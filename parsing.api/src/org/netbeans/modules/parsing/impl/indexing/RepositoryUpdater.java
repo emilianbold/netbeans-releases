@@ -59,6 +59,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -66,6 +67,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -128,10 +130,12 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 sb.append(" pathType=").append(c.getPathType()); //NOI18N
                 sb.append(" affected paths:\n"); //NOI18N
                 Collection<? extends ClassPath> paths = c.getAffectedPaths();
-                for(ClassPath cp : paths) {
-                    sb.append("  \""); //NOI18N
-                    sb.append(cp.toString(ClassPath.PathConversionMode.PRINT));
-                    sb.append("\"\n"); //NOI18N
+                if (paths != null) {
+                    for(ClassPath cp : paths) {
+                        sb.append("  \""); //NOI18N
+                        sb.append(cp.toString(ClassPath.PathConversionMode.PRINT));
+                        sb.append("\"\n"); //NOI18N
+                    }
                 }
                 sb.append("--\n"); //NOI18N
             }
@@ -246,16 +250,30 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         if (components.size() > 0) {
             Map<URL, FileListWork> jobs = new HashMap<URL, FileListWork>();
             for(JTextComponent jtc : components) {
-                FileObject f = NbEditorUtilities.getFileObject(jtc.getDocument());
+                Document d = jtc.getDocument();
+                FileObject f = NbEditorUtilities.getFileObject(d);
                 if (f != null) {
                     URL root = getOwningSourceRoot(f);
                     if (root != null) {
-                        FileListWork job = jobs.get(root);
-                        if (job == null) {
-                            job = new FileListWork(root, f);
-                            jobs.put(root, job);
-                        } else {
-                            job.addFile(f);
+                        long version = DocumentUtilities.getDocumentVersion(d);
+                        Long lastSeenVersion = (Long) d.getProperty(PROP_LAST_SEEN_VERSION);
+
+                        // check if we've ever seen this document, if it supports versioning
+                        // and if so then if the version saw last time is the same as the current one
+                        if (lastSeenVersion == null || version == 0 || lastSeenVersion < version) {
+                            d.putProperty(PROP_LAST_SEEN_VERSION, version);
+
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.fine("Document modified: " + FileUtil.getFileDisplayName(f) + " Owner: " + root); //NOI18N
+                            }
+
+                            FileListWork job = jobs.get(root);
+                            if (job == null) {
+                                job = new FileListWork(root, f);
+                                jobs.put(root, job);
+                            } else {
+                                job.addFile(f);
+                            }
                         }
                     }
                 }
@@ -276,6 +294,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());
     private static final Logger TEST_LOGGER = Logger.getLogger(RepositoryUpdater.class.getName() + ".tests"); //NOI18N
 
+    private static final String PROP_LAST_SEEN_VERSION = RepositoryUpdater.class.getName() + "-last-seen-document-version"; //NOI18N
+    
     private final Set<URL>scannedRoots = Collections.synchronizedSet(new HashSet<URL>());
     private final Set<URL>scannedBinaries = Collections.synchronizedSet(new HashSet<URL>());
     private final Set<URL>scannedUnknown = Collections.synchronizedSet(new HashSet<URL>());
