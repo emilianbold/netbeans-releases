@@ -53,6 +53,10 @@ public final class ClusterUtils {
     private ClusterUtils() {
     }
 
+    public static boolean isValidCluster(File file) {
+        return (new File(file, "config/Modules")).exists();
+    }
+
     /**
      * Returns path to cluster dir for specified project.
      * Path is returned even if it does not currently exist.

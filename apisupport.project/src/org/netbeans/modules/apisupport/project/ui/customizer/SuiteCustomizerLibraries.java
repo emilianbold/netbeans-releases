@@ -51,7 +51,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.Collator;
 import java.util.ArrayList;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -67,6 +66,8 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -231,6 +232,10 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         return;
     }
 
+    // TODO C.P support "universal" "${nbplatform.active.dir}/*" entry in the cluster.path
+    // meaning "all platform clusters", recognized in harness and in UI;
+    // it would allow easy switch among platforms with different clusters;
+    // update also code of SuiteProjectGenerator#createPlatformProperties
     private void loadClusterPath() {
         assert platformModules != null : "Must create platform nodes first";
         assert libChildren != null;
@@ -785,13 +790,9 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     // TODO C.P separate model from nodes, together with TreeTable --> Outline 
     abstract class Enabled extends AbstractNode {
         private EnabledState state;
-//        XXX private Children standard;
-//        private boolean isPlatformNode;
-//        XXX private File clusterDir;
 
         Enabled(Children ch, boolean enabled) {
             super(ch);
-//            XXX this.standard = ch;
             setEnabled(enabled);
             
             Sheet s = Sheet.createDefault();
@@ -824,6 +825,11 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 return;
             }
             state = s;
+            Logger logger = Logger.getLogger(EnabledProp.class.getName());
+            logger.log(Level.FINE, "Node '" + getName() + "', state="
+                    + (s==EnabledState.DISABLED ? "disabled" :
+                        (s==EnabledState.FULL_ENABLED ? "full enabled" : "part enabled")));
+
             if (propagate) {
                 //refresh children
                 EnabledState newChildState = 
@@ -1045,11 +1051,15 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         
         public Boolean getValue() throws IllegalAccessException, InvocationTargetException {
             Children ch = node.getChildren();
+            Logger logger = Logger.getLogger(EnabledProp.class.getName());
             if (ch == Children.LEAF) {
+                logger.log(Level.FINE, "Node '" + node.getName() + "' is LEAF, enabled=" + node.isEnabled());
                 return node.isEnabled();
             } else if (node.getState() == EnabledState.PART_ENABLED) {
+                logger.log(Level.FINE, "Node '" + node.getName() + "', enabled=null");
                 return null;
             } else {
+                logger.log(Level.FINE, "Node '" + node.getName() + "', enabled=" + node.isEnabled());
                 return node.isEnabled();
             }
         }

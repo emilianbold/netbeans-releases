@@ -227,7 +227,7 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
             File file = FileUtil.normalizeFile(chooser.getSelectedFile());
-            if (! file.exists() || file.isFile() || ! isValidCluster(file)) {
+            if (! file.exists() || file.isFile() || ! ClusterUtils.isValidCluster(file)) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                         org.openide.util.NbBundle.getMessage(EditClusterPanel.class, "MSG_NotValidCluster")));
             } else {
@@ -237,10 +237,6 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
             }
         }
     }//GEN-LAST:event_browseButtonActionPerformed
-
-    private boolean isValidCluster(File f) {
-        return (new File(f, "config/Modules")).exists();
-    }
 
     public void changedUpdate(DocumentEvent e) {
         updateDialog();

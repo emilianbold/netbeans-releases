@@ -44,13 +44,18 @@ package org.netbeans.modules.apisupport.project.suite;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.ui.customizer.BasicBrandingModel;
+import org.netbeans.modules.apisupport.project.ui.customizer.ClusterInfo;
+import org.netbeans.modules.apisupport.project.ui.customizer.ClusterUtils;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerLibraries;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
@@ -117,6 +122,17 @@ public class SuiteProjectGenerator {
                 projectDir, PLATFORM_PROPERTIES_PATH);
         EditableProperties props = new EditableProperties(true);
         props.setProperty("nbplatform.active", platformID); // NOI18N
+
+        NbPlatform plaf = NbPlatform.getPlatformByID(platformID);
+        if (plaf != null && plaf.getHarnessVersion() > NbPlatform.HARNESS_VERSION_65) {
+            List<String> clusterPath = new ArrayList<String>();
+            File[] files = plaf.getDestDir().listFiles();
+            for (File file : files) {
+                if (ClusterUtils.isValidCluster(file))
+                    clusterPath.add(SuiteProperties.toPlatformClusterEntry(file.getName()));
+            }
+            props.setProperty(SuiteProperties.CLUSTER_PATH_PROPERTY, SuiteUtils.getAntProperty(clusterPath));
+        }
         storeProperties(plafPropsFO, props);
     }
     
@@ -140,8 +156,14 @@ public class SuiteProjectGenerator {
         if (plaf != null) {
             ModuleEntry bootstrapModule = plaf.getModule("org.netbeans.bootstrap");
             if (bootstrapModule != null) {
-                // Will be stripped of version suffix if appropriate for the platform.
-                suiteProps.setEnabledClusters(new String[] {bootstrapModule.getClusterDirectory().getName()});
+                if (plaf.getHarnessVersion() <= NbPlatform.HARNESS_VERSION_65) {
+                    // Will be stripped of version suffix if appropriate for the platform.
+                    suiteProps.setEnabledClusters(new String[] {bootstrapModule.getClusterDirectory().getName()});
+                } else {
+                    suiteProps.setClusterPath(new ClusterInfo[] {
+                        ClusterInfo.create(bootstrapModule.getClusterDirectory(), true, true)
+                    });
+                }
             }
         }
         suiteProps.setDisabledModules(SuiteCustomizerLibraries.DISABLED_PLATFORM_MODULES.toArray(new String[0]));

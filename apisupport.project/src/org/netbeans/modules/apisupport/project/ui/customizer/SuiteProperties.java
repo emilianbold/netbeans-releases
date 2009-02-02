@@ -280,7 +280,7 @@ public final class SuiteProperties extends ModuleProperties {
                 for (ClusterInfo ci : clusterPath) {
                     if (ci.isPlatformCluster()) {
                         String cluster = ci.getClusterDir().getName();
-                        String entry = "${" + ACTIVE_NB_PLATFORM_DIR_PROPERTY + "}/" + SingleModuleProperties.clusterBaseName(cluster);
+                        String entry = toPlatformClusterEntry(cluster);
                         cp.add(entry);
                         cpwdc.add(entry);
                     } else {
@@ -324,7 +324,7 @@ public final class SuiteProperties extends ModuleProperties {
      * properties.
      * @return Set of clusters. Set is iterable in the same order as read from properties.
      */
-    Set<ClusterInfo> getClusterPath() {
+    public Set<ClusterInfo> getClusterPath() {
         if (clusterPath == null) {
             clusterPath = new LinkedHashSet<ClusterInfo>();
             String cpp = getEvaluator().getProperty(CLUSTER_PATH_PROPERTY);
@@ -353,14 +353,18 @@ public final class SuiteProperties extends ModuleProperties {
         return clusterPath;
     }   // TODO C.P test non-existent project clusters
 
-    void setClusterPath(ClusterInfo[] clusterPathList) {
+    public void setClusterPath(ClusterInfo[] clusterPathList) {
         Set<ClusterInfo> newClusterPath = new LinkedHashSet<ClusterInfo>(Arrays.asList(clusterPathList));
         if (newClusterPath.equals(clusterPath))
             return;
         clusterPath = newClusterPath;
         clusterPathChanged = true;
-        // TODO C.P change notifications
     }
+
+    public static String toPlatformClusterEntry(String cluster) {
+        return "${" + ACTIVE_NB_PLATFORM_DIR_PROPERTY + "}/" + SingleModuleProperties.clusterBaseName(cluster);
+    }
+
 
     /**
      * Converts "raw" cluster.path entry (possibly with nbplatform.active.dir,
@@ -370,7 +374,7 @@ public final class SuiteProperties extends ModuleProperties {
      */
     File evaluateCPEntry(String rawEntry) {
         // When cluster does not exist, it is either bare name or one with different number
-        final Pattern pat = Pattern.compile("(?:.*[\\\\/])?([^/\\\\]*?)([0-9]+)?[/\\\\]?$");
+        final Pattern pat = Pattern.compile("(?:.*[\\\\/])?([^/\\\\]*?)([0-9.]+)?[/\\\\]?$");
         final String nbDirProp = "${" + ACTIVE_NB_PLATFORM_DIR_PROPERTY + "}";
         if (rawEntry.startsWith(nbDirProp)) {
             rawEntry = getActivePlatform().getDestDir().getAbsolutePath()
