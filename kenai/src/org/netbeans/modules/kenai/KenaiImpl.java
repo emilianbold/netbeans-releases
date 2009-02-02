@@ -46,6 +46,7 @@ import org.netbeans.modules.kenai.api.KenaiException;
  * SPI entry point.
  *
  * @author Maros Sandor
+ * @author Jan Becicka
  */
 public abstract class KenaiImpl {
 
@@ -53,23 +54,19 @@ public abstract class KenaiImpl {
      * Searches kenai for projects.
      *
      * @param pattern pattern to search for. Currenlty only substring match is supported.
-     * @param username
-     * @param password
      * @return list of Kenai projects
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
-    public abstract Iterator<ProjectData> searchProjects(String pattern, String username, char[] password) throws KenaiException;
+    public abstract Iterator<ProjectData> searchProjects(String pattern) throws KenaiException;
 
     /**
      * Retrieves all available information about a Kenai project.
      *
      * @param name name of the proejct to query
-     * @param username
-     * @param password
      * @return KenaiProjectImpl or null if the project does not exist
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
-    public abstract ProjectData getProject(String name, String username, char[] password) throws KenaiException;
+    public abstract ProjectData getProject(String name) throws KenaiException;
 
     /**
      * Asks whether a person is authorized to perform an activity on a particular project.
@@ -77,12 +74,10 @@ public abstract class KenaiImpl {
      * @param projectName name of a project
      * @param feature feature to check
      * @param activity activity to check
-     * @param username
-     * @param password
      * @return true if the person is authorized to perform the activity on the project, false otherwise
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
-    public abstract boolean isAuthorized(String projectName, String feature, String activity, String username, char [] password) throws KenaiException;
+    public abstract boolean isAuthorized(String projectName, String feature, String activity) throws KenaiException;
 
     /**
      * Verifies that the supplied credentials are valid.
@@ -93,6 +88,54 @@ public abstract class KenaiImpl {
      */
     public abstract void verify(String username, char[] password) throws KenaiException;
 
+    /**
+     *
+     * @param username
+     * @param password
+     * @throws org.netbeans.modules.kenai.api.KenaiException
+     */
     public abstract void register(String username, char[] password) throws KenaiException ;
-    public abstract ProjectData createProject(String name, String displayName, String username, char [] password) throws KenaiException;
+
+    /**
+     * 
+     * @param name
+     * @param displayName
+     * @param description
+     * @param licenses
+     * @param tags
+     * @return
+     * @throws org.netbeans.modules.kenai.api.KenaiException
+     */
+    public abstract ProjectData createProject (
+            String name,
+            String displayName,
+            String description,
+            String[] licenses,
+            String tags
+            ) throws KenaiException;
+
+    /**
+     * 
+     * @param projectName
+     * @param name
+     * @param display_name
+     * @param description
+     * @param url
+     * @param repository_url
+     * @param browse_url
+     * @param service
+     * @return
+     * @throws org.netbeans.modules.kenai.api.KenaiException
+     */
+    public abstract FeatureData createProjectFeature(
+            String projectName,
+            String name,
+            String display_name,
+            String description,
+            String url,
+            String repository_url,
+            String browse_url,
+            String service
+            ) throws KenaiException;
+
 }

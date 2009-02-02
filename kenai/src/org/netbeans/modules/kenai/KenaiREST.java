@@ -46,6 +46,8 @@ import java.util.Iterator;
 import java.util.Set;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.codeviation.pojson.*;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiErrorMessage;
 
 /**
  * Talks to remote Kenai server via Web services API.
@@ -61,11 +63,11 @@ public class KenaiREST extends KenaiImpl {
     }
 
     @Override
-    public boolean isAuthorized(String projectName, String feature, String activity, String username, char [] password) throws KenaiException {
+    public boolean isAuthorized(String projectName, String feature, String activity) throws KenaiException {
         String [][] params = {
             new String [] { "feature_id", feature },
             new String [] { "activity_id", activity },
-            new String [] { "person_id", username },
+            new String [] { "person_id", Kenai.getDefault().getPasswordAuthentication().getUserName()},
             new String [] { "project_id", projectName }
         };
         RestConnection conn = new RestConnection(baseURL.toString() + "/api/login/authorize", params);
@@ -79,7 +81,7 @@ public class KenaiREST extends KenaiImpl {
     }
 
     @Override
-    public ProjectData getProject(String name, String username, char[] password) throws KenaiException {
+    public ProjectData getProject(String name) throws KenaiException {
         RestConnection conn = new RestConnection(baseURL.toString() + "/api/projects/" + name + ".json");
         RestResponse resp = null;
         try {
@@ -97,7 +99,7 @@ public class KenaiREST extends KenaiImpl {
     }
 
     @Override
-    public Iterator<ProjectData> searchProjects(String pattern, String username, char[] password) throws KenaiException {
+    public Iterator<ProjectData> searchProjects(String pattern) throws KenaiException {
         RestConnection conn = new RestConnection(baseURL.toString() + "/home/live_lookup?val=" + pattern);
         RestResponse resp = null;
         try {
@@ -130,8 +132,72 @@ public class KenaiREST extends KenaiImpl {
     }
 
     @Override
-    public ProjectData createProject(String name, String displayName, String username, char[] password) throws KenaiException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public ProjectData createProject(
+            String name,
+            String displayName,
+            String description,
+            String[] licenses,
+            String tags
+            ) throws KenaiException {
+        RestConnection conn = new RestConnection(baseURL.toString() + "/api/projects.json");
+        RestResponse resp = null;
+        PojsonSave<ProjectCreateData> save = PojsonSave.create(ProjectCreateData.class);
+        ProjectCreateData prdata = new ProjectCreateData();
+        prdata.project.name = name;
+        prdata.project.display_name = displayName;
+        prdata.project.description = description;
+        prdata.project.licenses = licenses;
+        prdata.project.tags = tags;
+
+        try {
+            resp = conn.post(null, save.asString(prdata));
+        } catch (IOException iOException) {
+            throw new KenaiException(iOException);
+        }
+
+        if (resp.getResponseCode() != 201) throw new KenaiErrorMessage(resp.getResponseMessage(),resp.getDataAsString());
+
+        String response = resp.getDataAsString();
+
+        PojsonLoad pload = PojsonLoad.create();
+        return pload.load(response, ProjectData.class);
+    }
+
+    @Override
+    public FeatureData createProjectFeature(
+            String projectName,
+            String name,
+            String display_name,
+            String description,
+            String url,
+            String repository_url,
+            String browse_url,
+            String service
+            ) throws KenaiException {
+        
+        RestConnection conn = new RestConnection(baseURL.toString() + "/api/projects/"+projectName+"/features.json");
+        RestResponse resp = null;
+        PojsonSave<ProjectFeatureCreateData> save = PojsonSave.create(ProjectFeatureCreateData.class);
+        ProjectFeatureCreateData fdata = new ProjectFeatureCreateData();
+        fdata.feature.name = name;
+        fdata.feature.display_name = display_name;
+        fdata.feature.description = description;
+        fdata.feature.service = service;
+        fdata.feature.url = url;
+        fdata.feature.repository_url = repository_url;
+        fdata.feature.browse_url = browse_url;
+        try {
+            resp = conn.post(null, save.asString(fdata));
+        } catch (IOException iOException) {
+            throw new KenaiException(iOException);
+        }
+
+        if (resp.getResponseCode() != 201) throw new KenaiErrorMessage(resp.getResponseMessage(),resp.getDataAsString());
+
+        String response = resp.getDataAsString();
+
+        PojsonLoad pload = PojsonLoad.create();
+        return pload.load(response, FeatureData.class);
     }
 
     @Override
@@ -156,6 +222,5 @@ public class KenaiREST extends KenaiImpl {
             throw new KenaiException("Authentication failed");
         }
     }
-
 //        DateFormat df = new SimpleDateFormat("y-M-d'T'H:m:s'Z'");
 }

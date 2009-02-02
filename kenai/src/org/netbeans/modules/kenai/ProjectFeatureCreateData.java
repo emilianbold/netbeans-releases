@@ -37,45 +37,30 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.api;
-
-import org.netbeans.modules.kenai.FeatureData;
+package org.netbeans.modules.kenai;
 
 /**
  *
- * @author Maros Sandor
  * @author Jan Becicka
  */
-public final class KenaiProjectFeature {
+@org.codeviation.pojson.Pojson.IgnoreNonExisting
+public class ProjectFeatureCreateData {
 
-    private FeatureData featureData;
-    
-    KenaiProjectFeature(FeatureData data) {
-        this.featureData = data;
+    public ProjectFeatureCreateData() {
+        feature = new Feature();
     }
 
-    public String getName() {
-        return featureData.name;
-    }
+    public Feature feature;
 
-    public KenaiFeature getType() {
-        return Enum.valueOf(KenaiFeature.class, featureData.type);
+    @org.codeviation.pojson.Pojson.IgnoreNonExisting
+    public static class Feature {
+        public String name;
+        public String display_name;
+        public String description;
+        public String service;
+        public String url;
+        public String repository_url;
+        public String browse_url;
     }
-
-    public String getService() {
-        return featureData.service;
-    }
-
-    public String getLocation() {
-        return featureData.url;
-    }
-
-    public String getWebLocation() {
-        return featureData.web_url;
-    }
-
-    public String getDisplayName() {
-        return featureData.display_name;
-    }
-
 }
+

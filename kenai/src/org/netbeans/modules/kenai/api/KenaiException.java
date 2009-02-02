@@ -60,5 +60,5 @@ public class KenaiException extends Exception {
 
     public KenaiException() {
     }
-    
-}
+
+    }
