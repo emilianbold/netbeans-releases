@@ -200,32 +200,11 @@ public class CreateCopyAction extends ContextAction {
 
             if(!toRepositoryFile.isRepositoryRoot()) {
                 SVNUrl folderToCreate = toRepositoryFile.removeLastSegment().getFileUrl();
-                ISVNInfo info = null;
                 try{
-                    info = client.getInfo(folderToCreate);                                                                
+                    client.getInfo(folderToCreate);                                                                
                 } catch (SVNClientException ex) {                                
                     if(!SvnClientExceptionHandler.isWrongUrl(ex.getMessage())) { 
                         throw ex;
-                    }
-                }                         
-
-                if(support.isCanceled()) {
-                    return;
-            }                        
-
-                if(info == null) {
-                    client.mkdir(folderToCreate,
-                                 true,
-                                 "[Netbeans SVN client generated message: create a new folder for the copy]: '\n" + createCopy.getMessage() + "\n'"); // NOI18N
-                } else {
-                    if(createCopy.getLocalFile().isFile()) {
-                        // we are copying a file to a destination which already exists. Even if it's a folder - we don't use the exactly same
-                        // as the commandline svn client:
-                        // - the remote file specified in the GUI has to be exactly the file which has to be created at the repository.
-                        // - if the destination is an existent folder the file won't be copied into it, as the svn client would do.
-                        throw new SVNClientException("File allready exists");
-                    } else {
-                        // XXX warnig: do you realy want to? could be already a project folder!
                     }
                 }
             }
