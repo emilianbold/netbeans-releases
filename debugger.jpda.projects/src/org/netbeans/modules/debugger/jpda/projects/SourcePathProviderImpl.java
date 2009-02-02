@@ -825,7 +825,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         }
     }
     
-    private static final class FileObjectComparator implements Comparator<FileObject> {
+    static final class FileObjectComparator implements Comparator<FileObject> {
 
         public int compare(FileObject fo1, FileObject fo2) {
             String r1 = getRoot(fo1);
