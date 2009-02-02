@@ -175,9 +175,15 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
         subListeners.clear();
     }
-    
+
     @Override
     public void propertyChange (PropertyChangeEvent e) {
+        if (e.getNewValue() != null) {
+            synchronized (this) {
+                // Reset the provider to display the current one.
+                providerToDisplay = null;
+            }
+        }
         updateModel ();
     }
     
@@ -187,7 +193,10 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         if (!sessionProviders.contains(providerToDisplay)) {
             providerToDisplay = null;
         }
-        DebuggerEngine e;
+        DebuggerEngine e = dm.getCurrentEngine ();
+        if (e == null && providerToDisplay == null && sessionProviders.size() > 0) {
+            providerToDisplay = sessionProviders.get(0);
+        }
         ContextProvider cp;
         String viewPath;
         if (providerToDisplay != null) {
@@ -195,7 +204,6 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             cp = dm;
             viewPath = viewType + "/" + providerToDisplay.getTypeID();
         } else {
-            e = dm.getCurrentEngine ();
             cp = e != null ? DebuggerManager.join(e, dm) : dm;
             viewPath = viewType;
         }
@@ -287,10 +295,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             models.add(rp);
         }
 
+        final JComponent buttonsSubPane;
         synchronized (buttons) {
             buttonsPane.removeAll();
             if (buttons.size() == 0 && sessionProviders.size() == 0) {
                 buttonsPane.setVisible(false);
+                buttonsSubPane = null;
             } else {
                 buttonsPane.setVisible(true);
                 int i = 0;
@@ -301,13 +311,22 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                     i++;
                     javax.swing.JSeparator s = new javax.swing.JSeparator(SwingConstants.HORIZONTAL);
                     c = new GridBagConstraints(0, i, 1, 1, 0.0, 0.0, GridBagConstraints.NORTH, 0, new Insets(5, 0, 5, 0), 0, 0);
-                    buttonsPane.add(b, c);
+                    buttonsPane.add(s, c);
                     i++;
                 }
-                for (javax.swing.AbstractButton b : buttons) {
-                    GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 0.0, GridBagConstraints.NORTH, 0, new Insets(5, 5, 5, 5), 0, 0);
-                    buttonsPane.add(b, c);
+                if (tabbedPane != null) {
+                    buttonsSubPane = new javax.swing.JPanel();
+                    buttonsSubPane.setLayout(new java.awt.GridBagLayout());
+                    GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.VERTICAL, new Insets(5, 0, 5, 0), 0, 0);
+                    buttonsPane.add(buttonsSubPane, c);
                     i++;
+                } else {
+                    buttonsSubPane = null;
+                    for (javax.swing.AbstractButton b : buttons) {
+                        GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 0.0, GridBagConstraints.NORTH, 0, new Insets(5, 5, 5, 5), 0, 0);
+                        buttonsPane.add(b, c);
+                        i++;
+                    }
                 }
                 //GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.VERTICAL, new Insets(5, 5, 5, 5), 0, 0);
                 //buttonsPane.add(new javax.swing.JPanel(), c); // Push-panel
@@ -352,11 +371,14 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                             java.awt.Component c = tabbedPane.getComponentAt(i);
                             if (c instanceof javax.swing.JLabel) {
                                 String id = ((javax.swing.JLabel) c).getText();
+                                if (providerToDisplay != null) {
+                                    id = providerToDisplay.getTypeID() + "/" + id;
+                                }
                                 javax.swing.JPanel contentComponent = new javax.swing.JPanel(new java.awt.BorderLayout ());
                                 subListeners.add(new ViewModelListener (
                                     viewType + "/" + id,
                                     contentComponent,
-                                    buttonsPane,
+                                    buttonsSubPane,
                                     propertiesHelpID,
                                     viewIcon
                                 ));
@@ -387,6 +409,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
     private javax.swing.JButton createSessionsSwitchButton() {
         final javax.swing.JButton b = new javax.swing.JButton(new ImageIcon(viewIcon));
+        b.setMargin(new Insets(2, 2, 2, 2));
         b.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (e.getSource() == b) {
@@ -403,7 +426,11 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                         mi.addActionListener(this);
                         m.add(mi);
                     }
-                    m.setVisible(true);
+                    java.awt.Point pos = b.getMousePosition();
+                    if (pos == null) {
+                        pos = new java.awt.Point(b.getWidth(), b.getHeight());
+                    }
+                    m.show(b, pos.x, pos.y);
                 } else {
                     JMenuItem mi = (JMenuItem) e.getSource();
                     Object s = mi.getClientProperty("SESSION");
@@ -414,6 +441,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                             providerToDisplay = (SessionProvider) s;
                         }
                     }
+                    updateModel();
                 }
             }
         });
