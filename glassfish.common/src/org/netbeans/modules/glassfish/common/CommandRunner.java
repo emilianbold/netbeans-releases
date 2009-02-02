@@ -308,7 +308,7 @@ public class CommandRunner extends BasicTask<OperationState> {
 
             while(!httpSucceeded && retries-- > 0) {
                 try {
-                    Logger.getLogger("glassfish").log(Level.FINE, "V3 HTTP Command: " + commandUrl );
+                    Logger.getLogger("glassfish").log(Level.FINE, "HTTP Command: " + commandUrl );
 
                     conn = urlToConnectTo.openConnection();
                     if(conn instanceof HttpURLConnection) {
