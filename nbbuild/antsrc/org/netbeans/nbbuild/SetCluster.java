@@ -55,6 +55,7 @@ import org.apache.tools.ant.Task;
  */
 public class SetCluster extends Task {
     private String name = null;
+    private String clusterName = null;
     private String cluster;
     private String thisModuleName = null;
     private String defaultLocation = null;
@@ -62,6 +63,11 @@ public class SetCluster extends Task {
     /** Sets the name of property which should contain the value */
     public void setName(String name) {
         this.name = name;
+    }
+    
+    /** Sets the name of property which should contain name of cluster */
+    public void setClusterName(String name) {
+	this.clusterName = name;
     }
     
     /** Name of a cluster */
@@ -110,6 +116,10 @@ public class SetCluster extends Task {
                     // We found the list referring to this module
                     log( "Property: " + name + " will be set to " + clusterDir, Project.MSG_VERBOSE);
                     this.getProject().setProperty( name, clusterDir ); // XXX setNewProperty?
+		    if (clusterName != null) { // Set also cluster name property
+                        log( "Property: " + clusterName + " will be set to " + property, Project.MSG_VERBOSE);
+			this.getProject().setProperty( clusterName, property ); // XXX setNewProperty?
+		    }
                     return;
                 }
                 String otherCluster = clusterByModule.put(module, clusterDir);
