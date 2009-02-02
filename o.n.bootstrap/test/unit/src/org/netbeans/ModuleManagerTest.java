@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.startup;
+package org.netbeans;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -71,22 +71,13 @@ import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
-import org.netbeans.InvalidException;
-import org.netbeans.Module;
-import org.netbeans.ModuleManager;
-import org.netbeans.Util;
-import org.netbeans.core.startup.SetupHid.FakeEvents;
-import org.netbeans.core.startup.SetupHid.FakeModuleInstaller;
-import org.netbeans.core.startup.SetupHid.LoggedPCListener;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.test.TestFileUtils;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Utilities;
+import org.openide.util.test.TestFileUtils;
 
 /** Test the module manager as well as the Module class.
  * This means creating modules from JAR as well as from "classpath"
@@ -134,8 +125,8 @@ public class ModuleManagerTest extends SetupHid {
      * Try to disable them too.
      */
     public void testSimpleInstallation() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -222,8 +213,8 @@ public class ModuleManagerTest extends SetupHid {
 
     public void testInstallAutoload() throws Exception {
         // Cf. #9779, I think.
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -275,8 +266,8 @@ public class ModuleManagerTest extends SetupHid {
 
     public void testInstallEager() throws Exception {
         // Cf. #17501.
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -327,8 +318,8 @@ public class ModuleManagerTest extends SetupHid {
     }
 
     public void testEagerPlusAutoload() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -379,8 +370,8 @@ public class ModuleManagerTest extends SetupHid {
      * always be on, regardless of the normal module.
      */
     public void testEagerPlusAutoload2() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -410,8 +401,8 @@ public class ModuleManagerTest extends SetupHid {
     }
 
     public void testEagerEnabledImmediately() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -449,27 +440,30 @@ public class ModuleManagerTest extends SetupHid {
     }
 
     public void testEagerEnablementRobust() throws Exception { // #144005
-        FileObject dir = FileUtil.toFileObject(getWorkDir());
-        assertNotNull(dir);
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        File dir = getWorkDir();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
-            Module eager1 = mgr.create(FileUtil.toFile(TestFileUtils.writeZipFile(dir, "eager1.jar",
-                    "META-INF/MANIFEST.MF:OpenIDE-Module: eager1\nOpenIDE-Module-Module-Dependencies: autoload\n\n")), null, false, false, true);
+            File jar = new File(dir, "eager1.jar");
+            TestFileUtils.writeZipFile(jar, "META-INF/MANIFEST.MF:OpenIDE-Module: eager1\nOpenIDE-Module-Module-Dependencies: autoload\n\n");
+            Module eager1 = mgr.create(jar, null, false, false, true);
             mgr.enable(Collections.<Module>emptySet());
             assertEquals(Collections.emptySet(), mgr.getEnabledModules());
-            Module autoload = mgr.create(FileUtil.toFile(TestFileUtils.writeZipFile(dir, "autoload.jar",
-                    "META-INF/MANIFEST.MF:OpenIDE-Module: autoload\n\n")), null, false, true, false);
+            jar = new File(dir, "autoload.jar");
+            TestFileUtils.writeZipFile(jar, "META-INF/MANIFEST.MF:OpenIDE-Module: autoload\n\n");
+            Module autoload = mgr.create(jar, null, false, true, false);
             mgr.enable(Collections.<Module>emptySet());
             assertEquals(new HashSet<Module>(Arrays.asList(autoload, eager1)), mgr.getEnabledModules());
-            mgr.create(FileUtil.toFile(TestFileUtils.writeZipFile(dir, "eager2.jar",
-                    "META-INF/MANIFEST.MF:OpenIDE-Module: eager2\nOpenIDE-Module-Module-Dependencies: missing\n\n")), null, false, false, true);
+            jar = new File(dir, "eager2.jar");
+            TestFileUtils.writeZipFile(jar, "META-INF/MANIFEST.MF:OpenIDE-Module: eager2\nOpenIDE-Module-Module-Dependencies: missing\n\n");
+            mgr.create(jar, null, false, false, true);
             mgr.enable(Collections.<Module>emptySet());
             assertEquals(new HashSet<Module>(Arrays.asList(autoload, eager1)), mgr.getEnabledModules());
-            Module eager3 = mgr.create(FileUtil.toFile(TestFileUtils.writeZipFile(dir, "eager3.jar",
-                    "META-INF/MANIFEST.MF:OpenIDE-Module: eager3\nOpenIDE-Module-Module-Dependencies: autoload\n\n")), null, false, false, true);
+            jar = new File(dir, "eager3.jar");
+            TestFileUtils.writeZipFile(jar, "META-INF/MANIFEST.MF:OpenIDE-Module: eager3\nOpenIDE-Module-Module-Dependencies: autoload\n\n");
+            Module eager3 = mgr.create(jar, null, false, false, true);
             mgr.enable(Collections.<Module>emptySet());
             assertEquals(new HashSet<Module>(Arrays.asList(autoload, eager1, eager3)), mgr.getEnabledModules());
         } finally {
@@ -479,8 +473,8 @@ public class ModuleManagerTest extends SetupHid {
 
     public void testCyclic() throws Exception {
         // Cf. #12014.
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -499,8 +493,8 @@ public class ModuleManagerTest extends SetupHid {
 
     public void testBuildVersionCanBeReadOrIsDelegated() throws Exception {
         // Cf. #12014.
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -532,8 +526,8 @@ public class ModuleManagerTest extends SetupHid {
     }
 
     public void testLookup() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         Module m1, m2;
@@ -559,7 +553,8 @@ public class ModuleManagerTest extends SetupHid {
         assertEquals(m2, item.getInstance());
         Util.err.info("Item ID: " + item.getId());
         assertTrue("Item class is OK: " + item.getType(), item.getType().isAssignableFrom(Module.class));
-        assertEquals("finding by ID works", Collections.singleton(m2), new HashSet<Module>(l.lookup(new Lookup.Template<Module>(null, item.getId(), null)).allInstances()));
+        assertEquals("finding by ID works", Collections.singleton(m2),
+                new HashSet<Module>(l.lookup(new Lookup.Template<Module>(null, item.getId(), null)).allInstances()));
         final boolean[] waiter = new boolean[] {false};
         resultAll.addLookupListener(new LookupListener() {
             public void resultChanged(LookupEvent lev) {
@@ -589,8 +584,8 @@ public class ModuleManagerTest extends SetupHid {
 
     /** Test that after deletion of a module, problems cache is cleared. */
     public void test14561() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -610,8 +605,8 @@ public class ModuleManagerTest extends SetupHid {
 
     /** Test that PROP_PROBLEMS is fired reliably after unexpected problems. */
     public void test14560() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         LoggedPCListener listener = new LoggedPCListener();
         mgr.addPropertyChangeListener(listener);
@@ -638,8 +633,8 @@ public class ModuleManagerTest extends SetupHid {
 
     // #14705: make sure package loading is tested
     public void testPackageLoading() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -689,8 +684,8 @@ public class ModuleManagerTest extends SetupHid {
 
     public void testPackageDependencyMayfail() throws Exception {
         //see #63904:
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -721,8 +716,8 @@ public class ModuleManagerTest extends SetupHid {
 
     // #12549: check that loading of localized manifest attributes works.
     public void testLocalizedManifestAttributes() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         Locale starting = Locale.getDefault();
@@ -767,8 +762,8 @@ public class ModuleManagerTest extends SetupHid {
 
     // #19698: check that it also works when the module is enabled (above, module was disabled).
     public void testLocalizedManifestAttributesWhileEnabled() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         Locale starting = Locale.getDefault();
@@ -829,8 +824,8 @@ public class ModuleManagerTest extends SetupHid {
             jar.toURL(),
             ljar.toURL(),
         });
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         Locale starting = Locale.getDefault();
         try {
             ModuleManager mgr = new ModuleManager(installer, ev);
@@ -883,8 +878,8 @@ public class ModuleManagerTest extends SetupHid {
 
     // #9273: test that modules/patches/<<code-name-dashes>>/*.jar function as patches
     public void testModulePatches() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -900,8 +895,8 @@ public class ModuleManagerTest extends SetupHid {
     }
 
     public void testSimpleProvReq() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -972,8 +967,8 @@ public class ModuleManagerTest extends SetupHid {
     }
 
     public void testProvReqCycles() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -1017,8 +1012,8 @@ public class ModuleManagerTest extends SetupHid {
     }
 
     public void testMultipleProvs() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -1064,8 +1059,8 @@ public class ModuleManagerTest extends SetupHid {
     }
 
     public void testProvReqUnsatisfiable() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         Module m1 = createModule(mgr, "OpenIDE-Module: m1\nOpenIDE-Module-Needs: tok\n");
@@ -1097,8 +1092,8 @@ public class ModuleManagerTest extends SetupHid {
     }
     
     private void doSimpleProvNeeds(boolean reverseOrder, boolean recommends) throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -1245,8 +1240,8 @@ public class ModuleManagerTest extends SetupHid {
     }
     
     private void doComplexProvNeeds(boolean reverseOrder, boolean recommends, boolean sndRec) throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -1345,8 +1340,8 @@ public class ModuleManagerTest extends SetupHid {
     }
     
     public void testRecommendsWithoutAProvider() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -1401,8 +1396,8 @@ public class ModuleManagerTest extends SetupHid {
 
     private void doRecommendsWithAProviderWithoutAProvider(boolean recommends) throws Exception {
         // ========= XXX recommends parameter is unused! ===========
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -1477,8 +1472,8 @@ public class ModuleManagerTest extends SetupHid {
     }
     
     public void testMultipleReqs() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -1496,8 +1491,8 @@ public class ModuleManagerTest extends SetupHid {
     }
 
     public void testEagerReq() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -1527,8 +1522,8 @@ public class ModuleManagerTest extends SetupHid {
     }
 
     public void testAutoloadProv() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -1548,8 +1543,8 @@ public class ModuleManagerTest extends SetupHid {
     }
 
     public void testWeirdRecursion() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -1588,8 +1583,8 @@ public class ModuleManagerTest extends SetupHid {
         List<String> freeModules = new ArrayList<String>(Arrays.asList(moduleNames));
         int count = 100; // # of things to do in order
         Random r = new Random(count * 17 + 113);
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -1740,8 +1735,8 @@ public class ModuleManagerTest extends SetupHid {
      */
 
     public void testRelVersRanges() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -1785,8 +1780,8 @@ public class ModuleManagerTest extends SetupHid {
 
     public void testDisableAgainstRelVersRange() throws Exception {
         // #41449: org.openidex.util/3 disabled improperly when disable module w/ dep on org.openide.util/2-3
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -1815,8 +1810,8 @@ public class ModuleManagerTest extends SetupHid {
      * Would probably always pass on Unix, but on Windows it matters.
      */
     public void testModuleDeletion() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
 
         File jar = new File(getWorkDir(), "copy-of-simple-module.jar");
@@ -1857,8 +1852,8 @@ public class ModuleManagerTest extends SetupHid {
      * according to the system classloader.
      */
     public void testContextClassLoader() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         final ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         // Make sure created threads do not die.
@@ -1967,8 +1962,8 @@ public class ModuleManagerTest extends SetupHid {
      * @see "#24996"
      */
     public void testDependOnTwoFixedModules() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -2002,7 +1997,7 @@ public class ModuleManagerTest extends SetupHid {
      * @see "#19621"
      */
     public void testPackageExports() throws Exception {
-        ModuleManager mgr = new ModuleManager(new FakeModuleInstaller(), new FakeEvents());
+        ModuleManager mgr = new ModuleManager(new MockModuleInstaller(), new MockEvents());
         mgr.mutexPrivileged().enterWriteAccess();
         try {
             Module m1 = mgr.create(new File(jars, "api-mod-export-all.jar"), null, false, false, false);
@@ -2114,7 +2109,7 @@ public class ModuleManagerTest extends SetupHid {
      * @see "#27853"
      */
     public void testIndirectPackageExports() throws Exception {
-        ModuleManager mgr = new ModuleManager(new FakeModuleInstaller(), new FakeEvents());
+        ModuleManager mgr = new ModuleManager(new MockModuleInstaller(), new MockEvents());
         mgr.mutexPrivileged().enterWriteAccess();
         try {
             Module m1 = mgr.create(new File(jars, "api-mod-export-api.jar"), null, false, false, false);
@@ -2144,7 +2139,7 @@ public class ModuleManagerTest extends SetupHid {
     }
 
     public void testPublicPackagesCanBeExportedToSelectedFriendsOnlyIssue54123 () throws Exception {
-        ModuleManager mgr = new ModuleManager(new FakeModuleInstaller(), new FakeEvents());
+        ModuleManager mgr = new ModuleManager(new MockModuleInstaller(), new MockEvents());
         mgr.mutexPrivileged().enterWriteAccess();
         try {
             Module m1 = mgr.create(new File(jars, "api-mod-export-friend.jar"), null, false, false, false);
@@ -2201,8 +2196,8 @@ public class ModuleManagerTest extends SetupHid {
     }
 
     public void testModuleInterdependencies() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -2241,19 +2236,22 @@ public class ModuleManagerTest extends SetupHid {
     }
 
     public void testModuleInterdependenciesNeeds() throws Exception { // #114896
-        FileObject dir = FileUtil.toFileObject(getWorkDir());
-        assertNotNull(dir);
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        File dir = getWorkDir();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
-            Module api = mgr.create(FileUtil.toFile(TestFileUtils.writeZipFile(dir, "api.jar",
-                    "META-INF/MANIFEST.MF:OpenIDE-Module: api\nOpenIDE-Module-Needs: provider\n\n")), null, false, false, false);
-            Module impl = mgr.create(FileUtil.toFile(TestFileUtils.writeZipFile(dir, "impl.jar",
-                    "META-INF/MANIFEST.MF:OpenIDE-Module: impl\nOpenIDE-Module-Provides: provider\nOpenIDE-Module-Module-Dependencies: api\n\n")), null, false, false, false);
-            Module client = mgr.create(FileUtil.toFile(TestFileUtils.writeZipFile(dir, "client.jar",
-                    "META-INF/MANIFEST.MF:OpenIDE-Module: client\nOpenIDE-Module-Module-Dependencies: api\n\n")), null, false, false, false);
+            File jar = new File(dir, "api.jar");
+            TestFileUtils.writeZipFile(jar, "META-INF/MANIFEST.MF:OpenIDE-Module: api\nOpenIDE-Module-Needs: provider\n\n");
+            Module api = mgr.create(jar, null, false, false, false);
+            jar = new File(dir, "impl.jar");
+            TestFileUtils.writeZipFile(jar, "META-INF/MANIFEST.MF:OpenIDE-Module: impl\nOpenIDE-Module-Provides: provider\n" +
+                    "OpenIDE-Module-Module-Dependencies: api\n\n");
+            Module impl = mgr.create(jar, null, false, false, false);
+            jar = new File(dir, "client.jar");
+            TestFileUtils.writeZipFile(jar, "META-INF/MANIFEST.MF:OpenIDE-Module: client\nOpenIDE-Module-Module-Dependencies: api\n\n");
+            Module client = mgr.create(jar, null, false, false, false);
             assertEquals(Collections.singleton(api), mgr.getModuleInterdependencies(impl, false, false));
             assertEquals(Collections.singleton(api), mgr.getModuleInterdependencies(impl, false, true));
             assertEquals(Collections.singleton(api), mgr.getModuleInterdependencies(impl, true, false));
@@ -2282,8 +2280,8 @@ public class ModuleManagerTest extends SetupHid {
     }
 
     private void doModuleClassLoaderWasNotReadyWhenTheChangeWasFiredIssue (final int typeOfClassLoader) throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         final ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -2340,8 +2338,8 @@ public class ModuleManagerTest extends SetupHid {
         mani.put("OpenIDE-Module-Module-Dependencies", "m1");
         mani.put("OpenIDE-Module-Java-Dependencies", "Java > 2046");
         createJar(m2j, Collections.<String,String>emptyMap(), mani);
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -2370,7 +2368,7 @@ public class ModuleManagerTest extends SetupHid {
         createJar(m2j, Collections.<String,String>emptyMap(), mani);
         File m3j = new File(getWorkDir(), "m3.jar");
         createJar(m3j, Collections.<String,String>emptyMap(), Collections.singletonMap("OpenIDE-Module", "m3"));
-        FakeModuleInstaller installer = new FakeModuleInstaller() {
+        MockModuleInstaller installer = new MockModuleInstaller() {
             public @Override boolean shouldDelegateResource(Module m, Module parent, String pkg) {
                 if (parent == null && pkg.equals("javax/swing/") && m.getCodeNameBase().matches("m[12]")) {
                     return false;
@@ -2379,7 +2377,7 @@ public class ModuleManagerTest extends SetupHid {
                 }
             }
         };
-        FakeEvents ev = new FakeEvents();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -2396,7 +2394,7 @@ public class ModuleManagerTest extends SetupHid {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    static void assertOverrides(Module m, String clazz) throws Exception {
+    public static void assertOverrides(Module m, String clazz) throws Exception {
         try {
             assertFalse("module " + m.getCodeNameBase() + " did not override " + clazz,
                     Class.forName(clazz) == m.getClassLoader().loadClass(clazz));
@@ -2411,7 +2409,7 @@ public class ModuleManagerTest extends SetupHid {
         assertFalse("module " + m.getCodeNameBase() + " did not override " + rsrc,
                 cpResource.equals(modResource));
     }
-    static void assertDoesNotOverride(Module m, String clazz) throws Exception {
+    public static void assertDoesNotOverride(Module m, String clazz) throws Exception {
         assertEquals(Class.forName(clazz), m.getClassLoader().loadClass(clazz));
         String rsrc = clazz.replace('.', '/') + ".class";
         URL cpResource = ModuleManagerTest.class.getResource("/" + rsrc);
@@ -2434,8 +2432,8 @@ public class ModuleManagerTest extends SetupHid {
         mani.put("OpenIDE-Module", "m3");
         mani.put("OpenIDE-Module-Module-Dependencies", "m1/0");
         createJar(m3j, Collections.<String,String>emptyMap(), mani);
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -2476,7 +2474,7 @@ public class ModuleManagerTest extends SetupHid {
             }
             os.putNextEntry(elem);
             InputStream is = jar.getInputStream(elem);
-            FileUtil.copy(is, os);
+            copyStreams(is, os);
             is.close();
         }
         os.close();

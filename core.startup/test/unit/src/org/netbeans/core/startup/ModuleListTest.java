@@ -41,16 +41,33 @@
 
 package org.netbeans.core.startup;
 
-//import junit.framework.*;
+import org.netbeans.SetupHid;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
+import org.netbeans.LoggedPCListener;
+import org.netbeans.MockModuleInstaller;
+import org.netbeans.MockEvents;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
-import org.netbeans.junit.*;
-import java.util.*;
-import org.openide.modules.*;
-import java.io.*;
 import java.util.logging.Level;
 import org.netbeans.Stamps;
-import org.openide.filesystems.*;
+import org.netbeans.junit.Log;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.LocalFileSystem;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.test.MockLookup;
 
 /** Test the functions of the module list, i.e. finding modules on
@@ -93,8 +110,8 @@ public class ModuleListTest extends SetupHid {
         ud.mkdirs();
         System.setProperty("netbeans.user", ud.getPath());
         
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         mgr = new ModuleManager(installer, ev);
         File dir = getWorkDir();
         File modulesdir = new File(dir, "Modules");
@@ -193,8 +210,8 @@ public class ModuleListTest extends SetupHid {
         
         CountingSecurityManager.initialize(new File(lfs.getRootDirectory(), "Modules").getPath());
         
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr2 = new ModuleManager(installer, ev);
         assertNotNull(mf);
         ModuleList list2 = new ModuleList(mgr2, mf, ev);
@@ -269,4 +286,68 @@ public class ModuleListTest extends SetupHid {
     // and check that layer-driven events are enough to cause
     // complex installations & uninstallations
     
+    private static void copy(File a, FileObject b) throws IOException {
+        OutputStream os = b.getOutputStream();
+        try {
+            copyStreams(new FileInputStream(a), os);
+        } finally {
+            os.close();
+        }
+    }
+
+    private static class LoggedFileListener implements FileChangeListener {
+
+        /** names of files that have changed: */
+        private final Set<String> files = new HashSet<String>(100);
+
+        private synchronized void change(FileEvent ev) {
+            files.add(ev.getFile().getPath());
+            notify();
+        }
+
+        public synchronized void waitForChanges() throws InterruptedException {
+            wait(5000);
+        }
+
+        public synchronized boolean hasChange(String fname) {
+            return files.contains(fname);
+        }
+
+        public synchronized boolean waitForChange(String fname) throws InterruptedException {
+            while (!hasChange(fname)) {
+                long start = System.currentTimeMillis();
+                waitForChanges();
+                if (System.currentTimeMillis() - start > 4000) {
+                    //System.err.println("changes=" + changes);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public void fileDeleted(FileEvent fe) {
+            change(fe);
+        }
+
+        public void fileFolderCreated(FileEvent fe) {
+            change(fe);
+        }
+
+        public void fileDataCreated(FileEvent fe) {
+            change(fe);
+        }
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            // ignore?
+        }
+
+        public void fileRenamed(FileRenameEvent fe) {
+            change(fe);
+        }
+
+        public void fileChanged(FileEvent fe) {
+            change(fe);
+        }
+    }
+
 }

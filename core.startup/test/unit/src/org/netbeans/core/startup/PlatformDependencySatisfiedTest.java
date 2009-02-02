@@ -41,6 +41,8 @@
 
 package org.netbeans.core.startup;
 
+import org.netbeans.SetupHid;
+import org.netbeans.MockEvents;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.lang.reflect.Field;
@@ -177,7 +179,7 @@ public class PlatformDependencySatisfiedTest extends SetupHid {
         os.putNextEntry (new JarEntry ("empty/test.txt"));
         os.close ();
         
-        final FakeEvents ev = new FakeEvents();
+        final MockEvents ev = new MockEvents();
         NbInstaller installer = new NbInstaller(ev);
         ModuleManager mgr = new ModuleManager(installer, ev);
         ModuleFormatSatisfiedTest.addOpenideModules(mgr);

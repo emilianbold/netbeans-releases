@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,52 +31,38 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.core.startup;
 
-import org.netbeans.MockEvents;
-import java.io.File;
-import java.util.Collections;
-import org.netbeans.Module;
-import org.netbeans.ModuleManager;
-import org.openide.util.NbBundle;
+import org.netbeans.SetupHid;
+import java.io.IOException;
+import java.io.InputStream;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-/** Test the NetBeans module installer implementation.
- * Broken into pieces to ensure each runs in its own VM.
- * @author Jesse Glick
- */
-public class NbInstallerTest3 extends NbInstallerTestBase {
+abstract class NbInstallerTestBase extends SetupHid {
 
-    public NbInstallerTest3(String name) {
-        super(name);
+    public NbInstallerTestBase(String n) {
+        super(n);
     }
 
-    /** Test #21173/#23595: overriding layers by branding. */
-    public void testBrandingLayerOverrides() throws Exception {
-        Main.getModuleSystem ();
-        final MockEvents ev = new MockEvents();
-        NbInstaller installer = new NbInstaller(ev);
-        ModuleManager mgr = new ModuleManager(installer, ev);
-        installer.registerManager(mgr);
-        mgr.mutexPrivileged().enterWriteAccess();
-        try {
-            String orig = NbBundle.getBranding();
-            NbBundle.setBranding("foo");
-            try {
-                Module m1 = mgr.create(new File(jars, "base-layer-mod.jar"), null, false, false, false);
-                assertEquals(Collections.EMPTY_SET, m1.getProblems());
-                mgr.enable(m1);
-                assertEquals("special contents", slurp("foo/file1.txt"));
-                assertEquals(null, slurp("foo/file2.txt"));
-                mgr.disable(m1);
-                mgr.delete(m1);
-            } finally {
-                NbBundle.setBranding(orig);
-            }
-        } finally {
-            mgr.mutexPrivileged().exitWriteAccess();
+    protected static String slurp(String path) throws IOException {
+        Main.getModuleSystem(); // #26451
+        FileObject fo = FileUtil.getConfigFile(path);
+        if (fo == null) return null;
+        InputStream is = fo.getInputStream();
+        StringBuffer text = new StringBuffer((int)fo.getSize());
+        byte[] buf = new byte[1024];
+        int read;
+        while ((read = is.read(buf)) != -1) {
+            text.append(new String(buf, 0, read, "US-ASCII"));
         }
+        return text.toString();
     }
-    
+
 }

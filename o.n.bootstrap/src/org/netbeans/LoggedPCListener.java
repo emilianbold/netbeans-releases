@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,50 +39,50 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.startup;
+package org.netbeans;
 
-import org.netbeans.MockEvents;
-import java.io.File;
-import java.util.Collections;
-import org.netbeans.Module;
-import org.netbeans.ModuleManager;
-import org.openide.util.NbBundle;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.HashSet;
+import java.util.Set;
 
-/** Test the NetBeans module installer implementation.
- * Broken into pieces to ensure each runs in its own VM.
- * @author Jesse Glick
+/**
+ * XXX replace with MockPropertyChangeListener
  */
-public class NbInstallerTest3 extends NbInstallerTestBase {
+public final class LoggedPCListener implements PropertyChangeListener {
 
-    public NbInstallerTest3(String name) {
-        super(name);
+    private final Set<PropertyChangeEvent> changes = new HashSet<PropertyChangeEvent>(100);
+
+    public synchronized void propertyChange(PropertyChangeEvent evt) {
+        changes.add(evt);
+        notify();
     }
 
-    /** Test #21173/#23595: overriding layers by branding. */
-    public void testBrandingLayerOverrides() throws Exception {
-        Main.getModuleSystem ();
-        final MockEvents ev = new MockEvents();
-        NbInstaller installer = new NbInstaller(ev);
-        ModuleManager mgr = new ModuleManager(installer, ev);
-        installer.registerManager(mgr);
-        mgr.mutexPrivileged().enterWriteAccess();
-        try {
-            String orig = NbBundle.getBranding();
-            NbBundle.setBranding("foo");
-            try {
-                Module m1 = mgr.create(new File(jars, "base-layer-mod.jar"), null, false, false, false);
-                assertEquals(Collections.EMPTY_SET, m1.getProblems());
-                mgr.enable(m1);
-                assertEquals("special contents", slurp("foo/file1.txt"));
-                assertEquals(null, slurp("foo/file2.txt"));
-                mgr.disable(m1);
-                mgr.delete(m1);
-            } finally {
-                NbBundle.setBranding(orig);
+    public synchronized void waitForChanges() throws InterruptedException {
+        wait(5000);
+    }
+
+    public synchronized boolean hasChange(Object source, String prop) {
+        for (PropertyChangeEvent ev : changes) {
+            if (source == ev.getSource()) {
+                if (prop.equals(ev.getPropertyName())) {
+                    return true;
+                }
             }
-        } finally {
-            mgr.mutexPrivileged().exitWriteAccess();
         }
+        return false;
     }
-    
+
+    public synchronized boolean waitForChange(Object source, String prop) throws InterruptedException {
+        while (!hasChange(source, prop)) {
+            long start = System.currentTimeMillis();
+            waitForChanges();
+            if (System.currentTimeMillis() - start > 4000) {
+                //System.err.println("changes=" + changes);
+                return false;
+            }
+        }
+        return true;
+    }
+
 }

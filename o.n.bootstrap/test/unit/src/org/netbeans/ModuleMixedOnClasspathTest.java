@@ -37,7 +37,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.core.startup;
+package org.netbeans;
 
 import java.io.File;
 import java.net.URL;
@@ -46,10 +46,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-import org.netbeans.Module;
-import org.netbeans.ModuleManager;
-import org.netbeans.core.startup.SetupHid.FakeEvents;
-import org.netbeans.core.startup.SetupHid.FakeModuleInstaller;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -90,8 +86,8 @@ public class ModuleMixedOnClasspathTest extends SetupHid {
         numberOfStandard = 0;
         numberOfFixed = 0;
         
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
