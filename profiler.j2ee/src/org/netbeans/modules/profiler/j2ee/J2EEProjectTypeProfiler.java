@@ -337,11 +337,11 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         return true;
     }
 
-    public boolean isFileObjectSupported(final Project project, final FileObject fo) {
-        return ((WebProjectUtils.isJSP(fo) && WebProjectUtils.isWebDocumentSource(fo, project)) // jsp from /web directory
-               || (WebProjectUtils.isHttpServlet(fo) && WebProjectUtils.isWebJavaSource(fo, project)
-                  && WebProjectUtils.isMappedServlet(fo, project, true))); // mapped servlet from /src directory
-    }
+//    public boolean isFileObjectSupported(final Project project, final FileObject fo) {
+//        return ((WebProjectUtils.isJSP(fo) && WebProjectUtils.isWebDocumentSource(fo, project)) // jsp from /web directory
+//               || (WebProjectUtils.isHttpServlet(fo) && WebProjectUtils.isWebJavaSource(fo, project)
+//                  && WebProjectUtils.isMappedServlet(fo, project, true))); // mapped servlet from /src directory
+//    }
 
     public String getProfilerTargetName(final Project project, final FileObject buildScript, final int type,
                                         final FileObject profiledClass) {
@@ -389,35 +389,35 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         return loadGenConfig;
     }
 
-    public ClientUtils.SourceCodeSelection[] getDefaultRootMethods(Project project, FileObject profiledClassFile,
-                                                                   boolean profileUnderlyingFramework,
-                                                                   String[][] projectPackagesDescr) {
-        if (profileUnderlyingFramework) {
-            return new ClientUtils.SourceCodeSelection[0]; // Server doesn't know its main method
-        } else {
-            // Profile Project or Profile Single
-            if (profiledClassFile == null) {
-                // Profile Project, extract root methods from the project
-                Set<ClientUtils.SourceCodeSelection> roots = new HashSet<ClientUtils.SourceCodeSelection>(Arrays.asList(ProjectUtilities
-                                                                                                                        .getProjectDefaultRoots(project,
-                                                                                                                                                projectPackagesDescr)));
-                ClientUtils.SourceCodeSelection[] jsps = WebProjectUtils.getJSPRootMethods(project, true); // TODO: needs to be computed also for subprojects!
-                roots.addAll(Arrays.asList(jsps));
-
-                return roots.toArray(new ClientUtils.SourceCodeSelection[roots.size()]);
-            } else {
-                // Profile Single, provide correct root methods
-                if (WebProjectUtils.isJSP(profiledClassFile)) {
-                    // TODO: create list of jsp-specific methods (execute & all used Beans)
-                    return ProjectUtilities.getProjectDefaultRoots(project, projectPackagesDescr);
-                } else {
-                    String profiledClass = SourceUtils.getToplevelClassName(profiledClassFile);
-
-                    return new ClientUtils.SourceCodeSelection[] { new ClientUtils.SourceCodeSelection(profiledClass, "<all>", "") }; // NOI18N // Covers all innerclasses incl. anonymous innerclasses
-                }
-            }
-        }
-    }
+//    public ClientUtils.SourceCodeSelection[] getDefaultRootMethods(Project project, FileObject profiledClassFile,
+//                                                                   boolean profileUnderlyingFramework,
+//                                                                   String[][] projectPackagesDescr) {
+//        if (profileUnderlyingFramework) {
+//            return new ClientUtils.SourceCodeSelection[0]; // Server doesn't know its main method
+//        } else {
+//            // Profile Project or Profile Single
+//            if (profiledClassFile == null) {
+//                // Profile Project, extract root methods from the project
+//                Set<ClientUtils.SourceCodeSelection> roots = new HashSet<ClientUtils.SourceCodeSelection>(Arrays.asList(ProjectUtilities
+//                                                                                                                        .getProjectDefaultRoots(project,
+//                                                                                                                                                projectPackagesDescr)));
+//                ClientUtils.SourceCodeSelection[] jsps = WebProjectUtils.getJSPRootMethods(project, true); // TODO: needs to be computed also for subprojects!
+//                roots.addAll(Arrays.asList(jsps));
+//
+//                return roots.toArray(new ClientUtils.SourceCodeSelection[roots.size()]);
+//            } else {
+//                // Profile Single, provide correct root methods
+//                if (WebProjectUtils.isJSP(profiledClassFile)) {
+//                    // TODO: create list of jsp-specific methods (execute & all used Beans)
+//                    return ProjectUtilities.getProjectDefaultRoots(project, projectPackagesDescr);
+//                } else {
+//                    String profiledClass = SourceUtils.getToplevelClassName(profiledClassFile);
+//
+//                    return new ClientUtils.SourceCodeSelection[] { new ClientUtils.SourceCodeSelection(profiledClass, "<all>", "") }; // NOI18N // Covers all innerclasses incl. anonymous innerclasses
+//                }
+//            }
+//        }
+//    }
 
     public SelectProfilingTask.SettingsConfigurator getSettingsConfigurator() {
         if (configurator == null) {
@@ -761,31 +761,31 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         return getLastAgentPort();
     }
 
-    public SimpleFilter computePredefinedInstrumentationFilter(Project project, SimpleFilter predefinedInstrFilter,
-                                                               String[][] projectPackagesDescr) {
-        SimpleFilter retValue;
-
-        retValue = super.computePredefinedInstrumentationFilter(project, predefinedInstrFilter, projectPackagesDescr);
-
-        boolean recurse = predefinedInstrFilter == ProjectUtilities.FILTER_PROJECT_SUBPROJECTS_ONLY;
-        ClientUtils.SourceCodeSelection[] jspMethods = WebProjectUtils.getJSPRootMethods(project, recurse); // TODO: needs to be computed also for subprojects!
-
-        if (jspMethods != null) {
-            StringBuffer buffer = new StringBuffer(jspMethods.length * 30);
-
-            if (retValue != null) {
-                buffer.append(retValue.getFilterValue()).append(' '); // NOI18N
-            }
-
-            for (int i = 0; i < jspMethods.length; i++) {
-                buffer.append(jspMethods[i].getClassName()).append(' '); // NOI18N
-            }
-
-            retValue.setFilterValue(buffer.toString().trim());
-        }
-
-        return retValue;
-    }
+//    public SimpleFilter computePredefinedInstrumentationFilter(Project project, SimpleFilter predefinedInstrFilter,
+//                                                               String[][] projectPackagesDescr) {
+//        SimpleFilter retValue;
+//
+//        retValue = super.computePredefinedInstrumentationFilter(project, predefinedInstrFilter, projectPackagesDescr);
+//
+//        boolean recurse = predefinedInstrFilter == ProjectUtilities.FILTER_PROJECT_SUBPROJECTS_ONLY;
+//        ClientUtils.SourceCodeSelection[] jspMethods = WebProjectUtils.getJSPRootMethods(project, recurse); // TODO: needs to be computed also for subprojects!
+//
+//        if (jspMethods != null) {
+//            StringBuffer buffer = new StringBuffer(jspMethods.length * 30);
+//
+//            if (retValue != null) {
+//                buffer.append(retValue.getFilterValue()).append(' '); // NOI18N
+//            }
+//
+//            for (int i = 0; i < jspMethods.length; i++) {
+//                buffer.append(jspMethods[i].getClassName()).append(' '); // NOI18N
+//            }
+//
+//            retValue.setFilterValue(buffer.toString().trim());
+//        }
+//
+//        return retValue;
+//    }
 
     public void setupProjectSessionSettings(final Project project, final SessionSettings ss) {
         // settings required for code fragment profiling
