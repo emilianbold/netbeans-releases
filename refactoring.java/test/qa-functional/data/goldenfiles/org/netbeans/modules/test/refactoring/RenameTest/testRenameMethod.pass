@@ -1,0 +1,22 @@
+==>RenameMethod
+package renameClass;
+
+public class RenameMethod {
+
+    public int  renamedMethod() {
+        return 1;
+    }
+
+    public int usage() {
+        renamedMethod();
+        new Integer(renamedMethod());
+        return renamedMethod();
+    }
+
+    {
+        renamedMethod();
+    }
+
+    int x = renamedMethod();
+
+}

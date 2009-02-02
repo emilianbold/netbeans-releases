@@ -51,7 +51,7 @@ import org.netbeans.jemmy.Timeouts;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.test.refactoring.actions.FindUsagesAction;
 import org.netbeans.modules.test.refactoring.operators.FindUsagesClassOperator;
-import org.netbeans.modules.test.refactoring.operators.FindUsagesResultOperator;
+import org.netbeans.modules.test.refactoring.operators.RefactoringResultOperator;
 
 /**
  *
@@ -167,7 +167,7 @@ public class FindUsagesMethodTest extends FindUsagesTestCase {
         findUsages("fumethod", "Test", 6, 19, FIND_USAGES_METHOD | NOT_SEARCH_IN_COMMENTS | NOT_SEARCH_FROM_BASECLASS);
         findUsages("fumethod", "Test", 6, 19, FIND_USAGES_METHOD | NOT_SEARCH_IN_COMMENTS | NOT_SEARCH_FROM_BASECLASS);
         setBrowseChild(true);
-        FindUsagesResultOperator furo = new FindUsagesResultOperator();
+        RefactoringResultOperator furo = new RefactoringResultOperator();
         JTabbedPane tabbedPane = furo.getTabbedPane();
         assertNotNull(tabbedPane);
         String title = tabbedPane.getTitleAt(tabbedPane.getTabCount()-1);
