@@ -313,11 +313,12 @@ public class ToolbarTabDisplayerUI extends AbstractTabDisplayerUI {
             // as we cannot get the button small enough using the margin and border...
             if (Utilities.isMac()) {
                 // #67128 the -3 heuristics seems to cripple the buttons on macosx. it looks ok otherwise.
-                result.height -= 3; 
+                result.height -= 3;
+                result.width -= 5;
             } 
             return result;
         }
-        
+
         public void paintComponent (Graphics g) {
             super.paintComponent(g);
             String s = doGetText();
@@ -385,7 +386,9 @@ public class ToolbarTabDisplayerUI extends AbstractTabDisplayerUI {
             }
             return result;
         }
-    }    
+    }
+
+    private static final boolean isAqua = "Aqua".equals(UIManager.getLookAndFeel().getID());//NOI18N
     
     /**
      * Originally in org.netbeans.form.palette.CategorySelectPanel.
@@ -394,12 +397,12 @@ public class ToolbarTabDisplayerUI extends AbstractTabDisplayerUI {
      */
     static class AutoGridLayout implements LayoutManager {
 
-        private int h_margin_left = 2; // margin on the left
-        private int h_margin_right = 1; // margin on the right
-        private int v_margin_top = 2; // margin at the top
-        private int v_margin_bottom = 3; // margin at the bottom
-        private int h_gap = 1; // horizontal gap between components
-        private int v_gap = 1; // vertical gap between components
+        private int h_margin_left = isAqua ? 0 : 2; // margin on the left
+        private int h_margin_right = isAqua ? 0 : 1; // margin on the right
+        private int v_margin_top = isAqua ? 0 : 2; // margin at the top
+        private int v_margin_bottom = isAqua ? 0 : 3; // margin at the bottom
+        private int h_gap = isAqua ? 0 : 1; // horizontal gap between components
+        private int v_gap = isAqua ? 0 : 1; // vertical gap between components
 
         public void addLayoutComponent(String name, Component comp) {
         }
