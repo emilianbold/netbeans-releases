@@ -41,21 +41,24 @@ package org.netbeans.modules.kenai.api;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import org.netbeans.modules.kenai.FeatureData;
 import org.netbeans.modules.kenai.ProjectData;
-import org.netbeans.modules.kenai.util.Utils;
 
 /**
  * IDE-side representation of a Kenai project.
  *
  * @author Maros Sandor
+ * @author Jan Becicka
  */
 public final class KenaiProject {
 
-    private final String    name;
+    private String    name;
 
-    private final URL       href;
+    private URL       href;
 
     private ProjectData     data;
+    
+    private KenaiProjectFeature[] features;
 
     /**
      * When detailed properties of this project has been fetched.
@@ -99,6 +102,44 @@ public final class KenaiProject {
         return new String[0];
     }
 
+    public synchronized KenaiProjectFeature[] getFeatures() {
+        if (features==null) {
+            features=new KenaiProjectFeature[data.features.length];
+            int i=0;
+            for (FeatureData feature:data.features) {
+                features[i++] = new KenaiProjectFeature(feature);
+            }
+        }
+        return features;
+    }
+
+    /**
+     * Creates new feateru for this project
+     * @param projectName
+     * @param name
+     * @param display_name
+     * @param description
+     * @param service
+     * @param url
+     * @param repository_url
+     * @param browse_url
+     * @return
+     * @throws org.netbeans.modules.kenai.api.KenaiException
+     */
+    KenaiProjectFeature createProjectFeature(
+            String name,
+            String display_name,
+            String description,
+            String service,
+            String url,
+            String repository_url,
+            String browse_url
+            ) throws KenaiException {
+        KenaiProjectFeature feature = Kenai.getDefault().createProjectFeature(getName(), name, display_name, description, service, url, repository_url, browse_url);
+        refresh();
+        return feature;
+    }
+
     void fillInfo(ProjectData prj) {
         detailsTimestamp = System.currentTimeMillis();
     }
@@ -116,5 +157,17 @@ public final class KenaiProject {
 //        } catch (KenaiException kenaiException) {
 //            Utils.logError(this, kenaiException);
 //        }
+    }
+
+    private void refresh() throws KenaiException {
+        this.data = Kenai.getDefault().getDetails(getName());
+
+        this.name = data.name;
+        try {
+            this.href = new URL(data.href);
+        } catch (MalformedURLException ex) {
+            throw new IllegalArgumentException(ex);
+        }
+        features=null;
     }
 }

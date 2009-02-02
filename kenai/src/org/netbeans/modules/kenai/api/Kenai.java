@@ -39,11 +39,14 @@
 
 package org.netbeans.modules.kenai.api;
 
+import java.net.Authenticator;
 import java.net.MalformedURLException;
+import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import org.netbeans.modules.kenai.FeatureData;
 import org.netbeans.modules.kenai.KenaiREST;
 import org.netbeans.modules.kenai.KenaiImpl;
 import org.netbeans.modules.kenai.ProjectData;
@@ -52,40 +55,34 @@ import org.netbeans.modules.kenai.ProjectData;
  * Main entry point to Kenai integration.
  *
  * @author Maros Sandor
+ * @author Jan Becicka
  */
 public final class Kenai {
 
-    private static final Map<URL,Kenai> instances = new HashMap<URL,Kenai>(1);
+    private static Kenai instance;
+
+    private PasswordAuthentication auth = new PasswordAuthentication(null, new char[0]);
+    private static URL url;
+
 
     public static synchronized Kenai getDefault() {
-        try {
-            return getInstance(new URL("http://kenai.com"));
-        } catch (MalformedURLException ex) {
-            throw new RuntimeException(ex);
+        if (instance == null) {
+            try {
+                URL url = Kenai.url == null ? new URL("http://kenai.com") : Kenai.url;
+                KenaiImpl impl = new KenaiREST(url);
+                instance = new Kenai(impl);
+            } catch (MalformedURLException ex) {
+                throw new RuntimeException(ex);
+            }
         }
+        return instance;
     }
 
-    public static synchronized Kenai getInstance(URL location) {
-        Kenai kenai = instances.get(location);
-        if (kenai == null) {
-            KenaiImpl impl = new KenaiREST(location);
-            kenai = new Kenai(impl);
-            instances.put(location, kenai);
-        }
-        return kenai;
+    public static void setURL(URL url) {
+        Kenai.url=url;
     }
 
     private final KenaiImpl     impl;
-
-    /**
-     * Currently user username.
-     */
-    private String username;
-
-    /**
-     * Currently used password.
-     */
-    private char[] password;
 
     Kenai(KenaiImpl impl) {
         this.impl = impl;
@@ -97,12 +94,11 @@ public final class Kenai {
      *
      * @param username
      * @param password
-     * @return true if the login was successful, false otherwise
+     * @throws KenaiException
      */
-    public void login(String username, char [] password) throws KenaiException {
+    public void login(final String username, final char [] password) throws KenaiException {
+        auth = new PasswordAuthentication(username, password);
         impl.verify(username, password);
-        this.username = username;
-        this.password = password;
     }
 
     /**
@@ -118,21 +114,14 @@ public final class Kenai {
     }
 
     /**
-     *
-     * @return currently active credentials or null if the user is not logged in
-     */
-    public String getUsername() {
-        return username;
-    }
-
-    /**
      * Search for Kenai projects on the Kenai server. The format of the search pattern is as follows:
      *
      * @param pattern search pattern. Only one method is recognized now: substring match
      * @return an interator over kenai domains that match given search pattern
+     * @throws KenaiException
      */
     public Iterator<KenaiProject> searchProjects(String pattern) throws KenaiException {
-        Iterator<ProjectData> prjs = impl.searchProjects(pattern, username, password);
+        Iterator<ProjectData> prjs = impl.searchProjects(pattern);
         return new ProjectsIterator(prjs);
     }
 
@@ -141,35 +130,88 @@ public final class Kenai {
      *
      * @param name name of the project
      * @return KenaiProject
+     * @throws KenaiException
      */
     public KenaiProject getProject(String name) throws KenaiException {
-        ProjectData prj = impl.getProject(name, username, password);
+        ProjectData prj = impl.getProject(name);
         return new KenaiProject(prj);
     }
 
     ProjectData getDetails(String name) throws KenaiException {
-        return impl.getProject(name, username, password);
+        return impl.getProject(name);
     }
 
     /**
      * Creates a new Kenai domain on the Kenai server
      *
-     * @param name
-     * @param displayName
-     * @return
+     * @param name name of the project
+     * @param displayName display name of the project
+     * @param description project description
+     * @param licenses array of licenses hashes
+     * @param tags comma separated tags
+     * @return instance of KenaiProject
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
-    public KenaiProject createProject(String name, String displayName) throws KenaiException {
-        if (username == null) {
+    public KenaiProject createProject(
+            String name,
+            String displayName,
+            String description,
+            String[] licenses,
+            String tags
+            ) throws KenaiException {
+        if (auth.getUserName()== null) {
             throw new KenaiException("Guest user is not allowed to create new domains");
         }
-        ProjectData prj = impl.createProject(name, displayName, username, password);
+        ProjectData prj = impl.createProject(name, displayName, description, licenses, tags);
         return new KenaiProject(prj);
     }
 
-    public boolean isAuthorized(KenaiProject project, KenaiActivity activity) throws KenaiException {
-        return impl.isAuthorized(project.getName(), activity.getFeature().getId(), activity.getName(), username, password);
+    /**
+     * 
+     * @param projectName
+     * @param name
+     * @param display_name
+     * @param description
+     * @param service
+     * @param url
+     * @param repository_url
+     * @param browse_url
+     * @return
+     * @throws org.netbeans.modules.kenai.api.KenaiException
+     */
+    KenaiProjectFeature createProjectFeature(
+            String projectName,
+            String name,
+            String display_name,
+            String description,
+            String service,
+            String url,
+            String repository_url,
+            String browse_url
+            ) throws KenaiException {
+        if (getPasswordAuthentication().getUserName() == null) {
+            throw new KenaiException("Guest user is not allowed to create new domains");
+        }
+        FeatureData prj = impl.createProjectFeature(
+                projectName,
+                name,
+                display_name,
+                description,
+                url,
+                repository_url,
+                browse_url,
+                service);
+        return new KenaiProjectFeature(prj);
     }
+
+    public boolean isAuthorized(KenaiProject project, KenaiActivity activity) throws KenaiException {
+        return impl.isAuthorized(project.getName(), activity.getFeature().getId(), activity.getName());
+    }
+
+    public PasswordAuthentication getPasswordAuthentication() {
+        return auth;
+    }
+
 
     private class ProjectsIterator implements Iterator<KenaiProject> {
 

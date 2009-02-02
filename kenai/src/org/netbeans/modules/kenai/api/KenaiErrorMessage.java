@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,48 +34,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.kenai.api;
 
-import org.netbeans.modules.kenai.FeatureData;
+import org.codeviation.pojson.PojsonLoad;
 
 /**
  *
- * @author Maros Sandor
  * @author Jan Becicka
  */
-public final class KenaiProjectFeature {
+public class KenaiErrorMessage extends KenaiException {
+    private String errorResponse;
 
-    private FeatureData featureData;
+    public KenaiErrorMessage(String message, Throwable cause, String errorResponse) {
+        super(message, cause);
+        this.errorResponse = errorResponse;
+    }
+
+    public KenaiErrorMessage(String message, String errorResponse) {
+        super(message);
+        this.errorResponse = errorResponse;
+    }
     
-    KenaiProjectFeature(FeatureData data) {
-        this.featureData = data;
+    public <T> T getKenaiError(Class<T> clazz) {
+        PojsonLoad load = PojsonLoad.create();
+        return load.load(errorResponse, clazz);
     }
 
-    public String getName() {
-        return featureData.name;
-    }
-
-    public KenaiFeature getType() {
-        return Enum.valueOf(KenaiFeature.class, featureData.type);
-    }
-
-    public String getService() {
-        return featureData.service;
-    }
-
-    public String getLocation() {
-        return featureData.url;
-    }
-
-    public String getWebLocation() {
-        return featureData.web_url;
-    }
-
-    public String getDisplayName() {
-        return featureData.display_name;
+    public String getAsString() {
+        return errorResponse;
     }
 
 }

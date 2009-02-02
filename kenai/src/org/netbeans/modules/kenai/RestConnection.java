@@ -46,14 +46,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.Authenticator;
 import java.net.HttpURLConnection;
+import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.kenai.api.Kenai;
 
 /**
  * RestConnection
@@ -97,6 +98,14 @@ public class RestConnection {
                 conn.setUseCaches(false);
                 conn.setDefaultUseCaches(false);
                 conn.setAllowUserInteraction(true);
+                //KenaiAuthenticator not working. Why?
+                PasswordAuthentication a = Kenai.getDefault().getPasswordAuthentication();
+                if (a.getUserName()!=null) {
+                    assert a.getPassword()!=null;
+                    String userPassword = a.getUserName() + ":" + String.valueOf(a.getPassword());
+                    String encoding = new sun.misc.BASE64Encoder().encode(userPassword.getBytes());  
+                    conn.setRequestProperty("Authorization", "Basic " + encoding);
+                }
 
                 SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");
                 date = format.format(new Date());
@@ -105,10 +114,6 @@ public class RestConnection {
                 Logger.getLogger(RestConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-    }
-
-    public void setAuthenticator(Authenticator authenticator) {
-        Authenticator.setDefault(authenticator);
     }
 
     public String getDate() {
@@ -169,6 +174,7 @@ public class RestConnection {
 
     public RestResponse post(String[][] headers, InputStream is) throws IOException {
         conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/json");
         return connect(headers, is);
     }
 
@@ -177,7 +183,7 @@ public class RestConnection {
      */
     public RestResponse post(String[][] headers, String[][] params) throws IOException {
         conn.setRequestMethod("POST");
-        conn.setRequestProperty("ContentType", "application/x-www-form-urlencoded");
+        conn.setRequestProperty("Content-Type", "application/json");
         String data = encodeParams(params);
         return connect(headers, new ByteArrayInputStream(data.getBytes("UTF-8")));
     }
@@ -222,14 +228,15 @@ public class RestConnection {
             response.setLastModified(conn.getLastModified());
 
             try {
-                InputStream is = conn.getInputStream();
+            InputStream is = conn.getInputStream();
                 while ((count = is.read(buffer)) != -1) {
                     response.write(buffer, 0, count);
                 }
             } catch (IOException e) {
-                // sometimes there is no input available
+                while ((count = conn.getErrorStream().read(buffer)) != -1) {
+                    response.write(buffer, 0, count);
+                }
             }
-
             return response;
         } catch (Exception e) {
             String errMsg = "Cannot connect to :" + conn.getURL();
