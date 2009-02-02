@@ -269,8 +269,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     }
 
     public void copy(SVNUrl fromUrl, SVNUrl toUrl, String msg, SVNRevision rev) throws SVNClientException {
-        CopyCommand cmd = new CopyCommand(fromUrl, toUrl, msg, rev);
-        exec(cmd);
+        copy(fromUrl, toUrl, msg, rev, false);
     }
 
     public void remove(SVNUrl[] url, String msg) throws SVNClientException {
@@ -977,8 +976,9 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void copy(SVNUrl arg0, SVNUrl arg1, String arg2, SVNRevision arg3, boolean arg4) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void copy(SVNUrl fromUrl, SVNUrl toUrl, String msg, SVNRevision rev, boolean makeParents) throws SVNClientException {
+        CopyCommand cmd = new CopyCommand(fromUrl, toUrl, msg, rev, makeParents);
+        exec(cmd);
     }
 
     public void copy(SVNUrl[] arg0, SVNUrl arg1, String arg2, SVNRevision arg3, boolean arg4, boolean arg5) throws SVNClientException {
