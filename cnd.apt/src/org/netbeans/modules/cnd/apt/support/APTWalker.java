@@ -435,15 +435,15 @@ public abstract class APTWalker {
         return (curAPT == null && visits.isEmpty()) || isStopped();
     }
     
-    protected APTMacroMap getMacroMap() {
+    protected final APTMacroMap getMacroMap() {
         return macros;
     }
     
-    protected APT getCurNode() {
+    protected final APT getCurNode() {
         return curAPT;
     }
 
-    public APTFile getFile() {
+    public final APTFile getRootFile() {
         return root;
     }
 

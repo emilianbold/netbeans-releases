@@ -104,11 +104,11 @@ public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
     }
 
     @Override
-    public void define(APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
+    public void define(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
         if (false && sysMacroMap != null && sysMacroMap.isDefined(name)) { // disable for IZ#124635
             // TODO: report error about redefining system macros
         } else {
-            super.define(name, params, value, Kind.DEFINED);
+            super.define(file, name, params, value, Kind.DEFINED);
             macroCache.remove(name.getText());
         }
     }
@@ -118,12 +118,12 @@ public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
         if (false && sysMacroMap != null && sysMacroMap.isDefined(name)) { // disable for IZ#124635
             // TODO: report warning about undefined system macros
         }
-        super.undef(name);
+        super.undef(file, name);
         macroCache.remove(name.getText());
     }
 
-    protected APTMacro createMacro(APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
-        return new APTMacroImpl(name, params, value, macroType);
+    protected APTMacro createMacro(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
+        return new APTMacroImpl(file, name, params, value, macroType);
     }
 
     protected APTMacroMapSnapshot makeSnapshot(APTMacroMapSnapshot parent) {

@@ -62,7 +62,7 @@ public interface APTMacroMap extends APTMacroCallback {
     /** 
      * APTWalker context methods to (un)define macros 
      */    
-    public void define(APTToken name, List<APTToken> value, Kind macroType);
-    public void define(APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType);
+    public void define(APTFile file, APTToken name, List<APTToken> value, Kind macroType);
+    public void define(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType);
     public void undef(APTFile file, APTToken name);
 }
