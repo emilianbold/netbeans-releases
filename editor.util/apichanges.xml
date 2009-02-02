@@ -104,15 +104,29 @@ is the proper place.
 
   <changes>
 
+    <change id="DocumentUtilities.getDocumentVersion-added">
+      <summary>Added DocumentUtilities.getDocumentVersion(Document)</summary>
+        <version major="1" minor="27"/>
+        <date day="1" month="2" year="2009"/>
+        <author login="vstejskal"/>
+        <compatibility addition="yes" deletion="no" modification="no" binary="compatible" semantic="compatible" />
+        <description>
+        <p>
+            Adding DocumentUtilities.getDocumentVersion(Document) to provide access
+            to documents' version property.
+        </p>
+        </description>
+    </change>
+
     <change id="DocumentUtilities.debugOffset-added">
-      <summary>Added DocumentUtilities.debugOffset(doc, offset)</summary>
+      <summary>Added DocumentUtilities.debugOffset(Document, int)</summary>
         <version major="1" minor="25"/>
         <date day="16" month="6" year="2008"/>
         <author login="mmetelka"/>
         <compatibility addition="yes" deletion="no" modification="no" binary="compatible" semantic="compatible" />
         <description>
         <p>
-            Adding DocumentUtilities.debugOffset(doc, offset) to dump both the integer offset
+            Adding DocumentUtilities.debugOffset(Document, int) to dump both the integer offset
             and line and column as seen in editor's status bar.
             PositionRegion.toString(doc) debugs its bounds using debugOffset().
             Added PositionRegion.getText() and PositionRegion.getString() to obtain text of the region.

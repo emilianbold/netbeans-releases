@@ -43,6 +43,7 @@ package org.netbeans.lib.editor.util.swing;
 
 import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
@@ -69,6 +70,9 @@ import org.netbeans.lib.editor.util.CompactMap;
 
 public final class DocumentUtilities {
     
+    /** BaseDocument's version. */
+    private static final String VERSION_PROP = "version"; //NOI18N
+
     private static final Object TYPING_MODIFICATION_DOCUMENT_PROPERTY = new Object();
     
     private static final Object TYPING_MODIFICATION_KEY = new Object();
@@ -663,11 +667,11 @@ public final class DocumentUtilities {
             return null;
         }
         
-        public String toString() {
+        public @Override String toString() {
             return getName();
         }
 
-    }
+    } // End of EventPropertiesElement class
     
     private static final class EventPropertiesElementChange
     implements DocumentEvent.ElementChange, UndoableEdit  {
@@ -788,5 +792,23 @@ public final class DocumentUtilities {
             }
         }
         return mimeType;
+    }
+
+    /**
+     * Attempts to get the version of a <code>Document</code>. Netbeans editor
+     * documents are versioned, which means that every time a document is modified
+     * its version is incremented. This method can be used to read the latest version
+     * of a netbeans document.
+     * 
+     * @param doc The document to get a version for.
+     *
+     * @return The document's version or <code>0</code> if the document does not
+     *   support versioning (ie. is not a netbeans editor document).
+     *
+     * @since 1.27
+     */
+    public static long getDocumentVersion(Document doc) {
+        Object version = doc.getProperty(VERSION_PROP);
+        return version instanceof AtomicLong ? ((AtomicLong) version).get() : 0;
     }
 }
