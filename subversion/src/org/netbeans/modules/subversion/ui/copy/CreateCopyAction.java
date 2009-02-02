@@ -52,14 +52,7 @@ import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.omg.PortableServer.RequestProcessingPolicy;
-import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
@@ -191,6 +184,9 @@ public class CreateCopyAction extends ContextAction {
      * @param roots
      */
     private void performCopy(CreateCopy createCopy, SvnProgressSupport support, File[] roots) {
+        if (roots == null) {
+            return;
+        }
         RepositoryFile toRepositoryFile = createCopy.getToRepositoryFile();                
 
         try {                
@@ -211,11 +207,11 @@ public class CreateCopyAction extends ContextAction {
                     if(!SvnClientExceptionHandler.isWrongUrl(ex.getMessage())) { 
                         throw ex;
                     }
-                }            
+                }                         
 
                 if(support.isCanceled()) {
                     return;
-                }
+            }                        
 
                 if(info == null) {
                     client.mkdir(folderToCreate,
@@ -227,12 +223,12 @@ public class CreateCopyAction extends ContextAction {
                         // as the commandline svn client:
                         // - the remote file specified in the GUI has to be exactly the file which has to be created at the repository.
                         // - if the destination is an existent folder the file won't be copied into it, as the svn client would do.
-                        throw new SVNClientException("File allready exists");                                                             
+                        throw new SVNClientException("File allready exists");
                     } else {
                         // XXX warnig: do you realy want to? could be already a project folder!
                     }
-                }                           
-            }                        
+                }
+            }
 
             if(support.isCanceled()) {
                 return;
@@ -248,12 +244,21 @@ public class CreateCopyAction extends ContextAction {
                         client.copy(new File[] {root}, toUrl, createCopy.getMessage(), true, true);
                     }
                 }
-            } else {               
-                RepositoryFile fromRepositoryFile = createCopy.getFromRepositoryFile();                
-                client.copy(fromRepositoryFile.getFileUrl(),
+            } else {
+                if(roots.length == 1) {
+                    RepositoryFile fromRepositoryFile = createCopy.getFromRepositoryFile();
+                    client.copy(fromRepositoryFile.getFileUrl(),
                             toRepositoryFile.getFileUrl(),
                             createCopy.getMessage(),
-                            fromRepositoryFile.getRevision());
+                            fromRepositoryFile.getRevision(), true);
+                } else {
+                    // more roots => copying a multifile dataobject - see getActionRoots(ctx)
+                    for (File root : roots) {
+                        SVNUrl fromUrl = SvnUtils.getRepositoryRootUrl(root).appendPath(SvnUtils.getRepositoryPath(root));
+                        SVNUrl toUrl = getToRepositoryFile(toRepositoryFile, root).getFileUrl();
+                        client.copy(fromUrl, toUrl, createCopy.getMessage(), SVNRevision.HEAD, true);
+                    }
+                }
             }                            
             
             if(support.isCanceled()) {
@@ -261,7 +266,7 @@ public class CreateCopyAction extends ContextAction {
             }
 
             if(createCopy.switchTo()) {
-                if(createCopy.isLocal() && roots != null && roots.length > 1) {
+                if(roots != null && roots.length > 1) {
                     // more roots menas we copyied a multifile dataobject - see getActionRoots(ctx)
                     // lets also switch all of them
                     for (File file : roots) {
