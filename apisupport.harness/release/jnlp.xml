@@ -110,12 +110,13 @@ made subject to such option by the copyright holder.
         <property name="enabled.clusters" value=""/>
         <property name="disabled.clusters" value=""/>
         
-        <fileset id="jnlp.included.modules" dir="${netbeans.dest.dir}">
+        <pathfileset id="jnlp.included.modules" >
+            <path refid="cluster.path.id"/>
             <and>
                 <or>
-                    <filename name="*/modules/**/*.jar"/>
-                    <filename name="*/lib/**/*.jar"/>
-                    <filename name="*/core/**/*.jar"/>
+                    <filename name="modules/**/*.jar"/>
+                    <filename name="lib/**/*.jar"/>
+                    <filename name="core/**/*.jar"/>
                 </or>
                 <not>
                     <filename name="**/update/**/*.jar"/>
@@ -126,7 +127,7 @@ made subject to such option by the copyright holder.
                     <param name="excludeClusters" value="${disabled.clusters}"/>
                 </custom>
             </and>
-        </fileset>
+        </pathfileset>
         <property name="jnlp.sign.jars" value="true"/>
         <property name="jnlp.signjar.keystore" location="build/default.keystore"/>
         <property name="jnlp.signjar.alias" value="jnlp"/>
@@ -167,11 +168,11 @@ made subject to such option by the copyright holder.
             dir="${jnlp.dest.dir}/netbeans/"
             codebase="${jnlp.platform.codebase.own}"
             verify="true"
-            verifyexcludes="lib/nbexec.cmd,lib/nbexec,lib/nbexec.exe,core/ide.ks,LICENSE.txt,DISTRIBUTION.txt,THIRDPARTYLICENSEREADME.txt,docs/swing-layout-1.0-doc.zip,docs/swing-layout-1.0.1-doc.zip,docs/html40.zip,core/org-netbeans-modules-utilities-cli.jar,docs/org/netbeans/modules/usersguide/ide.css,docs/swing-layout-1.0.2-doc.zip,docs/swing-layout-1.0.2-src.zip,docs/swing-layout-1.0.3-doc.zip,docs/swing-layout-1.0.3-src.zip"
+            verifyexcludes="lib/nbexec.cmd,lib/nbexec,lib/nbexec.exe,lib/nbexec.dll,core/ide.ks,LICENSE.txt,DISTRIBUTION.txt,THIRDPARTYLICENSEREADME.txt,docs/swing-layout-1.0-doc.zip,docs/swing-layout-1.0.1-doc.zip,docs/html40.zip,core/org-netbeans-modules-utilities-cli.jar,docs/org/netbeans/modules/usersguide/ide.css,docs/swing-layout-1.0.2-doc.zip,docs/swing-layout-1.0.2-src.zip,docs/swing-layout-1.0.3-doc.zip,docs/swing-layout-1.0.3-src.zip"
             permissions="${jnlp.permissions}"
             signjars="${jnlp.sign.jars}"
         >
-            <modules refid="jnlp.included.modules"/>
+            <resources refid="jnlp.included.modules"/>
         </makejnlp>
     </target>
 
@@ -193,7 +194,7 @@ made subject to such option by the copyright holder.
             dir="${jnlp.master.dir}"
             codebase="${jnlp.platform.codebase}"
         >
-            <modules refid="jnlp.included.modules"/>
+            <resources refid="jnlp.included.modules"/>
         </makemasterjnlp>
     </target>
     
@@ -413,9 +414,10 @@ made subject to such option by the copyright holder.
         <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
         <nbjpdastart name="NetBeans" addressproperty="debug.port" transport="dt_socket">
             <classpath>
-                <fileset dir="${netbeans.dest.dir}">
-                    <include name="**/*.jar"/>
-                </fileset>
+                <pathfileset>
+                    <path refid="cluster.path.id"/>
+                    <filename name="**/*.jar"/>
+                </pathfileset>
                 <fileset dir="${cluster}">
                     <include name="**/*.jar"/>
                 </fileset>
@@ -425,6 +427,7 @@ made subject to such option by the copyright holder.
         <property name="debug.args" value="-Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,suspend=${debug.pause},server=n,address=${debug.port}"/>
         <antcall target="run">
             <param name="run.args" value="${debug.args}"/>
+            <reference refid="cluster.path.id"/>
         </antcall>
     </target>
 

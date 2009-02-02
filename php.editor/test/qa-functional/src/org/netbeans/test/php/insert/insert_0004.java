@@ -137,34 +137,43 @@ public class insert_0004 extends insert
     jdGenerator.waitClosed( );
 
     // Check result
+    /*
     String[] asResult =
     {
-      "public function getA() {",
+      "public function getA()",
+      "{",
       "return $this->a;",
       "}",
       "",
-      "public function setA($a) {",
+      "public function setA($a)",
+      "{",
       "$this->a = $a;",
       "}",
       "",
-      "public function getB() {",
+      "public function getB()",
+      "{",
       "return $this->b;",
       "}",
       "",
-      "public function setB($b) {",
+      "public function setB($b)",
+      "{",
       "$this->b = $b;",
       "}",
       "",
-      "public function getD() {",
+      "public function getD()",
+      "{",
       "return $this->d;",
       "}",
       "",
-      "public function setD($d) {",
+      "public function setD($d)",
+      "{",
       "$this->d = $d;",
       "}",
       "",
     };
-    CheckResult( eoPHP, asResult, -24 );
+    CheckResult( eoPHP, asResult, -30 );
+    */
+    CheckFlex( eoPHP, "public function getA(){return $this->a;}public function setA($a){$this->a=$a;}public function getB(){return $this->b;}public function setB($b){$this->b=$b;}public function getD(){return $this->d;}public function setD($d){$this->d=$d;}", false );
 
     endTest( );
   }

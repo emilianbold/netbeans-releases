@@ -120,7 +120,7 @@ public class JavaClassImpl implements JavaClass {
         return -1;
     }
 
-    public int getAllInstancesSize() {
+    public long getAllInstancesSize() {
         return -1;
     }
 

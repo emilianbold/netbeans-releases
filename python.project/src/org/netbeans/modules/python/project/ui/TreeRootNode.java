@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.python.project.ui;
 
 import java.awt.EventQueue;
@@ -82,26 +81,24 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Jesse Glick
  */
 public final class TreeRootNode extends FilterNode implements PropertyChangeListener {
-    
+
     private final static Image SOURCE_ROOT_BADGE = ImageUtilities.loadImage("org/netbeans/modules/python/project/resources/sourceBadge.gif"); // NOI18N
-    
     private final SourceGroup g;
-    
+
     public TreeRootNode(SourceGroup g) {
         this(DataFolder.findFolder(g.getRootFolder()), g);
     }
-    
+
     private TreeRootNode(DataFolder folder, SourceGroup g) {
         this(new FilterNode(folder.getNodeDelegate(), folder.createNodeChildren(new VisibilityQueryDataFilter(g))), g);
     }
-    
-    private TreeRootNode (Node originalNode, SourceGroup g) {
+
+    private TreeRootNode(Node originalNode, SourceGroup g) {
         super(originalNode, new PackageFilterChildren(originalNode),
-            new ProxyLookup(
+                new ProxyLookup(
                 originalNode.getLookup(),
-                Lookups.singleton(new PathFinder(g))
-                // no need for explicit search info
-            ));
+                Lookups.singleton(new PathFinder(g)) // no need for explicit search info
+                ));
         this.g = g;
         g.addPropertyChangeListener(WeakListeners.propertyChange(this, g));
     }
@@ -116,7 +113,7 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
             return Utilities.icon2Image(icon);
         }
     }
-    
+
     public Image getIcon(int type) {
         return computeIcon(false, type);
     }
@@ -148,6 +145,7 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
     public void propertyChange(PropertyChangeEvent ev) {
         // XXX handle SourceGroup.rootFolder change too
         EventQueue.invokeLater(new Runnable() {
+
             public void run() {
                 fireNameChange(null, null);
                 fireDisplayNameChange(null, null);
@@ -159,13 +157,13 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
 
     /** Copied from PhysicalView and PackageRootNode. */
     public static final class PathFinder {
-        
+
         private final SourceGroup g;
-        
+
         PathFinder(SourceGroup g) {
             this.g = g;
         }
-        
+
         public Node findPath(Node rootNode, Object o) {
             FileObject fo;
             if (o instanceof FileObject) {
@@ -183,20 +181,20 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                 StringTokenizer strtok = new StringTokenizer(relPath, "/"); // NOI18N
                 while (strtok.hasMoreTokens()) {
                     String token = strtok.nextToken();
-                   path.add(token);
+                    path.add(token);
                 }
                 try {
-                    Node folderNode =  folder.equals(groupRoot) ? rootNode : NodeOp.findPath(rootNode, Collections.enumeration(path));
+                    Node folderNode = folder.equals(groupRoot) ? rootNode : NodeOp.findPath(rootNode, Collections.enumeration(path));
                     if (fo.isFolder()) {
                         return folderNode;
                     } else {
                         Node[] childs = folderNode.getChildren().getNodes(true);
                         for (int i = 0; i < childs.length; i++) {
-                           DataObject dobj = childs[i].getLookup().lookup(DataObject.class);
-                           if (dobj != null && dobj.getPrimaryFile().getNameExt().equals(fo.getNameExt())) {
-                               return childs[i];
-                           }
-                           
+                            DataObject dobj = childs[i].getLookup().lookup(DataObject.class);
+                            if (dobj != null && dobj.getPrimaryFile().getNameExt().equals(fo.getNameExt())) {
+                                return childs[i];
+                            }
+
                         }
                     }
                 } catch (NodeNotFoundException e) {
@@ -204,36 +202,36 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                 }
             } else if (groupRoot.equals(fo)) {
                 return rootNode;
-            } 
+            }
             return null;
         }
     }
-    
+
     private static final class VisibilityQueryDataFilter implements ChangeListener, PropertyChangeListener, ChangeableDataFilter {
-        
+
         private static final long serialVersionUID = 1L; // in case a DataFolder.ClonedFilterHandle saves me
-        
         private final EventListenerList ell = new EventListenerList();
         private final SourceGroup g;
-        
+
         public VisibilityQueryDataFilter(SourceGroup g) {
             this.g = g;
             VisibilityQuery.getDefault().addChangeListener(WeakListeners.change(this, VisibilityQuery.getDefault()));
             g.addPropertyChangeListener(WeakListeners.propertyChange(this, g));
         }
-        
+
         public boolean acceptDataObject(DataObject obj) {
             FileObject fo = obj.getPrimaryFile();
-            if(fo.getExt().equalsIgnoreCase("pyc")||fo.getExt().equalsIgnoreCase("pyo"))
+            if (fo.getExt().equalsIgnoreCase("pyc") || fo.getExt().equalsIgnoreCase("pyo") | fo.getExt().equalsIgnoreCase("egg-info") || fo.getName().equalsIgnoreCase("build") || fo.getName().equalsIgnoreCase("dist")) {
                 return false;
+            }
             return g.contains(fo) &&
                     VisibilityQuery.getDefault().isVisible(fo);
         }
-        
+
         public void stateChanged(ChangeEvent e) {
             fireChange();
         }
-        
+
         public void propertyChange(PropertyChangeEvent e) {
             if (SourceGroup.PROP_CONTAINERSHIP.equals(e.getPropertyName())) {
                 fireChange();
@@ -248,52 +246,47 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                     if (event == null) {
                         event = new ChangeEvent(this);
                     }
-                    ((ChangeListener) listeners[i+1]).stateChanged(event);
+                    ((ChangeListener) listeners[i + 1]).stateChanged(event);
                 }
             }
         }
-        
+
         public void addChangeListener(ChangeListener listener) {
             ell.add(ChangeListener.class, listener);
         }
-        
+
         public void removeChangeListener(ChangeListener listener) {
             ell.remove(ChangeListener.class, listener);
         }
-        
     }
-    
-    
+
     private static final class PackageFilterChildren extends FilterNode.Children {
-        
-        public PackageFilterChildren (final Node originalNode) {
-            super (originalNode);
-        }       
-                
+
+        public PackageFilterChildren(final Node originalNode) {
+            super(originalNode);
+        }
+
         @Override
         protected Node copyNode(final Node originalNode) {
             DataObject dobj = originalNode.getLookup().lookup(DataObject.class);
-            return (dobj instanceof DataFolder) ? new PackageFilterNode (originalNode) : super.copyNode(originalNode);
+            return (dobj instanceof DataFolder) ? new PackageFilterNode(originalNode) : super.copyNode(originalNode);
         }
     }
-    
+
     private static final class PackageFilterNode extends FilterNode {
-        
-        public PackageFilterNode (final Node origNode) {
-            super (origNode, new PackageFilterChildren (origNode));
+
+        public PackageFilterNode(final Node origNode) {
+            super(origNode, new PackageFilterChildren(origNode));
         }
-        
+
         @Override
-        public void setName (final String name) {
-            if (Utilities.isJavaIdentifier (name)) {
-                super.setName (name);
+        public void setName(final String name) {
+            if (Utilities.isJavaIdentifier(name)) {
+                super.setName(name);
+            } else {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        NbBundle.getMessage(TreeRootNode.class, "MSG_InvalidPackageName"), NotifyDescriptor.INFORMATION_MESSAGE));
             }
-            else {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message (
-                    NbBundle.getMessage(TreeRootNode.class,"MSG_InvalidPackageName"), NotifyDescriptor.INFORMATION_MESSAGE));
-            }
-        }                
-        
+        }
     }
-    
 }

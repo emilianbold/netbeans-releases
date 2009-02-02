@@ -463,20 +463,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
     }
 
     private static boolean isImplicitConcat(APTToken left, APTToken right) {
-        return APTUtils.isInt(left) && APTUtils.isID(right) && areAdjacent(left, right);
-    }
-
-    private static boolean areAdjacent(APTToken left, APTToken right) {
-        while (left instanceof MacroExpandedToken && right instanceof MacroExpandedToken) {
-            left = ((MacroExpandedToken)left).getTo();
-            right = ((MacroExpandedToken)right).getTo();
-        }
-//        if (left instanceof APTToken && right instanceof APTToken) {
-            return (left).getEndOffset() == (right).getOffset();
-//        } else {
-//            return left.getLine() == right.getLine()
-//                    && left.getColumn() + left.getText().length() == right.getColumn();
-//        }
+        return APTUtils.isInt(left) && APTUtils.isID(right) && APTUtils.areAdjacent(left, right);
     }
 
     private static Map<String, List<APTToken>> createParamsMap(APTMacro macro, List<List<APTToken>> params) {
@@ -556,7 +543,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                 out.append(escape(token.getText()));
             } else {
                 out.append(token.getText());
-                if (i + 1 < tokens.size() && !areAdjacent(token, tokens.get(i + 1))) {
+                if (i + 1 < tokens.size() && !APTUtils.areAdjacent(token, tokens.get(i + 1))) {
                     out.append(' '); // NOI18N
                 }
             }

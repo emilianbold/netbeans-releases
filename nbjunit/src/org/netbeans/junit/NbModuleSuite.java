@@ -424,7 +424,8 @@ public class NbModuleSuite {
      * in the tested applicationwill be included in the test. 
      * 
      * @param clazz the class with bunch of testXYZ methods
-     * @param tests names of test methods to execute from the <code>clazz</code>
+     * @param tests names of test methods to execute from the <code>clazz</code>, if
+     *    no test methods are specified, all tests in the class are executed
      * @return runtime container ready test
      * @since 1.49
      */
@@ -558,7 +559,9 @@ public class NbModuleSuite {
             System.setProperty("netbeans.user", ud.getPath());
 
             TreeSet<String> modules = new TreeSet<String>();
-            modules.addAll(findEnabledModules(NbTestSuite.class.getClassLoader()));
+            if (config.enableClasspathModules) {
+                modules.addAll(findEnabledModules(NbTestSuite.class.getClassLoader()));
+            }
             modules.add("org.openide.filesystems");
             modules.add("org.openide.modules");
             modules.add("org.openide.util");
@@ -689,16 +692,18 @@ public class NbModuleSuite {
                     }
                 }
             }
-            
-            // find "cluster" from
-            // k/o.n.m.a.p.N/csam/testModule/build/cluster/modules/org-example-testModule.jar
-            // tested in apisupport.project
-            for (String s : System.getProperty("java.class.path").split(File.pathSeparator)) {
-                File module = new File(s);
-                File cluster = module.getParentFile().getParentFile();
-                File m = new File(new File(cluster, "config"), "Modules");
-                if (m.exists() || cluster.getName().equals("cluster")) {
-                    clusters.add(cluster);
+
+            if (config.enableClasspathModules) {
+                // find "cluster" from
+                // k/o.n.m.a.p.N/csam/testModule/build/cluster/modules/org-example-testModule.jar
+                // tested in apisupport.project
+                for (String s : System.getProperty("java.class.path").split(File.pathSeparator)) {
+                    File module = new File(s);
+                    File cluster = module.getParentFile().getParentFile();
+                    File m = new File(new File(cluster, "config"), "Modules");
+                    if (m.exists() || cluster.getName().equals("cluster")) {
+                        clusters.add(cluster);
+                    }
                 }
             }
             return clusters.toArray(new File[0]);

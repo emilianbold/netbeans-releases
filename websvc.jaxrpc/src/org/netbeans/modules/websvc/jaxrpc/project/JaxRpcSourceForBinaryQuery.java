@@ -49,6 +49,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -56,6 +57,12 @@ import org.openide.filesystems.FileUtil;
  *
  * @author mkuchtiak
  */
+@ProjectServiceProvider(service=SourceForBinaryQueryImplementation.class, projectType={
+    "org-netbeans-modules-java-j2seproject",
+    "org-netbeans-modules-web-project",
+    "org-netbeans-modules-j2ee-ejbjarproject",
+    "org-netbeans-modules-j2ee-clientproject"
+})
 public class JaxRpcSourceForBinaryQuery implements SourceForBinaryQueryImplementation {
 
     private final Map<URL, SourceForBinaryQuery.Result> cache = new HashMap<URL, SourceForBinaryQuery.Result>();

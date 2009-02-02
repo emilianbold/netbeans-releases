@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -54,10 +53,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -112,22 +108,6 @@ public final class VerifyUpdateCenter extends Task {
         }
     }
 
-    private Set<String> disabledAutoloads;
-    /**
-     * Comma/space-separated list of CNBs of autoloads which are expected to be disabled.
-     * Generally should refer to "placeholder" modules which need to be installed but have no runtime component.
-     * If specified (even if empty), any other autoloads which are not enabled result in a build failure.
-     */
-    public void setDisabledAutoloads(String s) {
-        disabledAutoloads = new HashSet<String>(Arrays.asList(s.split("[, ]+")));
-    }
-
-    private boolean checkAutoUpdateVisibility;
-    /** Turn on to check that all regular modules are marked for AU as either visible or essential. */
-    public void setCheckAutoUpdateVisibility(boolean checkAutoUpdateVisibility) {
-        this.checkAutoUpdateVisibility = checkAutoUpdateVisibility;
-    }
-
     private Path classpath = new Path(getProject());
     public void addConfiguredClasspath(Path p) {
         classpath.append(p);
@@ -146,37 +126,7 @@ public final class VerifyUpdateCenter extends Task {
         Map<String,String> pseudoTests = new LinkedHashMap<String,String>();
         ClassLoader loader = new AntClassLoader(getProject(), classpath);
         Set<Manifest> manifests = loadManifests(updates);
-        if (checkAutoUpdateVisibility) {
-            Set<String> requiredBySomeone = new HashSet<String>();
-            for (Manifest m : manifests) {
-                String deps = m.getMainAttributes().getValue("OpenIDE-Module-Module-Dependencies");
-                if (deps != null) {
-                    String identifier = "[\\p{javaJavaIdentifierStart}][\\p{javaJavaIdentifierPart}]*";
-                    Matcher match = Pattern.compile(identifier + "(\\." + identifier + ")*").matcher(deps);
-                    while (match.find()) {
-                        requiredBySomeone.add(match.group());
-                    }
-                }
-            }
-            StringBuilder auVisibilityProblems = new StringBuilder();
-            String[] markers = {"autoload", "eager", "AutoUpdate-Show-In-Client", "AutoUpdate-Essential-Module"};
-            MODULE: for (Manifest m : manifests) {
-                String cnb = findCNB(m);
-                if (requiredBySomeone.contains(cnb)) {
-                    continue;
-                }
-                Attributes attr = m.getMainAttributes();
-                for (String marker : markers) {
-                    if ("true".equals(attr.getValue(marker))) {
-                        continue MODULE;
-                    }
-                }
-                auVisibilityProblems.append("\n" + cnb);
-            }
-            pseudoTests.put("testAutoUpdateVisibility", auVisibilityProblems.length() > 0 ?
-                "Some regular modules (that no one depends on) neither AutoUpdate-Show-In-Client nor AutoUpdate-Essential-Module" + auVisibilityProblems : null);
-        }
-        checkForProblems(findInconsistencies(manifests, loader, disabledAutoloads), "Inconsistency(ies) in " + updates, "synchronicConsistency", pseudoTests);
+        checkForProblems(findInconsistencies(manifests, loader), "Inconsistency(ies) in " + updates, "synchronicConsistency", pseudoTests);
         if (pseudoTests.get("synchronicConsistency") == null) {
             log(updates + " is internally consistent", Project.MSG_INFO);
             if (oldUpdates != null) {
@@ -184,7 +134,7 @@ public final class VerifyUpdateCenter extends Task {
                 for (Manifest m : loadManifests(oldUpdates)) {
                     updated.put(findCNB(m), m);
                 }
-                if (!findInconsistencies(new HashSet<Manifest>(updated.values()), loader, null).isEmpty()) {
+                if (!findInconsistencies(new HashSet<Manifest>(updated.values()), loader).isEmpty()) {
                     log(oldUpdates + " is already inconsistent, skipping update check", Project.MSG_WARN);
                     JUnitReportWriter.writeReport(this, null, reportFile, pseudoTests);
                     return;
@@ -206,7 +156,7 @@ public final class VerifyUpdateCenter extends Task {
                         updatedCNBs.add(cnb);
                     }
                 }
-                SortedMap<String,SortedSet<String>> updateProblems = findInconsistencies(new HashSet<Manifest>(updated.values()), loader, null);
+                SortedMap<String,SortedSet<String>> updateProblems = findInconsistencies(new HashSet<Manifest>(updated.values()), loader);
                 updateProblems.keySet().retainAll(newCNBs); // ignore problems in now-deleted modules
                 checkForProblems(updateProblems, "Inconsistency(ies) in " + updates + " relative to " + oldUpdates, "diachronicConsistency", pseudoTests);
                 if (pseudoTests.get("diachronicConsistency") == null) {
@@ -218,10 +168,10 @@ public final class VerifyUpdateCenter extends Task {
     }
 
     @SuppressWarnings("unchecked")
-    private SortedMap<String,SortedSet<String>> findInconsistencies(Set<Manifest> manifests, ClassLoader loader, Set<String> disabledAutoloads) throws BuildException {
+    private SortedMap<String,SortedSet<String>> findInconsistencies(Set<Manifest> manifests, ClassLoader loader) throws BuildException {
         try {
             return (SortedMap) loader.loadClass("org.netbeans.core.startup.ConsistencyVerifier").
-                    getMethod("findInconsistencies", Set.class, Set.class).invoke(null, manifests, disabledAutoloads);
+                    getMethod("findInconsistencies", Set.class).invoke(null, manifests);
         } catch (Exception x) {
             throw new BuildException(x, getLocation());
         }

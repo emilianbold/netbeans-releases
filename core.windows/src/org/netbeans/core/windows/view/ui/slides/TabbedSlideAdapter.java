@@ -373,16 +373,21 @@ public final class TabbedSlideAdapter implements Tabbed {
     /** Add action for disabling slide */
     public Action[] getPopupActions(Action[] defaultActions, int tabIndex) {
         boolean isMDI = WindowManagerImpl.getInstance().getEditorAreaState() == Constants.EDITOR_AREA_JOINED;
-        Action[] result = new Action[defaultActions.length + (isMDI && Switches.isTopComponentSlidingEnabled() ? 2 : 0)];
+        TabData td = slideBar.getModel().getTab(tabIndex);
+        boolean slidingEnabled = true;
+        if( td.getComponent() instanceof TopComponent ) {
+            slidingEnabled = Switches.isSlidingEnabled((TopComponent)td.getComponent());
+        }
+        Action[] result = new Action[defaultActions.length + (isMDI && Switches.isTopComponentSlidingEnabled() && slidingEnabled ? 2 : 0)];
         System.arraycopy(defaultActions, 0, result, 0, defaultActions.length);
-        if (isMDI && Switches.isTopComponentSlidingEnabled() ) {
+        if (isMDI && Switches.isTopComponentSlidingEnabled() && slidingEnabled) {
             result[defaultActions.length] = 
                 new ActionUtils.AutoHideWindowAction(slideBar, tabIndex, true);
-                result[defaultActions.length+1] = 
-                    new ActionUtils.ToggleWindowTransparencyAction(slideBar, 
-                        tabIndex, 
-                        slideBar.isSlidedTabTransparent() 
-                            && tabIndex == slideBar.getSelectionModel().getSelectedIndex());
+            result[defaultActions.length+1] =
+                new ActionUtils.ToggleWindowTransparencyAction(slideBar,
+                    tabIndex,
+                    slideBar.isSlidedTabTransparent()
+                        && tabIndex == slideBar.getSelectionModel().getSelectedIndex());
         }
         return result;
     }

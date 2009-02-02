@@ -79,22 +79,22 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
-import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsComponentFactory;
-import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandler;
-import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandlerChain;
-import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandlerChains;
-import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandlerClass;
-import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModel;
-import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModelFactory;
-import org.netbeans.modules.websvc.core.jaxws.bindings.model.DefinitionsBindings;
-import org.netbeans.modules.websvc.core.jaxws.bindings.model.GlobalBindings;
+import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsComponentFactory;
+import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsHandler;
+import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsHandlerChain;
+import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsHandlerChains;
+import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsHandlerClass;
+import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsModel;
+import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsModelFactory;
+import org.netbeans.modules.websvc.api.jaxws.bindings.DefinitionsBindings;
+import org.netbeans.modules.websvc.api.jaxws.bindings.GlobalBindings;
 import org.netbeans.modules.websvc.spi.support.MessageHandlerPanel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Binding;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
-import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandlerName;
+import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsHandlerName;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -405,15 +405,6 @@ public class ClientHandlerButtonListener implements ActionListener {
                 ErrorManager.getDefault().log(ex.getLocalizedMessage());
             } catch (IllegalArgumentException ex) {
                 ErrorManager.getDefault().log(ex.getLocalizedMessage());
-            }
-            // refresh client artifacts directory due to code completion
-            String packageName = client.getPackageName();
-            if (packageName != null) {
-                packageName = packageName.replace(".", "/"); //NOI18N
-                FileObject clientArtifactsFolder = project.getProjectDirectory().getFileObject("build/generated/wsimport/client/" + packageName); //NOI18N
-                if (clientArtifactsFolder != null) {
-                    clientArtifactsFolder.refresh();
-                }
             }
         }
     }

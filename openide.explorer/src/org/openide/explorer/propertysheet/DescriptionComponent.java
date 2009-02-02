@@ -44,7 +44,6 @@ import java.awt.BorderLayout;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -124,17 +123,25 @@ class DescriptionComponent extends JComponent implements ActionListener, MouseLi
         jsc.getViewport().setOpaque(false);
 
         if (!PropUtils.psNoHelpButton) {
-            Image help = ImageUtilities.loadImage("org/openide/resources/propertysheet/propertySheetHelp.png", true); //NOI18N
+            if( PropUtils.isAqua ) {
+                btn = new JButton();
+                btn.addActionListener(this);
+                btn.putClientProperty("JButton.buttonType", "help");
+                btn.setOpaque(false);
+                btn.setContentAreaFilled(false);
+            } else {
+                Image help = ImageUtilities.loadImage("org/openide/resources/propertysheet/propertySheetHelp.png", true); //NOI18N
 
-            btn = new JButton(new ImageIcon(help));
-            btn.addActionListener(this);
+                btn = new JButton(new ImageIcon(help));
+                btn.addActionListener(this);
 
-            toolbar = new JToolBar ();
-            toolbar.setRollover (true);
-            toolbar.setFloatable (false);
-            toolbar.setLayout (new BorderLayout (0, 0));
-            toolbar.setBorder (BorderFactory.createEmptyBorder());
-            toolbar.add (btn);
+                toolbar = new JToolBar ();
+                toolbar.setRollover (true);
+                toolbar.setFloatable (false);
+                toolbar.setLayout (new BorderLayout (0, 0));
+                toolbar.setBorder (BorderFactory.createEmptyBorder());
+                toolbar.add (btn);
+            }
             btn.setFocusable(false);
         }
 
@@ -145,7 +152,7 @@ class DescriptionComponent extends JComponent implements ActionListener, MouseLi
         add(jsc);
         add(lbl);
         if (!PropUtils.psNoHelpButton) {
-            add(toolbar);
+            add( PropUtils.isAqua ? btn : toolbar);
         }
         jep.addMouseListener(this);
         jsc.addMouseListener(this);
@@ -163,10 +170,13 @@ class DescriptionComponent extends JComponent implements ActionListener, MouseLi
         int height = lbll.height;
         int right = getWidth() - ins.right;
         if (!PropUtils.psNoHelpButton) {
-            Dimension bttn = toolbar.getPreferredSize();
+            Dimension bttn = PropUtils.isAqua ? btn.getPreferredSize() : toolbar.getPreferredSize();
             height = Math.max(bttn.height, lbll.height);
             right = getWidth() - (ins.right + bttn.width);
-            toolbar.setBounds(right, ins.top, bttn.width, height);
+            if( PropUtils.isAqua )
+                btn.setBounds(right, ins.top, bttn.width, height);
+            else
+                toolbar.setBounds(right, ins.top, bttn.width, height);
         }
         lbl.setBounds(ins.left, ins.top, right, height);
         jsc.setBounds(ins.left, height, getWidth() - (ins.left + ins.right), getHeight() - height);

@@ -1023,6 +1023,9 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             if (!props.containsKey(ProjectProperties.EXCLUDES)) {
                 props.setProperty(ProjectProperties.EXCLUDES, ""); // NOI18N
             }
+            if (!props.containsKey("build.generated.sources.dir")) { // NOI18N
+                props.setProperty("build.generated.sources.dir", "${build.dir}/generated-sources"); // NOI18N
+            }
             
 
             updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);            

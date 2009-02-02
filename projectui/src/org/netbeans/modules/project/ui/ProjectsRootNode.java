@@ -97,6 +97,7 @@ import org.openide.xml.XMLUtil;
 import org.openidex.search.FileObjectFilter;
 import org.openidex.search.SearchInfo;
 import org.openidex.search.SearchInfoFactory;
+import org.openidex.search.Utils;
 
 /** Root node for list of open projects
  */
@@ -734,7 +735,7 @@ public class ProjectsRootNode extends AbstractNode {
         return new AlwaysSearchableSearchInfo(p);
     }
     
-    private static final class AlwaysSearchableSearchInfo implements SearchInfo {
+    private static final class AlwaysSearchableSearchInfo implements SearchInfo.Files {
         
         private final SearchInfo delegate;
         
@@ -763,6 +764,9 @@ public class ProjectsRootNode extends AbstractNode {
             return delegate.objectsToSearch();
         }
         
+        public Iterator<FileObject> filesToSearch() {
+            return Utils.getFileObjectsIterator(delegate);
+        }
+        
     }
-    
 }

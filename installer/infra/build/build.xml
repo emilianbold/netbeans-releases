@@ -781,7 +781,7 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-netbeans-components" if="do.build.netbeans">
 	<set property="netbeans.group.uid" value=""/>
 	<antcall target="build-list">
-	    <param name="build.list" value="nb-base nb-javase nb-webcommon nb-javaee nb-javame nb-soa nb-ruby nb-cnd nb-php runtimes-group glassfish glassfish-mod tomcat openesb"/>
+	    <param name="build.list" value="nb-base nb-javase nb-webcommon nb-javaee nb-javame nb-soa nb-ruby nb-cnd nb-php nb-ergonomics runtimes-group glassfish glassfish-mod tomcat openesb"/>
         </antcall>
      </target>
 
@@ -1069,6 +1069,12 @@ jarsigner.storepass=${jarsigner.storepass}
         </antcall>
     </target>
 
+    <target name="build-nb-ergonomics">	
+	<antcall target="build-nb-product">
+	    <param name="component.uid"  value="nb-ergonomics"/>
+        </antcall>
+    </target>
+
     <target name="build-nb-javafx">	
 	<antcall target="build-nb-product">
 	    <param name="component.uid"  value="nb-javafx"/>
@@ -1226,6 +1232,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javame"     version="${nb.full.version}"/>
             <component uid="nb-webcommon"  version="${nb.full.version}"/>
             <component uid="nb-javaee"     version="${nb.full.version}"/>
+            <component uid="nb-ergonomics" version="${nb.full.version}"/>
             <component uid="glassfish"     version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
             <component uid="tomcat"        version="${tomcat.full.version}"/>
@@ -1244,6 +1251,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase"     version="${nb.full.version}"/>
             <component uid="nb-webcommon"  version="${nb.full.version}"/>
             <component uid="nb-javaee"     version="${nb.full.version}"/>
+            <component uid="nb-ergonomics" version="${nb.full.version}"/>
             <component uid="glassfish"     version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
             <component uid="tomcat"        version="${tomcat.full.version}"/>
@@ -1341,6 +1349,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        <component uid="nb-ruby"        version="${nb.full.version}"/>
                        <component uid="nb-cnd"         version="${nb.full.version}"/>
                        <component uid="nb-php"         version="${nb.full.version}"/>
+                       <component uid="nb-ergonomics"  version="${nb.full.version}"/>
                        <component uid="glassfish"      version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
                        <component uid="glassfish-mod"  version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
                        <component uid="tomcat"         version="${tomcat.full.version}"/>
@@ -1361,6 +1370,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        <component uid="nb-ruby"        version="${nb.full.version}"/>
                        <component uid="nb-cnd"         version="${nb.full.version}"/>
                        <component uid="nb-php"         version="${nb.full.version}"/>
+                       <component uid="nb-ergonomics"  version="${nb.full.version}"/>
                        <component uid="glassfish"      version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
                        <component uid="glassfish-mod"  version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
                        <component uid="tomcat"         version="${tomcat.full.version}"/>
@@ -1383,6 +1393,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-ruby"       version="${nb.full.version}"/>
             <component uid="nb-cnd"        version="${nb.full.version}"/>
             <component uid="nb-php"        version="${nb.full.version}"/>
+            <component uid="nb-ergonomics" version="${nb.full.version}"/>
             <component uid="glassfish"     version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
             <component uid="tomcat"        version="${tomcat.full.version}"/>

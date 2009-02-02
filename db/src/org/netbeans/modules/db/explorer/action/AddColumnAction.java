@@ -55,6 +55,7 @@ import org.openide.util.actions.SystemAction;
  * @author Rob Englander
  */
 public class AddColumnAction extends BaseAction {
+    private static final Logger LOGGER = Logger.getLogger(AddColumnAction.class.getName());
 
     @Override
     public String getName() {
@@ -83,7 +84,7 @@ public class AddColumnAction extends BaseAction {
                             SystemAction.get(RefreshAction.class).performAction(new Node[] { node });
                         }
                     } catch(Exception exc) {
-                        Logger.getLogger("global").log(Level.INFO, null, exc);
+                        LOGGER.log(Level.WARNING, null, exc);
                         DbUtilities.reportError(bundle().getString("ERR_UnableToAddColumn"), exc.getMessage()); // NOI18N
                     }
                 }

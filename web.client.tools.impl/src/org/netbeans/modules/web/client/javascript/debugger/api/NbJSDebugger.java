@@ -366,6 +366,9 @@ public final class NbJSDebugger {
                 URLDisplayer.getDefault().showURL(uri.toURL());
             } catch (MalformedURLException e) {
                 // TODO
+            } catch (IllegalArgumentException e) {
+                // URL is not absolute 
+                // TODO
             }
         } else {
             DebuggerManager manager = DebuggerManager.getDebuggerManager();
@@ -441,6 +444,13 @@ public final class NbJSDebugger {
     }
 
     public boolean supportsHttpMonitor() {
+        // If all browsers (eg: IE & Firefox support HTTP monitor,
+        // simply return true, otherwise, a condition is needed here
+        // to enable HTTP monitor on a per browser basis. To use the
+        // Experimental HTTP monitoring for IE, uncomment the
+        // return true, and comment out the following line.
+        // (must also uncomment a few things in the native code as well)
+        //return true;
         return browser == WebClientToolsProjectUtils.Browser.FIREFOX;
     }
 

@@ -89,7 +89,6 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
 
     private int caretOffset;
     private CompilationInfo cInfo = null;
-    private Future<Void> initTask = null;
     private TreePath treePath = null;
     private Scope scope = null;
     private TypeElement enclClass = null;
@@ -102,7 +101,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
         this.request = request;
     }
     
-    public synchronized void updateDefaultValues() {
+    public void updateDefaultValues() {
         updateTemplateEnding();
         updateTemplateBasedOnCatchers();
         updateTemplateBasedOnSelection();
@@ -717,20 +716,20 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
         }
     }
     
-    private synchronized boolean initParsing() {
-        if (cInfo == null && initTask == null) {
+    private boolean initParsing() {
+        if (cInfo == null) {
             JTextComponent c = request.getComponent();
             caretOffset = c.getSelectionStart();
             JavaSource js = JavaSource.forDocument(c.getDocument());
             if (js != null) {
                 try {
-                    initTask = js.runWhenScanFinished(new Task<CompilationController>() {
+                    Future<Void> initTask = js.runWhenScanFinished(new Task<CompilationController>() {
 
                         public void run(final CompilationController controller) throws IOException {
+                            if (cInfo != null)
+                                return;
                             controller.toPhase(JavaSource.Phase.RESOLVED);
-                            synchronized(JavaCodeTemplateProcessor.this) {
-                                cInfo = controller;
-                            }
+                            cInfo = controller;
                             final TreeUtilities tu = cInfo.getTreeUtilities();
                             treePath = tu.pathFor(caretOffset);
                             scope = tu.scopeFor(caretOffset);

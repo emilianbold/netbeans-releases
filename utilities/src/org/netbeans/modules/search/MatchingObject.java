@@ -49,20 +49,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.channels.ClosedByInterruptException;
-import java.nio.channels.FileChannel;
-import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CoderResult;
-import java.nio.charset.CodingErrorAction;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.search.LineReader.LineSeparator;
+import java.util.regex.Matcher;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -80,7 +72,7 @@ import static java.util.logging.Level.SEVERE;
  * @author  Tim Boudreau
  */
 final class MatchingObject implements PropertyChangeListener {
-    
+
     /** */
     private final Logger LOG = Logger.getLogger(getClass().getName());
     /** */
@@ -140,11 +132,6 @@ final class MatchingObject implements PropertyChangeListener {
     private boolean valid = true;
     /** */
     private StringBuilder text;
-    
-    /**
-     * list of line separators used in the file
-     */
-    LineSeparator[] lineSeparators;
     
     /**
      * Creates a new {@code MatchingObject} with a reference to the found
@@ -438,56 +425,9 @@ final class MatchingObject implements PropertyChangeListener {
         assert !EventQueue.isDispatchThread();
         
         if (refreshCache || (text == null)) {
-            text = readText();
+            text = new StringBuilder(Utils.getCharSequence(new FileInputStream(getFile()), charset));
         }
         return text == null ? new StringBuilder() : text;
-    }
-    
-    /**
-     * Reads the text from the file.
-     * 
-     * @return  {@code StringBuilder} containing the text file's content,
-     *          or {@code null} if reading was interrupted
-     * @exception  java.io.IOException  if some error occured while reading
-     *                                  the file
-     */
-    private StringBuilder readText() throws IOException {
-        StringBuilder ret = null;
-        
-        ByteBuffer buf = getByteBuffer();
-        if (buf != null) {
-            CharBuffer cbuf = decodeByteBuffer(buf, charset);
-            LineReader reader = new LineReader(cbuf);
-            ret = reader.readText();
-            lineSeparators = reader.getLineSeparators();
-            reader.clear();
-        }
-        return ret;
-    }
-
-    /**
-     * 
-     * @author  Tim Boudreau
-     */
-    private ByteBuffer getByteBuffer() throws IOException {
-        assert !EventQueue.isDispatchThread();
-        
-        File file = getFile();
-        //XXX optimize with a single shared bytebuffer if performance
-        //problems noted
-        FileInputStream str = new FileInputStream(file);
-
-        ByteBuffer buffer = ByteBuffer.allocate((int) file.length());
-        FileChannel channel = str.getChannel();
-        try {
-            channel.read(buffer, 0);
-        } catch (ClosedByInterruptException cbie) {
-            return null;        //this is actually okay
-        } finally {
-            channel.close();
-        }
-        buffer.rewind();
-        return buffer;
     }
     
     /**
@@ -636,84 +576,32 @@ final class MatchingObject implements PropertyChangeListener {
         
         StringBuilder content = text(true);   //refresh the cache, reads the file
         
-        List<TextDetail> textMatches = resultModel.basicCriteria
-                                                    .getTextDetails(object);
-        int matchIndex = 0;
+        List<TextDetail> textMatches = resultModel.basicCriteria.getTextDetails(object);
 
-        int currLineOffset = 0;
-        int currLine = 1;
-
-        int inlineMatchNumber = 0;      //order of a match in a line
-        int inlineOffsetShift = 0;      //shift of offsets caused by replacements
-
-        mainloop:
+        int offsetShift = 0;
         for (TextDetail textDetail : textMatches) {
-            int matchLine = textDetail.getLine();
-
-            while (currLine < matchLine) {
-                int lfOffset = content.indexOf("\n",currLineOffset);//NOI18N
-                if (lfOffset == -1) {
-//                    assert false;       //PENDING - should notify user
-                    break mainloop;
-                }
-
-                currLineOffset = lfOffset + 1;       //skips "\n"
-                currLine++;
-                inlineMatchNumber = 0;
-                inlineOffsetShift = 0;
-            }
-
-            if (!isSubnodeSelected(matchIndex++)) {
-                continue;
-            }
-
-            if (++inlineMatchNumber == 1) { //first selected match on a line
-                boolean check = false;
-                assert check = true;    //side-effect - turns the check on
-                if (check) {
-                    int lineEndOffset = content.indexOf("\n",       //NOI18N
-                                                        currLineOffset);
-                    String fileLine = (lineEndOffset != -1)
-                                      ? content.substring(currLineOffset,
-                                                          lineEndOffset)
-                                      : content.substring(currLineOffset);
-                    if (!fileLine.equals(textDetail.getLineText())) {
-                        log(SEVERE, "file line differs from the expected line");
-                        if (LOG.isLoggable(FINEST)) {
-                            log(SEVERE, " - expected line: \"" + textDetail.getLineText() + '"');
-                            log(SEVERE, " - file line:     \"" + fileLine + '"');
-                        }
-                        return InvalidityStatus.CHANGED;
-                    }
-                }
-            }
-
-            int matchLength = textDetail.getMarkLength();
-            int matchOffset = currLineOffset + inlineOffsetShift
-                              + (textDetail.getColumn() - 1);
-            int matchEndOffset = matchOffset + matchLength;
-            if (!content.substring(matchOffset, matchEndOffset)
-                .equals(textDetail.getLineText().substring(
-                                textDetail.getColumn() - 1,
-                                textDetail.getColumn() - 1 + matchLength))) {
-                log(SEVERE, "file match part differs from the expected match");
+            String matchedSubstring = content.substring(textDetail.getStartOffset() + offsetShift, textDetail.getEndOffset() + offsetShift);
+            if (!matchedSubstring.equals(textDetail.getMatchedText())) {
+                log(SEVERE, "file match part differs from the expected match");  //NOI18N
                 if (LOG.isLoggable(FINEST)) {
-                    log(SEVERE, " - expected line: \""
-                                + textDetail.getLineText().substring(
-                                        textDetail.getColumn() - 1,
-                                        textDetail.getColumn() - 1 + matchLength)
+                    log(SEVERE, " - expected line: \""                           //NOI18N
+                                + textDetail.getMatchedText()
                                 + '"');
-                    log(SEVERE, " - file line:     \""
-                                + content.substring(matchOffset, matchEndOffset)
+                    log(SEVERE, " - file line:     \""                           //NOI18N
+                                + matchedSubstring
                                 + '"');
                 }
                 return InvalidityStatus.CHANGED;
             }
+
+            String replacedString = resultModel.basicCriteria.getReplaceString();
+            if (resultModel.basicCriteria.isRegexp()){
+                Matcher m = resultModel.basicCriteria.getTextPattern().matcher(matchedSubstring);
+                replacedString = m.replaceFirst(replacedString);
+            }
             
-            content.replace(matchOffset, matchEndOffset,
-                            resultModel.replaceString);
-            inlineOffsetShift += resultModel.replaceString.length()
-                                 - matchLength;
+            content.replace(textDetail.getStartOffset() + offsetShift, textDetail.getEndOffset() + offsetShift, replacedString);
+            offsetShift += replacedString.length() - matchedSubstring.length();
         }
         return null;
     }
@@ -750,94 +638,16 @@ final class MatchingObject implements PropertyChangeListener {
     /**
      */
     private String makeStringToWrite() {
-        return makeStringToWrite(text, lineSeparators);
+        return makeStringToWrite(text);
     }
     
     /**
      */
-    static String makeStringToWrite(StringBuilder text,
-                                    LineSeparator[] lineSeparators) {
-        if ((lineSeparators == null) || (lineSeparators.length == 0)) {
-            return text.toString();
-        }
-
-        StringBuilder outBuf = new StringBuilder(text.length()
-                                                 + lineSeparators.length);
-        int from = 0;
-        int index;
-        int separatorIndex = 0;
-        while ((index = text.indexOf("\n", from)) != -1) {              //NOI18N
-            outBuf.append(text.substring(from, index));
-            outBuf.append(lineSeparators[separatorIndex++].getString());
-            from = index + 1;
-        }
-        if (from != text.length()) {
-            outBuf.append(text.substring(from));
-        }
-        return outBuf.toString();
+    static String makeStringToWrite(StringBuilder text) {
+        return text.toString();
     }
 
     /**
-     * Decodes a given {@code ByteBuffer} with a given charset decoder.
-     * This is a workaround for a broken
-     * {@link Charset.decode(ByteBuffer) Charset#decode(java.nio.ByteBuffer}
-     * method in JDK 1.5.x.
-     * 
-     * @param  in  {@code ByteBuffer} to be decoded
-     * @param  charset  charset whose decoder will be used for decoding
-     * @return  {@code CharBuffer} containing chars produced by the decoder
-     * @see  <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/nio/charset/Charset.html#decode(java.nio.ByteBuffer)">Charset.decode(ByteBuffer)</a>
-     * @see  <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6221056">JDK bug #6221056</a>
-     * @see  <a href="http://www.netbeans.org/issues/show_bug.cgi?id=103193">NetBeans bug #103193</a>
-     * @see  <a href="http://www.netbeans.org/issues/show_bug.cgi?id=103067">NetBeans bug #103067</a>
-     */
-    private CharBuffer decodeByteBuffer(final ByteBuffer in,
-                                        final Charset charset)
-            throws CharacterCodingException {
-        
-        final CharsetDecoder decoder = charset.newDecoder()
-                                       .onMalformedInput(CodingErrorAction.REPLACE)
-                                       .onUnmappableCharacter(CodingErrorAction.REPLACE);
-        
-	int remaining = in.remaining();
-        if (remaining == 0) {
-            return CharBuffer.allocate(0);
-        }
-        
-        int n = (int) (remaining * decoder.averageCharsPerByte());
-        if (n < 16) {
-            n = 16;            //make sure some CharBuffer is allocated
-                               //even when decoding small number of bytes
-                               //and averageCharsPerByte() is less than 1
-        }
-	CharBuffer out = CharBuffer.allocate(n);
-        
-	decoder.reset();
-	for (;;) {
-	    CoderResult cr = in.hasRemaining()
-                             ? decoder.decode(in, out, true)
-                             : CoderResult.UNDERFLOW;
-	    if (cr.isUnderflow()) {
-		cr = decoder.flush(out);
-            }
-	    if (cr.isUnderflow()) {
-		break;
-            }
-	    if (cr.isOverflow()) {
-		CharBuffer o = CharBuffer.allocate(n <<= 1);
-		out.flip();
-		o.put(out);
-		out = o;
-		continue;
-	    }
-	    cr.throwException();
-	}
-	out.flip();
-	return out;
-    }
-
-    /**
-     *
      */
     private void log(Level logLevel, String msg) {
         String id = (object instanceof DataObject)

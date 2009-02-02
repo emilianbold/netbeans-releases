@@ -43,7 +43,6 @@ package org.netbeans.modules.websvc.wsitconf.ui.service;
 
 import java.awt.Color;
 import java.awt.Dialog;
-import java.util.Collection;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -76,18 +75,19 @@ import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
 import javax.swing.*;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.websvc.wsitconf.spi.ProjectSpecificSecurity;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
+import org.netbeans.modules.websvc.wsitconf.spi.WsitProvider;
 import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.AdvancedSecurityPanel;
 import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.KerberosConfigPanel;
+import org.netbeans.modules.websvc.wsitconf.util.DefaultSettings;
+import org.netbeans.modules.websvc.wsitconf.util.ServerUtils;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.AddressingModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMSequenceBinding;
 import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
-import org.netbeans.modules.websvc.wsstack.api.WSStack;
-import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
-import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
+import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
@@ -105,12 +105,15 @@ public class BindingPanel extends SectionInnerPanel {
     private Service service;
     private JaxWsModel jaxwsmodel;
 
+    private WsitProvider wsitProvider;
+
     private String oldProfile;
 
     private boolean doNotSync = false;
 
     private boolean inSync = false;
     private boolean isFromJava = true;
+    private boolean jsr109 = false;
 
     private final Color RED = new java.awt.Color(255, 0, 0);
     private final Color REGULAR;
@@ -127,7 +130,12 @@ public class BindingPanel extends SectionInnerPanel {
         this.undoManager = undoManager;
         this.binding = binding;
         this.jaxwsmodel = jaxwsmodel;
-        
+
+        this.wsitProvider = project.getLookup().lookup(WsitProvider.class);
+        if (wsitProvider != null) {
+            jsr109 = wsitProvider.isJsr109Project();
+        }
+
         initComponents();
 
         REGULAR = profileInfoField.getForeground();
@@ -165,11 +173,10 @@ public class BindingPanel extends SectionInnerPanel {
         addrChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
 
         // detect and fill appropriate config options
-        J2eePlatform platform = Util.getJ2eePlatform(project);
-        WSStack<JaxWs> wsStack = platform == null ? null : JaxWsStackProvider.getJaxWsStack(platform);
+        WSStackVersion wsStackVersion = Util.getHighestWSStackVersion(project);
         inSync = true;
         for (ConfigVersion cfgVersion : ConfigVersion.values()) {
-            if ((wsStack == null) || (cfgVersion.isSupported(wsStack.getVersion()))) {
+            if ((wsStackVersion != null) && (cfgVersion.isSupported(wsStackVersion))) {
                 supportedConfigVersions.add(cfgVersion);
                 cfgVersionCombo.addItem(cfgVersion);
             }
@@ -310,6 +317,8 @@ public class BindingPanel extends SectionInnerPanel {
     public void setValue(javax.swing.JComponent source, Object value) {
         if (inSync) return;
 
+        Util.checkMetroLibrary(project);
+        
         ConfigVersion userExpectedCfgVersion = getUserExpectedConfigVersion();
         if (source.equals(cfgVersionCombo)) {
             doNotSync = true;
@@ -373,8 +382,7 @@ public class BindingPanel extends SectionInnerPanel {
         if (source.equals(tcpChBox)) {
             boolean tcp = TransportModelHelper.isTCPEnabled(binding);
             if (tcpChBox.isSelected() != tcp) {
-                boolean jsr109 = isJsr109Supported();
-                TransportModelHelper.enableTCP(service, isFromJava, binding, project, tcpChBox.isSelected(), jsr109);
+                TransportModelHelper.enableTCP(service, isFromJava, binding, project, tcpChBox.isSelected());
             }
         }
 
@@ -389,24 +397,32 @@ public class BindingPanel extends SectionInnerPanel {
             }
         }
 
+        ProjectSpecificSecurity pss = null;
+        if (wsitProvider != null) {
+            pss = wsitProvider.getProjectSecurityUpdater();
+        }
         if (source.equals(securityChBox)) {
             String profile = (String) profileCombo.getSelectedItem();
             if (securityChBox.isSelected()) {
                 profileCombo.setSelectedItem(profile);
                 if (devDefaultsChBox.isSelected()) {
-                    Util.fillDefaults(project, false,true);
+                    DefaultSettings.fillDefaults(project, false,true);
                     ProfilesModelHelper.setServiceDefaults((String) profileCombo.getSelectedItem(), binding, project);
                     if (ProfilesModelHelper.isSSLProfile(profile)) {
-                        ProfilesModelHelper.setSSLAttributes(binding);
+                        if (pss != null) {
+                            pss.setSSLAttributes(binding);
+                        }
                     }
                 }
             } else {
                 if (devDefaultsChBox.isSelected()) {
                     if (ProfilesModelHelper.isSSLProfile(profile)) {
-                        ProfilesModelHelper.unsetSSLAttributes(binding);
+                        if (pss != null) {
+                            pss.unsetSSLAttributes(binding);
+                        }
                     }
                 }
-                Util.unfillDefaults(project);
+                DefaultSettings.unfillDefaults(project);
                 SecurityPolicyModelHelper spmh = SecurityPolicyModelHelper.getInstance(getUserExpectedConfigVersion());
                 spmh.disableSecurity(binding, true);
             }
@@ -415,10 +431,10 @@ public class BindingPanel extends SectionInnerPanel {
 
         if (source.equals(devDefaultsChBox)) {
             if (devDefaultsChBox.isSelected()) {
-                Util.fillDefaults(project, false,true);
+                DefaultSettings.fillDefaults(project, false,true);
                 ProfilesModelHelper.setServiceDefaults((String) profileCombo.getSelectedItem(), binding, project);
             } else {
-                Util.unfillDefaults(project);
+                DefaultSettings.unfillDefaults(project);
             }
         }
 
@@ -438,10 +454,14 @@ public class BindingPanel extends SectionInnerPanel {
                 if (devDefaultsChBox.isSelected()) {
                     ProfilesModelHelper.setServiceDefaults(profile, binding, project);
                     if (ProfilesModelHelper.isSSLProfile(profile) && !ProfilesModelHelper.isSSLProfile(oldProfile)) {
-                        ProfilesModelHelper.setSSLAttributes(binding);
+                        if (pss != null) {
+                            pss.setSSLAttributes(binding);
+                        }
                     }
                     if (!ProfilesModelHelper.isSSLProfile(profile) && ProfilesModelHelper.isSSLProfile(oldProfile)) {
-                        ProfilesModelHelper.unsetSSLAttributes(binding);
+                        if (pss != null) {
+                            pss.unsetSSLAttributes(binding);
+                        }
                     }
                 }
                 boolean defUsed = ProfilesModelHelper.isServiceDefaultSetupUsed(profile, binding, project);
@@ -518,7 +538,7 @@ public class BindingPanel extends SectionInnerPanel {
         // everything is ok, disable security
         if (!amSec) {
 
-            boolean gf = Util.isGlassfish(project);
+            boolean gf = ServerUtils.isGlassfish(project);
 
             securityChBox.setEnabled(true);
             profileInfoField.setForeground(REGULAR);
@@ -635,20 +655,6 @@ public class BindingPanel extends SectionInnerPanel {
         }
     }
 
-    private boolean isJsr109Supported(){
-        J2eePlatform j2eePlatform = Util.getJ2eePlatform(project);
-        if (j2eePlatform != null){
-            Collection<WSStack> wsStacks = (Collection<WSStack>)
-                    j2eePlatform.getLookup().lookupAll(WSStack.class);
-            for (WSStack stack : wsStacks) {
-                if (stack.isFeatureSupported(JaxWs.Feature.JSR109)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -1171,7 +1177,6 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
     }//GEN-LAST:event_stsConfigButtonActionPerformed
 
     private void trustButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_trustButtonActionPerformed
-        boolean jsr109 = isJsr109Supported();
         String profile = (String) profileCombo.getSelectedItem();
         TruststorePanel storePanel = new TruststorePanel(binding, project, jsr109, profile, false, getUserExpectedConfigVersion());
         DialogDescriptor dlgDesc = new DialogDescriptor(storePanel,
@@ -1185,7 +1190,6 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
     }//GEN-LAST:event_trustButtonActionPerformed
 
     private void keyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyButtonActionPerformed
-        boolean jsr109 = isJsr109Supported();
         KeystorePanel storePanel = new KeystorePanel(binding, project, jsr109, false, getUserExpectedConfigVersion());
         DialogDescriptor dlgDesc = new DialogDescriptor(storePanel,
                 NbBundle.getMessage(BindingPanel.class, "LBL_Keystore_Panel_Title")); //NOI18N

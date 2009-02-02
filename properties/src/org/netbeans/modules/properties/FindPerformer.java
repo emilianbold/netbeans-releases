@@ -60,9 +60,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 
@@ -378,7 +376,7 @@ public class FindPerformer extends javax.swing.AbstractAction
             return;
         
 
-        if(row != -1 || column != -1) {
+        if(row != -1 && column != -1) {
             // Some cell is selected.
             int startOffset, endOffset;
             startOffset = endOffset = ((JTextField)((PropertiesTableCellEditor)table.getCellEditor(row, column)).getComponent()).getCaretPosition();

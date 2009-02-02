@@ -313,6 +313,26 @@ public class PythonAstUtils {
         return false;
     }
 
+    /** Return if a function is a staticmethod **/
+    public static boolean isStaticMethod(PythonTree node) {
+        if (node instanceof FunctionDef) {
+            FunctionDef def = (FunctionDef)node;
+            List<expr> decorators = def.getInternalDecorator_list();
+            if (decorators != null && decorators.size() > 0) {
+                for (expr decorator : decorators) {
+                    if (decorator instanceof Name) {
+                        String decoratorName = ((Name)decorator).getText();
+                        if (decoratorName.equals("staticmethod")) { // NOI18N
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     /** Compute the module/class name for the given node path */
     public static String getFqnName(AstPath path) {
         StringBuilder sb = new StringBuilder();

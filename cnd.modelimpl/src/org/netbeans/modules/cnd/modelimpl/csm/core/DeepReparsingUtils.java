@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -52,6 +53,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.openide.filesystems.FileObject;
 
 /**
  * Reparse dependant files.
@@ -235,12 +237,22 @@ public final class DeepReparsingUtils {
      * Reparse included files at file added.
      */
     public static void reparseOnAdded(NativeFileItem nativeFile, ProjectBase project) {
+        reparseOnAdded(nativeFile.getFile().getName(), project);
+    }
+
+    /**
+     * Reparse included files at file added.
+     */
+    public static void reparseOnAdded(FileObject addedFile, ProjectBase project) {
+        reparseOnAdded(addedFile.getNameExt(), project);
+    }
+
+    private static void reparseOnAdded(String name, ProjectBase project) {
         if (!TraceFlags.USE_DEEP_REPARSING) {
             return;
         }
-        String name = nativeFile.getFile().getName();
         Set<CsmFile> resolved = new HashSet<CsmFile>();
-        for (CsmFile file : project.getSourceFiles()) {
+        for (CsmFile file : project.getAllFiles()) {
             for (CsmInclude incl : file.getIncludes()) {
                 if (incl.getIncludeName().toString().endsWith(name)/* && incl.getIncludeFile() == null*/) {
                     resolved.add(file);
@@ -253,6 +265,7 @@ public final class DeepReparsingUtils {
             Set<CsmFile> coherence = new HashSet<CsmFile>();
             for (CsmFile file : resolved) {
                 top.addAll(project.getGraph().getTopParentFiles(file));
+                coherence.add(file);
                 coherence.addAll(project.getGraph().getIncludedFiles(file));
             }
             addToReparse(project, top, coherence, true);

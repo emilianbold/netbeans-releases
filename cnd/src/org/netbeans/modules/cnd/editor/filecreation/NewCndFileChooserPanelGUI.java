@@ -69,12 +69,12 @@ import org.openide.util.NbBundle;
  */
 class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
   
-    
+    private final String defaultExtension;
     private String expectedExtension;
     private final MIMEExtensions es;
     
     /** Creates new form NewCndFileChooserPanelGUI */
-    NewCndFileChooserPanelGUI( Project project, SourceGroup[] folders, Component bottomPanel, MIMEExtensions es) {
+    NewCndFileChooserPanelGUI( Project project, SourceGroup[] folders, Component bottomPanel, MIMEExtensions es, String defaultExt) {
         super(project, folders);
         
         this.es = es;
@@ -86,7 +86,8 @@ class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
         if ( bottomPanel != null ) {
             bottomPanelContainer.add( bottomPanel, java.awt.BorderLayout.CENTER );
         }
-        initValues( null, null, null );
+        defaultExtension = defaultExt;
+        initValues(null, null, null);
         
         browseButton.addActionListener( this );
         locationComboBox.addActionListener( this );
@@ -124,7 +125,7 @@ class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
         // Create OS dependent relative name
         folderTextField.setText( getRelativeNativeName( preselectedGroup.getRootFolder(), preselectedFolder ) );
         
-        String ext = es.getDefaultExtension();
+        String ext = defaultExtension == null? es.getDefaultExtension() : defaultExtension;
         cbExtension.setSelectedItem(ext);
         cbExtension.enableInputMethods(true);
         expectedExtension = ext;
@@ -226,7 +227,7 @@ class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
     public String getTargetExtension() {
         return expectedExtension;
     }
-    
+
     public boolean useTargetExtensionAsDefault() {
         return cbSetAsDefault.isSelected();
     }

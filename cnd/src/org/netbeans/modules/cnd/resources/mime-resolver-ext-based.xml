@@ -113,11 +113,15 @@ made subject to such option by the copyright holder.
     </file>
     <file>
         <ext name="ui"/>
-        <resolver mime="text/xml+qtui"/>
+        <resolver mime="text/qtui+xml"/>
     </file>
     <file>
         <ext name="qrc"/>
-        <resolver mime="text/xml+qtresource"/>
+        <resolver mime="text/qtresource+xml"/>
+    </file>
+    <file>
+        <ext name="ts"/>
+        <resolver mime="text/qttranslation+xml"/>
     </file>
     <file>
         <ext name="pro"/>

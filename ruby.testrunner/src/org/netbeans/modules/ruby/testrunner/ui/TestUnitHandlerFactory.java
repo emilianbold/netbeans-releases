@@ -52,6 +52,7 @@ import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
+import org.netbeans.modules.ruby.testrunner.TestRunnerUtilities;
 import org.netbeans.modules.ruby.testrunner.TestUnitRunner;
 import org.openide.util.NbBundle;
 
@@ -100,7 +101,7 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
         List<String> stackTraceList = new ArrayList<String>();
         stackTraceList.add(message);
         for (String location : stackTrace.split("%BR%")) { //NOI18N
-            if (!location.contains(TestUnitRunner.MEDIATOR_SCRIPT_NAME) && !location.contains(TestUnitRunner.RUNNER_SCRIPT_NAME)) { //NOI18N
+            if (!TestRunnerUtilities.filterOutFromStacktrace(location)) {
                 stackTraceList.add(location);
             }
         }
@@ -122,9 +123,8 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(TestType.TEST_UNIT.toString(), session);
+            Testcase testcase = new Testcase(matcher.group(2), TestType.TEST_UNIT.name(), session);
             testcase.setTimeMillis(toMillis(matcher.group(1)));
-            testcase.setName(matcher.group(2));
             testcase.setClassName(matcher.group(3));
             testcase.setTrouble(new Trouble(false));
 
@@ -180,10 +180,9 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(TestType.TEST_UNIT.name(), session);
+            Testcase testcase = new Testcase(matcher.group(2), TestType.TEST_UNIT.name(), session);
             testcase.setTimeMillis(toMillis(matcher.group(1)));
             testcase.setClassName(matcher.group(3));
-            testcase.setName(matcher.group(2));
             testcase.setTrouble(new Trouble(true));
             testcase.getTrouble().setStackTrace(getStackTrace(matcher.group(4), matcher.group(5)));
             session.addTestCase(testcase);
@@ -216,7 +215,7 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
     static class TestStartedHandler extends TestRecognizerHandler {
 
         public TestStartedHandler() {
-            super("%TEST_STARTED%\\s([\\w]+)\\((.+)\\)"); //NOI18N
+            super("%TEST_STARTED%\\s(.+)\\((.+)\\)"); //NOI18N
         }
 
         @Override
@@ -245,15 +244,14 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
         }
 
         public TestFinishedHandler() {
-            super("%TEST_FINISHED%\\stime=(.+)\\s([\\w]+)\\((.+)\\)"); //NOI18N
+            super("%TEST_FINISHED%\\stime=(.+)\\s(.+)\\((.+)\\)"); //NOI18N
         }
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(TestType.TEST_UNIT.name(), session);
+            Testcase testcase = new Testcase(matcher.group(2), TestType.TEST_UNIT.name(), session);
             testcase.setTimeMillis(toMillis(matcher.group(1)));
             testcase.setClassName(matcher.group(3));
-            testcase.setName(matcher.group(2));
             session.addTestCase(testcase);
         }
     }

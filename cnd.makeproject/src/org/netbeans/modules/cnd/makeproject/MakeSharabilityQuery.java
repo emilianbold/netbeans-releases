@@ -111,6 +111,9 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation {
                     } else if (subString.startsWith("nbproject" + File.separator + "Package-")) // NOI18N
                     {
                         return Integer.valueOf(SharabilityQuery.SHARABLE);
+                    } else if (subString.startsWith("nbproject" + File.separator + "qt-")) // NOI18N
+                    {
+                        return Integer.valueOf(subString.endsWith(".pro")? SharabilityQuery.SHARABLE : SharabilityQuery.NOT_SHARABLE); // NOI18N
                     } else if (subString.equals("build")) // NOI18N
                     {
                         return Integer.valueOf(SharabilityQuery.NOT_SHARABLE);

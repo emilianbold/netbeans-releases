@@ -682,18 +682,16 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
             if (((MakeConfiguration) confs[i]).isLinkerConfiguration()) {
                 librariesConfiguration = makeConfiguration.getLinkerConfiguration().getLibrariesConfiguration();
-                LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
-                for (int j = 0; j < libraryItems.length; j++) {
-                    if (libraryItems[j] instanceof LibraryItem.ProjectItem) {
-                        LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) libraryItems[j];
+                for (LibraryItem item : librariesConfiguration.getValue()) {
+                    if (item instanceof LibraryItem.ProjectItem) {
+                        LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) item;
                         subProjects.add(projectItem.getMakeArtifact().getProjectLocation());
                     }
                 }
             }
 
-            LibraryItem.ProjectItem[] aProjectItems = makeConfiguration.getRequiredProjectsConfiguration().getRequiredProjectItemsAsArray();
-            for (int j = 0; j < aProjectItems.length; j++) {
-                subProjects.add(aProjectItems[j].getMakeArtifact().getProjectLocation());
+            for (LibraryItem.ProjectItem item : makeConfiguration.getRequiredProjectsConfiguration().getValue()) {
+                subProjects.add(item.getMakeArtifact().getProjectLocation());
             }
         }
 
@@ -723,7 +721,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         boolean addPath = true;
         ArrayList<String> toBeRemoved = new ArrayList<String>();
 
-        if (IpeUtils.isPathAbsolute(relPath) || relPath.startsWith("..")) { // NOI18N
+        if (IpeUtils.isPathAbsolute(relPath) || relPath.startsWith("..") || relPath.startsWith(".")) { // NOI18N
             synchronized (sourceRoots) {
                 if (canonicalPath != null) {
                     int canonicalPathLength = canonicalPath.length();

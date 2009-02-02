@@ -47,6 +47,7 @@ import javax.swing.text.Document;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import static org.netbeans.api.java.lexer.JavaTokenId.*;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.lexer.Token;
@@ -136,7 +137,7 @@ public class Reformatter implements ReformatTask {
         StringBuilder sb = new StringBuilder(text);
         try {
             ClassPath empty = ClassPathSupport.createClassPath(new URL[0]);
-            ClasspathInfo cpInfo = ClasspathInfo.create(empty, empty, empty);
+            ClasspathInfo cpInfo = ClasspathInfo.create(JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries(), empty, empty);
             JavacTaskImpl javacTask = JavacParser.createJavacTask(cpInfo, null, null,null);
             com.sun.tools.javac.util.Context ctx = javacTask.getContext();
             JavaCompiler.instance(ctx).genEndPos = true;
@@ -2596,7 +2597,7 @@ public class Reformatter implements ReformatTask {
                                 count--;
                             }
                             if ((idx = text.lastIndexOf('\n')) >= 0) { //NOI18N
-                                if (idx > lastIdx)
+                                if (idx >= lastIdx)
                                     addDiff(new Diff(offset + lastIdx, offset + idx + 1, null));
                                 lastIdx = idx + 1;
                             }

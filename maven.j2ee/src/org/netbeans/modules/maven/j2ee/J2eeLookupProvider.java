@@ -47,6 +47,8 @@ import org.netbeans.modules.maven.j2ee.ejb.EjbModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.web.CopyOnSave;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.j2ee.ejb.EjbEntRefContainerImpl;
+import org.netbeans.modules.maven.j2ee.web.EntRefContainerImpl;
 import org.netbeans.modules.maven.j2ee.web.WebReplaceTokenProvider;
 import org.netbeans.spi.project.LookupProvider;
 import org.openide.filesystems.FileStateInvalidException;
@@ -88,11 +90,17 @@ public class J2eeLookupProvider implements LookupProvider {
         private Object lastInstance = null;
         private CopyOnSave copyOnSave;
         private WebReplaceTokenProvider replacer;
+        private EntRefContainerImpl webEnt;
+        private EjbEntRefContainerImpl ejbEnt;
+        private JPAStuffImpl jpa;
         public Provider(Project proj, InstanceContent cont) {
             super(cont);
             project = proj;
             content = cont;
             replacer = new WebReplaceTokenProvider(proj);
+            webEnt = new EntRefContainerImpl(proj);
+            ejbEnt = new EjbEntRefContainerImpl(proj);
+            jpa = new JPAStuffImpl(proj);
             checkJ2ee();
             NbMavenProject.addPropertyChangeListener(project, this);
         }
@@ -131,8 +139,12 @@ public class J2eeLookupProvider implements LookupProvider {
                 removeLastInstance();
                 WebModuleProviderImpl prov = new WebModuleProviderImpl(project);
                 lastInstance = prov;
+                content.remove(ejbEnt);
+                content.remove(jpa);
                 content.add(lastInstance);
                 content.add(replacer);
+                content.add(webEnt);
+                content.add(jpa);
                 copyOnSave = new CopyOnSave(project, prov);
                 try {
                     copyOnSave.initialize();
@@ -142,14 +154,21 @@ public class J2eeLookupProvider implements LookupProvider {
             } else if (NbMavenProject.TYPE_EAR.equals(packaging) && !lastType.equals(packaging)) {
                 removeLastInstance();
                 content.remove(replacer);
+                content.remove(webEnt);
+                content.remove(ejbEnt);
+                content.remove(jpa);
                 lastInstance = new EarModuleProviderImpl(project);
                 content.add(lastInstance);
                 content.add(((EarModuleProviderImpl)lastInstance).getEarImplementation());
             } else if (NbMavenProject.TYPE_EJB.equals(packaging) && !lastType.equals(packaging)) {
                 removeLastInstance();
+                content.remove(jpa);
                 content.remove(replacer);
+                content.remove(webEnt);
                 lastInstance = new EjbModuleProviderImpl(project);
                 content.add(lastInstance);
+                content.add(jpa);
+                content.add(ejbEnt);
             } else if (lastInstance != null && !(
                     NbMavenProject.TYPE_WAR.equals(packaging) || 
                     NbMavenProject.TYPE_EJB.equals(packaging) || 
@@ -157,6 +176,9 @@ public class J2eeLookupProvider implements LookupProvider {
             {
                 removeLastInstance();
                 content.remove(replacer);
+                content.remove(webEnt);
+                content.remove(ejbEnt);
+                content.remove(jpa);
                 lastInstance = null;
             }
             lastType = packaging;

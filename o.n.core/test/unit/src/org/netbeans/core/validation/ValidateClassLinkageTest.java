@@ -42,18 +42,25 @@
 package org.netbeans.core.validation;
 
 import java.io.File;
-import java.net.*;
-import java.util.*;
+import java.net.URI;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import org.netbeans.junit.*;
-import junit.textui.TestRunner;
+import org.netbeans.junit.NbTestCase;
+import org.openide.util.NbCollections;
 
 /**
  * Test that all classes in the system can load and link.
  * @author Jesse Glick
  */
 public class ValidateClassLinkageTest extends NbTestCase {
+
+    // XXX needs to be using NbModuleSuite to be meaningful
     
     public ValidateClassLinkageTest(String name) {
         super(name);
@@ -64,19 +71,10 @@ public class ValidateClassLinkageTest extends NbTestCase {
      * @see org.netbeans.core.modules.NbInstaller#preresolveClasses
      */
     public void testClassLinkage() throws Exception {
-        if (ValidateClassLinkageTest.class.getClassLoader() == ClassLoader.getSystemClassLoader()) {
-            // do not check anything as this probably means we are running
-            // plain Unit test and not inside the IDE mode
-            return;
-        }
-        
-        
         ClassLoader l = Thread.currentThread().getContextClassLoader();
         assertNotNull("Context CL has some autoloads in it", l.getResource("org/openide/windows/InputOutput.class"));
-        Enumeration e = l.getResources("META-INF/MANIFEST.MF");
-        Set/*<File>*/ jars = new TreeSet();
-        while (e.hasMoreElements()) {
-            URL manifest = (URL)e.nextElement();
+        Set<File> jars = new TreeSet<File>();
+        for (URL manifest : NbCollections.iterable(l.getResources("META-INF/MANIFEST.MF"))) {
             String murl = manifest.toExternalForm();
             assertTrue(murl.endsWith("/META-INF/MANIFEST.MF"));
             if (murl.startsWith("jar:")) {
@@ -92,17 +90,13 @@ public class ValidateClassLinkageTest extends NbTestCase {
                 jars.add(f);
             }
         }
-        Map/*<String,Throwable>*/ errorsByClazz = new TreeMap();
-        Map/*<String,File>*/ locationsByClass = new HashMap();
-        Iterator it = jars.iterator();
-        while (it.hasNext()) {
-            File jar = (File)it.next();
+        Map<String,Throwable> errorsByClazz = new TreeMap<String,Throwable>();
+        Map<String,File> locationsByClass = new HashMap<String,File>();
+        for (File jar : jars) {
             System.err.println("Checking JAR: " + jar);
             JarFile jarfile = new JarFile(jar);
             try {
-                e = jarfile.entries();
-                while (e.hasMoreElements()) {
-                    JarEntry entry = (JarEntry)e.nextElement();
+                for (JarEntry entry : NbCollections.iterable(jarfile.entries())) {
                     String name = entry.getName();
                     if (name.endsWith(".class")) {
                         String clazz = name.substring(0, name.length() - 6).replace('/', '.');
@@ -132,14 +126,11 @@ public class ValidateClassLinkageTest extends NbTestCase {
             }
         }
         if (!errorsByClazz.isEmpty()) {
-            it = errorsByClazz.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry)it.next();
-                String clazz = (String)entry.getKey();
-                Throwable t = (Throwable)entry.getValue();
+            for (Map.Entry<String,Throwable> entry : errorsByClazz.entrySet()) {
+                String clazz = entry.getKey();
                 // Will go the logs:
                 System.err.println("From " + clazz + " in " + locationsByClass.get(clazz) + ":");
-                t.printStackTrace();
+                entry.getValue().printStackTrace();
             }
             fail("Linkage or class loading errors encountered in " + errorsByClazz.keySet() + " (see logs for details)");
         }
