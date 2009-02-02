@@ -732,4 +732,9 @@ public class Folder {
     private static String getString(String s) {
         return NbBundle.getMessage(Folder.class, s);
     }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }

@@ -807,6 +807,7 @@ made subject to such option by the copyright holder.
             </fileset>
         </delete>
         <delete file="${cluster}/update_tracking/${code.name.base.dashes}.xml"/>
+	<delete file="${netbeans.dest.dir}/${module.cluster.name}.built" failonerror="false"/>
     </target>
     <target name="test-clean" depends="basic-init,files-init">
         <macrodef name="test-clean">
