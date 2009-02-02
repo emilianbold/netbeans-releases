@@ -62,6 +62,8 @@ import org.openide.filesystems.FileUtil;
  * @author Tomas Mysik
  */
 public final class PhpCoverageProvider implements CoverageProvider {
+    // XXX for now disabled due to problems with statistics, getDetails() method is not called etc.
+    public static final boolean ENABLED = Boolean.getBoolean(PhpCoverageProvider.class.getName() + ".enabled"); // NOI18N
     private static final Set<String> MIME_TYPES = Collections.singleton(PhpSourcePath.MIME_TYPE);
 
     private final Object lock = new Object();

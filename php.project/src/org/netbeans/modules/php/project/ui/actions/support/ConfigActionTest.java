@@ -220,7 +220,9 @@ public class ConfigActionTest extends ConfigAction {
                             public void run() {
                                 rerunUnitTestHandler.enable();
                                 testRunner.showResults();
-                                handleCodeCoverage();
+                                if (PhpCoverageProvider.ENABLED) {
+                                    handleCodeCoverage();
+                                }
                             }
                         });
             } else {
@@ -238,9 +240,13 @@ public class ConfigActionTest extends ConfigAction {
             }
             externalProcessBuilder = externalProcessBuilder
                     .addArgument(PhpUnit.PARAM_XML_LOG)
-                    .addArgument(PhpUnit.XML_LOG.getAbsolutePath())
-                    .addArgument(PhpUnit.PARAM_COVERAGE_LOG)
-                    .addArgument(PhpUnit.COVERAGE_LOG.getAbsolutePath())
+                    .addArgument(PhpUnit.XML_LOG.getAbsolutePath());
+            if (PhpCoverageProvider.ENABLED) {
+                externalProcessBuilder = externalProcessBuilder
+                        .addArgument(PhpUnit.PARAM_COVERAGE_LOG)
+                        .addArgument(PhpUnit.COVERAGE_LOG.getAbsolutePath());
+            }
+            externalProcessBuilder = externalProcessBuilder
                     .addArgument(pair.second);
             return externalProcessBuilder;
         }
