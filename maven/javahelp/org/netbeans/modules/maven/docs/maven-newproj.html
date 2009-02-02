@@ -44,9 +44,37 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
     </head>
     <body>
         <h2>Creating a Maven Project</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small></p>
         <p>
-            <!-- TODO describe your module, add more pages... -->
+        You use the New Project wizard to create a new Maven project based on an archetype in your local or
+        a remote repository.
+        Archetypes provide the template that the IDE uses when creating a Maven project.
+
         </p>
+
+        <ul class="notes">
+            <li>If you have an existing Maven 2 project that contains <tt>pom.xml</tt> you do not need to use the New Project wizard.
+            You can open the project by choosing Open Project (Shift-Ctrl-O) from the main menu.</li>
+        </ul>
+
+        <p><strong>To create a new Maven project</strong></p>
+        <ol>
+            <li>Choose File &gt; New Project from the main menu to open the New Project wizard.</li>
+            <li>Choose the Maven category and then choose a Maven project template. Click Next.
+            <p>If you choose the Maven Project template you will need to choose an archetype.
+            The wizard displays the available archetypes contained in your local or registered remote repository.
+            </p>
+            </li>
+            <li>Specify the project name, location and project details. Click Finish.</li>
+        </ol>
+
+
+
+        <p>When you click Finish, the IDE creates the Maven project and displays the node for the project
+        in the Projects window.</p>
+
+
+
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/maven/maven-about.html">About Working with Maven</a></dd>

@@ -38,41 +38,34 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
 -->
 <html>
     <head>
-        <title>Working with the Maven POM</title>
+        <title>Building a Maven Project</title>
         <link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     </head>
     <body>
-        <h2>Working with the Maven POM</h2>
+        <h2>Building a Maven Project</h2>
         <p> <small><a href="#seealso">See Also</a>&nbsp; </small></p>
-        <p>The basic unit of work in Maven is the Project Object Model (POM) that is contained in <tt>pom.xml</tt>.
-        <tt>pom.xml</tt> contains information about the project and configuration details 
-        such as project dependencies and build profiles that Maven uses to execute goals and build the project.</p>
-        <p>For more details about POM elements, see the following pages on the Maven site:</p>
-        
-        <p>
-        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-        <param name="content" value="http://maven.apache.org/guides/introduction/introduction-to-the-pom.html">
-        <param name="text" value="<html><u>Introduction to the POM</u></html>">
-        <param name="textFontSize" value="medium">
-        <param name="textColor" value="blue">
-        </object>
-        </p>
+        <p></p>
 
-        <p>
-        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-        <param name="content" value="http://maven.apache.org/ref/2.0.8/maven-model/maven.html">
-        <param name="text" value="<html><u>POM Reference</u></html>">
-        <param name="textFontSize" value="medium">
-        <param name="textColor" value="blue">
-        </object>
-        </p>
-
-
-        <p>
-        </p>
-        
+        <p>What this means is that the process for building and distributing a particular artifact (project) is clearly defined.</p>
 <dl>
+
+    <h3>Customizing the Build Process</h3>
+        <p>To customize the build for a Maven project you modify the POM to add or reconfigure plugins.
+        The code completion in the POM can help you locate and add the plugin details to <tt>pom.xml</tt>.
+
+        <ol>
+            <li>Open <tt>pom.xml</tt> in the XML editor.</li>
+            <li>Choose Source &gt; Insert Code (Ctrl-I) from the main menu and select Plugin from the popup menu
+            to open the Add New Plugin dialog box.</li>
+            <li>Type a query term to search for the plugin.</li>
+            <li>Select the plugin from the list of available plugins.</li>
+            <li>Select the goals that you want to be executed. Click OK.</li>
+        </ol>
+<p>When you click OK, the IDE adds the plugin description to <tt>pom.xml</tt> and the goals to run as part of the build process.
+</p>
+        If you add a plugin that is not in the local repository, This plugin will be automatically downloaded and used - including a specific version if you request it (the default is to use the latest available).
+
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/maven/maven-about.html">About Working with Maven</a></dd>
 </dl>
