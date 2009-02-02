@@ -150,14 +150,15 @@ class MultiBundleStructure extends BundleStructure implements Serializable {
         }
         if (index >= 0 && index < files.length) {
             try {
-                return (PropertiesFileEntry) ((PropertiesDataObject) DataObject.find(files[index])).getPrimaryEntry();
+                DataObject dataObject = DataObject.find(files[index]);
+                if (dataObject instanceof PropertiesDataObject) {
+                    return (PropertiesFileEntry) ((PropertiesDataObject)dataObject).getPrimaryEntry();
+                }
             } catch (DataObjectNotFoundException ex) {
 //                ex.printStackTrace();
-                return null;
             }
-        } else {
-            return null;
-        }
+        } 
+        return null;
     }
 
     /**
