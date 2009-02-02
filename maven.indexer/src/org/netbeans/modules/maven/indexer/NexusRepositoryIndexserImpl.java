@@ -357,7 +357,7 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
                 }
             } else {
                 LOGGER.finer("Indexing Local Repository :" + repo.getId());//NOI18N
-                indexer.scan(indexingContext, new RepositoryIndexerListener(indexer, indexingContext, false), updateLocal);
+                indexer.scan(indexingContext, new RepositoryIndexerListener(indexer, indexingContext), updateLocal);
             }
         } catch (IOException iOException) {
             LOGGER.warning(iOException.getMessage());//NOI18N
