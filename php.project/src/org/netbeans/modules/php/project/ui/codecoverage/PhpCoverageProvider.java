@@ -45,6 +45,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.Document;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsf.codecoverage.api.CoverageManager;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageProvider;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageProviderHelper;
 import org.netbeans.modules.gsf.codecoverage.api.FileCoverageDetails;
@@ -55,7 +57,7 @@ import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.FileVO;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-// XXX coverage data could be fetch lazily but... not sure what is better
+// XXX coverage data could be fetched lazily but... not sure what is more performance friendly
 /**
  * @author Tomas Mysik
  */
@@ -87,6 +89,10 @@ public final class PhpCoverageProvider implements CoverageProvider {
         }
     }
 
+    public static void notifyProjectOpened(Project project) {
+        CoverageManager.INSTANCE.setEnabled(project, true);
+    }
+
     public boolean supportsHitCounts() {
         return true;
     }
@@ -107,11 +113,6 @@ public final class PhpCoverageProvider implements CoverageProvider {
             return;
         }
         enabled = on;
-//        timestamp = 0;
-//        if (!on) {
-//            hitCounts = null;
-//            fullNames = null;
-//        }
         CoverageProviderHelper.setEnabled(project, on);
     }
 
@@ -161,9 +162,9 @@ public final class PhpCoverageProvider implements CoverageProvider {
                     fo,
                     fo.getNameExt(),
                     file.getMetrics().loc,
-                    file.getMetrics().ncloc,
-                    0,
-                    0));
+                    file.getLines().size(),
+                    file.getMetrics().loc - file.getMetrics().ncloc,
+                    -1));
         }
         return result;
     }

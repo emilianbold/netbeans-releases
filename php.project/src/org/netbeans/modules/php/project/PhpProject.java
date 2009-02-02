@@ -411,6 +411,12 @@ public class PhpProject implements Project {
                 IncludePathClassPathProvider.addProjectIncludePath(classPath);
             }
 
+            // ensure that code coverage is initialized in case it's enabled...
+            PhpCoverageProvider coverageProvider = getLookup().lookup(PhpCoverageProvider.class);
+            if (coverageProvider.isEnabled()) {
+                coverageProvider.notifyProjectOpened(PhpProject.this);
+            }
+
             final CopySupport copySupport = getCopySupport();
             if (copySupport != null) {
                 copySupport.projectOpened(PhpProject.this);
