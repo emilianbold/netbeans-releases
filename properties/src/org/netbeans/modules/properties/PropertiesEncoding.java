@@ -165,7 +165,7 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
 
         public void fileDataCreated(FileEvent fe) {
             /* this should be never called on plain files (non-directories) */
-            assert false;
+//            assert false;
         }
 
         public void fileFolderCreated(FileEvent fe) {
