@@ -68,7 +68,7 @@ public interface CsmMacroExpansionDocProvider {
      * @param outDoc - result
      * @return - number of expansions
      */
-    public abstract int expand(Document inDoc, int startOffset, int endOffset, Document outDoc);
+    public int expand(Document inDoc, int startOffset, int endOffset, Document outDoc);
 
     /**
      * Transforms original offset to offset in expanded text.
@@ -77,7 +77,7 @@ public interface CsmMacroExpansionDocProvider {
      * @param originalOffset - original offset
      * @return offset in expanded text
      */
-    public abstract int getOffsetInExpandedText(Document expandedDoc, int originalOffset);
+    public int getOffsetInExpandedText(Document expandedDoc, int originalOffset);
 
     /**
      * Transforms offset in expanded text to original offset.
@@ -86,7 +86,7 @@ public interface CsmMacroExpansionDocProvider {
      * @param expandedOffset - offset in expanded text
      * @return original offset
      */
-    public abstract int getOffsetInOriginalText(Document expandedDoc, int expandedOffset);
+    public int getOffsetInOriginalText(Document expandedDoc, int expandedOffset);
 
     /**
      * Returns offset of the next macro expansion.
@@ -95,7 +95,7 @@ public interface CsmMacroExpansionDocProvider {
      * @param expandedOffset - offset in expanded text
      * @return offset of the next macro expansion
      */
-    public abstract int getNextMacroExpansionStartOffset(Document expandedDoc, int expandedOffset);
+    public int getNextMacroExpansionStartOffset(Document expandedDoc, int expandedOffset);
 
     /**
      * Returns offset of the previous macro expansion.
@@ -104,5 +104,5 @@ public interface CsmMacroExpansionDocProvider {
      * @param expandedOffset - offset in expanded text
      * @return offset of the next macro expansion
      */
-    public abstract int getPrevMacroExpansionStartOffset(Document expandedDoc, int expandedOffset);
+    public int getPrevMacroExpansionStartOffset(Document expandedDoc, int expandedOffset);
 }
