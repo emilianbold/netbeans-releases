@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.configurations;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -467,7 +466,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             currentFolder.addItem(new Item(path));
         } else if (element.equals(ITEM_NAME_ELEMENT)) {
             String path = currentFolder.getRootPath() + '/' + currentText;
-            if (path.startsWith("./")) {
+            if (path.startsWith("./")) { // NOI18N
                 path = path.substring(2);
             }
             path = getString(adjustOffset(path));

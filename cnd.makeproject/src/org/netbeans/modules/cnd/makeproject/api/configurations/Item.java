@@ -204,11 +204,11 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             boolean nameWithoutExtension = true;
             Object o = evt.getSource();
             if (o instanceof DataObject) {
-                String nodeName = ((DataObject)o).getName();
-                FileObject fo = ((DataObject)o).getPrimaryFile();
+                String nodeName = ((DataObject) o).getName();
+                FileObject fo = ((DataObject) o).getPrimaryFile();
                 if (fo != null) {
                     String fileName = fo.getNameExt();
-                    if (nodeName.equals(fileName)){
+                    if (nodeName.equals(fileName)) {
                         nameWithoutExtension = false;
                     }
 
@@ -586,9 +586,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     public String toString() {
         return path;
     }
-
     private static final SpiAccessor SPI_ACCESSOR = new SpiAccessor();
+
     private static final class SpiAccessor {
+
         private UserOptionsProvider provider;
 
         private synchronized UserOptionsProvider getProvider() {
@@ -599,7 +600,6 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         }
 
         private SpiAccessor() {
-            
         }
 
         private List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, BasicCompiler compiler, MakeConfiguration makeConfiguration) {
@@ -617,6 +617,5 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                 return macros;
             }
         }
-       
     }
 }

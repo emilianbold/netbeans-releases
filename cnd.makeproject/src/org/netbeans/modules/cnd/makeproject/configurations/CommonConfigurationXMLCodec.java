@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  * Change History:
  * V55 - NB 7.0
  *   DISK_FOLDER_ELEMENT
+ *   ITEM_NAME_ELEMENT
  * V54 - NB 7.0
  *   Qt settings are persisted:
  *   QT_ELEMENT
@@ -474,8 +475,7 @@ public abstract class CommonConfigurationXMLCodec
         for (int i = 0; i < subfolders.length; i++) {
             if (subfolders[i].isDiskFolder()) {
                 writeDiskFolder(xes, subfolders[i]);
-            }
-            else {
+            } else {
                 writeLogicalFolder(xes, subfolders[i]);
             }
         }
@@ -486,6 +486,7 @@ public abstract class CommonConfigurationXMLCodec
         }
         xes.elementClose(LOGICAL_FOLDER_ELEMENT);
     }
+
     private void writeDiskFolder(XMLEncoderStream xes, Folder folder) {
         if (folder.getRoot() != null) {
             xes.elementOpen(DISK_FOLDER_ELEMENT,
@@ -493,8 +494,7 @@ public abstract class CommonConfigurationXMLCodec
                         new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
                         new AttrValuePair(ROOT_ATTR, "" + folder.getRoot()), // NOI18N
                     });
-        }
-        else {
+        } else {
             xes.elementOpen(DISK_FOLDER_ELEMENT,
                     new AttrValuePair[]{
                         new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N

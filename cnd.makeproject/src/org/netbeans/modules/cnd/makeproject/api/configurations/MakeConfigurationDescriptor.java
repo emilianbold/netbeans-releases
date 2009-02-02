@@ -107,7 +107,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     private boolean modified = false;
     private Folder externalFileItems = null;
     private Folder rootFolder = null;
-    private HashMap<String,Item> projectItems = null;
+    private HashMap<String, Item> projectItems = null;
     private final List<String> sourceRoots = new ArrayList<String>();
     private final Set<ChangeListener> projectItemsChangeListeners = new HashSet<ChangeListener>();
     private NativeProject nativeProject = null;
@@ -119,7 +119,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         super();
         this.baseDir = baseDir;
         rootFolder = new Folder(this, null, "root", "root", true); // NOI18N
-        projectItems = new HashMap<String,Item>();
+        projectItems = new HashMap<String, Item>();
         setModified(true);
         ToolsPanel.addCompilerSetModifiedListener(this);
     }
@@ -180,18 +180,18 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         setModified(true);
     }
 
-    public void setInitTask(Task task){
+    public void setInitTask(Task task) {
         initTask = task;
     }
-    
-    /*package-local*/ synchronized void waitInitTask(){
-        if (initTask == null){
+
+    /*package-local*/ synchronized void waitInitTask() {
+        if (initTask == null) {
             return;
         }
         initTask.waitFinished();
         initTask = null;
     }
-    
+
     public void initLogicalFolders(Iterator<SourceFolderInfo> sourceFileFolders, boolean createLogicalFolders, Iterator<String> importantItems) {
         if (createLogicalFolders) {
             rootFolder.addNewFolder(SOURCE_FILES_FOLDER, getString("SourceFilesTxt"), true);
@@ -270,11 +270,11 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         this.baseDir = baseDir;
     }
 
-    public HashMap<String,Item> getProjectItemsMap() {
+    public HashMap<String, Item> getProjectItemsMap() {
         return projectItems;
     }
 
-    public void setProjectItemsMap(HashMap<String,Item> projectItems) {
+    public void setProjectItemsMap(HashMap<String, Item> projectItems) {
         this.projectItems = projectItems;
     }
 
@@ -367,7 +367,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
     public Item findExternalItemByPath(String path) {
         // Try first as-is
-        if (externalFileItems == null){
+        if (externalFileItems == null) {
             return null;
         }
         path = FilePathAdaptor.normalize(path);
@@ -513,9 +513,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
      * @param needAdd list of needed extensions of header files.
      */
     public void addAdditionalHeaderExtensions(Collection<String> needAdd) {
-        ((MakeProject)getProject()).addAdditionalHeaderExtensions(needAdd);
+        ((MakeProject) getProject()).addAdditionalHeaderExtensions(needAdd);
     }
-    
+
     private class SaveRunnable implements Runnable {
 
         public boolean ret = false;
@@ -631,32 +631,31 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             if (nodeList != null && nodeList.getLength() > 0) {
                 // Node already there
                 Node node = nodeList.item(0);
-                node.setTextContent(((MakeProject)getProject()).getSourceEncoding());
-            }
-            else {
+                node.setTextContent(((MakeProject) getProject()).getSourceEncoding());
+            } else {
                 // Create node
                 Element nativeProjectType = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.SOURCE_ENCODING_TAG); // NOI18N
-                nativeProjectType.appendChild(doc.createTextNode(((MakeProject)getProject()).getSourceEncoding()));
+                nativeProjectType.appendChild(doc.createTextNode(((MakeProject) getProject()).getSourceEncoding()));
                 data.appendChild(nativeProjectType);
             }
             helper.putPrimaryConfigurationData(data, true);
-            
+
             ProjectManager.getDefault().saveProject(project);
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }
     }
 
-    private void updateExtensionList(){
+    private void updateExtensionList() {
         Set<String> h = MakeProject.createExtensionSet();
         Set<String> c = MakeProject.createExtensionSet();
         Set<String> cpp = MakeProject.createExtensionSet();
-        for(Item item : getProjectItems()) {
+        for (Item item : getProjectItems()) {
             String path = item.getPath();
             String ext = FileUtil.getExtension(path);
-            if (ext.length()>0) {
+            if (ext.length() > 0) {
                 if (!h.contains(ext) && !c.contains(ext) && !cpp.contains(ext)) {
-                    if (MIMEExtensions.isRegistered(MIMENames.HEADER_MIME_TYPE, ext)){
+                    if (MIMEExtensions.isRegistered(MIMENames.HEADER_MIME_TYPE, ext)) {
                         h.add(ext);
                     } else if (MIMEExtensions.isRegistered(MIMENames.C_MIME_TYPE, ext)) {
                         c.add(ext);
@@ -668,7 +667,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
         ((MakeProject) getProject()).updateExtensions(c, cpp, h);
     }
-    
+
     /**
      * Returns project locations (rel or abs) or all subprojects in all configurations.
      */
@@ -697,9 +696,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
         return subProjects;
     }
-    
+
     public void addSourceRootRaw(String path) {
-        synchronized(sourceRoots) {
+        synchronized (sourceRoots) {
             sourceRoots.add(path);
         }
     }
@@ -722,57 +721,57 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         ArrayList<String> toBeRemoved = new ArrayList<String>();
 
         //if (IpeUtils.isPathAbsolute(relPath) || relPath.startsWith("..") || relPath.startsWith(".")) { // NOI18N
-            synchronized (sourceRoots) {
-                if (canonicalPath != null) {
-                    int canonicalPathLength = canonicalPath.length();
-                    for (String sourceRoot : sourceRoots) {
-                        String absSourceRoot = IpeUtils.toAbsolutePath(getBaseDir(), sourceRoot);
-                        String canonicalSourceRoot = null;
-                        try {
-                            canonicalSourceRoot = new File(absSourceRoot).getCanonicalPath();
-                        } catch (IOException ioe) {
-                            canonicalSourceRoot = null;
+        synchronized (sourceRoots) {
+            if (canonicalPath != null) {
+                int canonicalPathLength = canonicalPath.length();
+                for (String sourceRoot : sourceRoots) {
+                    String absSourceRoot = IpeUtils.toAbsolutePath(getBaseDir(), sourceRoot);
+                    String canonicalSourceRoot = null;
+                    try {
+                        canonicalSourceRoot = new File(absSourceRoot).getCanonicalPath();
+                    } catch (IOException ioe) {
+                        canonicalSourceRoot = null;
+                    }
+                    if (canonicalSourceRoot != null) {
+                        int canonicalSourceRootLength = canonicalSourceRoot.length();
+                        if (canonicalSourceRoot.equals(canonicalPath)) {
+                            // Identical - don't add
+                            addPath = false;
+                            break;
                         }
-                        if (canonicalSourceRoot != null) {
-                            int canonicalSourceRootLength = canonicalSourceRoot.length();
-                            if (canonicalSourceRoot.equals(canonicalPath)) {
-                                // Identical - don't add
-                                addPath = false;
-                                break;
-                            }
-                            if (canonicalSourceRoot.startsWith(canonicalPath) && canonicalSourceRoot.charAt(canonicalPathLength) == File.separatorChar) {
-                                // Existing root sub dir of new path - remove existing path
-                                toBeRemoved.add(sourceRoot);
-                                continue;
-                            }
-                            if (canonicalPath.startsWith(canonicalSourceRoot) && canonicalPath.charAt(canonicalSourceRootLength) == File.separatorChar) {
-                                // Sub dir of existing root - don't add
-                                addPath = false;
-                                break;
-                            }
+                        if (canonicalSourceRoot.startsWith(canonicalPath) && canonicalSourceRoot.charAt(canonicalPathLength) == File.separatorChar) {
+                            // Existing root sub dir of new path - remove existing path
+                            toBeRemoved.add(sourceRoot);
+                            continue;
+                        }
+                        if (canonicalPath.startsWith(canonicalSourceRoot) && canonicalPath.charAt(canonicalSourceRootLength) == File.separatorChar) {
+                            // Sub dir of existing root - don't add
+                            addPath = false;
+                            break;
                         }
                     }
-                }
-                if (toBeRemoved.size() > 0) {
-                    for (String toRemove : toBeRemoved) {
-                        sourceRoots.remove(toRemove);
-                    }
-                }
-                if (addPath) {
-                    String usePath;
-                    if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
-                        usePath = FilePathAdaptor.normalize(IpeUtils.toAbsoluteOrRelativePath(getBaseDir(), path));
-                    } else if (PathPanel.getMode() == PathPanel.REL) {
-                        usePath = relPath;
-                    } else {
-                        usePath = absPath;
-                    }
-                    
-                    sourceRoots.add(usePath);
-                    setModified();
                 }
             }
-        //}
+            if (toBeRemoved.size() > 0) {
+                for (String toRemove : toBeRemoved) {
+                    sourceRoots.remove(toRemove);
+                }
+            }
+            if (addPath) {
+                String usePath;
+                if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+                    usePath = FilePathAdaptor.normalize(IpeUtils.toAbsoluteOrRelativePath(getBaseDir(), path));
+                } else if (PathPanel.getMode() == PathPanel.REL) {
+                    usePath = relPath;
+                } else {
+                    usePath = absPath;
+                }
+
+                sourceRoots.add(usePath);
+                setModified();
+            }
+        }
+    //}
     }
 
     /*
@@ -781,7 +780,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     private List<String> getSourceRootsRaw() {
         return sourceRoots;
     }
-    
+
     public void setSourceRoots(List<String> list) {
         synchronized (sourceRoots) {
             sourceRoots.clear();
@@ -997,7 +996,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 }
             } else {
                 String filePath;
-                 if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+                if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
                     filePath = IpeUtils.toAbsoluteOrRelativePath(baseDir, files[i].getPath());
                 } else if (PathPanel.getMode() == PathPanel.REL) {
                     filePath = IpeUtils.toRelativePath(baseDir, files[i].getPath());
@@ -1014,11 +1013,11 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             }
         }
     }
-    
+
     public boolean okToChange() {
         int previousVersion = getVersion();
         int currentVersion = CommonConfigurationXMLCodec.CURRENT_VERSION;
-        if (previousVersion < currentVersion) {                                           
+        if (previousVersion < currentVersion) {
             String txt = getString("UPGRADE_TXT");
             NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt, getString("UPGRADE_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION); // NOI18N
             if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
