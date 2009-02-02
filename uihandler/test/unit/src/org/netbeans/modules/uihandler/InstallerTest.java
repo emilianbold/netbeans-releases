@@ -49,7 +49,6 @@ import java.lang.reflect.InvocationTargetException;
 import javax.swing.JButton;
 import javax.xml.parsers.ParserConfigurationException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -482,6 +481,13 @@ public class InstallerTest extends NbTestCase {
         assertEquals("Throwable at org.netbeans.modules.uihandler.InstallerTest.testCreateMessage", message);
         message = Installer.createMessage(new Error("PROBLEM"));
         assertEquals("Error: PROBLEM", message);
+    }
+
+    public void testCreateMessageIssue157715(){
+        Exception rootExc = new NullPointerException("root");
+        IllegalStateException ise = new IllegalStateException("ae", rootExc);
+        String message = Installer.createMessage(ise);
+        assertEquals("use nested exception", "NullPointerException: root", message);
     }
 
     public void testDontSubmitTwiceIssue128306(){

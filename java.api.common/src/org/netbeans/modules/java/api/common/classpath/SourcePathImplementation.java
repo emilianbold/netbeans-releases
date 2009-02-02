@@ -222,7 +222,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                     }
                     result.add(new PRI());
                 }
-                // adds build/generated/wsclient and build/generated/wsimport to resources to be available for code completion
+                // adds build/generated/wsclient to resources to be available for code completion
                 try {
                     String buildDir = evaluator.getProperty(BUILD_DIR);
                     if (buildDir!=null) {
@@ -234,25 +234,6 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                             url = new URL (url.toExternalForm()+'/');   //NOI18N
                         }
                         result.add(ClassPathSupport.createResource(url));
-                        // generated/wsimport/client
-                        f = new File (projectHelper.resolveFile(buildDir),"generated/wsimport/client"); //NOI18N
-                        url = f.toURI().toURL();
-                        if (!f.exists()) {  //NOI18N
-                            assert !url.toExternalForm().endsWith("/");  //NOI18N
-                            url = new URL (url.toExternalForm()+'/');   //NOI18N
-                        }
-                        result.add(ClassPathSupport.createResource(url));
-
-                        // generated/wsimport/service
-                        if (canHaveWebServices) {
-                            f = new File (projectHelper.resolveFile(buildDir),"generated/wsimport/service"); //NOI18N
-                            url = f.toURI().toURL();
-                            if (!f.exists()) {  //NOI18N
-                                assert !url.toExternalForm().endsWith("/");  //NOI18N
-                                url = new URL (url.toExternalForm()+'/');   //NOI18N
-                            }
-                            result.add(ClassPathSupport.createResource(url));
-                        }
 
                         // generated/addons/<subDirs>
                         result.addAll(getGeneratedSrcRoots(buildDir,

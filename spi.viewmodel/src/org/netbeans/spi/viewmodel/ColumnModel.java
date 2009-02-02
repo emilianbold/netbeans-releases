@@ -42,7 +42,10 @@
 package org.netbeans.spi.viewmodel;
 
 import java.beans.PropertyEditor;
-import javax.swing.table.TableCellEditor;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import javax.swing.table.TableCellRenderer;
 
 
@@ -260,4 +263,5 @@ public abstract class ColumnModel implements Model {
 //    public TableCellRenderer getTableCellRenderer () {
 //        return null;
 //    }
+    
 }

@@ -46,6 +46,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.*;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
@@ -119,12 +120,16 @@ public final class APTMacroMapSnapshot {
     //This is a single instance of a class to indicate that macro is undefined,
     //not a child of APTMacro to track errors more easily
     public static final APTMacro UNDEFINED_MACRO = new UndefinedMacro();
-    private static class UndefinedMacro implements APTMacro {
+    private static final class UndefinedMacro implements APTMacro {
         @Override
         public String toString() {
             return "Macro undefined"; // NOI18N
         }
 
+        public APTFile getFile() {
+            return null;
+        }
+        
         public Kind getKind() {
             return Kind.USER_SPECIFIED;
         }

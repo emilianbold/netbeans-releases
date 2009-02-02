@@ -93,7 +93,7 @@ Microsystems, Inc. All Rights Reserved.
                                          soa(soa),
                                          ruby(ruby),                                       
                                          php(php), 
-                                         enterprise(javaee), identity(javaee), xml(javaee), visualweb(javaee), groovy(javaee),
+                                         enterprise(javaee), identity(javaee), xml(javaee), groovy(javaee),
                                          webcommon(webcommon),
                                          ergonomics(ergonomics),
                                          ide(baseide), nb6.0-etc(baseide), platform(baseide), gsf(baseide)"/>        

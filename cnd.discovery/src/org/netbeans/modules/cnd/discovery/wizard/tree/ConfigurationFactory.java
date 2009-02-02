@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.discovery.wizard.tree;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -190,25 +191,88 @@ public class ConfigurationFactory {
     public static void consolidateFile(ProjectConfigurationImpl project){
         FolderConfigurationImpl root = (FolderConfigurationImpl)project.getRoot();
         consolidateFile(root);
-        project.setUserInludePaths(null);
-        project.setUserMacros(null);
+        project.setUserInludePaths(root.getUserInludePaths(false));
+        project.setUserMacros(root.getUserMacros(false));
     }
     
     private static void consolidateFile(FolderConfigurationImpl folder){
+        Set<String> commonFoldersIncludes = new HashSet<String>();
+        Map<String,String> commonFoldersMacros = new HashMap<String,String>();
+        boolean haveSubFolders = false;
         for(FolderConfiguration f : folder.getFolders()){
-            FolderConfigurationImpl sub = (FolderConfigurationImpl)f;
-            consolidateFile(sub);
+            FolderConfigurationImpl subFolder = (FolderConfigurationImpl) f;
+            consolidateFile(subFolder);
+            if (!haveSubFolders) {
+                commonFoldersIncludes.addAll(subFolder.getUserInludePaths(false));
+                commonFoldersMacros.putAll(subFolder.getUserMacros(false));
+                haveSubFolders = true;
+            } else {
+                if (commonFoldersIncludes.size() > 0) {
+                    commonFoldersIncludes.retainAll(subFolder.getUserInludePaths(false));
+                }
+                if (commonFoldersMacros.size() > 0) {
+                    Set<String> intersection = commonFoldersMacros.keySet();
+                    intersection.retainAll(subFolder.getUserMacros(false).keySet());
+                    Map<String,String> newcommonFoldersMacros = new HashMap<String,String>();
+                    for(String key : intersection){
+                        String value1 = commonFoldersMacros.get(key);
+                        String value2 = subFolder.getUserMacros(false).get(key);
+                        if (value1 == null && value1 == null || value1 != null && value1.equals(value2)){
+                            newcommonFoldersMacros.put(key, value1);
+                        }
+                    }
+                    commonFoldersMacros = newcommonFoldersMacros;
+                }
+            }
+        }
+        Set<String> commonFilesIncludes = new HashSet<String>();
+        Map<String,String> commonFilesMacros = new HashMap<String,String>();
+        boolean first = true;
+        if (haveSubFolders) {
+            commonFilesIncludes = new HashSet<String>(commonFoldersIncludes);
+            commonFilesMacros = new HashMap<String,String>(commonFoldersMacros);
+            first = false;
         }
         for(FileConfiguration f : folder.getFiles()){
             FileConfigurationImpl file =((FileConfigurationImpl)f);
             file.setOverrideIncludes(false);
             file.setOverrideMacros(false);
+            if (first) {
+                commonFilesIncludes.addAll(file.getUserInludePaths());
+                commonFilesMacros.putAll(file.getUserMacros());
+                first = false;
+            } else {
+                if (commonFilesIncludes.size() > 0) {
+                    commonFilesIncludes.retainAll(file.getUserInludePaths());
+                }
+                if (commonFilesMacros.size() > 0) {
+                    Set<String> intersection = commonFilesMacros.keySet();
+                    intersection.retainAll(file.getUserMacros().keySet());
+                    Map<String,String> newCommonMacros = new HashMap<String,String>();
+                    for(String key : intersection){
+                        String value1 = commonFilesMacros.get(key);
+                        String value2 = file.getUserMacros().get(key);
+                        if (value1 == null && value1 == null || value1 != null && value1.equals(value2)){
+                            newCommonMacros.put(key, value1);
+                        }
+                    }
+                    commonFilesMacros = newCommonMacros;
+                }
+            }
             file.setUserInludePaths(file.getUserInludePaths());
             file.setUserMacros(file.getUserMacros());
         }
         folder.setOverrideIncludes(false);
         folder.setOverrideMacros(false);
-        folder.setUserInludePaths(null);
-        folder.setUserMacros(null);
+        if (commonFilesIncludes.size() > 0) {
+            folder.setUserInludePaths(commonFilesIncludes);
+        } else {
+            folder.setUserInludePaths(null);
+        }
+        if (commonFilesMacros.size() > 0) {
+            folder.setUserMacros(commonFilesMacros);
+        } else {
+            folder.setUserMacros(null);
+        }
     }
 }

@@ -40,11 +40,13 @@
  */
 package org.netbeans.modules.groovy.editor.api.completion;
 
+import java.beans.PropertyChangeEvent;
 import javax.lang.model.element.ElementKind;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaMethod;
 import groovy.lang.MetaProperty;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -124,12 +126,15 @@ import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 
 public class CompletionHandler implements CodeCompletionHandler {
 
     private static final Logger LOG = Logger.getLogger(CompletionHandler.class.getName());
 
-    private final List<String> dfltImports = new ArrayList<String>();
+    private final List<String> defaultImports = new ArrayList<String>();
+
+    private final PropertyChangeListener docListener;
 
     private int anchor;
 
@@ -137,7 +142,7 @@ public class CompletionHandler implements CodeCompletionHandler {
 
     private String groovyJavaDocBase = null;
 
-    private String gapiDocBase = null;
+    private String groovyApiDocBase = null;
 
     // FIXME this should be local variable
     private Set<GroovyKeyword> keywords;
@@ -153,17 +158,39 @@ public class CompletionHandler implements CodeCompletionHandler {
         }
 
         GroovySettings groovySettings = GroovySettings.getInstance();
-        // FIXME register listener
-        String docroot = groovySettings.getGroovyDoc() + "/"; // NOI18N
+        docListener = new PropertyChangeListener() {
 
-        groovyJavaDocBase = directoryNameToUrl(docroot + "groovy-jdk/"); // NOI18N
-        gapiDocBase = directoryNameToUrl(docroot + "gapi/"); // NOI18N
+            public void propertyChange(PropertyChangeEvent evt) {
+                synchronized (CompletionHandler.this) {
+                    groovyJavaDocBase = null;
+                    groovyApiDocBase = null;
+                }
+            }
+        };
+        groovySettings.addPropertyChangeListener(WeakListeners.propertyChange(docListener, this));
 
-        LOG.log(Level.FINEST, "GDK Doc path: {0}", groovyJavaDocBase);
-        LOG.log(Level.FINEST, "GAPI Doc path: {0}", gapiDocBase);
-
-        Collections.addAll(dfltImports, "java.io", "java.lang", "java.net", // NOI18N
+        Collections.addAll(defaultImports, "java.io", "java.lang", "java.net", // NOI18N
                 "java.util", "groovy.util", "groovy.lang"); // NOI18N
+    }
+
+    private String getGroovyJavadocBase() {
+        synchronized (this) {
+            if (groovyJavaDocBase == null) {
+                String docroot = GroovySettings.getInstance().getGroovyDoc() + "/"; // NOI18N
+                groovyJavaDocBase = directoryNameToUrl(docroot + "groovy-jdk/"); // NOI18N
+            }
+            return groovyJavaDocBase;
+        }
+    }
+
+    private String getGroovyApiDocBase() {
+        synchronized (this) {
+            if (groovyApiDocBase == null) {
+                String docroot = GroovySettings.getInstance().getGroovyDoc() + "/"; // NOI18N
+                groovyApiDocBase = directoryNameToUrl(docroot + "gapi/"); // NOI18N
+            }
+            return groovyApiDocBase;
+        }
     }
 
     private static String directoryNameToUrl(String dirname) {
@@ -1919,7 +1946,7 @@ public class CompletionHandler implements CodeCompletionHandler {
         }
 
 
-        List<String> defaultImports = new ArrayList<String>();
+        List<String> localDefaultImports = new ArrayList<String>();
 
         // Are there any manually imported types?
 
@@ -1954,7 +1981,7 @@ public class CompletionHandler implements CodeCompletionHandler {
                     wildcardImport = wildcardImport.substring(0, wildcardImport.length() - 1);
                 }
 
-                defaultImports.add(wildcardImport);
+                localDefaultImports.add(wildcardImport);
 
             }
 
@@ -1965,12 +1992,12 @@ public class CompletionHandler implements CodeCompletionHandler {
         // First, create a list of default JDK packages. These are reused,
         // so they are defined elsewhere.
 
-        defaultImports.addAll(dfltImports);
+        localDefaultImports.addAll(defaultImports);
 
         // adding types from default import, optionally filtered by
         // prefix
 
-        for (String singlePackage : defaultImports) {
+        for (String singlePackage : localDefaultImports) {
             List<TypeHolder> typeList;
 
             typeList = getElementListForPackageAsTypeHolder(javaSource, singlePackage, currentPackage);
@@ -2341,9 +2368,9 @@ public class CompletionHandler implements CodeCompletionHandler {
         if (request.ctx.before1 != null && request.ctx.before1.text().toString().equals("new") && request.prefix.length() > 0) {
             LOG.log(Level.FINEST, "This looks like a constructor ...");
             // look for all imported types starting with prefix, which have public constructors
-            final List<String> defaultImports = new ArrayList<String>();
+            final List<String> localDefaultImports = new ArrayList<String>();
 
-            defaultImports.addAll(dfltImports);
+            localDefaultImports.addAll(defaultImports);
 
             final JavaSource javaSource = getJavaSourceFromRequest(request);
 
@@ -2353,7 +2380,7 @@ public class CompletionHandler implements CodeCompletionHandler {
                     javaSource.runUserActionTask(new Task<CompilationController>() {
                         public void run(CompilationController info) {
 
-                            for (String singlePackage : defaultImports) {
+                            for (String singlePackage : localDefaultImports) {
                                 List<? extends javax.lang.model.element.Element> typelist;
 
                                 typelist = getElementListForPackage(info.getElements(), javaSource, singlePackage);
@@ -2777,10 +2804,11 @@ public class CompletionHandler implements CodeCompletionHandler {
 
             String base = "";
 
+            String javadoc = getGroovyJavadocBase();
             if (jdkJavaDocBase != null && ame.isGDK() == false) {
                 base = jdkJavaDocBase;
-            } else if (groovyJavaDocBase != null && ame.isGDK() == true) {
-                base = groovyJavaDocBase;
+            } else if (javadoc != null && ame.isGDK() == true) {
+                base = javadoc;
             } else {
                 LOG.log(Level.FINEST, "Neither JDK nor GDK or error locating: {0}", ame.isGDK());
                 return error;
@@ -2834,8 +2862,9 @@ public class CompletionHandler implements CodeCompletionHandler {
                 URL url;
                 File testFile;
 
+                String apiDoc = getGroovyApiDocBase();
                 try {
-                    url = new URL(gapiDocBase + classNamePath);
+                    url = new URL(apiDoc + classNamePath);
                     testFile = new File(url.toURI());
                 } catch (MalformedURLException ex) {
                     LOG.log(Level.FINEST, "MalformedURLException: {0}", ex);
@@ -2846,7 +2875,7 @@ public class CompletionHandler implements CodeCompletionHandler {
                 }
 
                 if (testFile != null && testFile.exists()) {
-                    base = gapiDocBase;
+                    base = apiDoc;
                 }
             }
 
