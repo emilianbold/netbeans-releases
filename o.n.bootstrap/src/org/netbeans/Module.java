@@ -216,7 +216,7 @@ public abstract class Module extends ModuleInfo {
         return codeNameRelease;
     }
     
-    public String[] getProvides() {
+    public @Override String[] getProvides() {
         return provides;
     }
     /** Test whether the module provides a given token or not. 
@@ -477,7 +477,7 @@ public abstract class Module extends ModuleInfo {
     public abstract void reload() throws IOException;
     
     // impl of ModuleInfo method
-    public ClassLoader getClassLoader() throws IllegalArgumentException {
+    public @Override ClassLoader getClassLoader() throws IllegalArgumentException {
         if (!enabled) {
             throw new IllegalArgumentException("Not enabled: " + codeNameBase); // NOI18N
         }
@@ -580,7 +580,7 @@ public abstract class Module extends ModuleInfo {
     }
     
     /** String representation for debugging. */
-    public String toString() {
+    public @Override String toString() {
         String s = "Module:" + getCodeNameBase(); // NOI18N
         if (!isValid()) s += "[invalid]"; // NOI18N
         return s;
@@ -600,7 +600,7 @@ public abstract class Module extends ModuleInfo {
             this.pkg = pkg;
             this.recursive = recursive;
         }
-        public String toString() {
+        public @Override String toString() {
             return "PackageExport[" + pkg + (recursive ? "**/" : "") + "]"; // NOI18N
         }
     }

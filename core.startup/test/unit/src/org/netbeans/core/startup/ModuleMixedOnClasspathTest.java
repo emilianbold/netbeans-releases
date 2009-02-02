@@ -40,27 +40,17 @@
 package org.netbeans.core.startup;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-import org.netbeans.Events;
-import org.netbeans.InvalidException;
-import org.netbeans.JarClassLoader;
 import org.netbeans.Module;
-import org.netbeans.ModuleFactory;
 import org.netbeans.ModuleManager;
 import org.netbeans.core.startup.SetupHid.FakeEvents;
 import org.netbeans.core.startup.SetupHid.FakeModuleInstaller;
-import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
-import org.openide.util.Union2;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
