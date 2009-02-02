@@ -167,6 +167,7 @@ public class LineBreakpointsHitCountTest extends JellyTestCase{
             org.openide.nodes.Node.Property property = (org.openide.nodes.Node.Property) treeTableOperator.getValueAt(row, 2);
             assertEquals("44", property.getValue());
 /* THIS PART IS ABOUT TO BE REVIEWED */
+
             /*
             new ContinueAction().perform();
 
@@ -204,6 +205,7 @@ public class LineBreakpointsHitCountTest extends JellyTestCase{
             property = (org.openide.nodes.Node.Property) treeTableOperator.getValueAt(row, 2);
             assertEquals("47", property.getValue());
             */
+            
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
