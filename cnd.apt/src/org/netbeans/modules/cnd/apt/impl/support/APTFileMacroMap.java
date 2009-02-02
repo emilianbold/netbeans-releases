@@ -45,6 +45,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.*;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
@@ -113,9 +114,9 @@ public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
     }
 
     @Override
-    public void undef(APTToken name) {
+    public void undef(APTFile file, APTToken name) {
         if (false && sysMacroMap != null && sysMacroMap.isDefined(name)) { // disable for IZ#124635
-            // TODO: report error about undefined system macros
+            // TODO: report warning about undefined system macros
         }
         super.undef(name);
         macroCache.remove(name.getText());

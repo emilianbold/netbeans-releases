@@ -128,7 +128,7 @@ public abstract class APTAbstractWalker extends APTWalker {
     
     protected void onUndef(APT apt) {
         APTUndefine undef = (APTUndefine)apt;
-        getMacroMap().undef(undef.getName());
+        getMacroMap().undef(getFile(), undef.getName());
     }
     
     protected boolean onIf(APT apt) {
