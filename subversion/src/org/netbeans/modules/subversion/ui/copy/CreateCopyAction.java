@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.subversion.ui.copy;
 
+import java.awt.EventQueue;
 import java.io.File;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.RepositoryFile;
@@ -51,12 +52,16 @@ import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.omg.PortableServer.RequestProcessingPolicy;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -121,19 +126,60 @@ public class CreateCopyAction extends ContextAction {
             return;
         }                   
         final RepositoryFile repositoryFile = new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.HEAD);        
-        
+
+        final RequestProcessor rp = createRequestProcessor(nodes);
         final boolean hasChanges = files.length > 0;
         final CreateCopy createCopy = new CreateCopy(repositoryFile, interestingFile, hasChanges);
-        
-        if(createCopy.showDialog()) {
-            // XXX don't close dialog if error occures!
-            ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this,  nodes) {
-                public void perform() {
-                    performCopy(createCopy, this, roots);
+
+        performCopy(createCopy, rp, nodes, roots);
+    }
+
+    private void performCopy(final CreateCopy createCopy, final RequestProcessor rp, final Node[] nodes, final File[] roots) {
+        rp.post(new Runnable() {
+            public void run() {
+                if (createCopy.showDialog()) {
+                    String errorText = validateTargetPath(createCopy);
+                    if (errorText == null) {
+                        ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(CreateCopyAction.this, nodes) {
+                            public void perform() {
+                                performCopy(createCopy, this, roots);
+                            }
+                        };
+                        support.start(createRequestProcessor(nodes));
+                    } else {
+                        SvnClientExceptionHandler.annotate(errorText);
+                        createCopy.setErrorText(errorText);
+                        EventQueue.invokeLater(new Runnable() {
+                            public void run() {
+                                performCopy(createCopy, rp, nodes, roots);
+                            }
+                        });
+                    }
                 }
-            };
-            support.start(createRequestProcessor(nodes));
+            }
+        });
+    }
+
+    private String validateTargetPath(CreateCopy createCopy) {
+        String errorText = null;
+        try {
+            RepositoryFile toRepositoryFile = createCopy.getToRepositoryFile();
+            SvnClient client = Subversion.getInstance().getClient(toRepositoryFile.getRepositoryUrl());
+            ISVNInfo info = null;
+            try {
+                info = client.getInfo(toRepositoryFile.getFileUrl());
+            } catch (SVNClientException e) {
+                if (!SvnClientExceptionHandler.isWrongUrl(e.getMessage())) {
+                    throw e;
+                }
+            }
+            if (info != null) {
+                errorText = NbBundle.getMessage(CreateCopyAction.class, "MSG_CreateCopy_Target_Exists");     // NOI18N
+            }
+        } catch (SVNClientException ex) {
+            errorText = null;
         }
+        return errorText;
     }
 
     /**
@@ -146,7 +192,7 @@ public class CreateCopyAction extends ContextAction {
      */
     private void performCopy(CreateCopy createCopy, SvnProgressSupport support, File[] roots) {
         RepositoryFile toRepositoryFile = createCopy.getToRepositoryFile();                
-        
+
         try {                
             SvnClient client;
             try {
@@ -194,7 +240,7 @@ public class CreateCopyAction extends ContextAction {
 
             if(createCopy.isLocal()) {
                 if(roots.length == 1) {
-                    client.copy(new File[] {createCopy.getLocalFile()}, toRepositoryFile.getFileUrl(), createCopy.getMessage(), true, false);
+                    client.copy(new File[] {createCopy.getLocalFile()}, toRepositoryFile.getFileUrl(), createCopy.getMessage(), true, true);
                 } else {
                     // more roots => copying a multifile dataobject - see getActionRoots(ctx)
                     for (File root : roots) {
