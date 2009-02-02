@@ -41,9 +41,17 @@
 
 package org.netbeans.modules.php.editor;
 
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * @author Tor Norbye
@@ -69,6 +77,16 @@ public abstract class PHPTestBase extends CslTestBase {
     @Override
     protected String getPreferredMimeType() {
         return PHPLanguage.PHP_MIME_TYPE;
+    }
+
+     protected @Override Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib"))
+                //FileUtil.toFileObject(getDataFile("/testfiles/completion/lib"))
+            })
+        );
     }
     
     // Called via reflection from GsfUtilities. This is necessary because
