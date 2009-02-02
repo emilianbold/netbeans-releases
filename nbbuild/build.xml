@@ -1494,14 +1494,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </antcall>
   </target>
 
-  <target name="build-vw" depends="init" description="Build only the Visual Web modules.">
-    <delete file="netbeans/nb.cluster.visualweb.built" failonerror="false"/>
-    <antcall target="build-one-cluster">
-      <param name="one.cluster.name" value="nb.cluster.visualweb"/>
-      <param name="nb.cluster.visualweb-hasNoDependencies" value="true"/>
-    </antcall>
-  </target>
-  
     <target name="localtest" depends="bootstrap">
         <mkdir dir="build/test/unit/classes"/>
         <path id="test.cp">
@@ -1544,13 +1536,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <param name="allmodules" value="${modules.to.clean}"/>
     </antcall>
     <delete file="netbeans/${clean.cluster.name}.built" failonerror="false"/>
-  </target>
-
-
-  <target name="clean-vw" depends="init" description="Clean only Visual Web modules">
-    <antcall target="cleanall" inheritAll="false">
-      <param name="allmodules" value="${nb.cluster.visualweb}"/>
-    </antcall>
   </target>
 
 
@@ -1949,11 +1934,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       </jar>
       <zip basedir="${test.dist.dir}" destfile="build/testdist.zip"/>
   </target>      
-
-  <target name="commit-validation-vw" description="Run the Visual Web sanity tests">
-      <ant dir="../visualweb.kit/test" target="build-test-tools" inheritall="true"/>
-      <ant dir="../visualweb.kit/test" target="commit-validation" inheritall="false"/> 
-  </target>
 
   <target name="sigtests-init" depends="bootstrap">
     <taskdef name="resolvelist" classname="org.netbeans.nbbuild.ResolveList" classpath="nbantext.jar"/>
