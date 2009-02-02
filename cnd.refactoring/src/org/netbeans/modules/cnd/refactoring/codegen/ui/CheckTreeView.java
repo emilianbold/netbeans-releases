@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.refactoring.codegen.ui;
 
 import java.awt.Rectangle;
@@ -62,56 +61,57 @@ import org.openide.nodes.Node;
  *
  * @author Petr Hrebejk
  */
-public class CheckTreeView extends BeanTreeView  {
-    
+public class CheckTreeView extends BeanTreeView {
+
     private NodeTreeModel nodeTreeModel;
-    
+
     /** Creates a new instance of CheckTreeView */
     public CheckTreeView() {
-        
-        setFocusable( false );
-        
+
+        setFocusable(false);
+
         CheckListener l = new CheckListener();
-        tree.addMouseListener( l );
-        tree.addKeyListener( l );
+        tree.addMouseListener(l);
+        tree.addKeyListener(l);
 
         CheckRenderer check = new CheckRenderer();
-        tree.setCellRenderer( check );
+        tree.setCellRenderer(check);
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        
+
         tree.setShowsRootHandles(false);
-        
-        InputMap input = tree.getInputMap( JTree.WHEN_FOCUSED );
-        if( null != input )
-            input.remove( KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0) );
-        
-        setBorder( UIManager.getBorder("ScrollPane.border") ); // NOI18N
+
+        InputMap input = tree.getInputMap(JTree.WHEN_FOCUSED);
+        if (null != input) {
+            input.remove(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+        }
+
+        setBorder(UIManager.getBorder("ScrollPane.border")); // NOI18N
     }
-    
+
     @Override
     protected NodeTreeModel createModel() {
         nodeTreeModel = super.createModel();
         return nodeTreeModel;
     }
 
-    public void expandRow( int row ) {        
+    public void expandRow(int row) {
         tree.expandRow(row);
     }
-    
+
     public boolean getScrollsOnExpand() {
         return tree.getScrollsOnExpand();
     }
-    
-    public void setScrollsOnExpand( boolean scrolls ) {
-        tree.setScrollsOnExpand( scrolls );
+
+    public void setScrollsOnExpand(boolean scrolls) {
+        tree.setScrollsOnExpand(scrolls);
     }
-    
+
     @Override
     protected void showPath(TreePath path) {
         tree.expandPath(path);
         showPathWithoutExpansion(path);
     }
-    
+
     @Override
     protected void showSelection(TreePath[] treePaths) {
         tree.getSelectionModel().setSelectionPaths(treePaths);
@@ -120,48 +120,52 @@ public class CheckTreeView extends BeanTreeView  {
             showPathWithoutExpansion(treePaths[0]);
         }
     }
-    
+
     private void showPathWithoutExpansion(TreePath path) {
         Rectangle rect = tree.getPathBounds(path);
 
-        if (rect != null && getWidth() > 0 && getHeight() > 0 ) {
+        if (rect != null && getWidth() > 0 && getHeight() > 0) {
             tree.scrollRectToVisible(rect);
         }
     }
-    
+
     class CheckListener implements MouseListener, KeyListener {
 
         // MouseListener -------------------------------------------------------
-        
         public void mouseClicked(MouseEvent e) {
-            if( !e.isPopupTrigger() ) {
+            if (!e.isPopupTrigger()) {
                 TreePath path = tree.getPathForLocation(e.getPoint().x, e.getPoint().y);
-                toggle( path );            
+                toggle(path);
             }
         }
 
-        public void keyTyped(KeyEvent e) {}
+        public void keyTyped(KeyEvent e) {
+        }
 
-        public void keyReleased(KeyEvent e) {}
+        public void keyReleased(KeyEvent e) {
+        }
 
-        public void mouseEntered(MouseEvent e) {}
+        public void mouseEntered(MouseEvent e) {
+        }
 
-        public void mouseExited(MouseEvent e) {}
+        public void mouseExited(MouseEvent e) {
+        }
 
-        public void mousePressed(MouseEvent e) {}
+        public void mousePressed(MouseEvent e) {
+        }
 
-        public void mouseReleased(MouseEvent e) {}
+        public void mouseReleased(MouseEvent e) {
+        }
 
         // Key Listener --------------------------------------------------------
-        
         public void keyPressed(KeyEvent e) {
-            if (e.getKeyCode() == KeyEvent.VK_SPACE ) {
-                
-                if ( e.getSource() instanceof JTree ) {
+            if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+
+                if (e.getSource() instanceof JTree) {
                     JTree tree = (JTree) e.getSource();
                     TreePath path = tree.getSelectionPath();
 
-                    if ( toggle( path )) {
+                    if (toggle(path)) {
                         e.consume();
                     }
                 }
@@ -173,41 +177,42 @@ public class CheckTreeView extends BeanTreeView  {
                 e.consume();
             }
         }
-        
+
         // Private methods -----------------------------------------------------
-        
-        private boolean toggle( TreePath treePath ) {
-            
-            if( treePath == null )
+        private boolean toggle(TreePath treePath) {
+
+            if (treePath == null) {
                 return false;
-            
-            Node node = Visualizer.findNode( treePath.getLastPathComponent() );
-            if( node == null )
-                return false ;
+            }
+
+            Node node = Visualizer.findNode(treePath.getLastPathComponent());
+            if (node == null) {
+                return false;
+            }
 
             ElementNode.Description description = node.getLookup().lookup(ElementNode.Description.class);
-            if (description != null ) {
-                if( description.isSelectable()  ) {
-                    description.setSelected( !description.isSelected() );
+            if (description != null) {
+                if (description.isSelectable()) {
+                    description.setSelected(!description.isSelected());
                     return true;
                 } else {
                     boolean newState = !description.isSelected();
                     description.setSelected(newState);
-                    toggleChildren( description.getSubs(), newState );
+                    toggleChildren(description.getSubs(), newState);
                 }
             }
-            
+
             return false;
         }
-        
-        private void toggleChildren( List<ElementNode.Description> children, boolean newState ) {
-            if( null == children )
+
+        private void toggleChildren(List<ElementNode.Description> children, boolean newState) {
+            if (null == children) {
                 return;
-            for( ElementNode.Description d : children ) {
-                d.setSelected( newState );
-                toggleChildren( d.getSubs(), newState );
+            }
+            for (ElementNode.Description d : children) {
+                d.setSelected(newState);
+                toggleChildren(d.getSubs(), newState);
             }
         }
     }
-    
 }

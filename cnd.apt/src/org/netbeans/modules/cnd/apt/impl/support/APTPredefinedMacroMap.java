@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
@@ -103,15 +104,15 @@ public class APTPredefinedMacroMap implements APTMacroMap {
         APTUtils.LOG.log(Level.SEVERE, "setState is not supported", new IllegalAccessException()); // NOI18N
     }
 
-    public void define(APTToken name, List<APTToken> value, Kind macroType) {
+    public void define(APTFile file, APTToken name, List<APTToken> value, Kind macroType) {
         APTUtils.LOG.log(Level.SEVERE, "define is not supported", new IllegalAccessException()); // NOI18N
     }
 
-    public void define(APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
+    public void define(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
         APTUtils.LOG.log(Level.SEVERE, "define is not supported", new IllegalAccessException()); // NOI18N
     }
 
-    public void undef(APTToken name) {
+    public void undef(APTFile file, APTToken name) {
         APTUtils.LOG.log(Level.SEVERE, "undef is not supported", new IllegalAccessException()); // NOI18N
     }
    
@@ -134,11 +135,15 @@ public class APTPredefinedMacroMap implements APTMacroMap {
     }
 
     
-    private static class APTPredefinedMacroImpl implements APTMacro {   
+    private static final class APTPredefinedMacroImpl implements APTMacro {
         private APTToken macro;
         
         public APTPredefinedMacroImpl(APTToken macro) {
             this.macro =  macro;           
+        }
+
+        public APTFile getFile() {
+            return null;
         }
 
         public Kind getKind() {

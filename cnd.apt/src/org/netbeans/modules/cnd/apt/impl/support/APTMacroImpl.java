@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -57,14 +58,17 @@ import org.netbeans.modules.cnd.apt.utils.ListBasedTokenStream;
  * implementation of APTMacro
  * @author Vladimir Voskresensky
  */
-public class APTMacroImpl implements APTMacro {
+public final class APTMacroImpl implements APTMacro {
+    private final APTFile file;
     private final APTToken name;
     private final APTToken[] paramsArray;
     private final List<APTToken> body;
     private final Kind macroType;
 
-    public APTMacroImpl(APTToken name, Collection<APTToken> params, List<APTToken> body, Kind macroType) {
+    public APTMacroImpl(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> body, Kind macroType) {
         assert (name != null);
+        this.file = file;
+        assert file == null || macroType == Kind.DEFINED : "file info has only #defined macro " + file;
         this.name = name;
         //this.params = params;
         if (params != null) {
@@ -76,6 +80,10 @@ public class APTMacroImpl implements APTMacro {
         this.macroType = macroType;
     }
 
+    public APTFile getFile() {
+        return file;
+    }
+    
     public Kind getKind() {
         return macroType;
     }
