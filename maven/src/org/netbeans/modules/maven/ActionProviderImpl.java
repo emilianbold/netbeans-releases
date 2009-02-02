@@ -257,8 +257,15 @@ public class ActionProviderImpl implements ActionProvider {
                 RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById(RepositoryPreferences.LOCAL_REPO_ID);
                 if (info != null) {
                     List<Artifact> arts = new ArrayList<Artifact>();
-                    arts.add(project.getOriginalMavenProject().getArtifact());
-                    arts.addAll(project.getOriginalMavenProject().getDependencyArtifacts());
+                    Artifact prjArt = project.getOriginalMavenProject().getArtifact();
+                    if (prjArt != null) {
+                        arts.add(prjArt);
+                    }
+                    //#157572
+                    Set depArts = project.getOriginalMavenProject().getDependencyArtifacts();
+                    if (depArts != null) {
+                        arts.addAll(depArts);
+                    }
                     RepositoryIndexer.updateIndexWithArtifacts(info, arts);
                 }
             }
