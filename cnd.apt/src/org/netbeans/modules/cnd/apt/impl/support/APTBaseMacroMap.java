@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.structure.APTDefineNode;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
@@ -302,7 +303,6 @@ public abstract class APTBaseMacroMap {
         }
 
         public void popExpanding() {
-//            return null;
         }
 
         public boolean isExpanding(APTToken token) {
@@ -328,7 +328,7 @@ public abstract class APTBaseMacroMap {
         public void define(APTToken name, List<APTToken> value, Kind macroType) {
         }
 
-        public void undef(APTToken name) {
+        public void undef(APTFile file, APTToken name) {
         }
 
         public void setState(State state) {

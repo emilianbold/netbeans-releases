@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.apt.impl.support;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
@@ -109,7 +110,7 @@ public class APTSystemMacroMap extends APTBaseMacroMap implements APTMacroMap {
     }
 
     @Override
-    public void undef(APTToken name) {
+    public void undef(APTFile file, APTToken name) {
         throw new UnsupportedOperationException("Can not modify immutable System macro map"); // NOI18N
     }
 }
