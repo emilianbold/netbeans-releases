@@ -44,6 +44,7 @@ import java.awt.BorderLayout;
 import java.io.Serializable;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
+import org.netbeans.modules.cnd.model.tasks.OpenedEditors;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -102,6 +103,7 @@ public final class MacroExpansionTopComponent extends TopComponent {
         removeAll();
         add(panel, BorderLayout.CENTER);
         validate();
+        OpenedEditors.getDefault().fireStateChanged();
     }
 
     /**
