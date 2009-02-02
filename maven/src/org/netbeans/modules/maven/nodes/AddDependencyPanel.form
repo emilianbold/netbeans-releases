@@ -16,7 +16,7 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Component id="coordPanel" alignment="1" max="32767" attributes="0"/>
-          <Component id="tabPane" alignment="0" pref="434" max="32767" attributes="0"/>
+          <Component id="tabPane" alignment="0" pref="438" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -44,8 +44,8 @@
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="txtArtifactId" alignment="0" pref="337" max="32767" attributes="0"/>
-                      <Component id="txtGroupId" alignment="0" pref="337" max="32767" attributes="0"/>
+                      <Component id="txtArtifactId" alignment="0" pref="341" max="32767" attributes="0"/>
+                      <Component id="txtGroupId" alignment="0" pref="341" max="32767" attributes="0"/>
                       <Group type="102" alignment="1" attributes="0">
                           <Component id="txtVersion" pref="181" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
@@ -169,12 +169,12 @@
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="resultsPanel" pref="402" max="32767" attributes="0"/>
+                              <Component id="resultsPanel" pref="406" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="resultsLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="227" max="32767" attributes="0"/>
+                              <EmptySpace pref="231" max="32767" attributes="0"/>
                               <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
@@ -186,7 +186,7 @@
                                       <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
                                   </Group>
-                                  <Component id="searchField" pref="356" max="32767" attributes="0"/>
+                                  <Component id="searchField" pref="360" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -210,7 +210,7 @@
                           <Component id="resultsLabel" min="-2" max="-2" attributes="1"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="resultsPanel" pref="190" max="32767" attributes="2"/>
+                      <Component id="resultsPanel" pref="188" max="32767" attributes="2"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -309,7 +309,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="artifactPanel" alignment="0" pref="402" max="32767" attributes="0"/>
+                          <Component id="artifactPanel" alignment="0" pref="406" max="32767" attributes="0"/>
                           <Component id="artifactsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>

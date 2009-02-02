@@ -44,5 +44,6 @@ made subject to such option by the copyright holder.
     <taskdef name="nbdeploy" classname="org.netbeans.modules.j2ee.ant.Deploy"/>
     <taskdef name="nbundeploy" classname="org.netbeans.modules.j2ee.ant.Undeploy"/>
     <taskdef name="nbverify" classname="org.netbeans.modules.j2ee.ant.Verify"/>
+    <taskdef name="nbstartserver" classname="org.netbeans.modules.j2ee.ant.StartServer"/>
     <taskdef name="nbstartprofiledserver" classname="org.netbeans.modules.j2ee.ant.StartProfiledServer"/>
 </antlib>

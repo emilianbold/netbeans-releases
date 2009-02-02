@@ -113,7 +113,7 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     }
     
     public String name() {
-        return "GlassFish v3 Server AddInstanceIterator";  // NOI18N
+        return "GlassFish v3 Prelude Server AddInstanceIterator";  // NOI18N
     }
     
     public static void showInformation(final String msg,  final String title){

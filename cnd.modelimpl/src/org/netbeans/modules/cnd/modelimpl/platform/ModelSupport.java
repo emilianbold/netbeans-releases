@@ -637,7 +637,7 @@ public class ModelSupport implements PropertyChangeListener {
     private class ExternalUpdateListener extends FileChangeAdapter implements Runnable {
 
         private boolean isRunning;
-        private final Collection<FileObject> changedFileObjects = new HashSet<FileObject>();
+        private final Map<FileObject, Boolean> changedFileObjects = new HashMap<FileObject, Boolean>();
 
         /** FileChangeListener implementation. Fired when a file is changed. */
         public 
@@ -650,19 +650,35 @@ public class ModelSupport implements PropertyChangeListener {
             if (model != null) {
                 FileObject fo = fe.getFile();
                 if (isCOrCpp(fo)) {
-                    scheduleUpdate(fo);
+                    scheduleUpdate(fo, false);
                 }
             }
         }
 
-        private void scheduleUpdate(FileObject fo) {
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
+                System.err.printf("External updates: fileDataCreated %s\n", fe);
+            }
+            ModelImpl model = theModel;
+            if (model != null) {
+                FileObject fo = fe.getFile();
+                if (isCOrCpp(fo)) {
+                    scheduleUpdate(fo, true);
+                }
+            }
+        }
+
+        private void scheduleUpdate(FileObject fo, boolean isCreated) {
             ModelImpl model = theModel;
             if (model != null) {
                 synchronized (this) {
                     if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-                        System.err.printf("External updates: schedulling update for %s\n", fo);
+                        System.err.printf("External updates: scheduling update for %s\n", fo);
                     }
-                    changedFileObjects.add(fo);
+                    if (!changedFileObjects.containsKey(fo)) {
+                        changedFileObjects.put(fo, isCreated);
+                    }
                     if (!isRunning) {
                         isRunning = true;
                         model.enqueueModelTask(this, "External File Updater"); // NOI18N
@@ -676,25 +692,36 @@ public class ModelSupport implements PropertyChangeListener {
                 System.err.printf("External updates: running update task\n");
             }
             while (true) {
-                FileObject fo = null;
+                final FileObject fo;
+                final boolean created;
                 synchronized (this) {
-                    Iterator<FileObject> iter = changedFileObjects.iterator();
-                    if (iter.hasNext()) {
-                        fo = iter.next();
-                        iter.remove();
-                    } else {
+                    if (changedFileObjects.isEmpty()) {
                         isRunning = false;
                         break;
+                    } else {
+                        Iterator<Map.Entry<FileObject, Boolean>> it = changedFileObjects.entrySet().iterator();
+                        Map.Entry<FileObject, Boolean> entry = it.next();
+                        fo = entry.getKey();
+                        created = entry.getValue();
+                        it.remove();
                     }
                 }
                 if (fo != null) {
                     if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
                         System.err.printf("Updating for %s\n", fo);
                     }
-                    CsmFile[] files = CsmUtilities.getCsmFiles(fo);
-                    for (int i = 0; i < files.length; i++) {
-                        FileImpl file = (FileImpl) files[i];
-                        file.getProjectImpl(true).onFileExternalChange(file);
+                    if (created) {
+                        ProjectBase project = (ProjectBase)CsmUtilities.getCsmProject(fo);
+                        if (project != null) {
+                            project.onFileExternalCreate(fo);
+                        }
+                   } else {
+                        CsmFile[] files = CsmUtilities.getCsmFiles(fo);
+                        for (int i = 0; i < files.length; ++i) {
+                            FileImpl file = (FileImpl) files[i];
+                            ProjectBase project = file.getProjectImpl(true);
+                            project.onFileExternalChange(file);
+                        }
                     }
                 }
             }

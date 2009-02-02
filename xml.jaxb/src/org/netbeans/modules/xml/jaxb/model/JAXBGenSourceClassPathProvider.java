@@ -34,6 +34,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -41,6 +42,11 @@ import org.openide.filesystems.FileUtil;
  *
  * @author gpatil
  */
+@ProjectServiceProvider(service=ClassPathProvider.class, projectType={
+    "org-netbeans-modules-java-j2seproject",
+    "org-netbeans-modules-web-project",
+    "org-netbeans-modules-j2ee-ejbjarproject"
+})
 public class JAXBGenSourceClassPathProvider implements ClassPathProvider {
     private static final String JAXB_GEN_SRC_ROOT = "/generated/addons/jaxb"; //NOI18N
     private static ThreadLocal inAPICall = new ThreadLocal() {
@@ -54,7 +60,7 @@ public class JAXBGenSourceClassPathProvider implements ClassPathProvider {
     private ClassPath sourceCP, compileCP, bootCP;
     private String buildDir = "build" ; //NOI18N
     private String jaxbSrcGenDir = buildDir + JAXB_GEN_SRC_ROOT; 
-    JAXBGenSourceClassPathProvider(Project project) {
+    public JAXBGenSourceClassPathProvider(Project project) {
         this.project = project;
         //TODO get/update buildDir, JAXB_SRC_GEN_DIR
     }

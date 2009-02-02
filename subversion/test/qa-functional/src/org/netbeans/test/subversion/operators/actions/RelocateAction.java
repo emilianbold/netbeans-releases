@@ -56,6 +56,6 @@ public class RelocateAction extends ActionNoBlock {
 
     /** Creates a new instance of RelocateAction */
     public RelocateAction() {
-        super(VERSIONING_ITEM + "|" + RELOCATE_ITEM, null);
+        super(VERSIONING_ITEM + "|" + SVN_ITEM + "|" + RELOCATE_ITEM, null);
     }
 }

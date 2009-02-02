@@ -104,10 +104,15 @@ public class ShellDataLoader extends CndAbstractDataLoaderExt {
         // API doesn't provide method to replace platform dependant "new line" string.
         @Override
         public FileObject createFromTemplate(FileObject f, String name) throws IOException {
-            String ext = getFile().getExt();
-            if (name == null) {
-                name = FileUtil.findFreeFileName(f, getFile().getName(), ext);
+
+            // passed name already contains extension, don't append another one
+            String ext = FileUtil.getExtension(name);
+            if (ext.length() != 0) {
+                name = name.substring(0, name.length() - ext.length() - 1);
+            } else {
+                ext = getFile().getExt();
             }
+
             FileObject fo = f.createData(name, ext);
             java.text.Format frm = createFormat(f, name, ext);
             BufferedReader r = new BufferedReader(new InputStreamReader(getFile().getInputStream()));

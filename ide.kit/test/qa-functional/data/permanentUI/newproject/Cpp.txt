@@ -4,3 +4,5 @@ C/C++
     C/C++ Dynamic Library
     C/C++ Static Library
     C/C++ Qt Application
+    C/C++ Qt Dynamic Library
+    C/C++ Qt Static Library

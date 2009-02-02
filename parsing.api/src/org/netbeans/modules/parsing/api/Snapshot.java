@@ -41,6 +41,7 @@ package org.netbeans.modules.parsing.api;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.openide.filesystems.FileObject;
 
 
@@ -61,7 +62,7 @@ import org.openide.filesystems.FileObject;
 public final class Snapshot {
     
     private CharSequence    text;
-    private String          mimeType;
+    private MimePath        mimePath;
     int[][]                 currentToOriginal;
     int[][]                 originalToCurrent;
     private Source          source;
@@ -70,13 +71,13 @@ public final class Snapshot {
     Snapshot (
         CharSequence        text, 
         Source              source,
-        String              mimeType,
+        MimePath            mimePath,
         int[][]             currentToOriginal,
         int[][]             originalToCurrent
     ) {
         this.text =         text;
         this.source =       source;
-        this.mimeType =     mimeType;
+        this.mimePath =     mimePath;
         this.currentToOriginal =    
                             currentToOriginal;
         this.originalToCurrent = 
@@ -139,16 +140,17 @@ public final class Snapshot {
                     newOriginalToCurrent.get (newOriginalToCurrent.size () - 1) [1], 
                 -1
             });
+        MimePath newMimePath = MimePath.get (mimePath, mimeType);
         Snapshot snapshot = new Snapshot (
             getText ().subSequence (offset, offset + length),
             source,
-            mimeType,
+            newMimePath,
             newCurrentToOriginal.toArray (new int [newCurrentToOriginal.size ()][]),
             newOriginalToCurrent.toArray (new int [newOriginalToCurrent.size ()][])
         );
         return new Embedding (
             snapshot, 
-            mimeType
+            newMimePath
         );
     }
     
@@ -163,10 +165,15 @@ public final class Snapshot {
         CharSequence        charSequence, 
         String              mimeType
     ) {
+        MimePath newMimePath = MimePath.get (mimePath, mimeType);
         return new Embedding (
-            new Snapshot (charSequence, source, mimeType, new int[][] {new int[] {0, -1}}, new int[][] {}),
-            mimeType
-        
+            new Snapshot (
+                charSequence,
+                source,
+                newMimePath,
+                new int[][] {new int[] {0, -1}}, new int[][] {}
+            ),
+            newMimePath
         );
     }
     
@@ -187,7 +194,17 @@ public final class Snapshot {
      */
     public String getMimeType (
     ) {
-        return mimeType;
+        return mimePath.getMimeType (mimePath.size () - 1);
+    }
+
+    /**
+     * Returns this snapshot's mime path.
+     *
+     * @return              this snapshot mime type.
+     */
+    public MimePath getMimePath (
+    ) {
+        return mimePath;
     }
     
     /**
@@ -200,41 +217,40 @@ public final class Snapshot {
      * @param snapshotOffset The offset in this snapshot.
      *
      * @return The offset in the original source or <code>-1</code>.
+     * @throws IndexOutOfBoundsException if the index argument is negative or not less than the length of this string
      */
     public int getOriginalOffset (
         int snapshotOffset
     ) {
-        if (snapshotOffset < 0 || snapshotOffset > getText().length()) {
-            return -1;
-        }
+        if (snapshotOffset < 0)
+            throw new IndexOutOfBoundsException (snapshotOffset + " < 0");
+        if (snapshotOffset > getText ().length ())
+            throw new IndexOutOfBoundsException (snapshotOffset + " > " + getText ().length ());
 
-	int low = 0;
-	int high = currentToOriginal.length - 1;
+        int low = 0;
+        int high = currentToOriginal.length - 1;
 
-	while (low <= high) {
-	    int mid = (low + high) >> 1;
-	    int cmp = currentToOriginal [mid] [0];
-            
-            if (cmp > snapshotOffset) {
-		high = mid - 1;
-            } else if (mid == currentToOriginal.length - 1 ||
-                       currentToOriginal [mid + 1] [0] > snapshotOffset)
-            {
+        while (low <= high) {
+            int mid = (low + high) >> 1;
+            int cmp = currentToOriginal [mid] [0];
+            if (cmp > snapshotOffset)
+                high = mid - 1;
+            else
+            if (mid == currentToOriginal.length - 1 ||
+                currentToOriginal [mid + 1] [0] > snapshotOffset
+            ) {
                 if (currentToOriginal [mid] [1] < 0) {
-                    if (snapshotOffset == cmp && mid > 0) {
+                    if (snapshotOffset == cmp && mid > 0)
                         return snapshotOffset - currentToOriginal [mid - 1] [0] + currentToOriginal [mid - 1] [1];
-                    } else {
+                    else
                         return currentToOriginal [mid] [1];
-                    }
-                } else {
+                } else
                     return snapshotOffset - currentToOriginal [mid] [0] + currentToOriginal [mid] [1];
-                }
-            } else {
-		low = mid + 1;
-            }
-	}
+            } else
+                low = mid + 1;
+        } // while
 
-	return -1;
+        return -1;
     }
     
     /**
@@ -249,15 +265,15 @@ public final class Snapshot {
     public int getEmbeddedOffset (
         int                 originalOffset
     ) {
-	int low = 0;
-	int high = originalToCurrent.length - 1;
+        int low = 0;
+        int high = originalToCurrent.length - 1;
 
-	while (low <= high) {
-	    int mid = (low + high) >> 1;
-	    int cmp = originalToCurrent [mid] [0];
-            
-            if (cmp > originalOffset) 
-		high = mid - 1;
+        while (low <= high) {
+            int mid = (low + high) >> 1;
+            int cmp = originalToCurrent [mid] [0];
+
+            if (cmp > originalOffset)
+                high = mid - 1;
             else
             if (mid == originalToCurrent.length - 1 ||
                 originalToCurrent [mid + 1] [0] > originalOffset
@@ -270,9 +286,9 @@ public final class Snapshot {
                 else
                     return originalOffset - originalToCurrent [mid] [0] + originalToCurrent [mid] [1];
             else
-		low = mid + 1;
-	}
-	return -1;
+                low = mid + 1;
+        } // while
+        return -1;
     }
     
     /**
@@ -294,7 +310,7 @@ public final class Snapshot {
         if (fileObject != null)
             sb.append (fileObject.getNameExt ());
         else
-            sb.append (mimeType).append (" ").append (_source.getDocument (false));
+            sb.append (mimePath).append (" ").append (_source.getDocument (false));
         if (!getMimeType ().equals (_source.getMimeType ())) {
             sb.append ("( ").append (getMimeType ()).append (" ");
             sb.append (getOriginalOffset (0)).append ("-").append(getOriginalOffset (getText ().length () - 1)).append (")");

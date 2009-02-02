@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.openide.util.NbBundle;
 
@@ -271,7 +272,7 @@ public class BadgeProvider {
             if (project != null) {
                 Set<CsmUID<CsmFile>> set = getFiles(project);
                 if (set != null && set.size()>0){
-                    set.remove(file.getUID());
+                    set.remove(UIDs.get(file));
                 }
             }
         }
@@ -289,7 +290,7 @@ public class BadgeProvider {
                     wrongFiles.put(project,set);
                 }
                 if (set != null) {
-                    set.add(file.getUID());
+                    set.add(UIDs.get(file));
                 }
             }
         }
@@ -309,7 +310,7 @@ public class BadgeProvider {
             if (project != null) {
                 Set<CsmUID<CsmFile>> set = getFiles(project);
                 if (set != null){
-                    return set.contains(file.getUID());
+                    return set.contains(UIDs.get(file));
                 }
             }
             return false;

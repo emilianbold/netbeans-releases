@@ -47,7 +47,9 @@ import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
+import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
 /** Encapsulate fields refactoring. This is a composed refactoring (uses instances of {@link org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldRefactoring}
@@ -62,15 +64,26 @@ public final class EncapsulateFieldsRefactoring extends AbstractRefactoring {
     private Set<CsmVisibility> methodModifiers = Collections.emptySet();
     private Set<CsmVisibility> fieldModifiers = Collections.emptySet();;
     private boolean alwaysUseAccessors;
+    private boolean methodInline;
 
     /** Creates a new instance of EcapsulateFields.
      * @param selectedObject field to encapsulate, whatever tree of class
      *          containing trees to encapsulate
      */
-    public EncapsulateFieldsRefactoring(CsmObject selectedObject) {
-        super(Lookups.fixed(selectedObject));
+    public EncapsulateFieldsRefactoring(CsmObject selectedObject, CsmContext editorContext) {
+        super(createLookup(selectedObject, editorContext));
     }
-    
+
+    private static Lookup createLookup(CsmObject selectedObject, CsmContext editorContext) {
+        assert selectedObject != null || editorContext != null: "must be non null object to refactor";
+        if (editorContext == null) {
+            return Lookups.fixed(selectedObject);
+        } else if (selectedObject == null) {
+            return Lookups.fixed(editorContext);
+        } else {
+            return Lookups.fixed(selectedObject, editorContext);
+        }
+    }
     /**
      * Getter for property refactorFields
      * @return Value of refactorFields
@@ -101,6 +114,22 @@ public final class EncapsulateFieldsRefactoring extends AbstractRefactoring {
      */
     public boolean isAlwaysUseAccessors() {
         return alwaysUseAccessors;
+    }
+
+    /**
+     * Gtter for property methodInline
+     * @return Value of methodInline
+     */
+    public boolean isMethodInline() {
+        return methodInline;
+    }
+
+    /**
+     *  Setter for property methodInline
+     * @param methodInline New value of property methodInline
+     */
+    public void setMethodInline(boolean methodInline) {
+        this.methodInline = methodInline;
     }
     
     /**
@@ -148,10 +177,9 @@ public final class EncapsulateFieldsRefactoring extends AbstractRefactoring {
      * Represents data from the panel.
      */
     public static final class EncapsulateFieldInfo {
-        CsmField field;
-        String getterName;
-        String setterName;
-        
+        final CsmField field;
+        final String getterName;
+        final String setterName;
         /**
          * Creates an instance of Encapsulate Field Info
          * @param field 

@@ -353,19 +353,23 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
                 filesForStatus.add(f);
             }
         }
-        
-        StatusCommand statusCmd = new StatusCommand(filesForStatus.toArray(new File[filesForStatus.size()]), true, false, false, false);
-        exec(statusCmd);
-        Status[] statusValues = statusCmd.getStatusValues();
+
+        Status[] statusValues = new Status[] {};
+        if (!filesForStatus.isEmpty()) {
+            StatusCommand statusCmd = new StatusCommand(filesForStatus.toArray(new File[filesForStatus.size()]), true, false, false, false);
+            exec(statusCmd);
+            statusValues = statusCmd.getStatusValues();
+        }
         for (Status status : statusValues) {
             if(isManaged(status.getWcStatus())) {
                 filesForInfo.add(new File(status.getPath()));
             }
         }
-        ISVNInfo[] infos = getInfo(filesForInfo.toArray(new File[filesForInfo.size()]), null, null);        
-        
         Map<File, ISVNInfo> infoMap = new HashMap<File, ISVNInfo>();
-        for (ISVNInfo info : infos) infoMap.put(info.getFile(), info);
+        if (!filesForInfo.isEmpty()) {
+            ISVNInfo[] infos = getInfo(filesForInfo.toArray(new File[filesForInfo.size()]), null, null);
+            for (ISVNInfo info : infos) infoMap.put(info.getFile(), info);
+        }
         
         Map<File, ISVNStatus> statusMap = new HashMap<File, ISVNStatus>();
         for (Status status : statusValues) {
@@ -953,8 +957,20 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void copy(File[] arg0, SVNUrl arg1, String arg2, boolean arg3, boolean arg4) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    /**
+     * Copies all files from <code>files</code> to repository URL at <code>targetUrl</code>.
+     * @param files array of files which will be copied
+     * @param targetUrl destination repository Url
+     * @param message commit message
+     * @param addAsChild not supported
+     * @param makeParents creates parent folders
+     * @throws org.tigris.subversion.svnclientadapter.SVNClientException
+     */
+    public void copy(File[] files, SVNUrl targetUrl, String message, boolean addAsChild, boolean makeParents) throws SVNClientException {
+        for (File file : files) {
+            CopyCommand cmd = new CopyCommand(file, targetUrl, message, makeParents);
+            exec(cmd);
+        }
     }
 
     public void copy(SVNUrl arg0, File arg1, SVNRevision arg2, boolean arg3, boolean arg4) throws SVNClientException {

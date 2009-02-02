@@ -41,18 +41,11 @@
 
 package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
-import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
-import org.netbeans.modules.j2ee.dd.api.web.Listener;
-import org.netbeans.modules.j2ee.dd.api.web.Servlet;
-import org.netbeans.modules.j2ee.dd.api.web.WebApp;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
-import org.netbeans.modules.websvc.jaxwsruntimemodel.JavaWsdlMapper;
-import org.netbeans.modules.websvc.wsitconf.util.Util;
+import org.netbeans.modules.websvc.wsitconf.spi.ProjectSpecificTransport;
+import org.netbeans.modules.websvc.wsitconf.spi.WsitProvider;
+import org.netbeans.modules.websvc.wsitconf.util.ServerUtils;
 import org.netbeans.modules.websvc.wsitmodelext.policy.All;
 import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
 import org.netbeans.modules.websvc.wsitmodelext.mtom.MtomQName;
@@ -65,23 +58,12 @@ import org.netbeans.modules.websvc.wsitmodelext.transport.OptimizedTCPTransport;
 import org.netbeans.modules.websvc.wsitmodelext.transport.TCPQName;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.xam.Model;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.XMLDataObject;
-import org.openide.util.Exceptions;
-import org.openide.xml.XMLUtil;
-import org.w3c.dom.Element;
 
 /**
  *
  * @author Martin Grebac
  */
 public class TransportModelHelper {
-    private static final String SERVLET_NAME = "ServletName";
-
-    private static final String TCP_GF_NONJSR109 = "com.sun.xml.ws.transport.tcp.server.glassfish.WSStartupServlet";   //NOI18N
-    private static final String TCP_TOMCAT =       "com.sun.xml.ws.transport.http.servlet.WSServletContextListener";   //NOI18N
             
     /**
      * Creates a new instance of TransportModelHelper
@@ -137,11 +119,11 @@ public class TransportModelHelper {
     /* doesn't set anything in the DD; is used when changing namespaces for policies
      */
     static void enableTCP(Binding b, boolean enable) {
-        enableTCP(null, false, b, null, enable, false);
+        enableTCP(null, false, b, null, enable);
     }
     
     // enables/disables TCP in the config wsdl on specified binding
-    public static void enableTCP(Service s, boolean isFromJava, Binding b, Project p, boolean enable, boolean jsr109) {
+    public static void enableTCP(Service s, boolean isFromJava, Binding b, Project p, boolean enable) {
         PolicyModelHelper pmh = PolicyModelHelper.getInstance(PolicyModelHelper.getConfigVersion(b));
         All a = pmh.createPolicy(b, false);
         OptimizedTCPTransport tcp = 
@@ -157,63 +139,21 @@ public class TransportModelHelper {
                 model.startTransaction();
             }
 
-            boolean tomcat = Util.isTomcat(p);
+            boolean tomcat = ServerUtils.isTomcat(p);
             if (tomcat) {
                 tcp.setPort(OptimizedTCPTransport.DEFAULT_PORT_VALUE);
             }
-            
-            WebModule wm = null;
+
             if (p != null) {
-                wm = WebModule.getWebModule(p.getProjectDirectory());
-            }
-            if (wm != null) {
-                try {
-                    WebApp wApp = DDProvider.getDefault ().getDDRoot(wm.getDeploymentDescriptor());                    
-                    if (jsr109) {
-                        String servletClassName = s.getImplementationClass();       //NOI18N
-                        Servlet servlet = Util.getServlet(wApp, servletClassName);
-                        if (servlet == null) {      //NOI18N
-                            try {
-                                String servletName = s.getName();
-                                servlet = (Servlet)wApp.addBean("Servlet", new String[]{SERVLET_NAME,"ServletClass"},    //NOI18N
-                                        new Object[]{servletName,servletClassName},SERVLET_NAME);                                 //NOI18N
-                                servlet.setLoadOnStartup(new java.math.BigInteger("1"));                            //NOI18N
-                                String serviceName = s.getServiceName();
-                                if (serviceName == null) {
-                                    serviceName = servletClassName.substring(servletClassName.lastIndexOf('.')+1) + JavaWsdlMapper.SERVICE;
-                                }
-                                wApp.addBean("ServletMapping", new String[]{SERVLET_NAME,"UrlPattern"}, //NOI18N
-                                        new Object[]{servletName, "/" + serviceName},SERVLET_NAME);                               //NOI18N
-                                wApp.write(wm.getDeploymentDescriptor());
-                            } catch (NameAlreadyUsedException ex) {
-                                ex.printStackTrace();
-                            } catch (ClassNotFoundException ex) {
-                                ex.printStackTrace();
-                            }
-                        } else {
-                            servlet.setLoadOnStartup(new java.math.BigInteger("1"));
-                        }
-                    } else {
-                        String listener = tomcat ? TCP_TOMCAT : TCP_GF_NONJSR109;
-                        if (!isTcpListener(wApp, listener)) {
-                            try {
-                                wApp.addBean("Listener", new String[]{"ListenerClass"},  //NOI18N
-                                        new Object[]{listener}, "ListenerClass");                          //NOI18N
-                                wApp.write(wm.getDeploymentDescriptor());
-                            } catch (NameAlreadyUsedException ex) {
-                                ex.printStackTrace();
-                            } catch (ClassNotFoundException ex) {
-                                ex.printStackTrace();
-                            }
-                        }
-                        if (tomcat) {
-                            addConnector(p);
-                        }
+                WsitProvider provider = p.getLookup().lookup(WsitProvider.class);
+                if (provider != null) {
+                    ProjectSpecificTransport t = provider.getProjectTransportUpdater();
+                    if (t != null) {
+                        t.setTCPUrl(s, tomcat);
                     }
-                } catch (IOException ex) {
-                    ex.printStackTrace();
                 }
             }
+
             try {
                 tcp.enable(enable);
             } finally {
@@ -226,65 +166,7 @@ public class TransportModelHelper {
             PolicyModelHelper.cleanPolicies(b);
         }
     }
-
-    private static final String PROP_CONNECTOR = "Connector"; // NOI18N
-    private static final String CONN_PROTOCOL = "com.sun.xml.ws.transport.tcp.server.tomcat.grizzly10.WSTCPGrizzly10ProtocolHandler";
-    private static final String CONN_PORT = "5773";
-    private static final String CONN_TIMEOUT = "20000";
-    private static final String CONN_REDIRECT_PORT = "8080";
     
-    /**
-     * Make some Tomcat specific changes in server.xml.
-     */
-    public static void addConnector(Project p) {
-        FileObject serverXml = Util.getServerXml(p);
-        if (serverXml != null) {
-            try {
-                XMLDataObject dobj = (XMLDataObject)DataObject.find(serverXml);
-                org.w3c.dom.Document doc = dobj.getDocument();
-                org.w3c.dom.Element root = doc.getDocumentElement();
-                org.w3c.dom.NodeList list = root.getElementsByTagName("Service"); //NOI18N
-                int size=list.getLength();
-                if (size>0) {
-                    org.w3c.dom.Element service=(org.w3c.dom.Element)list.item(0);
-                    org.w3c.dom.NodeList cons = service.getElementsByTagName(PROP_CONNECTOR);
-                    for (int i=0;i<cons.getLength();i++) {
-                        org.w3c.dom.Element con=(org.w3c.dom.Element)cons.item(i);
-                        String protocol = con.getAttribute("protocol");
-                        if (CONN_PROTOCOL.equals(protocol))return;
-                    }
-
-                    Element e = doc.createElement(PROP_CONNECTOR);
-                    e.setAttribute("port", CONN_PORT);
-                    e.setAttribute("connectionTimeout", CONN_TIMEOUT);
-                    e.setAttribute("protocol", CONN_PROTOCOL);
-                    e.setAttribute("redirectHttpPort", CONN_REDIRECT_PORT);
-                    e.setAttribute("redirectPort", CONN_REDIRECT_PORT);
-
-                    service.appendChild(e);
-
-                    XMLUtil.write(doc, new FileOutputStream(FileUtil.toFile(serverXml)), "UTF-8");
-                }
-            } catch(org.xml.sax.SAXException ex){
-                Exceptions.printStackTrace(ex);
-            } catch(org.openide.loaders.DataObjectNotFoundException ex){
-                Exceptions.printStackTrace(ex);
-            } catch(java.io.IOException ex){
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    }
-    
-    private static boolean isTcpListener(WebApp wa, String listener) {
-        Listener[] listeners = wa.getListener();
-        for (Listener l : listeners) {
-            if (listener.equals(l.getListenerClass())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
    private static void removeTCP(Binding b) {
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         OptimizedTCPTransport tcp = getOptimizedTCPTransport(p);

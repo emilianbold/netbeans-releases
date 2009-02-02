@@ -43,8 +43,6 @@ package org.netbeans.modules.apisupport.project.ui.wizard.winsys;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,7 +59,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -105,6 +102,11 @@ final class NewTCIterator extends BasicWizardIterator {
         private String mode;
         private boolean opened = false;
         private boolean keepPrefSize = false;
+        private boolean slidingNotAllowed = false;
+        private boolean closingNotAllowed = false;
+        private boolean draggingNotAllowed = false;
+        private boolean undockingNotAllowed = false;
+        private boolean maximizationNotAllowed = false;
         
         private CreatedModifiedFiles files;
         
@@ -167,6 +169,46 @@ final class NewTCIterator extends BasicWizardIterator {
         public void setKeepPrefSize(boolean keepPrefSize) {
             this.keepPrefSize = keepPrefSize;
         }
+
+        public boolean isClosingNotAllowed() {
+            return closingNotAllowed;
+        }
+
+        public void setClosingNotAllowed(boolean closingNotAllowed) {
+            this.closingNotAllowed = closingNotAllowed;
+        }
+
+        public boolean isDraggingNotAllowed() {
+            return draggingNotAllowed;
+        }
+
+        public void setDraggingNotAllowed(boolean draggingNotAllowed) {
+            this.draggingNotAllowed = draggingNotAllowed;
+        }
+
+        public boolean isMaximizationNotAllowed() {
+            return maximizationNotAllowed;
+        }
+
+        public void setMaximizationNotAllowed(boolean maximizationNotAllowed) {
+            this.maximizationNotAllowed = maximizationNotAllowed;
+        }
+
+        public boolean isSlidingNotAllowed() {
+            return slidingNotAllowed;
+        }
+
+        public void setSlidingNotAllowed(boolean slidingNotAllowed) {
+            this.slidingNotAllowed = slidingNotAllowed;
+        }
+
+        public boolean isUndockingNotAllowed() {
+            return undockingNotAllowed;
+        }
+
+        public void setUndockingNotAllowed(boolean undockingNotAllowed) {
+            this.undockingNotAllowed = undockingNotAllowed;
+        }
     }
     
     public static void generateFileChanges(DataModel model) {
@@ -200,9 +242,7 @@ final class NewTCIterator extends BasicWizardIterator {
         replaceTokens.put("PACKAGENAME", packageName);//NOI18N
         replaceTokens.put("MODE", mode); //NOI18N
         replaceTokens.put("OPENED", model.isOpened() ? "true" : "false"); //NOI18N
-        replaceTokens.put("KEEPPREFSIZE", model.isKeepPrefSize() //NOI18N
-                ? "putClientProperty(\"netbeans.winsys.tc.keep_preferred_size_when_slided_in\", Boolean.TRUE);"  //NOI18N
-                : ""); //NOI18N
+        replaceTokens.put("WINSYSBEHAVIOR", defineWinSysBehavior( model ) ); //NOI18N
 
         // 0. move icon file if necessary
         String icon = model.getIcon();
@@ -322,6 +362,29 @@ final class NewTCIterator extends BasicWizardIterator {
                                 NbBundle.getMessage(NewTCIterator.class, "HINT_TemplateTCName", name))); //NOI18N
         
         model.setCreatedModifiedFiles(fileChanges);
+    }
+
+    private static String defineWinSysBehavior( DataModel model ) {
+        StringBuffer res = new StringBuffer();
+        if( model.isClosingNotAllowed() ) {
+            res.append("\tputClientProperty(TopComponent.PROP_CLOSING_DISABLED, Boolean.TRUE);\n");
+        }
+        if( model.isDraggingNotAllowed() ) {
+            res.append("\tputClientProperty(TopComponent.PROP_DRAGGING_DISABLED, Boolean.TRUE);\n");
+        }
+        if( model.isMaximizationNotAllowed() ) {
+            res.append("\tputClientProperty(TopComponent.PROP_MAXIMIZATION_DISABLED, Boolean.TRUE);\n");
+        }
+        if( model.isSlidingNotAllowed() ) {
+            res.append("\tputClientProperty(TopComponent.PROP_SLIDING_DISABLED, Boolean.TRUE);\n");
+        }
+        if( model.isUndockingNotAllowed() ) {
+            res.append("\tputClientProperty(TopComponent.PROP_UNDOCKING_DISABLED, Boolean.TRUE);\n");
+        }
+        if( model.isKeepPrefSize() ) {
+            res.append("\tputClientProperty(TopComponent.PROP_KEEP_PREFERRED_SIZE_WHEN_SLIDED_IN, Boolean.TRUE);\n");
+        }
+        return res.toString();
     }
     
     private static String getRelativePath(String rootpath, String fullyQualifiedPackageName,

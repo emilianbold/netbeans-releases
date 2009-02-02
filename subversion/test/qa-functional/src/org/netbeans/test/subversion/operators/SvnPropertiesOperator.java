@@ -179,7 +179,7 @@ public class SvnPropertiesOperator extends NbDialogOperator {
     @Override
     public JButtonOperator btCancel() {
         if (_btCancel == null) {
-            _btCancel = new JButtonOperator(this, "Cancel");
+            _btCancel = new JButtonOperator(this, "Close");
         }
         return _btCancel;
     }

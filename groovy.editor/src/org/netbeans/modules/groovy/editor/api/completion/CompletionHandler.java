@@ -115,8 +115,6 @@ import org.netbeans.modules.groovy.editor.api.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler;
-import org.netbeans.modules.groovy.editor.completion.CompletionItem;
-import org.netbeans.modules.groovy.editor.completion.DynamicElementHandler;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
@@ -141,6 +139,7 @@ public class CompletionHandler implements CodeCompletionHandler {
 
     private String gapiDocBase = null;
 
+    // FIXME this should be local variable
     private Set<GroovyKeyword> keywords;
 
     public CompletionHandler() {
@@ -153,7 +152,8 @@ public class CompletionHandler implements CodeCompletionHandler {
             jdkJavaDocBase = url.toString();
         }
 
-        GroovySettings groovySettings = new GroovySettings();
+        GroovySettings groovySettings = GroovySettings.getInstance();
+        // FIXME register listener
         String docroot = groovySettings.getGroovyDoc() + "/"; // NOI18N
 
         groovyJavaDocBase = directoryNameToUrl(docroot + "groovy-jdk/"); // NOI18N
@@ -162,12 +162,8 @@ public class CompletionHandler implements CodeCompletionHandler {
         LOG.log(Level.FINEST, "GDK Doc path: {0}", groovyJavaDocBase);
         LOG.log(Level.FINEST, "GAPI Doc path: {0}", gapiDocBase);
 
-        dfltImports.add("java.io"); // NOI18N
-        dfltImports.add("java.lang"); // NOI18N
-        dfltImports.add("java.net"); // NOI18N
-        dfltImports.add("java.util"); // NOI18N
-        dfltImports.add("groovy.util"); // NOI18N
-        dfltImports.add("groovy.lang"); // NOI18N
+        Collections.addAll(dfltImports, "java.io", "java.lang", "java.net", // NOI18N
+                "java.util", "groovy.util", "groovy.lang"); // NOI18N
     }
 
     private static String directoryNameToUrl(String dirname) {
@@ -977,6 +973,10 @@ public class CompletionHandler implements CodeCompletionHandler {
             return false;
         }
 
+        if (request.dotContext != null && request.dotContext.isMethodsOnly()) {
+            return false;
+        }
+
         ClassNode declaringClass;
 
         if (request.isBehindDot()) {
@@ -1066,9 +1066,9 @@ public class CompletionHandler implements CodeCompletionHandler {
         }
 
         // FIXME just a dirty prototype
-        Map<FieldSignature, ? extends CompletionItem> dynamic = DynamicElementHandler.forCompilationInfo(request.info).getFields(
-                getSurroundingClassNode(request).getName(), declaringClass.getName(), request.prefix, anchor);
-        proposals.addAll(dynamic.values());
+//        Map<FieldSignature, ? extends CompletionItem> dynamic = DynamicElementHandler.forCompilationInfo(request.info).getFields(
+//                getSurroundingClassNode(request).getName(), declaringClass.getName(), request.prefix, anchor, true, request.info.getFileObject());
+//        proposals.addAll(dynamic.values());
 
         return true;
     }
@@ -1548,7 +1548,7 @@ public class CompletionHandler implements CodeCompletionHandler {
             Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
 
 
-            if (t.id() != GroovyTokenId.DOT && t.id() != GroovyTokenId.OPTIONAL_DOT
+            if (t.id() != GroovyTokenId.DOT && t.id() != GroovyTokenId.OPTIONAL_DOT && t.id() != GroovyTokenId.MEMBER_POINTER
                     && t.id() != GroovyTokenId.WHITESPACE && t.id() != GroovyTokenId.NLS) {
                 // is it prefix
                 if (t.id() != GroovyTokenId.IDENTIFIER) {
@@ -1561,7 +1561,7 @@ public class CompletionHandler implements CodeCompletionHandler {
 
         // now we should be on dot or in whitespace or NLS after the dot
         boolean remainingTokens = true;
-        if (ts.token().id() != GroovyTokenId.DOT && ts.token().id() != GroovyTokenId.OPTIONAL_DOT) {
+        if (ts.token().id() != GroovyTokenId.DOT && ts.token().id() != GroovyTokenId.OPTIONAL_DOT && ts.token().id() != GroovyTokenId.MEMBER_POINTER) {
 
             // travel back on the token string till the token is neither a
             // WHITESPACE nor NLS
@@ -1573,10 +1573,15 @@ public class CompletionHandler implements CodeCompletionHandler {
             }
         }
 
-        if ((ts.token().id() != GroovyTokenId.DOT && ts.token().id() != GroovyTokenId.OPTIONAL_DOT)
+        if ((ts.token().id() != GroovyTokenId.DOT && ts.token().id() != GroovyTokenId.OPTIONAL_DOT && ts.token().id() != GroovyTokenId.MEMBER_POINTER)
                 || !remainingTokens) {
             // no astpath
             return null;
+        }
+
+        boolean methodsOnly = false;
+        if (ts.token().id() == GroovyTokenId.MEMBER_POINTER) {
+            methodsOnly = true;
         }
 
         // travel back on the token string till the token is neither a
@@ -1595,7 +1600,7 @@ public class CompletionHandler implements CodeCompletionHandler {
 
         AstPath realPath = getPath(request.info, request.doc, astOffset);
 
-        return new DotCompletionContext(lexOffset, astOffset, realPath);
+        return new DotCompletionContext(lexOffset, astOffset, realPath, methodsOnly);
     }
 
     private static class DotCompletionContext {
@@ -1606,10 +1611,14 @@ public class CompletionHandler implements CodeCompletionHandler {
 
         private final AstPath astPath;
 
-        public DotCompletionContext(int lexOffset, int astOffset, AstPath astPath) {
+        private final boolean methodsOnly;
+
+        public DotCompletionContext(int lexOffset, int astOffset,
+                AstPath astPath, boolean methodsOnly) {
             this.lexOffset = lexOffset;
             this.astOffset = astOffset;
             this.astPath = astPath;
+            this.methodsOnly = methodsOnly;
         }
 
         public int getLexOffset() {
@@ -1623,6 +1632,11 @@ public class CompletionHandler implements CodeCompletionHandler {
         public AstPath getAstPath() {
             return astPath;
         }
+
+        public boolean isMethodsOnly() {
+            return methodsOnly;
+        }
+        
     }
 
     /**
@@ -2434,7 +2448,8 @@ public class CompletionHandler implements CodeCompletionHandler {
 
         Map<MethodSignature, ? extends CompletionItem> result = CompleteElementHandler
                 .forCompilationInfo(request.info)
-                    .getMethods(getSurroundingClassNode(request), declaringClass, request.prefix, anchor);
+                    .getMethods(getSurroundingClassNode(request), declaringClass, request.prefix, anchor,
+                    request.dotContext != null && request.dotContext.isMethodsOnly());
         proposals.addAll(result.values());
 
         return true;
@@ -2754,7 +2769,7 @@ public class CompletionHandler implements CodeCompletionHandler {
     public String document(CompilationInfo info, ElementHandle element) {
         LOG.log(Level.FINEST, "document(), ElementHandle : {0}", element);
 
-        String ERROR = "<h2>" + NbBundle.getMessage(CompletionHandler.class, "GroovyCompletion_NoJavaDocFound") + "</h2>";
+        String error = NbBundle.getMessage(CompletionHandler.class, "GroovyCompletion_NoJavaDocFound");
         String doctext = null;
 
         if (element instanceof AstMethodElement) {
@@ -2768,7 +2783,7 @@ public class CompletionHandler implements CodeCompletionHandler {
                 base = groovyJavaDocBase;
             } else {
                 LOG.log(Level.FINEST, "Neither JDK nor GDK or error locating: {0}", ame.isGDK());
-                return ERROR;
+                return error;
             }
 
             MetaMethod mm = ame.getMethod();
@@ -2824,10 +2839,10 @@ public class CompletionHandler implements CodeCompletionHandler {
                     testFile = new File(url.toURI());
                 } catch (MalformedURLException ex) {
                     LOG.log(Level.FINEST, "MalformedURLException: {0}", ex);
-                    return ERROR;
+                    return error;
                 } catch (URISyntaxException uriEx) {
                     LOG.log(Level.FINEST, "URISyntaxException: {0}", uriEx);
-                    return ERROR;
+                    return error;
                 }
 
                 if (testFile != null && testFile.exists()) {
@@ -2849,12 +2864,12 @@ public class CompletionHandler implements CodeCompletionHandler {
                     ame.isGDK());
             } catch (MalformedURLException ex) {
                 LOG.log(Level.FINEST, "document(), URL trouble: {0}", ex); // NOI18N
-                return ERROR;
+                return error;
             }
 
             // If we could not find a suitable JavaDoc for the method - say so.
             if (doctext == null) {
-                return ERROR;
+                return error;
             }
 
             doctext = "<h3>" + className + "." + printSig + "</h3><BR>" + doctext;

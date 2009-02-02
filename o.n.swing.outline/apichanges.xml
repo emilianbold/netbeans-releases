@@ -105,6 +105,22 @@ is the proper place.
 
 <changes>
 
+    <change id="nested_comparator">
+      <api name="etable_outline"/>
+      <summary>Possibility to define comparator for sorting the rows</summary>
+      <version major="1" minor="3"/>
+      <date day="15" month="1" year="2009"/>
+      <author login="jrechtacek"/>
+      <compatibility addition="yes" binary="compatible" deprecation="no"/>
+      <description>
+        <p>Added methods <code>setNestedComparator(Comparator c)</code> and
+        <code>getNestedComparator ()</code> to allow to define own <code>java.util.Comparator</code>
+        for for sorting the rows belonging to same parent.
+        </p>
+      </description>
+      <class package="org.netbeans.swing.etable" name="ETableColumn"/>
+      <issue number="86793"/>
+    </change>
     <change id="persist_sorting">
       <api name="etable_outline"/>
       <summary>Allow persist column sorting</summary>

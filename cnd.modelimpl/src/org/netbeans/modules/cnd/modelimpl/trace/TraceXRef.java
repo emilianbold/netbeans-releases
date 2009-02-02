@@ -78,6 +78,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
@@ -1112,7 +1113,7 @@ public class TraceXRef extends TraceModel {
         private final int offset;
 
         RefLink(CsmReference ref) {
-            this.fileUID = ref.getContainingFile().getUID();
+            this.fileUID = UIDs.get(ref.getContainingFile());
             this.offset = ref.getStartOffset();
         }
 

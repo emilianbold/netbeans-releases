@@ -41,7 +41,13 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
 <toc version="2.0">
     <tocitem text="Java Applications"  expand="false">
         <tocitem text="Working with Maven">
-            <tocitem text="About Maven Project Support" target="org.netbeans.modules.maven.about"/>
+            <tocitem text="Creating a Maven Project" target="maven_project" />
+            <tocitem text="Configuring Maven Settings" target="maven_settings" />
+            <tocitem text="Working with the Maven POM" target="maven_pom" />
+            <tocitem text="Managing Maven Project Dependencies" target="maven_dependencies" />
+            <tocitem text="Working with Maven Repositories" target="maven_repositories" />
+
+            
         </tocitem>
     </tocitem>
 </toc>

@@ -59,6 +59,7 @@ import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitconf.ui.ClassDialog;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
+import org.netbeans.modules.websvc.wsitconf.util.ServerUtils;
 import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 
 /**
@@ -170,7 +171,7 @@ public class TruststorePanel extends JPanel {
         if (storeLocation != null) {
             setStoreLocation(storeLocation);
         } else if (jsr109) {
-            setStoreLocation(Util.getStoreLocation(project, true, client));
+            setStoreLocation(ServerUtils.getStoreLocation(project, true, client));
         }
 
         ksType = ProprietarySecurityPolicyModelHelper.getStoreType(comp, true);

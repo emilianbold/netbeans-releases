@@ -41,14 +41,26 @@
 
 package org.openidex.search;
 
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 
-/**
- *
- * @author  Marian Petras
- */
-final class Utils {
+ /**
+  * Search API utility class.
+  *
+  * @since org.openidex.util/3 3.20
+  * @author  Marian Petras
+  * @author  kaktus
+  */
+public final class Utils {
+
+    private Utils() {
+    }
 
     /**
      */
@@ -70,6 +82,38 @@ final class Utils {
                     new FileObjectFilter[] {
                             SearchInfoFactory.VISIBILITY_FILTER });
         }
+    }
+
+    /**
+     * Returns <code>Iterator</code> of <code>FileObject</code>'s for the provided <code>SearchInfo</code>.
+     * If provided <code>SearchInfo</code> object is implementation of <code>SearchInfo.Files</code> interface
+     * then the result of method <code>SearchInfo.Files.filesToSearch</code> is returned. Otherwise the objects
+     * are getting from the <code>SearchInfo.objectsToSearch</code> method.
+     *
+     * @param si <code>SearchInfo</code> object to return the iterator for
+     * @return iterator which iterates over <code>FileObject</code>s
+     * @since org.openidex.util/3 3.20
+     */
+    public static Iterator<FileObject> getFileObjectsIterator(SearchInfo si){
+        if (si instanceof SearchInfo.Files){
+            return ((SearchInfo.Files)si).filesToSearch();
+        }else{
+            Set<FileObject> set = new HashSet<FileObject>();
+            for(Iterator<DataObject> iter = si.objectsToSearch(); iter.hasNext();){
+                set.add(iter.next().getPrimaryFile());
+            }
+            return set.iterator();
+        }
+    }
+
+    static Iterator<DataObject> toDataObjectIterator(Iterator<FileObject> itFO){
+        Set<DataObject> set = new HashSet<DataObject>();
+        while(itFO.hasNext()){
+            try {
+                set.add(DataObject.find(itFO.next()));
+            } catch (DataObjectNotFoundException ex){}
+        }
+        return set.iterator();
     }
     
 }

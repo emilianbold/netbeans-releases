@@ -55,7 +55,7 @@ import org.openide.util.actions.NodeAction;
  */
 /*package*/ class OpenWithQtDesignerAction extends NodeAction {
 
-    private static final String QTUI_MIME_TYPE = "text/xml+qtui"; // NOI18N
+    private static final String QTUI_MIME_TYPE = "text/qtui+xml"; // NOI18N
     private static final String DESIGNER_EXECUTABLE = "designer"; // NOI18N
 
     private final String name;

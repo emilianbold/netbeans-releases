@@ -44,13 +44,15 @@ package org.netbeans.modules.xml.text.dom;
 import java.util.*;
 
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.modules.xml.spi.dom.NodeListImpl;
 import org.w3c.dom.*;
 
 public class StartTag extends Tag {
 
-    public StartTag(XMLSyntaxSupport support, Token from, int to, String name, Collection attribs) {
-        super( support, from, to, name, attribs );
+    StartTag(XMLSyntaxSupport support, Token<XMLTokenId> from, int start, int end) {
+        super( support, from, start, end);
+        this.name = from.text().toString();
     }
 
     public boolean hasChildNodes() {

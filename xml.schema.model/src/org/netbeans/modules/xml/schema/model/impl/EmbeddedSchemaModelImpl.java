@@ -163,4 +163,9 @@ public class EmbeddedSchemaModelImpl extends SchemaModelImpl {
     private AbstractDocumentModel getDelegate() {
         return (AbstractDocumentModel) delegate;
     }
+
+    public boolean isEmbedded() {
+        return true;
+    }
+
 }

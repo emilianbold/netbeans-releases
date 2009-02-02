@@ -58,6 +58,11 @@ const char *NbLauncher::HOME_TOKEN = "${HOME}";
 const char *NbLauncher::REG_SHELL_FOLDERS_KEY = "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders";
 const char *NbLauncher::REG_DESKTOP_NAME = "Desktop";
 
+const char *NbLauncher::CON_ATTACH_MSG = 
+"\n\nThe launcher has determined that the parent process has a console and will reuse it for its own console output.\n"
+"Use '--console suppress' to suppress console output.\n"
+"Use '--console new' to create a separate console window.\n";
+
 const char *NbLauncher::staticOptions[] = {
     "-J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade",
     "-J-Dnetbeans.accept_license_class=org.netbeans.license.AcceptLicense",
@@ -83,7 +88,7 @@ int NbLauncher::start(char *cmdLine) {
 int NbLauncher::start(int argc, char *argv[]) {
     SetErrorMode(SetErrorMode(0) | SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
 
-    if (!checkLoggingArg(argc, argv, true) || !setUpProcess(argc, argv) || !initBaseNames() || !readClusterFile()) {
+    if (!checkLoggingArg(argc, argv, true) || !setUpProcess(argc, argv, CON_ATTACH_MSG) || !initBaseNames() || !readClusterFile()) {
         return -1;
     }
 
@@ -160,15 +165,51 @@ bool NbLauncher::initBaseNames() {
     return true;
 }
 
-void NbLauncher::addCluster(const char *cl) {
-    string cluster = (baseDir + '\\' + cl);
-    if (dirExists(cluster.c_str())) {
-        if (!clusters.empty()) {
-            clusters += ';';
+void NbLauncher::addCluster(const char *cluster) {
+
+    class SetCurDir {
+    public:
+        SetCurDir(const char *dir) {
+            oldCurDir[0] = '\0';
+            DWORD rc = GetCurrentDirectory(MAX_PATH, oldCurDir);
+            if (rc == 0) {
+                logErr(true, false, "Failed to get current directory");
+                return;
+            }
+            if (rc > MAX_PATH) {
+                logMsg("Failed to get current directory, buffer is too small.");
+                return;
+            }
+            if (!SetCurrentDirectory(dir)) {
+                logErr(true, true, "Failed to set current directory to \"%s\"", dir);
+                oldCurDir[0] = '\0';
+            }
         }
-        logMsg("Adding cluster %s", cluster.c_str());
-        clusters += cluster;
+
+        ~SetCurDir() {
+            if (oldCurDir[0]) {
+                if (!SetCurrentDirectory(oldCurDir)) {
+                    logErr(true, true, "Failed to set current directory to \"%s\"", oldCurDir);
+                }
+            }
+        }
+    private:
+        char oldCurDir[MAX_PATH];
+    };
+
+    logMsg("addCluster: %s", cluster);
+    SetCurDir setCurDir(baseDir.c_str());
+    char clusterPath[MAX_PATH + 1] = {0};
+    strncpy(clusterPath, cluster, MAX_PATH);
+    if (!normalizePath(clusterPath, MAX_PATH)) {
+        logMsg("Invalid cluster path: %s", cluster);
+        return;
     }
+    if (!clusters.empty()) {
+        clusters += ';';
+    }
+    logMsg("Adding cluster %s", clusterPath);
+    clusters += clusterPath;
 }
 
 void NbLauncher::addExtraClusters() {
@@ -246,7 +287,7 @@ bool NbLauncher::parseArgs(int argc, char *argv[]) {
             CHECK_ARG;
             char tmp[MAX_PATH + 1] = {0};
             strncpy(tmp, argv[++i], MAX_PATH);
-            if (!normalizePath(tmp)) {
+            if (!normalizePath(tmp, MAX_PATH)) {
                 logErr(false, true, "User directory path \"%s\" is not valid.", argv[i]);
                 return false;
             }

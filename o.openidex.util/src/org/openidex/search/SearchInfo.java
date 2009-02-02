@@ -42,6 +42,7 @@
 package org.openidex.search;
 
 import java.util.Iterator;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 
 /**
@@ -97,5 +98,25 @@ public interface SearchInfo {
      *          to be searched
      */
     public Iterator<DataObject> objectsToSearch();
-    
+
+    /**
+     * Additionally defines which <code>FileObject</code>s should be searched.
+     *
+     * @since org.openidex.util/3 3.20
+     * @author kaktus
+     */
+    public interface Files extends SearchInfo{
+
+    /**
+     * Specifies which <code>FileObject</code>s should be searched.
+     * The returned <code>Iterator</code> needn't implement method
+     * {@link java.util.Iterator#remove remove()} (i.e. it may throw
+     * <code>UnsupportedOperationException</code> instead of actual
+     * implementation).
+     *
+     * @return  iterator which iterates over <code>FileObject</code>s
+     *          to be searched
+     */
+    public Iterator<FileObject> filesToSearch();
+    }
 }

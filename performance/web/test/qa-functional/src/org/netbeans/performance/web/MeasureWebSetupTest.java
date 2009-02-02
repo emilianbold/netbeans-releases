@@ -61,7 +61,6 @@ public class MeasureWebSetupTest {
         System.setProperty("suitename", MeasureWebSetupTest.class.getCanonicalName());
 
         suite.addTest(NbModuleSuite.create(WebSetup.class, ".*", ".*"));
-        
         return suite;
     }
     

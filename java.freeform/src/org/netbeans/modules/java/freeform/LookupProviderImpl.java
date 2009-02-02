@@ -92,6 +92,7 @@ public class LookupProviderImpl implements LookupProvider {
             new JavadocQuery(projectHelper, projectEvaluator, aux), // JavadocForBinaryQueryImplementation
             new PrivilegedTemplatesImpl(), // PrivilegedTemplates
             new JavaActions(project, projectHelper, projectEvaluator, aux), // ActionProvider
+            // XXX could use LookupMergerSupport.createClassPathProviderMerger here, though ClasspathsTest then fails:
             new LookupMergerImpl(), // LookupMerger
             new JavaFreeformFileBuiltQuery(project, projectHelper, projectEvaluator, aux), // FileBuiltQueryImplementation
             new HelpIDFragmentProviderImpl());

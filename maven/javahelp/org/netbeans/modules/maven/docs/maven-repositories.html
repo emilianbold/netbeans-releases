@@ -1,0 +1,138 @@
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+
+Contributor(s):
+
+Portions Copyrighted 2009 Sun Microsystems, Inc.
+-->
+<html>
+    <head>
+        <title>Working with Maven Repositories</title>
+        <link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+    <body>
+        <h2>Working with Maven Repositories</h2>
+        <p>Software library archives (JARs), build artifacts and dependencies
+        that are used to build Maven projects are stored in repositories.
+        There are two types of repositories:</p>
+
+        <ul>
+            <li><strong>Local repositories.</strong> A cache of a remote
+            repository that is stored on the local machine.
+            Maven projects are built against the local repository.
+            The local repository usually only stores a subset of the files
+            available in the remote repository and any temporary build artefacts.
+            </li>
+            <li><strong>Remote repositories.</strong> A central repository
+            that contains all the Maven artifacts and libraries.
+            The remote repository may be a third-party repository
+            (e.g. http://repo1.maven.org/),
+            or it may be a private internal repository.</li>
+        </ul>
+
+        <p>The IDE indexes the contents of local and remote Maven repositories using the Nexus indexing engine.
+        The repository indexes are used for some functionality such as code completion.
+        You can browse and manage the indexes in the Maven Repositories window.</p>
+
+        <p>To browse Maven repositories.</p>
+        <ol>
+            <li>Choose Window &gt; Other &gt; Maven Repository Browser to open the Maven Repositories window.</li>
+            <li>Expand the repository nodes to view the groupId and artifactId for the indexed artifacts.</li>
+        </ol>
+
+        <p>The Maven Repositories window lists the Maven repositories registered with the IDE and
+        enables you to add, remove and update Maven repositories.
+        The local Maven repository is indicated by a yellow repository node
+        (&nbsp;<img src="img/localrepo.png" alt="local Maven repository">)
+        and remote repositories are indicated by blue repository nodes
+        (&nbsp;<img src="img/remoterepo.png" alt="remote Maven repository">).</p>
+        <ul class="note">
+            <li>By default the IDE includes the central Maven repository in the list
+            of remote repositories.
+            When a project requires build artifacts that are not stored in the local repository,
+            Maven downloads the required artifacts to the local repository from a remote repository.
+            The files in the local Maven repository are then shared by all your Maven projects.</li>
+        </ul>
+        <p>The Maven Repositories window contains the following buttons for working with repositories.</p>
+
+        <table border="1" cellpadding="5" cellspacing="0">
+            <tr>
+            <th align="left" scope="col"><b>Button</b></th>
+            <th align="left" scope="col"><b>Description</b></th>
+            </tr>
+            <tr><td><img src="img/refreshRepo.png" alt="Updates repository indexes"></td><td>Updates Indexes.
+            Click this to reindex the local repository and update the indexes for the remote repositories.</td></tr>
+            <tr><td><img src="img/AddRepo.png" alt="Add repository"></td><td>Add repository.
+            Click this to open the Add Repository dialog box where you can specify the details
+            for the new repository.</td></tr>
+            <tr><td><img src="img/FindInRepo.png" alt="Find in repository"></td><td>Find.
+            Click this to open the Find in Repositories dialog box.
+            Enter a term to search the repositories for artifacts containing the term.</td></tr>
+        </table>
+
+        <p>You can expand the repository nodes to view the indexed artifacts grouped by GroupId and ArtifactId,
+        the version of the library sources and the type of packaging.
+        Depending on the metadata available, you can right-click a library to perform various actions.</p>
+        <ul>
+            <li><strong>Add As Dependency to.</strong> Choose this to add the library to an open project as a dependency.
+            The IDE automatically modifies the project's pom.</li>
+            <li><strong>Find Usages.</strong> Choose this to view open projects and repository artifacts that use
+            the selected library as a dependency.</li>
+            <li><strong>View JavaDoc.</strong></li>
+            <li><strong>Open Project Home Page.</strong> If available, opens the project home page for the library in your browser.</li>
+            <li><strong>Open Bug Tracker.</strong> If available, opens the bug tracking page for the library in your browser.</li>
+            <li><strong>SCM.</strong> If available, you can choose this to browse the sources online or checkout the sources.
+            If you choose to checkout the sources, you will be prompted to specify either a
+            remote or local repository and to supply the checkout details.
+            Sources are checked out from the repository using Maven SCM.</li>
+        </ul>
+
+
+        <!--In a Maven development environment, it is recommended that you store Maven software library JARs and
+        project artifacts in a local repository instead of in CVS.-->
+
+
+        
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/maven/maven-about.html">About Working with Maven</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

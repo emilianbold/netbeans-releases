@@ -79,7 +79,8 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
                 "ejb-types",            // NOI18N
                 "ejb-types_3_0",        // NOI18N
                 "ejb-types-server",     // NOI18N
-//#134462                "web-services",         // NOI18N
+                "web-services",         // NOI18N
+                "web-service-clients",  // NOI18N
                 "j2ee-types",           // NOI18N
     };
     
@@ -100,7 +101,9 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
                 "Templates/Classes/Class.java",// NOI18N
                 "Templates/Classes/Package",// NOI18N
                 "Templates/Persistence/Entity.java",// NOI18N
-                "Templates/Persistence/RelatedCMP"// NOI18N
+                "Templates/Persistence/RelatedCMP",// NOI18N
+                "Templates/WebServices/WebService",// NOI18N
+                "Templates/WebServices/WebServiceClient"// NOI18N
     };
     
     private static final String[] WEB_TYPES = new String[] {

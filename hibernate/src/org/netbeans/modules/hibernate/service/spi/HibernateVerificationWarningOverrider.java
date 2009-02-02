@@ -43,12 +43,19 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.j2ee.jpa.verification.api.JPAVerificationWarningIds;
 import org.netbeans.modules.j2ee.jpa.verification.api.VerificationWarningOverrider;
+import org.netbeans.spi.project.LookupProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
  * To override specific verification warning
  * 
  * @author Dongmei Cao
  */
+@ProjectServiceProvider(service=VerificationWarningOverrider.class, projectType={
+    "org-netbeans-modules-maven",
+    "org-netbeans-modules-java-j2seproject",
+    "org-netbeans-modules-web-project"
+}, projectTypes=@LookupProvider.Registration.ProjectType(id="org-netbeans-modules-ant-freeform", position=701))
 public class HibernateVerificationWarningOverrider implements VerificationWarningOverrider {
     
     private Project project;

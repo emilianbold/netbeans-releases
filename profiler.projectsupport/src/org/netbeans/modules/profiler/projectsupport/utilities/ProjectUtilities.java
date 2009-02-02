@@ -460,7 +460,7 @@ public class ProjectUtilities {
             throw new IllegalArgumentException("Storage must be a non-null String[2][] array"); // NOI18N
         }
 
-        if (storage[0] == null) {
+        if (storage[0] == null || storage[0].length == 0) {
             Collection<String> packages1 = new ArrayList<String>();
 
             for (FileObject root : getSourceRoots(project, false)) {
@@ -470,7 +470,7 @@ public class ProjectUtilities {
             storage[0] = packages1.toArray(new String[0]);
         }
 
-        if (subprojects && (storage[1] == null)) {
+        if (subprojects && (storage[1] == null || storage[1].length == 0)) {
             FileObject[] srcRoots2 = getSourceRoots(project, true); // TODO: should be computed based on already known srcRoots1
             ArrayList<String> packages2 = new ArrayList<String>();
 

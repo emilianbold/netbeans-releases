@@ -53,7 +53,9 @@ import org.netbeans.modules.gsf.testrunner.output.OutputLine;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -72,27 +74,28 @@ public class TestsuiteNode extends AbstractNode {
      * @see  ResultDisplayHandler#ANONYMOUS_SUITE
      */
     public TestsuiteNode(final String suiteName, final boolean filtered) {
-        this(null, suiteName, filtered);
+        this(null, suiteName, filtered, null);
     }
     
     /**
      * Creates a new instance of TestsuiteNode
      */
     public TestsuiteNode(final Report report, final boolean filtered) {
-        this(report, null, filtered);
+        this(report, null, filtered, null);
     }
-    
+
+
     /**
      *
      * @param  suiteName  name of the test suite, or {@code ANONYMOUS_SUITE}
      *                    in the case of anonymous suite
      * @see  ResultDisplayHandler#ANONYMOUS_SUITE
      */
-    private TestsuiteNode(final Report report,
+    protected TestsuiteNode(final Report report,
                           final String suiteName,
-                          final boolean filtered) {
+                          final boolean filtered, Lookup lookup) {
         super(report != null ? new TestsuiteNodeChildren(report, filtered)
-                             : Children.LEAF);
+                             : Children.LEAF, lookup);
         this.report = report; 
         this.suiteName = (report != null) ? report.getSuiteClassName() : suiteName;
         this.filtered = filtered;
@@ -100,8 +103,6 @@ public class TestsuiteNode extends AbstractNode {
         assert this.suiteName != null;
         
         setDisplayName();
-        setIconBaseWithExtension(
-                "org/netbeans/modules/gsf/testrunner/resources/class.gif");     //NOI18N
     }
 
     /**
@@ -131,12 +132,13 @@ public class TestsuiteNode extends AbstractNode {
     
     @Override
     public Image getIcon(int type) {
-        Image classIcon = ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/class.gif"); //NOI18N
         if (containsFailed()) {
-            Image errorBadgeIcon = ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/error-badge.gif"); //NOI18N
-            return ImageUtilities.mergeImages(classIcon, errorBadgeIcon, 0, 10);
+            return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/error_16.png"); //NOI18N
         }
-        return classIcon;
+        if (report != null && Status.PENDING == report.getStatus()) {
+            return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/warning2_16.png"); //NOI18N
+        }
+        return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/ok_16.png"); //NOI18N
     }
     
     /**
