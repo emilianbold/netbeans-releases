@@ -137,7 +137,7 @@ public abstract class APTBaseMacroMap {
         defineImpl(name, value, macroType);
     }
     
-    protected final void defineImpl(APTToken name, List<APTToken> value, Kind macroType) {
+    private final void defineImpl(APTToken name, List<APTToken> value, Kind macroType) {
         define(name, null, value, macroType);
     }
 
@@ -145,7 +145,7 @@ public abstract class APTBaseMacroMap {
         defineImpl(name, params, value, macroType);
     }
     
-    protected void defineImpl(APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
+    private void defineImpl(APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
         active.macros.put(name.getText(), createMacro(name, params, value, macroType));
     }
     

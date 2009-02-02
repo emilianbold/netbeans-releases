@@ -584,8 +584,8 @@ public final class J2SEProject implements Project, AntProjectListener {
                                 if (!ep.containsKey(ProjectProperties.EXCLUDES)) {
                                     ep.setProperty(ProjectProperties.EXCLUDES, ""); // NOI18N
                                 }
-                                if (!ep.containsKey("build.generated.dir")) { // NOI18N
-                                    ep.setProperty("build.generated.dir", "${build.dir}/generated-sources"); // NOI18N
+                                if (!ep.containsKey("build.generated.sources.dir")) { // NOI18N
+                                    ep.setProperty("build.generated.sources.dir", "${build.dir}/generated-sources"); // NOI18N
                                 }
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                                 try {

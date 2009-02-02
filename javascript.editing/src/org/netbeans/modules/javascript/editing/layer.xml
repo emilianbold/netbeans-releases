@@ -326,17 +326,5 @@
                 <attr name="templateCategory" stringvalue="web-types"/>
             </file>
         </folder>
-        <folder name="Ruby">
-            <file name="javascript.shadow">
-                <attr name="originalFile" stringvalue="Templates/Other/javascript.js"/>
-                <attr name="position" intvalue="703"/>
-                <attr name="templateCategory" stringvalue="ruby"/>
-            </file>
-            <file name="json.shadow">
-                <attr name="originalFile" stringvalue="Templates/Other/json.json"/>
-                <attr name="position" intvalue="750"/>
-                <attr name="templateCategory" stringvalue="ruby"/>
-            </file>
-        </folder>
     </folder>
 </filesystem>

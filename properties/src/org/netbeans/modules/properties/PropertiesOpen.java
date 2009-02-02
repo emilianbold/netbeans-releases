@@ -556,7 +556,7 @@ public class PropertiesOpen extends CloneableOpenSupport
                         PropertiesOpen support = (PropertiesOpen)findCloneableOpenSupport();
                         if(support != null ) {
                     
-                            bundleStructure.updateEntries();
+//                            bundleStructure.updateEntries();
                             support.close(false);
                         }
                     } else {
@@ -1163,7 +1163,7 @@ public class PropertiesOpen extends CloneableOpenSupport
                 l = weakListeners.get(dataObject);
                 if (l!=null) {
                     dataObject.removePropertyChangeListener(l);
-                    weakListeners.remove(l);
+                    weakListeners.remove(dataObject);
                 }
             }
             return true;
@@ -1290,8 +1290,12 @@ public class PropertiesOpen extends CloneableOpenSupport
         @Deprecated
         private void init(PropertiesDataObject obj) {
             BundleStructure structure = obj.getBundleStructure();
+            PropertiesEditorSupport editorSupport = null;
             for(int i=0; i< structure.getEntryCount(); i++) {
-                managers.add(structure.getNthEntry(i).getPropertiesEditor().getUndoRedoManager());
+                editorSupport = structure.getNthEntry(i).getPropertiesEditor();
+                if (editorSupport != null) {
+                    managers.add(editorSupport.getUndoRedoManager());
+                }
             }
         }
 

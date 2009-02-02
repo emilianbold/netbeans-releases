@@ -51,10 +51,6 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
  */
 public class OQLParserTaskFactory extends TaskFactory {
 
-    public OQLParserTaskFactory() {
-        System.out.println("hoo");
-    }
-
     @Override
     public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
         if (snapshot.getMimeType().equals("text/x-oql")) {

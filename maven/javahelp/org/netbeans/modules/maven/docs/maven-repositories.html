@@ -44,6 +44,7 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
     </head>
     <body>
         <h2>Working with Maven Repositories</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small></p>
         <p>Software library archives (JARs), build artifacts and dependencies
         that are used to build Maven projects are stored in repositories.
         There are two types of repositories:</p>
@@ -53,23 +54,23 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
             repository that is stored on the local machine.
             Maven projects are built against the local repository.
             The local repository usually only stores a subset of the files
-            available in the remote repository and any temporary build artefacts.
+            available in the remote repository and any temporary build artifacts.
             </li>
             <li><strong>Remote repositories.</strong> A central repository
-            that contains all the Maven artifacts and libraries.
+            that contains all the Maven artifacts and plugins.
             The remote repository may be a third-party repository
             (e.g. http://repo1.maven.org/),
             or it may be a private internal repository.</li>
         </ul>
 
         <p>The IDE indexes the contents of local and remote Maven repositories using the Nexus indexing engine.
-        The repository indexes are used for some functionality such as code completion.
+        The IDE uses the repository indexes for some Maven-related functions such as code completion.
         You can browse and manage the indexes in the Maven Repositories window.</p>
 
-        <p>To browse Maven repositories.</p>
+        <p><strong>To browse Maven repositories</strong></p>
         <ol>
             <li>Choose Window &gt; Other &gt; Maven Repository Browser to open the Maven Repositories window.</li>
-            <li>Expand the repository nodes to view the groupId and artifactId for the indexed artifacts.</li>
+            <li>Expand the nodes in the window to view the contents of the repositories.</li>
         </ol>
 
         <p>The Maven Repositories window lists the Maven repositories registered with the IDE and

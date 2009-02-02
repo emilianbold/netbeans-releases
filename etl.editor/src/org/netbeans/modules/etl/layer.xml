@@ -104,7 +104,7 @@ made subject to such option by the copyright holder.
     <folder name="Services">
         <!-- Recognize text/x-etl+xml: -->
         <folder name="MIMEResolver">
-            <file name="org-netbeans-modules-etl-mime-resolver.xml" url="mime-resolver.xml">
+            <file name="org-netbeans-modules-etl-mime-resolver.xml" url="integrator-mime-resolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/etl/ui/resources/images/ETLDefinition.png"/>
                 <attr name="position" intvalue="447"/>

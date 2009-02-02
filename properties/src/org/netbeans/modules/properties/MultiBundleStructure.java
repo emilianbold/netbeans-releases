@@ -105,6 +105,9 @@ class MultiBundleStructure extends BundleStructure implements Serializable {
             String fName;
             FileObject oldCandidate;
             for (FileObject file : parent.getChildren()) {
+                if (!file.hasExt(PropertiesDataLoader.PROPERTIES_EXTENSION)) {
+                    continue;
+                }
                 fName = file.getName();
                 if (fName.equals(baseName) && file.isValid()) {
                     listFileObjects.add(0,file);
@@ -124,11 +127,7 @@ class MultiBundleStructure extends BundleStructure implements Serializable {
                     }
                 }
             }
-            files = new FileObject[listFileObjects.size()];
-            int index = 0;
-            for (FileObject file : listFileObjects) {
-                files[index++] = file;
-            }
+            files = listFileObjects.toArray(new FileObject[listFileObjects.size()]);
             primaryEntry = getNthEntry(0);
             obj = (PropertiesDataObject) primaryEntry.getDataObject();
         } catch (DataObjectNotFoundException ex) {
@@ -151,14 +150,15 @@ class MultiBundleStructure extends BundleStructure implements Serializable {
         }
         if (index >= 0 && index < files.length) {
             try {
-                return (PropertiesFileEntry) ((PropertiesDataObject) DataObject.find(files[index])).getPrimaryEntry();
+                DataObject dataObject = DataObject.find(files[index]);
+                if (dataObject instanceof PropertiesDataObject) {
+                    return (PropertiesFileEntry) ((PropertiesDataObject)dataObject).getPrimaryEntry();
+                }
             } catch (DataObjectNotFoundException ex) {
-                ex.printStackTrace();
-                return null;
+//                ex.printStackTrace();
             }
-        } else {
-            return null;
-        }
+        } 
+        return null;
     }
 
     /**

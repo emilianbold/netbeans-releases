@@ -721,7 +721,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         boolean addPath = true;
         ArrayList<String> toBeRemoved = new ArrayList<String>();
 
-        if (IpeUtils.isPathAbsolute(relPath) || relPath.startsWith("..")) { // NOI18N
+        if (IpeUtils.isPathAbsolute(relPath) || relPath.startsWith("..") || relPath.startsWith(".")) { // NOI18N
             synchronized (sourceRoots) {
                 if (canonicalPath != null) {
                     int canonicalPathLength = canonicalPath.length();
