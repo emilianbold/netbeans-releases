@@ -44,21 +44,16 @@ package org.netbeans.modules.glassfish.javaee;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.modules.glassfish.javaee.ide.Hk2PluginProperties;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 
@@ -250,13 +245,6 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     public Set getSupportedModuleTypes() {
         return pf.getSupportedModuleTypes();
     }
-//        Set<Object> result = new HashSet<Object>();
-//        result.add(J2eeModule.WAR);
-//        if("true".equals(System.getProperty("glassfish.javaee.ejbsupport.enable"))) {
-//            result.add(J2eeModule.EJB);
-//        }
-//        return result;
-//    }
     
     /**
      * 

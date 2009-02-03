@@ -111,11 +111,6 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
     }
     
     public void testMultyThread() throws Exception {
-        
-        // Switched OFF untill #143967 is fixed
-        if (true) {
-            return;
-        }
 
         String dataPath = getDataDir().getAbsolutePath().replaceAll("repository", "modelimpl"); //NOI18N
 

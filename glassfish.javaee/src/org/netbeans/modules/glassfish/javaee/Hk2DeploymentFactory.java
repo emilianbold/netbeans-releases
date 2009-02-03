@@ -172,6 +172,6 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
         if (null != preludeInstance)
             preludeInstance.setServerUtilities(ServerUtilities.getPreludeUtilities());
         if (null != ee6Instance)
-            ee6Instance.setServerUtilities(ServerUtilities.getPreludeUtilities());
+            ee6Instance.setServerUtilities(ServerUtilities.getEe6Utilities());
     }
 }

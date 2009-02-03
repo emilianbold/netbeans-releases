@@ -51,7 +51,6 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
@@ -342,9 +341,18 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
     private CsmFile getMacroFile(APTMacro m) {
         CsmFile out = null;
         if (m.getFile() != null) {
-            out = macro2file.get(m.getFile().getPath());
+            String path = m.getFile().getPath();
+            out = macro2file.get(path);
             if (out == null) {
-                out = CsmModelAccessor.getModel().findFile(m.getFile().getPath());
+                ProjectBase targetPrj = ((ProjectBase) csmFile.getProject()).findFileProject(path);
+                if (targetPrj != null) {
+                    out = targetPrj.getFile(new File(path));
+                    // if file belongs to project, it should be not null
+                    // but info could be obsolete
+                }
+                if (out != null) {
+                    macro2file.put(path, out);
+                }
             }
         }
         return out;
