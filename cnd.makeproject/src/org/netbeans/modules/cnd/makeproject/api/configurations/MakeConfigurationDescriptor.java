@@ -893,7 +893,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 Folder top = folder.findFolderByName(folderEntry.getFile().getName());
                 if (top == null) {
                     top = new Folder(folder.getConfigurationDescriptor(), folder, folderEntry.getFile().getName(), folderEntry.getFile().getName(), true);
-                    String relativeRoot = IpeUtils.toRelativePath(getBaseDir(), folderEntry.getFile().getPath());
+                    String relativeRoot = FilePathAdaptor.normalize(IpeUtils.toRelativePath(getBaseDir(), folderEntry.getFile().getPath()));
                     top.setRoot(relativeRoot);
                     folder.addFolder(top);
                 }
