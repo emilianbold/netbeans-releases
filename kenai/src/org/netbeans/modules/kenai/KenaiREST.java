@@ -99,7 +99,14 @@ public class KenaiREST extends KenaiImpl {
 
     @Override
     public Iterator<ProjectData> searchProjects(String pattern) throws KenaiException {
-        RestConnection conn = new RestConnection(baseURL.toString() + "/api/projects.json?q=" + pattern);
+        ProjectsListData pld = loadPage(baseURL.toString() + "/api/projects.json?q=" + pattern);
+        return new ProjectIterator(pld);
+
+    }
+
+    private ProjectsListData loadPage(String url) throws KenaiException {
+
+        RestConnection conn = new RestConnection(url);
         RestResponse resp = null;
         try {
             resp = conn.get(null);
@@ -111,15 +118,16 @@ public class KenaiREST extends KenaiImpl {
         PojsonLoad pload = PojsonLoad.create();
         ProjectsListData pld = pload.load(responseString, ProjectsListData.class);
 
-        return new ProjectIterator(pld);
-
+        return pld;
     }
+
 
 
     private class ProjectIterator implements Iterator<ProjectData> {
 
         private ProjectsListData pld;
         private int currentIndex = 0;
+        private int PAGE_SIZE = 10;
 
         public ProjectIterator(ProjectsListData pld) {
             this.pld = pld;
@@ -129,11 +137,15 @@ public class KenaiREST extends KenaiImpl {
             if (pld.projects.length>currentIndex) {
                 return true;
             }
-            return false;
+            return pld.next!=null;
         }
 
         public ProjectData next() {
             try {
+                if (currentIndex==PAGE_SIZE) {
+                    currentIndex-=PAGE_SIZE;
+                    pld = loadPage(pld.next);
+                }
                 return getProject(pld.projects[currentIndex++].name);
             } catch (KenaiException ex) {
                 throw new RuntimeException(ex);
