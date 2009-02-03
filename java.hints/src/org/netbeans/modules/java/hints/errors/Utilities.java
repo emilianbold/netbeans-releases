@@ -166,7 +166,7 @@ public class Utilities {
             case ARRAY:
                 return getName(((ArrayType) tm).getComponentType());
             default:
-                return "aName"; //NOI18N
+                return DEFAULT_NAME;
         }
     }
     
