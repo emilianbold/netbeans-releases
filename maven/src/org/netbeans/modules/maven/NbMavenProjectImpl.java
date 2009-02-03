@@ -782,6 +782,14 @@ public final class NbMavenProjectImpl implements Project {
         return staticLookup;
     }
 
+    public boolean isErrorPom(MavenProject pr) {
+        if ("error".equals(pr.getArtifactId()) && "error".equals(pr.getGroupId()) && "unknown".equals(pr.getVersion())) {
+            return true;
+        }
+        return false;
+    }
+
+
     private final class Info implements ProjectInformation {
 
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
@@ -803,8 +811,13 @@ public final class NbMavenProjectImpl implements Project {
             return toReturn;
         }
 
+
         public String getDisplayName() {
-            String toReturn = NbMavenProjectImpl.this.getOriginalMavenProject().getName();
+            MavenProject pr = NbMavenProjectImpl.this.getOriginalMavenProject();
+            if (isErrorPom(pr)) {
+                return NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_FailedLoadingProject");
+            }
+            String toReturn = pr.getName();
             if (toReturn == null) {
                 String grId = NbMavenProjectImpl.this.getOriginalMavenProject().getGroupId();
                 String artId = NbMavenProjectImpl.this.getOriginalMavenProject().getArtifactId();

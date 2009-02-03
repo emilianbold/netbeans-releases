@@ -83,10 +83,8 @@ public class Hk2DeploymentManager implements DeploymentManager {
     private volatile ServerInstance serverInstance;
     private volatile InstanceProperties instanceProperties;
     private Hk2PluginProperties pluginProperties;
-    private String uname;
-    private String passwd;
     private String uri;
-
+    private ServerUtilities su;
     
     /**
      * 
@@ -94,10 +92,9 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @param uname 
      * @param passwd 
      */
-    public Hk2DeploymentManager(String uri, String uname, String passwd) {
+    public Hk2DeploymentManager(String uri, String uname, String passwd, ServerUtilities su) {
         this.uri = uri;
-        this.uname = uname;
-        this.passwd = passwd;
+        this.su = su;
         pluginProperties = new Hk2PluginProperties(this);
     }
         
@@ -421,7 +418,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
     public ServerInstance getServerInstance() {
         // !PW FIXME synchronization - using volatile for now, could do a little better
         if(serverInstance == null) {
-            serverInstance = ServerUtilities.getServerInstance(uri);
+            serverInstance = su.getServerInstance(uri);
             if(serverInstance == null) {
                 String warning = "Common server instance not found for " + uri;
                 Logger.getLogger("glassfish-javaee").log(Level.WARNING, warning);

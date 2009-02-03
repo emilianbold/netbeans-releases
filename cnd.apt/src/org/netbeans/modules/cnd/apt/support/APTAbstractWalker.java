@@ -112,7 +112,7 @@ public abstract class APTAbstractWalker extends APTWalker {
     protected void onDefine(APT apt) {
         APTDefine define = (APTDefine)apt;
         if (define.isValid()) {
-            getMacroMap().define(define.getName(), define.getParams(), define.getBody(), Kind.DEFINED);
+            getMacroMap().define(getRootFile(), define.getName(), define.getParams(), define.getBody(), Kind.DEFINED);
         } else {
             if (DebugUtils.STANDALONE) {
                 if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {
@@ -128,7 +128,7 @@ public abstract class APTAbstractWalker extends APTWalker {
     
     protected void onUndef(APT apt) {
         APTUndefine undef = (APTUndefine)apt;
-        getMacroMap().undef(undef.getName());
+        getMacroMap().undef(getRootFile(), undef.getName());
     }
     
     protected boolean onIf(APT apt) {

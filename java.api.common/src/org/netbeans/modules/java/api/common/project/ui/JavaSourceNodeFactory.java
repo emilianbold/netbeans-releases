@@ -306,7 +306,7 @@ public final class JavaSourceNodeFactory implements NodeFactory {
                     return null; // never mind
                 }
             }
-            return "<font color='!Label.disabledForeground'>" + htmlName + "</font>"; // NOI18N
+            return "<font color='!controlShadow'>" + htmlName + "</font>"; // NOI18N
         }
         
     }

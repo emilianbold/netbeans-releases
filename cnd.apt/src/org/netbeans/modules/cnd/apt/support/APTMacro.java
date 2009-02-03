@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.apt.support;
 
 import antlr.TokenStream;
 import java.util.Collection;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 
 /**
  * macros for APT macro map
@@ -54,6 +55,7 @@ public interface APTMacro {
     public APTToken getName();
     public Collection<APTToken> getParams();
     public TokenStream getBody();
+    public APTFile getFile(); // macro defined in code using #define directive has file information
 
     public enum Kind {
         COMPILER_PREDEFINED, // compiler predefined macro, for example __STDC__

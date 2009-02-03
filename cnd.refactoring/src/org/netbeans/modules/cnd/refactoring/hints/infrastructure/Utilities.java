@@ -40,9 +40,11 @@
  */
 package org.netbeans.modules.cnd.refactoring.hints.infrastructure;
 
+import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
@@ -61,12 +63,6 @@ public class Utilities {
     private static final String DEFAULT_NAME = "name"; // NOI18N
 
     public Utilities() {
-    }
-
-    public static int getEnclosingClassInsertPoint(CsmContext editorContext) {
-        int caret = editorContext.getCaretOffset();
-        int insertPt = caret;
-        return insertPt;
     }
     
     public static CsmClass extractEnclosingClass(CsmContext editorContext) {
