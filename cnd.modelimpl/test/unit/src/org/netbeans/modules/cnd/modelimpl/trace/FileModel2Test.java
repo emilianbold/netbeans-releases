@@ -189,4 +189,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // IZ#157603 : Code model does not understand __attribute, constructor, destructor keywords (GNU)
         performTest("iz157603.cc");
     }
+
+    public void testIZ157836() throws Exception {
+        // IZ#157836 : parser incorrectly handles expression in else without {}
+        performTest("iz157836.cc");
+    }
 }
