@@ -91,6 +91,10 @@ public final class OpenedEditors {
         });
     }
 
+    public void fireStateChanged() {
+        stateChanged();
+    }
+
     public static synchronized OpenedEditors getDefault() {
         if (DEFAULT == null) {
             DEFAULT = new OpenedEditors();

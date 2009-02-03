@@ -108,7 +108,6 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         }
         jCodeExpansionEditorPane.setContentType(mimeType);
         jCodeExpansionEditorPane.setDocument(doc);
-        jCodeExpansionEditorPane.enableInputMethods(false);
         doc.putProperty(JEditorPane.class, jCodeExpansionEditorPane);
     }
 
@@ -142,7 +141,7 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
     /**
      * Sets scope for macro expansion (local or whole file).
      *
-     * @param local - is scole local
+     * @param local - is scope local
      */
     public void setLocalContext(boolean local) {
         localContext.setSelected(local);

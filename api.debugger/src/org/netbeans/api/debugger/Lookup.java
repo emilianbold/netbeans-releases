@@ -68,13 +68,19 @@ import java.util.Set;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.spi.debugger.ContextAwareService;
+import org.netbeans.spi.debugger.ContextAwareSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup.Item;
 import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.Lookup.Result;
 
 
 /**
@@ -147,7 +153,7 @@ abstract class Lookup implements ContextProvider {
             if (l2 instanceof Compound) ((Compound) l2).setContext (context);
             if (l2 instanceof MetaInf) ((MetaInf) l2).setContext (context);
         }
-        
+
         private class CompoundLookupList<T> extends LookupList<T> implements Customizer,
                                                                        PropertyChangeListener {
             
@@ -227,6 +233,7 @@ abstract class Lookup implements ContextProvider {
 
         
         MetaInf (String rootFolder) {
+            if (rootFolder != null && rootFolder.length() == 0) rootFolder = null;
             this.rootFolder = rootFolder;
             moduleLookupResult = org.openide.util.Lookup.getDefault().lookupResult(ModuleInfo.class);
             //System.err.println("\nModules = "+moduleLookupResult.allInstances().size()+"\n");
@@ -251,9 +258,11 @@ abstract class Lookup implements ContextProvider {
         
         private List<String> list(String folder, Class<?> service) {
             String name = service.getName ();
-            String resourceName = "META-INF/debugger/" +
-                ((rootFolder == null) ? "" : rootFolder + "/") + 
-                ((folder == null) ? "" : folder + "/") + 
+            String pathResourceName = "debugger/" +
+                ((rootFolder == null) ? "" : rootFolder + "/") +
+                ((folder == null) ? "" : folder + "/");
+            String resourceName = "META-INF/" +
+                pathResourceName +
                 name;
             synchronized(registrationCache) {
                 List<String> l = registrationCache.get(resourceName);
@@ -265,6 +274,17 @@ abstract class Lookup implements ContextProvider {
             }
         }
     
+        private org.openide.util.Lookup lookupForPath(String folder) {
+            String pathResourceName = "Debugger/" +
+                ((rootFolder == null) ? "" : rootFolder + "/") +
+                ((folder == null) ? "" : folder + "/");
+            return new PathLookup(pathResourceName);
+        }
+
+        private <T> Result<T> listLookup(String folder, Class<T> service) {
+            return lookupForPath(folder).lookupResult(service);
+        }
+
         private static Set<String> getHiddenClassNames(List l) {
             Set<String> s = null;
             int i, k = l.size ();
@@ -319,97 +339,6 @@ abstract class Lookup implements ContextProvider {
             throw new InternalError ("Can not read from Meta-inf!");
         }
         
-        private Object createInstance (String service) {
-            try {
-                ClassLoader cl = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
-                String method = null;
-                if (service.endsWith("()")) {
-                    int lastdot = service.lastIndexOf('.');
-                    if (lastdot < 0) {
-                        Exceptions.printStackTrace(
-                                new IllegalStateException("Bad service - dot before method name is missing: " +
-                                "'" + service + "'."));
-                        return null;
-                    }
-                    method = service.substring(lastdot + 1, service.length() - 2).trim();
-                    service = service.substring(0, lastdot);
-                }
-                Class cls = cl.loadClass (service);
-
-                Object o = null;
-                if (method != null) {
-                    Method m = null;
-                    if (context != null) {
-                        try {
-                            m = cls.getDeclaredMethod(method, new Class[] { Lookup.class });
-                        } catch (NoSuchMethodException nsmex) {}
-                    }
-                    if (m == null) {
-                        try {
-                            m = cls.getDeclaredMethod(method, new Class[] { });
-                        } catch (NoSuchMethodException nsmex) {}
-                    }
-                    if (m != null) {
-                        o = m.invoke(null, (m.getParameterTypes().length == 0)
-                                     ? new Object[] {} : new Object[] { context });
-                    }
-                }
-                if (o == null && context != null) {
-                    Constructor[] cs = cls.getConstructors ();
-                    int i, k = cs.length;
-                    for (i = 0; i < k; i++) {
-                        Constructor c = cs [i];
-                        if (c.getParameterTypes ().length != 1) continue;
-                        try {
-                            o = c.newInstance (new Object[] {context});
-                        } catch (IllegalAccessException e) {
-                            if (verbose) {
-                                System.out.println("\nservice: " + service);
-                                e.printStackTrace ();
-                            }
-                        } catch (IllegalArgumentException e) {
-                            if (verbose) {
-                                System.out.println("\nservice: " + service);
-                                e.printStackTrace ();
-                            }
-                        }
-                    }
-                }
-                if (o == null)
-                    o = cls.newInstance ();
-                if (verbose)
-                    System.out.println("\nR  instance " + o + 
-                        " created");
-                return o;
-            } catch (ClassNotFoundException e) {
-                Exceptions.printStackTrace(
-                        Exceptions.attachMessage(
-                            e,
-                            "The service "+service+" not found."));
-            } catch (InstantiationException e) {
-                Exceptions.printStackTrace(
-                        Exceptions.attachMessage(
-                        e,
-                        "The service "+service+" can not be instantiated."));
-            } catch (IllegalAccessException e) {
-                Exceptions.printStackTrace(
-                        Exceptions.attachMessage(
-                        e,
-                        "The service "+service+" can not be accessed."));
-            } catch (InvocationTargetException ex) {
-                Exceptions.printStackTrace(
-                        Exceptions.attachMessage(
-                        ex,
-                        "The service "+service+" can not be created."));
-            } catch (ExceptionInInitializerError ex) {
-                Exceptions.printStackTrace(
-                        Exceptions.attachMessage(
-                        ex,
-                        "The service "+service+" can not be initialized."));
-            }
-            return null;
-        }
-
         private void listenOn(ClassLoader cl) {
             synchronized(moduleChangeListeners) {
                 if (!moduleChangeListeners.containsKey(cl)) {
@@ -447,7 +376,7 @@ abstract class Lookup implements ContextProvider {
             }
             pcs.firePropertyChange("PROP_CACHE", null, null); // NOI18N
         }
-        
+
         private final class ModuleChangeListener implements PropertyChangeListener, org.openide.util.LookupListener {
 
             private ClassLoader cl;
@@ -580,40 +509,75 @@ abstract class Lookup implements ContextProvider {
             public int notifyUnloadOrder = 0;
             
             public MetaInfLookupList(String folder, Class<T> service) {
-                this(list(folder, service), service);
+                this(list(folder, service), listLookup(folder, service), service);
                 this.folder = folder;
             }
             
-            private MetaInfLookupList(List<String> l, Class<T> service) {
-                this(l, getHiddenClassNames(l), service);
+            private MetaInfLookupList(List<String> l, Result<T> lr, Class<T> service) {
+                this(l, lr, getHiddenClassNames(l), service);
             }
             
-            private MetaInfLookupList(List<String> l, Set<String> s, Class<T> service) {
+            private MetaInfLookupList(List<String> l, Result<T> lr, Set<String> s, Class<T> service) {
                 super(s);
                 assert service != null;
                 this.service = service;
-                fillInstances(l, s);
+                fillInstances(l, lr, s);
                 listenOnDisabledModules();
             }
             
-            private void fillInstances(List<String> l, Set<String> s) {
+            private void fillInstances(List<String> l, Result<T> lr, Set<String> s) {
                 for (String className : l) {
                     if (className.endsWith(HIDDEN)) continue;
                     if (s != null && s.contains (className)) continue;
-                    Object instance = null;
-                    synchronized(instanceCache) {
-                        instance = instanceCache.get (className);
+                    fillClassInstance(className);
+                }
+                for (Item<T> li : lr.allItems()) {
+                    // TODO: We likely do not have the Item.getId() defined correctly.
+                    // We have to check the ContextAwareService.serviceID()
+                    String serviceName = getServiceName(li.getId());
+                    if (s != null && s.contains (serviceName)) continue;
+                    add(new LazyInstance<T>(service, li));
+                }
+                /*
+                for (Object lri : lr.allInstances()) {
+                    if (lri instanceof ContextAwareService) {
+                        String className = ((ContextAwareService) lri).serviceName();
+                        if (s != null && s.contains (className)) continue;
+                        fillClassInstance(className);
                     }
-                    if (instance != null) {
-                        try {
-                            add(service.cast(instance), className);
-                        } catch (ClassCastException cce) {
-                            Logger.getLogger(Lookup.class.getName()).log(Level.WARNING, null, cce);
-                        }
-                        listenOn(instance.getClass().getClassLoader());
-                    } else if (checkClassName(className)) {
-                        add(new LazyInstance<T>(service, className), className);
+                }
+                 */
+            }
+
+            private String getServiceName(String itemId) {
+                int i = itemId.lastIndexOf('/');
+                if (i < 0) i = 0;
+                else i++; // Skip '/'
+                String serviceName = itemId.substring(i);
+                serviceName = serviceName.replace('-', '.');
+                try {
+                    org.openide.util.Lookup.getDefault().lookup(ClassLoader.class).loadClass(serviceName);
+                } catch (ClassNotFoundException ex) {
+                    // Not a class, likely a method call
+                    serviceName = serviceName + "()";
+                }
+                return serviceName;
+            }
+
+            private void fillClassInstance(String className) {
+                Object instance = null;
+                synchronized(instanceCache) {
+                    instance = instanceCache.get (className);
+                }
+                if (instance != null) {
+                    try {
+                        add(service.cast(instance), className);
+                    } catch (ClassCastException cce) {
+                        Logger.getLogger(Lookup.class.getName()).log(Level.WARNING, null, cce);
                     }
+                    listenOn(instance.getClass().getClassLoader());
+                } else if (checkClassName(className)) {
+                    add(new LazyInstance<T>(service, className), className);
                 }
             }
 
@@ -645,9 +609,10 @@ abstract class Lookup implements ContextProvider {
                 // can sync on it
                 clear();
                 List<String> l = list(folder, service);
+                Result lr = listLookup(folder, service);
                 Set<String> s = getHiddenClassNames(l);
                 hiddenClassNames = s;
-                fillInstances(l, s);
+                fillInstances(l, lr, s);
                 firePropertyChange();
             }
             
@@ -704,25 +669,43 @@ abstract class Lookup implements ContextProvider {
             }
 
             private class LazyInstance<T> extends LookupLazyEntry<T> {
+
                 private String className;
                 private Class<T> service;
+                Item<T> lookupItem;
+
                 public LazyInstance(Class<T> service, String className) {
                     this.service = service;
                     this.className = className;
+                }
+
+                public LazyInstance(Class<T> service, Item<T> lookupItem) {
+                    this.service = service;
+                    this.lookupItem = lookupItem;
                 }
 
                 private final Object instanceCreationLock = new Object();
                 
                 protected T getEntry() {
                     Object instance = null;
-                    synchronized (instanceCreationLock) {
-                        synchronized(instanceCache) {
-                            instance = instanceCache.get (className);
+                    if (lookupItem != null) {
+                        instance = lookupItem.getInstance();
+                        if (instance instanceof ContextAwareService) {
+                            ContextAwareService cas = (ContextAwareService) instance;
+                            instance = cas.forContext(Lookup.MetaInf.this.context);
+                            lookupItem = null;
                         }
-                        if (instance == null) {
-                            instance = createInstance (className);
-                            synchronized (instanceCache) {
-                                instanceCache.put (className, instance);
+                    }
+                    if (instance == null) {
+                        synchronized (instanceCreationLock) {
+                            synchronized(instanceCache) {
+                                instance = instanceCache.get (className);
+                            }
+                            if (instance == null) {
+                                instance = ContextAwareSupport.createInstance (className, Lookup.MetaInf.this.context);
+                                synchronized (instanceCache) {
+                                    instanceCache.put (className, instance);
+                                }
                             }
                         }
                     }
@@ -841,5 +824,5 @@ abstract class Lookup implements ContextProvider {
         }
         
     }
-    
+
 }
