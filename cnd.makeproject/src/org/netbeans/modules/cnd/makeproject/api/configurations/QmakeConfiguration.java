@@ -40,6 +40,8 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.StringTokenizer;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringListNodeProp;
@@ -58,7 +60,15 @@ public class QmakeConfiguration implements Cloneable {
     private final String[] BUILD_MODE_NAMES = { "Debug", "Release" }; // NOI18N
     private final String[] BUILD_NODE_OPTIONS = { "debug", "release" }; // NOI18N
 
+    private final MakeConfiguration makeConfiguration;
+
+    // general
+    private StringConfiguration destdir;
+    private StringConfiguration target;
+    private StringConfiguration libVersion;
     private IntConfiguration buildMode;
+
+    // modules
     private BooleanConfiguration coreEnabled;
     private BooleanConfiguration guiEnabled;
     private BooleanConfiguration networkEnabled;
@@ -66,11 +76,19 @@ public class QmakeConfiguration implements Cloneable {
     private BooleanConfiguration sqlEnabled;
     private BooleanConfiguration svgEnabled;
     private BooleanConfiguration xmlEnabled;
+
+    // generated files
     private StringConfiguration mocDir;
     private StringConfiguration uiDir;
+
+    // expert
     private VectorConfiguration<String> customDefs;
 
-    public QmakeConfiguration() {
+    public QmakeConfiguration(MakeConfiguration makeConfiguration) {
+        this.makeConfiguration = makeConfiguration;
+        destdir = new StringConfiguration(null, ""); // NOI18N
+        target = new StringConfiguration(null, ""); // NOI18N
+        libVersion = new StringConfiguration(null, "1.0.0"); // NOI18N
         buildMode = new IntConfiguration(null, 0, BUILD_MODE_NAMES, BUILD_NODE_OPTIONS);
         coreEnabled = new BooleanConfiguration(null, true);
         guiEnabled = new BooleanConfiguration(null, true);
@@ -91,6 +109,11 @@ public class QmakeConfiguration implements Cloneable {
         basic.setName("QtGeneral"); // NOI18N
         basic.setDisplayName(getString("QtGeneralTxt")); // NOI18N
         basic.setShortDescription(getString("QtGeneralHint")); // NOI18N
+        basic.put(new StringNodeProp(destdir, getDestdirDefault(), "QtDestdir", getString("QtDestdirTxt"), getString("QtDestdirHint"))); // NOI18N
+        basic.put(new StringNodeProp(target, getTargetDefault(), "QtTarget", getString("QtTargetTxt"), getString("QtTargetHint"))); // NOI18N
+        if (makeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_DYNAMIC_LIB) {
+            basic.put(new StringNodeProp(libVersion, "QtVersion", getString("QtVersionTxt"), getString("QtVersionHint"))); // NOI18N
+        }
         basic.put(new IntNodeProp(buildMode, true, "QtBuildMode", getString("QtBuildModeTxt"), getString("QtBuildModeHint"))); // NOI18N
         sheet.put(basic);
 
@@ -108,9 +131,9 @@ public class QmakeConfiguration implements Cloneable {
         sheet.put(modules);
 
         Sheet.Set generatedFiles = new Sheet.Set();
-        generatedFiles.setName("QtGeneratedFiles"); // NOI18N
-        generatedFiles.setDisplayName(getString("QtGeneratedFilesTxt")); // NOI18N
-        generatedFiles.setShortDescription(getString("QtGeneratedFilesHint")); // NOI18N
+        generatedFiles.setName("QtIntermediateFiles"); // NOI18N
+        generatedFiles.setDisplayName(getString("QtIntermediateFilesTxt")); // NOI18N
+        generatedFiles.setShortDescription(getString("QtIntermediateFilesHint")); // NOI18N
         generatedFiles.put(new StringNodeProp(mocDir, "QtMocDir", getString("QtMocDirTxt"), getString("QtMocDirHint"))); // NOI18N
         generatedFiles.put(new StringNodeProp(uiDir, "QtUicDir", getString("QtUiDirTxt"), getString("QtUiDirHint"))); // NOI18N
         sheet.put(generatedFiles);
@@ -125,11 +148,73 @@ public class QmakeConfiguration implements Cloneable {
         return sheet;
     }
 
+    public String getDestdirValue() {
+        if (destdir.getModified()) {
+            return destdir.getValue();
+        } else {
+            return getDestdirDefault();
+        }
+    }
+
+    private String getDestdirDefault() {
+        return MakeConfiguration.DIST_FOLDER + "/" + makeConfiguration.getName() + "/" + "${CND_PLATFORM}"; // NOI18N
+    }
+
+    public StringConfiguration getDestdir() {
+        return destdir;
+    }
+
+    private void setDestdir(StringConfiguration destdir) {
+        this.destdir = destdir;
+    }
+
+    public String getTargetValue() {
+        if (target.getModified()) {
+            return target.getValue();
+        } else {
+            return getTargetDefault();
+        }
+    }
+
+    private String getTargetDefault() {
+        return ConfigurationSupport.makeNameLegal(IpeUtils.getBaseName(makeConfiguration.getBaseDir()));
+    }
+
+    public StringConfiguration getTarget() {
+        return target;
+    }
+
+    private void setTarget(StringConfiguration target) {
+        this.target = target;
+    }
+
+    public StringConfiguration getLibVersion() {
+        return libVersion;
+    }
+
+    private void setLibVersion(StringConfiguration libVersion) {
+        this.libVersion = libVersion;
+    }
+
+    public String getOutputValue() {
+        String dir = getDestdirValue();
+        String file = getTargetValue();
+        switch (makeConfiguration.getConfigurationType().getValue()) {
+            case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
+                file = Platforms.getPlatform(makeConfiguration.getPlatform().getValue()).getQtLibraryName(file, getLibVersion().getValue());
+                break;
+            case MakeConfiguration.TYPE_QT_STATIC_LIB:
+                file = "lib" + file + ".a"; // NOI18N
+                break;
+        }
+        return 0 < dir.length()? dir + "/" + file : file; // NOI18N
+    }
+
     public IntConfiguration getBuildMode() {
         return buildMode;
     }
 
-    public void setBuildMode(IntConfiguration buildMode) {
+    private void setBuildMode(IntConfiguration buildMode) {
         this.buildMode = buildMode;
     }
 
@@ -194,7 +279,7 @@ public class QmakeConfiguration implements Cloneable {
         return coreEnabled;
     }
 
-    public void setCoreEnabled(BooleanConfiguration val) {
+    private void setCoreEnabled(BooleanConfiguration val) {
         coreEnabled = val;
     }
 
@@ -202,7 +287,7 @@ public class QmakeConfiguration implements Cloneable {
         return guiEnabled;
     }
 
-    public void setGuiEnabled(BooleanConfiguration val) {
+    private void setGuiEnabled(BooleanConfiguration val) {
         guiEnabled = val;
     }
 
@@ -210,7 +295,7 @@ public class QmakeConfiguration implements Cloneable {
         return networkEnabled;
     }
 
-    public void setNetworkEnabled(BooleanConfiguration val) {
+    private void setNetworkEnabled(BooleanConfiguration val) {
         networkEnabled = val;
     }
 
@@ -218,7 +303,7 @@ public class QmakeConfiguration implements Cloneable {
         return openglEnabled;
     }
 
-    public void setOpenglEnabled(BooleanConfiguration val) {
+    private void setOpenglEnabled(BooleanConfiguration val) {
         openglEnabled = val;
     }
 
@@ -226,7 +311,7 @@ public class QmakeConfiguration implements Cloneable {
         return sqlEnabled;
     }
 
-    public void setSqlEnabled(BooleanConfiguration val) {
+    private void setSqlEnabled(BooleanConfiguration val) {
         sqlEnabled = val;
     }
 
@@ -234,7 +319,7 @@ public class QmakeConfiguration implements Cloneable {
         return svgEnabled;
     }
 
-    public void setSvgEnabled(BooleanConfiguration val) {
+    private void setSvgEnabled(BooleanConfiguration val) {
         svgEnabled = val;
     }
 
@@ -242,7 +327,7 @@ public class QmakeConfiguration implements Cloneable {
         return xmlEnabled;
     }
 
-    public void setXmlEnabled(BooleanConfiguration val) {
+    private void setXmlEnabled(BooleanConfiguration val) {
         xmlEnabled = val;
     }
 
@@ -250,7 +335,7 @@ public class QmakeConfiguration implements Cloneable {
         return mocDir;
     }
 
-    public void setMocDir(StringConfiguration mocDir) {
+    private void setMocDir(StringConfiguration mocDir) {
         this.mocDir = mocDir;
     }
 
@@ -258,7 +343,7 @@ public class QmakeConfiguration implements Cloneable {
         return uiDir;
     }
 
-    public void setUiDir(StringConfiguration uicDir) {
+    private void setUiDir(StringConfiguration uicDir) {
         this.uiDir = uicDir;
     }
 
@@ -266,11 +351,14 @@ public class QmakeConfiguration implements Cloneable {
         return customDefs;
     }
 
-    public void setCustomDefs(VectorConfiguration<String> customDefs) {
+    private void setCustomDefs(VectorConfiguration<String> customDefs) {
         this.customDefs = customDefs;
     }
 
     public void assign(QmakeConfiguration other) {
+        getDestdir().assign(other.getDestdir());
+        getTarget().assign(other.getTarget());
+        getLibVersion().assign(other.getLibVersion());
         getBuildMode().assign(other.getBuildMode());
         isCoreEnabled().assign(other.isCoreEnabled());
         isGuiEnabled().assign(other.isGuiEnabled());
@@ -288,6 +376,9 @@ public class QmakeConfiguration implements Cloneable {
     public QmakeConfiguration clone() {
         try {
             QmakeConfiguration clone = (QmakeConfiguration) super.clone();
+            clone.setDestdir(getDestdir().clone());
+            clone.setTarget(getTarget().clone());
+            clone.setLibVersion(getLibVersion().clone());
             clone.setBuildMode(getBuildMode().clone());
             clone.setCoreEnabled(isCoreEnabled().clone());
             clone.setGuiEnabled(isGuiEnabled().clone());

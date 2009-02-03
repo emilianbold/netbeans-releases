@@ -315,7 +315,10 @@ public class GroovyActionProvider implements ActionProvider {
         List<String> names = getTestRootsNames(project);
         List<FileObject> result = new ArrayList<FileObject>();
         for (String name : names) {
-            result.add(project.getProjectDirectory().getFileObject(name));
+            FileObject root = project.getProjectDirectory().getFileObject(name);
+            if (root != null) {
+                result.add(root);
+            }
         }
         return result.toArray(new FileObject[result.size()]);
     }

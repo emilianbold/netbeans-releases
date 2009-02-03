@@ -246,8 +246,6 @@ public class WebFrameworksPanel extends javax.swing.JPanel implements ListSelect
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanelConfig, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE))
         );
-
-        jButtonAdd.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebFrameworksPanel.class, "ACS_Frameworks_AddButton_A11YDesc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddActionPerformed

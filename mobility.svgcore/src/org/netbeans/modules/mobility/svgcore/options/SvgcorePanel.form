@@ -104,7 +104,7 @@
       <Properties>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-            <TitledBorder title="SVG Rich Components Snippets ">
+            <TitledBorder title="SVG Rich Components Snippets">
               <ResourceString PropertyName="titleX" bundle="org/netbeans/modules/mobility/svgcore/options/Bundle.properties" key="LBL_SVGFrame" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </TitledBorder>
           </Border>

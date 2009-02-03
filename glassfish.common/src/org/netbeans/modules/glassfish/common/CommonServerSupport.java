@@ -129,6 +129,13 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         }
     }
     
+//<<<<<<< local
+//    private static String formatUri(String glassfishRoot, String host, int port, String uriFragment) {
+//        return "[" + glassfishRoot + "]" + uriFragment + ":" + host + ":" + port;
+//    }
+//
+//=======
+//>>>>>>> other
     private static String updateString(Map<String, String> map, String key, String defaultValue) {
         String result = map.get(key);
         if(result == null) {

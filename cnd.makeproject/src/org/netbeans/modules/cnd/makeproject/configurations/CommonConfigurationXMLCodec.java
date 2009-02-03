@@ -74,9 +74,15 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
+ * V55 - NB 7.0
+ *   DISK_FOLDER_ELEMENT
+ *   ITEM_NAME_ELEMENT
  * V54 - NB 7.0
  *   Qt settings are persisted:
  *   QT_ELEMENT
+ *   QT_DESTDIR
+ *   QT_TARGET
+ *   QT_LIB_VERSION
  *   QT_BUILD_MODE_ELEMENT
  *   QT_MODULES_ELEMENT
  *   QT_MOC_DIR_ELEMENT
@@ -155,7 +161,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 54;
+    public final static int CURRENT_VERSION = 55;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -169,7 +175,9 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String FOLDER_PATH_ELEMENT = "folderPath"; // Old style. FIXUP : < version 5 // NOI18N
     protected final static String SOURCE_FOLDERS_ELEMENT = "sourceFolders"; // Old style. FIXUP : < version 5 // NOI18N
     protected final static String LOGICAL_FOLDER_ELEMENT = "logicalFolder"; // NOI18N
+    protected final static String DISK_FOLDER_ELEMENT = "df"; // NOI18N
     protected final static String ITEM_PATH_ELEMENT = "itemPath"; // NOI18N
+    protected final static String ITEM_NAME_ELEMENT = "in"; // NOI18N
     protected final static String PROJECT_MAKEFILE_ELEMENT = "projectmakefile"; // NOI18N
     protected final static String REQUIRED_PROJECTS_ELEMENT = "requiredProjects"; // NOI18N
     protected final static String SOURCE_ROOT_LIST_ELEMENT = "sourceRootList"; // NOI18N
@@ -270,6 +278,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String VERSION_ATTR = "version"; // NOI18N
     protected final static String TYPE_ATTR = "type"; // NOI18N
     protected final static String NAME_ATTR = "name"; // NOI18N
+    protected final static String ROOT_ATTR = "root"; // NOI18N
     protected final static String SET_ATTR = "set"; // NOI18N
     protected final static String DISPLAY_NAME_ATTR = "displayName"; // NOI18N
     protected final static String PROJECT_FILES_ATTR = "projectFiles"; // NOI18N
@@ -293,12 +302,14 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String PACK_TOPDIR_ELEMENT = "packTopDir"; // NOI18N
     // Qt-related
     protected final static String QT_ELEMENT = "qt"; // NOI18N
+    protected final static String QT_DESTDIR_ELEMENT = "destdir"; // NOI18N
+    protected final static String QT_TARGET_ELEMENT = "target"; // NOI18N
+    protected final static String QT_LIB_VERSION_ELEMENT = "libVersion"; // NOI18N
     protected final static String QT_BUILD_MODE_ELEMENT = "buildMode"; // NOI18N
     protected final static String QT_MODULES_ELEMENT = "modules"; // NOI18N
     protected final static String QT_MOC_DIR_ELEMENT = "mocDir"; // NOI18N
     protected final static String QT_UI_DIR_ELEMENT = "uiDir"; // NOI18N
     protected final static String QT_DEFS_LIST_ELEMENT = "defs"; // NOI18N
-
     private ConfigurationDescriptor projectDescriptor;
     private boolean publicLocation;
 
@@ -344,11 +355,10 @@ public abstract class CommonConfigurationXMLCodec
                 if (makeConfiguration.isQmakeConfiguration()) {
                     writeQmakeConfiguration(xes, makeConfiguration.getQmakeConfiguration());
                 }
-                if (makeConfiguration.isCompileConfiguration() || makeConfiguration.isQmakeConfiguration()) {
-                    writeCompiledProjectConfBlock(xes, makeConfiguration);
-                }
                 if (makeConfiguration.isMakefileConfiguration()) {
                     writeMakefileProjectConfBlock(xes, makeConfiguration);
+                } else {
+                    writeCompiledProjectConfBlock(xes, makeConfiguration);
                 }
                 writePackaging(xes, makeConfiguration.getPackagingConfiguration());
                 ConfigurationAuxObject[] profileAuxObjects = confs.getConf(i).getAuxObjects();
@@ -403,11 +413,17 @@ public abstract class CommonConfigurationXMLCodec
         writeCCompilerConfiguration(xes, makeConfiguration.getCCompilerConfiguration());
         writeCCCompilerConfiguration(xes, makeConfiguration.getCCCompilerConfiguration());
         writeFortranCompilerConfiguration(xes, makeConfiguration.getFortranCompilerConfiguration());
-        if (makeConfiguration.isLinkerConfiguration()) {
-            writeLinkerConfiguration(xes, makeConfiguration.getLinkerConfiguration());
-        }
-        if (makeConfiguration.isArchiverConfiguration()) {
-            writeArchiverConfiguration(xes, makeConfiguration.getArchiverConfiguration());
+        switch (makeConfiguration.getConfigurationType().getValue()) {
+            case MakeConfiguration.TYPE_APPLICATION:
+            case MakeConfiguration.TYPE_DYNAMIC_LIB:
+            case MakeConfiguration.TYPE_QT_APPLICATION:
+            case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
+                writeLinkerConfiguration(xes, makeConfiguration.getLinkerConfiguration());
+                break;
+            case MakeConfiguration.TYPE_STATIC_LIB:
+            case MakeConfiguration.TYPE_QT_STATIC_LIB:
+                writeArchiverConfiguration(xes, makeConfiguration.getArchiverConfiguration());
+                break;
         }
         writeRequiredProjects(xes, makeConfiguration.getRequiredProjectsConfiguration());
         xes.elementClose(COMPILE_TYPE_ELEMENT);
@@ -415,6 +431,15 @@ public abstract class CommonConfigurationXMLCodec
 
     private void writeQmakeConfiguration(XMLEncoderStream xes, QmakeConfiguration qmake) {
         xes.elementOpen(QT_ELEMENT);
+        if (qmake.getDestdir().getModified()) {
+            xes.element(QT_DESTDIR_ELEMENT, qmake.getDestdirValue());
+        }
+        if (qmake.getTarget().getModified()) {
+            xes.element(QT_TARGET_ELEMENT, qmake.getTargetValue());
+        }
+        if (qmake.getLibVersion().getModified()) {
+            xes.element(QT_LIB_VERSION_ELEMENT, qmake.getLibVersion().getValue());
+        }
         if (qmake.getBuildMode().getModified()) {
             xes.element(QT_BUILD_MODE_ELEMENT, String.valueOf(qmake.getBuildMode().getValue()));
         }
@@ -468,7 +493,11 @@ public abstract class CommonConfigurationXMLCodec
         // write out subfolders
         Folder[] subfolders = folder.getFoldersAsArray();
         for (int i = 0; i < subfolders.length; i++) {
-            writeLogicalFolder(xes, subfolders[i]);
+            if (subfolders[i].isDiskFolder()) {
+                writeDiskFolder(xes, subfolders[i]);
+            } else {
+                writeLogicalFolder(xes, subfolders[i]);
+            }
         }
         // write out items
         Item[] items = folder.getItemsAsArray();
@@ -476,6 +505,32 @@ public abstract class CommonConfigurationXMLCodec
             xes.element(ITEM_PATH_ELEMENT, items[i].getPath());
         }
         xes.elementClose(LOGICAL_FOLDER_ELEMENT);
+    }
+
+    private void writeDiskFolder(XMLEncoderStream xes, Folder folder) {
+        if (folder.getRoot() != null) {
+            xes.elementOpen(DISK_FOLDER_ELEMENT,
+                    new AttrValuePair[]{
+                        new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
+                        new AttrValuePair(ROOT_ATTR, "" + folder.getRoot()), // NOI18N
+                    });
+        } else {
+            xes.elementOpen(DISK_FOLDER_ELEMENT,
+                    new AttrValuePair[]{
+                        new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
+                    });
+        }
+        // write out subfolders
+        Folder[] subfolders = folder.getFoldersAsArray();
+        for (int i = 0; i < subfolders.length; i++) {
+            writeDiskFolder(xes, subfolders[i]);
+        }
+        // write out items
+        Item[] items = folder.getItemsAsArray();
+        for (int i = 0; i < items.length; i++) {
+            xes.element(ITEM_NAME_ELEMENT, items[i].getName());
+        }
+        xes.elementClose(DISK_FOLDER_ELEMENT);
     }
 
     private void writeSourceRoots(XMLEncoderStream xes) {

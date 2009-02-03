@@ -144,7 +144,7 @@ public class MakeConfiguration extends Configuration {
         packagingConfiguration = new PackagingConfiguration(this);
         requiredProjectsConfiguration = new RequiredProjectsConfiguration();
         debuggerChooserConfiguration = new DebuggerChooserConfiguration();
-        qmakeConfiguration = new QmakeConfiguration();
+        qmakeConfiguration = new QmakeConfiguration(this);
 
         developmentHost.addPropertyChangeListener(compilerSet);
         developmentHost.addPropertyChangeListener(platform);
@@ -739,7 +739,7 @@ public class MakeConfiguration extends Configuration {
         } else if (isMakefileConfiguration()) {
             output = getMakefileConfiguration().getOutput().getValue();
         } else if (isQmakeConfiguration()) {
-            output = getLinkerConfiguration().getOutputValue();
+            output = getQmakeConfiguration().getOutputValue();
         } else {
             assert false;
         }

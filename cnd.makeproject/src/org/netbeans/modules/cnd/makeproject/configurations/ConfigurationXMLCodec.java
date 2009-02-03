@@ -202,6 +202,17 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                     ((MakeConfigurationDescriptor) projectDescriptor).setExternalFileItems(currentFolder);
                 }
             }
+        } else if (element.equals(DISK_FOLDER_ELEMENT)) {
+            if (currentFolderStack.size() == 0) {
+                currentFolder = ((MakeConfigurationDescriptor) projectDescriptor).getLogicalFolders();
+                currentFolderStack.push(currentFolder);
+            } else {
+                String name = getString(atts.getValue(NAME_ATTR));
+                String root = getString(atts.getValue(ROOT_ATTR));
+                currentFolder = currentFolder.addNewFolder(name, name, true);
+                currentFolder.setRoot(root);
+                currentFolderStack.push(currentFolder);
+            }
         } else if (element.equals(SOURCE_ROOT_LIST_ELEMENT)) {
             currentList = new ArrayList<String>();
         } else if (element.equals(ItemXMLCodec.ITEM_ELEMENT)) {
@@ -438,7 +449,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             currentFolder.addItem(new Item(getString(currentText)));
         } else if (element.equals(SOURCE_FOLDERS_ELEMENT)) { // FIXUP: < version 5
             //((MakeConfigurationDescriptor)projectDescriptor).setExternalFileItems(currentList);
-        } else if (element.equals(LOGICAL_FOLDER_ELEMENT)) {
+        } else if (element.equals(LOGICAL_FOLDER_ELEMENT) || element.equals(DISK_FOLDER_ELEMENT)) {
             currentFolderStack.pop();
             if (currentFolderStack.size() > 0) {
                 currentFolder = currentFolderStack.peek();
@@ -451,6 +462,13 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             currentList = null;
         } else if (element.equals(ITEM_PATH_ELEMENT)) {
             String path = currentText;
+            path = getString(adjustOffset(path));
+            currentFolder.addItem(new Item(path));
+        } else if (element.equals(ITEM_NAME_ELEMENT)) {
+            String path = currentFolder.getRootPath() + '/' + currentText;
+            if (path.startsWith("./")) { // NOI18N
+                path = path.substring(2);
+            }
             path = getString(adjustOffset(path));
             currentFolder.addItem(new Item(path));
         } else if (element.equals(ItemXMLCodec.ITEM_EXCLUDED_ELEMENT) || element.equals(ItemXMLCodec.EXCLUDED_ELEMENT)) {
@@ -724,13 +742,25 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (currentLibrariesConfiguration != null && stdLibItem != null) {
                 currentLibrariesConfiguration.add(stdLibItem);
             }
-        } else if (element.equals(QT_MODULES_ELEMENT)) {
-            if (currentQmakeConfiguration != null) {
-                currentQmakeConfiguration.setEnabledModules(currentText);
-            }
         } else if (element.equals(QT_BUILD_MODE_ELEMENT)) {
             if (currentQmakeConfiguration != null) {
                 currentQmakeConfiguration.getBuildMode().setValue(Integer.parseInt(currentText));
+            }
+        } else if (element.equals(QT_DESTDIR_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.getDestdir().setValue(getString(currentText));
+            }
+        } else if (element.equals(QT_TARGET_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.getTarget().setValue(getString(currentText));
+            }
+        } else if (element.equals(QT_LIB_VERSION_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.getLibVersion().setValue(getString(currentText));
+            }
+        } else if (element.equals(QT_MODULES_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.setEnabledModules(currentText);
             }
         } else if (element.equals(QT_MOC_DIR_ELEMENT)) {
             if (currentQmakeConfiguration != null) {
