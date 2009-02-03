@@ -66,11 +66,11 @@ import org.openide.nodes.Node;
  *
  * @author lukas
  */
-public class CStubsTest extends RestTestBase {
+public class RestCStubsTest extends RestTestBase {
 
     private static boolean haveProjects = false;
 
-    public CStubsTest(String name) {
+    public RestCStubsTest(String name) {
         super(name);
     }
 
@@ -250,7 +250,7 @@ public class CStubsTest extends RestTestBase {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(CStubsTest.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(RestCStubsTest.class),
                 "testWizard", //NOI18N
                 "testCreateSimpleStubs", //NOI18N
                 "testFromWADL", //NOI18N
