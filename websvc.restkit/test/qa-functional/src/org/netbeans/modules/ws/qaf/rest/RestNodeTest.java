@@ -196,7 +196,7 @@ public class RestNodeTest extends RestTestBase {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(RestNodeTest.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(RestNodeTest.class),
                 "testNodesAfterOpen",
                 "testOpenOnResource",
                 "testOpenOnMethod",
