@@ -75,8 +75,11 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, F
         ProjectClassPathImplementation impl = new ProjectClassPathImplementation(project.getProjectDirectory());
 
         File pluginsDir = FileUtil.normalizeFile(new File(FileUtil.toFile(project.getProjectDirectory()), "plugins")); // NOI18N
-        // it is a weak referneced
+        File libDir = FileUtil.normalizeFile(new File(FileUtil.toFile(project.getProjectDirectory()), "lib")); // NOI18N
+
+        // it is weakly referenced
         FileUtil.addFileChangeListener(impl, pluginsDir);
+        FileUtil.addFileChangeListener(impl, libDir);
         return impl;
     }
 

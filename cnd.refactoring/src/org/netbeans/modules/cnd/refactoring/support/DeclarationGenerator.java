@@ -84,6 +84,7 @@ public final class DeclarationGenerator {
     public static String createSetter(CsmField field, String sName, Kind kind) {
         StringBuilder out = new StringBuilder();
         CharSequence fldName = field.getName();
+        String paramName = GeneratorUtils.stripFieldPrefix(fldName.toString());
         out.append("\n"); // NOI18N
         // type information is the first
         if (field.isStatic()) {
@@ -98,12 +99,12 @@ public final class DeclarationGenerator {
         out.append(sName).append("("); // NOI18N
         // add parameter
         out.append(field.getType().getText());
-        out.append(" ").append(fldName);// NOI18N
+        out.append(" ").append(paramName);// NOI18N
         out.append(")"); // NOI18N
         if (kind == Kind.DECLARATION) {
             out.append(";"); //NOI18N
         } else {
-            out.append("{ ").append("this->").append(fldName).append("=").append(fldName).append(";}"); // NOI18N
+            out.append("{ ").append("this->").append(fldName).append("=").append(paramName).append(";}"); // NOI18N
         }
         out.append("\n"); // NOI18N
         return out.toString();
