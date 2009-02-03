@@ -1066,11 +1066,17 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         try {
             removedText = getText(chng.getOffset(), chng.getLength());
         } catch (BadLocationException e) {
-            // Ignore
-            removedText = null;
+            throw new IllegalStateException(e);
         }
         org.netbeans.lib.editor.util.swing.DocumentUtilities.putEventProperty(chng, String.class,
                 removedText);
+
+        // Notify the remove update listeners - before the actual remove happens
+        // so that it adheres to removeUpdate() logic; also the listeners can check
+        // positions' offsets before the actual removal happens.
+        for (DocumentListener listener: updateDocumentListenerList.getListeners()) {
+            listener.removeUpdate(chng);
+        }
 
         // Remember the line changes here but add them to chng during postRemoveUpdate()
         removeUpdateLineUndo = lineRootElement.removeUpdate(chng.getOffset(), chng.getLength());
@@ -1094,17 +1100,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         fixLineSyntaxState.update(false);
         chng.addEdit(fixLineSyntaxState.createAfterLineUndo());
         fixLineSyntaxState = null;
-
-        // Useful for lexer snapshots
-        org.netbeans.lib.editor.util.swing.DocumentUtilities.addEventPropertyStorage(chng);
-        BaseDocumentEvent bEvt = (BaseDocumentEvent)chng;
-        org.netbeans.lib.editor.util.swing.DocumentUtilities.putEventProperty(
-                chng, String.class, bEvt.getText());
-
-        for (DocumentListener listener: updateDocumentListenerList.getListeners()) {
-            listener.removeUpdate(chng);
-        }
-
     }
 
     public String getText(int[] block) throws BadLocationException {

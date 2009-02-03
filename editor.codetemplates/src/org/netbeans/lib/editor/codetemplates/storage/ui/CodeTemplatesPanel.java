@@ -291,7 +291,7 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
                     CodeTemplatesModel.TM tableModel = (CodeTemplatesModel.TM)tTemplates.getModel();
                     int i, rows = tableModel.getRowCount ();
                     for (i = 0; i < rows; i++) {
-                        String abbrev = (String) tableModel.getAbbreviation(i);
+                        String abbrev = tableModel.getAbbreviation(i);
                         if (newAbbrev.equals (abbrev)) {
                             DialogDisplayer.getDefault ().notify (
                                 new NotifyDescriptor.Message (
