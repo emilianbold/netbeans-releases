@@ -56,8 +56,6 @@ import org.openide.filesystems.FileObject;
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.class, position = 11)
 public class MacroExpansionCaretAwareFactory extends CaretAwareCsmFileTaskFactory {
 
-    private final static String MACRO_EXPANSION_UPDATING_CARET = "macro-expansion-updating-caret"; // NOI18N
-
     @Override
     protected PhaseRunner createTask(final FileObject fo) {
         return new PhaseRunner() {
@@ -68,9 +66,11 @@ public class MacroExpansionCaretAwareFactory extends CaretAwareCsmFileTaskFactor
                 if (doc == null) {
                     return;
                 }
-                if (doc.getProperty(MACRO_EXPANSION_UPDATING_CARET) != null) {
-                    doc.putProperty(MACRO_EXPANSION_UPDATING_CARET, null);
-                    return;
+                Object obj = doc.getProperty(CsmFileTaskFactory.USE_OWN_CARET_POSITION);
+                if (obj != null) {
+                    if(!(Boolean) obj) {
+                        return;
+                    }
                 }
                 if (!isMacroExpansionDoc(doc)) {
                     Document doc2 = (Document) doc.getProperty(Document.class);
@@ -80,8 +80,6 @@ public class MacroExpansionCaretAwareFactory extends CaretAwareCsmFileTaskFactor
                 }
                 if (!changed) {
                     syncRelatedDocumentCaretPosition(fo);
-                } else {
-                    doc.putProperty(MACRO_EXPANSION_UPDATING_CARET, true);
                 }
             }
 
@@ -148,13 +146,17 @@ public class MacroExpansionCaretAwareFactory extends CaretAwareCsmFileTaskFactor
             if (doc2 != null && isCaretSuncEnabledOnRelatedDoc(doc2)) {
                 FileObject file2 = CsmUtilities.getFileObject(doc2);
                 if (file2 != null) {
-                    int doc2CarretPosition = MacroExpansionViewUtils.getDocumentOffset(doc2,
-                            MacroExpansionViewUtils.getFileOffset(doc, CaretAwareCsmFileTaskFactory.getLastPosition(fo)));
-                    if (doc2CarretPosition >= 0 && doc2CarretPosition < doc2.getLength()) {
+                    int doc2CarretPosition = CaretAwareCsmFileTaskFactory.getLastPosition(file2);
+                    int docCarretPosition = CaretAwareCsmFileTaskFactory.getLastPosition(fo);
+                    int doc2CarretPositionFromDoc = MacroExpansionViewUtils.getDocumentOffset(doc2,
+                            MacroExpansionViewUtils.getFileOffset(doc, docCarretPosition));
+                    int docCarretPositionFromDoc2 = MacroExpansionViewUtils.getDocumentOffset(doc,
+                            MacroExpansionViewUtils.getFileOffset(doc2, doc2CarretPosition));
+                    if (doc2CarretPositionFromDoc >= 0 && doc2CarretPositionFromDoc < doc2.getLength()) {
                         JEditorPane ep = MacroExpansionViewUtils.getEditor(doc2);
-                        if (ep != null && ep.getCaretPosition() != doc2CarretPosition && !ep.hasFocus()) {
-                            ep.setCaretPosition(doc2CarretPosition);
-                            doc.putProperty(MACRO_EXPANSION_UPDATING_CARET, true);
+                        if (ep != null && doc2CarretPosition != doc2CarretPositionFromDoc &&
+                                docCarretPosition != docCarretPositionFromDoc2 && !ep.hasFocus()) {
+                            ep.setCaretPosition(doc2CarretPositionFromDoc);
                         }
                     }
                 }

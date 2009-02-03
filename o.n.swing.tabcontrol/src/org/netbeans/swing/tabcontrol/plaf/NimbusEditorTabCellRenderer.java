@@ -50,6 +50,7 @@ import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.image.BufferedImage;
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -106,7 +107,16 @@ final class NimbusEditorTabCellRenderer extends AbstractTabCellRenderer {
     
     private static void paintTabBackground (Graphics g, int index, Component c,
     int x, int y, int w, int h) {
+
+        Shape clip = g.getClip();
         NimbusEditorTabCellRenderer ren = (NimbusEditorTabCellRenderer) c;
+
+        w +=1;
+        boolean isPreviousTabSelected = ren.isPreviousTabSelected();
+        if (isPreviousTabSelected) {
+            g.setClip(x+1, y, w-1, h);
+        }
+
         Object o = null;
         if (ren.isSelected()) {
             if (ren.isActive()) {
@@ -126,6 +136,10 @@ final class NimbusEditorTabCellRenderer extends AbstractTabCellRenderer {
             painter.paint(g2d, null, w, h);
             g.drawImage(bufIm, x, y, null);
         } else {
+        }
+
+        if (isPreviousTabSelected) {
+            g.setClip(clip);
         }
     }
     

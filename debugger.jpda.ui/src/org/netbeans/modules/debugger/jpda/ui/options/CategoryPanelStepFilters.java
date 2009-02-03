@@ -312,6 +312,7 @@ class CategoryPanelStepFilters extends StorablePanel {
                     "all",
                     Collections.EMPTY_SET
                 );
+        filterClassesModel.clear();
         for (String filter : allFilters) {
             ClassFilter cf = new ClassFilter(filter, enabledFilters.contains(filter));
             filterClassesModel.addElement(cf);
