@@ -41,22 +41,31 @@
 
 package org.netbeans.modules.hudson.maven;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.model.CiManagement;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.util.ChangeSupport;
 
 /**
  *
  * @author mkleint
  */
-public class HudsonProviderImpl implements ProjectHudsonProvider {
+@ProjectServiceProvider(service=ProjectHudsonProvider.class, projectType="org-netbeans-modules-maven")
+public class HudsonProviderImpl implements ProjectHudsonProvider, PropertyChangeListener {
 
-    private Project project;
+    private final Project project;
+    private boolean associated;
+    private final ChangeSupport cs = new ChangeSupport(this);
 
     public HudsonProviderImpl(Project project) {
         this.project = project;
+        checkHudson();
+        NbMavenProject.addPropertyChangeListener(project, this);
     }
 
     private CiManagement getCIManag() {
@@ -64,6 +73,10 @@ public class HudsonProviderImpl implements ProjectHudsonProvider {
         CiManagement cim = prj.getMavenProject().getCiManagement();
         return cim;
 
+    }
+
+    public boolean isAssociated() {
+        return associated;
     }
 
     public String getServerUrl() {
@@ -77,10 +90,6 @@ public class HudsonProviderImpl implements ProjectHudsonProvider {
             return url;
         }
         return "http://localhost/";
-    }
-
-    public String getName() {
-        return getServerUrl().replaceFirst("https?://", "").replaceFirst("/$", ""); // NOI18N
     }
 
     public String getJobName() {
@@ -99,9 +108,27 @@ public class HudsonProviderImpl implements ProjectHudsonProvider {
         return "";
     }
 
-    public void addChangeListener(ChangeListener arg0) {
+    public void addChangeListener(ChangeListener l) {
+        cs.addChangeListener(l);
     }
 
-    public void removeChangeListener(ChangeListener arg0) {
+    public void removeChangeListener(ChangeListener l) {
+        cs.removeChangeListener(l);
     }
+
+    public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
+        if (NbMavenProject.PROP_PROJECT.equals(propertyChangeEvent.getPropertyName())) {
+            boolean old = associated;
+            checkHudson();
+            if (old != associated) {
+                cs.fireChange();
+            }
+        }
+    }
+
+    private void checkHudson() {
+        CiManagement cim = getCIManag();
+        associated = cim != null && cim.getSystem() != null && "hudson".equalsIgnoreCase(cim.getSystem());
+    }
+
 }

@@ -250,7 +250,8 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
             project.setSelectedItem(null);
             return;
         }
-        if (p.getLookup().lookup(ProjectHudsonProvider.class) != null) {
+        ProjectHudsonProvider php = p.getLookup().lookup(ProjectHudsonProvider.class);
+        if (php != null && php.isAssociated()) {
             error("This project already seems to be associated with a Hudson job."); // XXX I18N
             return;
         }

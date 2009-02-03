@@ -44,16 +44,33 @@ package org.netbeans.modules.hudson.spi;
 import javax.swing.event.ChangeListener;
 
 /**
- *
- * @author mkleint
+ * Documents existence of a Hudson job associated with the project.
  */
 public interface ProjectHudsonProvider {
 
+    /**
+     * @return true if the project is currently associated with a job, false otherwise
+     */
+    boolean isAssociated();
+
+    /**
+     * @return the root URL of the server, e.g. {@code http://deadlock.netbeans.org/hudson/}
+     */
     String getServerUrl();
-    String getName();
+
+    /**
+     * @return the code name of the job on that server
+     */
     String getJobName();
 
+    /**
+     * Adds a listener to changes in validity or status.
+     */
     void addChangeListener(ChangeListener listener);
+
+    /**
+     * Removes a listener to changes in validity or status.
+     */
     void removeChangeListener(ChangeListener listener);
 
 }

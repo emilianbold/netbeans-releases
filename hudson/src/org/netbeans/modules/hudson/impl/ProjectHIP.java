@@ -66,9 +66,10 @@ class ProjectHIP extends HudsonInstanceProperties {
             providers.add(prov);
         }
         ProjectHudsonProvider p = prov.getLookup().lookup(ProjectHudsonProvider.class);
-        if (p != null) {
-            put(INSTANCE_URL, p.getServerUrl());
-            put(INSTANCE_NAME, p.getName());
+        if (p != null && p.isAssociated()) {
+            String u = p.getServerUrl();
+            put(INSTANCE_URL, u);
+            put(INSTANCE_NAME, u.replaceFirst("https?://", "").replaceFirst("/$", "")); // NOI18N
             setPreferredJobs();
         }
         //TODO listen on changes from the provider and refire them as changed properties.
@@ -99,7 +100,7 @@ class ProjectHIP extends HudsonInstanceProperties {
         String list = "";
         for (Project prj : getProviders()) {
             ProjectHudsonProvider p = prj.getLookup().lookup(ProjectHudsonProvider.class);
-            if (p != null) {
+            if (p != null && p.isAssociated()) {
                 String name = p.getJobName();
                 if (name != null && name.trim().length() > 0) {
                     list = list + "|" + name.trim(); //NOI18N

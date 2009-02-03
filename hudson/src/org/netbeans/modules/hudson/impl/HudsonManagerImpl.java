@@ -305,6 +305,9 @@ public class HudsonManagerImpl extends HudsonManager {
                     exists = true;
                 }
                 ProjectHudsonProvider prov = project.getLookup().lookup(ProjectHudsonProvider.class);
+                if (!prov.isAssociated()) {
+                    prov = null;
+                }
                 if (prov != null && !exists) {
                     String url = prov.getServerUrl();
                     HudsonInstance in = getInstance(url);
