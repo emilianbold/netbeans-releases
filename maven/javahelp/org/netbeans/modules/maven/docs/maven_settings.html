@@ -15,9 +15,10 @@
 <h2>Configuring Maven Settings</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small></p>
 <p>You can configure Maven settings at the IDE level and at the project level.
-At the IDE level you can configure Maven installation and repostiory details.
-At the project level you can configure Maven profiles for each project and
-bind IDE actions to Maven goals for each project.</p>
+At the IDE level you can configure Maven installation and repository details and define global Maven goals.
+At the project level you can create configurations to activate Maven profiles and
+bind IDE actions to Maven goals for a project.
+</p>
 
 <h3>Configuring Maven Settings for the IDE</h3>
 <p>You configure Maven settings that effect the
@@ -28,12 +29,12 @@ the location of the local Maven repository and settings for updating the reposit
 <ol>
   <li>From the main window, choose Tools &gt; Options. </li>
   <li>Click the Miscellaneous category and then click the Maven tab.</li>
-  <li>Modify the properties as desired. </li>
+  <li>Modify the properties as desired. Click OK.</li>
 </ol>
 
 <h3>Configuring Maven Settings for Projects</h3>
 <p>By using the project's Properties window you can configure Maven settings for an individual project.
-You can create named configurations and then bind Maven goals to IDE actions and assign the
+You can create named configurations and then bind IDE actions to Maven goals and assign the
 binding to a configuration.</p>
 <ol>
   <li>Right-click the project node in the Projects window and choose Properties. </li>
@@ -43,9 +44,10 @@ binding to a configuration.</p>
 <p><strong>Using Project Configurations</strong></p>
 <p>The Configurations category enables you to enable and disable the configurations option for your project
 and create new named configurations.
-If you enable the option you can create named configurations that can be selected when binding
-an IDE action to a Maven goal in the Actions category of the Properties window.
-<!--A configuration enables you to customize how your project is loaded and executed-->.</p>
+When enabled, you can easily create and activate any configurations that you create.
+You can create configurations that can activate specific Maven profiles.
+You can also use a configuration to map IDE actions to Maven goals.</p>
+
 <p>You can switch to a configuration by right-clicking the project node in the Projects window and
 choosing Set Configuration.
 If your project is set as the main project in the IDE you can also
@@ -54,30 +56,21 @@ switch configurations using the drop-down list in the toolbar.</p>
 <p>Using a named configuration enables you to do the following:</p>
 <ul>
     <li>Load the project in the IDE with a customized set of dependencies or submodules.</li>
-    <li>Every action triggered with the configuration will have it's profile(s) also activated for building,
-    running or debugging the application.
-    Thus you can have alternate setup for various plugins and easily switch between them.</li>
-    <li>Once configurations are enabled, other panels in the Project properties dialog
-    (currently Actions panel for all project packagings and the Run panel for "jar" packaging)
-    add a combobox with existing configurations and let you customize the IDE actions on a
-    per configuration basis.
-    For example each configuration can run the project with different main class setup.
-    Or with different parameters passed into the main class. </li>
+    <li>Trigger actions and activate any associated profiles.</li>
+    <li>Customize IDE actions to map to Maven goals.</li>
 </ul>
-<!-- TODO Confirm this -->
 
-<!--
-Hint: In case you have configurations disabled but still want to have the project loaded with specific profile(s) on,
-please refer to the project's popup menu and find the "Profiles" sub menu.
-There you can select profiles you want to have activated when the project loads.
-Please not that when you enable configurations, the Profiles action disappears
-and you are expected to use Configurations to get the same result.
--->
+<ul class="notes">
+    <li>If you do not enable configurations for your project, you can activate Maven profiles
+    by right-clicking the project node and choosing Profiles from the popup menu.</li>
+</ul>
+
 
 <p><strong>Binding IDE Actions to Maven Goals</strong></p>
 
 <p>You can use the Actions category in the Properties window to customize IDE actions by binding the action to Maven goals.
 The Actions pane lists the IDE's default project actions that can be mapped to Maven goals.
+You can assign the mapping to a project configuration if you activated configurations for the project.
 The following textfields display the goals and properties associated with the selected action.</p>
 
 <ul>
