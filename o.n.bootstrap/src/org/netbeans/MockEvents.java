@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,21 +39,10 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.lib.editor.codetemplates.textsync;
+package org.netbeans;
 
-/**
- * Notifications of changes in editing of text sync groups.
- *
- * @author Miloslav Metelka
- */
-public interface TextSyncGroupEditingNotify {
+public final class MockEvents extends Events {
 
-    void deactivated(TextRegionEditing textRegionEditing, TextSync lastActiveTextSync);
-    
-    void released(TextRegionEditing textRegionEditing);
-    
-    void textSyncActivated(TextRegionEditing textRegionEditing, int origTextSyncIndex);
-    
-    void textSyncModified(TextRegionEditing textRegionEditing);
+    protected void logged(String message, Object[] args) {}
 
 }

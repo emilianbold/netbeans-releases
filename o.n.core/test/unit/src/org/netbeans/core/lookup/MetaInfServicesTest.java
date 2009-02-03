@@ -49,7 +49,7 @@ import javax.print.PrintServiceLookup;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.core.startup.ModuleHistory;
-import org.netbeans.core.startup.SetupHid;
+import org.netbeans.SetupHid;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;

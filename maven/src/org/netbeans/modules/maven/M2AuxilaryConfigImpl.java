@@ -43,12 +43,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import hidden.org.codehaus.plexus.util.StringOutputStream;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.util.Exceptions;
-import org.openide.util.Mutex;
+import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -66,15 +66,73 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
 
     private static final String AUX_CONFIG = "AuxilaryConfiguration"; //NOI18N
     private static final String CONFIG_FILE_NAME = "nb-configuration.xml"; //NOI18N
+    private static final int SAVING_DELAY = 100;
     private NbMavenProjectImpl project;
+    private RequestProcessor.Task savingTask;
+    private Document scheduledDocument;
 
     /** Creates a new instance of M2AuxilaryConfigImpl */
     public M2AuxilaryConfigImpl(NbMavenProjectImpl proj) {
         this.project = proj;
+        savingTask = RequestProcessor.getDefault().create(new Runnable() {
+
+            public void run() {
+                try {
+                    project.getProjectDirectory().getFileSystem().runAtomicAction(new AtomicAction() {
+                        public void run() throws IOException {
+                            FileLock lck = null;
+                            OutputStream out = null;
+                            try {
+                                FileObject config = project.getProjectDirectory().getFileObject(CONFIG_FILE_NAME);
+                                if (config == null) {
+                                    config = project.getProjectDirectory().createData(CONFIG_FILE_NAME);
+                                }
+                                Document doc;
+                                synchronized (M2AuxilaryConfigImpl.this) {
+                                    //do saving here..
+                                    doc = scheduledDocument;
+                                    scheduledDocument = null;
+
+                                    lck = config.lock();
+                                }
+                                out = config.getOutputStream(lck);
+                                XMLUtil.write(doc, out, "UTF-8"); //NOI18N
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            } finally {
+                                if (out != null) {
+                                    try {
+                                        out.close();
+                                    } catch (IOException ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    }
+                                }
+                                if (lck != null) {
+                                    lck.releaseLock();
+                                }
+                            }
+                        }
+                    });
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
+
+            }
+        });
     }
 
     public synchronized Element getConfigurationFragment(final String elementName, final String namespace, boolean shared) {
         if (shared) {
+            //first check the document schedule for persistence
+            if (scheduledDocument != null) {
+                Element el = findElement(scheduledDocument.getDocumentElement(), elementName, namespace);
+                if (el != null) {
+                    el = (Element) el.cloneNode(true);
+                }
+                return el;
+            }
+            //TODO shall we generally do some caching?
             final FileObject config = project.getProjectDirectory().getFileObject(CONFIG_FILE_NAME);
             if (config != null) {
                 Document doc;
@@ -121,22 +179,26 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
         Document doc = null;
         FileObject config = project.getProjectDirectory().getFileObject(CONFIG_FILE_NAME);
         if (shared) {
-            if (config != null) {
-                try {
-                    doc = XMLUtil.parse(new InputSource(config.getInputStream()), false, true, null, null);
-                } catch (SAXException ex) {
-                    ex.printStackTrace();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
+            if (scheduledDocument != null) {
+                doc = scheduledDocument;
             } else {
-                String element = "project-shared-configuration"; // NOI18N
-                doc = XMLUtil.createDocument(element, null, null, null);
-                doc.getDocumentElement().appendChild(doc.createComment(
-                        "\nThis file contains additional configuration written by modules in the NetBeans IDE.\n" + //NOI18N will be part of a file on disk, don't translate
-                        "The configuration is intended to be shared among all the users of project and\n" +//NOI18N
-                        "therefore it is assumed to be part of version control checkout.\n" +//NOI18N
-                        "Without this configuration present, some functionality in the IDE may be limited or fail altogether.\n"));//NOI18N
+                if (config != null) {
+                    try {
+                        doc = XMLUtil.parse(new InputSource(config.getInputStream()), false, true, null, null);
+                    } catch (SAXException ex) {
+                        ex.printStackTrace();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                } else {
+                    String element = "project-shared-configuration"; // NOI18N
+                    doc = XMLUtil.createDocument(element, null, null, null);
+                    doc.getDocumentElement().appendChild(doc.createComment(
+                            "\nThis file contains additional configuration written by modules in the NetBeans IDE.\n" + //NOI18N will be part of a file on disk, don't translate
+                            "The configuration is intended to be shared among all the users of project and\n" +//NOI18N
+                            "therefore it is assumed to be part of version control checkout.\n" +//NOI18N
+                            "Without this configuration present, some functionality in the IDE may be limited or fail altogether.\n"));//NOI18N
+                }
             }
         } else {
             String str = (String) project.getProjectDirectory().getAttribute(AUX_CONFIG);
@@ -162,29 +224,11 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
             doc.getDocumentElement().appendChild(doc.importNode(fragment, true));
         }
         if (shared) {
-            FileLock lck = null;
-            OutputStream out = null;
-            try {
-                if (config == null) {
-                    config = project.getProjectDirectory().createData(CONFIG_FILE_NAME);
-                }
-                lck = config.lock();
-                out = config.getOutputStream(lck);
-                XMLUtil.write(doc, out, "UTF-8"); //NOI18N
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } finally {
-                if (out != null) {
-                    try {
-                        out.close();
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-                if (lck != null) {
-                    lck.releaseLock();
-                }
+            if (scheduledDocument == null) {
+                scheduledDocument = doc;
             }
+            savingTask.schedule(SAVING_DELAY);
+
         } else {
             try {
                 StringOutputStream wr = new StringOutputStream();
@@ -201,18 +245,21 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
         Document doc = null;
         FileObject config = project.getProjectDirectory().getFileObject(CONFIG_FILE_NAME);
         if (shared) {
-            if (config != null) {
-                try {
-                    doc = XMLUtil.parse(new InputSource(config.getInputStream()), false, true, null, null);
-                } catch (SAXException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+            if (scheduledDocument != null) {
+                doc = scheduledDocument;
             } else {
-                return false;
+                if (config != null) {
+                    try {
+                        doc = XMLUtil.parse(new InputSource(config.getInputStream()), false, true, null, null);
+                    } catch (SAXException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } else {
+                    return false;
+                }
             }
-
         } else {
             String str = (String) project.getProjectDirectory().getAttribute(AUX_CONFIG);
             if (str != null) {
@@ -234,26 +281,10 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
             }
         }
         if (shared) {
-            FileLock lck = null;
-            OutputStream out = null;
-            try {
-                lck = config.lock();
-                out = config.getOutputStream(lck);
-                XMLUtil.write(doc, out, "UTF-8"); //NOI18N
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } finally {
-                if (out != null) {
-                    try {
-                        out.close();
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-                if (lck != null) {
-                    lck.releaseLock();
-                }
+            if (scheduledDocument == null) {
+                scheduledDocument = doc;
             }
+            savingTask.schedule(SAVING_DELAY);
         } else {
             try {
                 StringOutputStream wr = new StringOutputStream();
