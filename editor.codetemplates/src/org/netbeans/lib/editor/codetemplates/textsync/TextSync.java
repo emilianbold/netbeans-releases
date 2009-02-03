@@ -58,7 +58,7 @@ public final class TextSync {
     private static int EDITABLE_FLAG = 1;
     private static int CARET_MARKER_FLAG = 2;
 
-    private TextSyncGroup textSyncGroup;
+    private TextSyncGroup<?> textSyncGroup;
     
     private List<TextRegion<?>> regions;
     
@@ -190,11 +190,13 @@ public final class TextSync {
         return regions;
     }
     
-    TextSyncGroup textSyncGroup() {
-        return textSyncGroup;
+    public <T> TextSyncGroup<T> group() {
+        @SuppressWarnings("unchecked")
+        TextSyncGroup<T> group = (TextSyncGroup<T>)textSyncGroup;
+        return group;
     }
     
-    void setTextSyncGroup(TextSyncGroup textSyncGroup) {
+    void setGroup(TextSyncGroup<?> textSyncGroup) {
         this.textSyncGroup = textSyncGroup;
     }
 
@@ -212,19 +214,13 @@ public final class TextSync {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(regions.size() * 8 + 2);
-        sb.append('[');
-        boolean nonFirst = false;
         TextRegion masterRegion = masterRegion();
         for (TextRegion textRegion : regions) {
-            if (nonFirst) {
-                sb.append(", ");
-            }
-            sb.append(textRegion);
+            sb.append("    ");
             if (textRegion == masterRegion)
-                sb.append('M');
-            nonFirst = true;
+                sb.append("M:");
+            sb.append(textRegion).append('\n');
         }
-        sb.append(']');
         return sb.toString();
     }
     

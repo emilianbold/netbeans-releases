@@ -73,8 +73,6 @@ for TEST_SUITE in soa.kit xml.schema mobility.project ide.kit php.editor; do
 done
 # Init application server for tests
 #sh -x `dirname $0`/initAppserver.sh
-# visualweb UI validation tests
-#sh -x `dirname $0`/run-vw-sanity.sh
 # SOA (BPEL, XSLT) and XML UI validation tests
 #for i in 1 2 3; do
 #    ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-enterprise -Dxtest.instance.name="Enterprise tests" -Dxtest.no.cleanresults=true -Dnetbeans.dest.dir=$NB_ALL/nbbuild/test-netbeans runtests

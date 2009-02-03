@@ -90,7 +90,6 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
     private AntProjectHelper projectHelper;
     private FileChangeListener fcl = null;      
     private PropertyEvaluator evaluator;
-    private boolean canHaveWebServices;
     private File buildGeneratedDir = null;
     private final FileChangeListener buildGeneratedDirListener = new FileChangeAdapter() {
         public @Override void fileFolderCreated(FileEvent fe) {
@@ -110,13 +109,12 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
      * @param sourceRoots used to get the roots information and events
      * @param projectHelper used to obtain the project root
      */
-    SourcePathImplementation(SourceRoots sourceRoots, AntProjectHelper projectHelper, PropertyEvaluator evaluator, boolean canHaveWebServices) {
+    SourcePathImplementation(SourceRoots sourceRoots, AntProjectHelper projectHelper, PropertyEvaluator evaluator) {
         assert sourceRoots != null && projectHelper != null && evaluator != null;
         this.sourceRoots = sourceRoots;
         this.sourceRoots.addPropertyChangeListener (this);
         this.projectHelper=projectHelper;
         this.evaluator = evaluator;
-        this.canHaveWebServices = canHaveWebServices;
         evaluator.addPropertyChangeListener(this);
     }
 
