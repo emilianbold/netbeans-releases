@@ -95,6 +95,10 @@ public class ItemXMLCodec extends XMLDecoder implements XMLEncoder {
 
     // interface XMLEncoder
     public void encode(XMLEncoderStream xes) {
+        if (item.isDefaultConfiguration()) {
+            return;
+        }
+
 	xes.elementOpen(ITEM_ELEMENT, new AttrValuePair[] {new AttrValuePair(PATH_ATTR, item.getItem().getPath())});
 	if (item.getExcluded().getModified())
 	    xes.element(ITEM_EXCLUDED_ELEMENT, "" + item.getExcluded().getValue()); // NOI18N

@@ -50,8 +50,11 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLDocReader;
 import org.netbeans.modules.cnd.makeproject.MakeProjectConfigurationProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -194,6 +197,17 @@ public class ConfigurationXMLReader extends XMLDocReader {
             // Project is modified and will be saved with current version. This includes samples.
             configurationDescriptor.setVersion(CommonConfigurationXMLCodec.CURRENT_VERSION);
         }
+        
+        // Ensure all item configurations have been created
+        Item[] projectItems = configurationDescriptor.getProjectItems();
+        for (Configuration configuration : configurationDescriptor.getConfs().getConfigurtions()) {
+            for (Item item : projectItems) {
+                if (item.getItemConfiguration(configuration) == null) {
+                    configuration.addAuxObject(new ItemConfiguration(configuration, item));
+                }
+            }
+        }
+
         ConfigurationDescriptorProvider.recordMetrics(ConfigurationDescriptorProvider.USG_PROJECT_OPEN_CND, configurationDescriptor);
         return configurationDescriptor;
     }

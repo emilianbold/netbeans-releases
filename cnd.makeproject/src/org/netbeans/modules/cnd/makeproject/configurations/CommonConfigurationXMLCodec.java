@@ -74,6 +74,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
+ * V56 - NB 7.0
+ *   Dont write ITEM_ELEMENT (item configuration) if default values
  * V55 - NB 7.0
  *   DISK_FOLDER_ELEMENT
  *   ITEM_NAME_ELEMENT
@@ -158,7 +160,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 55;
+    public final static int CURRENT_VERSION = 56;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
