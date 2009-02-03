@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,50 +39,65 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.startup;
+package org.netbeans;
 
-import org.netbeans.MockEvents;
-import java.io.File;
-import java.util.Collections;
-import org.netbeans.Module;
-import org.netbeans.ModuleManager;
-import org.openide.util.NbBundle;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-/** Test the NetBeans module installer implementation.
- * Broken into pieces to ensure each runs in its own VM.
- * @author Jesse Glick
- */
-public class NbInstallerTest3 extends NbInstallerTestBase {
+public class MockModuleInstaller extends ModuleInstaller {
 
-    public NbInstallerTest3(String name) {
-        super(name);
+    // For examining results of what happened:
+    public final List<String> actions = new ArrayList<String>();
+    public final List<Object> args = new ArrayList<Object>();
+
+    public void clear() {
+        actions.clear();
+        args.clear();
     }
+    // For adding invalid modules:
+    public final Set<Module> delinquents = new HashSet<Module>();
+    // For adding modules that don't want to close:
+    public final Set<Module> wontclose = new HashSet<Module>();
 
-    /** Test #21173/#23595: overriding layers by branding. */
-    public void testBrandingLayerOverrides() throws Exception {
-        Main.getModuleSystem ();
-        final MockEvents ev = new MockEvents();
-        NbInstaller installer = new NbInstaller(ev);
-        ModuleManager mgr = new ModuleManager(installer, ev);
-        installer.registerManager(mgr);
-        mgr.mutexPrivileged().enterWriteAccess();
-        try {
-            String orig = NbBundle.getBranding();
-            NbBundle.setBranding("foo");
-            try {
-                Module m1 = mgr.create(new File(jars, "base-layer-mod.jar"), null, false, false, false);
-                assertEquals(Collections.EMPTY_SET, m1.getProblems());
-                mgr.enable(m1);
-                assertEquals("special contents", slurp("foo/file1.txt"));
-                assertEquals(null, slurp("foo/file2.txt"));
-                mgr.disable(m1);
-                mgr.delete(m1);
-            } finally {
-                NbBundle.setBranding(orig);
-            }
-        } finally {
-            mgr.mutexPrivileged().exitWriteAccess();
+    public void prepare(Module m) throws InvalidException {
+        if (delinquents.contains(m)) {
+            throw new InvalidException(m, "not supposed to be installed");
         }
+        actions.add("prepare");
+        args.add(m);
     }
-    
+
+    public void dispose(Module m) {
+        actions.add("dispose");
+        args.add(m);
+    }
+
+    public void load(List<Module> modules) {
+        actions.add("load");
+        args.add(new ArrayList<Module>(modules));
+    }
+
+    public void unload(List<Module> modules) {
+        actions.add("unload");
+        args.add(new ArrayList<Module>(modules));
+    }
+
+    public boolean closing(List<Module> modules) {
+        actions.add("closing");
+        args.add(new ArrayList<Module>(modules));
+        for (Module m : modules) {
+            if (wontclose.contains(m)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void close(List<Module> modules) {
+        actions.add("close");
+        args.add(new ArrayList<Module>(modules));
+    }
+
 }

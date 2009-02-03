@@ -38,7 +38,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.startup;
+package org.netbeans;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,12 +51,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-import org.netbeans.Events;
-import org.netbeans.InvalidException;
-import org.netbeans.JarClassLoader;
-import org.netbeans.Module;
-import org.netbeans.ModuleFactory;
-import org.netbeans.ModuleManager;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -84,8 +78,8 @@ public class ModuleFactoryTest extends ModuleManagerTest {
         numberOfStandard = 0;
         numberOfFixed = 0;
         
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
@@ -121,8 +115,8 @@ public class ModuleFactoryTest extends ModuleManagerTest {
         ModuleManager mgr = null;
         try {
             testingDummyModule = true;
-            FakeModuleInstaller installer = new FakeModuleInstaller();
-            FakeEvents ev = new FakeEvents();
+            MockModuleInstaller installer = new MockModuleInstaller();
+            MockEvents ev = new MockEvents();
             mgr = new ModuleManager(installer, ev);
             mgr.mutexPrivileged().enterWriteAccess();
             
@@ -148,8 +142,8 @@ public class ModuleFactoryTest extends ModuleManagerTest {
         ModuleManager mgr = null;
         try {
             testingParentClassloaders = true;
-            FakeModuleInstaller installer = new FakeModuleInstaller();
-            FakeEvents ev = new FakeEvents();
+            MockModuleInstaller installer = new MockModuleInstaller();
+            MockEvents ev = new MockEvents();
             mgr = new ModuleManager(installer, ev);
             mgr.mutexPrivileged().enterWriteAccess();
             File j1 = new File(jars, "simple-module.jar");

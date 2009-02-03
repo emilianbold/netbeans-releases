@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.projects;
+package org.netbeans.core.validation;
 
 import java.io.ByteArrayOutputStream;
 import java.io.BufferedInputStream;
