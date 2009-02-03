@@ -81,7 +81,6 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
     private static final String BUILD_DIR = "build.dir"; // NOI18N
     private static final String BUILD_GENERATED_DIR = "build.generated.sources.dir"; // NOI18N
 
-    private static final String DIR_GEN_BINDINGS = "generated/addons"; // NOI18N
     private static RequestProcessor REQ_PROCESSOR = new RequestProcessor(); // No I18N
     
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
@@ -116,17 +115,6 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         this.projectHelper=projectHelper;
         this.evaluator = evaluator;
         evaluator.addPropertyChangeListener(this);
-    }
-
-    private synchronized void createListener(String buildDir, String[] paths){
-        if (this.fcl == null){
-            // Need to keep reference to fcl.
-            // See JavaDoc for org.openide.util.WeakListeners
-            FileObject prjFo = this.projectHelper.getProjectDirectory();                        
-            this.fcl = new AddOnGeneratedSourceRootListener(prjFo, buildDir, 
-                    paths);
-            ((AddOnGeneratedSourceRootListener)this.fcl).listenToProjRoot();            
-        }
     }
     
     private List<PathResourceImplementation> getGeneratedSrcRoots(String buildDir, String[] paths){
@@ -232,13 +220,6 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                             url = new URL (url.toExternalForm()+'/');   //NOI18N
                         }
                         result.add(ClassPathSupport.createResource(url));
-
-                        // generated/addons/<subDirs>
-                        result.addAll(getGeneratedSrcRoots(buildDir,
-                                new String[] {DIR_GEN_BINDINGS}));
-                        // Listen for any new Source root creation.
-                        createListener(buildDir,
-                                new String[] {DIR_GEN_BINDINGS});
                     }
                     String buildGeneratedDirS = evaluator.getProperty(BUILD_GENERATED_DIR);
                     if (buildGeneratedDirS != null) {
