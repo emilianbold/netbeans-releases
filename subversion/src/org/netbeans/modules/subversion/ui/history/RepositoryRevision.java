@@ -101,6 +101,13 @@ class RepositoryRevision {
         text.append(getLog().getMessage());
         return text.toString();
     }
+
+    public void sort (Comparator<RepositoryRevision.Event> comparator) {
+        if (events == null) {
+            return;
+        }
+        Collections.sort(events, comparator);
+    }
     
     public class Event {
     
@@ -158,5 +165,27 @@ class RepositoryRevision {
         }
 
         
+    }
+
+    public static class EventFullNameComparator implements Comparator<Event> {
+
+        public int compare(Event e1, Event e2) {
+            if (e1 == null || e2 == null || e1.getChangedPath() == null || e2.getChangedPath() == null) {
+                return 0;
+            }
+            return e1.getChangedPath().getPath().compareTo(e1.getChangedPath().getPath());
+        }
+
+    }
+
+    public static class EventBaseNameComparator implements Comparator<Event> {
+
+        public int compare(Event e1, Event e2) {
+            if (e1 == null || e2 == null || e1.getName() == null || e2.getName() == null) {
+                return 0;
+            }
+            return e1.getName().compareTo(e2.getName());
+        }
+
     }
 }
