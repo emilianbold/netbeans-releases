@@ -664,10 +664,36 @@ public final class UpdateTracking {
             
             String dash = name.replace ('.', '-');
 
-            for (File c : clusters(true)) {
-                File hidden = new File(new File(new File(c, "config"), "Modules"), dash + ".xml_hidden");
-                if (hidden.exists()) {
-                    hidden.delete();
+            {
+                boolean needInfoInUserDir = false;
+                boolean afterNBMsCluster = false;
+                for (File c : clusters(true)) {
+                    File hidden = new File(new File(new File(c, "config"), "Modules"), dash + ".xml_hidden");
+                    if (hidden.exists()) {
+                        hidden.delete();
+                    }
+
+                    if (directory.equals(c)) {
+                        afterNBMsCluster = true;
+                        continue;
+                    }
+
+                    if (afterNBMsCluster) {
+                        continue;
+                    }
+
+                    File customConfigs = new File(new File(new File(c, "config"), "Modules"), dash + ".xml");
+                    if (customConfigs.exists()) {
+                        needInfoInUserDir = true;
+                    }
+                }
+
+                if (needInfoInUserDir) {
+                    // there is a definition for the same XML file in some cluster
+                    // already and
+                    File userConfig = new File(new File(new File(getUserDir(), "config"), "Modules"), dash + ".xml");
+                    writeModulesConfig(userConfig, searchFor, candidate, newCandidate, oldCandidate, name);
+                    return;
                 }
             }
 
@@ -676,109 +702,7 @@ public final class UpdateTracking {
                 // already written
                 return;
             }
-            
-            config.getParentFile ().mkdirs ();
-            
-            Boolean isAutoload = null;
-            Boolean isEager = null;
-            
-            java.util.Iterator it = newVersion.getFiles ().iterator ();
-            boolean needToWrite = false;
-            
-            while (it.hasNext ()) {
-                ModuleFile f = (ModuleFile)it.next ();
-
-                String n = f.getName ();
-                String parentDir = new File (f.getName ()).getParentFile ().getName ();
-                
-                needToWrite = needToWrite || n.indexOf (ModuleDeactivator.MODULES) >= 0;
-                
-                if (n.endsWith (".jar")) { // NOI18N
-                    // ok, module candidate                    
-                    candidate = f.getName ();
-                    
-                    // the correct candidate looks as e.g. org.netbeans.modules.mymodule
-                    // if no jar looks as codenamebase then the jar file will be found as module's jar
-                    if (searchFor.endsWith (candidate) || candidate.endsWith (searchFor)) {
-                        newCandidate = candidate;
-                        oldCandidate = null;
-                        
-                        // autoload and eager will set by module's jar
-                        if ("autoload".equals (parentDir)) { // NOI18N
-                            isAutoload = Boolean.TRUE;
-                        } else {
-                            isAutoload = Boolean.FALSE;
-                        }
-                        if ("eager".equals (parentDir)) { // NOI18N
-                            isEager = Boolean.TRUE;
-                        } else {
-                            isEager = Boolean.FALSE;
-                        }
-                    } else {
-                        if (newCandidate == null) {
-                            oldCandidate = (oldCandidate == null ? "" : oldCandidate + ", ") + candidate; // NOI18N
-                        }
-                    }
-                }
-                
-                // if no correct name found => set autoload/eager by the last jar file
-                if (isAutoload == null && "autoload".equals (parentDir)) { // NOI18N
-                    isAutoload = Boolean.TRUE;
-                }
-                if (isEager == null && "eager".equals (parentDir)) { // NOI18N
-                    isEager = Boolean.TRUE;
-                }
-            }
-            
-            if (! needToWrite) {
-                System.out.println("Warning: No config file written for module " + codenamebase + ". No jar file present in \"modules\" directory.");
-                return ;
-            }
-            
-            assert newCandidate != null || oldCandidate != null : "No jar file present!";
-            if (newCandidate == null) {
-                // PENDING: should check but some NBM assumed wrong behaviour before bugfix 53316
-                assert oldCandidate.equals (candidate) : "More files look as module: " + oldCandidate;
-                // only temporary
-                if (!oldCandidate.equals (candidate)) {
-                    System.out.println("NBM Error: More files look as module: " + oldCandidate);
-                    oldCandidate = candidate;
-                }
-                // end of temp
-            }
-            
-            String moduleName = newCandidate == null ? oldCandidate : newCandidate;
-            
-            boolean autoload = isAutoload != null && isAutoload.booleanValue ();
-            boolean eager = isEager != null && isEager.booleanValue ();
-            boolean isEnabled = !autoload && !eager;
-            
-            String spec = newVersion.getVersion ();
-            OutputStream os; 
-            try {
-                os = new FileOutputStream(config);
-                PrintWriter pw = new PrintWriter(new java.io.OutputStreamWriter(os, "UTF-8"));
-                // Please make sure formatting matches what the IDE actually spits
-                // out; it could matter.
-                pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-                pw.println("<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Module Status 1.0//EN\"");
-                pw.println("                        \"http://www.netbeans.org/dtds/module-status-1_0.dtd\">");
-                pw.println("<module name=\"" + name + "\">");
-                pw.println("    <param name=\"autoload\">" + autoload + "</param>");
-                pw.println("    <param name=\"eager\">" + eager + "</param>");
-                if (isEnabled) {
-                    pw.println("    <param name=\"enabled\">" + isEnabled + "</param>");
-                }
-                pw.println("    <param name=\"jar\">" + moduleName + "</param>");
-                pw.println("    <param name=\"reloadable\">false</param>");
-                pw.println("    <param name=\"specversion\">" + spec + "</param>");
-                pw.println("</module>");
-                pw.flush();
-                pw.close();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-            
+            writeModulesConfig(config, searchFor, candidate, newCandidate, oldCandidate, name);
         }
         
         void write( ) {
@@ -895,6 +819,101 @@ public final class UpdateTracking {
                     return localever;
             }
             return null;
+        }
+
+        private void writeModulesConfig(File config, String searchFor, String candidate, String newCandidate, String oldCandidate, String name) {
+            config.getParentFile().mkdirs();
+            Boolean isAutoload = null;
+            Boolean isEager = null;
+            java.util.Iterator it = newVersion.getFiles().iterator();
+            boolean needToWrite = false;
+            while (it.hasNext()) {
+                ModuleFile f = (ModuleFile) it.next ();
+                String n = f.getName();
+                String parentDir = new File(f.getName()).getParentFile().getName();
+                needToWrite = needToWrite || n.indexOf(ModuleDeactivator.MODULES) >= 0;
+                if (n.endsWith(".jar")) {
+                    // NOI18N
+                    // ok, module candidate
+                    candidate = f.getName();
+                    // the correct candidate looks as e.g. org.netbeans.modules.mymodule
+                    // if no jar looks as codenamebase then the jar file will be found as module's jar
+                    if (searchFor.endsWith(candidate) || candidate.endsWith(searchFor)) {
+                        newCandidate = candidate;
+                        oldCandidate = null;
+                        // autoload and eager will set by module's jar
+                        if ("autoload".equals(parentDir)) {
+                            // NOI18N
+                            isAutoload = Boolean.TRUE;
+                        } else {
+                            isAutoload = Boolean.FALSE;
+                        }
+                        if ("eager".equals(parentDir)) {
+                            // NOI18N
+                            isEager = Boolean.TRUE;
+                        } else {
+                            isEager = Boolean.FALSE;
+                        }
+                    } else {
+                        if (newCandidate == null) {
+                            oldCandidate = (oldCandidate == null ? "" : oldCandidate + ", ") + candidate; // NOI18N
+                        }
+                    }
+                }
+                // if no correct name found => set autoload/eager by the last jar file
+                if (isAutoload == null && "autoload".equals(parentDir)) {
+                    // NOI18N
+                    isAutoload = Boolean.TRUE;
+                }
+                if (isEager == null && "eager".equals(parentDir)) {
+                    // NOI18N
+                    isEager = Boolean.TRUE;
+                }
+            }
+            if (!needToWrite) {
+                System.out.println("Warning: No config file written for module " + codenamebase + ". No jar file present in \"modules\" directory.");
+                return;
+            }
+            assert newCandidate != null || oldCandidate != null : "No jar file present!";
+            if (newCandidate == null) {
+                // PENDING: should check but some NBM assumed wrong behaviour before bugfix 53316
+                assert oldCandidate.equals(candidate) : "More files look as module: " + oldCandidate;
+                // only temporary
+                if (!oldCandidate.equals(candidate)) {
+                    System.out.println("NBM Error: More files look as module: " + oldCandidate);
+                    oldCandidate = candidate;
+                }
+                // end of temp
+            }
+            String moduleName = newCandidate == null ? oldCandidate : newCandidate;
+            boolean autoload = isAutoload != null && isAutoload.booleanValue();
+            boolean eager = isEager != null && isEager.booleanValue();
+            boolean isEnabled = !autoload && !eager;
+            String spec = newVersion.getVersion();
+            OutputStream os;
+            try {
+                os = new FileOutputStream(config);
+                PrintWriter pw = new PrintWriter(new java.io.OutputStreamWriter(os, "UTF-8"));
+                // Please make sure formatting matches what the IDE actually spits
+                // out; it could matter.
+                pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+                pw.println("<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Module Status 1.0//EN\"");
+                pw.println("                        \"http://www.netbeans.org/dtds/module-status-1_0.dtd\">");
+                pw.println("<module name=\"" + name + "\">");
+                pw.println("    <param name=\"autoload\">" + autoload + "</param>");
+                pw.println("    <param name=\"eager\">" + eager + "</param>");
+                if (isEnabled) {
+                    pw.println("    <param name=\"enabled\">" + isEnabled + "</param>");
+                }
+                pw.println("    <param name=\"jar\">" + moduleName + "</param>");
+                pw.println("    <param name=\"reloadable\">false</param>");
+                pw.println("    <param name=\"specversion\">" + spec + "</param>");
+                pw.println("</module>");
+                pw.flush();
+                pw.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
     
