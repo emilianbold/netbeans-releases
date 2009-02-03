@@ -540,6 +540,9 @@ public class CsmUtilities {
     }
 
     public static CloneableEditorSupport findCloneableEditorSupport(DataObject dob) {
+        if (dob == null) {
+            return null;
+        }
         Object obj = dob.getCookie(org.openide.cookies.OpenCookie.class);
         if (obj instanceof CloneableEditorSupport) {
             return (CloneableEditorSupport) obj;
