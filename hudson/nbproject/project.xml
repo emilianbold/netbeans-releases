@@ -150,6 +150,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.hudson.maven</friend>
+                <friend>org.netbeans.modules.hudson.subversion</friend>
                 <package>org.netbeans.modules.hudson.api</package>
                 <package>org.netbeans.modules.hudson.spi</package>
             </friend-packages>

@@ -41,6 +41,7 @@ package org.netbeans.modules.hudson.ui.actions;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -56,14 +57,17 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
+import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ProjectHudsonJobCreator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.xml.XMLUtil;
@@ -101,6 +105,7 @@ public class CreateJob extends AbstractAction {
     }
 
     private void finalizeJob(ProjectHudsonJobCreator creator, String name) {
+        // XXX this would be a maven2-moduleset for Maven projects; must not create root element here! change API
         Document doc = XMLUtil.createDocument("project", null, null, null); // NOI18N
         try {
             creator.configure(doc);
@@ -131,6 +136,10 @@ public class CreateJob extends AbstractAction {
     @ServiceProvider(service=ProjectHudsonJobCreatorFactory.class)
     public static class DummyJobCreator implements ProjectHudsonJobCreatorFactory {
         public ProjectHudsonJobCreator forProject(final Project project) {
+            final File basedir = FileUtil.toFile(project.getProjectDirectory());
+            if (basedir == null) {
+                return null;
+            }
             return new ProjectHudsonJobCreator() {
                 public String jobName() {
                     return ProjectUtils.getInformation(project).getName();
@@ -167,9 +176,26 @@ public class CreateJob extends AbstractAction {
                         configXml.getDocumentElement().
                                 appendChild(configXml.createElement(dummy));
                     }
-                    ((Element) configXml.getDocumentElement().
-                            appendChild(configXml.createElement("scm"))).
-                            setAttribute("class", "hudson.scm.NullSCM");
+                    Element scmE = (Element) configXml.getDocumentElement().
+                            appendChild(configXml.createElement("scm"));
+                    for (HudsonSCM scm : Lookup.getDefault().lookupAll(HudsonSCM.class)) {
+                        HudsonSCM.Configuration cfg = scm.forFolder(basedir);
+                        if (cfg != null) {
+                            cfg.configure(scmE);
+                            break;
+                        }
+                    }
+                }
+            };
+        }
+    }
+
+    @ServiceProvider(service=HudsonSCM.class, position=9999)
+    public static class NoSCM implements HudsonSCM {
+        public Configuration forFolder(File folder) {
+            return new Configuration() {
+                public void configure(Element configXmlSCM) {
+                    configXmlSCM.setAttribute("class", "hudson.scm.NullSCM");
                 }
             };
         }
