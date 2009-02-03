@@ -41,7 +41,10 @@
 package org.netbeans.modules.openide.loaders;
 
 import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -57,6 +60,8 @@ import org.openide.loaders.DataObjectNotFoundException;
 public class DataObjectEncodingQueryImplementation extends FileEncodingQueryImplementation {
     private static ThreadLocal<DataFolder> TARGET = new ThreadLocal<DataFolder>();
     private static final Logger LOG = Logger.getLogger(DataObjectEncodingQueryImplementation.class.getName());
+    // whether FEQI found in DataObject lookup for MIME type
+    private static final Map<String, Boolean> MIME_TYPE_CHECK_MAP = new HashMap<String, Boolean>();
     
     /** Creates a new instance of DataObjectEncodingQueryImplementation */
     public DataObjectEncodingQueryImplementation() {
@@ -70,7 +75,15 @@ public class DataObjectEncodingQueryImplementation extends FileEncodingQueryImpl
     public static void exitIgnoreTargetFolder(DataFolder prev) {
         TARGET.set(prev);
     }
-    
+
+    /**
+     * Gets encoding for given FileObject. According to #155380 algorith is as follows:
+     * - Looking for FEQ implementation in the MimeLookup. If found use this FEQ.
+     * - Check the map<MimeType,Boolean>.
+     * - If map contains FALSE value for the given MimeType then do not look for FEQ in the DataObject lookup.
+     * - If map contains TRUE value for the given MimeType then get FEQ from the DataObject lookup.
+     * - If map not contains given MimeType then add it to the map with value TRUE if FEQ is found in the DataObject lookup
+     */
     public Charset getEncoding(FileObject file) {
         assert file != null;
         DataFolder df = TARGET.get();
@@ -78,17 +91,31 @@ public class DataObjectEncodingQueryImplementation extends FileEncodingQueryImpl
             // do not create new data objects
             return null;
         }
-        try {
-            DataObject dobj = DataObject.find(file);
-            FileEncodingQueryImplementation impl = dobj.getLookup().lookup (FileEncodingQueryImplementation.class);
-            if (impl == null)  {
+        String mimeType = file.getMIMEType();
+        FileEncodingQueryImplementation impl = MimeLookup.getLookup(mimeType).lookup(FileEncodingQueryImplementation.class);
+        if (impl != null) {
+            Charset charset = impl.getEncoding(file);
+            if (charset != null) {
+                return charset;
+            }
+        }
+        Boolean useDataObjectLookup = MIME_TYPE_CHECK_MAP.get(mimeType);
+        if (useDataObjectLookup == null || useDataObjectLookup.booleanValue()) {
+            DataObject dobj;
+            try {
+                dobj = DataObject.find(file);
+            } catch (DataObjectNotFoundException ex) {
+                LOG.warning("Invalid DataObject: " + FileUtil.getFileDisplayName(file));
                 return null;
             }
-            return impl.getEncoding(file);
-        } catch (DataObjectNotFoundException donf) {
-            LOG.warning("Invalid DataObject: " + FileUtil.getFileDisplayName(file));
-            return null;
+            impl = dobj.getLookup().lookup(FileEncodingQueryImplementation.class);
+            if (impl != null) {
+                MIME_TYPE_CHECK_MAP.put(mimeType, Boolean.TRUE);
+                return impl.getEncoding(file);
+            } else {
+                MIME_TYPE_CHECK_MAP.put(mimeType, Boolean.FALSE);
+            }
         }
+        return null;
     }
-
 }
