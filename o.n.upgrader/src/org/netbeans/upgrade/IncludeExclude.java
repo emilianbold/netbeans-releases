@@ -43,7 +43,6 @@ package org.netbeans.upgrade;
 
 import java.io.*;
 import java.util.*;
-import java.util.jar.*;
 import java.util.regex.*;
 import org.openide.util.Union2;
 
@@ -109,6 +108,7 @@ final class IncludeExclude extends AbstractSet {
         return 0;
     }
     
+    @Override
     public boolean contains (Object o) {
         String s = (String)o;
         
@@ -122,6 +122,10 @@ final class IncludeExclude extends AbstractSet {
             Matcher m = p.matcher (s);
             if (m.matches ()) {
                 yes = include.booleanValue ();
+                if (!yes) {
+                    // exclude matches => immediately return
+                    return false;
+                }
             }
         }
         

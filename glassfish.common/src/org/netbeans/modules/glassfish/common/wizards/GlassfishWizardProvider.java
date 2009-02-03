@@ -39,32 +39,47 @@
 
 package org.netbeans.modules.glassfish.common.wizards;
 
-import org.netbeans.modules.glassfish.common.GlassfishInstance;
+import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.spi.server.ServerWizardProvider;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 
 /**
  *
  * @author Peter Williams
+ * @author vince kraemer
  */
 public class GlassfishWizardProvider implements ServerWizardProvider {
 
-    private GlassfishWizardProvider() {
+    private GlassfishInstanceProvider gip;
+
+    public static ServerWizardProvider createPrelude() {
+        return get(GlassfishInstanceProvider.getPrelude());
     }
     
-    public static ServerWizardProvider create() {
-        return new GlassfishWizardProvider();
+    public static ServerWizardProvider createEe6() {
+        return get(GlassfishInstanceProvider.getEe6());
+    }
+
+    private static ServerWizardProvider get(GlassfishInstanceProvider gip) {
+        ServerWizardProvider retVal = null;
+        if (null != gip)
+            retVal = new GlassfishWizardProvider(gip);
+        return retVal;
+    }
+
+    private GlassfishWizardProvider(GlassfishInstanceProvider gip) {
+        this.gip = gip;
     }
 
     // ------------------------------------------------------------------------
     // ServerWizardProvider interface implementation
     // ------------------------------------------------------------------------
     public String getDisplayName() {
-        return GlassfishInstance.GLASSFISH_SERVER_NAME;
+        return gip.getDisplayName();
     }
 
     public InstantiatingIterator getInstantiatingIterator() {
-        return new ServerWizardIterator();
+        return new ServerWizardIterator(gip);
     }
     
     

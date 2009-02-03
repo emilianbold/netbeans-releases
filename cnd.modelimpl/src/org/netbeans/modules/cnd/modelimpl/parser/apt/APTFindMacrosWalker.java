@@ -46,9 +46,12 @@ import antlr.TokenStreamException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
@@ -83,6 +86,7 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
  * @author Sergey Grinev
  */
 public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
+    protected final Map<String, CsmFile> macro2file = new HashMap<String, CsmFile>();
 
     public APTFindMacrosWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler) {
         super(apt, csmFile, preprocHandler);
@@ -163,6 +167,12 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
                         if (mi != null) {
                             addReference(apttoken, mi);
                             break;
+                        } else {
+                            CsmFile macroContainter = getMacroFile(m);
+                            if (macroContainter != null) {
+                                addReference(apttoken, new MacroInfo(macroContainter, m.getName().getOffset(), m.getName().getEndOffset(), m.getFile().getPath()));
+                                break;
+                            }
                         }
                         // nobreak
                     case COMPILER_PREDEFINED:
@@ -327,5 +337,16 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
         public CharSequence getText() {
             return TextCache.getString(super.getText());
         }
+    }
+
+    private CsmFile getMacroFile(APTMacro m) {
+        CsmFile out = null;
+        if (m.getFile() != null) {
+            out = macro2file.get(m.getFile().getPath());
+            if (out == null) {
+                out = CsmModelAccessor.getModel().findFile(m.getFile().getPath());
+            }
+        }
+        return out;
     }
 }

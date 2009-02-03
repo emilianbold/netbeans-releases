@@ -41,7 +41,17 @@
 
 package org.netbeans.spi.debugger.ui;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.util.Map;
 import javax.swing.JComponent;
+
+import org.netbeans.modules.debugger.ui.registry.DebuggerProcessor;
+import org.netbeans.spi.debugger.ContextAwareService;
+import org.netbeans.spi.debugger.ContextAwareSupport;
+import org.netbeans.spi.debugger.ContextProvider;
 
 /**
  * Support for "New Breakpoint" dialog and Breakpoint Customizer. Represents
@@ -60,11 +70,17 @@ public abstract class BreakpointType {
     public abstract String getCategoryDisplayName ();
 
     /**
-     * Return display name of this breakpoint type (like "Line Breakppoint").
+     * Provide the display name of this breakpoint type.
+     * The return value is read from "displayName" attribute of the registry file
+     * when this implementation is registered via {@link Registration} annotation.
+     * Therefore in this case the implementation should NOT override this method
+     * as it's not called.
      *
      * @return display name of this breakpoint type
      */
-    public abstract String getTypeDisplayName ();
+    public String getTypeDisplayName () {
+        return null;
+    }
 
     /**
      * Returns visual customizer for this breakpoint type. Customizer can 
@@ -103,4 +119,101 @@ public abstract class BreakpointType {
      * @return true of this breakpoint type should be default
      */
     public abstract boolean isDefault ();
+    
+    /**
+     * Declarative registration of an BreakpointType implementation.
+     * By marking the implementation class with this annotation,
+     * you automatically register that implementation for use by debugger.
+     * The class must be public and have a public constructor which takes
+     * no arguments or takes {@link ContextProvider} as an argument.
+     * @since 2.16
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ElementType.TYPE})
+    public @interface Registration {
+        /**
+         * The display name, in the form of either a general string to take as is,
+         * or a resource bundle reference such as "my.module.Bundle#some_key",
+         * or just "#some_key" to load from a "Bundle" in the same package
+         * as the registered implementation.
+         *
+         * @return The display name or resource bundle reference
+         */
+        String displayName();
+        /**
+         * An optional path to register this implementation in.
+         */
+        String path() default "";
+    }
+
+    static class ContextAware extends BreakpointType implements ContextAwareService<BreakpointType> {
+
+        private String serviceName;
+        private String displayName;
+        private ContextProvider context;
+        private BreakpointType delegate;
+
+        private ContextAware(String serviceName, String displayName) {
+            this.serviceName = serviceName;
+            this.displayName = displayName;
+        }
+
+        private ContextAware(String serviceName, String displayName, ContextProvider context) {
+            this.serviceName = serviceName;
+            this.displayName = displayName;
+            this.context = context;
+        }
+
+        private synchronized BreakpointType getDelegate() {
+            if (delegate == null) {
+                delegate = (BreakpointType) ContextAwareSupport.createInstance(serviceName, context);
+            }
+            return delegate;
+        }
+
+        public BreakpointType forContext(ContextProvider context) {
+            if (context == this.context) {
+                return this;
+            } else {
+                return new BreakpointType.ContextAware(serviceName, displayName, context);
+            }
+        }
+
+        @Override
+        public String getTypeDisplayName() {
+            if (displayName != null) {
+                return displayName;
+            }
+            return getDelegate().getTypeDisplayName();
+        }
+
+        @Override
+        public JComponent getCustomizer() {
+            return getDelegate().getCustomizer();
+        }
+
+        @Override
+        public String getCategoryDisplayName() {
+            return getDelegate().getCategoryDisplayName();
+        }
+
+        @Override
+        public boolean isDefault() {
+            return getDelegate().isDefault();
+        }
+
+        /**
+         * Creates instance of <code>ContextAwareService</code> based on layer.xml
+         * attribute values
+         *
+         * @param attrs attributes loaded from layer.xml
+         * @return new <code>ContextAwareService</code> instance
+         */
+        static ContextAwareService createService(Map attrs) throws ClassNotFoundException {
+            String serviceName = (String) attrs.get(DebuggerProcessor.SERVICE_NAME);
+            String displayName = (String) attrs.get("displayName");
+            return new BreakpointType.ContextAware(serviceName, displayName);
+        }
+
+    }
 }

@@ -38,9 +38,15 @@
  */
 package org.netbeans.modules.test.refactoring;
 
+import java.io.File;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
-import javax.swing.JTree;
-import javax.swing.tree.TreeModel;
+import java.util.Set;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.modules.test.refactoring.operators.RefactoringResultOperator;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -58,28 +64,74 @@ public class ModifyingRefactoring extends RefactoringTestCase {
         return "RefactoringTest";
 
     }
-    List<String> modificatedFiles;
 
-    
-    public void storeModifiedFiles(JTree tree) {
-        TreeModel model = tree.getModel();
-        browseForFiles(model.getRoot(), tree, 0);
+    /**
+     * Gets list of files in give directory
+     * @param rootDir Root directory
+     * @return List of filenames in given directory, including subdirectories
+     */
+    public List<String> getFiles(File rootDir) {
+        List<String> res = new LinkedList<String>();
+        getFiles(rootDir, res);
+        return res;
     }
-    
-    private void browseForFiles(Object root, JTree tree,int level) {
-        if(level==2) {
-            System.out.println(root.getClass().getName());
-            String filename = (String) getPreviewItemLabel(root);
-            modificatedFiles.add(filename);
-            return;
-        }
-        TreeModel model = tree.getModel();
-        for(int i =0; i<model.getChildCount(root);i++) {
-            browseForFiles(model.getChild(root, i), tree, level+1);
+
+    private void getFiles(File dir,List<String> res) {
+        File[] listFiles = dir.listFiles();
+        for (File file : listFiles) {
+            if(file.getName().startsWith(".")) continue; //ignoring hidden files
+            if(file.isDirectory()) getFiles(file,res);
+            res.add(file.getAbsolutePath());
         }        
     }
-    
-    
 
+    public void refModifiedFiles(Set<FileObject> modifiedFiles) {
+        List<FileObject> l = new LinkedList<FileObject>(modifiedFiles);
+        Collections.sort(l, new Comparator<FileObject>() {
+
+            public int compare(FileObject o1, FileObject o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        for (FileObject fileObject : l) {
+                ref(fileObject);
+        }
+       
+    }
+
+    public void refFileChange(List<String> origFiles, List<String> newFiles) {
+        Collections.sort(newFiles);
+        Collections.sort(origFiles);        
+        for (String fileName : newFiles) {
+            if(!origFiles.contains(fileName)) {
+                File f = new File(fileName);
+                if(!f.exists()) fail("File "+fileName+" does not exists");
+                if(f.isDirectory()) {
+                    ref("Created directory:\n");
+                    ref(fileName+"\n");
+                } else {
+                    ref("Created file:\n");
+                    ref(new File(fileName));
+                }
+            }
+        }
+
+        for (String fileName : origFiles) {
+            if(!newFiles.contains(fileName)) {
+                ref("Deleted file:\n");
+                ref(fileName);
+            }
+        }
+    }
+
+    protected void dumpRefactoringResults() {
+        RefactoringResultOperator result = RefactoringResultOperator.getPreview();
+        JButtonOperator jbo = new JButtonOperator(result.getDoRefactor());
+        Set<FileObject> involvedFiles = (Set<FileObject>) result.getInvolvedFiles();
+        List<String> origfiles = getFiles(new File(getDataDir(), "projects/RefactoringTest/src"));
+        jbo.push();
+        refModifiedFiles(involvedFiles);
+        refFileChange(origfiles, getFiles(new File(getDataDir(), "projects/RefactoringTest/src")));
+    }
 }
 

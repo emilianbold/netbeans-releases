@@ -56,8 +56,11 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmField;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
@@ -318,10 +321,40 @@ public class GeneratorUtils {
      * @param path
      * @return
      */
-    private static InsertInfo[] getInsertPositons(CsmContext path) {
+    private static InsertInfo[] getInsertPositons(CsmContext path, InsertPoint insPt) {
+        int position = 0;
+        CsmFile declFile = null;
+        CsmFile defFile = null;
+        CsmClass enclClass = null;
         InsertInfo[] out = new InsertInfo[2];
-        int position = Utilities.getEnclosingClassInsertPoint(path);
-        CloneableEditorSupport classDeclEditor = CsmUtilities.findCloneableEditorSupport(path.getFile());
+        if (insPt == InsertPoint.DEFAULT) {
+            // calculate using editor context
+            CsmOffsetable decl = path.getObjectUnderOffset();
+            if (decl == null) {
+                for (CsmObject csmObject : path.getPath()) {
+                    if (CsmKindUtilities.isClass(csmObject)) {
+                        enclClass = (CsmClass) csmObject;
+                        position = path.getCaretOffset();
+                    } else {
+                        if (CsmKindUtilities.isOffsetableDeclaration(csmObject)) {
+                            decl = (CsmOffsetable)csmObject;
+                        }
+                    }
+                }
+            }
+            if (decl != null) {
+                position = decl.getEndOffset();
+            }
+        } else {
+            enclClass = null;
+        }
+        if (enclClass != null && CsmKindUtilities.isOffsetable(enclClass)) {
+            declFile = ((CsmOffsetable)enclClass).getContainingFile();
+        } else {
+            position = 10;
+        }
+        CloneableEditorSupport classDeclEditor = CsmUtilities.findCloneableEditorSupport(declFile);
+        CloneableEditorSupport classDefEditor = CsmUtilities.findCloneableEditorSupport(defFile);
         FileObject declFo = path.getFileObject();
         PositionRef startDeclPos = classDeclEditor.createPositionRef(position, Bias.Backward);
         PositionRef endDeclPos = classDeclEditor.createPositionRef(position, Bias.Forward);
@@ -343,7 +376,7 @@ public class GeneratorUtils {
             return;
         }
         if (inlineMethods) {
-            InsertInfo[] ins = getInsertPositons(path);
+            InsertInfo[] ins = getInsertPositons(path, InsertPoint.DEFAULT);
             final InsertInfo def = ins[0];
             final StringBuilder result = new StringBuilder();
             for (CsmField field : fields) {
@@ -422,7 +455,7 @@ public class GeneratorUtils {
             refactoring.setRefactorFields(refFields);
             refactoring.setFieldModifiers(Collections.<CsmVisibility>emptySet());
             refactoring.getContext().add(InsertPoint.DEFAULT);
-            refactoring.setMethodInline(inlineMethods);
+            refactoring.setMethodInline(false);
             Problem problem = refactoring.preCheck();
             if (problem != null && problem.isFatal()) {
                 // fatal problem

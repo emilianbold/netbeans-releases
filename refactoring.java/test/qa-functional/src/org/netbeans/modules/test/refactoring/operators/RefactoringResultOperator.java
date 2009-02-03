@@ -40,7 +40,13 @@
 package org.netbeans.modules.test.refactoring.operators;
 
 import java.awt.Component;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 import java.util.ResourceBundle;
+import java.util.Set;
+import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -50,17 +56,21 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.JViewport;
+import javax.swing.tree.TreeModel;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JSplitPaneOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.modules.refactoring.java.ui.tree.FileTreeElement;
+import org.netbeans.modules.refactoring.spi.impl.CheckNode;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Jiri Prox Jiri.Prox@Sun.COM
  */
-public class FindUsagesResultOperator extends TopComponentOperator{
+public class RefactoringResultOperator extends TopComponentOperator{
 
     private JButton refresh;
     private JToggleButton collapse;
@@ -71,20 +81,20 @@ public class FindUsagesResultOperator extends TopComponentOperator{
     private JButton cancel;
     private JButton doRefactor;
     
-    public FindUsagesResultOperator() {
+    public RefactoringResultOperator() {
         super(ResourceBundle.getBundle("org.netbeans.modules.refactoring.spi.impl.Bundle").getString("LBL_Usages"));
     }
     
-    public FindUsagesResultOperator(String windowTitle) {
+    public RefactoringResultOperator(String windowTitle) {
         super(windowTitle);
     }
     
-    public static FindUsagesResultOperator getFindUsagesResult() {
-        return new FindUsagesResultOperator(ResourceBundle.getBundle("org.netbeans.modules.refactoring.spi.impl.Bundle").getString("LBL_Usages"));
+    public static RefactoringResultOperator getFindUsagesResult() {
+        return new RefactoringResultOperator(ResourceBundle.getBundle("org.netbeans.modules.refactoring.spi.impl.Bundle").getString("LBL_Usages"));
     }
     
-    public static FindUsagesResultOperator getPreview() {
-        return new FindUsagesResultOperator(ResourceBundle.getBundle("org.netbeans.modules.refactoring.spi.impl.Bundle").getString("LBL_Refactoring"));
+    public static RefactoringResultOperator getPreview() {
+        return new RefactoringResultOperator(ResourceBundle.getBundle("org.netbeans.modules.refactoring.spi.impl.Bundle").getString("LBL_Refactoring"));
     }
     
     
@@ -146,7 +156,9 @@ public class FindUsagesResultOperator extends TopComponentOperator{
         if(level==0) System.out.println("--------------------------");
         for(int j = 0;j<level;j++) System.out.print("  ");
         System.out.print(no);
-        System.out.println(source.getClass().getName());
+        System.out.print(source.getClass().getName());
+        if(source.getClass().getName().endsWith("JButton")) System.out.print(((JButton)source).getText());
+        System.out.println("");
         if(!(source instanceof JComponent)) return;                    
         Component[] components = ((JComponent) source).getComponents();        
         for (int i = 0; i < components.length; i++) {
@@ -162,8 +174,27 @@ public class FindUsagesResultOperator extends TopComponentOperator{
         ContainerOperator ct = new ContainerOperator(refactoringPanel);
         JSplitPaneOperator splitPane = new JSplitPaneOperator(ct);
         JComponent leftComponent = (JComponent) splitPane.getLeftComponent();
-        JToolBar toolbar = (JToolBar) leftComponent.getComponent(0);
+        JToolBar toolbar = (JToolBar) leftComponent.getComponent(1);
         return toolbar;                        
+    }
+
+    private JPanel getDoRefactoringCancelPanel() {
+        JPanel refactoringPanel = getRefactoringPanel();
+        ContainerOperator ct = new ContainerOperator(refactoringPanel);
+        JSplitPaneOperator splitPane = new JSplitPaneOperator(ct);
+        JComponent leftComponent = (JComponent) splitPane.getLeftComponent();
+        JPanel panel = (JPanel) leftComponent.getComponent(0);
+        return panel;
+    }
+
+    private JButton getDoRefactoringButton() {
+        JPanel panel = getDoRefactoringCancelPanel();
+        return (JButton) panel.getComponent(0);
+    }
+
+    private JButton getCancelButton() {
+        JPanel panel = getDoRefactoringCancelPanel();
+        return (JButton) panel.getComponent(1);
     }
     
     public JTree getPreviewTree() {
@@ -171,7 +202,7 @@ public class FindUsagesResultOperator extends TopComponentOperator{
         ContainerOperator ct = new ContainerOperator(refactoringPanel);
         JSplitPaneOperator splitPane = new JSplitPaneOperator(ct);
         JComponent leftComponent = (JComponent) splitPane.getLeftComponent();
-        JScrollPane jScrollPane = (JScrollPane) leftComponent.getComponent(1);                
+        JScrollPane jScrollPane = (JScrollPane) leftComponent.getComponent(2);
         JViewport viewport = jScrollPane.getViewport();        
         return (JTree) viewport.getComponent(0);        
     }
@@ -216,6 +247,49 @@ public class FindUsagesResultOperator extends TopComponentOperator{
             next = (JButton) getJToolbar().getComponent(5);
         }
         return next;
+    }
+
+    public JButton getDoRefactor() {
+        if(doRefactor==null) {
+            doRefactor = getDoRefactoringButton();
+        }
+        return doRefactor;
+    }
+
+    public JButton getcancel() {
+        if(cancel==null) {
+            cancel = getCancelButton();
+        }
+        return cancel;
+    }
+
+    public Set<FileObject> getInvolvedFiles() {
+        JTree tree = this.getPreviewTree();
+        return browseForFileObjects(tree.getModel());
+    }
+
+    private Set<FileObject> browseForFileObjects(TreeModel model) {
+        Queue<CheckNode> q = new LinkedList<CheckNode>();
+        q.add((CheckNode)model.getRoot());
+        Set<FileObject> result = new HashSet<FileObject>();        
+        while(!q.isEmpty()) {
+            CheckNode node = q.remove();
+            Object uo = node.getUserObject();
+            if(uo instanceof FileTreeElement) {
+                FileTreeElement fileTreeElement = (FileTreeElement) uo;
+                Object userObject = fileTreeElement.getUserObject();
+                if(userObject instanceof FileObject) {
+                    result.add((FileObject)userObject);
+                } else {
+                    throw new IllegalArgumentException("Object of type FileObject was expected, but got "+userObject.getClass().getName());
+                }
+                                
+            }
+            for (int i = 0; i < model.getChildCount(node); i++) {
+                q.add((CheckNode)model.getChild(node, i));
+            }
+        }
+        return result;
     }
     
 

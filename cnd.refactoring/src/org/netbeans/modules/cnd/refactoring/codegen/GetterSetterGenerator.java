@@ -79,8 +79,11 @@ public class GetterSetterGenerator implements CodeGenerator {
             ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
             JTextComponent component = context.lookup(JTextComponent.class);
             CsmContext path = context.lookup(CsmContext.class);
-            CsmClass typeElement = Utilities.extractEnclosingClass(path);
-            if (component == null || typeElement == null) {
+            if (component == null || path == null) {
+                return ret;
+            }
+            CsmClass typeElement = path.getEnclosingClass();
+            if (typeElement == null) {
                 return ret;
             }
             CsmObject objectUnderOffset = path.getObjectUnderOffset();
@@ -99,10 +102,14 @@ public class GetterSetterGenerator implements CodeGenerator {
                     l.add(method);
                 }
             }
+            ElementNode.Description theFirstDescription = null;
             for (CsmMember member : GeneratorUtils.getAllMembers(typeElement)) {
                 if (CsmKindUtilities.isField(member)) {
                     CsmField variableElement = (CsmField)member;
                     ElementNode.Description description = ElementNode.Description.create(variableElement, null, true, variableElement.equals(objectUnderOffset));
+                    if (theFirstDescription == null) {
+                        theFirstDescription = description;
+                    }
                     boolean hasGetter = GeneratorUtils.hasGetter(variableElement, methods);
                     boolean hasSetter = GeneratorUtils.isConstant(variableElement) || GeneratorUtils.hasSetter(variableElement, methods);
                     if (!hasGetter) {

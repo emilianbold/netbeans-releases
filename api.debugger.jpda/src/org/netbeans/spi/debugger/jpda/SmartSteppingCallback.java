@@ -41,9 +41,16 @@
 
 package org.netbeans.spi.debugger.jpda;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.util.Map;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
-import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.modules.debugger.jpda.apiregistry.DebuggerProcessor;
+import org.netbeans.spi.debugger.ContextAwareService;
+import org.netbeans.spi.debugger.ContextAwareSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 
 /**
@@ -74,5 +81,64 @@ public abstract class SmartSteppingCallback {
      * @return true if execution should be stopped on the current position
      */
     public abstract boolean stopHere (ContextProvider lookupProvider, JPDAThread thread, SmartSteppingFilter f);
+
+    
+    /**
+     * Declarative registration of a SmartSteppingCallback implementation.
+     * By marking the implementation class with this annotation,
+     * you automatically register that implementation for use by debugger.
+     * The class must be public and have a public constructor which takes
+     * no arguments or takes {@link ContextProvider} as an argument.
+     *
+     * @author Martin Entlicher
+     * @since 2.19
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ElementType.TYPE})
+    public @interface Registration {
+        /**
+         * An optional path to register this implementation in.
+         */
+        String path() default "";
+
+    }
+
+    static class ContextAware extends SmartSteppingCallback implements ContextAwareService<SmartSteppingCallback> {
+
+        private String serviceName;
+
+        private ContextAware(String serviceName) {
+            this.serviceName = serviceName;
+        }
+
+        public SmartSteppingCallback forContext(ContextProvider context) {
+            return (SmartSteppingCallback) ContextAwareSupport.createInstance(serviceName, context);
+        }
+
+        @Override
+        public void initFilter(SmartSteppingFilter f) {
+            assert false;
+        }
+
+        @Override
+        public boolean stopHere(ContextProvider lookupProvider, JPDAThread thread, SmartSteppingFilter f) {
+            assert false;
+            throw new UnsupportedOperationException("Not supported.");
+        }
+        
+        /**
+         * Creates instance of <code>ContextAwareService</code> based on layer.xml
+         * attribute values
+         *
+         * @param attrs attributes loaded from layer.xml
+         * @return new <code>ContextAwareService</code> instance
+         */
+        static ContextAwareService createService(Map attrs) throws ClassNotFoundException {
+            String serviceName = (String) attrs.get(DebuggerProcessor.SERVICE_NAME);
+            return new ContextAware(serviceName);
+        }
+
+    }
+
 }
 

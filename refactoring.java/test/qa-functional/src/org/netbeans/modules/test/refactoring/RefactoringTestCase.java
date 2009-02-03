@@ -38,9 +38,12 @@
  */
 package org.netbeans.modules.test.refactoring;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -62,12 +65,11 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.diff.LineDiff;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -90,6 +92,7 @@ public abstract class RefactoringTestCase extends JellyTestCase {
         super(name);
     }
     
+    @Override
     public void ref(String text) {
         getRef().print(text);
     }
@@ -98,6 +101,44 @@ public abstract class RefactoringTestCase extends JellyTestCase {
         getRef().println(o);
     }
 
+    public void ref(File f) {
+        getRef().println("==>"+f.getName());
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(f));
+            String s = br.readLine();
+            while(s!=null) {
+                getRef().println(s);
+                s = br.readLine();
+            }
+            br.close();
+        } catch (FileNotFoundException ex) {
+            fail(ex);
+        } catch (IOException ex) {
+            fail(ex);
+        }
+    }
+
+    public void ref(FileObject fo) {
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(fo.getInputStream()));
+            getRef().println("==>"+fo.getName());
+            String s = br.readLine();
+            while(s!=null) {
+                getRef().println(s);
+                s = br.readLine();
+            }
+        } catch(IOException ioe) {
+            fail(ioe);
+        }
+    }
+
+    /**
+     * Dumps the tree structure into the ref file. The childs are sorted if they
+     * are closer to root than {@link #sortLevel} 
+     * @param model Model of the dumped tree
+     * @param parent Curren root whose childs are reculsively dumped
+     * @param level Distance current root - tree root
+     */
     protected void browseChildren(TreeModel model, Object parent, int level) {
         Object invoke = getPreviewItemLabel(parent);
         for (int i = 0; i < level; i++) ref("    ");
@@ -120,10 +161,13 @@ public abstract class RefactoringTestCase extends JellyTestCase {
         }
         
     }
-        
-    protected  void openFile(String treeSubPackagePathToFile, String fileName) {
-        // debug info, to be removed
-        //this.treeSubPackagePathToFile = treeSubPackagePathToFile;
+
+    /**
+     * Opens file in editor.
+     * @param treeSubPackagePathToFile
+     * @param fileName
+     */
+    protected  void openFile(String treeSubPackagePathToFile, String fileName) {      
         ProjectsTabOperator pto = new ProjectsTabOperator();
         pto.invoke();
         ProjectRootNode prn = pto.getProjectRootNode(getProjectName());
@@ -150,18 +194,29 @@ public abstract class RefactoringTestCase extends JellyTestCase {
         new OpenAction().performAPI(node);  //should be more stable then performing open action from popup
 
     }
-    
+
+    /**
+     * Gets the file name form the selected path in the preview tree. Supposed is
+     * that the name of file in the second element in the path
+     * @param tree Preview tree
+     * @return File name relared to selected node
+     */
     public String getFileForSelectedNode(JTree tree) {
         TreePath selectionPath = tree.getSelectionPath();
         Object pathComponent = selectionPath.getPathComponent(2);
         return (String) getPreviewItemLabel(pathComponent);
     }
 
+    /**
+     * Gets string label of tree item. Suppose that the object has metho {@code getLabel} which is called by reflection.
+     * @param parent The tree item
+     * @return Test lable obtained by method {@code getLabe}
+     */
     protected Object getPreviewItemLabel(Object parent)  {
         try {
-            Method method = parent.getClass().getDeclaredMethod("getLabel", null);
+            Method method = parent.getClass().getDeclaredMethod("getLabel");
             method.setAccessible(true);
-            Object invoke = method.invoke(parent, null);
+            Object invoke = method.invoke(parent);
             return invoke;
         } catch (IllegalAccessException ex) {
             Logger.getLogger(RefactoringTestCase.class.getName()).log(Level.SEVERE, null, ex);            
@@ -225,7 +280,7 @@ public abstract class RefactoringTestCase extends JellyTestCase {
         jemmyOutput = new PrintStream(new File(getWorkDir(), getName() + ".jemmy"));
         jemmyError = new PrintStream(new File(getWorkDir(), getName() + ".error"));        
         //JemmyProperties.setCurrentOutput(new TestOut(System.in, jemmyOutput , jemmyError));
-        JemmyProperties.setCurrentOutput(new TestOut(System.in, jemmyOutput , System.out));
+        //JemmyProperties.setCurrentOutput(new TestOut(System.in, null , System.out));
         System.out.println("Test "+getName()+" started");                
         openProject("RefactoringTest");
     }
