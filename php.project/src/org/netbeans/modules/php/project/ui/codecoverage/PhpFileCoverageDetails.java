@@ -45,6 +45,7 @@ import org.netbeans.modules.gsf.codecoverage.api.FileCoverageSummary;
 import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.FileVO;
 import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.LineVO;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * @author Tomas Mysik
@@ -54,13 +55,13 @@ public class PhpFileCoverageDetails implements FileCoverageDetails {
     private final FileVO file;
     private final long generated;
 
-    public PhpFileCoverageDetails(FileObject fo, FileVO file, long generated) {
+    public PhpFileCoverageDetails(FileObject fo, FileVO file) {
         assert fo != null;
         assert file != null;
 
         this.fo = fo;
         this.file = file;
-        this.generated = generated;
+        this.generated = FileUtil.toFile(fo).lastModified();
     }
 
     public FileObject getFile() {
@@ -80,21 +81,27 @@ public class PhpFileCoverageDetails implements FileCoverageDetails {
     }
 
     public FileCoverageSummary getSummary() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return PhpCoverageProvider.getFileCoverageSummary(file);
     }
 
     public CoverageType getType(int lineNo) {
+        lineNo++;
         // XXX when to return CoverageType.INFERRED?
         // XXX optimize - hold lines in hash map
         for (LineVO line : file.getLines()) {
             if (line.num == lineNo) {
-                return CoverageType.COVERED;
+                if (line.count > 0) {
+                    return CoverageType.COVERED;
+                } else {
+                    return CoverageType.NOT_COVERED;
+                }
             }
         }
-        return CoverageType.NOT_COVERED;
+        return CoverageType.INFERRED;
     }
 
     public int getHitCount(int lineNo) {
+        lineNo++;
         for (LineVO line : file.getLines()) {
             if (line.num == lineNo) {
                 return line.count;

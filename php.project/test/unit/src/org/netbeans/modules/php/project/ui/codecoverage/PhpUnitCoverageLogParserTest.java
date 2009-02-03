@@ -112,7 +112,16 @@ public class PhpUnitCoverageLogParserTest extends NbTestCase {
         file = coverage.getFiles().get(1);
         assertEquals("/home/gapon/NetBeansProjects/PhpProject01/src/Calculator.php", file.getPath());
         assertEquals(1, file.getClasses().size());
-        assertEquals(3, file.getLines().size());
+        assertEquals(6, file.getLines().size());
+
+        line = file.getLines().get(0);
+        assertEquals(10, line.num);
+        assertEquals("method", line.type);
+        assertEquals(3, line.count);
+        line = file.getLines().get(5);
+        assertEquals(19, line.num);
+        assertEquals("stmt", line.type);
+        assertEquals(0, line.count);
 
         CoverageMetricsVO coverageMetrics = coverage.getMetrics();
         assertNotNull(coverageMetrics);

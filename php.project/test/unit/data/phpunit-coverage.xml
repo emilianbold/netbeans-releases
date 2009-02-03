@@ -21,6 +21,9 @@
       <line num="10" type="method" count="3"/>
       <line num="12" type="stmt" count="3"/>
       <line num="13" type="stmt" count="1"/>
+      <line num="15" type="stmt" count="2"/>
+      <line num="18" type="method" count="0"/>
+      <line num="19" type="stmt" count="0"/>
       <metrics loc="18" ncloc="12" classes="1" methods="1" coveredmethods="1" statements="3" coveredstatements="3" elements="4" coveredelements="4"/>
     </file>
     <metrics files="2" loc="50" ncloc="30" classes="33" methods="1717" coveredmethods="665" statements="532" coveredstatements="443" elements="2344" coveredelements="1234"/>
