@@ -228,7 +228,7 @@ public final class Kenai {
         }
 
         public void remove() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            it.remove();
         }
     }
 }
