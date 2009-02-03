@@ -308,6 +308,19 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         if(!containerRef.exists()) {
             return false;
         }
+        for (String s : gip.getRequiredFiles()) {
+            containerRef = new File(glassfishDir, s);
+            if (!containerRef.exists()) {
+                return false;
+            }
+        }
+        for (String s : gip.getExcludedFiles()) {
+            containerRef = new File(glassfishDir, s);
+            if (containerRef.exists()) {
+                return false;
+            }
+        }
+
         wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "   ");
         return true;
     }
@@ -403,5 +416,4 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     String getInstallRootKey() {
         return gip.getInstallRootKey(); // "last-install-root"; // NOI18N
     }
-
 }
