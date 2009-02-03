@@ -45,7 +45,9 @@ import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.kenai.FeatureData;
 import org.netbeans.modules.kenai.KenaiImpl;
+import org.netbeans.modules.kenai.LicensesListData.LicensesListItem;
 import org.netbeans.modules.kenai.ProjectData;
+import org.netbeans.modules.kenai.ServicesListData.ServicesListItem;
 
 /**
  * Mockup kenai server.
@@ -189,6 +191,16 @@ public class KenaiMockup extends KenaiImpl {
             String browse_url,
             String service
             ) throws KenaiException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Iterator<LicensesListItem> getLicenses() throws KenaiException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Iterator<ServicesListItem> getServices() throws KenaiException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

@@ -9,11 +9,11 @@
  * "License"). You may not use this file except in compliance with the
  * License. You can obtain a copy of the License at
  * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * or nbbuild/services/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/services/CDDL-GPL-2-CP.  Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -46,6 +46,8 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.codeviation.pojson.*;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiErrorMessage;
+import org.netbeans.modules.kenai.api.KenaiLicense;
+import org.netbeans.modules.kenai.api.KenaiService;
 
 /**
  * Talks to remote Kenai server via Web services API.
@@ -99,12 +101,12 @@ public class KenaiREST extends KenaiImpl {
 
     @Override
     public Iterator<ProjectData> searchProjects(String pattern) throws KenaiException {
-        ProjectsListData pld = loadPage(baseURL.toString() + "/api/projects.json?q=" + pattern);
+        ProjectsListData pld = loadPage(baseURL.toString() + "/api/projects.json?q=" + pattern, ProjectsListData.class);
         return new ProjectIterator(pld);
 
     }
 
-    private ProjectsListData loadPage(String url) throws KenaiException {
+    private <T> T loadPage(String url, Class<T> clazz) throws KenaiException {
 
         RestConnection conn = new RestConnection(url);
         RestResponse resp = null;
@@ -116,12 +118,22 @@ public class KenaiREST extends KenaiImpl {
         String responseString = resp.getDataAsString();
 
         PojsonLoad pload = PojsonLoad.create();
-        ProjectsListData pld = pload.load(responseString, ProjectsListData.class);
+        T data = pload.load(responseString, clazz);
 
-        return pld;
+        return data;
     }
 
+    @Override
+    public Iterator<LicensesListData.LicensesListItem> getLicenses() throws KenaiException {
+        LicensesListData pld = loadPage(baseURL.toString() + "/api/licenses.json", LicensesListData.class);
+        return new LicensesIterator(pld);
+    }
 
+    @Override
+    public Iterator<ServicesListData.ServicesListItem> getServices() throws KenaiException {
+        ServicesListData pld = loadPage(baseURL.toString() + "/api/services.json", ServicesListData.class);
+        return new ServicesIterator(pld);
+    }
 
     private class ProjectIterator implements Iterator<ProjectData> {
 
@@ -144,7 +156,7 @@ public class KenaiREST extends KenaiImpl {
             try {
                 if (currentIndex==PAGE_SIZE) {
                     currentIndex-=PAGE_SIZE;
-                    pld = loadPage(pld.next);
+                    pld = loadPage(pld.next, ProjectsListData.class);
                 }
                 return getProject(pld.projects[currentIndex++].name);
             } catch (KenaiException ex) {
@@ -158,6 +170,73 @@ public class KenaiREST extends KenaiImpl {
 
     }
 
+    private class ServicesIterator implements Iterator<ServicesListData.ServicesListItem> {
+
+        private ServicesListData pld;
+        private int currentIndex = 0;
+        private int PAGE_SIZE = 10;
+
+        public ServicesIterator(ServicesListData pld) {
+            this.pld = pld;
+        }
+
+        public boolean hasNext() {
+            if (pld.services.length > currentIndex) {
+                return true;
+            }
+            return pld.next != null;
+        }
+
+        public ServicesListData.ServicesListItem next() {
+            try {
+                if (currentIndex == PAGE_SIZE) {
+                    currentIndex -= PAGE_SIZE;
+                    pld = loadPage(pld.next, ServicesListData.class);
+                }
+                return pld.services[currentIndex++];
+            } catch (KenaiException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException("Cannot remove items");
+        }
+    }
+
+    private class LicensesIterator implements Iterator<LicensesListData.LicensesListItem> {
+
+        private LicensesListData pld;
+        private int currentIndex = 0;
+        private int PAGE_SIZE = 10;
+
+        public LicensesIterator(LicensesListData pld) {
+            this.pld = pld;
+        }
+
+        public boolean hasNext() {
+            if (pld.licenses.length > currentIndex) {
+                return true;
+            }
+            return pld.next != null;
+        }
+
+        public LicensesListData.LicensesListItem next() {
+            try {
+                if (currentIndex == PAGE_SIZE) {
+                    currentIndex -= PAGE_SIZE;
+                    pld = loadPage(pld.next, LicensesListData.class);
+                }
+                return pld.licenses[currentIndex++];
+            } catch (KenaiException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException("Cannot remove items");
+        }
+    }
 
     @Override
     public ProjectData createProject(

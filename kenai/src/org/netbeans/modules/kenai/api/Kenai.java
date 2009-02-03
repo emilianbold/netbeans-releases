@@ -46,7 +46,9 @@ import java.util.Iterator;
 import org.netbeans.modules.kenai.FeatureData;
 import org.netbeans.modules.kenai.KenaiREST;
 import org.netbeans.modules.kenai.KenaiImpl;
+import org.netbeans.modules.kenai.LicensesListData;
 import org.netbeans.modules.kenai.ProjectData;
+import org.netbeans.modules.kenai.ServicesListData.ServicesListItem;
 
 /**
  * Main entry point to Kenai integration.
@@ -121,6 +123,27 @@ public final class Kenai {
         Iterator<ProjectData> prjs = impl.searchProjects(pattern);
         return new ProjectsIterator(prjs);
     }
+
+    /**
+     *
+     * @return
+     * @throws org.netbeans.modules.kenai.api.KenaiException
+     */
+    public Iterator<KenaiLicense> getLicenses() throws KenaiException {
+        Iterator<LicensesListData.LicensesListItem> licenses = impl.getLicenses();
+        return new LicensesIterator(licenses);
+    }
+
+    /**
+     * 
+     * @return
+     * @throws org.netbeans.modules.kenai.api.KenaiException
+     */
+    public Iterator<KenaiService> getServices() throws KenaiException {
+        Iterator<ServicesListItem> services = impl.getServices();
+        return new ServicesIterator(services);
+    }
+
 
     /**
      * Get information about a specific project.
@@ -231,4 +254,50 @@ public final class Kenai {
             it.remove();
         }
     }
+
+    private class LicensesIterator implements Iterator<KenaiLicense> {
+
+        private final Iterator<LicensesListData.LicensesListItem> it;
+
+        public LicensesIterator(Iterator<LicensesListData.LicensesListItem> it) {
+            this.it = it;
+        }
+
+        public boolean hasNext() {
+            return it.hasNext();
+        }
+
+        public KenaiLicense next() {
+            LicensesListData.LicensesListItem lli = it.next();
+            return new KenaiLicense(lli);
+        }
+
+        public void remove() {
+            it.remove();
+        }
+    }
+
+    private class ServicesIterator implements Iterator<KenaiService> {
+
+        private final Iterator<ServicesListItem> it;
+
+        public ServicesIterator(Iterator<ServicesListItem> it) {
+            this.it = it;
+        }
+
+        public boolean hasNext() {
+            return it.hasNext();
+        }
+
+        public KenaiService next() {
+            ServicesListItem sli = it.next();
+            return new KenaiService(sli);
+        }
+
+        public void remove() {
+            it.remove();
+        }
+    }
+
+
 }

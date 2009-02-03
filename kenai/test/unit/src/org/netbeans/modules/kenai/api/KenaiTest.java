@@ -135,6 +135,15 @@ public class KenaiTest {
         System.out.println("Admin? " + authorized);
     }
 
+    @Test
+    public void testIsAuthorized2() throws Exception {
+        String name = "unittestuniquename01";
+        KenaiProject prj = instance.getProject(name);
+
+        boolean authorized = instance.isAuthorized(prj, KenaiActivity.PROJECTS_ADMIN);
+        System.out.println("PROJECTS_ADMIN? " + authorized);
+
+    }
 
 
     /**
@@ -143,7 +152,7 @@ public class KenaiTest {
     @Test
     public void testCreateProject() throws KenaiException {
         System.out.println("createProject");
-        String name = "unittestuniquename01";
+        String name = "unittestuniquename02";
         String displayName = "Test Display Name";
         String description = "Test Description";
         String[] licenses = {"MIT"};
@@ -167,7 +176,7 @@ public class KenaiTest {
         String description = "Test Description";
         KenaiProject project = instance.getProject("unittestuniquename");
         try {
-            KenaiProjectFeature feature = project.createProjectFeature(name, displayName, description, KenaiFeature.WIKI.getId(), null, null, null);
+            KenaiProjectFeature feature = project.createProjectFeature(name, displayName, description, KenaiFeature.FORUM.getId(), null, null, null);
             assert feature.getName().equals(name);
             assert feature.getDisplayName().equals(displayName);
         } catch (KenaiErrorMessage kem) {
@@ -185,5 +194,26 @@ public class KenaiTest {
         }
     }
 
+    @Test
+    public void testGetLicenses() throws KenaiException {
+        System.out.println("testGetLicenses");
+        final Iterator<KenaiLicense> licenses = Kenai.getDefault().getLicenses();
+        while(licenses.hasNext()) {
+            KenaiLicense lic = licenses.next();
+            System.out.println(lic.getName());
+            System.out.println(lic.getDisplayName());
+            System.out.println(lic.getUri());
+        }
+    }
 
+    @Test
+    public void testGetServices() throws KenaiException {
+        System.out.println("testGetServices");
+        final Iterator<KenaiService> services = Kenai.getDefault().getServices();
+        while(services.hasNext()) {
+            KenaiService ser = services.next();
+            System.out.println(ser.getName());
+            System.out.println(ser.getDescription());
+        }
+    }
 }

@@ -50,6 +50,11 @@ import org.netbeans.modules.kenai.api.KenaiException;
  */
 public abstract class KenaiImpl {
 
+    public abstract Iterator<LicensesListData.LicensesListItem> getLicenses() throws KenaiException;
+
+    public abstract Iterator<ServicesListData.ServicesListItem> getServices() throws KenaiException;
+
+
     /**
      * Searches kenai for projects.
      *
