@@ -1202,10 +1202,16 @@ public class Util {
 
     public static List<String> getJaxBClassImports() {
         List<String> imports = new ArrayList<String>();
-        imports.add(JAXBContext.class.getName());
-        imports.add(Unmarshaller.class.getName());
-        imports.add(StreamSource.class.getName());
-        imports.add(StringReader.class.getName());
+        ClassLoader orig = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(Util.class.getClassLoader());
+        try {
+            imports.add(JAXBContext.class.getName());
+            imports.add(Unmarshaller.class.getName());
+            imports.add(StreamSource.class.getName());
+            imports.add(StringReader.class.getName());
+        } finally {
+          Thread.currentThread().setContextClassLoader(orig);
+        }
         return imports;
     }
 

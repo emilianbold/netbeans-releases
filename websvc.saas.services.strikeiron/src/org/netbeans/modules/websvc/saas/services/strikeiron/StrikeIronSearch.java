@@ -101,10 +101,16 @@ public class StrikeIronSearch {
             if (list != null && list.getLength() > 0) {
                 Node node = list.item(0);
                 // Now that we have the desired element, delegate to JAXB.
-                JAXBContext jc = JAXBContext.newInstance("com.strikeiron.search");
-                Unmarshaller unmarshaller = jc.createUnmarshaller();
-                SearchResponse resp = (SearchResponse) unmarshaller.unmarshal(node);
-                return resp.getSearchResult();
+                ClassLoader orig = Thread.currentThread().getContextClassLoader();
+                Thread.currentThread().setContextClassLoader(StrikeIronSearch.class.getClassLoader());
+                try {
+                    JAXBContext jc = JAXBContext.newInstance("com.strikeiron.search");
+                    Unmarshaller unmarshaller = jc.createUnmarshaller();
+                    SearchResponse resp = (SearchResponse) unmarshaller.unmarshal(node);
+                    return resp.getSearchResult();
+                } finally {
+                  Thread.currentThread().setContextClassLoader(orig);
+                }
             }
         } catch (JAXBException jbe) {
             throw new SearchException(jbe);
