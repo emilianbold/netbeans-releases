@@ -72,11 +72,6 @@ final class FixedModule extends Module {
     private Properties localizedProps;
     private final Manifest manifest;
 
-    /** Create a special-purpose "fixed" JAR. */
-    public FixedModule(ModuleManager mgr, Events ev, Manifest manifest, Object history, ClassLoader classloader) throws InvalidException {
-        this(mgr, ev, manifest, history, classloader, false, false);
-    }
-
     /**
      * Create a special-purpose "fixed" JAR which may nonetheless be marked eager or autoload.
      * @since 2.7

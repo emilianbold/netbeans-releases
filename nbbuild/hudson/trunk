@@ -115,8 +115,6 @@ JDK_TESTS=/opt/jdk1.5.0_14
 ant commit-validation
 # Init application server for tests
 sh -x `dirname $0`/initAppserver.sh
-# visualweb UI validation tests
-#sh -x `dirname $0`/run-vw-sanity.sh
 # SOA (BPEL, XSLT) and XML UI validation tests
 ant -f soa.kit/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.results.dir=$TESTS_RESULT_DIR -Dcontinue.after.failing.tests=true test
 ant -f xml.schema/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.results.dir=$TESTS_RESULT_DIR -Dcontinue.after.failing.tests=true test
