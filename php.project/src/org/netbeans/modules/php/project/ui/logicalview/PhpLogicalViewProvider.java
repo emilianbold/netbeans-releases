@@ -125,7 +125,8 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
                         found = findNode(node, path);
                     }
                     if (found == null) {
-                        return null;
+                        // can happen for tests that are underneath sources directory
+                        continue;
                     }
                     if (hasObject(found, target)) {
                         return found;

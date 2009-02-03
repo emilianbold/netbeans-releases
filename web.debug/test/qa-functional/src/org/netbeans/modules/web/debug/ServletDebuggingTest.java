@@ -157,16 +157,16 @@ public class ServletDebuggingTest extends J2eeTestCase {
                 new Object[]{new Integer(1), servletNode.getText()});
         new ActionNoBlock(null, debugFileItem).perform(servletNode);
         String setURITitle = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "TTL_setServletExecutionUri");
+        Utils.confirmClientSideDebuggingMeassage(SAMPLE_WEB_PROJECT_NAME);
         new NbDialogOperator(setURITitle).ok();
-        Utils.confirmClientSideDebuggingMeassage();
         try {
-            Thread.sleep(10000);
+            Thread.sleep(130000);
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         }
-        OutputTabOperator outputTab = new OutputTabOperator("MainTestApplication (debug)");
-        outputTab.waitText("BUILD SUCCESSFUL");
-        //stt.waitText("DivideServlet.java:" + line); //NOI18N
+        //OutputTabOperator outputTab = new OutputTabOperator("MainTestApplication (debug)");
+        //outputTab.waitText("BUILD SUCCESSFUL");
+        stt.waitText("DivideServlet.java:" + line); //NOI18N
         new StepIntoAction().perform();
         MainWindowOperator.getDefault().pressKey(KeyEvent.VK_ENTER);
         //stt.waitText("DivideServlet.java:"+(line+2)); //NOI18N
@@ -185,7 +185,12 @@ public class ServletDebuggingTest extends J2eeTestCase {
     public void testStepOut() {
         new DebugAction().perform(servletNode);
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
-        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME + "/DivideServlet");
+        //Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME + "/DivideServlet");
+        try {
+            Thread.sleep(20000);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         stt.waitText("DivideServlet.java:" + line); //NOI18N
         stt.clear();
         new StepOutAction().perform();

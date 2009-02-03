@@ -67,18 +67,30 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
+import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 
 /**
  * Common subclass to ConfigurationXMLCodec and AuxConfigurationXMLCodec
  */
 /**
  * Change History:
- * V53
- *   New configuration types: 4 (QT_APPLICATION), 5 (QT_LIBRARY)
- * V52
+ * V55 - NB 7.0
+ *   DISK_FOLDER_ELEMENT
+ *   ITEM_NAME_ELEMENT
+ * V54 - NB 7.0
+ *   Qt settings are persisted:
+ *   QT_ELEMENT
+ *   QT_BUILD_MODE_ELEMENT
+ *   QT_MODULES_ELEMENT
+ *   QT_MOC_DIR_ELEMENT
+ *   QT_UI_DIR_ELEMENT
+ *   QT_DEFS_LIST_ELEMENT
+ * V53 - NB 7.0
+ *   New configuration types: 4 (QT_APPLICATION), 5 (QT_DYNAMIC_LIBRARY), 6 (QT_STATIC_LIBRARY)
+ * V52 - NB 7.0
  *   ASSEMBLER_REQUIRED_ELEMENT
- * V51
- *   Now storing package type as name and not int
+ * V51 - NB 6.5
+ *   Now storing package type as name and not as int
  * V50 - 09.10.08 - NB 6.5
  *   Moved source encoding (SOURCE_ENCODING_ELEMENT) to project.xml
  * V49 - 09.02.08 - NB 6.5
@@ -146,7 +158,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 53;
+    public final static int CURRENT_VERSION = 55;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -160,7 +172,9 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String FOLDER_PATH_ELEMENT = "folderPath"; // Old style. FIXUP : < version 5 // NOI18N
     protected final static String SOURCE_FOLDERS_ELEMENT = "sourceFolders"; // Old style. FIXUP : < version 5 // NOI18N
     protected final static String LOGICAL_FOLDER_ELEMENT = "logicalFolder"; // NOI18N
+    protected final static String DISK_FOLDER_ELEMENT = "df"; // NOI18N
     protected final static String ITEM_PATH_ELEMENT = "itemPath"; // NOI18N
+    protected final static String ITEM_NAME_ELEMENT = "in"; // NOI18N
     protected final static String PROJECT_MAKEFILE_ELEMENT = "projectmakefile"; // NOI18N
     protected final static String REQUIRED_PROJECTS_ELEMENT = "requiredProjects"; // NOI18N
     protected final static String SOURCE_ROOT_LIST_ELEMENT = "sourceRootList"; // NOI18N
@@ -261,6 +275,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String VERSION_ATTR = "version"; // NOI18N
     protected final static String TYPE_ATTR = "type"; // NOI18N
     protected final static String NAME_ATTR = "name"; // NOI18N
+    protected final static String ROOT_ATTR = "root"; // NOI18N
     protected final static String SET_ATTR = "set"; // NOI18N
     protected final static String DISPLAY_NAME_ATTR = "displayName"; // NOI18N
     protected final static String PROJECT_FILES_ATTR = "projectFiles"; // NOI18N
@@ -282,6 +297,13 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String PACK_INFOS_LIST_ELEMENT = "packInfoList"; // NOI18NP
     protected final static String PACK_INFO_LIST_ELEMENT = "packInfoListElem"; // NOI18NP
     protected final static String PACK_TOPDIR_ELEMENT = "packTopDir"; // NOI18N
+    // Qt-related
+    protected final static String QT_ELEMENT = "qt"; // NOI18N
+    protected final static String QT_BUILD_MODE_ELEMENT = "buildMode"; // NOI18N
+    protected final static String QT_MODULES_ELEMENT = "modules"; // NOI18N
+    protected final static String QT_MOC_DIR_ELEMENT = "mocDir"; // NOI18N
+    protected final static String QT_UI_DIR_ELEMENT = "uiDir"; // NOI18N
+    protected final static String QT_DEFS_LIST_ELEMENT = "defs"; // NOI18N
     private ConfigurationDescriptor projectDescriptor;
     private boolean publicLocation;
 
@@ -324,6 +346,9 @@ public abstract class CommonConfigurationXMLCodec
 
             if (publicLocation) {
                 writeToolsSetBlock(xes, makeConfiguration);
+                if (makeConfiguration.isQmakeConfiguration()) {
+                    writeQmakeConfiguration(xes, makeConfiguration.getQmakeConfiguration());
+                }
                 if (makeConfiguration.isCompileConfiguration() || makeConfiguration.isQmakeConfiguration()) {
                     writeCompiledProjectConfBlock(xes, makeConfiguration);
                 }
@@ -393,6 +418,28 @@ public abstract class CommonConfigurationXMLCodec
         xes.elementClose(COMPILE_TYPE_ELEMENT);
     }
 
+    private void writeQmakeConfiguration(XMLEncoderStream xes, QmakeConfiguration qmake) {
+        xes.elementOpen(QT_ELEMENT);
+        if (qmake.getBuildMode().getModified()) {
+            xes.element(QT_BUILD_MODE_ELEMENT, String.valueOf(qmake.getBuildMode().getValue()));
+        }
+        xes.element(QT_MODULES_ELEMENT, qmake.getEnabledModules());
+        if (qmake.getMocDir().getModified()) {
+            xes.element(QT_MOC_DIR_ELEMENT, qmake.getMocDir().getValue());
+        }
+        if (qmake.getUiDir().getModified()) {
+            xes.element(QT_UI_DIR_ELEMENT, qmake.getUiDir().getValue());
+        }
+        if (qmake.getCustomDefs().getModified()) {
+            xes.elementOpen(QT_DEFS_LIST_ELEMENT);
+            for (String line : qmake.getCustomDefs().getValue()) {
+                xes.element(LIST_ELEMENT, line);
+            }
+            xes.elementClose(QT_DEFS_LIST_ELEMENT);
+        }
+        xes.elementClose(QT_ELEMENT);
+    }
+
     private void writeMakefileProjectConfBlock(XMLEncoderStream xes,
             MakeConfiguration makeConfiguration) {
         xes.elementOpen(MAKEFILE_TYPE_ELEMENT);
@@ -426,7 +473,11 @@ public abstract class CommonConfigurationXMLCodec
         // write out subfolders
         Folder[] subfolders = folder.getFoldersAsArray();
         for (int i = 0; i < subfolders.length; i++) {
-            writeLogicalFolder(xes, subfolders[i]);
+            if (subfolders[i].isDiskFolder()) {
+                writeDiskFolder(xes, subfolders[i]);
+            } else {
+                writeLogicalFolder(xes, subfolders[i]);
+            }
         }
         // write out items
         Item[] items = folder.getItemsAsArray();
@@ -434,6 +485,32 @@ public abstract class CommonConfigurationXMLCodec
             xes.element(ITEM_PATH_ELEMENT, items[i].getPath());
         }
         xes.elementClose(LOGICAL_FOLDER_ELEMENT);
+    }
+
+    private void writeDiskFolder(XMLEncoderStream xes, Folder folder) {
+        if (folder.getRoot() != null) {
+            xes.elementOpen(DISK_FOLDER_ELEMENT,
+                    new AttrValuePair[]{
+                        new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
+                        new AttrValuePair(ROOT_ATTR, "" + folder.getRoot()), // NOI18N
+                    });
+        } else {
+            xes.elementOpen(DISK_FOLDER_ELEMENT,
+                    new AttrValuePair[]{
+                        new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
+                    });
+        }
+        // write out subfolders
+        Folder[] subfolders = folder.getFoldersAsArray();
+        for (int i = 0; i < subfolders.length; i++) {
+            writeDiskFolder(xes, subfolders[i]);
+        }
+        // write out items
+        Item[] items = folder.getItemsAsArray();
+        for (int i = 0; i < items.length; i++) {
+            xes.element(ITEM_NAME_ELEMENT, items[i].getName());
+        }
+        xes.elementClose(DISK_FOLDER_ELEMENT);
     }
 
     private void writeSourceRoots(XMLEncoderStream xes) {
@@ -643,31 +720,31 @@ public abstract class CommonConfigurationXMLCodec
 
     public static void writeLibrariesConfiguration(XMLEncoderStream xes, LibrariesConfiguration librariesConfiguration) {
         xes.elementOpen(LINKER_LIB_ITEMS_ELEMENT);
-        LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
-        for (int i = 0; i < libraryItems.length; i++) {
-            if (libraryItems[i] instanceof LibraryItem.ProjectItem) {
+        List<LibraryItem> libraryItems = librariesConfiguration.getValue();
+        for (LibraryItem item : libraryItems) {
+            if (item instanceof LibraryItem.ProjectItem) {
                 xes.elementOpen(LINKER_LIB_PROJECT_ITEM_ELEMENT);
-                writeMakeArtifact(xes, ((LibraryItem.ProjectItem) libraryItems[i]).getMakeArtifact());
+                writeMakeArtifact(xes, ((LibraryItem.ProjectItem) item).getMakeArtifact());
                 xes.elementClose(LINKER_LIB_PROJECT_ITEM_ELEMENT);
-            } else if (libraryItems[i] instanceof LibraryItem.StdLibItem) {
-                xes.element(LINKER_LIB_STDLIB_ITEM_ELEMENT, ((LibraryItem.StdLibItem) libraryItems[i]).getName());
-            } else if (libraryItems[i] instanceof LibraryItem.LibItem) {
-                xes.element(LINKER_LIB_LIB_ITEM_ELEMENT, ((LibraryItem.LibItem) libraryItems[i]).getLibName());
-            } else if (libraryItems[i] instanceof LibraryItem.LibFileItem) {
-                xes.element(LINKER_LIB_FILE_ITEM_ELEMENT, ((LibraryItem.LibFileItem) libraryItems[i]).getPath());
-            } else if (libraryItems[i] instanceof LibraryItem.OptionItem) {
-                xes.element(LINKER_LIB_OPTION_ITEM_ELEMENT, ((LibraryItem.OptionItem) libraryItems[i]).getLibraryOption());
+            } else if (item instanceof LibraryItem.StdLibItem) {
+                xes.element(LINKER_LIB_STDLIB_ITEM_ELEMENT, ((LibraryItem.StdLibItem) item).getName());
+            } else if (item instanceof LibraryItem.LibItem) {
+                xes.element(LINKER_LIB_LIB_ITEM_ELEMENT, ((LibraryItem.LibItem) item).getLibName());
+            } else if (item instanceof LibraryItem.LibFileItem) {
+                xes.element(LINKER_LIB_FILE_ITEM_ELEMENT, ((LibraryItem.LibFileItem) item).getPath());
+            } else if (item instanceof LibraryItem.OptionItem) {
+                xes.element(LINKER_LIB_OPTION_ITEM_ELEMENT, ((LibraryItem.OptionItem) item).getLibraryOption());
             }
         }
         xes.elementClose(LINKER_LIB_ITEMS_ELEMENT);
     }
 
     public static void writeRequiredProjects(XMLEncoderStream xes, RequiredProjectsConfiguration requiredProjectsConfiguration) {
-        LibraryItem.ProjectItem[] projectItems = requiredProjectsConfiguration.getRequiredProjectItemsAsArray();
-        if (projectItems.length > 0) {
+        List<LibraryItem.ProjectItem> projectItems = requiredProjectsConfiguration.getValue();
+        if (!projectItems.isEmpty()) {
             xes.elementOpen(REQUIRED_PROJECTS_ELEMENT);
-            for (int i = 0; i < projectItems.length; i++) {
-                writeMakeArtifact(xes, projectItems[i].getMakeArtifact());
+            for (LibraryItem.ProjectItem item : projectItems) {
+                writeMakeArtifact(xes, item.getMakeArtifact());
             }
             xes.elementClose(REQUIRED_PROJECTS_ELEMENT);
         }

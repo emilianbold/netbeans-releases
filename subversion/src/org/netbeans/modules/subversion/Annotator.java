@@ -163,6 +163,7 @@ public class Annotator {
         String string = SvnModuleConfig.getDefault().getAnnotationFormat(); //System.getProperty("netbeans.experimental.svn.ui.statusLabelFormat");  // NOI18N
         if (string != null && !string.trim().equals("")) {
             mimeTypeFlag = string.indexOf("{mime_type}") > -1;
+            string = Utils.skipUnsupportedVariables(string, new String[] {"{status}", "{folder}", "{revision}", "{mime_type}" });     // NOI18N
             string = string.replaceAll("\\{revision\\}",  "\\{0\\}");           // NOI18N
             string = string.replaceAll("\\{status\\}",    "\\{1\\}");           // NOI18N
             string = string.replaceAll("\\{folder\\}",    "\\{2\\}");           // NOI18N

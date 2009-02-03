@@ -1,4 +1,3 @@
-// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
@@ -37,7 +36,7 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-// </editor-fold>
+
 package org.netbeans.modules.glassfish.common;
 
 import java.io.File;
@@ -73,14 +72,16 @@ public class CreateDomain extends Thread {
     final private File platformLocation;
     final private Map<String, String> map;
     final private Map<String, String> ip;
+    private GlassfishInstanceProvider gip;
 
     public CreateDomain(String uname, String pword, File platformLocation, 
-            Map<String, String> ip) {
+            Map<String, String> ip, GlassfishInstanceProvider gip) {
         this.uname = uname;
         this.pword = pword;
         this.platformLocation = platformLocation;
         this.ip = ip;
         this.map = new HashMap<String,String>();
+        this.gip = gip;
         map.putAll(ip);
         computePorts(ip,map);
     }
@@ -193,8 +194,8 @@ public class CreateDomain extends Thread {
             }
             if (0 == retVal) {
                 // The create was successful... create the instance and register it.
-                GlassfishInstance gi = GlassfishInstance.create(ip);
-                GlassfishInstanceProvider.getDefault().addServerInstance(gi);
+                GlassfishInstance gi = GlassfishInstance.create(ip,gip);
+                gip.addServerInstance(gi);
                 NbPreferences.forModule(this.getClass()).putBoolean(ServerUtilities.PROP_FIRST_RUN, true);
             }
         }

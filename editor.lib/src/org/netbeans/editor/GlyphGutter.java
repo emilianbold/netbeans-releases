@@ -65,6 +65,7 @@ import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.accessibility.*;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
@@ -286,11 +287,14 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         // properties is fired which must update this component although it is not visible anymore
         if (lineColoring == null)
             return;
-        
-        if (lineColoring.getBackColor() != null)
-            backgroundColor = lineColoring.getBackColor();
-        else
-            backgroundColor = defaultColoring.getBackColor();
+
+        backgroundColor = UIManager.getColor("NbEditorGlyphGutter.background"); //NOI18N
+        if( null == backgroundColor ) {
+            if (lineColoring.getBackColor() != null)
+                backgroundColor = lineColoring.getBackColor();
+            else
+                backgroundColor = defaultColoring.getBackColor();
+        }
 
         if (lineColoring.getForeColor() != null)
             foreColor = lineColoring.getForeColor();

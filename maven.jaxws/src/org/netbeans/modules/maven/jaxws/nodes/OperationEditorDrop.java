@@ -74,7 +74,7 @@ public class OperationEditorDrop implements ActiveEditorDrop {
                 Node clientNode = operationNode.getParentNode().getParentNode().getParentNode();
                 JAXWSLightSupport jaxWsSupport = clientNode.getLookup().lookup(JAXWSLightSupport.class);
                 if (jaxWsSupport != null) {
-                    Project clientProject = FileOwnerQuery.getOwner(jaxWsSupport.getLocalWsdlFolder(false));
+                    Project clientProject = FileOwnerQuery.getOwner(jaxWsSupport.getWsdlFolder(false));
                     // TODO: how to add dependency on other project
 //                    if (JaxWsUtils.addProjectReference(clientProject, targetFo)) {
                     JaxWsCodeGenerator.insertMethod(targetComponent.getDocument(), targetComponent.getCaret().getDot(), operationNode);

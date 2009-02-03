@@ -66,7 +66,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 public class FunctionImplEx<T>  extends FunctionImpl<T> {
 
     private CharSequence qualifiedName;
-    private boolean qualifiedNameIsFake = false;
+    private static final byte QUALIFIED_NAME = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+1);
     private final CharSequence[] classOrNspNames;   
     private AST fixFakeRegistrationAst = null; // AST for fixing fake registrations
     
@@ -128,50 +128,48 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     
     @Override
     public CharSequence getQualifiedName() {
-	if( qualifiedName == null ) {
-	    qualifiedName = QualifiedNameCache.getManager().getString(findQualifiedName());
-	}
-	return qualifiedName;
+        if( qualifiedName == null ) {
+            qualifiedName = QualifiedNameCache.getManager().getString(findQualifiedName());
+        }
+        return qualifiedName;
     }
     
     protected String findQualifiedName() {
-	CsmObject owner = findOwner(null);
-	if( owner instanceof CsmQualifiedNamedElement  ) {
-	    qualifiedNameIsFake = false;
-	    return ((CsmQualifiedNamedElement) owner).getQualifiedName().toString() + getScopeSuffix() + "::" + getQualifiedNamePostfix(); // NOI18N
-	}
-	else {
-	    qualifiedNameIsFake = true;
-	    CharSequence[] cnn = classOrNspNames;
-	    CsmNamespaceDefinition nsd = findNamespaceDefinition();
-	    StringBuilder sb = new StringBuilder();
-	    if( nsd != null ) {
-		sb.append(nsd.getQualifiedName());
-	    }
-	    if( cnn != null ) {
-		for (int i = 0; i < cnn.length; i++) {
-		    if( sb.length() > 0 ) {
-			sb.append("::"); // NOI18N
-		    }
-		    sb.append(cnn[i]);
-		}
-	    }
-	    if( sb.length() == 0 ) {
-		sb.append("unknown>"); // NOI18N
-	    }
-            sb.append(getScopeSuffix());
-	    sb.append("::"); // NOI18N
-	    sb.append(getQualifiedNamePostfix());
-	    return sb.toString();
-	}
+        CsmObject owner = findOwner(null);
+        if( owner instanceof CsmQualifiedNamedElement  ) {
+            setFlags(QUALIFIED_NAME, false);
+            return ((CsmQualifiedNamedElement) owner).getQualifiedName().toString() + getScopeSuffix() + "::" + getQualifiedNamePostfix(); // NOI18N
+        }
+        setFlags(QUALIFIED_NAME, true);
+        CharSequence[] cnn = classOrNspNames;
+        CsmNamespaceDefinition nsd = findNamespaceDefinition();
+        StringBuilder sb = new StringBuilder();
+        if( nsd != null ) {
+            sb.append(nsd.getQualifiedName());
+        }
+        if( cnn != null ) {
+            for (int i = 0; i < cnn.length; i++) {
+                if( sb.length() > 0 ) {
+                    sb.append("::"); // NOI18N
+                }
+                sb.append(cnn[i]);
+            }
+        }
+        if( sb.length() == 0 ) {
+            sb.append("unknown>"); // NOI18N
+        }
+        sb.append(getScopeSuffix());
+        sb.append("::"); // NOI18N
+        sb.append(getQualifiedNamePostfix());
+        return sb.toString();
     }
     
     @Override
     protected void registerInProject() {
-	super.registerInProject();
-	if( qualifiedNameIsFake ) {
-	    ((FileImpl) getContainingFile()).onFakeRegisration(this);
-	}
+        super.registerInProject();
+        if( hasFlags(QUALIFIED_NAME) ) {
+            ((FileImpl) getContainingFile()).onFakeRegisration(this);
+        }
     }
     
     public void fixFakeRegistration() {
@@ -253,7 +251,6 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         super.write(output);
         // can be null
         PersistentUtils.writeUTF(this.qualifiedName, output);
-        output.writeBoolean(this.qualifiedNameIsFake);
         PersistentUtils.writeStrings(this.classOrNspNames, output);
     }
     
@@ -262,7 +259,6 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         // can be null
         String read = PersistentUtils.readUTF(input);
         this.qualifiedName = read == null ? null : QualifiedNameCache.getManager().getString(read);
-        this.qualifiedNameIsFake = input.readBoolean();
         this.classOrNspNames = PersistentUtils.readStrings(input, NameCache.getManager());
     }
 }

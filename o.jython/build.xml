@@ -5,14 +5,4 @@
 <project name="o.jython" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.jython.</description>
     <import file="../nbbuild/templates/projectized.xml"/>
-
-    <target name="compile" depends="projectized-common.compile">
-        <copy tofile="build/jython.jar" file="${cluster}/jython-${jython_src_version}/jython.jar" overwrite="true"/>
-        <copy tofile="build/jarjar.jar" file="${cluster}/jython-${jython_src_version}/javalib/jarjar.jar" overwrite="true"/>
-    </target>
-
-    <target name="release" depends="init">
-        <copy todir="${cluster}/modules/ext" file="${cluster}/jython-${jython_src_version}/jython.jar" overwrite="true"/>
-        <copy todir="${cluster}/modules/ext" file="${cluster}/jython-${jython_src_version}/javalib/jarjar.jar" overwrite="true"/>
-    </target>
 </project>

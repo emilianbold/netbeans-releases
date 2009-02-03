@@ -44,8 +44,8 @@ build: .build-post
 
 .build-post: .build-impl nbexec.exe
 # Add your post 'build' code here...
-	cp nbexec.exe ../../../nbbuild/netbeans/platform9/lib/
-	cp nbexec.dll ../../../nbbuild/netbeans/platform9/lib/
+	cp nbexec.exe ../../../nbbuild/netbeans/platform10/lib/
+	cp nbexec.dll ../../../nbbuild/netbeans/platform10/lib/
 
 nbexec.exe: nbexecexe.cpp nbexecloader.h utilsfuncs.cpp
 	g++ -s -mno-cygwin nbexecexe.cpp utilsfuncs.cpp -o nbexec.exe

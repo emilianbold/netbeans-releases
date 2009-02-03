@@ -39,6 +39,9 @@
 
 package org.netbeans.core.startup;
 
+import org.netbeans.SetupHid;
+import org.netbeans.ModuleManagerTest;
+import org.netbeans.MockEvents;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
@@ -81,7 +84,7 @@ public class NbInstallerHideClasspathPackagesTest extends SetupHid {
         createJar(m2j, Collections.singletonMap("m2/layer.xml", "<filesystem/>"), mani);
         File m3j = new File(getWorkDir(), "m3.jar");
         createJar(m3j, Collections.<String,String>emptyMap(), Collections.singletonMap("OpenIDE-Module", "m3"));
-        Events ev = new FakeEvents();
+        Events ev = new MockEvents();
         NbInstaller inst = new NbInstaller(ev);
         ModuleManager mgr = new ModuleManager(inst, ev);
         inst.registerManager(mgr);

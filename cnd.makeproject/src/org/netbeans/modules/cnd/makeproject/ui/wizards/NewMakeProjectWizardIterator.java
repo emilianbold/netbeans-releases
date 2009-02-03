@@ -87,13 +87,14 @@ import org.openide.util.NbBundle;
 public class NewMakeProjectWizardIterator implements WizardDescriptor.InstantiatingIterator {
     private static final long serialVersionUID = 1L;
     static final boolean USE_SIMPLE_IMPORT_PROJECT = CndUtils.getBoolean("cnd.makeproject.simple.import", true); // NOI18N
-    
+
     public static final String APPLICATION_PROJECT_NAME = "Application"; // NOI18N
     public static final String DYNAMICLIBRARY_PROJECT_NAME = "DynamicLibrary";  // NOI18N
     public static final String STATICLIBRARY_PROJECT_NAME = "StaticLibrary"; // NOI18N
     public static final String MAKEFILEPROJECT_PROJECT_NAME = "MakefileProject"; // NOI18N
-    public static final String QTAPPLICATION_PROJECT_NAME = "QtApplicationProject"; // NOI18N
-    public static final String QTLIBRARY_PROJECT_NAME = "QtLibraryProject"; // NOI18N
+    public static final String QTAPPLICATION_PROJECT_NAME = "QtApplication"; // NOI18N
+    public static final String QTDYNAMICLIBRARY_PROJECT_NAME = "QtDynamicLibrary"; // NOI18N
+    public static final String QTSTATICLIBRARY_PROJECT_NAME = "QtStaticLibrary"; // NOI18N
 
     static final String PROP_NAME_INDEX = "nameIndex"; // NOI18N
     
@@ -102,15 +103,16 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
     public static final int TYPE_APPLICATION = 1;
     public static final int TYPE_DYNAMIC_LIB = 2;
     public static final int TYPE_STATIC_LIB = 3;
-    public static final int TYPE_QT_APP = 4;
-    public static final int TYPE_QT_LIB = 5;
-    
+    public static final int TYPE_QT_APPLICATION = 4;
+    public static final int TYPE_QT_DYNAMIC_LIB = 5;
+    public static final int TYPE_QT_STATIC_LIB = 6;
+
     private int wizardtype;
     private String name;
     private String wizardTitle;
     private String wizardACSD;
     
-    public NewMakeProjectWizardIterator(int wizardtype, String name, String wizardTitle, String wizardACSD) {
+    private NewMakeProjectWizardIterator(int wizardtype, String name, String wizardTitle, String wizardACSD) {
         this.wizardtype = wizardtype;
         this.name = name;
         this.wizardTitle = wizardTitle;
@@ -142,14 +144,21 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
         String name = QTAPPLICATION_PROJECT_NAME;
         String wizardTitle = getString("Templates/Project/Native/newQtApplication.xml");
         String wizardACSD = getString("NativeNewQtApplicationACSD");
-        return new NewMakeProjectWizardIterator(TYPE_QT_APP, name, wizardTitle, wizardACSD);
+        return new NewMakeProjectWizardIterator(TYPE_QT_APPLICATION, name, wizardTitle, wizardACSD);
     }
 
-    public static NewMakeProjectWizardIterator newQtLibrary() {
-        String name = QTLIBRARY_PROJECT_NAME;
-        String wizardTitle = getString("Templates/Project/Native/newQtLibrary.xml");
-        String wizardACSD = getString("NativeNewQtLibraryACSD");
-        return new NewMakeProjectWizardIterator(TYPE_QT_LIB, name, wizardTitle, wizardACSD);
+    public static NewMakeProjectWizardIterator newQtDynamicLibrary() {
+        String name = QTDYNAMICLIBRARY_PROJECT_NAME;
+        String wizardTitle = getString("Templates/Project/Native/newQtDynamicLibrary.xml");
+        String wizardACSD = getString("NativeNewQtDynamicLibraryACSD");
+        return new NewMakeProjectWizardIterator(TYPE_QT_DYNAMIC_LIB, name, wizardTitle, wizardACSD);
+    }
+
+    public static NewMakeProjectWizardIterator newQtStaticLibrary() {
+        String name = QTSTATICLIBRARY_PROJECT_NAME;
+        String wizardTitle = getString("Templates/Project/Native/newQtStaticLibrary.xml");
+        String wizardACSD = getString("NativeNewQtStaticLibraryACSD");
+        return new NewMakeProjectWizardIterator(TYPE_QT_STATIC_LIB, name, wizardTitle, wizardACSD);
     }
 
     public static NewMakeProjectWizardIterator makefile() {
@@ -161,7 +170,8 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
     
     private WizardDescriptor.Panel[] createPanels(String name) {
         if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB
-                || wizardtype == TYPE_STATIC_LIB || wizardtype == TYPE_QT_APP || wizardtype == TYPE_QT_LIB) {
+                || wizardtype == TYPE_STATIC_LIB || wizardtype == TYPE_QT_APPLICATION
+                || wizardtype == TYPE_QT_DYNAMIC_LIB || wizardtype == TYPE_QT_STATIC_LIB) {
             return new WizardDescriptor.Panel[] {
                 new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, true)
             };
@@ -376,7 +386,8 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
                 }
             }
         } else if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB
-                || wizardtype == TYPE_STATIC_LIB || wizardtype == TYPE_QT_APP || wizardtype == TYPE_QT_LIB) {
+                || wizardtype == TYPE_STATIC_LIB || wizardtype == TYPE_QT_APPLICATION
+                || wizardtype == TYPE_QT_DYNAMIC_LIB || wizardtype == TYPE_QT_STATIC_LIB) {
             int conftype = -1;
             if (wizardtype == TYPE_APPLICATION) {
                 conftype = MakeConfiguration.TYPE_APPLICATION;
@@ -384,21 +395,23 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
                 conftype = MakeConfiguration.TYPE_DYNAMIC_LIB;
             } else if (wizardtype == TYPE_STATIC_LIB) {
                 conftype = MakeConfiguration.TYPE_STATIC_LIB;
-            } else if (wizardtype == TYPE_QT_APP) {
+            } else if (wizardtype == TYPE_QT_APPLICATION) {
                 conftype = MakeConfiguration.TYPE_QT_APPLICATION;
-            } else if (wizardtype == TYPE_QT_LIB) {
-                conftype = MakeConfiguration.TYPE_QT_LIBRARY;
+            } else if (wizardtype == TYPE_QT_DYNAMIC_LIB) {
+                conftype = MakeConfiguration.TYPE_QT_DYNAMIC_LIB;
+            } else if (wizardtype == TYPE_QT_STATIC_LIB) {
+                conftype = MakeConfiguration.TYPE_QT_STATIC_LIB;
             }
             MakeConfiguration debug = new MakeConfiguration(dirF.getPath(), "Debug", conftype); // NOI18N
             debug.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
-            debug.getQmakeConfiguration().getConfig().setValue(QmakeConfiguration.DEBUG_FLAG);
+            debug.getQmakeConfiguration().getBuildMode().setValue(QmakeConfiguration.DEBUG_MODE);
             MakeConfiguration release = new MakeConfiguration(dirF.getPath(), "Release", conftype); // NOI18N
             release.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
-            release.getQmakeConfiguration().getConfig().setValue(QmakeConfiguration.RELEASE_FLAG);
+            release.getQmakeConfiguration().getBuildMode().setValue(QmakeConfiguration.RELEASE_MODE);
             MakeConfiguration[] confs = new MakeConfiguration[] {debug, release};
             MakeProjectGenerator.createProject(dirF, projectName, makefileName, confs, null, null);
             FileObject dir = FileUtil.toFileObject(dirF);

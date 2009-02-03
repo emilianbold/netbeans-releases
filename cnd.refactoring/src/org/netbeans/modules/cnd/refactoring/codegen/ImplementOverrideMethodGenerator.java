@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.refactoring.codegen;
 
+import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import java.awt.Dialog;
 import java.util.ArrayList;

@@ -42,17 +42,19 @@ BASENAME=netbeans-$BUILDNUM
 
 mkdir -p $DIST/zip/moduleclusters
 
-find netbeans | egrep -v "netbeans/(extra|testtools)" | zip -q $DIST/zip/$BASENAME.zip -@ || exit
+#Pack the distributions
+ant zip-cluster-config -Dcluster.config=full -Dzip.name=$DIST/zip/$NAME.zip || exit 1
 
-find netbeans | egrep -v "netbeans/(extra|testtools|xml|mobility|enterprise|visualweb|uml|ruby|soa|cnd|identity|php|groovy|webcommon|ergonomics)" | zip -q $DIST/zip/$BASENAME-javase.zip -@ || exit
-find netbeans | egrep -v "netbeans/(extra|testtools|uml|ruby|soa|cnd|identity|php)" | zip -q $DIST/zip/$BASENAME-java.zip -@ || exit
-find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|php|groovy|ergonomics)" | zip -q $DIST/zip/$BASENAME-ruby.zip -@ || exit
-find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|ruby|groovy|ergonomics)" | zip -q $DIST/zip/$BASENAME-php.zip -@ || exit
-find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|ruby|soa|identity|php|groovy|webcommon|ergonomics)" | zip -q $DIST/zip/$BASENAME-cnd.zip -@ || exit
+#ant zip-cluster-config -Dcluster.config=platform -Dzip.name=$DIST/zip/$NAME-platform.zip || exit 1
+ant zip-cluster-config -Dcluster.config=basic -Dzip.name=$DIST/zip/$NAME-javase.zip || exit 1
+ant zip-cluster-config -Dcluster.config=standard -Dzip.name=$DIST/zip/$NAME-java.zip || exit 1
+ant zip-cluster-config -Dcluster.config=ruby -Dzip.name=$DIST/zip/$NAME-ruby.zip || exit 1
+ant zip-cluster-config -Dcluster.config=php -Dzip.name=$DIST/zip/$NAME-php.zip || exit 1
+ant zip-cluster-config -Dcluster.config=cnd -Dzip.name=$DIST/zip/$NAME-cpp.zip || exit 1
 
 cd netbeans
 expat='extra|testtools'
-for c in platform ide java apisupport harness enterprise profiler visualweb ruby mobility soa xml cnd identity gsf php groovy; do
+for c in platform ide java apisupport harness enterprise profiler ruby mobility soa xml cnd identity gsf php groovy; do
     find * | egrep "^$c[0-9]*/" | zip -q $DIST/zip/moduleclusters/$BASENAME-$c.zip -@ || exit
     expat="$expat|$c[0-9]*"
 done
@@ -115,8 +117,6 @@ JDK_TESTS=/opt/jdk1.5.0_14
 ant commit-validation
 # Init application server for tests
 sh -x `dirname $0`/initAppserver.sh
-# visualweb UI validation tests
-sh -x `dirname $0`/run-vw-sanity.sh
 # SOA (BPEL, XSLT) and XML UI validation tests
 ant -f soa.kit/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.results.dir=$TESTS_RESULT_DIR -Dcontinue.after.failing.tests=true test
 ant -f xml.schema/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.results.dir=$TESTS_RESULT_DIR -Dcontinue.after.failing.tests=true test

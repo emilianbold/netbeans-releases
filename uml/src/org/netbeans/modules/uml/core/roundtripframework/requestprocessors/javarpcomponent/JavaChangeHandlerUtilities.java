@@ -109,6 +109,7 @@ public class JavaChangeHandlerUtilities
     extends RequestProcessorUtilities
     implements IJavaChangeHandlerUtilities
 {
+    private static final String GENERALIZATIONIMPLEMENTATIONWARNING = "Possible generalization-implementation resolve problem.";
     private IElementLocator m_loc = null;
     private IChangeRequest m_pRequest = null;
 
@@ -4035,18 +4036,18 @@ public class JavaChangeHandlerUtilities
     {
         if (derivedClasses == null)
             derivedClasses = new ETArrayList < IClassifier > ();
-        if(derivedClasses.contains(pBaseClass))//avoid infinite recursion on incorrect model, see issue #115479
-        {
-            //check may have some perfomance impact, but shoud be minor (usually inheritance isn't really deep so derivedClasses isn't big list
-            UMLLogger.logMessage("Possible generalization-implementation resolve problem.", Level.WARNING);
-            return derivedClasses;
-        }
         try
         {
             if (pBaseClass != null)
             {
                 if (addBaseToList)
                 {
+                    if(derivedClasses.contains(pBaseClass))//avoid infinite recursion on incorrect model, see issue #115479
+                    {
+                        //check may have some perfomance impact, but shoud be minor (usually inheritance isn't really deep so derivedClasses isn't big list
+                        UMLLogger.logMessage(GENERALIZATIONIMPLEMENTATIONWARNING, Level.WARNING);
+                        return derivedClasses;
+                    }
                     derivedClasses.add(pBaseClass);
                 }
                 
@@ -4073,6 +4074,12 @@ public class JavaChangeHandlerUtilities
                             IClassifier pItem = pSpecializations.get(idx++);
                             if (pItem != null)
                             {
+                                if(derivedClasses.contains(pItem))//avoid infinite recursion on incorrect model, see issue #115479
+                                {
+                                    //check may have some perfomance impact, but shoud be minor (usually inheritance isn't really deep so derivedClasses isn't big list
+                                    UMLLogger.logMessage(GENERALIZATIONIMPLEMENTATIONWARNING, Level.WARNING);
+                                    return derivedClasses;
+                                }
                                 derivedClasses.add(pItem);
                             }
                         }
@@ -4087,7 +4094,13 @@ public class JavaChangeHandlerUtilities
                             IClassifier pItem = pImplementations.get(idx++);
                             if (pItem != null)
                             {
-                                derivedClasses.add(pItem);
+                                if(derivedClasses.contains(pItem))//avoid infinite recursion on incorrect model, see issue #115479
+                                {
+                                    //check may have some perfomance impact, but shoud be minor (usually inheritance isn't really deep so derivedClasses isn't big list
+                                    UMLLogger.logMessage(GENERALIZATIONIMPLEMENTATIONWARNING, Level.WARNING);
+                                    return derivedClasses;
+                                }
+                                 derivedClasses.add(pItem);
                             }
                         }
                     }

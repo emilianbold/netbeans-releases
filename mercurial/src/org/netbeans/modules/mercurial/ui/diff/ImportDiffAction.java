@@ -53,7 +53,6 @@ import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.util.NbBundle;
@@ -66,6 +65,7 @@ import java.awt.Dialog;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
+import org.openide.filesystems.FileUtil;
 
 /**
  * ImportDiff action for mercurial: 
@@ -133,18 +133,18 @@ public class ImportDiffAction extends ContextAction {
         dialog.setVisible(true);
     }
 
-    private static void performImport(File repository, File patchFile, OutputLogger logger) {
-    try {
-        logger.outputInRed(
-                NbBundle.getMessage(ImportDiffAction.class,
-                "MSG_IMPORT_TITLE")); // NOI18N
-        logger.outputInRed(
-                NbBundle.getMessage(ImportDiffAction.class,
-                "MSG_IMPORT_TITLE_SEP")); // NOI18N
+    private static void performImport(final File repository, File patchFile, OutputLogger logger) {
+        try {
+            logger.outputInRed(
+                    NbBundle.getMessage(ImportDiffAction.class,
+                    "MSG_IMPORT_TITLE")); // NOI18N
+            logger.outputInRed(
+                    NbBundle.getMessage(ImportDiffAction.class,
+                    "MSG_IMPORT_TITLE_SEP")); // NOI18N
 
-        List<String> list = HgCommand.doImport(repository, patchFile, logger);
-        Mercurial.getInstance().changesetChanged(repository);
-        logger.output(list); // NOI18N
+            List<String> list = HgCommand.doImport(repository, patchFile, logger);
+            Mercurial.getInstance().changesetChanged(repository);
+            logger.output(list); // NOI18N
 
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
@@ -152,6 +152,11 @@ public class ImportDiffAction extends ContextAction {
         } finally {
             logger.outputInRed(NbBundle.getMessage(ImportDiffAction.class, "MSG_IMPORT_DONE")); // NOI18N
             logger.output(""); // NOI18N
+            Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
+                public void run() {
+                    FileUtil.refreshFor(repository); // import just might have changed the file layout...
+                }
+            });
         }
     }
 }

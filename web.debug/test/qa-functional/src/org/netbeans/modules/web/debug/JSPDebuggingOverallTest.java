@@ -188,16 +188,17 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         new Node(new JTreeOperator(propertiesDialogOper), "Run").select();
         String displayBrowserLabel = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_CustomizeRun_DisplayBrowser_JCheckBox");
         new JCheckBoxOperator(propertiesDialogOper, displayBrowserLabel).setSelected(false);
-        if(needToSetServer) {
+        /*if(needToSetServer) {
             // set default server
             new JComboBoxOperator(propertiesDialogOper).setSelectedIndex(0);
         }
+        */
         // confirm properties dialog
         propertiesDialogOper.ok();
         // if setting default server, it scans server jars; otherwise it continues immediatelly
         ProjectSupport.waitScanFinished();
         // start thread to close any information dialog
-        closeInformationDialog();
+        //closeInformationDialog();
     }
     
     /** Set a random port for Tomcat server and socket debugger transport. */
@@ -230,9 +231,10 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
      */
     public void testDebugProject() {
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME);
-        new DebugProjectAction().perform(rootNode);
-        Utils.confirmClientSideDebuggingMeassage();
+        rootNode.performPopupActionNoBlock("Debug");
+        Utils.confirmClientSideDebuggingMeassage(SAMPLE_WEB_PROJECT_NAME);
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
+        //MainWindowOperator.getDefault().waitStatusText("Finished building "+SAMPLE_WEB_PROJECT_NAME+" (debug)");
     }
 
     /** Reload browser while debugging.

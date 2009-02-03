@@ -53,7 +53,6 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -63,17 +62,23 @@ import org.openide.util.Utilities;
  */
 public class ExternalTerminal implements PropertyChangeListener {
     
-    private String tty = null;
-    private long pid;
+    private final String tty;
+    private final long pid;
     private File gdbHelperLog = null;
     private File gdbHelperScript = null;
-    private GdbDebugger debugger;
+    private final GdbDebugger debugger;
+
+    private static final int RETRY_LIMIT = 200;
+
+    public static String create(GdbDebugger debugger, String termpath, String[] env) throws IOException {
+        return new ExternalTerminal(debugger, termpath, env).tty;
+    }
     
     /** Creates a new instance of ExternalTerminal */
-    public ExternalTerminal(GdbDebugger debugger, String termpath, String[] env) throws IOException {
-        initGdbHelpers();
-        debugger.addPropertyChangeListener(this);
+    private ExternalTerminal(GdbDebugger debugger, String termpath, String[] env) throws IOException {
         this.debugger = debugger;
+        debugger.addPropertyChangeListener(this);
+        initGdbHelpers();
         
         ProcessBuilder pb = new ProcessBuilder(getTermOptions(termpath));
         
@@ -93,34 +98,40 @@ public class ExternalTerminal implements PropertyChangeListener {
         
         pb.start();
         
-        final BufferedReader fromTerm = new BufferedReader(new FileReader(gdbHelperLog.getAbsolutePath()));
-        new RequestProcessor("TermReader").post(new Runnable() { // NOI18N
-            public void run() {
-                int count = 0;
-                String pid_line = null;
-                try {
-                    while (count++ < 300) {
-                        tty = fromTerm.readLine();
-                        pid_line = fromTerm.readLine();
-                        if (pid_line == null) {
-                            try {
-                                Thread.sleep(100);
-                            } catch (InterruptedException ex) {
-                            }
-                        } else {
-                            break;
-                        }
+        int count = 0;
+        String tty_line = null;
+        String pid_line = null;
+        try {
+            while (count++ < RETRY_LIMIT) {
+                // TODO: it is not good to wait for the file to be filled with info this way
+                // need to find a better way to get pid later
+                BufferedReader fromTerm = new BufferedReader(new FileReader(gdbHelperLog));
+                tty_line = fromTerm.readLine();
+                pid_line = fromTerm.readLine();
+                fromTerm.close();
+                if (pid_line == null) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ex) {
                     }
-                } catch (IOException ioe) {
-                    return;
-                }
-                try {
-                    pid = Long.valueOf(pid_line);
-                } catch (NumberFormatException ex) {
-                    pid = 0;
+                } else {
+                    break;
                 }
             }
-        });
+            if (count >= RETRY_LIMIT) {
+                System.err.println("Retry limit reached for " + gdbHelperLog + ", giving up");
+            }
+        } catch (IOException ioe) {
+            System.err.println("Failed to read external terminal helper");
+        }
+        tty = tty_line;
+        long pidTemp = 0;
+        try {
+            pidTemp = Long.valueOf(pid_line);
+        } catch (Exception ex) {
+            System.err.println("Error parsing pid: " + pid_line);
+        }
+        pid = pidTemp;
     }
     
     private void initGdbHelpers() {
@@ -146,8 +157,8 @@ public class ExternalTerminal implements PropertyChangeListener {
         }
         ProcessBuilder pb = new ProcessBuilder("/bin/chmod", "755", gdbHelperScript.getAbsolutePath()); // NOI18N
         try {
-            pb.start();
-        } catch (IOException ex) {
+            pb.start().waitFor();
+        } catch (Exception ex) {
         }
     }
     
@@ -155,13 +166,7 @@ public class ExternalTerminal implements PropertyChangeListener {
      * Return the tty to the gdb engine. We don't have a timeout here because this is managed
      * by the general gdb startup timeout.
      */
-    public String getTty() {
-        while (tty == null) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ex) {
-            }
-        }
+    String getTty() {
         return tty;
     }
     
@@ -187,13 +192,15 @@ public class ExternalTerminal implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent ev) {
         if (ev.getPropertyName().equals(GdbDebugger.PROP_STATE)) {
             Object state = ev.getNewValue();
-            if (state == GdbDebugger.State.NONE) {
+            if (state == GdbDebugger.State.EXITED) {
                 gdbHelperScript.delete();
                 gdbHelperLog.delete();
             }
 	} else if (ev.getPropertyName().equals(GdbDebugger.PROP_KILLTERM)) {
+            if (pid == 0) {
+                System.err.println("Killing zero pid detected from log: " + gdbHelperLog);
+            }
             debugger.kill(15, pid);
-            
         }
     }
 }

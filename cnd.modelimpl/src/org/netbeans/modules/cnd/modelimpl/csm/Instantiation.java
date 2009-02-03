@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -68,7 +69,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  *
  * @author eu155513
  */
-public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> implements CsmOffsetableDeclaration<T>, CsmInstantiation {
+public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> implements CsmOffsetableDeclaration, CsmInstantiation, CsmIdentifiable {
     protected final T declaration;
     protected final Map<CsmTemplateParameter, CsmType> mapping;
     private String fullName = null;
@@ -210,13 +211,13 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         return getTemplateDeclaration().getScope();
     }
 
-    public CsmUID<T> getUID() {
+    public CsmUID<Instantiation> getUID() {
         return new InstantiationUID(this);
     }
     
     //////////////////////////////
     ////////////// STATIC MEMBERS
-    public static class Class extends Instantiation<CsmClass> implements CsmClass, CsmMember<CsmClass>, CsmTemplate,
+    public static class Class extends Instantiation<CsmClass> implements CsmClass, CsmMember, CsmTemplate,
                                     SelectImpl.FilterableMembers {
         public Class(CsmClass clazz, CsmType type) {
             super(clazz, type);
@@ -381,7 +382,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
 
     }
     
-    private static class Function extends Instantiation<CsmFunction> implements CsmFunction<CsmFunction> {
+    private static class Function extends Instantiation<CsmFunction> implements CsmFunction {
         private final CsmType retType;
         
         public Function(CsmFunction function, CsmType instantiation) {
@@ -510,7 +511,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         }
     }
     
-    private static class Typedef extends Instantiation<CsmTypedef> implements CsmTypedef, CsmMember<CsmTypedef> {
+    private static class Typedef extends Instantiation<CsmTypedef> implements CsmTypedef, CsmMember {
         private final CsmType type;
 
         public Typedef(CsmTypedef typedef, CsmInstantiation instantiation) {
@@ -544,7 +545,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         }
     }
     
-    private static class ClassForward extends Instantiation<CsmClassForwardDeclaration> implements CsmClassForwardDeclaration, CsmMember<CsmClassForwardDeclaration> {
+    private static class ClassForward extends Instantiation<CsmClassForwardDeclaration> implements CsmClassForwardDeclaration, CsmMember {
         private CsmClass csmClass = null;
 
         public ClassForward(CsmClassForwardDeclaration forward, Map<CsmTemplateParameter, CsmType> mapping) {
@@ -576,7 +577,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         }
     }
 
-    private static class Method extends Instantiation<CsmMethod> implements CsmMethod<CsmMethod>, CsmFunctionDefinition<CsmMethod> {
+    private static class Method extends Instantiation<CsmMethod> implements CsmMethod, CsmFunctionDefinition {
         private final CsmInstantiation instantiation;
         private final CsmType retType;
 
@@ -1013,13 +1014,13 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         return org.netbeans.modules.cnd.modelimpl.csm.NestedType.getNestedClassifier(memberResolver, parentClassifier, ownText);
     }
 
-    public final static class InstantiationUID<T extends CsmIdentifiable> implements CsmUID<T>, SelfPersistent {
-        private final T ref;
-        private InstantiationUID(T ref) {
+    public final static class InstantiationUID implements CsmUID<Instantiation>, SelfPersistent {
+        private final Instantiation ref;
+        private InstantiationUID(Instantiation ref) {
             this.ref = ref;
         }
 
-        public T getObject() {
+        public Instantiation getObject() {
             return this.ref;
         }
         ////////////////////////////////////////////////////////////////////////////

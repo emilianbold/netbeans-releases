@@ -47,8 +47,6 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
@@ -115,7 +113,6 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     
     private TabControlButton btnClose;
     private TabControlButton btnAutoHidePin;
-    private TabControlButton btnMaximizeRestore;
     
     /** Pin action */
     private final Action pinAction = new PinAction();
@@ -161,14 +158,25 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     
     void showHidePinButton() {
         Component tabComponent = null;
+        boolean tcSlidingEnabled = true;
+        boolean tcClosingEnabled = true;
         int selIndex = Math.max( 0, displayer.getSelectionModel().getSelectedIndex() );
         if( selIndex >= 0 && selIndex < displayer.getModel().size() ) {
             TabData tab = displayer.getModel().getTab( selIndex );
             tabComponent = tab.getComponent();
+            if( tabComponent instanceof TopComponent ) {
+                tcSlidingEnabled = displayer.getContainerWinsysInfo().isTopComponentSlidingEnabled( (TopComponent)tabComponent );
+                tcClosingEnabled = displayer.getContainerWinsysInfo().isTopComponentClosingEnabled( (TopComponent)tabComponent );
+            }
         }
         btnAutoHidePin.setVisible( tabComponent != null 
                 && !TabDisplayer.ORIENTATION_INVISIBLE.equals( displayer.getContainerWinsysInfo().getOrientation( tabComponent ) )
-                && displayer.getContainerWinsysInfo().isTopComponentSlidingEnabled() );
+                && displayer.getContainerWinsysInfo().isTopComponentSlidingEnabled()
+                && tcSlidingEnabled );
+
+        if( null != btnClose ) {
+            btnClose.setVisible(tabComponent != null && tcClosingEnabled);
+        }
     }
     
     protected void installControlButtons() {
@@ -177,7 +185,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     }
     
     private static final int ICON_X_PAD = 1;
-    
+
     /**
      * @return A component that holds all control buttons (maximize/restor, 
      * slide/pin, close) that are displayed in the active tab or null if
@@ -349,6 +357,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
      * Specifies font to use for text and font metrics. Subclasses may override
      * to specify their own text font
      */
+    @Override
     protected Font getTxtFont() {
         if (txtFont == null) {
             txtFont = (Font) UIManager.get("windowTitleFont");
@@ -610,6 +619,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
 
         public void stateChanged (ChangeEvent ce) {
             displayer.repaint();
+            showHidePinButton();
         }
 
         public void propertyChange (PropertyChangeEvent pce) {

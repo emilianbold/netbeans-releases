@@ -47,5 +47,5 @@ import java.util.List;
  */
 public interface FieldElement extends ModelElement {
     PhpModifiers getPhpModifiers();
-    List<? extends TypeScope> getReturnTypes();
+    List<? extends TypeScope> getTypes(int offset);    
 }

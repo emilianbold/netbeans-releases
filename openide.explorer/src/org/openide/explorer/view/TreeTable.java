@@ -1216,7 +1216,8 @@ class TreeTable extends JTable implements Runnable {
         @Override
         public boolean isCellEditable(EventObject e) {
             if (lastRow != -1) {
-                org.openide.nodes.Node n = Visualizer.findNode(tree.getPathForRow(lastRow).getLastPathComponent());
+                TreePath tp = tree.getPathForRow(lastRow);
+                org.openide.nodes.Node n = tp != null ? Visualizer.findNode(tp.getLastPathComponent()) : null;
 
                 if ((n == null) || !n.canRename()) {
                     //return false;

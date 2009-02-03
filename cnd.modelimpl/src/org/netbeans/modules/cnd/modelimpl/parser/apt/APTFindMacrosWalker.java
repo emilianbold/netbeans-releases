@@ -46,7 +46,9 @@ import antlr.TokenStreamException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -83,6 +85,7 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
  * @author Sergey Grinev
  */
 public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
+    protected final Map<String, CsmFile> macro2file = new HashMap<String, CsmFile>();
 
     public APTFindMacrosWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler) {
         super(apt, csmFile, preprocHandler);
@@ -151,22 +154,32 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
         return null; // tokenstream set to EOF? it's no good
     }
 
+    @SuppressWarnings("fallthrough")
     private void analyzeToken(APTToken token) {
         APTToken apttoken = token;
         if (apttoken != null) {
             APTMacro m = getMacroMap().getMacro(apttoken);
             if (m != null) {
-                if (m.isSystem()) {
-                    addSysReference(apttoken, m);
-                } else {
-                    MacroInfo mi = macroRefMap.get(apttoken.getText());
-                    if (mi != null) {
-                        addReference(apttoken, mi);
-                    } else {
-                        // this is user-defined macro (iz132150)
-                        // XXX: update to API call then iz132308 will be fixed
+                switch(m.getKind()){
+                    case DEFINED:
+                        MacroInfo mi = macroRefMap.get(apttoken.getText());
+                        if (mi != null) {
+                            addReference(apttoken, mi);
+                            break;
+                        } else {
+                            CsmFile macroContainter = getMacroFile(m);
+                            if (macroContainter != null) {
+                                addReference(apttoken, new MacroInfo(macroContainter, m.getName().getOffset(), m.getName().getEndOffset(), m.getFile().getPath()));
+                                break;
+                            }
+                        }
+                        // nobreak
+                    case COMPILER_PREDEFINED:
+                    case POSITION_PREDEFINED:
+                    case USER_SPECIFIED:
+                    default:
                         addSysReference(apttoken, m);
-                    }
+                        break;
                 }
             }
 //            else if (apttoken.getType() == CPPTokenTypes.ID_DEFINED) {
@@ -212,7 +225,26 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
 
         public SysMacroReference(CsmFile file, APTToken token, APTMacro macro) {
             super(file, token.getOffset(), token.getEndOffset());
-            ref = MacroImpl.createSystemMacro(token.getText(), APTUtils.stringize(macro.getBody(), false), ((ProjectBase) file.getProject()).getUnresolvedFile());
+            CsmMacro.Kind kind;
+            switch(macro.getKind()) {
+                case COMPILER_PREDEFINED:
+                    kind = CsmMacro.Kind.COMPILER_PREDEFINED;
+                    break;
+                case POSITION_PREDEFINED:
+                    kind = CsmMacro.Kind.POSITION_PREDEFINED;
+                    break;
+                case DEFINED:
+                    kind = CsmMacro.Kind.DEFINED;
+                    break;
+                case USER_SPECIFIED:
+                    kind = CsmMacro.Kind.USER_SPECIFIED;
+                    break;
+                default:
+                    System.err.println("unexpected kind in macro " + macro);
+                    kind = CsmMacro.Kind.USER_SPECIFIED;
+                    break;
+            }
+            ref = MacroImpl.createSystemMacro(token.getText(), APTUtils.stringize(macro.getBody(), false), ((ProjectBase) file.getProject()).getUnresolvedFile(), kind);
         }
 
         public CsmObject getReferencedObject() {
@@ -265,9 +297,9 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
                         // reference was made so it was macro during APTFindMacrosWalker's walk. Parser missed this variance of header and
                         // we have to create MacroImpl for skipped filepart on the spot (see IZ#130897)
                         if (target instanceof Unresolved.UnresolvedFile) {
-                            ref = MacroImpl.createSystemMacro(macroName, "", target);
+                            ref = MacroImpl.createSystemMacro(macroName, "", target, CsmMacro.Kind.USER_SPECIFIED);
                         } else {
-                            ref = new MacroImpl(macroName, null, "", target, new OffsetableBase(target, mi.startOffset, mi.endOffset), false);
+                            ref = new MacroImpl(macroName, null, "", target, new OffsetableBase(target, mi.startOffset, mi.endOffset), CsmMacro.Kind.DEFINED);
                         }
                     }
                 }
@@ -304,5 +336,25 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
         public CharSequence getText() {
             return TextCache.getString(super.getText());
         }
+    }
+
+    private CsmFile getMacroFile(APTMacro m) {
+        CsmFile out = null;
+        if (m.getFile() != null) {
+            String path = m.getFile().getPath();
+            out = macro2file.get(path);
+            if (out == null) {
+                ProjectBase targetPrj = ((ProjectBase) csmFile.getProject()).findFileProject(path);
+                if (targetPrj != null) {
+                    out = targetPrj.getFile(new File(path));
+                    // if file belongs to project, it should be not null
+                    // but info could be obsolete
+                }
+                if (out != null) {
+                    macro2file.put(path, out);
+                }
+            }
+        }
+        return out;
     }
 }

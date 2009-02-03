@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
  * @author gordonp
  */
 public abstract class RemoteConnectionSupport {
-    
+
     private JSch jsch;
     protected final String key;
     protected Session session;
@@ -70,6 +70,7 @@ public abstract class RemoteConnectionSupport {
     private String failureReason;
     private Integer timeout = Integer.getInteger("cnd.remote.timeout"); // NOI18N
     protected static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
+    protected static final int PORT = Integer.getInteger("cnd.remote.port", 22); //NOI18N
     
     public RemoteConnectionSupport(String key, int port) {
         this.key = key;

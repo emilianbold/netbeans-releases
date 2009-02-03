@@ -77,28 +77,22 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
-import org.openide.windows.InputOutput;
 
 /**
  * Action for creating new PHP Unit tests.
  * @author Tomas Mysik
  */
 public final class CreateTestsAction extends NodeAction {
-    private static final long serialVersionUID = 9523829206628824L;
+    private static final long serialVersionUID = 952382987542628824L;
 
     private static final Logger LOGGER = Logger.getLogger(CreateTestsAction.class.getName());
 
-    // php unit related
-    private static final String PARAM_SKELETON = "--skeleton-test"; // NOI18N
-    private static final String TEST_FILE_SUFFIX = "Test.php"; // NOI18N
-
-    private static final String TMP_FILE_SUFFIX = ".nb-tmp"; // NOI18N
     private static final String PHP_OPEN_TAG = "<?php"; // NOI18N
     private static final String INCLUDE_PATH_TPL = "ini_set(\"include_path\", %sini_get(\"include_path\"));"; // NOI18N
     private static final String INCLUDE_PATH_PART = "\"%s\".PATH_SEPARATOR."; // NOI18N
 
     private static final ExecutionDescriptor EXECUTION_DESCRIPTOR
-            = new ExecutionDescriptor().controllable(false).frontWindow(false).inputOutput(InputOutput.NULL);
+            = new ExecutionDescriptor().controllable(false).frontWindow(false);
     private static final RequestProcessor RP = new RequestProcessor("Generate PHP Unit tests", 1); // NOI18N
     static final Queue<Runnable> RUNNABLES = new ConcurrentLinkedQueue<Runnable>();
     private static final RequestProcessor.Task TASK = RP.create(new Runnable() {
@@ -256,7 +250,7 @@ public final class CreateTestsAction extends NodeAction {
 
         final File parent = FileUtil.toFile(sourceFo.getParent());
         final File generatedFile = getGeneratedFile(sourceFo, parent);
-        final File testFile = getTestFile(sourceFo, generatedFile, phpProject);
+        final File testFile = getTestFile(sourceFo, phpProject);
         if (testFile.isFile()) {
             // already exists
             toOpen.add(testFile);
@@ -264,12 +258,8 @@ public final class CreateTestsAction extends NodeAction {
         }
 
         // test does not exist yet
-        ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getPhpUnit());
-        externalProcessBuilder = externalProcessBuilder.workingDirectory(parent);
-        externalProcessBuilder = externalProcessBuilder.addArgument(PARAM_SKELETON);
-        externalProcessBuilder = externalProcessBuilder.addArgument(sourceFo.getName());
-        ExecutionService service = ExecutionService.newService(externalProcessBuilder, EXECUTION_DESCRIPTOR, null);
-        Future<Integer> result = service.run();
+        String paramSkeleton = phpUnit.supportedVersionFound() ? PhpUnit.PARAM_SKELETON : PhpUnit.PARAM_SKELETON_OLD;
+        Future<Integer> result = generateSkeleton(phpUnit, sourceFo, parent, paramSkeleton);
         try {
             if (result.get() != 0) {
                 // test not generated
@@ -287,8 +277,20 @@ public final class CreateTestsAction extends NodeAction {
         }
     }
 
+    private Future<Integer> generateSkeleton(PhpUnit phpUnit, FileObject sourceFo, File parent, String paramSkeleton) {
+        // test does not exist yet
+        ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getProgram())
+                .workingDirectory(parent)
+                .addArgument(paramSkeleton)
+                .addArgument(sourceFo.getName())
+                .addArgument(sourceFo.getNameExt());
+        ExecutionService service = ExecutionService.newService(externalProcessBuilder, EXECUTION_DESCRIPTOR,
+                String.format("%s %s %s %s", phpUnit.getProgram(), paramSkeleton, sourceFo.getName(), sourceFo.getNameExt())); // NOI18N
+        return service.run();
+    }
+
     private File getGeneratedFile(FileObject source, File parent) {
-        return new File(parent, source.getName() + TEST_FILE_SUFFIX);
+        return new File(parent, source.getName() + PhpUnit.TEST_FILE_SUFFIX);
     }
 
     private File getTestDirectory(PhpProject phpProject) {
@@ -297,11 +299,9 @@ public final class CreateTestsAction extends NodeAction {
         return FileUtil.toFile(testDirectory);
     }
 
-    private File getTestFile(FileObject source, File generatedFile, PhpProject phpProject) {
-        FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
-        String relativePath = FileUtil.getRelativePath(sourcesDirectory, source.getParent());
-        assert relativePath != null : String.format("Relative path must be found % and %s", sourcesDirectory, source.getParent());
-        return new File(new File(getTestDirectory(phpProject), relativePath), generatedFile.getName());
+    private File getTestFile(FileObject source, PhpProject phpProject) {
+        String relTestPath = GoToTest.findRelativeTestFileName(phpProject, source);
+        return new File(getTestDirectory(phpProject), relTestPath);
     }
 
     private File moveAndAdjustGeneratedFile(File generatedFile, File testFile, File testDirectory) {
@@ -317,16 +317,11 @@ public final class CreateTestsAction extends NodeAction {
             return generatedFile;
         }
 
-        if (!generatedFile.renameTo(testFile)) {
-            // what to do now??
-            return generatedFile;
-        }
-        assert testFile.isFile() : "(1) Test file must exist: " + testFile;
-        testFile = adjustFileContent(testFile, getIncludePaths(generatedFile, testFile, testDirectory));
+        testFile = adjustFileContent(generatedFile, testFile, getIncludePaths(generatedFile, testFile, testDirectory));
         if (testFile == null) {
             return null;
         }
-        assert testFile.isFile() : "(2) Test file must exist: " + testFile;
+        assert testFile.isFile() : "Test file must exist: " + testFile;
         return testFile;
     }
 
@@ -342,17 +337,14 @@ public final class CreateTestsAction extends NodeAction {
         return includePaths;
     }
 
-    private File adjustFileContent(File testFile, List<String> includePaths) {
-        File tmpFile = new File(testFile.getAbsolutePath() + TMP_FILE_SUFFIX);
-        tmpFile.deleteOnExit();
-        assert !tmpFile.exists() : "TMP file should not exist: " + tmpFile;
+    private File adjustFileContent(File generatedFile, File testFile, List<String> includePaths) {
         try {
             // input
-            BufferedReader in = new BufferedReader(new FileReader(testFile));
+            BufferedReader in = new BufferedReader(new FileReader(generatedFile));
 
             try {
                 // output
-                BufferedWriter out = new BufferedWriter(new FileWriter(tmpFile));
+                BufferedWriter out = new BufferedWriter(new FileWriter(testFile));
 
                 try {
                     // data
@@ -373,6 +365,7 @@ public final class CreateTestsAction extends NodeAction {
                         }
                     }
                 } finally {
+                    out.flush();
                     out.close();
                 }
             } finally {
@@ -380,17 +373,11 @@ public final class CreateTestsAction extends NodeAction {
             }
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, null, ex);
-            return testFile;
+            return null;
         }
 
-        if (!testFile.delete()) {
-            LOGGER.info("Cannot delete file " + testFile);
-            return testFile;
-        }
-        if (!tmpFile.renameTo(testFile)) {
-            LOGGER.info(String.format("Cannot rename file %s to %s", tmpFile, testFile));
-            tmpFile.delete();
-            return null;
+        if (!generatedFile.delete()) {
+            LOGGER.info("Cannot delete generated file " + generatedFile);
         }
         return testFile;
     }

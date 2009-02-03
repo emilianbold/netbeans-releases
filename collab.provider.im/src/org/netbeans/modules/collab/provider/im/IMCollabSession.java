@@ -50,14 +50,20 @@ import com.sun.collablet.ContactGroup;
 import com.sun.collablet.Conversation;
 import com.sun.collablet.ConversationPrivilege;
 
-import org.openide.*;
-import org.openide.util.*;
-
 import java.beans.*;
 
-import java.io.*;
+import java.text.MessageFormat;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.MissingResourceException;
+
+import org.openide.util.NbBundle;
 
 import org.netbeans.lib.collab.*;
 
@@ -149,7 +155,7 @@ public class IMCollabSession extends Object implements CollabSession, Collaborat
 
         String v = (String)personalStoreService.getProfile().getProperty("licenseKey", ""); // NOI18N
         if (v.trim().length()==0) {
-            personalStoreService.getProfile().setProperty("licenseKey", "NB-50"); // NOI18N
+            personalStoreService.getProfile().setProperty("licenseKey", getIDEVersion()); // NOI18N
             personalStoreService.getProfile().save();
         }
         String forumManage = personalStoreService.getProfile().getProperty("sunIMAllowForumManage", "deny"); // NOI18N
@@ -180,6 +186,20 @@ public class IMCollabSession extends Object implements CollabSession, Collaborat
 
         // Set user online
         publishStatus(CollabPrincipal.STATUS_ONLINE, ""); // NOI18N
+    }
+
+    private String getIDEVersion () {
+        String str = ""; // NOI18N
+        try {
+            str = MessageFormat.format(
+                NbBundle.getBundle("org.netbeans.core.startup.Bundle").getString("currentVersion"), // NOI18N
+                new Object[] {System.getProperty("netbeans.buildnumber")} // NOI18N
+            );
+        } catch (MissingResourceException ex) {
+            // Ignore
+            Debug.debugNotify(ex);
+        }
+        return str;
     }
 
     /**

@@ -66,6 +66,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.extexecution.ProcessInputStream;
@@ -172,8 +173,9 @@ public final class ExecutionService {
      * @param displayName display name of this service
      * @return new execution service
      */
-    public static ExecutionService newService(Callable<Process> processCreator,
-            ExecutionDescriptor descriptor, String displayName) {
+    @NonNull
+    public static ExecutionService newService(@NonNull Callable<Process> processCreator,
+            @NonNull ExecutionDescriptor descriptor, @NonNull String displayName) {
         return new ExecutionService(processCreator, displayName, descriptor);
     }
 
@@ -201,6 +203,7 @@ public final class ExecutionService {
      * @return task representing the actual run, value representing result
      *             of the {@link Future} is exit code of the process
      */
+    @NonNull
     public Future<Integer> run() {
         return run(null);
     }

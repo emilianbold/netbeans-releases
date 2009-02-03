@@ -1,0 +1,78 @@
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+
+Contributor(s):
+
+Portions Copyrighted 2009 Sun Microsystems, Inc.
+-->
+<html>
+    <head>
+        <title>Building a Maven Project</title>
+        <link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+    <body>
+        <h2>Building a Maven Project</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small></p>
+        <p></p>
+
+        <p>What this means is that the process for building and distributing a particular artifact (project) is clearly defined.</p>
+<dl>
+
+    <h3>Customizing the Build Process</h3>
+        <p>To customize the build for a Maven project you modify the POM to add or reconfigure plugins.
+        The code completion in the POM can help you locate and add the plugin details to <tt>pom.xml</tt>.
+
+        <ol>
+            <li>Open <tt>pom.xml</tt> in the XML editor.</li>
+            <li>Choose Source &gt; Insert Code (Ctrl-I) from the main menu and select Plugin from the popup menu
+            to open the Add New Plugin dialog box.</li>
+            <li>Type a query term to search for the plugin.</li>
+            <li>Select the plugin from the list of available plugins.</li>
+            <li>Select the goals that you want to be executed. Click OK.</li>
+        </ol>
+<p>When you click OK, the IDE adds the plugin description to <tt>pom.xml</tt> and the goals to run as part of the build process.
+</p>
+        If you add a plugin that is not in the local repository, This plugin will be automatically downloaded and used - including a specific version if you request it (the default is to use the latest available).
+
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/maven/maven-about.html">About Working with Maven</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

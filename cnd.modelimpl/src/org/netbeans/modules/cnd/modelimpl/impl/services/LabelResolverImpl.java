@@ -53,6 +53,7 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
@@ -77,8 +78,8 @@ public class LabelResolverImpl extends CsmLabelResolver {
     }
 
     @Override
-    public Collection<CsmReference> getLabels(CsmFunctionDefinition referencedFunction, CharSequence label, LabelKind kind) {
-        Context res = new Context(referencedFunction, label, kind);
+    public Collection<CsmReference> getLabels(CsmFunctionDefinition referencedFunction, CharSequence label, Set<LabelKind> kinds) {
+        Context res = new Context(referencedFunction, label, kinds);
         if(referencedFunction != null) {
             processInnerStatements(referencedFunction.getBody(), res);
         }
@@ -125,25 +126,25 @@ public class LabelResolverImpl extends CsmLabelResolver {
         }
     }
     
-    private static class Context{
-        private Collection<CsmReference> collection = new ArrayList<CsmReference>();
-        private CharSequence label;
-        private LabelKind kind;
+    private static final class Context{
+        private final Collection<CsmReference> collection = new ArrayList<CsmReference>();
+        private final CharSequence label;
+        private final Set<LabelKind> kinds;
 //        private CsmFunctionDefinition owner;
-        private Context(CsmFunctionDefinition owner, CharSequence label, LabelKind kind){
+        private Context(CsmFunctionDefinition owner, CharSequence label, Set<LabelKind> kinds){
             this.label = label;
-            this.kind = kind;
+            this.kinds = kinds;
 //            this.owner = owner;
         }
         private void addLabelDefinition(CsmLabel stmt){
-            if (kind == LabelKind.Both || kind == LabelKind.Definiton) {
+            if (kinds.contains(LabelKind.Definiton)) {
                 if (label == null || CharSequenceKey.Comparator.compare(label, stmt.getLabel()) == 0){
                     collection.add(CsmReferenceSupport.createObjectReference(stmt));
                 }
             }
         }
         private void addLabelReference(CsmGotoStatement stmt){
-            if (kind == LabelKind.Both || kind == LabelKind.Reference) {
+            if (kinds.contains(LabelKind.Reference)) {
                 if (label == null || CharSequenceKey.Comparator.compare(label, stmt.getLabel()) == 0){
                     collection.add(CsmReferenceSupport.createObjectReference(stmt));
                 }

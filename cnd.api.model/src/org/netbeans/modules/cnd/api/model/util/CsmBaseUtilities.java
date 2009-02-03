@@ -252,7 +252,10 @@ public class CsmBaseUtilities {
         }
         if (fun != null) {
             CsmScope scope = fun.getScope();
-            if (CsmKindUtilities.isNamespace(scope)) {
+            if (CsmKindUtilities.isNamespaceDefinition(scope)) {
+                CsmNamespace ns = ((CsmNamespaceDefinition) scope).getNamespace();
+                return ns;
+            } else if (CsmKindUtilities.isNamespace(scope)) {
                 CsmNamespace ns = (CsmNamespace) scope;
                 return ns;
             } else if (CsmKindUtilities.isClass(scope)) {

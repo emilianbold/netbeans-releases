@@ -227,7 +227,6 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
         UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
     }
     
-    @SuppressWarnings("unchecked")
     public UsingDeclarationImpl(DataInput input) throws IOException {
         super(input);
         this.name = NameCache.getManager().getString(input.readUTF());

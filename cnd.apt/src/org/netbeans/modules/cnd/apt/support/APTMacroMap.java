@@ -43,6 +43,8 @@ package org.netbeans.modules.cnd.apt.support;
 
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 
 /**
  * interface to support contextual macro definitions map
@@ -60,7 +62,7 @@ public interface APTMacroMap extends APTMacroCallback {
     /** 
      * APTWalker context methods to (un)define macros 
      */    
-    public void define(APTToken name, List<APTToken> value);
-    public void define(APTToken name, Collection<APTToken> params, List<APTToken> value);
-    public void undef(APTToken name);
+    public void define(APTFile file, APTToken name, List<APTToken> value, Kind macroType);
+    public void define(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType);
+    public void undef(APTFile file, APTToken name);
 }

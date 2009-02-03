@@ -47,20 +47,20 @@ import java.util.ArrayList;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.VectorConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;
 
 public class RequiredProjectsNodeProp extends PropertySupport<List> {
 
-    private VectorConfiguration<LibraryItem> vectorConfiguration;
+    private RequiredProjectsConfiguration vectorConfiguration;
     Project project;
     MakeConfiguration conf;
     String baseDir;
     String[] texts;
 
-    public RequiredProjectsNodeProp(VectorConfiguration<LibraryItem> vectorConfiguration, Project project, MakeConfiguration conf, String baseDir, String[] texts) {
+    public RequiredProjectsNodeProp(RequiredProjectsConfiguration vectorConfiguration, Project project, MakeConfiguration conf, String baseDir, String[] texts) {
         super(texts[0], List.class, texts[1], texts[2], true, true);
         this.vectorConfiguration = vectorConfiguration;
         this.project = project;

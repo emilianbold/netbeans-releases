@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.completion.csm.CsmProjectContentResolver;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -464,9 +465,9 @@ public class CsmFinderImpl implements CsmFinder {
     public List<CsmLabel> findLabel(CsmOffsetableDeclaration contextDeclaration, String name, boolean exactMatch, boolean sort) {
         List<CsmLabel> out = new ArrayList<CsmLabel>();
         if (CsmKindUtilities.isFunctionDefinition(contextDeclaration)) {
-            Collection<CsmReference> res = CsmLabelResolver.getDefault().getLabels((CsmFunctionDefinition) contextDeclaration, null, CsmLabelResolver.LabelKind.Definiton);
+            Collection<CsmReference> res = CsmLabelResolver.getDefault().getLabels((CsmFunctionDefinition) contextDeclaration, null, EnumSet.of(CsmLabelResolver.LabelKind.Definiton));
             for (CsmReference ref : res) {
-                if (ref.getReferencedObject() instanceof CsmLabel) {
+                if (CsmKindUtilities.isLabel(ref.getReferencedObject())) {
                     CsmLabel label = (CsmLabel) ref.getReferencedObject();
                     if (CsmSortUtilities.matchName(label.getLabel(), name, exactMatch, caseSensitive)) {
                         out.add(label);

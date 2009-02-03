@@ -357,7 +357,7 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
                 }
             } else {
                 LOGGER.finer("Indexing Local Repository :" + repo.getId());//NOI18N
-                indexer.scan(indexingContext, new RepositoryIndexerListener(indexer, indexingContext, false), updateLocal);
+                indexer.scan(indexingContext, new RepositoryIndexerListener(indexer, indexingContext), updateLocal);
             }
         } catch (IOException iOException) {
             LOGGER.warning(iOException.getMessage());//NOI18N
@@ -377,6 +377,7 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
             MUTEX.writeAccess(new Mutex.ExceptionAction<Object>() {
 
                 public Object run() throws Exception {
+                    initIndexer();
                     //need to delete the index and recreate? the scan(update) parameter doesn't work?
                     IndexingContext cntx = indexer.getIndexingContexts().get(repo.getId());
                     if (cntx != null) {
@@ -934,6 +935,8 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
             return ArtifactInfo.NAME;
         } else if (QueryField.FIELD_DESCRIPTION.equals(field)) {
             return ArtifactInfo.DESCRIPTION;
+        } else if (QueryField.FIELD_PACKAGING.equals(field)) {
+            return ArtifactInfo.PACKAGING;
         }
         return field;
     }
