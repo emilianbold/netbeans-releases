@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,46 +34,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.api.common.classpath;
+package org.netbeans.modules.glassfish.javaee;
 
-import org.netbeans.modules.java.api.common.SourceRoots;
-import org.netbeans.spi.java.classpath.ClassPathImplementation;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import java.util.Arrays;
+import java.util.HashSet;
+import javax.enterprise.deploy.shared.ModuleType;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.openide.util.NbBundle;
 
 /**
- * Support class for creating different types of classpath related implementations.
- * @since org.netbeans.modules.java.api.common/1 1.5
+ *
+ * @author vkraemer
  */
-public final class ClassPathSupportFactory {
+public class Ee6JavaEEPlatformFactory extends Hk2JavaEEPlatformFactory {
 
-    private ClassPathSupportFactory() {
+    public Ee6JavaEEPlatformFactory() {
+        super(
+            NbBundle.getMessage(Hk2JavaEEPlatformFactory.class, "MSG_MyServerPlatform"),
+            null, // JavaPlatformManager.getDefault().getDefaultPlatform();
+            NbBundle.getMessage(Hk2JavaEEPlatformFactory.class, "LBL_V3_LIBRARY"),
+            "J2EE/DeploymentPlugins/gfv3ee6/Lookup",
+            new HashSet(Arrays.asList(new String[] {"1.6"})),
+            new HashSet(Arrays.asList(new ModuleType[] { ModuleType.WAR,
+                ModuleType.CAR, ModuleType.EAR, ModuleType.EJB, ModuleType.RAR })),
+            new HashSet(Arrays.asList(new String[] {J2eeModule.J2EE_13,
+            J2eeModule.J2EE_14, J2eeModule.JAVA_EE_5})));
     }
-
-    /**
-     * Creates implementation of BOOT classpath based on project's <code>platform.active</code>
-     * property.
-     * @param evaluator project's property evaluator
-     * @return classpath implementation
-     */
-    public static ClassPathImplementation createBootClassPathImplementation(PropertyEvaluator evaluator) {
-        return new BootClassPathImplementation(evaluator);
-    }
-
-    /**
-     * Creates implementation of SOURCE classpath for given source roots and project
-     * assuming build classes folder is stored in property <code>build.dir</code>.
-     *
-     * @param sourceRoots project source roots
-     * @param projectHelper AntProjectHelper
-     * @param evaluator PropertyEvaluator
-     * @return classpath implementation
-     */
-    public static ClassPathImplementation createSourcePathImplementation(SourceRoots sourceRoots, AntProjectHelper projectHelper, PropertyEvaluator evaluator) {
-        return new SourcePathImplementation(sourceRoots, projectHelper, evaluator);
-    }
-
 }

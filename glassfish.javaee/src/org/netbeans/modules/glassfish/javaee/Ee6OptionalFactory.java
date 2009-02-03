@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,46 +34,20 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.api.common.classpath;
+package org.netbeans.modules.glassfish.javaee;
 
-import org.netbeans.modules.java.api.common.SourceRoots;
-import org.netbeans.spi.java.classpath.ClassPathImplementation;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.modules.glassfish.spi.ServerUtilities;
 
 /**
- * Support class for creating different types of classpath related implementations.
- * @since org.netbeans.modules.java.api.common/1 1.5
+ *
+ * @author vkraemer
  */
-public final class ClassPathSupportFactory {
+public class Ee6OptionalFactory extends Hk2OptionalFactory {
 
-    private ClassPathSupportFactory() {
+    public Ee6OptionalFactory() {
+        super(Hk2DeploymentFactory.createEe6(), ServerUtilities.getEe6Utilities());
     }
-
-    /**
-     * Creates implementation of BOOT classpath based on project's <code>platform.active</code>
-     * property.
-     * @param evaluator project's property evaluator
-     * @return classpath implementation
-     */
-    public static ClassPathImplementation createBootClassPathImplementation(PropertyEvaluator evaluator) {
-        return new BootClassPathImplementation(evaluator);
-    }
-
-    /**
-     * Creates implementation of SOURCE classpath for given source roots and project
-     * assuming build classes folder is stored in property <code>build.dir</code>.
-     *
-     * @param sourceRoots project source roots
-     * @param projectHelper AntProjectHelper
-     * @param evaluator PropertyEvaluator
-     * @return classpath implementation
-     */
-    public static ClassPathImplementation createSourcePathImplementation(SourceRoots sourceRoots, AntProjectHelper projectHelper, PropertyEvaluator evaluator) {
-        return new SourcePathImplementation(sourceRoots, projectHelper, evaluator);
-    }
-
 }
