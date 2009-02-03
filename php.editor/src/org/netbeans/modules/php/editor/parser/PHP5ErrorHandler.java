@@ -132,7 +132,8 @@ public class PHP5ErrorHandler implements ParserErrorHandler {
         }
     }
 
-    public void displaySyntaxErrors(Program program) {
+    public List<Error> displaySyntaxErrors(Program program) {
+        List<Error> errors = new ArrayList<Error>();
         for (SyntaxError syntaxError : syntaxErrors) {
             ASTNode astError = null;
             if (program != null) {
@@ -150,8 +151,9 @@ public class PHP5ErrorHandler implements ParserErrorHandler {
                 }
             }
             Error error = defaultSyntaxErrorHandling(syntaxError, astError);
-            //TODO: context.getListener().error(error);
+            errors.add(error);
         }
+        return errors;
     }
     
     // This is just defualt handling. We can do a logic, which will find metter 

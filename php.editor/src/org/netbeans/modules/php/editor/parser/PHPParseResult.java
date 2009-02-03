@@ -54,17 +54,12 @@ import org.netbeans.modules.php.editor.parser.astnodes.Program;
 public class PHPParseResult extends ParserResult {
     
     private final Program root;
-    private final List<Error> errors;
+    private List<Error> errors;
 
     public PHPParseResult(Snapshot snapshot, Program rootNode) {
-        this(snapshot, rootNode, Collections.<Error>emptyList());
-    }
-
-    public PHPParseResult(Snapshot snapshot, Program rootNode, List<Error> errors) {
-        //super(parser, file, PHPLanguage.PHP_MIME_TYPE, isValid);
         super(snapshot);
         this.root = rootNode;
-        this.errors = errors;
+        this.errors = Collections.<Error>emptyList();
     }
 
     public Program getProgram() {
@@ -81,6 +76,10 @@ public class PHPParseResult extends ParserResult {
         // comments copied from Groovy:
         // FIXME parsing API
         // remove from parser cache (?)
+    }
+
+    public void setErrors(List<Error> errors) {
+        this.errors = errors;
     }
 
 }

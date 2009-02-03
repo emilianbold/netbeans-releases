@@ -63,7 +63,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -203,8 +202,8 @@ public class GSFPHPParser extends Parser {
                     }
                 }
                 if (ok) {
-                    result = new PHPParseResult(context.getSnapshot(), program);
-                }
+                        result = new PHPParseResult(context.getSnapshot(), program);
+                    }
                 else {
                     result = sanitize(context, sanitizing, errorHandler);
                 }
@@ -213,8 +212,9 @@ public class GSFPHPParser extends Parser {
                 LOGGER.fine ("The parser value is not a Program: " + rootSymbol.value);
                 result = sanitize(context, sanitizing, errorHandler);
             }
+
             if (!sanitizedSource) {
-                errorHandler.displaySyntaxErrors(program);
+                result.setErrors(errorHandler.displaySyntaxErrors(program));
             }
         }
         else {
