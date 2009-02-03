@@ -152,5 +152,5 @@ public class Hk2JavaEEPlatformFactory extends J2eePlatformFactory {
         Set retVal = new HashSet();
         retVal.addAll(supportedSpecs);
         return retVal;
-    }    
+    }
 }

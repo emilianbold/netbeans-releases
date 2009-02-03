@@ -74,7 +74,9 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     private volatile static GlassfishInstanceProvider singletonEe6;
 
     public static GlassfishInstanceProvider getEe6() {
-        if ("true".equals(System.getProperty("org.glassfish.v3.supportV3"))) {
+        String v3Root = System.getProperty("org.glassfish.v3ee6.installRoot");
+        if ("true".equals(System.getProperty("org.glassfish.v3.supportV3")) ||
+               (null != v3Root && v3Root.trim().length() > 0) ) {
             if (singletonEe6 == null) {
                 singletonEe6 = new GlassfishInstanceProvider("deployer:gfv3ee6", "/GlassFishEE6/Instances",
                         "GlassFish v3", "org.glassfish.v3ee6.installRoot",
@@ -82,7 +84,9 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                         "Presonal GlassFish v3 Domain",
                         "GlassFish_v3", "http://java.net/download/glassfish/v3/promoted/latest-glassfish.zip",
                         "http://serverplugins.netbeans.org/glassfishv3/ee6zipfilename.txt",
-                        "last-v3ee6-install-root");
+                        "last-v3ee6-install-root",
+                        new String[] { "lib"+File.separator+"schemas"+File.separator+"web-app_3_0.xsd" },
+                        new String[0]);
             }
         }
         return singletonEe6;
@@ -99,7 +103,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                         "Presonal GlassFish v3 Prelude Domain",
                         "GlassFish_v3_Prelude", "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip",
                         "http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.txt",
-                        "last-install-root");
+                        "last-install-root", new String[0],
+                        new String[] { "lib"+File.separator+"schemas"+File.separator+"web-app_3_0.xsd" });
         }
         return singleton;
     }
@@ -118,10 +123,13 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     private String directDownloadUrl;
     private String indirectDownloadUrl;
     private String installRootKey;
+    private String[] requiredFiles;
+    private String[] excludedFiles;
 
     private GlassfishInstanceProvider(String uriFragment, String instancesDirName, 
             String displayName, String propName, String defaultName, String personalName,
-            String installName, String direct, String indirect, String prefKey) {
+            String installName, String direct, String indirect, String prefKey,
+            String[] requiredFiles, String[] excludedFiles) {
         this.instancesDirName = instancesDirName;
         this.displayName = displayName;
         this.uriFragment = uriFragment;
@@ -132,6 +140,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         this.directDownloadUrl = direct;
         this.indirectDownloadUrl = indirect;
         this.installRootKey = prefKey;
+        this.requiredFiles = requiredFiles;
+        this.excludedFiles = excludedFiles;
         try {
             registerDefaultInstance();
             loadServerInstances();
@@ -185,6 +195,14 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         return installRootPropName;
     }
 
+    public String[] getRequiredFiles() {
+        return requiredFiles;
+    }
+
+    public String[] getExcludedFiles() {
+        return excludedFiles;
+    }
+    
     public String getNameOfBits() {
         return displayName;
     }

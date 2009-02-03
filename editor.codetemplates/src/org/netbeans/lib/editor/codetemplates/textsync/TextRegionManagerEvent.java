@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,46 +34,53 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.api.common.classpath;
+package org.netbeans.lib.editor.codetemplates.textsync;
 
-import org.netbeans.modules.java.api.common.SourceRoots;
-import org.netbeans.spi.java.classpath.ClassPathImplementation;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import java.util.Collections;
+import java.util.EventObject;
+import java.util.List;
 
 /**
- * Support class for creating different types of classpath related implementations.
- * @since org.netbeans.modules.java.api.common/1 1.5
+ *
+ * @author mmetelka
  */
-public final class ClassPathSupportFactory {
+public final class TextRegionManagerEvent extends EventObject {
 
-    private ClassPathSupportFactory() {
+    private final boolean focusChange;
+
+    private final List<TextSyncGroup<?>> removedGroups;
+
+    private final TextSync previousTextSync;
+
+
+    TextRegionManagerEvent(TextRegionManager source, boolean focusChange,
+            List<TextSyncGroup<?>> removedGroups, TextSync previousTextSync
+    ) {
+        super(source);
+        this.focusChange = focusChange;
+        this.removedGroups = (removedGroups != null) ? removedGroups : Collections.<TextSyncGroup<?>>emptyList();
+        this.previousTextSync = previousTextSync;
     }
 
-    /**
-     * Creates implementation of BOOT classpath based on project's <code>platform.active</code>
-     * property.
-     * @param evaluator project's property evaluator
-     * @return classpath implementation
-     */
-    public static ClassPathImplementation createBootClassPathImplementation(PropertyEvaluator evaluator) {
-        return new BootClassPathImplementation(evaluator);
+    public TextRegionManager textRegionManager() {
+        return (TextRegionManager)getSource();
     }
 
-    /**
-     * Creates implementation of SOURCE classpath for given source roots and project
-     * assuming build classes folder is stored in property <code>build.dir</code>.
-     *
-     * @param sourceRoots project source roots
-     * @param projectHelper AntProjectHelper
-     * @param evaluator PropertyEvaluator
-     * @return classpath implementation
-     */
-    public static ClassPathImplementation createSourcePathImplementation(SourceRoots sourceRoots, AntProjectHelper projectHelper, PropertyEvaluator evaluator) {
-        return new SourcePathImplementation(sourceRoots, projectHelper, evaluator);
+    public boolean isFocusChange() {
+        return focusChange;
+    }
+
+    public <T> List<TextSyncGroup<T>> removedGroups() {
+        @SuppressWarnings("unchecked")
+        List<TextSyncGroup<T>> ret = (List<TextSyncGroup<T>>)(List)removedGroups;
+        return ret;
+    }
+
+    public TextSync previousTextSync() {
+        return previousTextSync;
     }
 
 }

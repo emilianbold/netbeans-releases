@@ -120,6 +120,8 @@ public class ProjectPropPanel extends javax.swing.JPanel implements ActionListen
         }
         ((MakeProject) project).setSourceEncoding(encName);
 
+        Vector<String> newSourceRoots = sourceRootChooser.getListData();
+        makeConfigurationDescriptor.setSourceRoots(newSourceRoots);
     }
 
     private static class EncodingRenderer extends JLabel implements ListCellRenderer, UIResource {

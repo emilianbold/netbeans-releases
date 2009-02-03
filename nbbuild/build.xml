@@ -652,28 +652,8 @@ ${hg.id.line}</echo>
 
     <property name="nb-extra-files" value="*.built,test/**,extra/**"/>
 
-    <!-- package the zip file -->
-    <zip destfile="NetBeans-${buildnum}.zip" update="true" duplicate="preserve">
-      <zipfileset file="${netbeans.dest.dir}/bin/netbeans" filemode="755" prefix="${netbeans.dest}/bin"/>
-      <zipfileset file="${netbeans.dest.dir}/${nb.cluster.platform.dir}/lib/nbexec" filemode="755" prefix="${netbeans.dest}/${nb.cluster.platform.dir}/lib"/>
-      <zipfileset dir="${netbeans.dest.dir}" filemode="755" prefix="${netbeans.dest}">
-        <include name="${nb.cluster.java.dir}/ant/bin/"/>
-        <exclude name="**/*.bat"/>
-        <exclude name="**/*.cmd"/>
-      </zipfileset>
-      <zipfileset dir="${netbeans.dest.dir}" filemode="755" prefix="${netbeans.dest}">
-        <include name="**/*.sh"/>
-      </zipfileset>
-      <zipfileset dir="${netbeans.dest.dir}" prefix="${netbeans.dest}" excludes="${nb-extra-files}"/>
-    </zip>
+    <antcall target="zip-cluster-config" inheritall="true"/>
     
-    <!-- package the zip file with extra files not to be included in regular product package-->
-    <!--
-    <zip destfile="NetBeans-${buildnum}-build-extra-data.zip" update="true" duplicate="preserve">
-        <zipfileset dir="${netbeans.dest.dir}" prefix="${netbeans.dest}" includes="${nb-extra-files}"/>
-    </zip>
-    -->
-
     <echo>Build created; see NetBeans-${buildnum}.zip (in nbbuild/).
 If you like, you may run the IDE straight from
 the ${netbeans.dest}/bin/ directory.
@@ -777,6 +757,39 @@ the ${netbeans.dest}/bin/ directory.
              mergedependentmodules="false">
     </nbmerge>
     <touch file="${netbeans.dest.dir}/${one.cluster.name}.built"/>
+  </target>
+
+  <target name="zip-cluster-config" depends="init">
+    <property name="zip.name" value="NetBeans-${buildnum}-${cluster.config}.zip"/>
+    <taskdef name="resolvelist" classname="org.netbeans.nbbuild.ResolveList" classpath="nbantext.jar"/>
+    <resolvelist name="nb.clusters.dirs" list="${nb.clusters.list}">
+        <mapper type="glob" from="*" to="*.dir"/>
+    </resolvelist>
+    <pathconvert property="nb.clusters.includes" pathsep=",">
+        <dirset dir="${netbeans.dest.dir}" includes="${nb.clusters.dirs}"/>
+        <mapper type="regexp" from=".*/([^/\\]*)" to="\1/**/*"/>
+    </pathconvert>
+    <pathconvert property="nb.clusters.exe.includes" pathsep=",">
+        <dirset dir="${netbeans.dest.dir}" includes="${nb.clusters.dirs}"/>
+        <mapper type="regexp" from=".*/([^/\\]*)" to="\1/**/*.sh,\1/**/bin/*"/>
+    </pathconvert>
+    <pathconvert property="nb.clusters.exe.excludes" pathsep=",">
+        <dirset dir="${netbeans.dest.dir}" includes="${nb.clusters.dirs}"/>
+        <mapper type="regexp" from=".*/([^/\\]*)" to="\1/**/bin/*.bat,\1/**/bin/*.cmd"/>
+    </pathconvert>
+    <!-- package the zip file -->
+    <zip destfile="${zip.name}" update="true" duplicate="preserve">
+      <zipfileset file="${netbeans.dest.dir}/bin/netbeans" filemode="755" prefix="${netbeans.dest}/bin"/>
+      <zipfileset file="${netbeans.dest.dir}/${nb.cluster.platform.dir}/lib/nbexec" filemode="755" prefix="${netbeans.dest}/${nb.cluster.platform.dir}/lib"/>
+      <zipfileset dir="${netbeans.dest.dir}" filemode="755" prefix="${netbeans.dest}"
+        includes="${nb.clusters.exe.includes}"
+        excludes="${nb.clusters.exe.excludes}"
+      />
+      <zipfileset
+        dir="${netbeans.dest.dir}" prefix="${netbeans.dest}"
+        includes="${nb.clusters.includes}" excludes="${nb-extra-files}"
+      />
+    </zip>
   </target>
 
   <target name="zipclusters" depends="init">
