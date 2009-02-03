@@ -2460,6 +2460,68 @@ public class ModuleManagerTest extends SetupHid {
         }
     }
 
+    public void testModuleOwnsClass() throws Exception { // #157798
+        clearWorkDir();
+        data = new File(getWorkDir(), "data");
+        jars = new File(getWorkDir(), "jars");
+        TestFileUtils.writeFile(new File(data, "mod1.mf"), "OpenIDE-Module: mod1/1\n\n");
+        TestFileUtils.writeFile(new File(data, "mod1/pkg/C1.java"), "package pkg; class C1 {}");
+        TestFileUtils.writeFile(new File(data, "mod1/pkg/C2.java"), "package pkg; class C2 {}");
+        File mod1JAR = createTestJAR(data, jars, "mod1", null);
+        TestFileUtils.writeFile(new File(data, "mod2.mf"), "OpenIDE-Module: mod2/1\n\n");
+        TestFileUtils.writeFile(new File(data, "mod2/pkg/C3.java"), "package pkg; class C3 {}");
+        File mod2JAR = createTestJAR(data, jars, "mod2", null);
+        ModuleManager mgr = new ModuleManager(new MockModuleInstaller(), new MockEvents());
+        mgr.mutexPrivileged().enterWriteAccess();
+        try {
+            Module mod1 = mgr.create(mod1JAR, null, false, false, false);
+            mgr.enable(mod1);
+            Module mod2 = mgr.create(mod2JAR, null, false, false, false);
+            mgr.enable(mod2);
+            Class c1 = mod1.getClassLoader().loadClass("pkg.C1");
+            Class c2 = mod1.getClassLoader().loadClass("pkg.C2");
+            Class c3 = mod2.getClassLoader().loadClass("pkg.C3");
+            assertTrue(mod1.owns(c1));
+            assertTrue(mod1.owns(c2));
+            assertFalse(mod1.owns(c3));
+            assertFalse(mod2.owns(c1));
+            assertFalse(mod2.owns(c2));
+            assertTrue(mod2.owns(c3));
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+        mgr = new ModuleManager(new MockModuleInstaller(), new MockEvents());
+        mgr.mutexPrivileged().enterWriteAccess();
+        try {
+            ClassLoader l = new URLClassLoader(new URL[] {mod1JAR.toURI().toURL(), mod2JAR.toURI().toURL()});
+            Module mod1 = mgr.createFixed(loadManifest(mod1JAR), null, l);
+            mgr.enable(mod1);
+            assertEquals(l, mod1.getClassLoader());
+            Module mod2 = mgr.createFixed(loadManifest(mod2JAR), null, l);
+            mgr.enable(mod2);
+            Class c1 = l.loadClass("pkg.C1");
+            assertEquals(l, c1.getClassLoader());
+            Class c2 = l.loadClass("pkg.C2");
+            Class c3 = l.loadClass("pkg.C3");
+            assertTrue(mod1.owns(c1));
+            assertTrue(mod1.owns(c2));
+            assertFalse(mod1.owns(c3));
+            assertFalse(mod2.owns(c1));
+            assertFalse(mod2.owns(c2));
+            assertTrue(mod2.owns(c3));
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+    }
+    private static Manifest loadManifest(File jar) throws IOException {
+        JarFile j = new JarFile(jar);
+        try {
+            return j.getManifest();
+        } finally {
+            j.close();
+        }
+    }
+
     private File copyJar(File file, String manifest) throws IOException {
         File ret = File.createTempFile(file.getName(), "2ndcopy", file.getParentFile());
         JarFile jar = new JarFile(file);

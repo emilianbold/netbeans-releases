@@ -43,6 +43,8 @@ package org.netbeans;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,6 +55,7 @@ import java.util.StringTokenizer;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
@@ -249,8 +252,26 @@ public abstract class Module extends ModuleInfo {
         if (cl instanceof Util.ModuleProvider) {
             return ((Util.ModuleProvider) cl).getModule() == this;
         }
-        return false;
-        
+        if (cl != classloader) {
+            return false;
+        }
+        // #157798: in JNLP or otherwise classpath mode, all modules share a CL.
+        CodeSource src = clazz.getProtectionDomain().getCodeSource();
+        if (src != null) {
+            try {
+                URL loc = src.getLocation();
+                if (loc.toString().matches("file:.+\\.jar")) {
+                    // URLClassLoader inconsistency.
+                    loc = new URL("jar:" + loc + "!/");
+                }
+                URL manifest = new URL(loc, "META-INF/MANIFEST.MF");
+                Manifest mf = new Manifest(manifest.openStream());
+                return codeName.equals(mf.getMainAttributes().getValue("OpenIDE-Module"));
+            } catch (IOException x) {
+                Logger.getLogger(Module.class.getName()).log(Level.FINE, null, x);
+            }
+        }
+        return true; // not sure...
     }
     
     /** Get all packages exported by this module to other modules.

@@ -372,6 +372,7 @@ public abstract class SetupHid extends NbTestCase {
         }
         // Cannot trivially use TestFileUtils.writeZipFile here since we have binary content (classes).
         File jar = new File(jars, name + ".jar");
+        jars.mkdirs();
         OutputStream os = new FileOutputStream(jar);
         try {
             JarOutputStream jos = new JarOutputStream(os, loadManifest(manifestF));

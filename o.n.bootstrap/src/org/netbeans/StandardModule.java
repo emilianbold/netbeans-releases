@@ -242,15 +242,6 @@ final class StandardModule extends Module {
         }
     }
     
-    public @Override boolean owns(Class clazz) {
-        ClassLoader cl = clazz.getClassLoader();
-        if (cl instanceof Util.ModuleProvider) {
-            return ((Util.ModuleProvider) cl).getModule() == this;
-        }
-        return false;
-        
-    }
-    
     public boolean isFixed() {
         return false;
     }
