@@ -81,6 +81,7 @@ public class ConfigActionTest extends ConfigAction {
     protected ConfigActionTest(PhpProject project) {
         super(project);
         coverageProvider = project.getLookup().lookup(PhpCoverageProvider.class);
+        assert coverageProvider != null;
     }
 
     @Override
@@ -220,9 +221,7 @@ public class ConfigActionTest extends ConfigAction {
                             public void run() {
                                 rerunUnitTestHandler.enable();
                                 testRunner.showResults();
-                                if (PhpCoverageProvider.ENABLED) {
-                                    handleCodeCoverage();
-                                }
+                                handleCodeCoverage();
                             }
                         });
             } else {
@@ -241,7 +240,7 @@ public class ConfigActionTest extends ConfigAction {
             externalProcessBuilder = externalProcessBuilder
                     .addArgument(PhpUnit.PARAM_XML_LOG)
                     .addArgument(PhpUnit.XML_LOG.getAbsolutePath());
-            if (PhpCoverageProvider.ENABLED) {
+            if (coverageProvider.isEnabled()) {
                 externalProcessBuilder = externalProcessBuilder
                         .addArgument(PhpUnit.PARAM_COVERAGE_LOG)
                         .addArgument(PhpUnit.COVERAGE_LOG.getAbsolutePath());
@@ -274,9 +273,9 @@ public class ConfigActionTest extends ConfigAction {
         }
 
         void handleCodeCoverage() {
-            if (coverageProvider == null
+            if (!coverageProvider.isEnabled()
                     || pair.second != CWD) {
-                // XXX no provider or just one test case (could be handled later)
+                // XXX no provider or not enabled or just one test case (could be handled later)
                 return;
             }
 
