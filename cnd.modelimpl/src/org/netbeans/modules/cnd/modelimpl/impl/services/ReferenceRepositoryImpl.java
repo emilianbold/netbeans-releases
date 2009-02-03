@@ -80,6 +80,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -241,7 +242,11 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
     private boolean hasName(FileImpl file, String name){
         try {
             if (file.isValid()) {
-                String text = file.getBuffer().getText();
+                FileBuffer buffer = file.getBuffer();
+                if (buffer == null){
+                    return false;
+                }
+                String text = buffer.getText();
                 if (text.indexOf(name) < 0) {
                     return false;
                 }
@@ -302,8 +307,13 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         Reader reader = null;
         TokenStream ts = null;
         try {
-            reader = file.getBuffer().getReader();
-            ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), reader);
+            if (file.isValid()) {
+                FileBuffer buffer = file.getBuffer();
+                if (buffer != null){
+                    reader = buffer.getReader();
+                    ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), reader);
+                }
+            }
         } catch (IOException ex) {
             DiagnosticExceptoins.register(ex);
             ts = null;
