@@ -46,7 +46,9 @@ import antlr.TokenStreamException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -83,6 +85,7 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
  * @author Sergey Grinev
  */
 public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
+    protected final Map<String, CsmFile> macro2file = new HashMap<String, CsmFile>();
 
     public APTFindMacrosWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler) {
         super(apt, csmFile, preprocHandler);
@@ -163,6 +166,12 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
                         if (mi != null) {
                             addReference(apttoken, mi);
                             break;
+                        } else {
+                            CsmFile macroContainter = getMacroFile(m);
+                            if (macroContainter != null) {
+                                addReference(apttoken, new MacroInfo(macroContainter, m.getName().getOffset(), m.getName().getEndOffset(), m.getFile().getPath()));
+                                break;
+                            }
                         }
                         // nobreak
                     case COMPILER_PREDEFINED:
@@ -327,5 +336,25 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
         public CharSequence getText() {
             return TextCache.getString(super.getText());
         }
+    }
+
+    private CsmFile getMacroFile(APTMacro m) {
+        CsmFile out = null;
+        if (m.getFile() != null) {
+            String path = m.getFile().getPath();
+            out = macro2file.get(path);
+            if (out == null) {
+                ProjectBase targetPrj = ((ProjectBase) csmFile.getProject()).findFileProject(path);
+                if (targetPrj != null) {
+                    out = targetPrj.getFile(new File(path));
+                    // if file belongs to project, it should be not null
+                    // but info could be obsolete
+                }
+                if (out != null) {
+                    macro2file.put(path, out);
+                }
+            }
+        }
+        return out;
     }
 }

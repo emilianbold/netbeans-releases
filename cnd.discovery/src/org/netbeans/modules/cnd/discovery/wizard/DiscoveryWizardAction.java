@@ -160,7 +160,8 @@ public final class DiscoveryWizardAction extends NodeAction {
             MakeConfigurationDescriptor make = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
             Folder folder = make.getLogicalFolders();
             Vector sources = folder.getFolders();
-            List<String> roots = new ArrayList<String>();
+            List<String> roots = make.getAbsoluteSourceRoots();
+            //List<String> roots = new ArrayList<String>();
             for (Object o : sources){
                 Folder sub = (Folder)o;
                 if (sub.isProjectFiles()) {
@@ -184,7 +185,7 @@ public final class DiscoveryWizardAction extends NodeAction {
                 String rootName = roots.get(0);
                 Item[] items = make.getProjectItems();
                 if (items.length>0){
-                    String path =items[0].getPath();
+                    String path =items[0].getAbsPath();
                     StringBuilder newBase = null;
                     if (path.startsWith("..")){ // NOI18N
                         newBase = new StringBuilder(base);

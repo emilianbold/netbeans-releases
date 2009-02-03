@@ -48,6 +48,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.javaee.db.Hk2DatasourceManager;
@@ -75,8 +76,41 @@ import org.openide.util.NbPreferences;
  *
  * @author Ludovic Champenois
  * @author Peter Williams
+ * @author vince kraemer
  */
 public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
+    private DeploymentFactory df;
+    private ServerUtilities su;
+
+//<<<<<<< local
+//=======
+//    // Could not use createPrelude and createEe6 in the layer.xml file
+//    /**
+//     * @deprecated for use from the layer.xml file ONLY
+//     */
+//>>>>>>> other
+//    public Hk2OptionalFactory() {
+//<<<<<<< local
+//        this(Hk2DeploymentFactory.createPrelude(),ServerUtilities.getPreludeUtilities());
+//=======
+//        //this(Hk2DeploymentFactory.createPrelude(),ServerUtilities.getPreludeUtilities());
+//>>>>>>> other
+//    }
+//
+    protected Hk2OptionalFactory(DeploymentFactory df, ServerUtilities su) {
+        this.df = df;
+        this.su = su;
+    }
+
+    public static Hk2OptionalFactory createPrelude() {
+        return new Hk2OptionalFactory(Hk2DeploymentFactory.createPrelude(),
+                ServerUtilities.getPreludeUtilities());
+    }
+    
+    public static Hk2OptionalFactory createEe6() {
+        return new Hk2OptionalFactory(Hk2DeploymentFactory.createEe6(),
+                ServerUtilities.getEe6Utilities());
+    }
     
     public StartServer getStartServer(DeploymentManager dm) {
         return new Hk2StartServer(dm);
@@ -107,7 +141,7 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
     
     @Override
     public InstantiatingIterator getAddInstanceIterator() {
-        return new J2eeInstantiatingIterator(ServerUtilities.getAddInstanceIterator());
+        return new J2eeInstantiatingIterator(su);
     }
     
     @Override
@@ -158,9 +192,11 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
     private static class J2eeInstantiatingIterator implements InstantiatingIterator {
         
         private final InstantiatingIterator delegate;
+        private ServerUtilities su;
 
-        public J2eeInstantiatingIterator(InstantiatingIterator delegate) {
-            this.delegate = delegate;
+        public J2eeInstantiatingIterator(ServerUtilities su) {
+            this.delegate = su.getAddInstanceIterator();
+            this.su = su;
         }
 
         public void removeChangeListener(ChangeListener l) {
@@ -205,7 +241,7 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
                 Object obj = set.iterator().next();
                 if(obj instanceof ServerInstance) {
                     ServerInstance instance = (ServerInstance) obj;
-                    Lookup lookup = ServerUtilities.getLookupFor(instance);
+                    Lookup lookup = su.getLookupFor(instance);
                     if (lookup != null) {
                         JavaEEServerModule module = lookup.lookup(JavaEEServerModule.class);
                         if(module != null) {
@@ -239,10 +275,9 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
             // remove any invalid server definitions...
             String[] urls = InstanceProperties.getInstanceList();
             if (null != urls) {
-                Hk2DeploymentFactory hk2df = new Hk2DeploymentFactory();
                 List<String> needToRemove = new ArrayList<String>();
                 for (String url : urls) {
-                    if (hk2df.handlesURI(url)) {
+                    if (df.handlesURI(url)) {
                         InstanceProperties ip = InstanceProperties.getInstanceProperties(url);
                         String installDirName = ip.getProperty(GlassfishModule.GLASSFISH_FOLDER_ATTR);
                         String domainDirName = ip.getProperty(GlassfishModule.DOMAINS_FOLDER_ATTR)+
@@ -265,7 +300,7 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
             final boolean needToRegisterDefaultServer =
                     !NbPreferences.forModule(this.getClass()).getBoolean(ServerUtilities.PROP_FIRST_RUN, false);
             if (needToRegisterDefaultServer) {
-                ServerUtilities.getServerProvider();
+                su.getServerProvider();
             }
         } catch (Exception ex) {
             throw new ServerInitializationException("failed to init default instance", ex);
