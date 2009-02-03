@@ -112,7 +112,31 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
             ErrorFixesFakeHint.setCreateLocalVariableInPlace(orig);
         }
     }
-    
+
+    public void testInsideBlock() throws Exception {
+        parameter = false;
+        performFixTest("test/Test.java",
+                       "package test; public class Test {public void test() {if (true) {int aaa = 0; |bbb = aaa; }}}",
+                       "AddParameterOrLocalFix:bbb:int:false",
+                       "package test; public class Test {public void test() {if (true) {int aaa = 0;int bbb = aaa; }}}");
+    }
+
+    public void testInsideBlockWithPreviousDeclaration() throws Exception {
+        parameter = false;
+        performFixTest("test/Test.java",
+                       "package test; public class Test {public void test() {Object[] array = new Object[10];for (int i = 0; i < array.length; i++) {Object item = array[i + 1];item = array[i];}int j = 0;while (j < 10) {|item = array[j];j--;}}}",
+                       "AddParameterOrLocalFix:item:java.lang.Object:false",
+                       "package test; public class Test {public void test() {Object[] array = new Object[10];for (int i = 0; i < array.length; i++) {Object item = array[i + 1];item = array[i];}int j = 0;while (j < 10) {Object item = array[j]; j--;}}}");
+    }
+
+    public void testInsideParentBlock() throws Exception {
+        parameter = false;
+        performFixTest("test/Test.java",
+                       "package test; public class Test {public void test() {{foo = \"bar\";}|foo = \"bar\";}}",
+                       "AddParameterOrLocalFix:foo:java.lang.String:false",
+                       "package test; public class Test {public void test() {String foo; {foo = \"bar\";}foo = \"bar\";}}");
+    }
+
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = CreateElement.analyze(info, pos);
         List<Fix> result=  new LinkedList<Fix>();
