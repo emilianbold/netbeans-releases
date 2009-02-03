@@ -79,7 +79,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
@@ -541,7 +540,7 @@ public class MakeActionProvider implements ActionProvider {
                     // Should never get here...
                     assert false;
                     return;
-                } else if (conf.isCompileConfiguration() || conf.isQmakeConfiguration()) {
+                } else if (conf.isApplicationConfiguration()) {
                     RunProfile runProfile = null;
                     int platform = conf.getPlatform().getValue();
                     if (platform == Platform.PLATFORM_WINDOWS) {
@@ -863,17 +862,7 @@ public class MakeActionProvider implements ActionProvider {
                 }
                 validated = true;
             } else if (targetName.equals("custom-action")) { // NOI18N
-                String exe = ""; // NOI18N
-                if (conf.isMakefileConfiguration()) {
-                    exe = conf.getMakefileConfiguration().getOutput().getValue();
-                } else if (conf.isApplicationConfiguration()) {
-                    exe = conf.getLinkerConfiguration().getOutputValue();
-                }
-                exe = conf.expandMacros(exe);
-                // Always absolute
-                if (exe.length() > 0) {
-                    exe = IpeUtils.toAbsolutePath(conf.getBaseDir(), exe);
-                }
+                String exe = conf.getAbsoluteOutputValue();
                 ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                         project,
                         actionEvent,
