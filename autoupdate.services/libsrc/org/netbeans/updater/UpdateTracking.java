@@ -664,6 +664,13 @@ public final class UpdateTracking {
             
             String dash = name.replace ('.', '-');
 
+            for (File c : clusters(true)) {
+                File hidden = new File(new File(new File(c, "config"), "Modules"), dash + ".xml_hidden");
+                if (hidden.exists()) {
+                    hidden.delete();
+                }
+            }
+
             File config = new File (configDir,  dash + ".xml"); // NOI18N
             if (config.isFile ()) {
                 // already written
