@@ -123,7 +123,7 @@ public abstract class CLIHandler extends Object {
     
     /** Testing output of the threads.
      */
-    private static final Logger OUTPUT = Logger.getLogger("org.netbeans.CLIHandler"); // NOI18N
+    private static final Logger OUTPUT = Logger.getLogger(CLIHandler.class.getName());
     
     private int when;
     
@@ -994,7 +994,7 @@ public abstract class CLIHandler extends Object {
                 try {
                     handleConnect(work);
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    OUTPUT.log(Level.WARNING, null, ex);
                 }
                 return;
             }
