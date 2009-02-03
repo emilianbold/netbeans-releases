@@ -106,7 +106,7 @@ implements Runnable, ChangeListener {
             }
         }
         if (empty) {
-            LOG.finest("adding default layer"); // NOI18N
+            LOG.fine("adding default layer"); // NOI18N
             try {
                 delegate.add(0, new XMLFileSystem(FoDFileSystem.class.getResource("default.xml"))); // NOI18N
             } catch (SAXException ex) {
