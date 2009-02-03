@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.configurations;
 
 import java.io.File;
@@ -67,29 +66,26 @@ import org.xml.sax.Attributes;
 /**
  * was: ConfigurationDescriptorHelper
  */
-
 public class ConfigurationXMLReader extends XMLDocReader {
+
     private static int DEPRECATED_VERSIONS = 26;
-
-
     private FileObject projectDirectory;
 
     public ConfigurationXMLReader(FileObject projectDirectory) {
         this.projectDirectory = projectDirectory;
-        // LATER configurationDescriptor = new
+    // LATER configurationDescriptor = new
     }
 
 
     /*
      * was: readFromDisk
      */
-
     public ConfigurationDescriptor read(final String relativeOffset) throws IOException {
         final String tag;
         final FileObject xml;
         // Try first new style file
         FileObject fo = projectDirectory.getFileObject("nbproject/configurations.xml"); // NOI18N
-        if (fo == null){
+        if (fo == null) {
             // then try old style file....
             tag = CommonConfigurationXMLCodec.PROJECT_DESCRIPTOR_ELEMENT;
             xml = projectDirectory.getFileObject("nbproject/projectDescriptor.xml"); // NOI18N
@@ -105,6 +101,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         String path = FileUtil.toFile(projectDirectory).getPath();
         final MakeConfigurationDescriptor configurationDescriptor = new MakeConfigurationDescriptor(path);
         Task task = RequestProcessor.getDefault().post(new Runnable() {
+
             public void run() {
                 try {
                     if (MakeProjectConfigurationProvider.ASYNC_LOAD) {
@@ -114,7 +111,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
                             ex.printStackTrace();
                         }
                     }
-                    if (_read(relativeOffset, tag, xml, configurationDescriptor) == null){
+                    if (_read(relativeOffset, tag, xml, configurationDescriptor) == null) {
                         // TODO configurationDescriptor is broken
                         configurationDescriptor.setState(State.BROKEN);
                     }
@@ -179,11 +176,12 @@ public class ConfigurationXMLReader extends XMLDocReader {
             File projectFile = FileUtil.toFile(projectDirectory);
             final String message = NbBundle.getMessage(ConfigurationXMLReader.class, "OLD_VERSION_WARNING", projectFile.getName()); // NOI18N
             Runnable warning = new Runnable() {
+
                 public void run() {
                     NotifyDescriptor nd = new NotifyDescriptor(message,
-                        NbBundle.getMessage(ConfigurationXMLReader.class, "CONVERT_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION, // NOI18N
-                        NotifyDescriptor.QUESTION_MESSAGE,
-                        null, NotifyDescriptor.YES_OPTION);
+                            NbBundle.getMessage(ConfigurationXMLReader.class, "CONVERT_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION, // NOI18N
+                            NotifyDescriptor.QUESTION_MESSAGE,
+                            null, NotifyDescriptor.YES_OPTION);
                     Object ret = DialogDisplayer.getDefault().notify(nd);
                     if (ret == NotifyDescriptor.YES_OPTION) {
                         configurationDescriptor.setModified(true);
@@ -197,7 +195,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
             // Project is modified and will be saved with current version. This includes samples.
             configurationDescriptor.setVersion(CommonConfigurationXMLCodec.CURRENT_VERSION);
         }
-        
+
         // Ensure all item configurations have been created
         Item[] projectItems = configurationDescriptor.getProjectItems();
         for (Configuration configuration : configurationDescriptor.getConfs().getConfigurtions()) {
