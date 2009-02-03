@@ -1630,20 +1630,40 @@ abstract public class CsmCompletionQuery {
                                     // try to find method in last resolved class appropriate for current context
                                     if (CsmKindUtilities.isClass(classifier)) {
                                         mtdList = finder.findMethods(this.contextElement, (CsmClass) classifier, mtdName, true, false, first, true, scopeAccessedClassifier, this.sort);
+                                        if ((!last || findType) && (mtdList == null || mtdList.size() == 0)) {
+                                            // could be pointer to function-type field
+                                            lastType = null;
+                                            List<CsmField> foundFields = finder.findFields(this.contextElement, (CsmClass) classifier, mtdName, true, false, first, true, scopeAccessedClassifier, this.sort);
+                                            if (foundFields != null && !foundFields.isEmpty()) {
+                                                // we found field with correct name, check if it has function pointer type
+                                                for (CsmField csmField : foundFields) {
+                                                    CsmType fldType = csmField.getType();
+                                                    if (CsmKindUtilities.isFunctionPointerType(fldType)) {
+                                                        // that was a function-type field
+                                                        lastType = fldType;
+                                                    }
+                                                }
+                                            }
+                                            return (lastType != null);
+                                        }
                                     }
                                 }
                             }
                             if (mtdList == null || mtdList.size() == 0) {
                                 // If we have not found method and (lastType != null) it could be default constructor.
                                 if (!isConstructor) {
-                                    // It could be default constructor call without "new"
-                                    CsmClassifier cls = null;
-                                    //cls = sup.getClassFromName(CsmCompletionQuery.this.getFinder(), mtdName, true);
-                                    if (cls == null) {
-                                        cls = findExactClass(mtdName, mtdNameExp.getTokenOffset(0));
-                                    }
-                                    if (cls != null) {
-                                        lastType = CsmCompletion.getType(cls, 0);
+                                    if (first) {
+                                        // It could be default constructor call without "new"
+                                        CsmClassifier cls = null;
+                                        //cls = sup.getClassFromName(CsmCompletionQuery.this.getFinder(), mtdName, true);
+                                        if (cls == null) {
+                                            cls = findExactClass(mtdName, mtdNameExp.getTokenOffset(0));
+                                        }
+                                        if (cls != null) {
+                                            lastType = CsmCompletion.getType(cls, 0);
+                                        }
+                                    } else {
+                                        lastType = null;
                                     }
                                 }
                                 return lastType != null;

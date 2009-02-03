@@ -91,8 +91,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         assert this.projectDirectory != null;
         this.sourceRoots = sourceRoots;
         this.testSourceRoots = testSourceRoots;
-
-        GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
     }
 
 
@@ -176,12 +174,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         ClassPath cp = cache[2+type];
         if ( cp == null) {
             if (type == 0) {
-                cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(FileUtil.toFileObject(projectDirectory)));
+                cp = ClassPathFactory.createClassPath(ProjectClassPathImplementation.forProject(project));
             }
             else {
-                cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(FileUtil.toFileObject(projectDirectory)));
+                cp = ClassPathFactory.createClassPath(ProjectClassPathImplementation.forProject(project));
             }
             cache[2+type] = cp;
         }

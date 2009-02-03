@@ -64,10 +64,13 @@ import org.openide.util.WeakListeners;
 
 final class BootClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
 
-    private List<PathResourceImplementation> resourcesCache;
-    private long eventId;
-    private PropertyChangeSupport support = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
+
     private final GrailsProjectConfig config;
+
+    private List<PathResourceImplementation> resourcesCache;
+
+    private long eventId;  
 
     private BootClassPathImplementation(GrailsProjectConfig config) {
         this.config = config;
