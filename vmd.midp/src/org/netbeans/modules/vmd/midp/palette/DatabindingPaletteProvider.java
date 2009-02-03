@@ -56,14 +56,15 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author karolharezlak
+ * @author karol harezlak
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.palette.PaletteProvider.class)
 public class DatabindingPaletteProvider implements PaletteProvider {
 
     public static final String CATEGORY_DATABINDING = "databinding"; // NOI18N
 
     private String[] paletteCategories = {CATEGORY_DATABINDING};
-    private int[] categoryPositions = {100000}; // custom should be the last
+    private int[] categoryPositions = {710}; // custom should be the last
 
     public DatabindingPaletteProvider() {
     }
@@ -92,8 +93,8 @@ public class DatabindingPaletteProvider implements PaletteProvider {
                 if (catFO == null) {
                     catFO = paletteFolder.createFolder(categoryName);
                 }
-                catFO.setAttribute("SystemFileSystem.localizingBundle", "org.netbeans.modules.vmd.databinding.palette.Bundle"); // NOI18N
-                catFO.setAttribute("SystemFileSystem.icon", new URL("nbresloc:/org/netbeans/modules/vmd/databinding/resources/componentscategory_" + categoryName + "_16.png")); // NOI18N
+                catFO.setAttribute("SystemFileSystem.localizingBundle", "org.netbeans.modules.vmd.midp.palette.Bundle"); // NOI18N
+                catFO.setAttribute("SystemFileSystem.icon", new URL("nbresloc:/org/netbeans/modules/vmd/midp/resources/components/category_databinding_16.png")); // NOI18N
                 catFO.setAttribute("isExpanded", "true"); // NOI18N
                 catFO.setAttribute("position", categoryPositions[i]); // NOI18N
             }
