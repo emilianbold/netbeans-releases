@@ -302,14 +302,12 @@ public class GeneratorUtils {
         final CloneableEditorSupport ces;
         final PositionRef start;
         final PositionRef end;
-        final FileObject fo;
         final int dot;
 
-        public InsertInfo(CloneableEditorSupport ces, int dot, PositionRef start, PositionRef end, FileObject fo) {
+        public InsertInfo(CloneableEditorSupport ces, int dot, PositionRef start, PositionRef end) {
             this.ces = ces;
             this.start = start;
             this.end = end;
-            this.fo = fo;
             this.dot = dot;
         }
 
@@ -344,22 +342,26 @@ public class GeneratorUtils {
             }
             if (decl != null) {
                 position = decl.getEndOffset();
+                if (CsmKindUtilities.isClassMember(decl)) {
+                    enclClass = ((CsmMember)decl).getContainingClass();
+                } else if (enclClass == null) {
+                    enclClass = path.getEnclosingClass();
+                }
             }
         } else {
             enclClass = null;
         }
-        if (enclClass != null && CsmKindUtilities.isOffsetable(enclClass)) {
+        if (CsmKindUtilities.isOffsetable(enclClass)) {
             declFile = ((CsmOffsetable)enclClass).getContainingFile();
         } else {
             position = 10;
         }
         CloneableEditorSupport classDeclEditor = CsmUtilities.findCloneableEditorSupport(declFile);
         CloneableEditorSupport classDefEditor = CsmUtilities.findCloneableEditorSupport(defFile);
-        FileObject declFo = path.getFileObject();
         PositionRef startDeclPos = classDeclEditor.createPositionRef(position, Bias.Backward);
         PositionRef endDeclPos = classDeclEditor.createPositionRef(position, Bias.Forward);
-        out[0] = new InsertInfo(classDeclEditor, position, startDeclPos, endDeclPos, declFo);
-        out[1] = new InsertInfo(classDeclEditor, position, startDeclPos, endDeclPos, declFo);
+        out[0] = new InsertInfo(classDeclEditor, position, startDeclPos, endDeclPos);
+        out[1] = new InsertInfo(classDeclEditor, position, startDeclPos, endDeclPos);
         return out;
     }
     
@@ -494,15 +496,16 @@ public class GeneratorUtils {
      * @param identifierString The identifer to strip.
      * @return The stripped identifier.
      */
-    private static String stripFieldPrefix(String identifierString) {
+    public static String stripFieldPrefix(String identifierString) {
         String stripped = identifierString;
         // remove usual C++ prefixes
-        if (identifierString.startsWith("m_")) { // NOI18N
+        if (stripped.startsWith("m_")) { // NOI18N
             stripped = identifierString.substring(2);
-        } else if (identifierString.length() > 1) {
-            if (identifierString.charAt(0) == 'p' && Character.isUpperCase(identifierString.charAt(1))) {
+        } 
+        if (stripped.length() > 1) {
+            if (stripped.charAt(0) == 'p' && Character.isUpperCase(stripped.charAt(1))) {
                 // this is like pointer "pValue"
-                stripped = identifierString.substring(1);
+                stripped = stripped.substring(1);
             }
         }
         return stripped;
