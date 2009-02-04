@@ -39,21 +39,26 @@
 
 package org.netbeans.modules.kenai;
 
+import org.codeviation.pojson.Pojson.IgnoreNonExisting;
+import org.codeviation.pojson.Pojson.SkipNullValues;
+
 /**
  *
  * @author Jan Becicka
  */
-@org.codeviation.pojson.Pojson.IgnoreNonExisting
+@IgnoreNonExisting
+@SkipNullValues
 public class ProjectCreateData {
 
     public ProjectCreateData() {
         project = new Project();
     }
-
     public Project project;
 
-    @org.codeviation.pojson.Pojson.IgnoreNonExisting
+    @IgnoreNonExisting
+    @SkipNullValues
     public static class Project {
+
         public String name;
         public String display_name;
         public String description;
