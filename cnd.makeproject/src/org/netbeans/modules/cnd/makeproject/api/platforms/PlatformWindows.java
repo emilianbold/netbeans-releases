@@ -65,7 +65,14 @@ public class PlatformWindows extends Platform {
     public String getLibraryName(String baseName) {
         return "lib" + baseName + ".dll"; // NOI18N
     }
-    
+
+    @Override
+    public String getQtLibraryName(String baseName, String version) {
+        int dot = version.indexOf('.'); // NOI18N
+        String majorVersion = 0 <= dot? version.substring(0, dot) : version;
+        return baseName + majorVersion + ".dll"; // NOI18N
+    }
+
     public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
         if (libName.endsWith(".dll")) { // NOI18N
             int i = libName.indexOf(".dll"); // NOI18N

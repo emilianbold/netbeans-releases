@@ -51,9 +51,10 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration.OptionToString;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration.LibraryToString;
+import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.VectorConfiguration;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 
@@ -75,7 +76,9 @@ public class QmakeProjectWriter {
      */
     private static enum Variable {
         TEMPLATE,
+        DESTDIR,
         TARGET,
+        VERSION,
         CONFIG,
         QT,
         SOURCES,
@@ -156,7 +159,9 @@ public class QmakeProjectWriter {
 
     private void write(BufferedWriter bw) throws IOException {
         write(bw, Variable.TEMPLATE, Operation.SET, getTemplate());
-        write(bw, Variable.TARGET, Operation.SET, getTarget());
+        write(bw, Variable.DESTDIR, Operation.SET, configuration.expandMacros(configuration.getQmakeConfiguration().getDestdirValue()));
+        write(bw, Variable.TARGET, Operation.SET, configuration.expandMacros(configuration.getQmakeConfiguration().getTargetValue()));
+        write(bw, Variable.VERSION, Operation.SET, configuration.getQmakeConfiguration().getLibVersion().getValue());
         write(bw, Variable.CONFIG, Operation.SUB, "debug_and_release"); // NOI18N
         write(bw, Variable.CONFIG, Operation.ADD, getConfig());
         write(bw, Variable.QT, Operation.SET, configuration.getQmakeConfiguration().getEnabledModules());
@@ -188,7 +193,7 @@ public class QmakeProjectWriter {
         write(bw, Variable.INCLUDEPATH, Operation.ADD,
                 configuration.getCCompilerConfiguration().getIncludeDirectories().toString(optionVisitor) +
                 configuration.getCCCompilerConfiguration().getIncludeDirectories().toString(optionVisitor));
-        LibraryToString libVisitor = new LibraryToString(configuration);
+        LibraryToString libVisitor = new LibraryToString();
         write(bw, Variable.LIBS, Operation.ADD,
                 configuration.getLinkerConfiguration().getLibrariesConfiguration().toString(libVisitor));
 
@@ -252,18 +257,6 @@ public class QmakeProjectWriter {
         }
     }
 
-    private String getTarget() {
-        switch (configuration.getConfigurationType().getValue()) {
-            case MakeConfiguration.TYPE_QT_APPLICATION:
-            case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
-                return configuration.expandMacros(configuration.getLinkerConfiguration().getOutputValue());
-            case MakeConfiguration.TYPE_QT_STATIC_LIB:
-                return configuration.expandMacros(configuration.getArchiverConfiguration().getOutputValue());
-            default:
-                return ""; // NOI18N
-        }
-    }
-
     private List<String> getConfig() {
         List<String> list = new ArrayList<String>();
         switch (configuration.getConfigurationType().getValue()) {
@@ -278,4 +271,21 @@ public class QmakeProjectWriter {
         return list;
     }
 
+    private static class LibraryToString implements VectorConfiguration.ToString<LibraryItem> {
+
+        public String toString(LibraryItem item) {
+            switch (item.getType()) {
+                case LibraryItem.PROJECT_ITEM:
+                case LibraryItem.LIB_FILE_ITEM:
+                    return IpeUtils.quoteIfNecessary(item.getPath());
+                case LibraryItem.LIB_ITEM:
+                case LibraryItem.STD_LIB_ITEM:
+                case LibraryItem.OPTION_ITEM:
+                    return item.getOption();
+                default:
+                    return ""; // NOI18N
+            }
+        }
+
+    }
 }

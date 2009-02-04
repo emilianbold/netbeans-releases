@@ -114,7 +114,7 @@ public class FromDBTest extends CRUDTest {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(FromDBTest.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(FromDBTest.class),
                 "testFromDB", //NOI18N
                 "testDeploy", //NOI18N
                 "testUndeploy").enableModules(".*").clusters(".*")); //NOI18N

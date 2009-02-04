@@ -713,7 +713,9 @@ abstract class Lookup implements ContextProvider {
                         try {
                             return service.cast(instance);
                         } catch (ClassCastException cce) {
-                            Logger.getLogger(Lookup.class.getName()).log(Level.WARNING, null, cce);
+                            Exceptions.printStackTrace(Exceptions.attachMessage(
+                                    cce,
+                                    "Can not cast instance "+instance+" registered in '"+folder+"' folder to "+service));
                             return null;
                         } finally {
                             listenOn(instance.getClass().getClassLoader());
