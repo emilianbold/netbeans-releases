@@ -13,6 +13,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -42,7 +43,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="jScrollPane1" alignment="0" pref="442" max="32767" attributes="0"/>
+                      <Component id="jScrollPane1" alignment="0" pref="547" max="32767" attributes="0"/>
                       <Component id="m_NavigateCheck" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="m_Status" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Group type="102" alignment="1" attributes="0">
@@ -50,16 +51,13 @@
                               <Group type="102" alignment="1" attributes="0">
                                   <Component id="findLabel" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="m_FindCombo" pref="379" max="32767" attributes="0"/>
+                                  <Component id="m_FindCombo" pref="463" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="1" attributes="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Group type="102" alignment="0" attributes="0">
                                           <Group type="103" groupAlignment="0" attributes="0">
-                                              <Group type="102" alignment="0" attributes="0">
-                                                  <EmptySpace max="-2" attributes="0"/>
-                                                  <Component id="m_WholeWordCheck" min="-2" max="-2" attributes="0"/>
-                                              </Group>
+                                              <Component id="m_WholeWordCheck" alignment="0" min="-2" max="-2" attributes="0"/>
                                               <Component id="m_MatchCaseCheck" alignment="0" min="-2" max="-2" attributes="0"/>
                                           </Group>
                                           <EmptySpace max="-2" attributes="0"/>
@@ -111,7 +109,7 @@
                               <Component id="jPanel3" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jScrollPane1" pref="205" max="32767" attributes="0"/>
+                          <Component id="jScrollPane1" pref="212" max="32767" attributes="0"/>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Component id="m_NavigateCheck" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
@@ -150,7 +148,7 @@
                       <Component id="m_FindButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="m_CloseButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="265" max="32767" attributes="0"/>
+                      <EmptySpace pref="268" max="32767" attributes="0"/>
                       <Component id="m_AssociateButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="m_AssociateAllButton" min="-2" max="-2" attributes="0"/>

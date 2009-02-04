@@ -75,7 +75,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
 
     public static GlassfishInstanceProvider getEe6() {
         String v3Root = System.getProperty("org.glassfish.v3ee6.installRoot");
-        if ("true".equals(System.getProperty("org.glassfish.v3.supportV3")) ||
+        if ("true".equals(System.getProperty("org.glassfish.v3.enableExperimentalFeatures")) ||
                (null != v3Root && v3Root.trim().length() > 0) ) {
             if (singletonEe6 == null) {
                 singletonEe6 = new GlassfishInstanceProvider("deployer:gfv3ee6", "/GlassFishEE6/Instances",
@@ -86,14 +86,14 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                         "http://serverplugins.netbeans.org/glassfishv3/ee6zipfilename.txt",
                         "last-v3ee6-install-root",
                         new String[] { "lib"+File.separator+"schemas"+File.separator+"web-app_3_0.xsd" },
-                        new String[0]);
+                        new String[0], true);
             }
         }
         return singletonEe6;
     }
 
     public static GlassfishInstanceProvider getPrelude() {
-        if ("true".equals(System.getProperty("org.glassfish.v3.doNotSupportPrelude"))) {
+        if ("true".equals(System.getProperty("org.glassfish.v3.disablePreludeSupport"))) {
             return singleton;
         }
         if(singleton == null) {
@@ -104,7 +104,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                         "GlassFish_v3_Prelude", "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip",
                         "http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.txt",
                         "last-install-root", new String[0],
-                        new String[] { "lib"+File.separator+"schemas"+File.separator+"web-app_3_0.xsd" });
+                        new String[] { "lib"+File.separator+"schemas"+File.separator+"web-app_3_0.xsd" }, false);
         }
         return singleton;
     }
@@ -125,11 +125,12 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     private String installRootKey;
     private String[] requiredFiles;
     private String[] excludedFiles;
+    private boolean needsJdk6;
 
     private GlassfishInstanceProvider(String uriFragment, String instancesDirName, 
             String displayName, String propName, String defaultName, String personalName,
             String installName, String direct, String indirect, String prefKey,
-            String[] requiredFiles, String[] excludedFiles) {
+            String[] requiredFiles, String[] excludedFiles, boolean needsJdk6) {
         this.instancesDirName = instancesDirName;
         this.displayName = displayName;
         this.uriFragment = uriFragment;
@@ -142,6 +143,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         this.installRootKey = prefKey;
         this.requiredFiles = requiredFiles;
         this.excludedFiles = excludedFiles;
+        this.needsJdk6 = needsJdk6;
         try {
             registerDefaultInstance();
             loadServerInstances();
@@ -311,6 +313,10 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     // ------------------------------------------------------------------------
     Collection<GlassfishInstance> getInternalInstances() {
         return instanceMap.values();
+    }
+
+    boolean requiresJdk6OrHigher() {
+        return needsJdk6;
     }
     
     // ------------------------------------------------------------------------

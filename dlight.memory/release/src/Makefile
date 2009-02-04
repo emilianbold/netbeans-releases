@@ -88,6 +88,7 @@ endif
 
 PLATFORM-i386  :=  x86${PLATFORM_64}
 PLATFORM-i686  :=  x86${PLATFORM_64}
+PLATFORM-x86_64  :=  x86${PLATFORM_64}
 PLATFORM-sparc  :=  sparc${PLATFORM_64}
 ifeq (${UNAME_P}, unknown)
 	PLATFORM = ${PLATFORM-${UNAME_M}}
@@ -162,4 +163,5 @@ test:
 	@echo "SOEXT = [${SOEXT}]"
 	@echo "CFLAGS = [${CFLAGS}]"
 	@echo "LDFLAGS = [${LDFLAGS}]"
-	@echo "${LIB_NAME} = [${LIB_NAME}-${OSNAME}-${PLATFORM}.${SOEXT}]"
+	@echo "${LIB_NAME} = [${LIB_PATH}]"	
+	@echo "${APP_NAME} = [${APP_PATH}]"

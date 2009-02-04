@@ -62,6 +62,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.glassfish.common.nodes.Hk2InstanceNode;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.ui.InstanceCustomizer;
+import org.netbeans.modules.glassfish.common.ui.VmCustomizer;
 import org.netbeans.modules.glassfish.spi.CustomizerCookie;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModuleFactory;
@@ -285,12 +286,14 @@ public class GlassfishInstance implements ServerInstanceImplementation {
     
     public JComponent getCustomizer() {
         JPanel commonCustomizer = new InstanceCustomizer(commonSupport);
-        
+        JPanel vmCustomizer = new VmCustomizer(commonSupport);
+
         Collection<JPanel> pages = new LinkedList<JPanel>();
         Collection<? extends CustomizerCookie> lookupAll = lookup.lookupAll(CustomizerCookie.class);
         for(CustomizerCookie cookie : lookupAll) {
             pages.addAll(cookie.getCustomizerPages());
         }
+        pages.add(vmCustomizer);
 
         JTabbedPane tabbedPane = null;
         for(JPanel page : pages) {

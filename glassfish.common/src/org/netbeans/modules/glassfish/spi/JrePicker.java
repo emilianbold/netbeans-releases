@@ -37,17 +37,16 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.glassfish.javaee;
+package org.netbeans.modules.glassfish.spi;
 
-import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import javax.swing.JPanel;
 
 /**
- *
+ * Allow modules to override the default UI for the Java page of the v3 instance
+ * customizer.
+ * 
  * @author vkraemer
  */
-public class Ee6OptionalFactory extends Hk2OptionalFactory {
-
-    public Ee6OptionalFactory() {
-        super(Hk2DeploymentFactory.createEe6(), ServerUtilities.getEe6Utilities());
-    }
+public interface JrePicker {
+  JPanel component(GlassfishModule locationHolder);
 }
