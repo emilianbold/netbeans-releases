@@ -189,7 +189,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         if (prj != null) {
             ContainerClassPathModifier modifier = prj.getLookup().lookup(ContainerClassPathModifier.class);
             if (modifier != null) {
-                progressContributor.progress("Adding J2EE apis to project classpath.");
+                progressContributor.progress(NbBundle.getMessage(JavaPersistenceGenerator.class, "LBL_Progress_Adding_Classpath"));
                 //TODO not project directory, but source root.
                 modifier.extendClasspath(prj.getProjectDirectory(),
                         new String[] {
