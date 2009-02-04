@@ -50,6 +50,7 @@ import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.DebugFileCommand;
 import org.netbeans.modules.php.project.ui.actions.DownloadCommand;
 import org.netbeans.modules.php.project.ui.actions.RunFileCommand;
+import org.netbeans.modules.php.project.ui.actions.RunTestCommand;
 import org.netbeans.modules.php.project.ui.actions.UploadCommand;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
@@ -275,20 +276,19 @@ public class SrcNode extends FilterNode {
         }
 
         private Action[] getCommonActions() {
-            Action[] toAdd = null;
+            List<Action> toAdd = new ArrayList<Action>();
             if (CommandUtils.isPhpOrHtmlFile(getFileObject())) {
                 // not available for multiple selected nodes => create new instance every time
-                toAdd = new Action[] {
-                    null,
-                    ProjectSensitiveActions.projectCommandAction(RunFileCommand.ID, RunFileCommand.DISPLAY_NAME, null),
-                    ProjectSensitiveActions.projectCommandAction(DebugFileCommand.ID, DebugFileCommand.DISPLAY_NAME, null),
-                };
-            } else {
-                toAdd = new Action[0];
+                toAdd.add(null);
+                toAdd.add(ProjectSensitiveActions.projectCommandAction(RunFileCommand.ID, RunFileCommand.DISPLAY_NAME, null));
+                toAdd.add(ProjectSensitiveActions.projectCommandAction(DebugFileCommand.ID, DebugFileCommand.DISPLAY_NAME, null));
+                if (!isTest) {
+                    toAdd.add(ProjectSensitiveActions.projectCommandAction(RunTestCommand.ID, RunTestCommand.DISPLAY_NAME, null));
+                }
             }
 
-            List<Action> actions = new ArrayList<Action>(COMMON_ACTIONS.length + toAdd.length);
-            actions.addAll(Arrays.asList(toAdd));
+            List<Action> actions = new ArrayList<Action>(COMMON_ACTIONS.length + toAdd.size());
+            actions.addAll(toAdd);
             if (!isTest) {
                 actions.addAll(Arrays.asList(COMMON_ACTIONS));
             }
