@@ -57,7 +57,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
-import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ProjectHudsonJobCreator;
 import org.openide.DialogDescriptor;
@@ -67,7 +66,6 @@ import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.xml.XMLUtil;
@@ -105,10 +103,8 @@ public class CreateJob extends AbstractAction {
     }
 
     private void finalizeJob(ProjectHudsonJobCreator creator, String name) {
-        // XXX this would be a maven2-moduleset for Maven projects; must not create root element here! change API
-        Document doc = XMLUtil.createDocument("project", null, null, null); // NOI18N
         try {
-            creator.configure(doc);
+            Document doc = creator.configure();
             String createItemURL = instance.getUrl() + "createItem?name=" + URLEncoder.encode(name, "UTF-8"); // NOI18N
             HttpURLConnection conn = (HttpURLConnection) new URL(createItemURL).openConnection();
             conn.setDoOutput(true);
@@ -133,7 +129,7 @@ public class CreateJob extends AbstractAction {
         }
     }
 
-    @ServiceProvider(service=ProjectHudsonJobCreatorFactory.class)
+    @ServiceProvider(service=ProjectHudsonJobCreatorFactory.class, position=9999)
     public static class DummyJobCreator implements ProjectHudsonJobCreatorFactory {
         public ProjectHudsonJobCreator forProject(final Project project) {
             final File basedir = FileUtil.toFile(project.getProjectDirectory());
@@ -166,36 +162,18 @@ public class CreateJob extends AbstractAction {
                 public void removeChangeListener(ChangeListener listener) {
                     cs.removeChangeListener(listener);
                 }
-                public void configure(Document configXml) throws IOException {
-                    configXml.getDocumentElement().
-                            appendChild(configXml.createElement("builders")).
+                public Document configure() throws IOException {
+                    Document configXml = XMLUtil.createDocument("project", null, null, null);
+                    Element projectE = configXml.getDocumentElement();
+                    projectE.appendChild(configXml.createElement("builders")).
                             appendChild(configXml.createElement("hudson.tasks.Shell")).
                             appendChild(configXml.createElement("command")).
                             appendChild(configXml.createTextNode("echo 'XXX not yet implemented! Just for testing.'"));
                     for (String dummy : new String[] {"actions", "publishers", "buildWrappers"}) {
-                        configXml.getDocumentElement().
-                                appendChild(configXml.createElement(dummy));
+                        projectE.appendChild(configXml.createElement(dummy));
                     }
-                    Element scmE = (Element) configXml.getDocumentElement().
-                            appendChild(configXml.createElement("scm"));
-                    for (HudsonSCM scm : Lookup.getDefault().lookupAll(HudsonSCM.class)) {
-                        HudsonSCM.Configuration cfg = scm.forFolder(basedir);
-                        if (cfg != null) {
-                            cfg.configure(scmE);
-                            break;
-                        }
-                    }
-                }
-            };
-        }
-    }
-
-    @ServiceProvider(service=HudsonSCM.class, position=9999)
-    public static class NoSCM implements HudsonSCM {
-        public Configuration forFolder(File folder) {
-            return new Configuration() {
-                public void configure(Element configXmlSCM) {
-                    configXmlSCM.setAttribute("class", "hudson.scm.NullSCM");
+                    Helper.addSCM(basedir, configXml);
+                    return configXml;
                 }
             };
         }

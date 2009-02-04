@@ -65,14 +65,20 @@ public class HudsonSubversionSCM implements HudsonSCM {
             }
             final String urlS = url.toString();
             return new Configuration() {
-                public void configure(Element configXmlSCM) {
-                    Document doc = configXmlSCM.getOwnerDocument();
+                public void configure(Document doc) {
+                    Element root = doc.getDocumentElement();
+                    Element configXmlSCM = (Element) root.appendChild(doc.createElement("scm"));
                     configXmlSCM.setAttribute("class", "hudson.scm.SubversionSCM");
                     Element loc = (Element) configXmlSCM.appendChild(doc.createElement("locations")).
                             appendChild(doc.createElement("hudson.scm.SubversionSCM_-ModuleLocation"));
                     loc.appendChild(doc.createElement("remote")).appendChild(doc.createTextNode(urlS));
                     loc.appendChild(doc.createElement("local")).appendChild(doc.createTextNode(urlS.replaceFirst(".+/", "")));
                     configXmlSCM.appendChild(doc.createElement("useUpdate")).appendChild(doc.createTextNode("true"));
+                    root.appendChild(doc.createElement("triggers")). // XXX reuse existing <triggers> if found
+                            appendChild(doc.createElement("hudson.triggers.SCMTrigger")).
+                            appendChild(doc.createElement("spec")).
+                            // XXX pretty arbitrary but seems like a decent first guess
+                            appendChild(doc.createTextNode("@hourly"));
                 }
             };
         } catch (LocalSubversionException ex) {
