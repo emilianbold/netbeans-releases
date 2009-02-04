@@ -288,7 +288,7 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
         FileOutputStream fw = new FileOutputStream(tmpFile);
         try{
             URLConnection conn = url.openConnection();
-            conn.setReadTimeout(20000);
+            conn.setReadTimeout(200000);
             conn.setDoOutput(false);
             conn.setDoInput(true);
             conn.setRequestProperty("User-Agent", "NetBeans");      //NOI18N

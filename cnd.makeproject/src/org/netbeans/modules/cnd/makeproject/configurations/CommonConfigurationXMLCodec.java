@@ -74,18 +74,23 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
+ * V57 - NB 7.0
+ *   new attributs for ITEM_ELEMENT: <item path="../gcc/zlib/examples/gzlog.h" ex="true" tool="1">
+ * V56 - NB 7.0
+ *   Dont write ITEM_ELEMENT (item configuration) if default values
  * V55 - NB 7.0
  *   DISK_FOLDER_ELEMENT
  *   ITEM_NAME_ELEMENT
  * V54 - NB 7.0
  *   Qt settings are persisted:
  *   QT_ELEMENT
- *   QT_DESTDIR
- *   QT_TARGET
- *   QT_LIB_VERSION
+ *   QT_DESTDIR_ELEMENT
+ *   QT_TARGET_ELEMENT
+ *   QT_LIB_VERSION_ELEMENT
  *   QT_BUILD_MODE_ELEMENT
  *   QT_MODULES_ELEMENT
  *   QT_MOC_DIR_ELEMENT
+ *   QT_RCC_DIR_ELEMENT
  *   QT_UI_DIR_ELEMENT
  *   QT_DEFS_LIST_ELEMENT
  * V53 - NB 7.0
@@ -161,7 +166,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 55;
+    public final static int CURRENT_VERSION = 57;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -308,6 +313,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String QT_BUILD_MODE_ELEMENT = "buildMode"; // NOI18N
     protected final static String QT_MODULES_ELEMENT = "modules"; // NOI18N
     protected final static String QT_MOC_DIR_ELEMENT = "mocDir"; // NOI18N
+    protected final static String QT_RCC_DIR_ELEMENT = "rccDir"; // NOI18N
     protected final static String QT_UI_DIR_ELEMENT = "uiDir"; // NOI18N
     protected final static String QT_DEFS_LIST_ELEMENT = "defs"; // NOI18N
     private ConfigurationDescriptor projectDescriptor;
@@ -446,6 +452,9 @@ public abstract class CommonConfigurationXMLCodec
         xes.element(QT_MODULES_ELEMENT, qmake.getEnabledModules());
         if (qmake.getMocDir().getModified()) {
             xes.element(QT_MOC_DIR_ELEMENT, qmake.getMocDir().getValue());
+        }
+        if (qmake.getRccDir().getModified()) {
+            xes.element(QT_RCC_DIR_ELEMENT, qmake.getRccDir().getValue());
         }
         if (qmake.getUiDir().getModified()) {
             xes.element(QT_UI_DIR_ELEMENT, qmake.getUiDir().getValue());

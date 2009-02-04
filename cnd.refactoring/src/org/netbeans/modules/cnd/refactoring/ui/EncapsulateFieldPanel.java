@@ -899,7 +899,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
 
     private static boolean isConstant(Object value) {
         if (CsmKindUtilities.isCsmObject(value) && CsmKindUtilities.isVariable((CsmObject)value)) {
-            return false;
+            return GeneratorUtils.isConstant((CsmVariable)value);
         } else {
             return false;
         }
@@ -948,16 +948,16 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
             if (ai == null) {
                 throw new IllegalStateException();
             }
-            String cellEditorValue = ai == null ? null: ai.name;
+            String cellEditorValue = ai.name;
             return super.getTableCellEditorComponent(table, cellEditorValue, isSelected, row, column);
         }
 
         @Override
         public Object getCellEditorValue() {
             String cellEditorValue = (String) super.getCellEditorValue();
-            Object retVal;
+            AccessorInfo retVal;
             if (cellEditorValue == null || cellEditorValue.length() == 0) {
-                if (ai != null || (ai.name != null && ai.name.length() > 0)) {
+                if (ai != null) {
                     ai.name = null;
                     ai.accessor = null;
                     ai.accessorToolTip = null;
@@ -974,9 +974,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         
         private void computeNewValue() {
             AccessorInfo desc = ai;
-            if (desc == null) {
-                return;
-            }
+            assert desc != null;
             desc.setName(((String) super.getCellEditorValue()).trim());
         }
         

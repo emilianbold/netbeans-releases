@@ -550,6 +550,9 @@ import org.xml.sax.helpers.DefaultHandler;
                         element.setAttribute("name", descriptor.getName()); // NOI18N
                         element.setAttribute("display", descriptor.getDisplayName()); // NOI18N
                         element.setAttribute("family", unsplit(descriptor.getFamily())); // NOI18N
+                        if (descriptor.getQmakeSpec() != null) {
+                            element.setAttribute("qmakespec", descriptor.getQmakeSpec()); // NOI18N
+                        }
                         root.appendChild(element);
 
                         element = doc.createElement("platforms"); // NOI18N
@@ -1162,6 +1165,7 @@ import org.xml.sax.helpers.DefaultHandler;
         String commandFolderPattern;
         String commandFolderSuffix;
         String commandFolderPathPattern;
+        String qmakespec;
         Compiler c = new Compiler();
         Compiler cpp = new Compiler();
         Compiler fortran = new Compiler();
@@ -1667,6 +1671,7 @@ import org.xml.sax.helpers.DefaultHandler;
                 v.toolChainName = getValue(attributes, "name"); // NOI18N
                 v.toolChainDisplay = getValue(attributes, "display"); // NOI18N
                 v.family = getValue(attributes, "family"); // NOI18N
+                v.qmakespec = getValue(attributes, "qmakespec"); // NOI18N
                 return;
             } else if (path.endsWith(".platforms")) { // NOI18N
                 v.platforms = getValue(attributes, "stringvalue"); // NOI18N
@@ -2148,6 +2153,10 @@ import org.xml.sax.helpers.DefaultHandler;
 
         public String getCommandFolderPathPattern() {
             return v.commandFolderPathPattern;
+        }
+
+        public String getQmakeSpec() {
+            return v.qmakespec;
         }
 
         public CompilerDescriptor getCpp() {

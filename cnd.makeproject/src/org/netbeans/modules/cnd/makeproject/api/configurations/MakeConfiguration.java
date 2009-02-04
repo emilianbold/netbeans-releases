@@ -53,6 +53,8 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
@@ -241,7 +243,13 @@ public class MakeConfiguration extends Configuration {
     }
 
     public boolean isApplicationConfiguration() {
-        return getConfigurationType().getValue() == TYPE_APPLICATION;
+        switch (getConfigurationType().getValue()) {
+            case TYPE_APPLICATION:
+            case TYPE_QT_APPLICATION:
+                return true;
+            default:
+                return false;
+        }
     }
 
     public boolean isCompileConfiguration() {
@@ -249,7 +257,15 @@ public class MakeConfiguration extends Configuration {
     }
 
     public boolean isLibraryConfiguration() {
-        return getConfigurationType().getValue() == TYPE_DYNAMIC_LIB || getConfigurationType().getValue() == TYPE_STATIC_LIB;
+        switch (getConfigurationType().getValue()) {
+            case TYPE_DYNAMIC_LIB:
+            case TYPE_STATIC_LIB:
+            case TYPE_QT_DYNAMIC_LIB:
+            case TYPE_QT_STATIC_LIB:
+                return true;
+            default:
+                return false;
+        }
     }
 
     public boolean isLinkerConfiguration() {
@@ -261,7 +277,13 @@ public class MakeConfiguration extends Configuration {
     }
 
     public boolean isDynamicLibraryConfiguration() {
-        return getConfigurationType().getValue() == TYPE_DYNAMIC_LIB;
+        switch (getConfigurationType().getValue()) {
+            case TYPE_DYNAMIC_LIB:
+            case TYPE_QT_DYNAMIC_LIB:
+                return true;
+            default:
+                return false;
+        }
     }
 
     public boolean isArchiverConfiguration() {
@@ -760,7 +782,7 @@ public class MakeConfiguration extends Configuration {
     }
 
     public boolean hasDebugger() {
-        return DefaultProjectActionHandler.getInstance().getCustomDebugActionHandlerProvider(this) != null;
+        return ProjectActionSupport.getInstance().canHandle(this, ProjectActionEvent.Type.DEBUG);
     }
 
     public String expandMacros(String val) {

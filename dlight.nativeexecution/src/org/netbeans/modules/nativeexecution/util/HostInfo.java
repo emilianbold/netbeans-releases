@@ -1,22 +1,30 @@
 package org.netbeans.modules.nativeexecution.util;
 
 import java.io.CharArrayWriter;
-import org.netbeans.modules.nativeexecution.api.support.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeTask;
 import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.NativeTaskConfig;
+import org.netbeans.modules.nativeexecution.api.support.ConnectionManager;
+import org.netbeans.modules.nativeexecution.support.InputRedirectorFactory;
 import org.openide.util.Exceptions;
+import org.openide.windows.InputOutput;
 
 /**
  * Utility class that provides information about particual host.
@@ -34,6 +42,7 @@ public final class HostInfo {
             Collections.synchronizedMap(new WeakHashMap<String, String>());
     private static final String cmd_uname = "/bin/uname"; // NOI18N
     private static final String cmd_sh = "/bin/sh"; // NOI18N
+    private static final String cmd_test = "/bin/test"; // NOI18N
 
 
     static {
@@ -108,14 +117,15 @@ public final class HostInfo {
                 throw new HostNotConnectedException();
             }
 
-            NativeTask task = new NativeTask(execEnv, "test", // NOI18N
-                    new String[]{"-f", fname}); // NOI18N
-            task.submit(true, false);
+            NativeTaskConfig ntc = new NativeTaskConfig(execEnv, cmd_test);
+            ntc = ntc.setArguments("-f", fname); // NOI18N
+
+            NativeProcessBuilder npb = new NativeProcessBuilder(ntc, null);
 
             try {
-                fileExists = task.get() == 0;
-            } catch (InterruptedException ex) {
-            } catch (ExecutionException ex) {
+                fileExists = npb.call().exitValue() == 0;
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
 
@@ -147,16 +157,21 @@ public final class HostInfo {
         }
 
         CharArrayWriter taskOutput = new CharArrayWriter();
-        NativeTask task = new NativeTask(execEnv, cmd_uname,
-                new String[]{"-s"}); // NOI18N
-        task.redirectOutTo(taskOutput);
-        task.submit(true, false);
+        NativeTaskConfig ntc = new NativeTaskConfig(execEnv, cmd_uname);
+        ntc = ntc.setArguments("-s"); // NOI18N
+        ExecutionDescriptor descriptor =
+                new ExecutionDescriptor().outProcessorFactory(
+                new InputRedirectorFactory(taskOutput));
+
+        ExecutionService execService = ExecutionService.newService(
+                new NativeProcessBuilder(ntc, null), descriptor, ""); // NOI18N
+
         int result = -1;
 
         String error = null;
 
         try {
-            result = task.get();
+            result = execService.run().get().intValue();
         } catch (InterruptedException ex) {
             error = ex.getMessage();
         } catch (ExecutionException ex) {
@@ -201,19 +216,30 @@ public final class HostInfo {
             return platformPathsHash.get(key);
         }
 
-        CharArrayWriter taskOutput = new CharArrayWriter();
-        NativeTask task = new NativeTask(execEnv, cmd_sh, new String[]{
-                    "-c", "\"" + // NOI18N
-                    cmd_uname + " -s; " + // NOI18N
-                    cmd_uname + " -p; " + // NOI18N
-                    cmd_uname + " -m\""}); // NOI18N
-        task.redirectOutTo(taskOutput);
-        task.submit(true, false);
+        NativeTaskConfig ntc =
+                new NativeTaskConfig(execEnv, cmd_sh).setArguments(
+                "-c", "\"" + // NOI18N
+                cmd_uname + " -s; " + // NOI18N
+                cmd_uname + " -p; " + // NOI18N
+                cmd_uname + " -m\"");
+
+        final CharArrayWriter taskOutput = new CharArrayWriter();
+
+        NativeProcessBuilder npb = new NativeProcessBuilder(ntc, null);
+
+        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
+                InputOutput.NULL).outProcessorFactory(
+                new InputRedirectorFactory(taskOutput));
+
+        ExecutionService execService = ExecutionService.newService(
+                npb, descriptor, "getPlatformPath"); // NOI18N
+
+        Future<Integer> fr = execService.run();
 
         int result = -1;
 
         try {
-            result = task.get();
+            result = fr.get();
         } catch (InterruptedException ex) {
         } catch (ExecutionException ex) {
         }
@@ -225,7 +251,7 @@ public final class HostInfo {
         String[] out = taskOutput.toString().split("\n"); // NOI18N
 
         if (out.length != 3) {
-            return "UNKNOWN"; // NOI18N
+            return "UNKNOWN (output is " + Arrays.toString(out) + ")"; // NOI18N
         }
 
         String osType = out[0];
@@ -246,7 +272,6 @@ public final class HostInfo {
 
         return platformPath;
     }
-
     /**
      * Tests whether the OS, that is ran in this execution environment, is Unix
      * or not.
@@ -254,9 +279,9 @@ public final class HostInfo {
      * @return true if execEnv refers to a host that runs Solaris or Linux.
      * @throws HostNotConnectedException if host is not connected yet.
      */
-    public static boolean isUnix(ExecutionEnvironment execEnv)
-            throws HostNotConnectedException {
-        String os = getOS(execEnv);
-        return "SunOS".equals(os) || "Linux".equals(os); // NOI18N
-    }
+//    public static boolean isUnix(ExecutionEnvironment execEnv)
+//            throws HostNotConnectedException {
+//        String os = getOS(execEnv);
+//        return "SunOS".equals(os) || "Linux".equals(os); // NOI18N
+//    }
 }

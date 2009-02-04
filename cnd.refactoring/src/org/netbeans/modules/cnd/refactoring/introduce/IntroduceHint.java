@@ -309,11 +309,11 @@ public class IntroduceHint /*implements CancellableTask<CompilationInfo>*/ {
 //    }
 
     static List<ErrorDescription> computeError(CsmContext info, Map<IntroduceKind, Fix> fixesMap, Map<IntroduceKind, String> errorMessage, AtomicBoolean cancel) {
-        int start = info.getStartOffset();
-        int end = info.getEndOffset();
+//        int start = info.getStartOffset();
+//        int end = info.getEndOffset();
         List<ErrorDescription> hints = new LinkedList<ErrorDescription>();
-        List<Fix> fixes = new LinkedList<Fix>();
-        CsmObject resolved = validateSelection(info, start, end);
+//        List<Fix> fixes = new LinkedList<Fix>();
+//        CsmObject resolved = validateSelection(info, start, end);
 
 //        if (resolved != null) {
 //            TreePathHandle h = TreePathHandle.create(resolved, info);

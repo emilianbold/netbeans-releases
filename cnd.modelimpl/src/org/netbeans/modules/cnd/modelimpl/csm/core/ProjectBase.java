@@ -1741,6 +1741,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
             ProjectSettingsValidator validator = new ProjectSettingsValidator(this);
             validator.storeSettings();
+            getUnresolved().dispose();
             RepositoryUtils.closeUnit(getUID(), getRequiredUnits(), cleanPersistent);
 
             platformProject = null;

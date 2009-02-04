@@ -38,9 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution.api;
 
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.nativeexecution.util.HostInfo;
-import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 
 /**
  * Configuration of environment for
@@ -84,8 +82,8 @@ final public class ExecutionEnvironment {
      * @param sshPort port to be used to establish ssh connection.
      */
     public ExecutionEnvironment(
-            @NullAllowed final String user,
-            @NullAllowed final String host,
+            final String user,
+            final String host,
             final int sshPort) {
         if (user == null) {
             this.user = System.getProperty("user.name"); // NOI18N
@@ -205,15 +203,15 @@ final public class ExecutionEnvironment {
         return hash;
     }
 
-    /**
-     * Returns OS name that is run on the host, reffered by this execution
-     * environment.
-     * @return String that represents OS name
-     * @throws HostNotConnectedException if the host, reffered by this execution
-     * environment is not connected yet.
-     * @see HostInfo
-     */
-    public String getOS() throws HostNotConnectedException {
-        return HostInfo.getOS(this);
-    }
+//    /**
+//     * Returns OS name that is run on the host, reffered by this execution
+//     * environment.
+//     * @return String that represents OS name
+//     * @throws HostNotConnectedException if the host, reffered by this execution
+//     * environment is not connected yet.
+//     * @see HostInfo
+//     */
+//    public String getOS() throws HostNotConnectedException {
+//        return HostInfo.getOS(this);
+//    }
 }

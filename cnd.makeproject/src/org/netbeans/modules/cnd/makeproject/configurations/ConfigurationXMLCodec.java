@@ -224,6 +224,12 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 ItemConfiguration itemConfiguration = new ItemConfiguration(currentConf, item);
                 currentItemConfiguration = itemConfiguration;
                 currentConf.addAuxObject(itemConfiguration);
+                if (descriptorVersion >= 57) {
+                    String excluded = atts.getValue(ItemXMLCodec.EXCLUDED_ATTR);
+                    int tool = new Integer(atts.getValue(ItemXMLCodec.TOOL_ATTR)).intValue();
+                    itemConfiguration.getExcluded().setValue(excluded.equals(TRUE_VALUE));
+                    itemConfiguration.setTool(tool);
+                }
             } else {
                 // FIXUP
             }
@@ -765,6 +771,10 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(QT_MOC_DIR_ELEMENT)) {
             if (currentQmakeConfiguration != null) {
                 currentQmakeConfiguration.getMocDir().setValue(getString(currentText));
+            }
+        } else if (element.equals(QT_RCC_DIR_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.getRccDir().setValue(getString(currentText));
             }
         } else if (element.equals(QT_UI_DIR_ELEMENT)) {
             if (currentQmakeConfiguration != null) {
