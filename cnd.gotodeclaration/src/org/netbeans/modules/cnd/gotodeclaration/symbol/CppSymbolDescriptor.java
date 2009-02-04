@@ -105,10 +105,10 @@ public class CppSymbolDescriptor extends SymbolDescriptor {
                     ownerName = fileName;
                 }
             } else {
-                throw new IllegalArgumentException("should be either CsmFile or CsmQualifiedNamedElement, in fact " + (csmObj == null ? "null" : csmObj.getClass().getName())); //NOI18N
+                throw new IllegalArgumentException("should be either CsmFile or CsmQualifiedNamedElement, in fact " + csmObj.getClass().getName()); //NOI18N
             }
         } else {
-            throw new IllegalArgumentException("should be either CsmMacro or CsmDeclaration, in fact " + (csmObj == null ? "null" : csmObj.getClass().getName())); //NOI18N
+            throw new IllegalArgumentException("should be either CsmMacro or CsmDeclaration, in fact " + csmObj.getClass().getName()); //NOI18N
         }
         icon = CsmImageLoader.getIcon(csmObj);
     }
