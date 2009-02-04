@@ -157,7 +157,7 @@ public final class Log extends Handler {
      * the use of additional log messages inserted into the code.
      * <p>
      * The best example showing usage of this method is real life test.
-     * Read <a href="http://www.netbeans.org/source/browse/xtest/nbjunit/test/unit/src/org/netbeans/junit/FlowControlTest.java">FlowControlTest.java</a> to know everything
+     * Read <a href="http://hg.netbeans.org/main/raw-file/tip/nbjunit/test/unit/src/org/netbeans/junit/FlowControlTest.java">FlowControlTest.java</a> to know everything
      * about the expected usage of this method.
      * <p>
      * The method does listen on output send to a logger <code>listenTo</code>
