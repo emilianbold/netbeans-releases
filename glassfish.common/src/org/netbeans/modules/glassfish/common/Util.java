@@ -37,30 +37,36 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.glassfish.javaee;
+package org.netbeans.modules.glassfish.common;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import javax.enterprise.deploy.shared.ModuleType;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.openide.util.NbBundle;
+import java.io.File;
+import java.io.FilenameFilter;
 
 /**
  *
  * @author vkraemer
  */
-public class Ee6JavaEEPlatformFactory extends Hk2JavaEEPlatformFactory {
+public class Util {
 
-    public Ee6JavaEEPlatformFactory() {
-        super(
-            NbBundle.getMessage(Hk2JavaEEPlatformFactory.class, "MSG_MyServerPlatform"),
-            null, // JavaPlatformManager.getDefault().getDefaultPlatform();
-            NbBundle.getMessage(Hk2JavaEEPlatformFactory.class, "LBL_V3_LIBRARY"),
-            "J2EE/DeploymentPlugins/gfv3ee6/Lookup",
-            new HashSet(Arrays.asList(new String[] {"1.6"})),
-            new HashSet(Arrays.asList(new ModuleType[] { ModuleType.WAR,
-                ModuleType.CAR, ModuleType.EAR, ModuleType.EJB, ModuleType.RAR })),
-            new HashSet(Arrays.asList(new String[] {J2eeModule.J2EE_13,
-            J2eeModule.J2EE_14, J2eeModule.JAVA_EE_5})));
+    private Util() {
     }
+
+    private static String INDICATOR = File.separatorChar == '/' ? "jrunscript" : "jrunscript.exe";
+    private static FilenameFilter JDK6_DETECTION_FILTER = new FilenameFilter() {
+            public boolean accept(File arg0, String arg1) {
+                if (arg1.equalsIgnoreCase(INDICATOR)) {
+                    return true;
+                }
+                return false;
+            }
+    };
+
+    public static boolean appearsToBeJdk6OrBetter(File javaExecutable) {
+        File dir = javaExecutable.getParentFile();
+        if (dir.list(Util.JDK6_DETECTION_FILTER).length < 1) {
+            return false;
+        }
+        return true;
+    }
+
 }

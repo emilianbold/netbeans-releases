@@ -70,10 +70,13 @@ public interface GlassfishModule {
     public static final String JRUBY_HOME = "jruby.home"; // NOI18N
     public static final String DOMAINS_FOLDER_ATTR = "domainsfolder"; // NOI18N
     public static final String DOMAIN_NAME_ATTR = "domainname";
+    public static final String JAVA_PLATFORM_ATTR = "java.platform";
     public static final String HTTP_MONITOR_FLAG = "httpMonitorOn";
     public static final String DRIVER_DEPLOY_FLAG = "driverDeployOn";
     
+    public static final String USE_SHARED_MEM_ATTR = "use.shared.mem"; // NOI18N
     public static final String DEBUG_PORT = "debugPort"; // NOI18N
+    public static final String DEBUG_MEM = "debugMem"; // NOI18N
     public static final String JVM_MODE = "jvmMode"; // NOI18N
     public static final String NORMAL_MODE = "normalMode"; // NOI18N
     public static final String DEBUG_MODE = "debugMode"; // NOI18N
