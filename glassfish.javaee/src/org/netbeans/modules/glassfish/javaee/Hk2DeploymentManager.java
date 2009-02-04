@@ -39,13 +39,18 @@
  * made subject to such option by the copyright holder.
  */
 
-
 package org.netbeans.modules.glassfish.javaee;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.model.DeployableObject;
@@ -59,8 +64,11 @@ import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedException;
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
+import javax.enterprise.deploy.spi.status.ProgressEvent;
+import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.glassfish.eecommon.api.HttpMonitorHelper;
 import org.netbeans.modules.glassfish.javaee.ide.MonitorProgressObject;
 import org.netbeans.modules.glassfish.javaee.ide.DummyProgressObject;
 import org.netbeans.modules.glassfish.javaee.ide.Hk2PluginProperties;
@@ -69,8 +77,13 @@ import org.netbeans.modules.glassfish.javaee.ide.Hk2TargetModuleID;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.glassfish.spi.AppDesc;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
+import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.xml.sax.SAXException;
 
 
 /**
@@ -350,7 +363,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
             }
         }
         return moduleList.size() > 0 ? moduleList.toArray(new TargetModuleID[moduleList.size()]) :
-+            new TargetModuleID[0];
+            new TargetModuleID[0];
     }
 
     /**
