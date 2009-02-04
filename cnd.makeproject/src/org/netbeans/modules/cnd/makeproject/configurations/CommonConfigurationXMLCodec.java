@@ -74,6 +74,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
+ * V57 - NB 7.0
+ *   new attributs for ITEM_ELEMENT: <item path="../gcc/zlib/examples/gzlog.h" ex="true" tool="1">
  * V56 - NB 7.0
  *   Dont write ITEM_ELEMENT (item configuration) if default values
  * V55 - NB 7.0
@@ -160,7 +162,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 56;
+    public final static int CURRENT_VERSION = 57;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N

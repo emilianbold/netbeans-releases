@@ -54,6 +54,8 @@ public class ItemXMLCodec extends XMLDecoder implements XMLEncoder {
     private ItemConfiguration item;
     public final static String ITEM_ELEMENT = "item"; // NOI18N
     public final static String PATH_ATTR = "path"; // NOI18N
+    public final static String EXCLUDED_ATTR = "ex"; // NOI18N
+    public final static String TOOL_ATTR = "tool"; // NOI18N
     public final static String EXCLUDED_ELEMENT = "excluded"; // FIXUP: < 7 // NOI18N
     public final static String TOOL_ELEMENT = "tool"; // FIXUP: < 7 // NOI18N
     public final static String ITEM_EXCLUDED_ELEMENT = "itemExcluded"; // NOI18N
@@ -96,11 +98,15 @@ public class ItemXMLCodec extends XMLDecoder implements XMLEncoder {
             return;
         }
 
-        xes.elementOpen(ITEM_ELEMENT, new AttrValuePair[]{new AttrValuePair(PATH_ATTR, item.getItem().getPath())});
-        if (item.getExcluded().getModified()) {
-            xes.element(ITEM_EXCLUDED_ELEMENT, "" + item.getExcluded().getValue()); // NOI18N
-        }
-        xes.element(ITEM_TOOL_ELEMENT, "" + item.getTool()); // NOI18N
+        xes.elementOpen(ITEM_ELEMENT, new AttrValuePair[]{
+            new AttrValuePair(PATH_ATTR, item.getItem().getPath()),
+            new AttrValuePair(EXCLUDED_ATTR, "" + item.getExcluded().getValue()),
+            new AttrValuePair(TOOL_ATTR, "" + item.getTool()),
+        });
+//        if (item.getExcluded().getModified()) {
+//            xes.element(ITEM_EXCLUDED_ELEMENT, "" + item.getExcluded().getValue()); // NOI18N
+//        }
+//        xes.element(ITEM_TOOL_ELEMENT, "" + item.getTool()); // NOI18N
         if (item.getTool() == Tool.CCompiler) {
             CommonConfigurationXMLCodec.writeCCompilerConfiguration(xes, item.getCCompilerConfiguration());
         } else if (item.getTool() == Tool.CCCompiler) {
