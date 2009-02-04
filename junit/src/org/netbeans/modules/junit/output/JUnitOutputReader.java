@@ -1001,7 +1001,7 @@ final class JUnitOutputReader {
         }
         executedSuitesCount++;
 
-        updateProgress();
+//        updateProgress();
         manager.displayReport(session, sessionType, report, taskFinished, statistics);
     }
     
