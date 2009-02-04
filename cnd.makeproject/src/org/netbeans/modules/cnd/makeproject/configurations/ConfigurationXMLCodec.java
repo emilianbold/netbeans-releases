@@ -772,6 +772,10 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (currentQmakeConfiguration != null) {
                 currentQmakeConfiguration.getMocDir().setValue(getString(currentText));
             }
+        } else if (element.equals(QT_RCC_DIR_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.getRccDir().setValue(getString(currentText));
+            }
         } else if (element.equals(QT_UI_DIR_ELEMENT)) {
             if (currentQmakeConfiguration != null) {
                 currentQmakeConfiguration.getUiDir().setValue(getString(currentText));
