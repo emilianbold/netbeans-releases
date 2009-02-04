@@ -48,8 +48,10 @@ import org.netbeans.jellytools.NewWebProjectServerSettingsStepOperator;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -87,7 +89,7 @@ public class WebVWJSFProjectValidation extends WebProjectValidationEE5 {
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebVWJSFProjectValidation.class);
         conf = addServerTests(Server.GLASSFISH, conf, 
-        "testPreconditions", "testNewVWJSFWebProject", "testRedeployProject", 
+        "testPreconditions", "testNewVWJSFWebProject", "testRedeployProject",
                 "testCleanAndBuildProject", "testCompileAllJSP", "testStopServer");
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);        
@@ -144,6 +146,14 @@ public class WebVWJSFProjectValidation extends WebProjectValidationEE5 {
         serverStep.next();
 
         NewWebProjectVWJSFFrameworkStepOperator frameworkStep = new NewWebProjectVWJSFFrameworkStepOperator();
+        // set VW JSF framework and download it from update center
+        frameworkStep.tabSelectTheFrameworksYouWantToUseInYourWebApplication().selectCell(0, 0);
+        new JButtonOperator(frameworkStep, "Download & Install").doClick();
+        try {
+            Thread.sleep(180000);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         assertTrue("VW JSF framework not present!", frameworkStep.setVWJSFFrameworkCheckbox());
         frameworkStep.txtDefaultJavaPackage().setText("");
         frameworkStep.txtDefaultJavaPackage().typeText("gggg*");

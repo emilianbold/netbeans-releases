@@ -207,7 +207,7 @@ import org.openide.loaders.DataObjectNotFoundException;
     }
 
     private static String getFileName(String className) {
-        return className.toLowerCase();
+        return className;
     }
 
     public String getFormName() {

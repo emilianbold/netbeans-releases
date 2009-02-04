@@ -217,15 +217,14 @@ public final class Snapshot {
      * @param snapshotOffset The offset in this snapshot.
      *
      * @return The offset in the original source or <code>-1</code>.
-     * @throws IndexOutOfBoundsException if the index argument is negative or not less than the length of this string
      */
     public int getOriginalOffset (
         int snapshotOffset
     ) {
         if (snapshotOffset < 0)
-            throw new IndexOutOfBoundsException (snapshotOffset + " < 0");
+            return -1;
         if (snapshotOffset > getText ().length ())
-            throw new IndexOutOfBoundsException (snapshotOffset + " > " + getText ().length ());
+            return -1;
 
         int low = 0;
         int high = currentToOriginal.length - 1;

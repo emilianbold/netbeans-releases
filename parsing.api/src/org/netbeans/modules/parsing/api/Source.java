@@ -220,7 +220,32 @@ public final class Source {
     // XXX: maybe we should add 'boolean forceOpen' parameter and call
     // editorCookie.openDocument() if neccessary
     public Document getDocument (boolean forceOpen) {
-        return _getDocument (forceOpen);
+        if (document != null) return document;
+        EditorCookie ec = null;
+
+        try {
+            DataObject dataObject = DataObject.find (fileObject);
+            ec = dataObject.getLookup ().lookup (EditorCookie.class);
+        } catch (DataObjectNotFoundException ex) {
+            //DataobjectNotFoundException may happen in case of deleting opened file
+            //handled by returning null
+        }
+
+        if (ec == null) return null;
+        Document doc = ec.getDocument ();
+        if (doc == null && forceOpen) {
+            try {
+                try {
+                    doc = ec.openDocument ();
+                } catch (UserQuestionException uqe) {
+                    uqe.confirmed ();
+                    doc = ec.openDocument ();
+                }
+            } catch (IOException ioe) {
+                LOG.log (Level.WARNING, null, ioe);
+            }
+        }
+        return doc;
     }
     
     /**
@@ -251,7 +276,7 @@ public final class Source {
      */
     public Snapshot createSnapshot () {
         final String [] text = new String [] {""}; //NOI18N
-        Document doc = _getDocument (false);
+        Document doc = getDocument (false);
         if (doc == null) {
             EditorKit kit = CloneableEditorSupport.getEditorKit (mimeType);
             Document customDoc = kit.createDefaultDocument ();
@@ -360,42 +385,6 @@ public final class Source {
 
             return source;
         }
-    }
-
-    private Document _getDocument(boolean forceOpen) {
-        Document doc;
-        synchronized (this) {
-            doc = document;
-        }
-
-        if (doc == null) {
-            EditorCookie ec = null;
-
-            try {
-                DataObject dataObject = DataObject.find(fileObject);
-                ec = dataObject.getLookup().lookup(EditorCookie.class);
-            } catch (DataObjectNotFoundException ex) {
-                //DataobjectNotFoundException may happen in case of deleting opened file
-                //handled by returning null
-            }
-
-            if (ec != null) {
-                doc = ec.getDocument();
-                if (doc == null && forceOpen) {
-                    try {
-                        try {
-                            doc = ec.openDocument();
-                        } catch (UserQuestionException uqe) {
-                            uqe.confirmed();
-                            doc = ec.openDocument();
-                        }
-                    } catch (IOException ioe) {
-                        LOG.log(Level.WARNING, null, ioe);
-                    }
-                }
-            }
-        }
-        return doc;
     }
 
     private void assignListeners () {

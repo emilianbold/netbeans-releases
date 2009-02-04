@@ -15,16 +15,16 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="coordPanel" alignment="1" max="32767" attributes="0"/>
           <Component id="tabPane" alignment="0" pref="456" max="32767" attributes="0"/>
+          <Component id="coordPanel" alignment="1" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="1" attributes="0">
-              <Component id="coordPanel" pref="118" max="32767" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="tabPane" min="-2" pref="309" max="-2" attributes="0"/>
+          <Group type="102" attributes="0">
+              <Component id="coordPanel" min="-2" pref="125" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="tabPane" pref="311" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -210,7 +210,7 @@
                           <Component id="resultsLabel" min="-2" max="-2" attributes="1"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="resultsPanel" pref="139" max="32767" attributes="2"/>
+                      <Component id="resultsPanel" pref="141" max="32767" attributes="2"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -322,7 +322,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="artifactsLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="artifactPanel" pref="199" max="32767" attributes="0"/>
+                      <Component id="artifactPanel" pref="201" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
