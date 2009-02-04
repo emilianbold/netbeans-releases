@@ -320,7 +320,7 @@ public class AutoupdateInfoParser extends DefaultHandler {
         public UpdateItem createUpdateItem () {
             URL distributionUrl = null;
             try {
-                distributionUrl = nbmFile.toURL (); // nbm as a source
+                distributionUrl = nbmFile.toURI().toURL (); // nbm as a source
             } catch (MalformedURLException ex) {
                 ERR.log (Level.INFO, null, ex);
             }
