@@ -254,12 +254,14 @@ public abstract class CsmFileTaskFactory {
                 Document doc2 = (Document) doc.getProperty(Document.class);
                 if (doc2 != null) {
                     FileObject fobj2 = CsmUtilities.getFileObject(doc2);
-                    PhaseRunner task = createTask(fobj2);
-                    TaskData data = new TaskData(task, getCsmFile(fobj2, false));
-                    doc2.putProperty(USE_OWN_CARET_POSITION, false);
-                    doc.putProperty(USE_OWN_CARET_POSITION, true);
-                    if (data != null) {
-                        post(data, fobj2, phase, delay);
+                    if (fobj2 != null) {
+                        PhaseRunner task = createTask(fobj2);
+                        TaskData data = new TaskData(task, getCsmFile(fobj2, false));
+                        doc2.putProperty(USE_OWN_CARET_POSITION, false);
+                        doc.putProperty(USE_OWN_CARET_POSITION, true);
+                        if (data != null) {
+                            post(data, fobj2, phase, delay);
+                        }
                     }
                 }
             }
