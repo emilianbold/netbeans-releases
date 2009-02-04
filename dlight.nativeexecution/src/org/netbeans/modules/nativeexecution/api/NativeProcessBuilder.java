@@ -44,7 +44,7 @@ import java.util.concurrent.Callable;
 import org.netbeans.modules.nativeexecution.access.ExecutionControlAccessor;
 import org.netbeans.modules.nativeexecution.support.RemoteNativeProcess;
 import org.netbeans.modules.nativeexecution.access.NativeTaskConfigAccessor;
-import org.netbeans.modules.nativeexecution.support.TerminalLocalNativeProcess;
+//import org.netbeans.modules.nativeexecution.support.TerminalLocalNativeProcess;
 
 /**
  *
@@ -75,7 +75,7 @@ public class NativeProcessBuilder implements Callable<Process> {
             process = new RemoteNativeProcess(config, executionControl);
         } else {
             if (ctrlInfo.getUseTerminal(executionControl) == true) {
-                process = new TerminalLocalNativeProcess(config, executionControl);
+//                process = new TerminalLocalNativeProcess(config, executionControl);
             } else {
                 process = new LocalNativeProcess(config, executionControl);
             }
