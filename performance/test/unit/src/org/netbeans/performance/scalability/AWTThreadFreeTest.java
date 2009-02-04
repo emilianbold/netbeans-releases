@@ -145,6 +145,7 @@ public class AWTThreadFreeTest extends NbTestCase {
                     sb.delete(0, 5000);
                 }
             }
+            sb.append("\nThere was ").append(traces.size()).append(" stacktraces\n");
 
             try {
                 if (dump != null) {
@@ -155,7 +156,7 @@ public class AWTThreadFreeTest extends NbTestCase {
                     for (StackTraceElement[] arr : traces) {
                         Map<Thread,StackTraceElement[]> map = Collections.singletonMap(awt, arr);
                         callMethod(builder, "addStacktrace", map, time);
-                        time += 10L;
+                        time += 10L * 1000 * 1000; // nano seconds
                     }
                     Object snapshot = callMethod(builder, "createSnapshot", base, time);
                     Class<?> loaded = Class.forName("org.netbeans.modules.profiler.LoadedSnapshot");

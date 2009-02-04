@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,36 +37,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.glassfish.javaee;
+package org.netbeans.modules.autoupdate.services;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import javax.enterprise.deploy.shared.ModuleType;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.openide.util.NbBundle;
+import java.io.File;
+import org.netbeans.api.autoupdate.UpdateUnit;
 
 /**
  *
- * @author vkraemer
+ * @author Jaroslav Tulach
  */
-public class Ee6JavaEEPlatformFactory extends Hk2JavaEEPlatformFactory {
+public class InstallHiddenModuleTest extends OperationsTestImpl {
 
-    public Ee6JavaEEPlatformFactory() {
-        super(
-            NbBundle.getMessage(Hk2JavaEEPlatformFactory.class, "MSG_MyServerPlatform"),
-            null, // JavaPlatformManager.getDefault().getDefaultPlatform();
-            NbBundle.getMessage(Hk2JavaEEPlatformFactory.class, "LBL_V3_LIBRARY"),
-            "J2EE/DeploymentPlugins/gfv3ee6/Lookup",
-            new HashSet(Arrays.asList(new String[] {"1.6"})),
-            new HashSet(Arrays.asList(new ModuleType[] { ModuleType.WAR,
-                ModuleType.CAR, ModuleType.EAR, ModuleType.EJB, ModuleType.RAR })),
-            new HashSet(Arrays.asList(new String[] {J2eeModule.J2EE_13,
-            J2eeModule.J2EE_14, J2eeModule.JAVA_EE_5})));
+    public InstallHiddenModuleTest(String testName) {
+        super(testName);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        clearWorkDir();
+        super.setUp();        
+        System.setProperty("netbeans.dirs", getWorkDirPath());
+        String udp = System.getProperty("netbeans.user");
+        assertNotNull("User dir is provided", udp);
+        File ud = new File(udp);
+        File hidden = new File(new File(new File(ud, "config"), "Modules"),
+            moduleCodeNameBaseForTest().replace('.', '-') + ".xml_hidden"
+        );
+        hidden.getParentFile().mkdirs();
+        hidden.createNewFile();
+    }
+
+    protected String moduleCodeNameBaseForTest() {
+        return "com.sun.testmodule.cluster"; //NOI18N
+    }
+
+    public void testSelf() throws Exception {
+        UpdateUnit install = UpdateManagerImpl.getInstance().getUpdateUnit(moduleCodeNameBaseForTest());
+        assertNotNull("There is an NBM to install", install);
+        installModule(install, null);
     }
 }
