@@ -150,13 +150,24 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
                                 showRevisionDiff(r1, onSelectionshowLastDifference);
                             }
                         } else if (nodes.length == 2) {
-                            RepositoryRevision.Event r2 = (RepositoryRevision.Event) nodes[1].getLookup().lookup(RepositoryRevision.Event.class);
-                            if (r2.getFile() == null || !r2.getFile().equals(r1.getFile())) {
+                            RepositoryRevision.Event revOlder = null;
+                            if (container1 != null) {
+                                /**
+                                 * second repository revision is acquired from a container, not through a Lookup as before,
+                                 * since only two containers are present in the lookup
+                                 */
+                                RepositoryRevision container2 = nodes[1].getLookup().lookup(RepositoryRevision.class);
+                                r1 = getEventForRoots(container1);
+                                revOlder = getEventForRoots(container2);
+                            } else {
+                                revOlder = (RepositoryRevision.Event) nodes[1].getLookup().lookup(RepositoryRevision.Event.class);
+                            }
+                            if (r1 == null || revOlder == null || revOlder.getFile() == null || !revOlder.getFile().equals(r1.getFile())) {
                                 throw new Exception();
                             }
-                            long revision2 = r1.getLogInfoHeader().getLog().getRevision().getNumber();
-                            long revision1 = r2.getLogInfoHeader().getLog().getRevision().getNumber();
-                            showDiff(r1, Long.toString(revision1), Long.toString(revision2), false);
+                            long revisionNumberOlder = r1.getLogInfoHeader().getLog().getRevision().getNumber();
+                            long revisionNumberNewer = revOlder.getLogInfoHeader().getLog().getRevision().getNumber();
+                            showDiff(r1, Long.toString(revisionNumberNewer), Long.toString(revisionNumberOlder), false);
                         }
                     } catch (Exception e) {
                         showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_IllegalSelection")); // NOI18N
@@ -207,7 +218,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         synchronized(this) {
             cancelBackgroundTasks();
             currentTask = new ShowDiffTask(header, revision1, revision2, showLastDifference);
-            currentShowDiffTask = currentTask.start(rp, header.getLogInfoHeader().getRepositoryRootUrl(), NbBundle.getMessage(DiffResultsView.class, "LBL_SearchHistory_Diffing"));                            
+            currentShowDiffTask = currentTask.start(rp, header.getLogInfoHeader().getRepositoryRootUrl(), NbBundle.getMessage(DiffResultsView.class, "LBL_SearchHistory_Diffing"));
         }
     }
 
@@ -233,25 +244,33 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         showDiff(rev, Long.toString(revision1), Long.toString(revision2), showLastDifference);
     }
 
-    private void showContainerDiff(RepositoryRevision container, boolean showLastDifference) {        
+    private void showContainerDiff(RepositoryRevision container, boolean showLastDifference) {
         List<RepositoryRevision.Event> revs = container.getEvents();
-        
-        RepositoryRevision.Event newest = null;
-        //try to get the root        
+
+        RepositoryRevision.Event newest = getEventForRoots(container);
+        if(newest == null) {
+            newest = revs.get(0);
+        }
+        if (newest.getFile() == null) return;
+        long rev = newest.getLogInfoHeader().getLog().getRevision().getNumber();
+        showDiff(newest, Long.toString(rev - 1), Long.toString(rev), showLastDifference);
+    }
+
+    private RepositoryRevision.Event getEventForRoots(RepositoryRevision container) {
+        RepositoryRevision.Event event = null;
+        List<RepositoryRevision.Event> revs = container.getEvents();
+
+        //try to get the root
         File[] roots = parent.getRoots();
         for(File root : roots) {
             for(RepositoryRevision.Event evt : revs) {
                 if(root.equals(evt.getFile())) {
-                    newest = evt;   
-                }   
-            }            
+                    event = evt;
+                }
+            }
         }
-        if(newest == null) {
-            newest = revs.get(0);   
-        }        
-        if (newest.getFile() == null) return;
-        long rev = newest.getLogInfoHeader().getLog().getRevision().getNumber();
-        showDiff(newest, Long.toString(rev - 1), Long.toString(rev), showLastDifference);
+
+        return event;
     }
     
     void onNextButton() {

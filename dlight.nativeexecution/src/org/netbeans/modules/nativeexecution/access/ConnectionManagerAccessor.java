@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,25 +34,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.nativeexecution.support;
+package org.netbeans.modules.nativeexecution.access;
 
-import org.netbeans.modules.nativeexecution.api.NativeTask;
-import org.openide.windows.InputOutput;
+import com.jcraft.jsch.Session;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.support.ConnectionManager;
 
-/**
- * Input/Output tabs manager, register your own implementation
- * using global Lookup service. The result of {@link #getIO(org.netbeans.modules.nativeexecution.NativeTask, boolean) }
- * is used as input output for {@link org.netbeans.modules.nativeexecution.NativeTask#setInputOutput(org.openide.windows.InputOutput) }.
- */
-public interface IOTabManager {
-  /**
-   *
-   * @param task task to get Input/Output
-   * @param reuse <code>true</code> if is is allowed to reuse tab, <code>false</code> otherwise
-   * @return Input/Ouput <param>task</param> task will redirect inout/output/error streams to
-   */
-  public InputOutput getIO(NativeTask task, boolean reuse);
+public abstract class ConnectionManagerAccessor {
+    private static volatile ConnectionManagerAccessor DEFAULT;
+
+    public static void setDefault(ConnectionManagerAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException(
+                    "ConnectionManagerAccessor is already defined"); // NOI18N
+        }
+
+        DEFAULT = accessor;
+    }
+
+    public static synchronized ConnectionManagerAccessor getDefault() {
+        if (DEFAULT != null) {
+            return DEFAULT;
+        }
+
+        try {
+            Class.forName(ConnectionManager.class.getName(), true,
+                    ConnectionManager.class.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+        }
+
+        return DEFAULT;
+    }
+
+    public abstract Session getConnectionSession(
+            final ConnectionManager mgr, final ExecutionEnvironment env);
 }

@@ -36,34 +36,41 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support;
 
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeTask;
-import org.openide.util.Exceptions;
+package org.netbeans.modules.nativeexecution.access;
 
-public class NativeTaskSupport {
+import java.util.Collection;
+import org.netbeans.modules.nativeexecution.api.ExecutionControl;
+import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
 
-    private static final String CMD_KILL = "/bin/kill"; // NOI18N
+public abstract class ExecutionControlAccessor {
+    private static volatile ExecutionControlAccessor DEFAULT;
 
-    public static boolean kill(ExecutionEnvironment env, int pid) {
-        return kill(env, 15, pid);
-    }
-
-    public static boolean kill(ExecutionEnvironment env, int signal, int pid) {
-        NativeTask task = new NativeTask(env, CMD_KILL,
-                new String[]{
-                    "-" + Integer.toString(signal), // NOI18N
-                    Integer.toString(pid)});
-
-        Integer result = new Integer(-1);
-
-        try {
-            result = task.invoke(false);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+    public static void setDefault(ExecutionControlAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException(
+                    "ConnectionManagerAccessor is already defined"); // NOI18N
         }
 
-        return result.intValue() == 0;
+        DEFAULT = accessor;
     }
+
+    public static synchronized ExecutionControlAccessor getDefault() {
+        if (DEFAULT != null) {
+            return DEFAULT;
+        }
+
+        try {
+            Class.forName(ExecutionControl.class.getName(), true,
+                    ExecutionControl.class.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+        }
+
+        return DEFAULT;
+    }
+
+    public abstract Collection<Listener> getListeners(final ExecutionControl ctrl);
+
+    public abstract boolean getUseTerminal(ExecutionControl ctrl);
+
 }

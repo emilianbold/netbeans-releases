@@ -39,28 +39,25 @@
 
 package org.netbeans.modules.nativeexecution.support;
 
-import java.util.Collection;
-import org.openide.util.Lookup;
+import java.io.Writer;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
+
 
 /**
- * This is factory class to get {@link org.netbeans.modules.dlight.core.execution.IOTabManager}
- * instance.
+ *
+ * @author ak119685
  */
-public final class IOTabManagerFactory {
-  private static final IOTabManager DEFAULT_INSTANCE = new IOTabManagerImpl();
+public class InputRedirectorFactory implements ExecutionDescriptor.InputProcessorFactory {
+    private final Writer writer;
 
-  /**
-   * Returns IOTabManager to work with input/,
-   * use global Lookup to look for {@link org.netbeans.modules.dlight.core.execution.IOTabManager}
-   * implementation, if no implementation is registered use own default implementation
-   * @return
-   */
-  public static IOTabManager getIOTabManager(){
-    Collection<? extends IOTabManager> instances =  Lookup.getDefault().lookupAll(IOTabManager.class);
-    if(instances.isEmpty()){
-      return DEFAULT_INSTANCE;
+    public InputRedirectorFactory(Writer writer) {
+        this.writer = writer;
     }
-    return instances.iterator().next();
-  }
+
+    public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+        return InputProcessors.copying(writer);
+    }
 
 }

@@ -328,7 +328,6 @@ public class SCFTHandlerTest extends NbTestCase {
          
      }
 
-    @RandomlyFails
     public void testTemplateWizardCopiesItsPropertiesToMapForOverridenEntryOnMoreEntries() throws Exception {
         LocalFileSystem fs = new LocalFileSystem();
         fs.setRootDirectory(getWorkDir());
@@ -342,7 +341,7 @@ public class SCFTHandlerTest extends NbTestCase {
         Charset set = Charset.forName("iso-8859-2");
         OutputStream os = fo2.getOutputStream();
         OutputStreamWriter w = new OutputStreamWriter(os, set);
-        String txt = "skvělej tým, co nikdy neusíná";
+        String txt = "skvělej tým, co nikdy neusíná - ěščřžýáíéúů";
         w.write(txt);
         w.close();
         
