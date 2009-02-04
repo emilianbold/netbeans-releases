@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.kenai.api;
 
-import com.sun.corba.se.spi.activation.Repository;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Matcher;
