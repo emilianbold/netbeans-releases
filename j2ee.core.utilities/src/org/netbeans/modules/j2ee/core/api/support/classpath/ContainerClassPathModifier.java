@@ -60,9 +60,12 @@ import org.openide.filesystems.FileObject;
  */
 public interface ContainerClassPathModifier {
 
-    public final String API_SERVLET = "servlet-api";
-    public final String API_JSP = "jsp-api";
-    public final String API_J2EE = "j2ee-api";
+    public final String API_SERVLET = "servlet-api"; //NOI18N
+    public final String API_JSP = "jsp-api"; //NOI18N
+    public final String API_J2EE = "j2ee-api"; //NOI18N
+    public final String API_PERSISTENCE = "persistence"; //NOI18N
+    public final String API_ANNOTATION = "annotation"; //NOI18N
+    public final String API_TRANSACTION = "transaction"; //NOI18N
 
 
     /**
