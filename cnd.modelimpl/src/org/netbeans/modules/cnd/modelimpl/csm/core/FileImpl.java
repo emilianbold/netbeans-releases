@@ -681,7 +681,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 } else {
 //                    System.err.println("new stream created, because prev stream was finished on " + stream.getStartOffset() + " now asked for " + startOffset);
                 }
-                stream = new OffsetTokenStream(createFullTokenStream(filtered));
+                TokenStream fullTS = createFullTokenStream(filtered);
+                if(fullTS != null) {
+                    stream = new OffsetTokenStream(fullTS);
+                } else {
+                    return null;
+                }
             } else {
 //                System.err.println("use cached stream finished previously on " + stream.getStartOffset() + " now asked for " + startOffset);
             }

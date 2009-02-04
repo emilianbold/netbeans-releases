@@ -49,6 +49,7 @@ import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataListener;
 import org.netbeans.modules.mobility.svgcore.api.snippets.SVGSnippetsProvider;
+import org.netbeans.modules.mobility.svgcore.items.form.SVGSnipetsProviderClassic;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
@@ -219,6 +220,7 @@ final class SvgcorePanel extends javax.swing.JPanel {
                     providerName = provider.getName();
                 }
             }
+            
         }
 
         public void setSelectedItem(Object anItem) {
@@ -226,6 +228,9 @@ final class SvgcorePanel extends javax.swing.JPanel {
         }
 
         public Object getSelectedItem() {
+             if (providerName == null) {
+                return NbBundle.getMessage(SVGSnipetsProviderClassic.class, "LBL_SNIPPET_DISPLAY_NAME"); //NOI18N
+            }
             return getDisplyName(providerName);
         }
 
@@ -234,6 +239,7 @@ final class SvgcorePanel extends javax.swing.JPanel {
         }
 
         public Object getElementAt(int index) {
+           
             return getDisplyName(snippetsNameList.get(index));
         }
 

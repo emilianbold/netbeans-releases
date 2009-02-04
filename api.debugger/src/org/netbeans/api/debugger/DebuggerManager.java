@@ -175,7 +175,7 @@ public final class DebuggerManager implements ContextProvider {
     private DebuggerEngine                    currentEngine;
     private List                              sessions = new ArrayList();
     private Set                               engines = new HashSet ();
-    private Vector                            breakpoints = new Vector ();
+    private final Vector                      breakpoints = new Vector ();
     private boolean                           breakpointsInitializing = false;
     private boolean                           breakpointsInitialized = false;
     private Vector                            watches = new Vector ();
@@ -900,10 +900,12 @@ public final class DebuggerManager implements ContextProvider {
                 int i, k = l.size ();
                 for (i = 0; i < k; i++) {
                     DebuggerManagerListener dl = (DebuggerManagerListener) l.elementAt (i);
-                    Breakpoint[] breakpoints = dl.initBreakpoints();
-                    createdBreakpoints.addAll (Arrays.asList (breakpoints));
-                    for (int j = 0; j < breakpoints.length; j++) {
-                        originatingListeners.put(breakpoints[j], dl);
+                    Breakpoint[] bkpts = dl.initBreakpoints();
+                    if (bkpts != null) {
+                        createdBreakpoints.addAll (Arrays.asList (bkpts));
+                        for (int j = 0; j < bkpts.length; j++) {
+                            originatingListeners.put(bkpts[j], dl);
+                        }
                     }
                 }
 
@@ -918,10 +920,12 @@ public final class DebuggerManager implements ContextProvider {
                     k = l1.size ();
                     for (i = 0; i < k; i++) {
                         DebuggerManagerListener dl = (DebuggerManagerListener) l1.elementAt (i);
-                        Breakpoint[] breakpoints = dl.initBreakpoints();
-                        createdBreakpoints.addAll (Arrays.asList (breakpoints));
-                        for (int j = 0; j < breakpoints.length; j++) {
-                            originatingListeners.put(breakpoints[j], dl);
+                        Breakpoint[] bkpts = dl.initBreakpoints();
+                        if (bkpts != null) {
+                            createdBreakpoints.addAll (Arrays.asList (bkpts));
+                            for (int j = 0; j < bkpts.length; j++) {
+                                originatingListeners.put(bkpts[j], dl);
+                            }
                         }
                     }
                 }
@@ -954,9 +958,11 @@ public final class DebuggerManager implements ContextProvider {
             try {
                 createdBreakpoints = new ArrayList<Breakpoint>();
                 Breakpoint[] bps = dl.initBreakpoints();
-                createdBreakpoints.addAll (Arrays.asList(bps));
-                for (int j = 0; j < bps.length; j++) {
-                    originatingListeners.put(bps[j], dl);
+                if (bps != null) {
+                    createdBreakpoints.addAll (Arrays.asList(bps));
+                    for (int j = 0; j < bps.length; j++) {
+                        originatingListeners.put(bps[j], dl);
+                    }
                 }
                 //System.err.println("createdBreakpoints = "+createdBreakpoints);
                 breakpoints.addAll(createdBreakpoints);
