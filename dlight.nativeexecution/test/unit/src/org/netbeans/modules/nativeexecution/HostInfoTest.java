@@ -39,18 +39,23 @@
 package org.netbeans.modules.nativeexecution;
 
 import java.io.CharArrayWriter;
-import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
+import java.util.concurrent.Future;
 import org.netbeans.modules.nativeexecution.util.HostInfo;
-import org.netbeans.modules.nativeexecution.api.NativeTask;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import java.util.concurrent.ExecutionException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.modules.nativeexecution.api.ExecutionControl;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.NativeTaskConfig;
+import org.netbeans.modules.nativeexecution.support.InputRedirectorFactory;
+import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 import org.openide.util.Exceptions;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -80,52 +85,55 @@ public class HostInfoTest {
     /**
      * Test of getOS method, of class HostInfo.
      */
-//  @Test
+    @Test
     public void testGetOS() {
         System.out.println("getOS");
         String expResult = "SunOS";
         String result;
 
+
+
         try {
             expResult = "SunOS";
             result = HostInfo.getOS(new ExecutionEnvironment("ak119685", "127.0.0.1"));
+            System.out.printf("Expected result is %s, actual result is %s\n", expResult, result);
             assertEquals(expResult, result);
         } catch (HostNotConnectedException ex) {
             Exceptions.printStackTrace(ex);
             fail("Wrong exception");
         }
-
-        try {
-            result = HostInfo.getOS(new ExecutionEnvironment("ak119685", "129.159.127.252"));
-            assertEquals(expResult, result);
-        } catch (HostNotConnectedException ex) {
-            Exceptions.printStackTrace(ex);
-            fail("Wrong exception");
-        }
-
-        try {
-            result = HostInfo.getOS(new ExecutionEnvironment("ak119685", "129.159.127.13"));
-            fail("Exception expected");
-        } catch (HostNotConnectedException ex) {
-            System.out.println("Expected exception");
-        }
-
-        try {
-//    NativeTask nt = new NativeTask(host, "ak119685", "/bin/ls", null);
-//    nt.submit();
-//    System.out.println("ls exit status is " + nt.exitValue());
-//    System.out.println("ls output is " + nt.getOutput());
-//      host = "129.159.127.13";
-//    allowUserInteraction = false;
-            expResult = "SunOS";
-            result = HostInfo.getOS(new ExecutionEnvironment("ak119685", "129.159.127.13"));
-            assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-//    fail("The test case is a prototype.");
-        } catch (HostNotConnectedException ex) {
-            Exceptions.printStackTrace(ex);
-            fail("Wrong exception");
-        }
+//
+//        try {
+//            result = HostInfo.getOS(new ExecutionEnvironment("ak119685", "129.159.127.252"));
+//            assertEquals(expResult, result);
+//        } catch (HostNotConnectedException ex) {
+//            Exceptions.printStackTrace(ex);
+//            fail("Wrong exception");
+//        }
+//
+//        try {
+//            result = HostInfo.getOS(new ExecutionEnvironment("ak119685", "129.159.127.13"));
+//            fail("Exception expected");
+//        } catch (HostNotConnectedException ex) {
+//            System.out.println("Expected exception");
+//        }
+//
+//        try {
+////    NativeTask nt = new NativeTask(host, "ak119685", "/bin/ls", null);
+////    nt.submit();
+////    System.out.println("ls exit status is " + nt.exitValue());
+////    System.out.println("ls output is " + nt.getOutput());
+////      host = "129.159.127.13";
+////    allowUserInteraction = false;
+//            expResult = "SunOS";
+//            result = HostInfo.getOS(new ExecutionEnvironment("ak119685", "129.159.127.13"));
+//            assertEquals(expResult, result);
+//        // TODO review the generated test code and remove the default call to fail.
+////    fail("The test case is a prototype.");
+//        } catch (HostNotConnectedException ex) {
+//            Exceptions.printStackTrace(ex);
+//            fail("Wrong exception");
+//        }
 
     // TODO review the generated test code and remove the default call to fail.
 //    fail("The test case is a prototype.");
@@ -138,16 +146,27 @@ public class HostInfoTest {
         boolean expResult;
 
         ExecutionEnvironment ee = new ExecutionEnvironment("ak119685", "129.159.127.252");
-        try {
-            System.out.println(new NativeTask(ee, "/bin/ls", null).invoke(false));
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
+//        try {
+//            CharArrayWriter writer = new CharArrayWriter();
+//
+//            NativeTaskConfig ntc = new NativeTaskConfig(ee, "/bin/ls").setArguments("-la");
+//            NativeProcessBuilder npb = new NativeProcessBuilder(ntc, null);
+//            ExecutionDescriptor descr = new ExecutionDescriptor().outLineBased(true).outProcessorFactory(new InputRedirectorFactory(writer));
+//            ExecutionService service = ExecutionService.newService(npb, descr, "xxx");
+//
+//            Future<Integer> fr = service.run();
+//            fr.get();
+//            System.out.println(writer.toString());
+//
+//        } catch (Exception ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
 
         try {
             fname = "/etc/passwd1";
             result = HostInfo.fileExists(ee, fname);
             expResult = false;
+            System.out.println(fname + (result == false ? " doesn't exist" : " exists"));
             assertEquals(expResult, result);
         } catch (HostNotConnectedException ex) {
             Exceptions.printStackTrace(ex);
@@ -158,66 +177,67 @@ public class HostInfoTest {
             fname = "/etc/passwd";
             result = HostInfo.fileExists(ee, fname);
             expResult = true;
+            System.out.println(fname + (result == false ? " doesn't exist" : " exists"));
             assertEquals(expResult, result);
         } catch (HostNotConnectedException ex) {
             Exceptions.printStackTrace(ex);
             fail("Wrong exception");
         }
+//
+//        try {
+//            fname = "/etc/passwd";
+//            result = HostInfo.fileExists(new ExecutionEnvironment("ak119685", "129.159.127.13"), fname);
+//            fail("Exception expected");
+//        } catch (HostNotConnectedException ex) {
+//            System.out.println("Expected exception");
+//        }
+//
+//        CharArrayWriter taskOutput = new CharArrayWriter();
+//        NativeTask nt = new NativeTask(new ExecutionEnvironment("ak119685", "localhost"), "/bin/ls", null);
+//        nt.redirectOutTo(taskOutput);
+//        nt.submit(true, false);
+//
+//        Integer taskResult = -1;
+//
+//        try {
+//            taskResult = nt.get();
+//        } catch (InterruptedException ex) {
+//            Exceptions.printStackTrace(ex);
+//        } catch (ExecutionException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
 
-        try {
-            fname = "/etc/passwd";
-            result = HostInfo.fileExists(new ExecutionEnvironment("ak119685", "129.159.127.13"), fname);
-            fail("Exception expected");
-        } catch (HostNotConnectedException ex) {
-            System.out.println("Expected exception");
-        }
-
-        CharArrayWriter taskOutput = new CharArrayWriter();
-        NativeTask nt = new NativeTask(new ExecutionEnvironment("ak119685", "localhost"), "/bin/ls", null);
-        nt.redirectOutTo(taskOutput);
-        nt.submit(true, false);
-
-        Integer taskResult = -1;
-        
-        try {
-            taskResult = nt.get();
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ExecutionException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        System.out.println("ls exit status is " + taskResult);
-        System.out.println("ls output is " + taskOutput.toString());
-
-        HostInfo.getPlatformPath(new ExecutionEnvironment(null, null, 22));
-
-        for (int i = 0; i < 10; i++) {
-            System.out.println(".. " + i + " ..");
-            try {
-                result = HostInfo.fileExists(new ExecutionEnvironment(null, null, 22), fname);
-                expResult = true;
-                assertEquals(expResult, result);
-            } catch (HostNotConnectedException ex) {
-                Exceptions.printStackTrace(ex);
-                fail("Wrong exception");
-            }
-        }
-
-        System.out.println("");
-
-        for (int i = 0; i < 10; i++) {
-            System.out.println(".. " + i + " ..");
-            try {
-                fname = "/etc/passwd1";
-                result = HostInfo.fileExists(new ExecutionEnvironment("ak119685", "localhost"), fname);
-                expResult = false;
-                assertEquals(expResult, result);
-            } catch (HostNotConnectedException ex) {
-                Exceptions.printStackTrace(ex);
-                fail("Wrong exception");
-            }
-        }
+//        System.out.println("ls exit status is " + taskResult);
+//        System.out.println("ls output is " + taskOutput.toString());
+//
+//        HostInfo.getPlatformPath(new ExecutionEnvironment(null, null, 22));
+//
+//        for (int i = 0; i < 10; i++) {
+//            System.out.println(".. " + i + " ..");
+//            try {
+//                result = HostInfo.fileExists(new ExecutionEnvironment(null, null, 22), fname);
+//                expResult = true;
+//                assertEquals(expResult, result);
+//            } catch (HostNotConnectedException ex) {
+//                Exceptions.printStackTrace(ex);
+//                fail("Wrong exception");
+//            }
+//        }
+//
+//        System.out.println("");
+//
+//        for (int i = 0; i < 10; i++) {
+//            System.out.println(".. " + i + " ..");
+//            try {
+//                fname = "/etc/passwd1";
+//                result = HostInfo.fileExists(new ExecutionEnvironment("ak119685", "localhost"), fname);
+//                expResult = false;
+//                assertEquals(expResult, result);
+//            } catch (HostNotConnectedException ex) {
+//                Exceptions.printStackTrace(ex);
+//                fail("Wrong exception");
+//            }
+//        }
 
     }
 
@@ -237,8 +257,12 @@ public class HostInfoTest {
     public void testGetPlatformPath() {
         System.out.println("getPlatformPath");
         String expResult = "intel-S2";
-        String result = HostInfo.getPlatformPath(new ExecutionEnvironment(null, null, 22));
+        String result = "";
 
+        for (int i = 0; i < 3; i++) {
+            result = HostInfo.getPlatformPath(new ExecutionEnvironment(null, null));
+            System.out.println("Platform PATH is " + result);
+        }
         assertEquals(expResult, result);
 
     }

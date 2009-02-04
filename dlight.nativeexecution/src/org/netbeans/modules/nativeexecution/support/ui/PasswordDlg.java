@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.ui;
+package org.netbeans.modules.nativeexecution.support.ui;
 
 import java.awt.Dialog;
 import org.openide.DialogDescriptor;
@@ -126,8 +126,8 @@ public class PasswordDlg extends javax.swing.JPanel {
               .add(jLabel1))
             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-              .add(tfHost, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
-              .add(tfPassword, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE))))
+              .add(tfHost, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)
+              .add(tfPassword, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE))))
         .addContainerGap())
     );
     layout.setVerticalGroup(
@@ -148,14 +148,14 @@ public class PasswordDlg extends javax.swing.JPanel {
 
     layout.linkSize(new java.awt.Component[] {tfHost, tfPassword}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
-    tfPassword.getAccessibleContext().setAccessibleName("null"); // NOI18N
-    tfPassword.getAccessibleContext().setAccessibleDescription("null"); // NOI18N
-    jLabel2.getAccessibleContext().setAccessibleName("null"); // NOI18N
-    jLabel2.getAccessibleContext().setAccessibleDescription("null"); // NOI18N
-    tfHost.getAccessibleContext().setAccessibleName("null"); // NOI18N
-    tfHost.getAccessibleContext().setAccessibleDescription("null"); // NOI18N
-    cbRememberPwd.getAccessibleContext().setAccessibleName("null"); // NOI18N
-    cbRememberPwd.getAccessibleContext().setAccessibleDescription("null"); // NOI18N
+    tfPassword.getAccessibleContext().setAccessibleName("null");
+    tfPassword.getAccessibleContext().setAccessibleDescription("null");
+    jLabel2.getAccessibleContext().setAccessibleName("null");
+    jLabel2.getAccessibleContext().setAccessibleDescription("null");
+    tfHost.getAccessibleContext().setAccessibleName("null");
+    tfHost.getAccessibleContext().setAccessibleDescription("null");
+    cbRememberPwd.getAccessibleContext().setAccessibleName("null");
+    cbRememberPwd.getAccessibleContext().setAccessibleDescription("null");
   }// </editor-fold>//GEN-END:initComponents
 
     private void tfPasswordonPwdFocus(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tfPasswordonPwdFocus

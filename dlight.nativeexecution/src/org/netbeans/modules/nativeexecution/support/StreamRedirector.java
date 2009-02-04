@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,10 +34,10 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support;
 
+package org.netbeans.modules.nativeexecution.support;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -62,6 +62,8 @@ public class StreamRedirector extends Thread {
         }
     }
 
+    private boolean terminated = false;
+
     public StreamRedirector(Reader reader, Writer writer, String name) {
         super("Stream redirection thread " + name); // NOI18N
         this.reader = reader;
@@ -85,9 +87,14 @@ public class StreamRedirector extends Thread {
         this.name = name;
     }
 
+    public void terminate() {
+        terminated = true;
+        interrupt();
+    }
+
     @Override
     public void run() {
-        if (writer == null || reader == null) {
+        if (writer == null || reader == null || terminated) {
             return;
         }
 
@@ -97,12 +104,13 @@ public class StreamRedirector extends Thread {
         BufferedReader breader = new BufferedReader(reader);
         try {
             String line;
-            while ((line = breader.readLine()) != null) {
+            while (!terminated && (line = breader.readLine()) != null) {
                 if (!"".equals(line)) {
-//                    System.out.println(name + ": " + line);
+                    System.out.println(name + ": " + line);
                     writer.write(line);
                     writer.append('\n');
                     writer.flush();
+                    stopIfInterrupted();
                 }
             }
         } catch (IOException ex) {
@@ -115,7 +123,9 @@ public class StreamRedirector extends Thread {
         } catch (Exception ex) {
             log.severe("Exception in StreamRedirector " + name + // NOI18N
                     ": " + ex.toString()); // NOI18N
+        } finally {
+            log.fine("StreamRedirector " + name + " done in thread " + // NOI18N
+                    Thread.currentThread().toString());
         }
-
     }
 }

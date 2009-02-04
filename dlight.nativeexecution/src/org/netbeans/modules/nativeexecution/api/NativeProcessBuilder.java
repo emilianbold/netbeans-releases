@@ -36,39 +36,51 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.nativeexecution.api;
 
-package org.netbeans.modules.nativeexecution.support;
+import java.io.IOException;
+import org.netbeans.modules.nativeexecution.support.LocalNativeProcess;
+import java.util.concurrent.Callable;
+import org.netbeans.modules.nativeexecution.access.ExecutionControlAccessor;
+import org.netbeans.modules.nativeexecution.support.RemoteNativeProcess;
+import org.netbeans.modules.nativeexecution.access.NativeTaskConfigAccessor;
+import org.netbeans.modules.nativeexecution.support.TerminalLocalNativeProcess;
 
-import com.jcraft.jsch.Session;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.support.ConnectionManager;
+/**
+ *
+ */
+public class NativeProcessBuilder implements Callable<Process> {
 
-public abstract class ConnectionManagerAccessor {
-    private static volatile ConnectionManagerAccessor DEFAULT;
+    private final NativeTaskConfig config;
+    private final ExecutionControl executionControl;
+    private NativeProcess process = null;
 
-    public static void setDefault(ConnectionManagerAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException(
-                    "ConnectionManagerAccessor is already defined"); // NOI18N
-        }
-
-        DEFAULT = accessor;
+    public NativeProcessBuilder(NativeTaskConfig config, ExecutionControl executionControl) {
+        this.config = config;
+        this.executionControl = executionControl == null 
+                ? ExecutionControl.getDefault()
+                : executionControl;
     }
 
-    public static synchronized ConnectionManagerAccessor getDefault() {
-        if (DEFAULT != null) {
-            return DEFAULT;
+    public NativeProcess call() throws IOException {
+        final NativeTaskConfigAccessor configInfo =
+                NativeTaskConfigAccessor.getDefault();
+
+        final ExecutionControlAccessor ctrlInfo =
+                ExecutionControlAccessor.getDefault();
+        
+        ExecutionEnvironment execEnv = configInfo.getExecutionEnvironment(config);
+
+        if (execEnv.isRemote()) {
+            process = new RemoteNativeProcess(config, executionControl);
+        } else {
+            if (ctrlInfo.getUseTerminal(executionControl) == true) {
+                process = new TerminalLocalNativeProcess(config, executionControl);
+            } else {
+                process = new LocalNativeProcess(config, executionControl);
+            }
         }
 
-        try {
-            Class.forName(ConnectionManager.class.getName(), true,
-                    ConnectionManager.class.getClassLoader());
-        } catch (ClassNotFoundException ex) {
-        }
-
-        return DEFAULT;
+        return process;
     }
-
-    public abstract Session getConnectionSession(
-            final ConnectionManager mgr, final ExecutionEnvironment env);
 }
