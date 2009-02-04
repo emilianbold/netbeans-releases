@@ -366,7 +366,7 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
         }
     }
     
-   private class AllFilter implements RepositoryQueue.Filter {
+   private static class AllFilter implements RepositoryQueue.Filter {
         public boolean accept(Key key, Persistent value) {
             return true;
         }
