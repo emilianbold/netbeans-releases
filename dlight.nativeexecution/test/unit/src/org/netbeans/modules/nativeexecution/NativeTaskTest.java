@@ -39,13 +39,22 @@
 package org.netbeans.modules.nativeexecution;
 
 import java.io.CharArrayWriter;
+import java.io.OutputStreamWriter;
 import java.util.concurrent.ExecutionException;
-import org.netbeans.modules.nativeexecution.api.NativeTask;
+import java.util.concurrent.Future;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.modules.nativeexecution.api.ExecutionControl;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.NativeTaskConfig;
 import org.openide.util.Exceptions;
 
 /**
@@ -80,6 +89,108 @@ public class NativeTaskTest {
     @Test
     public void testRun() {
         System.out.println("run");
+
+        NativeTaskConfig ntc = new NativeTaskConfig(
+                new ExecutionEnvironment("ak119685", "localhost"), "/export/home/ak119685/welcome.sh")
+        .addEnvironmentVariable("MY_ENV_VAR2", "IT_WORKS")
+                .setWorkingDirectory("/tmp");
+
+
+
+        NativeProcessBuilder npb = new NativeProcessBuilder(ntc, ExecutionControl.getDefault().useExternalTerminal(true));
+        ExecutionDescriptor descr = new ExecutionDescriptor().outLineBased(true).outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+
+            public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                return InputProcessors.copying(new OutputStreamWriter(System.out));
+            }
+        });
+
+        ExecutionService service = ExecutionService.newService(npb, descr, "test");
+
+        Future<Integer> result = service.run();
+        Integer res = null;
+        try {
+            res = result.get();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        System.out.println("RESULT == " + res);
+        
+//
+//        final NativeTaskListener l = new NativeTaskListener() {
+//
+//            public void taskStarted(NativeTask task) {
+//                System.out.println(task.getPID() + " - started");
+//            }
+//
+//            public void taskFinished(NativeTask task, Integer result) {
+//                System.out.println(task.getPID() + " - finished");
+//            }
+//
+//            public void taskCancelled(NativeTask task, CancellationException cex) {
+//                System.out.println(task.getPID() + " - cancelled");
+//            }
+//
+//            public void taskError(NativeTask task, Throwable t) {
+//                System.out.println(task.getPID() + " - error");
+//            }
+//        };
+//
+//        StringBuffer outBuffer = new StringBuffer();
+//        final ExecutionEnvironment ee = new ExecutionEnvironment(null, null);
+//
+//        NativeTask nt = new NativeTask(ee, "/bin/uname", new String[]{"-s"});
+//        nt.redirectOutTo(new StringBufferWriter(outBuffer));
+//        nt.addListener(l);
+//        nt.submit();
+//        try {
+//            nt.get();
+//        } catch (InterruptedException ex) {
+//            Exceptions.printStackTrace(ex);
+//        } catch (ExecutionException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
+//
+//        System.out.println(outBuffer.toString());
+//
+//
+//        Thread[] ts = new Thread[10];
+//        for (int i = 0; i < 10; i++) {
+//            ts[i] = new Thread(new Runnable() {
+//                public void run() {
+//                    StringBuffer outBuffer = new StringBuffer();
+////                    NativeTask nt = new NativeTask(ee, "/bin/uname", new String[]{"-s"});
+//                    NativeTask nt = new NativeTask("/tmp/qq");
+//                    nt.redirectOutTo(new StringBufferWriter(outBuffer));
+//                    nt.addListener(l);
+//                    nt.submit();
+//                    try {
+//                        nt.get();
+//                    } catch (InterruptedException ex) {
+//                        Exceptions.printStackTrace(ex);
+//                    } catch (ExecutionException ex) {
+//                        Exceptions.printStackTrace(ex);
+//                    }
+//
+//                    System.out.println("" + (++count) + ") " + nt.getPID() + " - " + outBuffer.toString());
+//                }
+//            });
+//        }
+//
+//        for (int i = 0; i < 10; i++) {
+//            ts[i].start();
+//        }
+//
+//        for (int i = 0; i < 10; i++) {
+//            try {
+//                ts[i].join();
+//            } catch (InterruptedException ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
+//        }
 //
 //        final NativeTaskListener l = new NativeTaskListener() {
 //
@@ -158,49 +269,49 @@ public class NativeTaskTest {
         // TODO review the generated test code and remove the default call to fail.
 
         final CharArrayWriter errWriter = new CharArrayWriter();
-
-        int tcount = 1;
-        Thread[] threads = new Thread[tcount];
-        for (int i = 0; i < tcount; i++) {
-            threads[i] = new Thread(new Runnable() {
-
-                public void run() {
-                    final NativeTask task = new NativeTask("/bin/lsss /");
-                    task.redirectErrTo(errWriter);
-                    task.submit(true, false);
-                    System.out.println("PID is " + task.getPID());
-
-                    try {
-                        System.out.println("Result: " + task.get());
-                    } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (ExecutionException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    
-                    System.out.println("ERROR: '" + errWriter.toString() + "'");
-
-                    try {
-                        System.out.println(task.invoke(false));
-                    } catch (Exception ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-
-                }
-            });
-        }
-
-        for (int i = 0; i < tcount; i++) {
-            threads[i].start();
-        }
-
-        for (int i = 0; i < tcount; i++) {
-            try {
-                threads[i].join();
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
+//
+//        int tcount = 1;
+//        Thread[] threads = new Thread[tcount];
+//        for (int i = 0; i < tcount; i++) {
+//            threads[i] = new Thread(new Runnable() {
+//
+//                public void run() {
+//                    final NativeTask task = new NativeTask("/bin/lsss /");
+//                    task.redirectErrTo(errWriter);
+//                    task.submit(true, false);
+//                    System.out.println("PID is " + task.getPID());
+//
+//                    try {
+//                        System.out.println("Result: " + task.get());
+//                    } catch (InterruptedException ex) {
+//                        Exceptions.printStackTrace(ex);
+//                    } catch (ExecutionException ex) {
+//                        Exceptions.printStackTrace(ex);
+//                    }
+//
+//                    System.out.println("ERROR: '" + errWriter.toString() + "'");
+//
+//                    try {
+//                        System.out.println(task.invoke(false));
+//                    } catch (Exception ex) {
+//                        Exceptions.printStackTrace(ex);
+//                    }
+//
+//                }
+//            });
+//        }
+//
+//        for (int i = 0; i < tcount; i++) {
+//            threads[i].start();
+//        }
+//
+//        for (int i = 0; i < tcount; i++) {
+//            try {
+//                threads[i].join();
+//            } catch (InterruptedException ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
+//        }
 
         System.out.println("Here we are!");
 

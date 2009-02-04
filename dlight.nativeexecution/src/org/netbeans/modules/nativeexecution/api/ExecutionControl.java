@@ -36,53 +36,63 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support;
+package org.netbeans.modules.nativeexecution.api;
 
-import java.io.Reader;
-import java.io.Writer;
-import javax.swing.Action;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.nativeexecution.api.NativeTask;
-import org.openide.windows.InputOutput;
+import java.util.ArrayList;
+import java.util.Collection;
+import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
+import org.netbeans.modules.nativeexecution.access.ExecutionControlAccessor;
 
-public abstract class NativeTaskAccessor {
+public class ExecutionControl {
 
-    private static volatile NativeTaskAccessor DEFAULT;
+    private Collection<Listener> listeners = null;
+    private boolean useExternalTerminal = false;
 
-    public static void setDefault(NativeTaskAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException(
-                    "NativeTaskInfoAccessor is already defined"); // NOI18N
-        }
 
-        DEFAULT = accessor;
+    static {
+        ExecutionControlAccessor.setDefault(new ExecutionControlAccessorImpl());
     }
 
-    public static synchronized NativeTaskAccessor getDefault() {
-        if (DEFAULT != null) {
-            return DEFAULT;
-        }
-
-        try {
-            Class.forName(NativeTask.class.getName(), true,
-                    NativeTask.class.getClassLoader());
-        } catch (ClassNotFoundException ex) {
-        }
-
-        return DEFAULT;
+    private ExecutionControl() {
     }
 
-    public abstract NativeExecutor getExecutor(NativeTask task);
+    private ExecutionControl(ExecutionControl ctrl) {
+        if (ctrl.listeners != null) {
+            listeners = new ArrayList<Listener>(ctrl.listeners);
+        }
+    }
 
-    public abstract Writer getRedirectionErrorWriter(NativeTask task);
+    public static ExecutionControl getDefault() {
+        return new ExecutionControl();
+    }
 
-    public abstract InputOutput getRedirectionIO(NativeTask task);
+    public ExecutionControl addNativeProcessListener(Listener listener) {
+        ExecutionControl newControl = new ExecutionControl(this);
+        if (newControl.listeners == null) {
+            newControl.listeners = new ArrayList<Listener>();
+        }
+        
+        newControl.listeners.add(listener);
+        return newControl;
+    }
 
-    public abstract Reader getRedirectionInputReader(NativeTask task);
+    public ExecutionControl useExternalTerminal(boolean useExternalTerminal) {
+        ExecutionControl newControl = new ExecutionControl(this);
+        newControl.useExternalTerminal = useExternalTerminal;
+        return newControl;
+    }
 
-    public abstract Writer getRedirectionOutputWriter(NativeTask task);
+    private static class ExecutionControlAccessorImpl
+            extends ExecutionControlAccessor {
 
-    public abstract Action[] getTaskControlActions(NativeTask task);
-    
-    public abstract void resetTask(NativeTask task);
+        @Override
+        public Collection<Listener> getListeners(ExecutionControl ctrl) {
+            return ctrl.listeners;
+        }
+
+        @Override
+        public boolean getUseTerminal(ExecutionControl ctrl) {
+            return ctrl.useExternalTerminal;
+        }
+    }
 }

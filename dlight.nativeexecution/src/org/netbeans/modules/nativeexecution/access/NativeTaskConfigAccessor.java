@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,49 +34,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.api;
+package org.netbeans.modules.nativeexecution.access;
 
-import java.util.concurrent.CancellationException;
+import java.util.Map;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeTaskConfig;
 
-/**
- * The listener interface for receiving task's execution state shanges events.
- */
-public interface NativeTaskListener {
+public abstract class NativeTaskConfigAccessor {
 
-    /**
-     * Invoked when <tt>NativeTask</tt> started.
-     * Task is considered to be started if and only if it has been submitted,
-     * native process has been created and PID of this process has been
-     * obtained.
-     *
-     * @param task task that started
-     */
-    public void taskStarted(NativeTask task);
+    private static volatile NativeTaskConfigAccessor DEFAULT;
 
-    /**
-     * Invoked when <tt>NativeTask</tt> finished.
-     * Task is considered to be finished if underlaying system process exited
-     * normally.
-     *
-     * @param task task that finished
-     * @param result exit code of the underlaying system process
-     */
-    public void taskFinished(NativeTask task, int result);
+    public static void setDefault(NativeTaskConfigAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException(
+                    "NativeTaskInfoAccessor is already defined"); // NOI18N
+        }
 
-    /**
-     * Invoked when <tt>NativeTask</tt> cancelled.
-     *
-     * @param task task that was cancelled
-     * @param cex <tt>CancellationException</tt> that causes cancellation.
-     */
-    public void taskCancelled(NativeTask task, CancellationException cex);
+        DEFAULT = accessor;
+    }
 
-    /**
-     * Invoked when some exception occured during <tt>NativeTask</tt> execution.
-     * @param task task that failed due to error
-     * @param t causing <tt>Throwable</tt>
-     */
-    public void taskError(NativeTask task, Throwable t);
+    public static synchronized NativeTaskConfigAccessor getDefault() {
+        if (DEFAULT != null) {
+            return DEFAULT;
+        }
+
+        try {
+            Class.forName(NativeTaskConfig.class.getName(), true,
+                    NativeTaskConfig.class.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+        }
+
+        return DEFAULT;
+    }
+
+    public abstract String getWorkingDirectory(NativeTaskConfig config);
+
+    public abstract ExecutionEnvironment getExecutionEnvironment(NativeTaskConfig config);
+
+    public abstract Map<String, String> getEnvVariables(NativeTaskConfig config);
+
+    public abstract String getCommandLine(NativeTaskConfig config);
 }

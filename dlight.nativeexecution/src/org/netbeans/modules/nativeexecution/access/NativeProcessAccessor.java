@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,38 +34,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.api;
 
-/**
- * Enum that represents phases of <tt>NativeTask</tt> execution.
- */
-public enum TaskExecutionState {
+package org.netbeans.modules.nativeexecution.access;
 
-    /**
-     * Task is in Initial state
-     */
-    INITIAL,
-    /**
-     * Task is starting. This means that it is submitted, but no PID is recieved
-     * yet
-     */
-    STARTING,
-    /**
-     * Task runs
-     */
-    RUNNING,
-    /**
-     * Task finished
-     */
-    FINISHED,
-    /**
-     * Task failed due to some exception
-     */
-    ERROR,
-    /**
-     * Task cancelled
-     */
-    CANCELLED
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+
+public abstract class NativeProcessAccessor {
+    private static volatile NativeProcessAccessor DEFAULT;
+
+    public static void setDefault(NativeProcessAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException(
+                    "NativeTaskInfoAccessor is already defined"); // NOI18N
+        }
+
+        DEFAULT = accessor;
+    }
+
+    public static synchronized NativeProcessAccessor getDefault() {
+        if (DEFAULT != null) {
+            return DEFAULT;
+        }
+
+        try {
+            Class.forName(NativeProcess.class.getName(), true,
+                    NativeProcess.class.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+        }
+
+        return DEFAULT;
+    }
+
+    public abstract void setID(NativeProcess process, String id);
+    public abstract void setState(NativeProcess process, NativeProcess.State state);
+
 }

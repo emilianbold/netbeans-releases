@@ -38,15 +38,11 @@
  */
 package org.netbeans.modules.nativeexecution.api.support;
 
-import org.netbeans.modules.nativeexecution.support.*;
+import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import java.util.concurrent.ExecutionException;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ObservableAction;
-import org.netbeans.modules.nativeexecution.api.ObservableActionListener;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-import java.awt.event.ActionEvent;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,6 +51,11 @@ import java.util.concurrent.Future;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ObservableAction;
+import org.netbeans.modules.nativeexecution.api.ObservableActionListener;
+import org.netbeans.modules.nativeexecution.access.ConnectionManagerAccessor;
+import org.netbeans.modules.nativeexecution.support.RemoteUserInfo;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Cancellable;
@@ -289,7 +290,7 @@ public final class ConnectionManager {
             }
 
             @Override
-            protected Boolean performAction(ActionEvent e) {
+            protected Boolean performAction() {
                 ConnectionManager cm = ConnectionManager.getInstance();
 
                 if (cm.isConnectedTo(execEnv)) {

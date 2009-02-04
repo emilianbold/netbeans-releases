@@ -38,27 +38,28 @@
  */
 package org.netbeans.modules.dlight.perfan.dbe;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.nio.channels.Channels;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.util.Locale;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.TimeoutException;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.modules.dlight.perfan.ipc.IPCException;
 import org.netbeans.modules.dlight.util.ExecUtil;
+import org.netbeans.modules.nativeexecution.api.ExecutionControl;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
+import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.NativeTaskConfig;
 import org.netbeans.modules.nativeexecution.util.HostInfo;
-import org.netbeans.modules.nativeexecution.api.NativeTask;
-import org.netbeans.modules.nativeexecution.api.NativeTaskListener;
 import org.openide.util.Exceptions;
 
-public class DbeConnector implements NativeTaskListener {
+public class DbeConnector implements Listener {
 
   public final Object lock = new Object();
   private static final char[] hex = {
@@ -81,7 +82,7 @@ public class DbeConnector implements NativeTaskListener {
   private String sVal;
   private Object aVal;
   private DecimalFormat format;
-  private NativeTask idbeTask;
+  private NativeTaskConfig idbeTask;
   private final ExecutionEnvironment execEnv;
   private final String experimentDirectory;
   private volatile IDBEInterface idbe;
@@ -106,34 +107,48 @@ public class DbeConnector implements NativeTaskListener {
 
     this.listener = listener;
     
-    idbeTask = new NativeTask(execEnv, idbeCmd, null);
-    idbeTask.addListener(this);
-    idbeTask.submit(true, false);
+    idbeTask = new NativeTaskConfig(execEnv, idbeCmd);
 
-    try {
-      processOutput = new InputStreamReader(idbeTask.getInputStream());
-      processError = new BufferedReader(Channels.newReader(Channels.newChannel(idbeTask.getErrorStream()), "UTF-8"));
-      processInput = idbeTask.getOutputStream();
+    ExecutionControl ctrl =
+            ExecutionControl.getDefault().addNativeProcessListener(this);
 
-      idbe = new IDBEInterface(this);
+    NativeProcessBuilder npb = new NativeProcessBuilder(idbeTask, ctrl);
+    ExecutionDescriptor descriptor = new ExecutionDescriptor().outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
 
-      try {
-        idbe.waitForExperiment(experimentDirectory);
-        listener.connected(idbe);
-      } catch (TimeoutException ex) {
-        Exceptions.printStackTrace(ex);
-      }
+            public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        });
 
-    } catch (IOException ex) {
-      Exceptions.printStackTrace(ex);
-    }
+
+//
+//    idbeTask.addListener(this);
+//    idbeTask.submit(true, false);
+//
+//    try {
+//      processOutput = new InputStreamReader(idbeTask.getInputStream());
+//      processError = new BufferedReader(Channels.newReader(Channels.newChannel(idbeTask.getErrorStream()), "UTF-8"));
+//      processInput = idbeTask.getOutputStream();
+//
+//      idbe = new IDBEInterface(this);
+//
+//      try {
+//        idbe.waitForExperiment(experimentDirectory);
+//        listener.connected(idbe);
+//      } catch (TimeoutException ex) {
+//        Exceptions.printStackTrace(ex);
+//      }
+//
+//    } catch (IOException ex) {
+//      Exceptions.printStackTrace(ex);
+//    }
 
     return true;
   }
 
   public void disconnect() {
-    idbeTask.cancel(true);
-    idbeTask.removeListener(this);
+//    idbeTask.cancel(true);
+//    idbeTask.removeListener(this);
     idbeTask = null;
     idbe = null;
   }
@@ -602,21 +617,25 @@ public class DbeConnector implements NativeTaskListener {
     }
   }
 
-  public void taskStarted(NativeTask task) {
-  }
+//  public void taskStarted(NativeTask task) {
+//  }
+//
+//  public void taskFinished(NativeTask task, int result) {
+//    System.out.println("XXXXXXXXXX Idbe finished!");
+//    reconnect();
+//  }
+//
+//  public void taskCancelled(NativeTask task, CancellationException cex) {
+//    System.out.println("XXXXXXXXXX Idbe cancelled!");
+//    idbe = null;
+//  }
+//
+//  public void taskError(NativeTask task, Throwable t) {
+//    System.out.println("XXXXXXXXXX Idbe Error - Need restarting!");
+//    reconnect();
+//  }
 
-  public void taskFinished(NativeTask task, int result) {
-    System.out.println("XXXXXXXXXX Idbe finished!");
-    reconnect();
-  }
-
-  public void taskCancelled(NativeTask task, CancellationException cex) {
-    System.out.println("XXXXXXXXXX Idbe cancelled!");
-    idbe = null;
-  }
-
-  public void taskError(NativeTask task, Throwable t) {
-    System.out.println("XXXXXXXXXX Idbe Error - Need restarting!");
-    reconnect();
-  }
+    public void processStateChanged(NativeProcess process, State oldState, State newState) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }
