@@ -132,7 +132,7 @@ public class ContainerCPModifierImpl implements ContainerClassPathModifier {
         //TODO is the manual reload necessary if pom.xml file is being saved?
 //                NbMavenProject.fireMavenProjectReload(project);
         if (added[0]) {
-            project.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
+            project.getLookup().lookup(NbMavenProject.class).synchronousDependencyDownload();
         }
 
     }

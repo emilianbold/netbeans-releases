@@ -71,6 +71,7 @@ public interface ContainerClassPathModifier {
     /**
      * Extend the project's classpath with the application container's API required
      * by the functionality added to the project.
+     * To be called outside of the Swing Event (AWT) thread as the processing can take a long time under some conditions.
      *
      * @param relevantFile a file from the project that was either created or is
      * from the project and is on correct classpath.
