@@ -224,6 +224,12 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 ItemConfiguration itemConfiguration = new ItemConfiguration(currentConf, item);
                 currentItemConfiguration = itemConfiguration;
                 currentConf.addAuxObject(itemConfiguration);
+                if (descriptorVersion >= 57) {
+                    String excluded = atts.getValue(ItemXMLCodec.EXCLUDED_ATTR);
+                    int tool = new Integer(atts.getValue(ItemXMLCodec.TOOL_ATTR)).intValue();
+                    itemConfiguration.getExcluded().setValue(excluded.equals(TRUE_VALUE));
+                    itemConfiguration.setTool(tool);
+                }
             } else {
                 // FIXUP
             }
@@ -742,13 +748,25 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (currentLibrariesConfiguration != null && stdLibItem != null) {
                 currentLibrariesConfiguration.add(stdLibItem);
             }
-        } else if (element.equals(QT_MODULES_ELEMENT)) {
-            if (currentQmakeConfiguration != null) {
-                currentQmakeConfiguration.setEnabledModules(currentText);
-            }
         } else if (element.equals(QT_BUILD_MODE_ELEMENT)) {
             if (currentQmakeConfiguration != null) {
                 currentQmakeConfiguration.getBuildMode().setValue(Integer.parseInt(currentText));
+            }
+        } else if (element.equals(QT_DESTDIR_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.getDestdir().setValue(getString(currentText));
+            }
+        } else if (element.equals(QT_TARGET_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.getTarget().setValue(getString(currentText));
+            }
+        } else if (element.equals(QT_LIB_VERSION_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.getLibVersion().setValue(getString(currentText));
+            }
+        } else if (element.equals(QT_MODULES_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.setEnabledModules(currentText);
             }
         } else if (element.equals(QT_MOC_DIR_ELEMENT)) {
             if (currentQmakeConfiguration != null) {

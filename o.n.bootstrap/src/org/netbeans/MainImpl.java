@@ -341,7 +341,7 @@ final class MainImpl extends Object {
 
         /** For a given classloader finds all registered CLIHandlers.
          */
-        public final Collection allCLIs () {
+        public final Collection<? extends CLIHandler> allCLIs () {
             if (handlers == null) {
                 handlers = new ArrayList<CLIHandler>(metaInf.lookupAll(CLIHandler.class));
             }

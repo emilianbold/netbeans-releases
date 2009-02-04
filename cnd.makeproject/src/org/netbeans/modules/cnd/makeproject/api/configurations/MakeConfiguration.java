@@ -144,7 +144,7 @@ public class MakeConfiguration extends Configuration {
         packagingConfiguration = new PackagingConfiguration(this);
         requiredProjectsConfiguration = new RequiredProjectsConfiguration();
         debuggerChooserConfiguration = new DebuggerChooserConfiguration();
-        qmakeConfiguration = new QmakeConfiguration();
+        qmakeConfiguration = new QmakeConfiguration(this);
 
         developmentHost.addPropertyChangeListener(compilerSet);
         developmentHost.addPropertyChangeListener(platform);
@@ -241,7 +241,13 @@ public class MakeConfiguration extends Configuration {
     }
 
     public boolean isApplicationConfiguration() {
-        return getConfigurationType().getValue() == TYPE_APPLICATION;
+        switch (getConfigurationType().getValue()) {
+            case TYPE_APPLICATION:
+            case TYPE_QT_APPLICATION:
+                return true;
+            default:
+                return false;
+        }
     }
 
     public boolean isCompileConfiguration() {
@@ -249,7 +255,15 @@ public class MakeConfiguration extends Configuration {
     }
 
     public boolean isLibraryConfiguration() {
-        return getConfigurationType().getValue() == TYPE_DYNAMIC_LIB || getConfigurationType().getValue() == TYPE_STATIC_LIB;
+        switch (getConfigurationType().getValue()) {
+            case TYPE_DYNAMIC_LIB:
+            case TYPE_STATIC_LIB:
+            case TYPE_QT_DYNAMIC_LIB:
+            case TYPE_QT_STATIC_LIB:
+                return true;
+            default:
+                return false;
+        }
     }
 
     public boolean isLinkerConfiguration() {
@@ -261,7 +275,13 @@ public class MakeConfiguration extends Configuration {
     }
 
     public boolean isDynamicLibraryConfiguration() {
-        return getConfigurationType().getValue() == TYPE_DYNAMIC_LIB;
+        switch (getConfigurationType().getValue()) {
+            case TYPE_DYNAMIC_LIB:
+            case TYPE_QT_DYNAMIC_LIB:
+                return true;
+            default:
+                return false;
+        }
     }
 
     public boolean isArchiverConfiguration() {
@@ -739,7 +759,7 @@ public class MakeConfiguration extends Configuration {
         } else if (isMakefileConfiguration()) {
             output = getMakefileConfiguration().getOutput().getValue();
         } else if (isQmakeConfiguration()) {
-            output = getLinkerConfiguration().getOutputValue();
+            output = getQmakeConfiguration().getOutputValue();
         } else {
             assert false;
         }
