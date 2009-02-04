@@ -79,7 +79,8 @@ public class EnableKitRefreshesLayersCheck extends NbTestCase {
     public void testJavaCanBeTurnedOn() throws Exception {
         Logger.getLogger("org.netbeans.JarClassLoader").setLevel(Level.OFF);
         Logger.getLogger("org.netbeans.Archive").setLevel(Level.OFF);
-	Logger.getLogger("org.openide").setLevel(Level.OFF);
+    	Logger.getLogger("org.openide").setLevel(Level.OFF);
+    	Logger.getLogger("sun.awt").setLevel(Level.OFF);
         
         FileObject root = FileUtil.getConfigFile("Menu");
         FileObject edit = root.getFileObject("Edit");

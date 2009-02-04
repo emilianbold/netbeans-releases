@@ -37,17 +37,36 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.glassfish.javaee;
+package org.netbeans.modules.glassfish.common;
 
-import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import java.io.File;
+import java.io.FilenameFilter;
 
 /**
  *
  * @author vkraemer
  */
-public class Ee6OptionalFactory extends Hk2OptionalFactory {
+public class Util {
 
-    public Ee6OptionalFactory() {
-        super(Hk2DeploymentFactory.createEe6(), ServerUtilities.getEe6Utilities());
+    private Util() {
     }
+
+    private static String INDICATOR = File.separatorChar == '/' ? "jrunscript" : "jrunscript.exe";
+    private static FilenameFilter JDK6_DETECTION_FILTER = new FilenameFilter() {
+            public boolean accept(File arg0, String arg1) {
+                if (arg1.equalsIgnoreCase(INDICATOR)) {
+                    return true;
+                }
+                return false;
+            }
+    };
+
+    public static boolean appearsToBeJdk6OrBetter(File javaExecutable) {
+        File dir = javaExecutable.getParentFile();
+        if (dir.list(Util.JDK6_DETECTION_FILTER).length < 1) {
+            return false;
+        }
+        return true;
+    }
+
 }
