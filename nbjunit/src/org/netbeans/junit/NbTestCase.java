@@ -214,8 +214,8 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         sb.append(indent).append("Thread ").append(t.getName()).append('\n');
         indent = indent.concat("  ");
         for (StackTraceElement e : data.get(t)) {
-            sb.append(indent).append(e.getClassName()).append('.').append(e.getMethodName())
-                    .append(':').append(e.getLineNumber()).append('\n');
+            sb.append("\tat ").append(e.getClassName()).append('.').append(e.getMethodName())
+                    .append('(').append(e.getFileName()).append(':').append(e.getLineNumber()).append(")\n");
         }
     }
     
