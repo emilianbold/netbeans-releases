@@ -63,6 +63,7 @@ public class NbiPanel extends JPanel {
     public static final int ANCHOR_RIGHT = 6;
     public static final int ANCHOR_BOTTOM = 7;
     public static final int ANCHOR_TOP = 8;
+    public static final int ANCHOR_FULL = 9;
     
     public NbiPanel() {
         super();
@@ -149,6 +150,15 @@ public class NbiPanel extends JPanel {
                         graphics.drawImage(backgroundImage,
                                 this.getWidth() - backgroundImage.getWidth(this),
                                 0,
+                                this);
+                        break;
+                    case ANCHOR_FULL:
+                        graphics.drawImage(
+                                backgroundImage,
+                                0, 0,
+                                this.getWidth(), this.getHeight(),
+                                0, 0,
+                                backgroundImage.getWidth(this), backgroundImage.getHeight(this),
                                 this);
                         break;
                 }

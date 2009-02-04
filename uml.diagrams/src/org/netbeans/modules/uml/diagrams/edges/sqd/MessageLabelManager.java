@@ -248,10 +248,13 @@ public class MessageLabelManager extends AbstractLabelManager
                 LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_CENTER;
         //check for message to self, consider message to self always right oriented (in current realization)
         MessageWidget msg=getMessage();
-        Widget pin1=msg.getSourceAnchor().getRelatedWidget();
-        Widget pin2=msg.getTargetAnchor().getRelatedWidget();
-        boolean toself=pin1.getParentWidget()==pin2.getParentWidget().getParentWidget() || pin1.getParentWidget().getParentWidget()==pin2.getParentWidget();
-        if(toself)retVal=LayoutFactory.ConnectionWidgetLayoutAlignment.CENTER_RIGHT;
+        if(msg!=null)
+        {
+            Widget pin1=msg.getSourceAnchor().getRelatedWidget();
+            Widget pin2=msg.getTargetAnchor().getRelatedWidget();
+            boolean toself=pin1.getParentWidget()==pin2.getParentWidget().getParentWidget() || pin1.getParentWidget().getParentWidget()==pin2.getParentWidget();
+            if(toself)retVal=LayoutFactory.ConnectionWidgetLayoutAlignment.CENTER_RIGHT;
+        }
         //
         return retVal;
     }

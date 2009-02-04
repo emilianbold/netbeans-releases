@@ -40,6 +40,8 @@
 package org.netbeans.api.extexecution.print;
 
 import java.util.List;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * Converts the line to lines for output window. Convertor may change number
@@ -58,9 +60,11 @@ public interface LineConvertor {
      * convertor.
      *
      * @param line input line to convert
-     * @return converted lines for output window
+     * @return converted lines for output window or <code>null</code>
+     *             if the convertor does not handle line at all
      * @see ConvertedLine
      */
-    List<ConvertedLine> convert(String line);
+    @CheckForNull
+    List<ConvertedLine> convert(@NonNull String line);
 
 }

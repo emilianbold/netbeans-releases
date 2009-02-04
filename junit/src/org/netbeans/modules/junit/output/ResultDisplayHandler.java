@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import org.openide.ErrorManager;
 import org.netbeans.modules.junit.JUnitSettings;
 
@@ -114,6 +115,9 @@ final class ResultDisplayHandler {
         };
         splitPane.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_ResultPanelTree"));
         splitPane.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ResultPanelTree"));
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+            splitPane.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+        }
         return splitPane;
     }
     

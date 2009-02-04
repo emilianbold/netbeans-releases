@@ -42,6 +42,7 @@ import java.awt.Component;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.cnd.settings.CppSettings;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -66,7 +67,7 @@ public class NewQtFormPanel extends CndPanel {
     }
 
     @Override
-    protected void doStoreSettings() {
+    protected void doStoreSettings(WizardDescriptor settings) {
         String table = (CppSettings.findObject(CppSettings.class, true)).getReplaceableStringsTable();
         table +="\nCLASSNAME=" + getGui().getFormName(); // NOI18N
         if (getGui().getHeaderFileName() != null) {

@@ -1,4 +1,3 @@
-// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
@@ -37,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-// </editor-fold>
 
 package org.netbeans.modules.glassfish.common;
 
@@ -69,6 +67,8 @@ import org.netbeans.modules.glassfish.spi.OperationStateListener;
 import org.netbeans.modules.glassfish.spi.Recognizer;
 import org.netbeans.modules.glassfish.spi.RecognizerCookie;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -82,8 +82,6 @@ import org.openide.util.RequestProcessor;
  */
 public class CommonServerSupport implements GlassfishModule, RefreshModulesCookie {
 
-    public static final String URI_PREFIX = "deployer:gfv3";
-
     private final transient Lookup lookup;
     private final Map<String, String> properties =
             Collections.synchronizedMap(new HashMap<String, String>(37));
@@ -96,13 +94,15 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     private FileObject instanceFO;
 
     private volatile boolean startedByIde = false;
+    private GlassfishInstanceProvider instanceProvider;
     
-    CommonServerSupport(Lookup lookup, Map<String, String> ip) {
+    CommonServerSupport(Lookup lookup, Map<String, String> ip, GlassfishInstanceProvider instanceProvider) {
         this.lookup = lookup;
+        this.instanceProvider = instanceProvider;
         String hostName = updateString(ip, GlassfishModule.HOSTNAME_ATTR, GlassfishInstance.DEFAULT_HOST_NAME);
         String glassfishRoot = updateString(ip, GlassfishModule.GLASSFISH_FOLDER_ATTR, "");
         int httpPort = updateInt(ip, GlassfishModule.HTTPPORT_ATTR, GlassfishInstance.DEFAULT_HTTP_PORT);
-        updateString(ip, GlassfishModule.DISPLAY_NAME_ATTR, GlassfishInstance.GLASSFISH_SERVER_NAME);
+        updateString(ip, GlassfishModule.DISPLAY_NAME_ATTR, "Bogus display name"); // NOI18N GlassfishInstance.GLASSFISH_PRELUDE_SERVER_NAME);
         updateInt(ip, GlassfishModule.ADMINPORT_ATTR, GlassfishInstance.DEFAULT_ADMIN_PORT);
         
         updateString(ip, GlassfishModule.DOMAINS_FOLDER_ATTR, 
@@ -111,7 +111,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         updateString(ip,GlassfishModule.SESSION_PRESERVATION_FLAG,"true");
 
         if(ip.get(GlassfishModule.URL_ATTR) == null) {
-            String deployerUrl = formatUri(glassfishRoot, hostName, httpPort);
+            String deployerUrl = instanceProvider.formatUri(glassfishRoot, hostName, httpPort);
             ip.put(URL_ATTR, deployerUrl);
         }
 
@@ -131,10 +131,13 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         }
     }
     
-    public static String formatUri(String glassfishRoot, String host, int port) {
-        return "[" + glassfishRoot + "]" + URI_PREFIX + ":" + host + ":" + port;
-    }
-
+//<<<<<<< local
+//    private static String formatUri(String glassfishRoot, String host, int port, String uriFragment) {
+//        return "[" + glassfishRoot + "]" + uriFragment + ":" + host + ":" + port;
+//    }
+//
+//=======
+//>>>>>>> other
     private static String updateString(Map<String, String> map, String key, String defaultValue) {
         String result = map.get(key);
         if(result == null) {
@@ -157,7 +160,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     }
     
     private FileObject getInstanceFileObject() {
-        FileObject dir = FileUtil.getConfigFile(GlassfishInstanceProvider.DIR_GLASSFISH_INSTANCES);
+        FileObject dir = FileUtil.getConfigFile(instanceProvider.getInstancesDirName());
         if(dir != null) {
             String instanceFN = properties.get(GlassfishInstanceProvider.INSTANCE_FO_ATTR);
             if(instanceFN != null) {
@@ -262,18 +265,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     public Future<OperationState> startServer(final OperationStateListener stateListener) {
         Logger.getLogger("glassfish").log(Level.FINEST, 
                 "CSS.startServer called on thread \"" + Thread.currentThread().getName() + "\"");
-        OperationStateListener startServerListener = new OperationStateListener() {
-            public void operationStateChanged(OperationState newState, String message) {
-                if(newState == OperationState.RUNNING) {
-                    setServerState(ServerState.STARTING);
-                } else if(newState == OperationState.COMPLETED) {
-                    startedByIde = true;
-                    setServerState(ServerState.RUNNING);
-                } else if(newState == OperationState.FAILED) {
-                    setServerState(ServerState.STOPPED);
-                }
-            }
-        };
+        OperationStateListener startServerListener = new StartOperationStateListener();
         FutureTask<OperationState> task = new FutureTask<OperationState>(
                 new StartTask(this, getRecognizers(), startServerListener, stateListener));
         RequestProcessor.getDefault().post(task);
@@ -283,18 +275,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     public Future<OperationState> startServer(final OperationStateListener stateListener, FileObject jdkRoot, String[] jvmArgs) {
         Logger.getLogger("glassfish").log(Level.FINEST, 
                 "CSS.startServer called on thread \"" + Thread.currentThread().getName() + "\"");
-        OperationStateListener startServerListener = new OperationStateListener() {
-            public void operationStateChanged(OperationState newState, String message) {
-                if(newState == OperationState.RUNNING) {
-                    setServerState(ServerState.STARTING);
-                } else if(newState == OperationState.COMPLETED) {
-                    startedByIde = true;
-                    setServerState(ServerState.RUNNING);
-                } else if(newState == OperationState.FAILED) {
-                    setServerState(ServerState.STOPPED);
-                }
-            }
-        };
+        OperationStateListener startServerListener = new StartOperationStateListener();
         FutureTask<OperationState> task = new FutureTask<OperationState>(
                 new StartTask(this, getRecognizers(), jdkRoot, jvmArgs, startServerListener, stateListener));
         RequestProcessor.getDefault().post(task);
@@ -608,4 +589,24 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         }
     }
 
+    public GlassfishInstanceProvider getInstanceProvider() {
+        return instanceProvider;
+    }
+
+
+    class StartOperationStateListener implements OperationStateListener {
+        public void operationStateChanged(OperationState newState, String message) {
+            if(newState == OperationState.RUNNING) {
+                setServerState(ServerState.STARTING);
+            } else if(newState == OperationState.COMPLETED) {
+                startedByIde = true;
+                setServerState(ServerState.RUNNING);
+            } else if(newState == OperationState.FAILED) {
+                setServerState(ServerState.STOPPED);
+                // Open a warning dialog here...
+                NotifyDescriptor nd = new NotifyDescriptor.Message(message);
+                DialogDisplayer.getDefault().notifyLater(nd);
+            }
+        }
+    }
 }

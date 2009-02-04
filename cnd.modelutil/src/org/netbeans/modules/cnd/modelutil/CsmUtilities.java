@@ -102,6 +102,7 @@ import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -157,14 +158,25 @@ public class CsmUtilities {
             mod |= CsmUtilities.getMemberModifiers((CsmMember) obj);
         } else if (CsmKindUtilities.isFunctionDefinition(obj)) {
             CsmFunctionDefinition fun = (CsmFunctionDefinition) obj;
-            if (CsmKindUtilities.isClassMember(fun.getDeclaration())) {
-                mod |= CsmUtilities.getMemberModifiers((CsmMember) fun.getDeclaration());
+            CsmFunction decl = fun.getDeclaration();
+            if (CsmKindUtilities.isClassMember(decl)) {
+                mod |= CsmUtilities.getMemberModifiers((CsmMember) decl);
+            } else {
+                if (decl == null) {
+                    decl = fun;
+                }
+                if (CsmKindUtilities.isGlobalFunction(obj)) {
+                    mod |= GLOBAL;
+                }
+                if (CsmKindUtilities.isFileLocalFunction(decl)){
+                    mod |= FILE_LOCAL;
+                }
             }
         } else {
-            if (CsmKindUtilities.isGlobalVariable(obj) || CsmKindUtilities.isGlobalVariable(obj)) {
+            if (CsmKindUtilities.isGlobalVariable(obj) || CsmKindUtilities.isGlobalFunction(obj)) {
                 mod |= GLOBAL;
             }
-            if (CsmKindUtilities.isFileLocalVariable(obj)) {
+            if (CsmKindUtilities.isFileLocalVariable(obj) || CsmKindUtilities.isFileLocalFunction(obj)) {
                 mod |= FILE_LOCAL;
             }
             if (CsmKindUtilities.isEnumerator(obj)) {
@@ -253,6 +265,27 @@ public class CsmUtilities {
         return panes[0];
     }
 
+    public static TopComponent getTopComponentInEQ(final String tcID) {
+        assert tcID != null;
+        final TopComponent tc[] = {null};
+        if (SwingUtilities.isEventDispatchThread()) {
+            tc[0] = WindowManager.getDefault().findTopComponent(tcID);
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        tc[0] = WindowManager.getDefault().findTopComponent(tcID);
+                    }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return tc[0];
+    }
+
     public static File getFile(Document bDoc) {
         DataObject dobj = NbEditorUtilities.getDataObject(bDoc);
         if (dobj != null && dobj.isValid()) {
@@ -304,6 +337,33 @@ public class CsmUtilities {
             exc.printStackTrace();
         }
         return csmProject;
+    }
+
+    /**
+     * Tries to find project that contains given file under its root directory.
+     * File doesn't have to be included into project or code model.
+     * This is somewhat similar to default FileOwnerQueryImplementation,
+     * but only for CsmProjects.
+     *
+     * @param fo  file to look up
+     * @return project that contains file under its root directory,
+     *      or <code>null</code> if there is no such project
+     */
+    public static CsmProject getCsmProject(FileObject fo) {
+        File file = FileUtil.toFile(fo);
+        if (file != null) {
+            String path = file.getPath();
+            for (CsmProject csmProject : CsmModelAccessor.getModel().projects()) {
+                Object platformProject = csmProject.getPlatformProject();
+                if (platformProject instanceof NativeProject) {
+                    NativeProject nativeProject = (NativeProject)platformProject;
+                    if (path.startsWith(nativeProject.getProjectRoot() + File.separator)) {
+                        return csmProject;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public static boolean isAnyNativeProjectOpened() {
@@ -437,16 +497,18 @@ public class CsmUtilities {
     }
 
     public static Document getDocument(FileObject fo) {
-        try {
-            DataObject dob = DataObject.find(fo);
-            if (dob != null && dob.isValid()) {
-                EditorCookie ec = dob.getCookie(EditorCookie.class);
-                if (ec != null) {
-                    return ec.getDocument();
+        if (fo != null && fo.isValid()) {
+            try {
+                DataObject dob = DataObject.find(fo);
+                if (dob != null && dob.isValid()) {
+                    EditorCookie ec = dob.getCookie(EditorCookie.class);
+                    if (ec != null) {
+                        return ec.getDocument();
+                    }
                 }
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
             }
-        } catch (DataObjectNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
         }
         return null;
     }
@@ -478,6 +540,9 @@ public class CsmUtilities {
     }
 
     public static CloneableEditorSupport findCloneableEditorSupport(DataObject dob) {
+        if (dob == null) {
+            return null;
+        }
         Object obj = dob.getCookie(org.openide.cookies.OpenCookie.class);
         if (obj instanceof CloneableEditorSupport) {
             return (CloneableEditorSupport) obj;

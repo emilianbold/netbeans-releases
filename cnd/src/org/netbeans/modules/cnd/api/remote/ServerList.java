@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.api.remote;
 
 import java.util.Collection;
+import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 
 /**
  * This is a place holder for a RemoteServerList which will be implemented in cnd.remote.
@@ -71,9 +72,10 @@ public interface ServerList {
     
     public void removeServer(ServerRecord record);
 
-    public ServerUpdateCache show(ServerUpdateCache serverUpdateCache, boolean tempUseWizard);
-    
+    @Deprecated
     public ServerUpdateCache show(ServerUpdateCache serverUpdateCache);
+
+    public boolean show(ToolsCacheManager cacheManager);
 
     public boolean isValidExecutable(String hkey, String path);
 }

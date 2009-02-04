@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -153,7 +154,13 @@ public final class LibraryManager {
                 //if (TraceFlags.TRACE_RESOLVED_LIBRARY) trace("Base Project as Default Search Path", curFile, resolvedPath, res, baseProject); //NOI18N
             } else if (!baseProject.isArtificial()) {
                 res = getLibrary((ProjectImpl)baseProject, folder);
-                if (TraceFlags.TRACE_RESOLVED_LIBRARY) trace("Library for folder "+folder, curFile, resolvedPath, res, baseProject); //NOI18N
+                if (res == null) {
+                    if (CndUtils.isDebugMode()) {
+                        trace("Not created library for folder "+folder, curFile, resolvedPath, res, baseProject); //NOI18N
+                    }
+                    res = baseProject;
+                }
+                if (TraceFlags.TRACE_RESOLVED_LIBRARY) {trace("Library for folder "+folder, curFile, resolvedPath, res, baseProject);} //NOI18N
             } else {
                 res = baseProject;
                 //if (TraceFlags.TRACE_RESOLVED_LIBRARY) trace("Base Project", curFile, resolvedPath, res, baseProject); //NOI18N

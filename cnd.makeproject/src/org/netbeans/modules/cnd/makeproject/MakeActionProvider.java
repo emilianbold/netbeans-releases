@@ -79,12 +79,12 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
@@ -98,6 +98,7 @@ import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.settings.CppSettings;
@@ -411,6 +412,10 @@ public class MakeActionProvider implements ActionProvider {
         }
     }
 
+    //debug variables
+    public final static boolean useRsync = Boolean.getBoolean("cnd.remote.useRsync");
+    public static final String REMOTE_BASE_PATH = "~/NetBeansProjects/remote"; //NOI18N
+
     public void addAction(ArrayList<ProjectActionEvent> actionEvents, String projectName, MakeConfigurationDescriptor pd, MakeConfiguration conf, String command, Lookup context) throws IllegalArgumentException {
         String[] targetNames;
         boolean validated = false;
@@ -462,6 +467,43 @@ public class MakeActionProvider implements ActionProvider {
                 if (!ProjectSupport.saveAllProjects(getString("NeedToSaveAllText"))) { // NOI18N
                     return;
                 }
+
+
+                if (useRsync && !conf.getDevelopmentHost().isLocalhost()) {
+                    final String rsyncLocalPath = "rsync"; //NOI18N
+                    CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
+                    int result = provider.run(conf.getDevelopmentHost().getName(), "which rsync", null); //NOI18N
+                    String rsyncRemotePath = (result != 0 || provider.getOutput().indexOf(' ')>-1) ? "/opt/csw/bin/rsync" : provider.getOutput(); //NOI18N //YESCHEAT
+                    // do sync
+                    RunProfile runSyncProfile = conf.getProfile().clone();
+                    // TODO: remote and local rsync paths from toolchain
+                    // TODO: real project name
+                    String lpath = project.getProjectDirectory().getNameExt();
+                    String remotePath = REMOTE_BASE_PATH + pi.separator() + lpath;
+                    //String rsyncLocalPath = HostFacadeFactory.createLocalHostFacade().findInPath("rsync");
+                    if (rsyncRemotePath == null || rsyncRemotePath.length() == 0 || rsyncLocalPath == null || rsyncLocalPath.length() == 0) {
+                        System.err.println("Rsync not fould in Toolchain: sources can not be synchronized");
+                        return;
+                    } else {
+                        String rsyncArgs = " --rsh=ssh --recursive --verbose --perms --links --delete --rsync-path=" + rsyncRemotePath + //NOI18N
+                                " --exclude \"build*\" --exclude \"dist*\" --cvs-exclude . " + //NOI18N
+                                conf.getDevelopmentHost().getName() + ":" + remotePath; //NOI18N
+                        runSyncProfile.setArgs(rsyncArgs);
+                        runSyncProfile.getConsoleType().setValue(RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW);
+
+                        MakeConfiguration syncConf = (MakeConfiguration) conf.clone();
+                        syncConf.setDevelopmentHost(new DevelopmentHostConfiguration(CompilerSetManager.LOCALHOST)); // rsync should be ran only locally
+                        ProjectActionEvent projectActionEvent = new ProjectActionEvent(
+                                project,
+                                actionEvent,
+                                projectName + " (Sync)", // NOI18N
+                                rsyncLocalPath, // NOI18N
+                                syncConf,
+                                runSyncProfile,
+                                false);
+                        actionEvents.add(projectActionEvent);
+                    }
+                }
             } else if (targetName.equals("run") || targetName.equals("debug") || targetName.equals("debug-stepinto") || targetName.equals("debug-load-only")) { // NOI18N
                 if (!validateBuildSystem(pd, conf, validated)) {
                     return;
@@ -498,7 +540,7 @@ public class MakeActionProvider implements ActionProvider {
                     // Should never get here...
                     assert false;
                     return;
-                } else if (conf.isCompileConfiguration() || conf.isQmakeConfiguration()) {
+                } else if (conf.isApplicationConfiguration()) {
                     RunProfile runProfile = null;
                     int platform = conf.getPlatform().getValue();
                     if (platform == Platform.PLATFORM_WINDOWS) {
@@ -527,7 +569,7 @@ public class MakeActionProvider implements ActionProvider {
                         runProfile.getEnvironment().putenv(pi.getPathName(), path);
                     } else if (platform == Platform.PLATFORM_MACOSX) {
                         // On Mac OS X we need to add paths to dynamic libraries from subprojects to DYLD_LIBRARY_PATH
-                        StringBuffer path = new StringBuffer();
+                        StringBuilder path = new StringBuilder();
                         Set subProjectOutputLocations = conf.getSubProjectOutputLocations();
                         // Add paths from subprojetcs
                         Iterator iter = subProjectOutputLocations.iterator();
@@ -563,7 +605,7 @@ public class MakeActionProvider implements ActionProvider {
                             platform == Platform.PLATFORM_SOLARIS_SPARC ||
                             platform == Platform.PLATFORM_LINUX) {
                         // Add paths from -L option
-                        StringBuffer path = new StringBuffer();
+                        StringBuilder path = new StringBuilder();
                         List list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
                         Iterator iter = list.iterator();
                         while (iter.hasNext()) {
@@ -820,17 +862,7 @@ public class MakeActionProvider implements ActionProvider {
                 }
                 validated = true;
             } else if (targetName.equals("custom-action")) { // NOI18N
-                String exe = ""; // NOI18N
-                if (conf.isMakefileConfiguration()) {
-                    exe = conf.getMakefileConfiguration().getOutput().getValue();
-                } else if (conf.isApplicationConfiguration()) {
-                    exe = conf.getLinkerConfiguration().getOutputValue();
-                }
-                exe = conf.expandMacros(exe);
-                // Always absolute
-                if (exe.length() > 0) {
-                    exe = IpeUtils.toAbsolutePath(conf.getBaseDir(), exe);
-                }
+                String exe = conf.getAbsoluteOutputValue();
                 ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                         project,
                         actionEvent,

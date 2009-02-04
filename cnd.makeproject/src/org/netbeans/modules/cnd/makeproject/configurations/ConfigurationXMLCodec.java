@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
+import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.xml.sax.Attributes;
@@ -103,8 +104,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private LinkerConfiguration currentLinkerConfiguration = null;
     private PackagingConfiguration currentPackagingConfiguration = null;
     private ArchiverConfiguration currentArchiverConfiguration = null;
-    private LibrariesConfiguration<LibraryItem> currentLibrariesConfiguration = null;
-    private RequiredProjectsConfiguration<LibraryItem> currentRequiredProjectsConfiguration = null;
+    private LibrariesConfiguration currentLibrariesConfiguration = null;
+    private RequiredProjectsConfiguration currentRequiredProjectsConfiguration = null;
+    private QmakeConfiguration currentQmakeConfiguration = null;
     private List<String> currentList = null;
     private int defaultConf = 0;
     private Stack<Folder> currentFolderStack = new Stack<Folder>();
@@ -170,7 +172,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             } else if (atts.getValue(index).equals("4")) { // NOI18N
                 confType = MakeConfiguration.TYPE_QT_APPLICATION;
             } else if (atts.getValue(index).equals("5")) { // NOI18N
-                confType = MakeConfiguration.TYPE_QT_LIBRARY;
+                confType = MakeConfiguration.TYPE_QT_DYNAMIC_LIB;
+            } else if (atts.getValue(index).equals("6")) { // NOI18N
+                confType = MakeConfiguration.TYPE_QT_STATIC_LIB;
             }
             currentConf = createNewConfiguration(projectDirectory, atts.getValue(0), confType);
         } else if (element.equals(NEO_CONF_ELEMENT)) {
@@ -198,6 +202,17 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                     ((MakeConfigurationDescriptor) projectDescriptor).setExternalFileItems(currentFolder);
                 }
             }
+        } else if (element.equals(DISK_FOLDER_ELEMENT)) {
+            if (currentFolderStack.size() == 0) {
+                currentFolder = ((MakeConfigurationDescriptor) projectDescriptor).getLogicalFolders();
+                currentFolderStack.push(currentFolder);
+            } else {
+                String name = getString(atts.getValue(NAME_ATTR));
+                String root = getString(atts.getValue(ROOT_ATTR));
+                currentFolder = currentFolder.addNewFolder(name, name, true);
+                currentFolder.setRoot(root);
+                currentFolderStack.push(currentFolder);
+            }
         } else if (element.equals(SOURCE_ROOT_LIST_ELEMENT)) {
             currentList = new ArrayList<String>();
         } else if (element.equals(ItemXMLCodec.ITEM_ELEMENT)) {
@@ -209,6 +224,12 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 ItemConfiguration itemConfiguration = new ItemConfiguration(currentConf, item);
                 currentItemConfiguration = itemConfiguration;
                 currentConf.addAuxObject(itemConfiguration);
+                if (descriptorVersion >= 57) {
+                    String excluded = atts.getValue(ItemXMLCodec.EXCLUDED_ATTR);
+                    int tool = new Integer(atts.getValue(ItemXMLCodec.TOOL_ATTR)).intValue();
+                    itemConfiguration.getExcluded().setValue(excluded.equals(TRUE_VALUE));
+                    itemConfiguration.setTool(tool);
+                }
             } else {
                 // FIXUP
             }
@@ -253,7 +274,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(CUSTOMTOOL_ELEMENT)) {
             if (currentItemConfiguration != null) {
                 currentCustomToolConfiguration = currentItemConfiguration.getCustomToolConfiguration();
-            } else; // FIXUP: ERROR
+            } else {
+                // FIXUP: ERROR
+            }
         } else if (element.equals(LINKERTOOL_ELEMENT)) {
             currentLinkerConfiguration = ((MakeConfiguration) currentConf).getLinkerConfiguration();
         } else if (element.equals(PACK_ELEMENT)) {
@@ -318,24 +341,28 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
 
         } else if (element.equals(PACK_FILE_LIST_ELEMENT)) {
             String type = atts.getValue(TYPE_ATTR); // NOI18N
-            String to = atts.getValue(TO_ATTR); // NOI18N
+            String to = getString(atts.getValue(TO_ATTR)); // NOI18N
             String from = atts.getValue(FROM_ATTR); // NOI18N
             from = getString(adjustOffset(from));
-            String perm = atts.getValue(PERM_ATTR); // NOI18N
-            String owner = atts.getValue(OWNER_ATTR); // NOI18N
-            String group = atts.getValue(GROUP_ATTR); // NOI18N
+            String perm = getString(atts.getValue(PERM_ATTR)); // NOI18N
+            String owner = getString(atts.getValue(OWNER_ATTR)); // NOI18N
+            String group = getString(atts.getValue(GROUP_ATTR)); // NOI18N
             PackagerFileElement fileElement = new PackagerFileElement(PackagerFileElement.toFileType(type), from, to, perm, owner, group);
             if (currentPackagingConfiguration != null) {
                 currentPackagingConfiguration.getFiles().add(fileElement);
             }
         } else if (element.equals(PACK_INFO_LIST_ELEMENT)) {
-            String name = atts.getValue(NAME_ATTR); // NOI18N
-            String value = atts.getValue(VALUE_ATTR); // NOI18N
+            String name = getString(atts.getValue(NAME_ATTR)); // NOI18N
+            String value = getString(atts.getValue(VALUE_ATTR)); // NOI18N
             String mandatory = atts.getValue(MANDATORY_ATTR); // NOI18N
             PackagerInfoElement infoElement = new PackagerInfoElement(currentPackagingConfiguration.getType().getValue(), name, value, mandatory.equals(TRUE_VALUE), false);
             if (currentPackagingConfiguration != null) {
                 currentPackagingConfiguration.getInfo().add(infoElement);
             }
+        } else if (element.equals(QT_ELEMENT)) {
+            currentQmakeConfiguration = ((MakeConfiguration) currentConf).getQmakeConfiguration();
+        } else if (element.equals(QT_DEFS_LIST_ELEMENT)) {
+            currentList = currentQmakeConfiguration.getCustomDefs().getValue();
         }
     }
 
@@ -356,7 +383,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             }
             ((MakeConfiguration) currentConf).getCompilerSet().setNameAndFlavor(currentText, descriptorVersion);
         } else if (element.equals(DEVELOPMENT_SERVER_ELEMENT)) {
-            ((MakeConfiguration) currentConf).getDevelopmentHost().setValue(currentText);
+            ((MakeConfiguration) currentConf).getDevelopmentHost().setValue(getString(currentText));
         } else if (element.equals(C_REQUIRED_ELEMENT)) {
             if (descriptorVersion <= 41) {
                 return; // ignore
@@ -386,7 +413,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(DEFAULT_CONF_ELEMENT)) {
             defaultConf = new Integer(currentText).intValue();
         } else if (element.equals(PROJECT_MAKEFILE_ELEMENT)) {
-            ((MakeConfigurationDescriptor) projectDescriptor).setProjectMakefileName(currentText);
+            ((MakeConfigurationDescriptor) projectDescriptor).setProjectMakefileName(getString(currentText));
         } else if (element.equals(OPTIMIZATION_LEVEL_ELEMENT)) { // FIXUP <= version 21
             int ol = new Integer(currentText).intValue();
             if (currentCCCCompilerConfiguration != null) {
@@ -417,9 +444,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             path = getString(adjustOffset(path));
             ((MakeConfiguration) currentConf).getMakefileConfiguration().getBuildCommandWorkingDir().setValue(path);
         } else if (element.equals(BUILD_COMMAND_ELEMENT)) {
-            ((MakeConfiguration) currentConf).getMakefileConfiguration().getBuildCommand().setValue(currentText);
+            ((MakeConfiguration) currentConf).getMakefileConfiguration().getBuildCommand().setValue(getString(currentText));
         } else if (element.equals(CLEAN_COMMAND_ELEMENT)) {
-            ((MakeConfiguration) currentConf).getMakefileConfiguration().getCleanCommand().setValue(currentText);
+            ((MakeConfiguration) currentConf).getMakefileConfiguration().getCleanCommand().setValue(getString(currentText));
         } else if (element.equals(EXECUTABLE_PATH_ELEMENT)) {
             String path = currentText;
             path = getString(adjustOffset(path));
@@ -428,7 +455,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             currentFolder.addItem(new Item(getString(currentText)));
         } else if (element.equals(SOURCE_FOLDERS_ELEMENT)) { // FIXUP: < version 5
             //((MakeConfigurationDescriptor)projectDescriptor).setExternalFileItems(currentList);
-        } else if (element.equals(LOGICAL_FOLDER_ELEMENT)) {
+        } else if (element.equals(LOGICAL_FOLDER_ELEMENT) || element.equals(DISK_FOLDER_ELEMENT)) {
             currentFolderStack.pop();
             if (currentFolderStack.size() > 0) {
                 currentFolder = currentFolderStack.peek();
@@ -436,11 +463,18 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 currentFolder = null;
             }
         } else if (element.equals(SOURCE_ENCODING_ELEMENT)) {
-            ((MakeProject) ((MakeConfigurationDescriptor) projectDescriptor).getProject()).setSourceEncoding(currentText);
+            ((MakeProject) ((MakeConfigurationDescriptor) projectDescriptor).getProject()).setSourceEncoding(getString(currentText));
         } else if (element.equals(PREPROCESSOR_LIST_ELEMENT)) {
             currentList = null;
         } else if (element.equals(ITEM_PATH_ELEMENT)) {
             String path = currentText;
+            path = getString(adjustOffset(path));
+            currentFolder.addItem(new Item(path));
+        } else if (element.equals(ITEM_NAME_ELEMENT)) {
+            String path = currentFolder.getRootPath() + '/' + currentText;
+            if (path.startsWith("./")) { // NOI18N
+                path = path.substring(2);
+            }
             path = getString(adjustOffset(path));
             currentFolder.addItem(new Item(path));
         } else if (element.equals(ItemXMLCodec.ITEM_EXCLUDED_ELEMENT) || element.equals(ItemXMLCodec.EXCLUDED_ELEMENT)) {
@@ -547,7 +581,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             }
         } else if (element.equals(PACK_TOPDIR_ELEMENT)) {
             if (currentPackagingConfiguration != null) {
-                currentPackagingConfiguration.getTopDir().setValue(currentText);
+                currentPackagingConfiguration.getTopDir().setValue(getString(currentText));
             }
         } else if (element.equals(ADDITIONAL_OPTIONS_ELEMENT)) {
             if (currentPackagingConfiguration != null) {
@@ -713,6 +747,38 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             LibraryItem.StdLibItem stdLibItem = Platforms.getPlatform(((MakeConfiguration) currentConf).getPlatform().getValue()).getStandardLibrarie(currentText);
             if (currentLibrariesConfiguration != null && stdLibItem != null) {
                 currentLibrariesConfiguration.add(stdLibItem);
+            }
+        } else if (element.equals(QT_BUILD_MODE_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.getBuildMode().setValue(Integer.parseInt(currentText));
+            }
+        } else if (element.equals(QT_DESTDIR_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.getDestdir().setValue(getString(currentText));
+            }
+        } else if (element.equals(QT_TARGET_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.getTarget().setValue(getString(currentText));
+            }
+        } else if (element.equals(QT_LIB_VERSION_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.getLibVersion().setValue(getString(currentText));
+            }
+        } else if (element.equals(QT_MODULES_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.setEnabledModules(currentText);
+            }
+        } else if (element.equals(QT_MOC_DIR_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.getMocDir().setValue(getString(currentText));
+            }
+        } else if (element.equals(QT_RCC_DIR_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.getRccDir().setValue(getString(currentText));
+            }
+        } else if (element.equals(QT_UI_DIR_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.getUiDir().setValue(getString(currentText));
             }
         }
     }

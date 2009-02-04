@@ -39,6 +39,7 @@ import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionUtils;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -127,12 +128,14 @@ public class CsmIncludeCompletionProvider implements CompletionProvider {
         private String filterPrefix;
         private Boolean usrInclude;
         private boolean showAll;
+        private boolean caseSensitive;
 
         /*package*/ Query(int caretOffset, boolean showAll) {
             this.creationCaretOffset = caretOffset;
             this.queryAnchorOffset = -1;
             this.resultSetAnchorOffset = creationCaretOffset;
             this.showAll = showAll;
+            this.caseSensitive = false;
         }
 
         @Override
@@ -160,6 +163,7 @@ public class CsmIncludeCompletionProvider implements CompletionProvider {
             Collection<CsmIncludeCompletionItem> items = getItems((BaseDocument) doc, caretOffset);
             if (this.queryAnchorOffset > 0) {
                 if (items != null && items.size() > 0) {
+                    this.caseSensitive = isCaseSensitive(component);
                     this.results = items;
                     items = getFilteredData(items, filterPrefix);
                     resultSet.estimateItems(items.size(), -1);
@@ -302,6 +306,10 @@ public class CsmIncludeCompletionProvider implements CompletionProvider {
             return this.queryAnchorOffset > 0;
         }
 
+        private boolean isCaseSensitive(JTextComponent component) {
+            return CsmCompletionUtils.isCaseSensitive(CsmCompletionUtils.getMimeType(component));
+        }
+
         private String trimIncludeSigns(String str) {
             if (str.startsWith(CsmIncludeCompletionItem.QUOTE) ||
                     str.startsWith(CsmIncludeCompletionItem.SYS_OPEN)) {
@@ -354,7 +362,12 @@ public class CsmIncludeCompletionProvider implements CompletionProvider {
         }
 
         private boolean matchPrefix(CsmIncludeCompletionItem itm, String prefix) {
-            return itm.getItemText().startsWith(prefix);
+            String item = itm.getItemText();
+            if (!this.caseSensitive) {
+                item = item.toLowerCase();
+                prefix = prefix.toLowerCase();
+            }
+            return item.startsWith(prefix);
         }
     }
 }

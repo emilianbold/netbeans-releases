@@ -68,29 +68,46 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  */
 public class DiffStreamSource extends StreamSource implements Cancellable {
 
-    private final File      baseFile;    
-    private final String    revision;
+    private final File      baseFile;
+    private final String    revision, pegRevision;
     private final String    title;
     private String          mimeType;
     private SVNUrl          url;
     private SVNUrl          repoUrl;
     private SvnClient       client;
-    
+
     /**
-     * Null is a valid value if base file does not exist in this revision. 
-     */ 
+     * Null is a valid value if base file does not exist in this revision.
+     */
     private File            remoteFile;
 
     /**
      * Creates a new StreamSource implementation for Diff engine.
-     * 
+     *
      * @param baseFile
      * @param revision file revision, may be null if the revision does not exist (ie for new files)
      * @param title title to use in diff panel
-     */ 
+     */
     public DiffStreamSource(File baseFile, SVNUrl repoUrl, SVNUrl fileUrl, String revision, String title) {
         this.baseFile = baseFile;
+        this.revision = this.pegRevision = revision;
+        this.title = title;
+        this.url = fileUrl;
+        this.repoUrl = repoUrl;
+    }
+
+    /**
+     * Creates a new StreamSource implementation for Diff engine.
+     *
+     * @param baseFile
+     * @param revision file revision, may be null if the revision does not exist (ie for new files)
+     * @param pegRevision file peg revision
+     * @param title title to use in diff panel
+     */
+    public DiffStreamSource(File baseFile, SVNUrl repoUrl, SVNUrl fileUrl, String revision, String pegRevision, String title) {
+        this.baseFile = baseFile;
         this.revision = revision;
+        this.pegRevision = pegRevision;
         this.title = title;
         this.url = fileUrl;
         this.repoUrl = repoUrl;
@@ -161,7 +178,7 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
 
         return Lookups.fixed(remoteFo);
     }
-    
+
     /**
      * Loads data over network.
      */
@@ -172,54 +189,20 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
             return;
         }
         mimeType = SvnUtils.getMimeType(baseFile);
-        try {
-            if (isEditable()) {
-                // we cannot move editable documents because that would break Document sharing
-                remoteFile = VersionsCache.getInstance().getFileRevision(baseFile, revision);
-            } else {               
-                try {                        
-                    client = Subversion.getInstance().getClient(repoUrl); 
-                    InputStream in = null;
-                    try {
-                        if(SvnClientFactory.isCLI()) {
-                            // XXX why was the revision given twice ??? !!! CLI WORKAROUND?
-                            // doesn't work with javahl but we won't change for cli as there might be some reason
-                            in = client.getContent(url.appendPath("@" + revision), SvnUtils.toSvnRevision(revision));
-                        } else {
-                            in = client.getContent(url, SvnUtils.toSvnRevision(revision), SvnUtils.toSvnRevision(revision));
-                        }
-                    } catch (SVNClientException e) {
-                        if(SvnClientExceptionHandler.isFileNotFoundInRevision(e.getMessage())    ||
-                           SvnClientExceptionHandler.isPathNotFound(e.getMessage()))
-                        {
-                            in = new ByteArrayInputStream(new byte[] {});
-                        } else {
-                            throw e;
-                        }
-                    }
-                    // keep original extension so MIME can be guessed by the extension
-                    File rf = File.createTempFile("nb-svn", baseFile.getName());  // NOI18N
-                    rf = FileUtil.normalizeFile(rf);
-                    rf.deleteOnExit();  // hard to track actual lifetime
-                    FileUtils.copyStreamToFile(new BufferedInputStream(in), rf);  
-                    if(rf == null) {
-                        remoteFile = null;
-                        return;
-                    }
-                    remoteFile = rf;
-                    Utils.associateEncoding(baseFile, rf);                            
-                } catch (Exception e) {
-                    throw e;
-                }
+        if (isEditable()) {
+            // we cannot move editable documents because that would break Document sharing
+            remoteFile = VersionsCache.getInstance().getFileRevision(baseFile, revision);
+        } else {
+            File rf = VersionsCache.getInstance().getFileRevision(repoUrl, url, revision, pegRevision, baseFile.getName());
+            if (rf == null) {
+                remoteFile = null;
+                return;
             }
-            if (!baseFile.exists() && remoteFile != null && remoteFile.exists()) {
-                mimeType = SvnUtils.getMimeType(remoteFile);
-            }
-        } catch (Exception e) {
-            // TODO detect interrupted IO (exception subclass), i.e. user cancel
-            IOException failure = new IOException("Can not load remote file for " + baseFile); // NOI18N
-            failure.initCause(e);
-            throw failure;
+            remoteFile = rf;
+            Utils.associateEncoding(baseFile, rf);
+        }
+        if (!baseFile.exists() && remoteFile != null && remoteFile.exists()) {
+            mimeType = SvnUtils.getMimeType(remoteFile);
         }
     }
 

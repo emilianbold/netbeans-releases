@@ -60,7 +60,7 @@ public class TextRegionManagerTest extends NbTestCase {
 
     public void testAddRegions() throws Exception {
         Document doc = new BaseDocument(false, "");
-        TextRegionManager textRegionManager = TextRegionManager.get(doc);
+        TextRegionManager textRegionManager = TextRegionManager.get(doc, true);
         //                   0         1
         //                   01234567890123456879
         doc.insertString(0, "abc def abc ghi", null);
@@ -70,7 +70,7 @@ public class TextRegionManagerTest extends NbTestCase {
         TextRegion region3 = new TextRegion(0, 7);
         TextSync textSync2 = new TextSync(region3);
         TextSyncGroup textSyncGroup = new TextSyncGroup(textSync1, textSync2);
-        textRegionManager.addTextSyncGroup(textSyncGroup, 0);
+        textRegionManager.addGroup(textSyncGroup, 0);
         
         // Check contents
         List<TextRegion<?>> regions = textRegionManager.regions(); // pkg-private method
@@ -78,14 +78,14 @@ public class TextRegionManagerTest extends NbTestCase {
         assertRegion(region, 0, 7);
         assertRegion(region.regions().get(0), 0, 3);
         assertRegion(regions.get(1), 8, 11);
-        textRegionManager.removeTextSyncGroup(textSyncGroup);
+        textRegionManager.stopGroupEditing(textSyncGroup);
         assertTextRegionManagerEmpty(textRegionManager);
         
         TextRegion textRegionOverlap = new TextRegion(2,4);
         TextSync textSyncOverlap = new TextSync(textRegionOverlap);
         textSyncGroup.addTextSync(textSyncOverlap);
         try {
-            textRegionManager.addTextSyncGroup(textSyncGroup, 0);
+            textRegionManager.addGroup(textSyncGroup, 0);
         } catch (IllegalArgumentException e) {
             // Expected
         }
@@ -95,7 +95,7 @@ public class TextRegionManagerTest extends NbTestCase {
         TextRegion textRegionWrapAll = new TextRegion(0, 15);
         TextSync textSyncWrapAll = new TextSync(textRegionWrapAll);
         textSyncGroup.addTextSync(textSyncWrapAll);
-        textRegionManager.addTextSyncGroup(textSyncGroup, 0);
+        textRegionManager.addGroup(textSyncGroup, 0);
 
         region = regions.get(0);
         assertRegion(region, 0, 15);

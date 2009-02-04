@@ -50,10 +50,22 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import org.openide.util.Lookup;
 import org.openidex.search.SearchType;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.channels.ClosedByInterruptException;
+import java.nio.channels.FileChannel;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CoderResult;
+import java.nio.charset.CodingErrorAction;
 
 /**
  *
  * @author  Marian Petras
+ * @author  kaktus
  */
 final class Utils {
 
@@ -148,5 +160,79 @@ final class Utils {
         return clonedSearchTypes;
     }
     
-    
+    /**
+     * Converts an input file stream into a char sequence.
+     *
+     * @throws IOException
+     */
+    static CharBuffer getCharSequence(final FileInputStream stream, Charset encoding) throws IOException {
+        FileChannel channel = stream.getChannel();
+        ByteBuffer bbuf = ByteBuffer.allocate((int) channel.size());
+        try {
+            channel.read(bbuf, 0);
+        } catch (ClosedByInterruptException cbie) {
+            return null;        //this is actually okay
+        } finally {
+            channel.close();
+        }
+        bbuf.rewind();
+        CharBuffer cbuf = decodeByteBuffer(bbuf, encoding);
+
+        return cbuf;
+ }
+
+    /**
+     * Decodes a given {@code ByteBuffer} with a given charset decoder.
+     * This is a workaround for a broken
+     * {@link Charset.decode(ByteBuffer) Charset#decode(java.nio.ByteBuffer}
+     * method in JDK 1.5.x.
+     *
+     * @param  in  {@code ByteBuffer} to be decoded
+     * @param  charset  charset whose decoder will be used for decoding
+     * @return  {@code CharBuffer} containing chars produced by the decoder
+     * @see  <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/nio/charset/Charset.html#decode(java.nio.ByteBuffer)">Charset.decode(ByteBuffer)</a>
+     * @see  <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6221056">JDK bug #6221056</a>
+     * @see  <a href="http://www.netbeans.org/issues/show_bug.cgi?id=103193">NetBeans bug #103193</a>
+     * @see  <a href="http://www.netbeans.org/issues/show_bug.cgi?id=103067">NetBeans bug #103067</a>
+     */
+    static CharBuffer decodeByteBuffer(final ByteBuffer in, final Charset charset) throws CharacterCodingException {
+        final CharsetDecoder decoder = charset.newDecoder()
+                                              .onMalformedInput(CodingErrorAction.REPLACE)
+                                              .onUnmappableCharacter(CodingErrorAction.REPLACE);
+        int remaining = in.remaining();
+        if (remaining == 0) {
+            return CharBuffer.allocate(0);
+        }
+
+        int n = (int) (remaining * decoder.averageCharsPerByte());
+        if (n < 16) {
+            n = 16;             //make sure some CharBuffer is allocated
+                                //even when decoding small number of bytes
+                                //and averageCharsPerByte() is less than 1
+        }
+        CharBuffer out = CharBuffer.allocate(n);
+
+        decoder.reset();
+        for (;;) {
+            CoderResult cr = in.hasRemaining()
+                    ? decoder.decode(in, out, true)
+                    : CoderResult.UNDERFLOW;
+            if (cr.isUnderflow()) {
+                cr = decoder.flush(out);
+            }
+            if (cr.isUnderflow()) {
+                break;
+            }
+            if (cr.isOverflow()) {
+                CharBuffer o = CharBuffer.allocate(n <<= 1);
+                out.flip();
+                o.put(out);
+                out = o;
+                continue;
+            }
+            cr.throwException();
+        }
+        out.flip();
+        return out;
+    }
 }

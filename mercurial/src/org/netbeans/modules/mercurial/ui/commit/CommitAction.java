@@ -129,12 +129,6 @@ public class CommitAction extends ContextAction {
     public static void commit(String contentTitle, final VCSContext ctx) {
         final File repository = HgUtils.getRootFile(ctx);
         if (repository == null) return;
-        String projName = HgProjectUtils.getProjectName(repository);
-        if (projName == null) {
-            File projFile = HgUtils.getProjectFile(ctx);
-            projName = HgProjectUtils.getProjectName(projFile);
-        } 
-        final String prjName = projName;
 
         // show commit dialog
         final CommitPanel panel = new CommitPanel();
@@ -194,7 +188,7 @@ public class CommitAction extends ContextAction {
             HgProgressSupport support = new HgProgressSupport() {
                 public void perform() {
                     OutputLogger logger = getLogger();
-                    performCommit(message, commitFiles, ctx, this, prjName, logger);
+                    performCommit(message, commitFiles, ctx, this, logger);
                 }
             };
             support.start(rp, repository.getAbsolutePath(), org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
@@ -339,7 +333,7 @@ public class CommitAction extends ContextAction {
     }
     
     private static void performCommit(String message, Map<HgFileNode, CommitOptions> commitFiles, 
-            VCSContext ctx, HgProgressSupport support, String prjName, OutputLogger logger) {
+            VCSContext ctx, HgProgressSupport support, OutputLogger logger) {
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
         final File repository = HgUtils.getRootFile(ctx);
         List<File> addCandidates = new ArrayList<File>();
@@ -406,11 +400,11 @@ public class CommitAction extends ContextAction {
             if (commitCandidates.size() == 1) {
                 logger.output(
                         NbBundle.getMessage(CommitAction.class,
-                        "MSG_COMMIT_INIT_SEP_ONE", commitCandidates.size(), prjName)); // NOI18N
+                        "MSG_COMMIT_INIT_SEP_ONE", commitCandidates.size())); // NOI18N
             } else {
                 logger.output(
                         NbBundle.getMessage(CommitAction.class,
-                        "MSG_COMMIT_INIT_SEP", commitCandidates.size(), prjName)); // NOI18N
+                        "MSG_COMMIT_INIT_SEP", commitCandidates.size())); // NOI18N
             }
             for (File f : commitCandidates) {
                 logger.output("\t" + f.getAbsolutePath()); // NOI18N

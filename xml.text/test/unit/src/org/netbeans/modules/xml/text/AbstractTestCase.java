@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
+import java.util.Scanner;
 import javax.swing.text.Document;
 import junit.framework.*;
 import org.netbeans.api.lexer.Language;
@@ -54,6 +55,7 @@ import org.netbeans.modules.xml.xdm.XDMModel;
 import org.netbeans.modules.xml.xdm.diff.DefaultElementIdentity;
 import org.netbeans.modules.xml.xdm.diff.DiffFinder;
 import org.netbeans.modules.xml.xdm.diff.Difference;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -128,4 +130,27 @@ public class AbstractTestCase extends TestCase {
         doc.putProperty(Language.class, XMLTokenId.language());
         return ((XMLSyntaxSupport)doc.getSyntaxSupport());
     }
+
+    /**
+     * Converts expected result data into a string. See result*.txt files.
+     */
+    protected String getExpectedResultAsString(String resultFile) {
+        StringBuilder expectedResult = new StringBuilder();
+        InputStream in = AbstractTestCase.class.getResourceAsStream(resultFile);
+        Scanner scanner = new Scanner(in);
+        try {
+            while(scanner.hasNextLine()) {
+                expectedResult.append(scanner.nextLine());
+            }
+        } finally {
+            scanner.close();
+            try {
+                in.close();
+            } catch (IOException ex) {
+                //stupid catch
+            }
+        }
+        return expectedResult.toString();        
+    }
+
 }

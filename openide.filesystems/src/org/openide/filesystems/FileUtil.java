@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.SyncFailedException;
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -85,6 +86,9 @@ import org.openide.util.WeakListeners;
  * This is a dummy class; all methods are static.
  */
 public final class FileUtil extends Object {
+
+    /** Contains mapping of FileChangeListener to File. */
+    private static final Map<FileChangeListener,Map<File,Holder>> holders = new WeakHashMap<FileChangeListener,Map<File,Holder>>();
 
     private static final Logger LOG = Logger.getLogger(FileUtil.class.getName());
 
@@ -194,8 +198,222 @@ public final class FileUtil extends Object {
             fs.removeFileChangeListener(fcl);
         }
     }
-    
-    
+
+    /**
+     * Adds a listener to changes in a given path. It permits you to listen to a file
+     * which does not yet exist, or continue listening to it after it is deleted and recreated, etc.
+     * <br/>
+     * When given path represents a file ({@code path.isDirectory() == false})
+     * <ul>
+     * <li>fileDataCreated event is fired when the file is created</li>
+     * <li>fileDeleted event is fired when the file is deleted</li>
+     * <li>fileChanged event is fired when the file is modified</li>
+     * <li>fileRenamed event is fired when the file is renamed</li>
+     * <li>fileAttributeChanged is fired when FileObject's attribute is changed</li>
+     * </ul>
+     * When given path represents a folder ({@code path.isDirectory() == true})
+     * <ul>
+     * <li>fileFolderCreated event is fired when the folder is created or a child folder created</li>
+     * <li>fileDataCreated event is fired when a child file is created</li>
+     * <li>fileDeleted event is fired when the folder is deleted or a child file/folder removed</li>
+     * <li>fileChanged event is fired when a child file is modified</li>
+     * <li>fileRenamed event is fired when the folder is renamed or a child file/folder is renamed</li>
+     * <li>fileAttributeChanged is fired when FileObject's attribute is changed</li>
+     *</ul>
+     * Can only add a given [listener, path] pair once. However a listener can 
+     * listen to any number of paths. Note that listeners are always held weakly
+     * - if the listener is collected, it is quietly removed.
+     *
+     * @param listener FileChangeListener to listen to changes in path
+     * @param path File path to listen to (even not existing)
+     *
+     * @see FileObject#addFileChangeListener
+     * @since org.openide.filesystems 7.20
+     */
+    public static void addFileChangeListener(FileChangeListener listener, File path) {
+        assert path.equals(FileUtil.normalizeFile(path)) : "Need to normalize " + path + "!";  //NOI18N
+        synchronized (holders) {
+            Map<File, Holder> f2H = holders.get(listener);
+            if (f2H == null) {
+                f2H = new HashMap<File, Holder>();
+                holders.put(listener, f2H);
+            }
+            if (f2H.containsKey(path)) {
+                throw new IllegalArgumentException("Already listening to " + path); // NOI18N
+            }
+            f2H.put(path, new Holder(listener, path));
+        }
+    }
+
+    /**
+     * Removes a listener to changes in a given path.
+     * @param listener FileChangeListener to be removed
+     * @param path File path in which listener was listening
+     * @throws IllegalArgumentException if listener was not listening to given path
+     *
+     * @see FileObject#removeFileChangeListener
+     * @since org.openide.filesystems 7.20
+     */
+    public static void removeFileChangeListener(FileChangeListener listener, File path) {
+        assert path.equals(FileUtil.normalizeFile(path)) : "Need to normalize " + path + "!";  //NOI18N
+        synchronized (holders) {
+            Map<File, Holder> f2H = holders.get(listener);
+            if (f2H == null) {
+                throw new IllegalArgumentException("Was not listening to " + path); // NOI18N
+            }
+            if (!f2H.containsKey(path)) {
+                throw new IllegalArgumentException(listener + " was not listening to " + path + "; only to " + f2H.keySet()); // NOI18N
+            }
+            // remove Holder instance from map and call run to unregister its current listener
+            f2H.remove(path).run();
+        }
+    }
+
+    /** Holds FileChangeListener and File pair and handle movement of auxiliary
+     * FileChangeListener to the first existing upper folder and firing appropriate events.
+     */
+    private static final class Holder extends WeakReference<FileChangeListener> implements FileChangeListener, Runnable {
+
+        private final File path;
+        private FileObject current;
+        private File currentF;
+        /** Whether listener is seeded on target path. */
+        private boolean isOnTarget = false;
+
+        public Holder(FileChangeListener listener, File path) {
+            super(listener, Utilities.activeReferenceQueue());
+            assert path != null;
+            this.path = path;
+            locateCurrent();
+        }
+
+        private void locateCurrent() {
+            FileObject oldCurrent = current;
+            currentF = path;
+            while (true) {
+                try {
+                    current = FileUtil.toFileObject(currentF);
+                } catch (IllegalArgumentException x) {
+                    // #73526: was originally normalized, but now is not. E.g. file changed case.
+                    currentF = FileUtil.normalizeFile(currentF);
+                    current = FileUtil.toFileObject(currentF);
+                }
+                if (current != null) {
+                    isOnTarget = path.equals(currentF);
+                    break;
+                }
+                currentF = currentF.getParentFile();
+                if (currentF == null) {
+                    // #47320: can happen on Windows in case the drive does not exist.
+                    // (Inside constructor for Holder.) In that case skip it.
+                    return;
+                }
+            }
+            assert current != null;
+            if (current != oldCurrent) {
+                if (oldCurrent != null) {
+                    oldCurrent.removeFileChangeListener(this);
+                }
+                current.addFileChangeListener(this);
+                current.getChildren();//to get events about children
+            }
+        }
+
+        private void someChange() {
+            FileChangeListener listener;
+            boolean wasOnTarget;
+            synchronized (this) {
+                if (current == null) {
+                    return;
+                }
+                listener = get();
+                if (listener == null) {
+                    return;
+                }
+                wasOnTarget = isOnTarget;
+                locateCurrent();
+            }
+            if (isOnTarget && !wasOnTarget) {
+                // fire events about itself creation (it is difference from FCL
+                // on FileOject - it cannot be fired because we attach FCL on already existing FileOject
+                if (current.isFolder()) {
+                    listener.fileFolderCreated(new FileEvent(current));
+                } else {
+                    listener.fileDataCreated(new FileEvent(current));
+                }
+            }
+        }
+
+        public void fileChanged(FileEvent fe) {
+            if (isOnTarget) {
+                FileChangeListener listener = get();
+                if (listener != null) {
+                    listener.fileChanged(fe);
+                }
+            } else {
+                someChange();
+            }
+        }
+
+        public void fileDeleted(FileEvent fe) {
+            if (isOnTarget) {
+                FileChangeListener listener = get();
+                if (listener != null) {
+                    listener.fileDeleted(fe);
+                }
+            }
+            someChange();
+        }
+
+        public void fileDataCreated(FileEvent fe) {
+            if (isOnTarget) {
+                FileChangeListener listener = get();
+                if (listener != null) {
+                    listener.fileDataCreated(fe);
+                }
+            } else {
+                someChange();
+            }
+        }
+
+        public void fileFolderCreated(FileEvent fe) {
+            if (isOnTarget) {
+                FileChangeListener listener = get();
+                if (listener != null) {
+                    listener.fileFolderCreated(fe);
+                }
+            } else {
+                someChange();
+            }
+        }
+
+        public void fileRenamed(FileRenameEvent fe) {
+            if (isOnTarget) {
+                FileChangeListener listener = get();
+                if (listener != null) {
+                    listener.fileRenamed(fe);
+                }
+            }
+            someChange();
+        }
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            if (isOnTarget) {
+                FileChangeListener listener = get();
+                if (listener != null) {
+                    listener.fileAttributeChanged(fe);
+                }
+            }
+        }
+
+        public synchronized void run() {
+            if (current != null) {
+                current.removeFileChangeListener(this);
+                current = null;
+            }
+        }
+    }
+
     /**
      * Executes atomic action. For more info see {@link FileSystem#runAtomicAction}. 
      * <p>

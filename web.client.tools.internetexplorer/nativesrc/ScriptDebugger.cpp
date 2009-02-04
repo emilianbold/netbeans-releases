@@ -500,6 +500,7 @@ IDebugProperty *ScriptDebugger::getChildDebugProperty(IDebugProperty *pDebugProp
             }
         }
     }
+	return NULL;
 }
 
 Property *ScriptDebugger::getProperty(IDebugProperty *pDebugProperty, tstring name, int stackDepth, BOOL recurse) {

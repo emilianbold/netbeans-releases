@@ -16,4 +16,11 @@
         <type>javadoc</type>            
         
     </volume>
+
+    <volume>
+        <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
+        <type>maven-pom</type>
+        <resource>http://repo1.maven.org/maven2/mysql/mysql-connector-java/5.1.6/mysql-connector-java-5.1.6.pom</resource>
+    </volume>
+
 </library>

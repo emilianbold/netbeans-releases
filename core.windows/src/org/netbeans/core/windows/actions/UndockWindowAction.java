@@ -115,7 +115,8 @@ public final class UndockWindowAction extends AbstractAction {
 
     public boolean isEnabled() {
         updateName();
-        return getTC2WorkWith() != null && Switches.isTopComponentUndockingEnabled();
+        return getTC2WorkWith() != null && Switches.isTopComponentUndockingEnabled()
+                && Switches.isUndockingEnabled(getTC2WorkWith());
     }
 
     private void updateName() {

@@ -145,40 +145,15 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
     }
    
     private void attachUpdater() {
-        //TODO the updating bussiness is somewhat more complex.
-        // inheritance currently not taken into account
-        
         FileObject fo = project.getProjectDirectory();
         FileObject userFo = project.getHomeDirectory();
-        fo.addFileChangeListener(project.getProjectFolderUpdater());
-        FileObject xml = fo.getFileObject("pom.xml"); //NOI18N
-        if (userFo != null) {
-            userFo.addFileChangeListener(project.getUserFolderUpdater());
-            FileObject prop = userFo.getFileObject("settings.xml"); //NOI18N
-            if (prop != null) {
-                prop.addFileChangeListener(project.getFileUpdater());
-            }
-        }
-        if (xml != null) {
-            xml.addFileChangeListener(project.getFileUpdater());
-        }
+        project.getProjectFolderUpdater().attachAll(fo);
+        project.getUserFolderUpdater().attachAll(userFo);
     }    
     
    private void detachUpdater() {
-        FileObject fo = project.getProjectDirectory();
-        FileObject userFo = project.getHomeDirectory();
-        fo.removeFileChangeListener(project.getProjectFolderUpdater());
-        if (userFo != null) {
-            userFo.removeFileChangeListener(project.getUserFolderUpdater());
-            FileObject prop = userFo.getFileObject("settings.xml"); //NOI18N
-            if (prop != null) {
-                prop.removeFileChangeListener(project.getFileUpdater());
-            }
-        }
-        FileObject xml = fo.getFileObject("pom.xml"); //NOI18N
-        if (xml != null) {
-            xml.removeFileChangeListener(project.getFileUpdater());
-        }
+        project.getProjectFolderUpdater().detachAll();
+        project.getUserFolderUpdater().detachAll();
     }        
 
 }

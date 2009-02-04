@@ -7,15 +7,15 @@ SCRIPTS_DIR=`pwd`
 source init.sh
 
 if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
-   ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/installer
+   ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/installer $MAC_PATH/reglib/src
    ERROR_CODE=$?
    if [ $ERROR_CODE != 0 ]; then
        echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't remove old scripts"
        exit $ERROR_CODE;
    fi
-   ssh $NATIVE_MAC_MACHINE mkdir -p $MAC_PATH/installer
+   ssh $NATIVE_MAC_MACHINE mkdir -p $MAC_PATH/installer $MAC_PATH/reglib/src
    cd $NB_ALL
-   gtar c installer/mac | ssh $NATIVE_MAC_MACHINE "( cd $MAC_PATH; tar x )"
+   gtar c installer/mac reglib/src | ssh $NATIVE_MAC_MACHINE "( cd $MAC_PATH; tar x )"
 
    if [ 1 -eq $ML_BUILD ] ; then
        cd $NB_ALL/l10n

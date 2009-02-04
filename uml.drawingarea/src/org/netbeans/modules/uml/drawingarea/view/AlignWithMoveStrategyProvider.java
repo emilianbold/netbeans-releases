@@ -510,7 +510,7 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
                 if (data instanceof IPresentationElement)
                 {
                     IPresentationElement presentation = (IPresentationElement) data;
-                    element = (INamedElement) presentation.getFirstSubject();
+                    if(presentation.getFirstSubject() instanceof INamedElement)element = (INamedElement) presentation.getFirstSubject();
                 }
 
                 // Handle the namespace change.  The container widget will
@@ -518,7 +518,7 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
                 //
                 // We have to have to handle the case of when the widget
                 // is moved from a container to the scene.
-                if (details.getOwner() instanceof ContainerWidget)
+                if (details.getOwner() instanceof ContainerWidget && element!=null)
                 {
                     IDiagram diagram = lookup.lookup(IDiagram.class);
                     if (diagram != null)

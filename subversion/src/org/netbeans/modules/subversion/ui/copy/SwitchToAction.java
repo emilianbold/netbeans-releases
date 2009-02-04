@@ -49,13 +49,15 @@ import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnClientRefreshHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.util.FileSelector;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -105,12 +107,19 @@ public class SwitchToAction extends ContextAction {
         
         Context ctx = getContext(nodes);        
 
-        File root = SvnUtils.getActionRoot(ctx);
-        if(root == null) return;
-        SVNUrl rootUrl;
+        File[] roots = SvnUtils.getActionRoots(ctx);
+        if(roots == null || roots.length == 0) return;
 
+        File interestingFile;
+        if(roots.length == 1) {
+            interestingFile = roots[0];
+        } else {
+            interestingFile = SvnUtils.getPrimaryFile(roots[0]);
+        }
+
+        SVNUrl rootUrl;
         try {            
-            rootUrl = SvnUtils.getRepositoryRootUrl(root);
+            rootUrl = SvnUtils.getRepositoryRootUrl(interestingFile);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
@@ -120,29 +129,37 @@ public class SwitchToAction extends ContextAction {
         boolean hasChanges = files.length > 0;
 
         final RequestProcessor rp = createRequestProcessor(nodes);
-        final SwitchTo switchTo = new SwitchTo(repositoryRoot, root, hasChanges);
+
+        final SwitchTo switchTo = new SwitchTo(repositoryRoot, interestingFile, hasChanges);
                 
-        showDialog(switchTo, root, rp, nodes);
+        if(switchTo.showDialog()) {
+            performSwitch(switchTo, rp, nodes, roots);
+        }
     }
 
-    private void showDialog(final SwitchTo switchTo, final File root, final RequestProcessor rp, final Node[] nodes) {        
-        boolean ret = switchTo.showDialog();
-        if(!ret) {
-            return;
-        }
+    /**
+     * Switches all files from the roots array to their respective urls given by the SwitchTo controller
+     * @param switchTo
+     * @param rp
+     * @param nodes
+     * @param roots
+     */
+    private void performSwitch(final SwitchTo switchTo, final RequestProcessor rp, final Node[] nodes, final File[] roots) {
         rp.post(new Runnable() {
             public void run() {
-                if(!validateInput(root, switchTo.getRepositoryFile())) {
+                if(!validateInput(roots[0], switchTo.getRepositoryFile())) {
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
-                            showDialog(switchTo, root, rp, nodes);
+                            performSwitch(switchTo, rp, nodes, roots);
                         }
                     });
                 } else {
                     ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(SwitchToAction.this, nodes) {
                         public void perform() {
-                            RepositoryFile toRepositoryFile = switchTo.getRepositoryFile();
-                            performSwitch(toRepositoryFile, root, this);
+                            for (File root : roots) {
+                                RepositoryFile toRepositoryFile = switchTo.getRepositoryFile().replaceLastSegment(root.getName(), 0);
+                                performSwitch(toRepositoryFile, root, this);
+                            }
                         }
                     };
                     support.start(rp);                            

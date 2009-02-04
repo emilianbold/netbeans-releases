@@ -72,6 +72,11 @@ import org.openide.util.WeakListeners;
  * @author Tomas Zezula, Tomas Mysik
  */
 public final class SourceRoots {
+    public enum Type {
+        SOURCES,
+        TESTS,
+        SELENIUM
+    }
 
     /**
      * Property name of a event that is fired when project properties change.
@@ -96,29 +101,40 @@ public final class SourceRoots {
     private List<URL> sourceRootURLs;
     private final PropertyChangeSupport support;
     private final ProjectMetadataListener listener;
-    private final boolean isTest;
     private final File projectDir;
+    private final Type type;
 
-    public static SourceRoots create(UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper refHelper, boolean isTest) {
+    public static SourceRoots create(UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper refHelper, Type type) {
         assert helper != null;
         assert evaluator != null;
         assert refHelper != null;
-        return new SourceRoots(helper, evaluator, refHelper, isTest);
+        assert type != null;
+        return new SourceRoots(helper, evaluator, refHelper, type);
     }
 
-    private SourceRoots(UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper refHelper, boolean isTest) {
+    private SourceRoots(UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper refHelper, Type type) {
 
         this.helper = helper;
         this.evaluator = evaluator;
         this.refHelper = refHelper;
-        this.isTest = isTest;
+        this.type = type;
 
-        sourceRootProperties = Arrays.asList(
-                PhpProjectProperties.SRC_DIR,
-                PhpProjectProperties.TEST_SRC_DIR);
-        sourceRootNames = Arrays.asList(
-                NbBundle.getMessage(SourceRoots.class, "LBL_Node_Sources"),
-                NbBundle.getMessage(SourceRoots.class, "LBL_Node_Tests"));
+        switch (type) {
+            case SOURCES:
+                sourceRootProperties = Arrays.asList(PhpProjectProperties.SRC_DIR);
+                sourceRootNames = Arrays.asList(NbBundle.getMessage(SourceRoots.class, "LBL_Node_Sources"));
+                break;
+            case TESTS:
+                sourceRootProperties = Arrays.asList(PhpProjectProperties.TEST_SRC_DIR);
+                sourceRootNames = Arrays.asList(NbBundle.getMessage(SourceRoots.class, "LBL_Node_Tests"));
+                break;
+            case SELENIUM:
+                sourceRootProperties = Arrays.asList(PhpProjectProperties.SELENIUM_SRC_DIR);
+                sourceRootNames = Arrays.asList(NbBundle.getMessage(SourceRoots.class, "LBL_Node_SeleniumTests"));
+                break;
+            default:
+                throw new IllegalStateException("Unknow sources roots type: " + type);
+        }
         projectDir = FileUtil.toFile(this.helper.getAntProjectHelper().getProjectDirectory());
         support = new PropertyChangeSupport(this);
         listener = new ProjectMetadataListener();
@@ -244,16 +260,20 @@ public final class SourceRoots {
     public String getRootDisplayName(String rootName, String propName) {
         if (rootName == null || rootName.length() == 0) {
             // if the prop is src.dir use the default name
-            if (isTest && "test.src.dir".equals(propName)) { //NOI18N
-                rootName = DEFAULT_TEST_LABEL;
-            } else if (!isTest && "src.dir".equals(propName)) { //NOI18N
-                rootName = DEFAULT_SOURCE_LABEL;
-            } else {
-                // if the name is not given, it should be either a relative path in the project dir
-                // or absolute path when the root is not under the project dir
-                String propValue = evaluator.getProperty(propName);
-                File sourceRoot = propValue == null ? null : helper.getAntProjectHelper().resolveFile(propValue);
-                rootName = createInitialDisplayName(sourceRoot);
+            switch (type) {
+                case SOURCES:
+                    rootName = DEFAULT_SOURCE_LABEL;
+                    break;
+                case TESTS:
+                    rootName = DEFAULT_TEST_LABEL;
+                    break;
+                default:
+                    // if the name is not given, it should be either a relative path in the project dir
+                    // or absolute path when the root is not under the project dir
+                    String propValue = evaluator.getProperty(propName);
+                    File sourceRoot = propValue == null ? null : helper.getAntProjectHelper().resolveFile(propValue);
+                    rootName = createInitialDisplayName(sourceRoot);
+                    break;
             }
         }
         return rootName;
@@ -265,11 +285,11 @@ public final class SourceRoots {
      * @return the label to be displayed.
      */
     public String createInitialDisplayName(File sourceRoot) {
-        return createInitialDisplayName(sourceRoot, projectDir, isTest);
+        return createInitialDisplayName(sourceRoot, projectDir, type);
     }
 
 
-    public static String createInitialDisplayName(File sourceRoot, File projectDir, boolean isTest) {
+    public static String createInitialDisplayName(File sourceRoot, File projectDir, Type type) {
         String rootName;
         if (sourceRoot != null) {
             String srPath = sourceRoot.getAbsolutePath();
@@ -280,7 +300,7 @@ public final class SourceRoots {
                 rootName = sourceRoot.getAbsolutePath();
             }
         } else {
-            rootName = isTest ? DEFAULT_TEST_LABEL : DEFAULT_SOURCE_LABEL;
+            rootName = type.equals(Type.SOURCES) ? DEFAULT_SOURCE_LABEL : DEFAULT_TEST_LABEL;
         }
         return rootName;
     }
@@ -291,6 +311,18 @@ public final class SourceRoots {
      * @return boolean <code>true</code> if the instance belongs to the test compilation unit, false otherwise.
      */
     public boolean isTest() {
+        boolean isTest = false;
+        switch (type) {
+            case SOURCES:
+                isTest = false;
+                break;
+            case TESTS:
+            case SELENIUM:
+                isTest = true;
+                break;
+            default:
+                assert false : "Unknown source roots type: " + type;
+        }
         return isTest;
     }
 

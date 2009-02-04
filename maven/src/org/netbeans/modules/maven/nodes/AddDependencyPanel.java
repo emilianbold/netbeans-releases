@@ -62,15 +62,21 @@ import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.TextValueCompleter;
+import org.netbeans.modules.maven.api.customizer.support.DelayedDocumentChangeListener;
 import org.netbeans.modules.maven.indexer.api.QueryField;
+import org.netbeans.modules.maven.spi.nodes.MavenNodeFactory;
 import org.openide.DialogDescriptor;
 import org.openide.NotificationLineSupport;
 import org.openide.explorer.ExplorerManager;
@@ -181,7 +187,11 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         queryPanel = new QueryPanel(this);
         resultsPanel.add(queryPanel, BorderLayout.CENTER);
 
-        searchField.getDocument().addDocumentListener(new DocumentListener() {
+        searchField.getDocument().addDocumentListener(
+                DelayedDocumentChangeListener.create(
+                searchField.getDocument(), queryPanel, 500));
+
+        /*searchField.getDocument().addDocumentListener(new DocumentListener() {
 
             public void insertUpdate(DocumentEvent e) {
                 queryPanel.maybeFind(searchField.getText());
@@ -194,7 +204,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             public void changedUpdate(DocumentEvent e) {
                 queryPanel.maybeFind(searchField.getText());
             }
-        });
+        });*/
 
         defaultProgressC = progressLabel.getForeground();
         defaultVersionC = txtVersion.getForeground();
@@ -367,8 +377,8 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                     .add(lblVersion))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(coordPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(txtArtifactId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE)
-                    .add(txtGroupId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE)
+                    .add(txtArtifactId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 343, Short.MAX_VALUE)
+                    .add(txtGroupId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 343, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, coordPanelLayout.createSequentialGroup()
                         .add(txtVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -380,7 +390,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         coordPanelLayout.setVerticalGroup(
             coordPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, coordPanelLayout.createSequentialGroup()
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(20, Short.MAX_VALUE)
                 .add(coordPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(txtGroupId, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(lblGroupId))
@@ -439,7 +449,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                 .add(searchPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, searchPanelLayout.createSequentialGroup()
                         .addContainerGap()
-                        .add(resultsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE))
+                        .add(resultsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 395, Short.MAX_VALUE))
                     .add(searchPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .add(resultsLabel)
@@ -453,7 +463,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                             .add(searchPanelLayout.createSequentialGroup()
                                 .add(jLabel1)
                                 .add(14, 14, 14))
-                            .add(searchField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 356, Short.MAX_VALUE))))
+                            .add(searchField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         searchPanelLayout.setVerticalGroup(
@@ -470,7 +480,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                     .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(resultsLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(resultsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
+                .add(resultsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -492,7 +502,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             .add(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(artifactPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE)
+                    .add(artifactPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 395, Short.MAX_VALUE)
                     .add(artifactsLabel))
                 .addContainerGap())
         );
@@ -502,7 +512,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                 .addContainerGap()
                 .add(artifactsLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(artifactPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 245, Short.MAX_VALUE)
+                .add(artifactPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -512,15 +522,15 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(tabPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, coordPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(tabPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 434, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(coordPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 107, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(coordPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 125, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(tabPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE))
+                .add(tabPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 311, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -672,15 +682,15 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         return 0;
     }
 
-    private static class QueryPanel extends JPanel implements ExplorerManager.Provider, Comparator<String>, PropertyChangeListener {
+
+    private static class QueryPanel extends JPanel implements ExplorerManager.Provider,
+            Comparator<String>, PropertyChangeListener, ChangeListener {
 
         private BeanTreeView btv;
         private ExplorerManager manager;
 
         private static final Object LOCK = new Object();
-        private static final int TYPE_DELAY = 500;
         private String inProgressText, lastQueryText, curTypedText;
-        private Timer typeTimer;
 
         private static Node noResultsRoot;
         private AddDependencyPanel depPanel;
@@ -701,27 +711,25 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             depPanel.resultsLabel.setLabelFor(btv);
         }
 
-        void maybeFind (String text) {
-            curTypedText = text.trim();
-            depPanel.searchField.setForeground(defSearchC);
-
-            if (typeTimer == null) {
-                typeTimer = new Timer(TYPE_DELAY, new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        if (curTypedText.length() < 3) {
-                            depPanel.searchField.setForeground(Color.RED);
-                            depPanel.nls.setWarningMessage(NbBundle.getMessage(AddDependencyPanel.class, "MSG_QueryTooShort"));
-                        } else {
-                            depPanel.searchField.setForeground(defSearchC);
-                            depPanel.nls.clearMessages();
-                            find(curTypedText);
-                        }
-                    }
-                });
-                typeTimer.setRepeats(false);
+        /** delayed change of query text */
+        public void stateChanged (ChangeEvent e) {
+            Document doc = (Document)e.getSource();
+            try {
+                curTypedText = doc.getText(0, doc.getLength()).trim();
+            } catch (BadLocationException ex) {
+                // should never happen, nothing we can do probably
+                return;
             }
 
-            typeTimer.restart();
+            depPanel.searchField.setForeground(defSearchC);
+            if (curTypedText.length() < 3) {
+                depPanel.searchField.setForeground(Color.RED);
+                depPanel.nls.setWarningMessage(NbBundle.getMessage(AddDependencyPanel.class, "MSG_QueryTooShort"));
+            } else {
+                depPanel.searchField.setForeground(defSearchC);
+                depPanel.nls.clearMessages();
+                find(curTypedText);
+            }
         }
 
         void find(String queryText) {
@@ -797,7 +805,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                             SwingUtilities.invokeLater(new Runnable() {
                                 public void run() {
                                     if (lastQueryText != null) {
-                                        maybeFind(lastQueryText);
+                                        find(lastQueryText);
                                     }
                                 }
                             });
@@ -850,7 +858,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                 node = new AbstractNode(array);
 
                 for (String key : keyList) {
-                    array.add(new Node[]{new ArtifactNode(key, map.get(key))});
+                    array.add(new Node[]{MavenNodeFactory.createArtifactNode(key, map.get(key))});
                 }
             } else {
                 node = getNoResultsRoot();
@@ -882,8 +890,8 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         public void propertyChange(PropertyChangeEvent evt) {
             if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
                 Node[] selNodes = manager.getSelectedNodes();
-                if (selNodes.length == 1 && selNodes[0] instanceof VersionNode) {
-                    NBVersionInfo vi = ((VersionNode)selNodes[0]).getNBVersionInfo();
+                if (selNodes.length == 1 && selNodes[0] instanceof MavenNodeFactory.VersionNode) {
+                    NBVersionInfo vi = ((MavenNodeFactory.VersionNode)selNodes[0]).getNBVersionInfo();
                     depPanel.txtGroupId.setText(vi.getGroupId());
                     depPanel.txtArtifactId.setText(vi.getArtifactId());
                     depPanel.txtVersion.setText(vi.getVersion());
@@ -906,45 +914,6 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                 }
             }
         }
-
-        private static class ArtifactNode extends AbstractNode {
-
-            private List<NBVersionInfo> versionInfos;
-
-            public ArtifactNode(String name, final List<NBVersionInfo> list) {
-                super(new Children.Keys<NBVersionInfo>() {
-                    @Override
-                    protected Node[] createNodes(NBVersionInfo arg0) {
-                        return new Node[]{new VersionNode(arg0, false)};
-                    }
-
-                    @Override
-                    protected void addNotify() {
-                        setKeys(list);
-                    }
-                });
-                this.versionInfos = list;
-                setName(name);
-                setDisplayName(name);
-            }
-
-            @Override
-            public Image getIcon(int arg0) {
-                Image badge = ImageUtilities.loadImage("org/netbeans/modules/maven/resources/ArtifactBadge.png", true); //NOI18N
-
-                return badge;
-            }
-
-            @Override
-            public Image getOpenedIcon(int arg0) {
-                return getIcon(arg0);
-            }
-
-            public List<NBVersionInfo> getVersionInfos() {
-                return new ArrayList<NBVersionInfo>(versionInfos);
-            }
-        }
-
 
     } // QueryPanel
 
@@ -1021,7 +990,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                 Node root = new AbstractNode(array);
 
                 for (Dependency dep : deps) {
-                    array.add(new Node[]{ new VersionNode(convert2VInfo(dep), true) });
+                    array.add(new Node[]{ MavenNodeFactory.createVersionNode(convert2VInfo(dep), true) });
                 }
 
                 manager.setRootContext(root);
@@ -1043,8 +1012,8 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
 
         public void propertyChange(PropertyChangeEvent evt) {
             Node[] selNodes = manager.getSelectedNodes();
-            if (selNodes.length == 1 && selNodes[0] instanceof VersionNode) {
-                NBVersionInfo vi = ((VersionNode)selNodes[0]).getNBVersionInfo();
+            if (selNodes.length == 1 && selNodes[0] instanceof MavenNodeFactory.VersionNode) {
+                NBVersionInfo vi = ((MavenNodeFactory.VersionNode)selNodes[0]).getNBVersionInfo();
                 depPanel.txtGroupId.setText(vi.getGroupId());
                 depPanel.txtArtifactId.setText(vi.getArtifactId());
                 depPanel.txtVersion.setText(""); //NOI18N
@@ -1083,76 +1052,6 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             });
         }
 
-    }
-
-    private static class VersionNode extends AbstractNode {
-
-        private NBVersionInfo nbvi;
-        private boolean fromDepMng;
-
-        /** Creates a new instance of VersionNode */
-        public VersionNode(NBVersionInfo versionInfo, boolean fromDepMng) {
-            super(Children.LEAF);
-
-            this.nbvi = versionInfo;
-            this.fromDepMng = fromDepMng;
-
-            setName(versionInfo.getVersion());
-
-            StringBuilder sb = new StringBuilder();
-            if (fromDepMng) {
-                sb.append(nbvi.getGroupId());
-                sb.append(DELIMITER);
-                sb.append(nbvi.getArtifactId());
-                sb.append(DELIMITER);
-            } else {
-                sb.append(nbvi.getVersion());
-            }
-            sb.append(" [ ");
-            sb.append(nbvi.getType());
-            String classifier = nbvi.getClassifier();
-            if (classifier != null) {
-                sb.append(",");
-                sb.append(classifier);
-            }
-            sb.append(" ] ");
-            String repo = nbvi.getRepoId();
-            if (repo != null) {
-                sb.append(" - ");
-                sb.append(repo);
-            }
-
-            setDisplayName(sb.toString());
-
-            setIconBaseWithExtension("org/netbeans/modules/maven/resources/DependencyJar.gif"); //NOI18N
-
-        }
-
-        /*@Override
-        public java.awt.Image getIcon(int param) {
-            java.awt.Image retValue = super.getIcon(param);
-            if (hasJavadoc) {
-                retValue = ImageUtilities.mergeImages(retValue,
-                        ImageUtilities.loadImage("org/netbeans/modules/maven/repository/DependencyJavadocIncluded.png"),//NOI18N
-                        12, 12);
-            }
-            if (hasSources) {
-                retValue = ImageUtilities.mergeImages(retValue,
-                        ImageUtilities.loadImage("org/netbeans/modules/maven/repository/DependencySrcIncluded.png"),//NOI18N
-                        12, 8);
-            }
-            return retValue;
-
-        }*/
-
-        public NBVersionInfo getNBVersionInfo() {
-            return nbvi;
-        }
-
-        @Override
-        public String getShortDescription() {
-            return nbvi.toString();
-        }
     }
 
 

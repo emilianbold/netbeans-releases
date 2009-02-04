@@ -44,12 +44,18 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.jaxb.cfg.schema.Schemas;
 import org.netbeans.modules.xml.jaxb.util.JAXBWizModuleConstants;
 import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 
 /**
  *
  * @author gpatil
  */
+@ProjectServiceProvider(service=ProjectOpenedHook.class, projectType={
+    "org-netbeans-modules-java-j2seproject",
+    "org-netbeans-modules-web-project",
+    "org-netbeans-modules-j2ee-ejbjarproject"
+})
 public class JAXBWizProjectOpenedHookImpl extends ProjectOpenedHook{
     private Project prj;
     

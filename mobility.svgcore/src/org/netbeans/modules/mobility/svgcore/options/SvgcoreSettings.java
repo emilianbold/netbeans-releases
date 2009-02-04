@@ -53,7 +53,8 @@ public class SvgcoreSettings {
 
     private static SvgcoreSettings svgcoreSettings = null;
 
-    private static final String PROP_EDITOR_PATH    = "editorPath"; //NOI18N    
+    private static final String PROP_EDITOR_PATH    = "editorPath"; //NOI18N
+    private static final String PROP_CURRENT_SNIPPET    = "currentSnippet"; //NOI18N
     private static final String DEFAULT_EDITOR_PATH = "c:\\Program Files\\Ikivo\\Ikivo Animator\\IkivoAnimator.exe"; //NOI18N   
     private static final long   serialVersionUID    = 85176380568174L;   
     
@@ -76,8 +77,6 @@ public class SvgcoreSettings {
         return svgcoreSettings;
     }
     
-
-    
     /**
      * Retrieve path to external editor executable
      * @return path to external editor executable
@@ -92,5 +91,17 @@ public class SvgcoreSettings {
      */
     public final void setExternalEditorPath(String path){
         prefs.put(PROP_EDITOR_PATH, path);
-    }    
+    }
+    
+    public final String getCurrentSnippet() {
+        return prefs.get(PROP_CURRENT_SNIPPET, null);
+    }
+
+    final void setCurrentSnippet(String currentSnippet) {
+        prefs.put(PROP_CURRENT_SNIPPET, currentSnippet);
+    }
+
+    
+
+
 }

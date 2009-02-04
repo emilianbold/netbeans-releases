@@ -119,7 +119,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
     }
 
     public CompilerSetManager getCompilerSetManager(String serverName) {
-        return ToolsPanel.getToolsPanel().getCompilerSetManagerCopy(serverName);
+        return ToolsPanel.getToolsPanel().getToolsCacheManager().getCompilerSetManagerCopy(serverName);
     }
     
     private void updateCompilerCollections(CompilerSet csToSelect) {

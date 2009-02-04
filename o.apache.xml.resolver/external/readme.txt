@@ -35,3 +35,14 @@ Hence we have applied the following patches on xml-commons-resolver-1.2:
 
 2. Handle null in org.apache.xml.resolver.CatalogManager.java::readProperties()
   + if (propertyFile == null) return;
+
+Note: 29 Jan 2009 Marek Slama
+
+As we cannot put forked resolver package into debian repository we had to use following workaround.
+
+1. We added new method into org.apache.xml.resolver.Catalog.java as described above. It is compatible
+change.
+
+2. We added 2 new classes org.apache.xml.resolver.NbCatalogManager.java and org.apache.xml.resolver.tools.NbCatalogResolver.java
+into resolver with necessary incompatible changes and all usages of CatalogManager and CatalogResolver in NB codebase
+are replaced by NbCatalogManager and NbCatalogResolver.

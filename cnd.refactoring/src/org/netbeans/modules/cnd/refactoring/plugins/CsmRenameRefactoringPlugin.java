@@ -46,6 +46,7 @@ import java.text.MessageFormat;
 import java.util.*;
 import javax.swing.text.Position.Bias;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
@@ -54,6 +55,9 @@ import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult.Difference;
@@ -181,6 +185,27 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
         return out;
     }
 
+    protected final void processFile(CsmFile csmFile, ModificationResult mr) {
+        Collection<? extends CsmObject> refObjects = getRefactoredObjects();
+        assert refObjects != null && refObjects.size() > 0 : "method must be called for resolved element";
+        FileObject fo = CsmUtilities.getFileObject(csmFile);
+        Collection<CsmReference> refs = new LinkedHashSet<CsmReference>();
+        for (CsmObject obj : refObjects) {
+            Collection<CsmReference> curRefs = CsmReferenceRepository.getDefault().getReferences(obj, csmFile, CsmReferenceKind.ALL, null);
+            refs.addAll(curRefs);
+        }
+        if (refs.size() > 0) {
+            List<CsmReference> sortedRefs = new ArrayList<CsmReference>(refs);
+            Collections.sort(sortedRefs, new Comparator<CsmReference>() {
+                public int compare(CsmReference o1, CsmReference o2) {
+                    return o1.getStartOffset() - o2.getStartOffset();
+                }
+            });
+            CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(csmFile);
+            processRefactoredReferences(sortedRefs, fo, ces, mr);
+        }
+    }
+    
     protected final void processRefactoredReferences(List<CsmReference> sortedRefs, FileObject fo, CloneableEditorSupport ces, ModificationResult mr) {
         String newName = refactoring.getNewName();
         for (CsmReference ref : sortedRefs) {

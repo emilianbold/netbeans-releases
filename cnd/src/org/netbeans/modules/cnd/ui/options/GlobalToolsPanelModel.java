@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.ui.options;
 import org.netbeans.modules.cnd.settings.CppSettings;
 
 /** Manage the data for the ToolsPanel */
-public class GlobalToolsPanelModel extends ToolsPanelModel {
+/*package-local*/ final class GlobalToolsPanelModel extends ToolsPanelModel {
     
     public void setCompilerSetName(String name) {
         CppSettings.getDefault().setCompilerSetName(name);

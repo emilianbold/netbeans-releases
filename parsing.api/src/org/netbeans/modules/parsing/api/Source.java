@@ -55,6 +55,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
@@ -219,7 +220,32 @@ public final class Source {
     // XXX: maybe we should add 'boolean forceOpen' parameter and call
     // editorCookie.openDocument() if neccessary
     public Document getDocument (boolean forceOpen) {
-        return _getDocument (forceOpen);
+        if (document != null) return document;
+        EditorCookie ec = null;
+
+        try {
+            DataObject dataObject = DataObject.find (fileObject);
+            ec = dataObject.getLookup ().lookup (EditorCookie.class);
+        } catch (DataObjectNotFoundException ex) {
+            //DataobjectNotFoundException may happen in case of deleting opened file
+            //handled by returning null
+        }
+
+        if (ec == null) return null;
+        Document doc = ec.getDocument ();
+        if (doc == null && forceOpen) {
+            try {
+                try {
+                    doc = ec.openDocument ();
+                } catch (UserQuestionException uqe) {
+                    uqe.confirmed ();
+                    doc = ec.openDocument ();
+                }
+            } catch (IOException ioe) {
+                LOG.log (Level.WARNING, null, ioe);
+            }
+        }
+        return doc;
     }
     
     /**
@@ -249,45 +275,55 @@ public final class Source {
      * @return The <code>Snapshot</code> of the current content of this source.
      */
     public Snapshot createSnapshot () {
-        final String [] text = new String [] { "" }; //NOI18N
-        Document doc = _getDocument(false);
+        final String [] text = new String [] {""}; //NOI18N
+        Document doc = getDocument (false);
         if (doc == null) {
-            EditorKit kit = CloneableEditorSupport.getEditorKit(mimeType);
-            Document customDoc = kit.createDefaultDocument();
+            EditorKit kit = CloneableEditorSupport.getEditorKit (mimeType);
+            Document customDoc = kit.createDefaultDocument ();
             try {
-                InputStream is = fileObject.getInputStream();
-                try {
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(is, FileEncodingQuery.getEncoding(fileObject)));
+                if (fileObject.isValid ()) {
+                    InputStream is = fileObject.getInputStream ();
                     try {
-                        kit.read(reader, customDoc, 0);
-                        doc = customDoc;
-                    } catch (BadLocationException ble) {
-                        LOG.log(Level.WARNING, null, ble);
+                        BufferedReader reader = new BufferedReader (
+                            new InputStreamReader (
+                                is,
+                                FileEncodingQuery.getEncoding (fileObject)
+                            )
+                        );
+                        try {
+                            kit.read (reader, customDoc, 0);
+                            doc = customDoc;
+                        } catch (BadLocationException ble) {
+                            LOG.log (Level.WARNING, null, ble);
+                        } finally {
+                            reader.close ();
+                        }
                     } finally {
-                        reader.close();
+                        is.close ();
                     }
-                    } finally {
-                    is.close();
                 }
             } catch (IOException ioe) {
-                LOG.log(Level.WARNING, null, ioe);
+                LOG.log (Level.WARNING, null, ioe);
             }
         }
         if (doc != null) {
             final Document d = doc;
-            d.render(new Runnable() {
-                public void run() {
+            d.render (new Runnable () {
+                public void run () {
                     try {
-                        text[0] = d.getText(0, d.getLength());
+                        text[0] = d.getText (0, d.getLength());
                     } catch (BadLocationException ble) {
-                        LOG.log(Level.WARNING, null, ble);
+                        LOG.log (Level.WARNING, null, ble);
                     }
-                    }
+                }
             });
         }
 
-        return new Snapshot(
-            text[0], this, mimeType, new int[][]{new int[]{0, 0}}, new int[][]{new int[]{0, 0}}
+        return new Snapshot (
+            text [0], this,
+            MimePath.get (mimeType),
+            new int[][] {new int[] {0, 0}},
+            new int[][] {new int[] {0, 0}}
         );
     }
     
@@ -349,42 +385,6 @@ public final class Source {
 
             return source;
         }
-    }
-
-    private Document _getDocument(boolean forceOpen) {
-        Document doc;
-        synchronized (this) {
-            doc = document;
-        }
-
-        if (doc == null) {
-            EditorCookie ec = null;
-
-            try {
-                DataObject dataObject = DataObject.find(fileObject);
-                ec = dataObject.getLookup().lookup(EditorCookie.class);
-            } catch (DataObjectNotFoundException ex) {
-                //DataobjectNotFoundException may happen in case of deleting opened file
-                //handled by returning null
-            }
-
-            if (ec != null) {
-                doc = ec.getDocument();
-                if (doc == null && forceOpen) {
-                    try {
-                        try {
-                            doc = ec.openDocument();
-                        } catch (UserQuestionException uqe) {
-                            uqe.confirmed();
-                            doc = ec.openDocument();
-                        }
-                    } catch (IOException ioe) {
-                        LOG.log(Level.WARNING, null, ioe);
-                    }
-                }
-            }
-        }
-        return doc;
     }
 
     private void assignListeners () {

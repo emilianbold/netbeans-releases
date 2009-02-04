@@ -53,7 +53,7 @@ import javax.swing.text.PlainDocument;
  */
 public class ItemEditorHelper implements Refreshable {
 
-    protected ItemEditorHelper.ItemDocument doc;
+    ItemEditorHelper.ItemDocument doc;
 
     /**
      * Model of item providing unified interface between text component and item data

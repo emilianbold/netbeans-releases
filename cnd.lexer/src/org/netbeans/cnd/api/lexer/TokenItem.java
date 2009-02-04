@@ -41,6 +41,7 @@ package org.netbeans.cnd.api.lexer;
 
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  * Token-item presents a token as a piece information
@@ -92,7 +93,7 @@ public interface TokenItem<T extends TokenId> {
         public AbstractItem(T tokenID, PartType partType, int offset, CharSequence image) {
             this.id = tokenID;
             this.offset = offset;
-            this.text = image;
+            this.text = CharSequenceKey.create(image);
             this.partType = partType;
         }
 

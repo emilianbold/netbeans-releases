@@ -191,6 +191,56 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
     short serialVersion = 1;
     private AttentionGetter attentionGetter = null;
 
+    /**
+     * Name of TopComponent's Boolean client property which forces the window system
+     * to respect TopComponent's preferred size when it is slided-in from left/right/bottom
+     * sliding bar when set to Boolean.TRUE. Otherwise the slided-in TopComponent
+     * will fill the entire width/length of the IDE window (the default behavior).
+     * This switch is intended for tools/palette windows like e.g. color chooser,
+     * tool picker etc.
+     * @since 6.26
+     */
+    public static final String PROP_KEEP_PREFERRED_SIZE_WHEN_SLIDED_IN = "netbeans.winsys.tc.keep_preferred_size_when_slided_in"; //NOI18N
+
+    /**
+     * Name of TopComponent's Boolean client property which removes close button
+     * from TopComponent's header and disables its 'Close Window' action when set to Boolean.TRUE.
+     * @since 6.26
+     */
+    public static final String PROP_CLOSING_DISABLED = "netbeans.winsys.tc.closing_disabled"; //NOI18N
+
+    /**
+     * Name of TopComponent's Boolean client property which removes 'minimized' button
+     * from TopComponent's header and disables its 'Minimize Window' action when
+     * set to Boolean.TRUE. TopComponents which are already slided-out and have this
+     * property set to Boolean.TRUE will have 'pin' button removed from their header
+     * and their 'Minimize Window' action will be disabled.
+     * @since 6.26
+     */
+    public static final String PROP_SLIDING_DISABLED = "netbeans.winsys.tc.sliding_disabled"; //NOI18N
+
+    /**
+     * Name of TopComponent's Boolean client property which disables TopComponent's
+     * 'Undock Window' action when set to Boolean.TRUE. TopComponents which are already
+     * floating and have this property set to Boolean.TRUE will have their 'Dock Window' action disabled.
+     * @since 6.26
+     */
+    public static final String PROP_UNDOCKING_DISABLED = "netbeans.winsys.tc.undocking_disabled"; //NOI18N
+
+    /**
+     * Name of TopComponent's Boolean client property which disables drag and drop
+     * when set to Boolean.TRUE.
+     * @since 6.26
+     */
+    public static final String PROP_DRAGGING_DISABLED = "netbeans.winsys.tc.dragging_disabled"; //NOI18N
+
+    /**
+     * Name of TopComponent's Boolean client property which disables TopComponent
+     * maximization by double-clicking its header when set to Boolean.TRUE. TopComponent's
+     * 'Maximize Window' action will be also disabled.
+     * @since 6.26
+     */
+    public static final String PROP_MAXIMIZATION_DISABLED = "netbeans.winsys.tc.maximization_disabled"; //NOI18N
 
     /** Create a top component.
     */

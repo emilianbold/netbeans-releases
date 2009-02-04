@@ -131,7 +131,7 @@ public class FmtOptions {
             { reformatComments, FALSE }, //NOI18N
             { indentHtml, TRUE }, //NOI18N
             { rightMargin, "80"}, //NOI18N
-            { openingBraceStyle, OBRACE_NEWLINE},
+            { openingBraceStyle, OBRACE_SAMELINE},
         };
         
         defaults = new HashMap<String,String>();

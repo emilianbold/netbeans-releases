@@ -41,7 +41,6 @@ package org.netbeans.modules.ide.ergonomics.fod;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
@@ -52,7 +51,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
-import org.openide.filesystems.FileObject;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import javax.xml.xpath.XPathExpression;
+import org.w3c.dom.Document;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;
@@ -67,8 +69,8 @@ public final class FeatureInfo {
     private final URL delegateLayer;
     private XMLFileSystem fs;
     private final Set<String> cnbs;
-    final Map<String,String> nbproject = new HashMap<String,String>();
-    final Map<String,String> files = new HashMap<String,String>();
+    private final Map<String,String> nbproject = new HashMap<String,String>();
+    private final Map<Object[],String> files = new HashMap<Object[],String>();
     private Properties properties;
     final String clusterName;
 
@@ -91,6 +93,7 @@ public final class FeatureInfo {
         FeatureInfo info = new FeatureInfo(clusterName, s, delegateLayer, p);
         final String prefix = "nbproject.";
         final String prefFile = "project.file.";
+        final String prefXPath = "project.xpath.";
         for (Object k : p.keySet()) {
             String key = (String) k;
             if (key.startsWith(prefix)) {
@@ -100,10 +103,23 @@ public final class FeatureInfo {
                 );
             }
             if (key.startsWith(prefFile)) {
-                info.projectFile(
-                    key.substring(prefFile.length()),
-                    p.getProperty(key)
-                );
+                try {
+                    info.projectFile(key.substring(prefFile.length()), null, p.getProperty(key));
+                } catch (XPathExpressionException ex) {
+                    IOException e = new IOException(ex.getMessage());
+                    e.initCause(ex);
+                    throw e;
+                }
+            }
+            if (key.startsWith(prefXPath)) {
+                try {
+                    String xpath = p.getProperty(key);
+                    info.projectFile(key.substring(prefXPath.length()), xpath, "");
+                } catch (XPathExpressionException ex) {
+                    IOException e = new IOException(ex.getMessage());
+                    e.initCause(ex);
+                    throw e;
+                }
             }
         }
         return info;
@@ -151,21 +167,46 @@ public final class FeatureInfo {
         return fs;
     }
 
-    boolean isProject(FileObject dir, boolean deepCheck) {
-        FoDFileSystem.LOG.log(Level.FINE, "Checking project {0}", dir);
-        boolean toRet;
-        if (isNbProject(dir, deepCheck)) {
-            toRet = true;
+    /** @return 0 = no
+     *          1 = yes
+     *          2 = I am interested to be turned on when this project is opened
+     */
+    int isProject(FeatureProjectFactory.Data data) {
+        FoDFileSystem.LOG.log(Level.FINE, "Checking project {0}", data);
+        int toRet;
+        if (isNbProject(data)) {
+            toRet = 1;
         } else {
             if (files.isEmpty()) {
-                toRet = false;
+                toRet = 0;
             } else {
-                toRet = false;
-                for (String s : files.keySet()) {
+                toRet = 0;
+                for (Object[] required : files.keySet()) {
+                    String s = (String)required[0];
                     FoDFileSystem.LOG.log(Level.FINER, "    checking file {0}", s);
-                    if (dir.getFileObject(s) != null) {
+                    if (data.hasFile(s)) {
                         FoDFileSystem.LOG.log(Level.FINER, "    found", s);
-                        toRet = true;
+                        if (data.isDeepCheck() && required[1] != null) {
+                            XPathExpression e = (XPathExpression)required[1];
+                            Document content = data.dom(s);
+                            try {
+                                String res = e.evaluate(content);
+                                FoDFileSystem.LOG.log(
+                                    Level.FINER,
+                                    "Parsed result {0} of type {1}",
+                                    new Object[] {
+                                        res, res == null ? null : res.getClass()
+                                    }
+                                );
+                                if (res != null && res.length() > 0) {
+                                    toRet = 2;
+                                }
+                            } catch (XPathExpressionException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        } else {
+                            toRet = 1;
+                        }
                         break;
                     }
                 }
@@ -186,45 +227,30 @@ public final class FeatureInfo {
         }
         return codeNames.isEmpty();
     }
+
+    @Override
+    public String toString() {
+        return "FeatureInfo[" + clusterName + "]";
+    }
     
-    private boolean isNbProject(FileObject dir, boolean deepCheck) {
+    private boolean isNbProject(FeatureProjectFactory.Data data) {
         if (nbproject.isEmpty()) {
             return false;
         } else {
-            FileObject prj = dir.getFileObject("nbproject/project.xml");
-            if (prj == null) {
+            if (!data.hasFile("nbproject/project.xml")) { // NOI18N
                 FoDFileSystem.LOG.log(Level.FINEST, "    nbproject/project.xml not found"); // NOI18N
                 return false;
             }
-            if (!deepCheck) {
+            if (!data.isDeepCheck()) {
                 FoDFileSystem.LOG.log(Level.FINEST, "    no deep check, OK"); // NOI18N
                 return true;
             }
-            byte[] arr = new byte[4000];
-            int len;
-            InputStream is = null;
-            try {
-                is = prj.getInputStream();
-                len = is.read(arr);
-            } catch (IOException ex) {
-                FoDFileSystem.LOG.log(Level.FINEST, "exception while reading " + prj, ex); // NOI18N
-                len = -1;
-            } finally {
-                if (is != null) {
-                    try {
-                        is.close();
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            }
-            FoDFileSystem.LOG.log(Level.FINEST, "    read {0} bytes", len); // NOI18N
-            if (len == -1) {
+            String text = data.is("nbproject/project.xml"); // NOI18N
+            if (text == null) {
                 return false;
             }
-            String text = new String(arr, 0, len);
             for (String t : nbproject.keySet()) {
-                final String pattern = "<type>" + t + "</type>";
+                final String pattern = "<type>" + t + "</type>"; // NOI18N
                 if (text.indexOf(pattern) >= 0) { // NOI18N
                     FoDFileSystem.LOG.log(Level.FINEST, "    '" + pattern + "' found, OK"); // NOI18N
                     return true;
@@ -240,7 +266,33 @@ public final class FeatureInfo {
     final void nbproject(String prjType, String clazz) {
         nbproject.put(prjType, clazz);
     }
-    final void projectFile(String file, String clazz) {
-        files.put(file, clazz);
+    final void projectFile(String file, String xpath, String clazz) throws XPathExpressionException {
+        XPathExpression e = null;
+        if (xpath != null) {
+            e = XPathFactory.newInstance().newXPath().compile(xpath);
+        }
+
+        files.put(new Object[] { file, e }, clazz);
+    }
+    static Map<String,String> nbprojectTypes() {
+        Map<String,String> map = new HashMap<String, String>();
+
+        for (FeatureInfo info : FeatureManager.features()) {
+            map.putAll(info.nbproject);
+        }
+        return map;
+    }
+
+    static Map<String,String> projectFiles() {
+        Map<String,String> map = new HashMap<String, String>();
+
+        for (FeatureInfo info : FeatureManager.features()) {
+            for (Map.Entry<Object[], String> e : info.files.entrySet()) {
+                if (e.getValue().length() > 0) {
+                    map.put((String)(e.getKey()[0]), e.getValue());
+                }
+            }
+        }
+        return map;
     }
 }

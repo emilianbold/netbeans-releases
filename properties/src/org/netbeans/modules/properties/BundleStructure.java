@@ -51,6 +51,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject.Entry;
 import org.openide.util.WeakListeners;
 
@@ -69,7 +70,7 @@ import org.openide.util.WeakListeners;
  * @author Petr Jiricka
  */
 public class BundleStructure {
-    
+
     /**
      * <code>PropertiesDataObject</code> whose structure is described
      * by this object
@@ -109,13 +110,15 @@ public class BundleStructure {
 
     /** listens to changes on the underlying <code>PropertyDataObject</code> */
     private PropertyChangeListener propListener;
-    
+
+    protected BundleStructure() {
+        obj = null;
+    }
     /**
      * Creates a new instance describing a given
      * <code>PropertiesDataObject</code>.
      *
      * @param  obj  <code>PropertiesDataObject</code> to be desribed
-     * @param ch children container for the node
      */
     public BundleStructure(PropertiesDataObject obj) {
         this.obj = obj;
@@ -543,6 +546,10 @@ public class BundleStructure {
         return comparator.isAscending();
     }
 
+    PropertiesOpen getOpenSupport() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
     /**
      * Builds (or rebuilds) a sorted list of entries of the underlying
      * <code>PropertiesDataObject<code> and a sorted list of keys gathered
@@ -551,7 +558,7 @@ public class BundleStructure {
      * @see  #entries
      * @see  #keyList
      */
-    private void updateEntries() {
+    void updateEntries() {
         Map<String,PropertiesFileEntry> tm = new TreeMap<String,PropertiesFileEntry>(
                 PropertiesDataObject.getSecondaryFilesComparator());
         for (Entry entry : obj.secondaryEntries()) {
@@ -577,7 +584,7 @@ public class BundleStructure {
      *
      * @see  #keyList
      */
-    private synchronized void buildKeySet() {
+    protected synchronized void buildKeySet() {
         List<String> keyList = new ArrayList<String>() {
             public boolean equals(Object obj) {
                 if (!(obj instanceof ArrayList)) {
@@ -602,16 +609,18 @@ public class BundleStructure {
         int entriesCount = getEntryCount();
         for (int index = 0; index < entriesCount; index++) {
             PropertiesFileEntry entry = getNthEntry(index);
-            PropertiesStructure ps = entry.getHandler().getStructure();
-            if (ps != null) {
-                for (Iterator<Element.ItemElem> it = ps.allItems(); it.hasNext(); ) {
-                    Element.ItemElem item = it.next();
-                    if (item == null) {
-                        continue;
-                    }
-                    String key = item.getKey();
-                    if (key != null && !(keyList.contains(key))) {
-                        keyList.add(item.getKey());
+            if (entry != null) {
+                PropertiesStructure ps = entry.getHandler().getStructure();
+                if (ps != null) {
+                    for (Iterator<Element.ItemElem> it = ps.allItems(); it.hasNext(); ) {
+                        Element.ItemElem item = it.next();
+                        if (item == null) {
+                            continue;
+                        }
+                        String key = item.getKey();
+                        if (key != null && !(keyList.contains(key))) {
+                            keyList.add(item.getKey());
+                        }
                     }
                 }
             }
@@ -676,6 +685,7 @@ public class BundleStructure {
      * @see  #removePropertyBundleListener
      */
     public void addPropertyBundleListener(PropertyBundleListener l) {
+        if (propBundleSupport == null) propBundleSupport = new PropertyBundleSupport(this);
         propBundleSupport.addPropertyBundleListener(l);
     }
 
@@ -707,6 +717,19 @@ public class BundleStructure {
         );
     }
 
+    void notifyOneFileChanged(FileObject file) {
+        // PENDING - events should be finer
+        // find out whether global key table has changed and fire a change
+        // according to that
+        List oldKeyList = keyList;
+
+        buildKeySet();
+        if (!keyList.equals(oldKeyList)) {
+            propBundleSupport.fireBundleDataChanged();
+        } else {
+            propBundleSupport.fireFileChanged(file.getName());
+        }
+    }
     /**
      * Notifies registered listeners of a change in a single file entry.
      * Depending whether a list of keys has changed, either an event

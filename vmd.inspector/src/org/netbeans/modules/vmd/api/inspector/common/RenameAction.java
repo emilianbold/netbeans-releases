@@ -81,7 +81,7 @@ public final class RenameAction extends SystemAction implements ActionContext {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 if (component == null || component.get() == null)
-                    throw new IllegalArgumentException("No DesignComponent attached to DeleteAction"); //NOI18N
+                    throw new IllegalArgumentException("No DesignComponent attached to RenameAction"); //NOI18N
                 component.get().getDocument().getTransactionManager().writeAccess(new Runnable() {
                     public void run() {
                         InfoPresenter presenter = component.get().getPresenter(InfoPresenter.class);

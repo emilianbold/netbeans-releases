@@ -106,7 +106,7 @@ public class JaxRpcAddOperation implements AddOperationCookie {
                 return; // this should never happen
             seiClass = implementationClass;
         }
-        AddWsOperationHelper strategy = new AddWsOperationHelper(NbBundle.getMessage(AddWsOperationHelper.class, "LBL_OperationAction"), false);
+        AddWsOperationHelper strategy = new AddWsOperationHelper(NbBundle.getMessage(JaxRpcAddOperation.class, "LBL_AddOperationAction"), false);
         try {
             String className = _RetoucheUtil.getMainClassName(implBeanClass);
             if (className != null) {

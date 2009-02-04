@@ -75,6 +75,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.VetoableChangeListener;
 import java.nio.charset.Charset;
 import java.util.logging.LogRecord;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -919,6 +921,40 @@ public final class Utils {
         } catch (Exception e) {
             logWarn(Utils.class, e);
         }
+    }
+
+    /**
+     * Checks and removes from the given string all patterns being a word in braces
+     * unless they are listed in supportedVariables<br>
+     *
+     * e.g.:<br>
+     * string:  [{status}{folder}{dil}]<br>
+     * supportedVariables: "{status}", "{folder}" <br>
+     * will result to:<br>
+     * [{status}{folder}]<br>
+     *
+     * @param string to be checked string
+     * @param vars supported variables
+     * @return 
+     */
+    public static String skipUnsupportedVariables(String string, String[] supportedVariables) {
+        String ret = string;
+        Pattern p = Pattern.compile("\\{\\w*\\}");
+        Matcher m = p.matcher(string);
+        while(m.find()) {
+            String g = m.group();
+            boolean isVar = false;
+            for (String var : supportedVariables) {
+                if(var.equals(g)) {
+                    isVar=true;
+                    break;
+                }
+            }
+            if(!isVar) {
+                ret = ret.replace(g, "");
+            }
+        }
+        return ret;
     }
 
     private static class ViewEnv implements CloneableEditorSupport.Env {

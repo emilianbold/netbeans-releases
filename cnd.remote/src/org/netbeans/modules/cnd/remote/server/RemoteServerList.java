@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.ui.EditServerListDialog;
+import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.ChangeSupport;
@@ -255,12 +256,9 @@ public class RemoteServerList implements ServerList {
         getPreferences().put(REMOTE_SERVERS, sb.substring(0, sb.length() - 1));
     }
 
+    @Deprecated
     public ServerUpdateCache show(ServerUpdateCache serverUpdateCache) {
-        return show(serverUpdateCache, false);
-    }
-
-    public ServerUpdateCache show(ServerUpdateCache serverUpdateCache, boolean tempUseWizard) {
-        EditServerListDialog dlg = new EditServerListDialog(serverUpdateCache, tempUseWizard);
+        EditServerListDialog dlg = new EditServerListDialog(serverUpdateCache);
         
         DialogDescriptor dd = new DialogDescriptor(dlg, NbBundle.getMessage(RemoteServerList.class, "TITLE_EditServerList"), true, 
                     DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, null);
@@ -269,17 +267,33 @@ public class RemoteServerList implements ServerList {
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.setVisible(true);
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-            if (serverUpdateCache == null) {
-                serverUpdateCache = new ServerUpdateCache();
-            }
-            serverUpdateCache.setDefaultIndex(dlg.getDefaultIndex());
-            serverUpdateCache.setHostKeyList(dlg.getHostKeyList());
-            return serverUpdateCache;
+            ServerUpdateCache serverUpdateCache2 = new ServerUpdateCache();
+            serverUpdateCache2.setHostKeyList(dlg.getHostKeyList());
+            serverUpdateCache2.setDefaultIndex(dlg.getDefaultIndex());
+            return serverUpdateCache2;
         } else {
             return null;
         }
     }
-    
+
+    public boolean show(ToolsCacheManager cacheManager) {
+        EditServerListDialog dlg = new EditServerListDialog(cacheManager);
+        DialogDescriptor dd = new DialogDescriptor(dlg, NbBundle.getMessage(RemoteServerList.class, "TITLE_EditServerList"), true,
+                    DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, null);
+        dlg.setDialogDescriptor(dd);
+        dd.addPropertyChangeListener(dlg);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.setVisible(true);
+        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+            cacheManager.setHostKeyList(dlg.getHostKeyList());
+            cacheManager.setDefaultIndex(dlg.getDefaultIndex());
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
     protected void refresh() {
         cs.fireChange();
     }
@@ -343,6 +357,5 @@ public class RemoteServerList implements ServerList {
     private Preferences getPreferences() {
         return NbPreferences.forModule(RemoteServerList.class);
     }
-
     
 }

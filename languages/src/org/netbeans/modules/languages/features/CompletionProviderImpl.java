@@ -72,19 +72,18 @@ import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.languages.Utils;
 import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.openide.filesystems.FileObject;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -351,20 +350,24 @@ public class CompletionProviderImpl implements CompletionProvider {
         }
 
         private boolean addParserTags (final Result resultSet, final Language language, final int offset) {
-            Source source = Source.create (doc);
-            try {
-                ParserManager.parse (Collections.<Source> singleton (source), new UserTask () {
-                    @Override
-                    public void run (ResultIterator resultIterator) throws ParseException {
-                        if (resultSet.isFinished ()) return;
-                        Parser.Result result = resultIterator.getParserResult (offset);
-                        addParserTags ((ParserResult) result, resultSet, language);
-                        resultSet.finish ();
+            final Source source = Source.create (doc);
+            RequestProcessor.getDefault ().post (new Runnable () {
+                public void run () {
+                    try {
+                        ParserManager.parse (Collections.<Source> singleton (source), new UserTask () {
+                            @Override
+                            public void run (ResultIterator resultIterator) throws ParseException {
+                                if (resultSet.isFinished ()) return;
+                                Parser.Result result = resultIterator.getParserResult (offset);
+                                addParserTags ((ParserResult) result, resultSet, language);
+                                resultSet.finish ();
+                            }
+                        });
+                    } catch (ParseException ex) {
+                        ex.printStackTrace ();
                     }
-                });
-            } catch (ParseException ex) {
-                ex.printStackTrace ();
-            }
+                }
+            });
             return false;
         }
         
