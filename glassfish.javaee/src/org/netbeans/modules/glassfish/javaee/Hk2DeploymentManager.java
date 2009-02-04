@@ -120,8 +120,34 @@ public class Hk2DeploymentManager implements DeploymentManager {
      */
     public ProgressObject distribute(Target [] targetList, File moduleArchive, File deploymentPlan) 
             throws IllegalStateException {
-        throw new UnsupportedOperationException(
-                "Hk2DeploymentManager.distribute(target, file, file) not supported yet.");
+        // compute the ModuleID
+        String t =  moduleArchive.getName();
+        final String moduleName = t.substring(0, t.length() - 4);
+        String contextRoot = null; // "/bogusCR";
+        Hk2TargetModuleID moduleId = new Hk2TargetModuleID((Hk2Target) targetList[0], moduleName,
+                contextRoot, moduleArchive.getAbsolutePath());
+        MonitorProgressObject deployProgress = new MonitorProgressObject(this, moduleId);
+        MonitorProgressObject returnProgress = new MonitorProgressObject(this, moduleId);
+        deployProgress.addProgressListener(new UpdateContextRoot(returnProgress,moduleId));
+
+        GlassfishModule commonSupport = this.getCommonServerSupport();
+        try {
+            boolean restart = HttpMonitorHelper.synchronizeMonitor(
+                    commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR),
+                    commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR),
+                    Boolean.parseBoolean(commonSupport.getInstanceProperties().get(GlassfishModule.HTTP_MONITOR_FLAG)),
+                    "modules/org-netbeans-modules-schema2beans.jar");
+            if (restart) {
+                commonSupport.restartServer(deployProgress);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger("glassfish.javaee").log(Level.WARNING, "http monitor state", ex);
+        } catch (SAXException ex) {
+            Logger.getLogger("glassfish.javaee").log(Level.WARNING, "http monitor state", ex);
+        }
+        commonSupport.deploy(deployProgress, moduleArchive, moduleName);
+
+        return returnProgress;
     }
 
     /**
@@ -164,8 +190,29 @@ public class Hk2DeploymentManager implements DeploymentManager {
      */
     public ProgressObject redeploy(TargetModuleID [] moduleIDList, File moduleArchive, File deploymentPlan) 
             throws UnsupportedOperationException, IllegalStateException {
-        throw new UnsupportedOperationException(
-                "Hk2DeploymentManager.redeploy(target_module [], file, file) not supported yet.");
+        final Hk2TargetModuleID moduleId = (Hk2TargetModuleID) moduleIDList[0];
+        final String moduleName = moduleId.getModuleID();
+        MonitorProgressObject deployProgress = new MonitorProgressObject(this, moduleId);
+        MonitorProgressObject returnProgress = new MonitorProgressObject(this, moduleId);
+        deployProgress.addProgressListener(new UpdateContextRoot(returnProgress,moduleId));
+        GlassfishModule commonSupport = this.getCommonServerSupport();
+        try {
+            boolean restart = HttpMonitorHelper.synchronizeMonitor(
+                    commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR),
+                    commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR),
+                    Boolean.parseBoolean(commonSupport.getInstanceProperties().get(GlassfishModule.HTTP_MONITOR_FLAG)),
+                    "modules/org-netbeans-modules-schema2beans.jar");
+            if (restart) {
+                commonSupport.restartServer(deployProgress);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger("glassfish.javaee").log(Level.WARNING, "http monitor state", ex);
+        } catch (SAXException ex) {
+            Logger.getLogger("glassfish.javaee").log(Level.WARNING, "http monitor state", ex);
+        }
+        commonSupport.deploy(deployProgress, moduleArchive, moduleName);
+
+        return returnProgress;
     }
 
     /**
@@ -302,7 +349,8 @@ public class Hk2DeploymentManager implements DeploymentManager {
                 }
             }
         }
-        return moduleList.size() > 0 ? moduleList.toArray(new TargetModuleID[moduleList.size()]) : null;
+        return moduleList.size() > 0 ? moduleList.toArray(new TargetModuleID[moduleList.size()]) :
++            new TargetModuleID[0];
     }
 
     /**
@@ -473,4 +521,54 @@ public class Hk2DeploymentManager implements DeploymentManager {
         return builder.toString();
     }
 
+    class UpdateContextRoot implements ProgressListener {
+        private MonitorProgressObject returnProgress;
+        private Hk2TargetModuleID moduleId;
+
+        UpdateContextRoot(MonitorProgressObject returnProgress,Hk2TargetModuleID moduleId) {
+            this.returnProgress = returnProgress;
+            this.moduleId = moduleId;
+        }
+
+            public void handleProgressEvent(ProgressEvent arg0) {
+                if (arg0.getDeploymentStatus().isCompleted()) {
+                    returnProgress.operationStateChanged(OperationState.RUNNING, arg0.getDeploymentStatus().getMessage());
+                    // let's update the context-root
+                    //
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            GetPropertyCommand gpc = new GetPropertyCommand("*." + moduleId.getModuleID() + ".context-root");
+                            Future<OperationState> result = getCommonServerSupport().execute(gpc);
+                            try {
+                                //result.get()
+                                if (result.get(60, TimeUnit.SECONDS) == OperationState.COMPLETED) {
+                                    long end = System.nanoTime();
+                                    //String installRoot = getGlassfishRoot();
+                                    //String targetInstallRoot = gpc.propertyValue();
+                                    Map<String, String> retVal = gpc.getData();
+                                    if (retVal.size() == 1) {
+                                        returnProgress.operationStateChanged(OperationState.COMPLETED, "updated the moduleid");
+                                        moduleId.setPath(retVal.entrySet().iterator().next().getValue());
+                                    }
+                                }
+                            } catch (InterruptedException ex) {
+                                returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid");
+                                Exceptions.printStackTrace(ex);
+                            } catch (ExecutionException ex) {
+                                returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid");
+                                Exceptions.printStackTrace(ex);
+                            } catch (TimeoutException ex) {
+                                returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid");
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    });
+                } else if (arg0.getDeploymentStatus().isFailed()) {
+                    returnProgress.operationStateChanged(OperationState.FAILED, "failed to update the moduleid");
+                } else {
+                    returnProgress.operationStateChanged(OperationState.RUNNING, arg0.getDeploymentStatus().getMessage());
+                }
+            }
+
+    }
 }
