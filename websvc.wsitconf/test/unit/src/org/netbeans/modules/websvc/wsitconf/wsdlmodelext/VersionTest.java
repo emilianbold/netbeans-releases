@@ -41,16 +41,12 @@
 package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
 import java.io.File;
-import java.util.Collection;
 import junit.framework.*;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.TestCatalogModel;
 import org.netbeans.modules.websvc.wsitconf.util.TestUtil;
-import org.netbeans.modules.websvc.wsitmodelext.policy.All;
-import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyReference;
 import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.wsdl.model.Binding;
-import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 

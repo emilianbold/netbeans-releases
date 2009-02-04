@@ -59,13 +59,18 @@ function classpath() {
 	else 
 	    if [ -d "${nbdist}/ide9" ]; then
 		ide="${nbdist}/ide9"
-	else 
-	    if [ -d "${nbdist}/ide10" ]; then
-		ide="${nbdist}/ide10"
-	else 
-		echo "Can not find ide subdirectory in Netbeans"
-		return
-	    fi
+            else 
+		    if [ -d "${nbdist}/ide10" ]; then
+			ide="${nbdist}/ide10"
+		    else 
+			    if [ -d "${nbdist}/ide11" ]; then
+				ide="${nbdist}/ide11"
+			    else 
+				echo "Can not find ide subdirectory in Netbeans"
+				return
+			    fi
+		    fi
+            fi
 	fi
     fi
 
@@ -75,15 +80,19 @@ function classpath() {
     else 
 	if [ -d "${nbdist}/platform8" ]; then
 	    platform="${nbdist}/platform8"
-    else 
-	if [ -d "${nbdist}/platform9" ]; then
-	    platform="${nbdist}/platform9"
-	else
-	    echo "Can not find platform subdirectory in Netbeans"
-	    return
+	else 
+		if [ -d "${nbdist}/platform9" ]; then
+		    platform="${nbdist}/platform9"
+		else 
+		    if [ -d "${nbdist}/platform10" ]; then
+			platform="${nbdist}/platform10"
+		    else
+			echo "Can not find platform subdirectory in Netbeans"
+			return
+		    fi
+		fi
 	fi
     fi
-    
 
     CP=${CP}${path_sep}${platform}/lib/org-openide-util.jar
     CP=${CP}${path_sep}${platform}/lib/boot.jar

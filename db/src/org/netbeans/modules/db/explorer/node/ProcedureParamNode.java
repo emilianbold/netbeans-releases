@@ -48,6 +48,8 @@ import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Parameter;
+import org.openide.nodes.PropertySupport;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 
 /**
@@ -112,14 +114,35 @@ public class ProcedureParamNode  extends BaseNode {
                                         icon = INOUT;
                                         break;
                                 }
+
+                                updateProperties(parameter);
                             }
                         }
                     }
                 );
             } catch (MetadataModelException e) {
-                // TODO report exception
+                Exceptions.printStackTrace(e);
             }
         }
+    }
+
+    private void updateProperties(Parameter param) {
+        PropertySupport ps = new PropertySupport.Name(this);
+        addProperty(ps);
+
+        switch (param.getDirection()) {
+            case IN:
+                addProperty(TYPE, TYPEDESC, String.class, false, bundle().getString("In")); // NOI18N
+                break;
+            case OUT:
+                addProperty(TYPE, TYPEDESC, String.class, false, bundle().getString("Out")); // NOI18N
+                break;
+            case INOUT:
+                addProperty(TYPE, TYPEDESC, String.class, false, bundle().getString("InOut")); // NOI18N
+                break;
+        }
+
+        addProperty(DATATYPE, DATATYPEDESC, String.class, false, param.getType().toString());
     }
 
     protected void initialize() {
@@ -140,7 +163,7 @@ public class ProcedureParamNode  extends BaseNode {
                 }
             );
         } catch (MetadataModelException e) {
-            // TODO report exception
+            Exceptions.printStackTrace(e);
         }
 
         return array[0];

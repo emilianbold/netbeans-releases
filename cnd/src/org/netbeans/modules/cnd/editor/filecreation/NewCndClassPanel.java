@@ -40,10 +40,14 @@
 package org.netbeans.modules.cnd.editor.filecreation;
 
 import java.awt.Component;
+import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.util.NbBundle;
 
 /**
@@ -65,11 +69,41 @@ public class NewCndClassPanel extends CndPanel {
     }
 
     @Override
-    protected void doStoreSettings() {
+    protected void doStoreSettings(WizardDescriptor settings) {
         String table = (CppSettings.findObject(CppSettings.class, true)).getReplaceableStringsTable();
         table +="\nCLASSNAME=" + getGui().getClassName(); // NOI18N
         table +="\nDEFAULT_HEADER_EXT=" + getGui().getHeaderExt(); // NOI18N
         (CppSettings.findObject(CppSettings.class, true)).setReplaceableStringsTable(table);
+        settings.putProperty("headerFileName", getGui().getHeaderFileName()); // NOI18N
+        FileObject fo = getHeaderFolderFromGUI();
+        if (fo != null){
+            settings.putProperty("headerFolder", DataFolder.findFolder(fo)); // NOI18N
+        }
+    }
+
+    private FileObject getHeaderFolderFromGUI() {
+        FileObject rootFolder = getGui().getTargetGroup().getRootFolder();
+        String folderName = getGui().getHeaderFolder();
+        String newObject = getGui().getHeaderName();
+
+        if (newObject.indexOf ('/') > 0) { // NOI18N
+            String path = newObject.substring (0, newObject.lastIndexOf ('/')); // NOI18N
+            folderName = folderName == null || "".equals (folderName) ? path : folderName + '/' + path; // NOI18N
+        }
+
+        FileObject headerFolder;
+        if (folderName == null) {
+            headerFolder = rootFolder;
+        } else {
+            headerFolder = rootFolder.getFileObject(folderName);
+        }
+        if ( headerFolder == null ) {
+            try {
+                headerFolder = FileUtil.createFolder( rootFolder, folderName );
+            } catch (IOException ioe) {
+            }
+        }
+        return headerFolder;
     }
     
     NewCndClassPanelGUI getGui() {

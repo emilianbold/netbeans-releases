@@ -60,11 +60,21 @@ import org.apache.tools.ant.types.Path;
  */
 public class LocJHIndexer extends MatchingTask {
 
+  private Path classpath;
   protected File basedir = null ;
   protected String dbdir = null ;
   protected String locales = null ;
   protected String jhall = null ;
 
+  /** Set the location of <samp>jhall.jar</samp> or <samp>jsearch.jar</samp> (JavaHelp tools library). */
+  public Path createClasspath() {
+      // JavaHelp release notes say jhtools.jar is enough, but class NoClassDefFoundError
+      // on javax.help.search.IndexBuilder when I tried it...
+      if (classpath == null) {
+          classpath = new Path(getProject());
+      }
+      return classpath.createPath();
+  }
   /** Specify a regular expression to find <samp>jhall.jar</samp>
    * (JavaHelp tools library).
    */
@@ -193,6 +203,7 @@ public class LocJHIndexer extends MatchingTask {
     jhindexer.setBasedir( new File( basedir + "/")) ;
     jhindexer.setDb( new File( basedir + "/" + locale + "/" + dbdir)) ;
     jhindexer.setLocale( locale) ;
+    jhindexer.createClasspath().add(classpath);
     setJHLib( jhindexer) ;
 
     jhindexer.execute() ;

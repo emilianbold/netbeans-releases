@@ -115,6 +115,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
     private WebModule wm;
     private RequestProcessor.Task generateWsdlModelTask;
     private URL wsdlURL;
+    private WsdlWrapperHandler wsdlHandler;
 
     /** Creates new form WebServiceFromWSDLPanel */
     public WebServiceFromWSDLPanel(Project project) {
@@ -168,7 +169,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                     }
                 }
 
-                final WsdlWrapperHandler wsdlHandler = handler;
+                wsdlHandler = handler;
 
                 wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlURL);
                 wsdlModeler.generateWsdlModel(new WsdlModelListener() {
@@ -349,6 +350,12 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                 jTextFieldPort.setText(chooser.getSelectedPortOwnerName() + "#" + chooser.getSelectedNodes()[0].getDisplayName()); //NOI18N
                 service = wsdlModel.getServiceByName(chooser.getSelectedPortOwnerName());
                 port = service.getPortByName(chooser.getSelectedNodes()[0].getDisplayName());
+                if (wsdlHandler != null) {
+                    String bindingType = wsdlHandler.getBindingTypeForPort(port.getName());
+                    if (bindingType != null) {
+                        port.setSOAPVersion(bindingType);
+                    }
+                }
             }
         }
     }//GEN-LAST:event_jButtonBrowsePortActionPerformed

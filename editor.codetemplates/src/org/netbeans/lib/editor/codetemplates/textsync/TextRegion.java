@@ -173,7 +173,10 @@ public final class TextRegion<I> {
 
     @Override
     public String toString() {
-        return "<" + startOffset() + "," + endOffset() + ")";
+        return "<" + startOffset() + "," + endOffset() + ") IHC=" +
+                System.identityHashCode(this) + ", parent=" +
+                ((parent != null) ? System.identityHashCode(parent) : "null") +
+                ((clientInfo != null) ? (" clientInfo:" + clientInfo) : "");
     }
     
 }

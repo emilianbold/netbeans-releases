@@ -71,6 +71,7 @@ import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
 import org.netbeans.modules.websvc.wsstack.api.WSTool;
 import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRs;
 import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRsStackProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.libraries.LibraryFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
@@ -83,6 +84,7 @@ import org.openide.util.NbBundle;
  *
  * @author Nam Nguyen
  */
+@ProjectServiceProvider(service=RestSupport.class, projectType="org-netbeans-modules-web-project")
 public class WebProjectRestSupport extends RestSupport {
 
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance";   //NOI18N

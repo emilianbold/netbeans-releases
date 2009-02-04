@@ -563,7 +563,35 @@ public class CompilerSet {
     public String getDriveLetterPrefix() {
         return driveLetterPrefix;
     }
-    
+
+    public String getQmakeSpec(int platform) {
+        String qmakespec = flavor.getToolchainDescriptor().getQmakeSpec();
+        if (qmakespec != null && 0 <= qmakespec.indexOf("${os}")) { // NOI18N
+            String os = null;
+            switch (platform) {
+                case PlatformTypes.PLATFORM_LINUX:
+                    os = "linux"; // NOI18N
+                    break;
+                case PlatformTypes.PLATFORM_MACOSX:
+                    os = "macx"; // NOI18N
+                    break;
+                case PlatformTypes.PLATFORM_SOLARIS_INTEL:
+                case PlatformTypes.PLATFORM_SOLARIS_SPARC:
+                    os = "solaris"; // NOI18N
+                    break;
+                case PlatformTypes.PLATFORM_WINDOWS:
+                    os = "win32"; // NOI18N
+                    break;
+            }
+            if (os == null) {
+                qmakespec = null;
+            } else {
+                qmakespec = qmakespec.replaceAll("\\$\\{os\\}", os); // NOI18N
+            }
+        }
+        return qmakespec;
+    }
+
     /**
      * Converts absolute Windows paths to paths without the ':'.
      * Example: C:/abc/def.c -> /cygdrive/c/def/c

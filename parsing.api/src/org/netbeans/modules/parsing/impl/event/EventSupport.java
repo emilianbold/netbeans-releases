@@ -108,26 +108,28 @@ public final class EventSupport {
         this.source = source;
     }
     
-    public synchronized void init () {
-        if (!initialized) {            
-            final FileObject fo = source.getFileObject();
-            if (fo != null) {
-                try {
-                    fileChangeListener = new FileChangeListenerImpl();
-                    fo.addFileChangeListener(FileUtil.weakFileChangeListener(this.fileChangeListener,fo));
-                    DataObject dObj = DataObject.find(fo);
-                    assignDocumentListener (dObj);
-                    dobjListener = new DataObjectListener(dObj);
-                    parserListener = new ParserListener();
-                    final Parser parser = SourceAccessor.getINSTANCE ().getCache (source).getParser ();
-                    if (parser != null) {
-                        parser.addChangeListener(parserListener);
+    public void init () {
+        synchronized (source) {
+            if (!initialized) {
+                final FileObject fo = source.getFileObject();
+                if (fo != null) {
+                    try {
+                        fileChangeListener = new FileChangeListenerImpl();
+                        fo.addFileChangeListener(FileUtil.weakFileChangeListener(this.fileChangeListener,fo));
+                        DataObject dObj = DataObject.find(fo);
+                        assignDocumentListener (dObj);
+                        dobjListener = new DataObjectListener(dObj);
+                        parserListener = new ParserListener();
+                        final Parser parser = SourceAccessor.getINSTANCE ().getCache (source).getParser ();
+                        if (parser != null) {
+                            parser.addChangeListener(parserListener);
+                        }
+                    } catch (DataObjectNotFoundException e) {
+                        LOGGER.warning("Ignoring events non existent file: " + FileUtil.getFileDisplayName(fo));     //NOI18N
                     }
-                } catch (DataObjectNotFoundException e) {
-                    LOGGER.warning("Ignoring events non existent file: " + FileUtil.getFileDisplayName(fo));     //NOI18N
                 }
+                initialized = true;
             }
-            initialized = true;
         }
     }   
     

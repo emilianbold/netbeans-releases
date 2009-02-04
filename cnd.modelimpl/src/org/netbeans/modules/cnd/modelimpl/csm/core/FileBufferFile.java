@@ -55,7 +55,7 @@ import org.openide.filesystems.FileUtil;
  */
 public class FileBufferFile extends AbstractFileBuffer {
     
-    private SoftReference bytes;
+    private SoftReference<byte[]> bytes;
     
     public FileBufferFile(File file) {
         super(file);
@@ -89,7 +89,7 @@ public class FileBufferFile extends AbstractFileBuffer {
         }
         // either bytes == null or bytes.get() == null
         b = doGetBytes();
-        bytes = new SoftReference(b);
+        bytes = new SoftReference<byte[]>(b);
         return b;
     }
     

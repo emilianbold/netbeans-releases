@@ -38,8 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package org.netbeans.modules.j2ee.deployment.impl;
 
 import java.io.File;
@@ -71,6 +69,7 @@ import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment.Mode;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
@@ -82,7 +81,10 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescript
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
+import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
+import org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  * Encapsulates a set of ServerTarget(s), provides a wrapper for deployment
@@ -99,7 +101,6 @@ import org.openide.util.Exceptions;
 public class TargetServer {
 
     private static final Logger LOGGER = Logger.getLogger(TargetServer.class.getName());
-
     private Target[] targets;
     private final ServerInstance instance;
     private final DeploymentTarget dtarget;
@@ -136,7 +137,7 @@ public class TargetServer {
         }
 
         incremental = instance.getIncrementalDeployment();
-        if (incremental != null && !checkServiceImplementations())
+        if (incremental != null && !checkServiceImplementations()) 
             incremental = null;
 
         try {
@@ -186,7 +187,7 @@ public class TargetServer {
             return false;
         }
 
-        if (deployable == null || null == deployable.getContentDirectory() || !instance.getIncrementalDeployment().canFileDeploy(targetz[0], deployable))
+        if (deployable == null || null == deployable.getContentDirectory() || !instance.getIncrementalDeployment().canFileDeploy(targetz[0], deployable)) 
             return false;
 
         return true;
@@ -359,8 +360,8 @@ public class TargetServer {
                 }
                 if (! redeployHasSharer ||
                     toDistribute.contains(sharer.getTarget())) {
-                        shared = true;
-                        addToUndeployWhenSharedDetected.add(sharer.delegate());
+                    shared = true;
+                    addToUndeployWhenSharedDetected.add(sharer.delegate());
                 } else {
                     removeFromRedeployWhenSharedDetected.add(sharer);
                     addToDistributeWhenSharedDetected.add(sharer.getTarget());
@@ -423,7 +424,7 @@ public class TargetServer {
         Set toRedeploy = new HashSet(); //type TargetModule
         for (int i=0; i<targetModules.length; i++) {
             // not my module
-            if (! targetModules[i].getInstanceUrl().equals(instance.getUrl()) ||
+           if (! targetModules[i].getInstanceUrl().equals(instance.getUrl()) ||
             ! targetNames.contains(targetModules[i].getTargetName()))
                 continue;
 
@@ -481,25 +482,40 @@ public class TargetServer {
         }
     }
 
-    public void startTargets(boolean debugMode, ProgressUI ui) throws ServerException {
+    public void startTargets(Mode mode, ProgressUI ui) throws ServerException {
         if (instance.getStartServer().isAlsoTargetServer(null)) {
-            if (debugMode) {
-                instance.startDebug(ui);
-            } else {
-                instance.start(ui);
+            switch (mode) {
+                case DEBUG: {
+                    instance.startDebug(ui);
+                    break;
+                }
+                case PROFILE: {
+                    ProfilerServerSettings settings = Lookup.getDefault().lookup(Profiler.class).getSettings(instance.getUrl());
+                    instance.startProfile(settings, false, ui);
+                    break;
+                }
+                case RUN: {
+                    instance.start(ui);
+                }
             }
+
             this.targets = dtarget.getServer().toTargets();
             return;
         }
         instance.start(ui);
         this.targets = dtarget.getServer().toTargets();
-        if (debugMode) {
-            for (int i=0; i<targets.length; i++) {
-                instance.startDebugTarget(targets[i], ui);
+        switch (mode) {
+            case DEBUG: {
+                for (int i = 0; i < targets.length; i++) {
+                    instance.startDebugTarget(targets[i], ui);
+                }
+                break;
             }
-        } else {
-            for (int i=0; i<targets.length; i++) {
-                instance.startTarget(targets[i], ui);
+            case RUN: {
+                for (int i = 0; i < targets.length; i++) {
+                    instance.startTarget(targets[i], ui);
+                }
+                break;
             }
         }
     }

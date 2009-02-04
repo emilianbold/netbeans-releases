@@ -130,6 +130,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         instructionPanel.setLayout(new java.awt.BorderLayout());
 
         jScrollPane1.setBorder(null);
+        jScrollPane1.setPreferredSize(new java.awt.Dimension(200, 200));
 
         instructions.setBorder(null);
         instructions.setEditable(false);
@@ -144,7 +145,6 @@ public class SelectModePanel extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(instructionPanel, gridBagConstraints);
@@ -285,16 +285,10 @@ public class SelectModePanel extends javax.swing.JPanel {
                     return false;
                 }
             }
-            file = new File(path+"/Makefile"); // NOI18N
-            if (file.exists() && file.isFile() && file.canRead()) {
+            if (SelectModeDescriptorPanel.findMakefile(path) != null){
                 return true;
             }
-            file = new File(path+"/makefile"); // NOI18N
-            if (file.exists() && file.isFile() && file.canRead()) {
-                return true;
-            }
-            file = new File(path+"/configure"); // NOI18N
-            if (file.exists() && file.isFile() && file.canRead()) {
+            if (SelectModeDescriptorPanel.findConfigureScript(path) != null){
                 return true;
             }
             if (simpleMode.isSelected()) {

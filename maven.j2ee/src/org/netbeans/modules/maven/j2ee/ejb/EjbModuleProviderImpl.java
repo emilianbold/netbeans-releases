@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.maven.j2ee.ejb;
 
-import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -47,7 +47,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
@@ -57,7 +56,6 @@ import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.POHImpl;
-import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -79,6 +77,18 @@ public class EjbModuleProviderImpl extends J2eeModuleProvider implements EjbJarP
         project = proj;
         ejbimpl = new EjbJarImpl(project, this);
         mavenproject = project.getLookup().lookup(NbMavenProject.class);
+    }
+
+    @Override
+    public DeployOnSaveSupport getDeployOnSaveSupport() {
+        //TODO
+        return super.getDeployOnSaveSupport();
+    }
+
+
+
+    public EjbJarImpl getModuleImpl() {
+        return ejbimpl;
     }
     
     /**

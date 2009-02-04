@@ -157,6 +157,7 @@ public class MavenProjectNode extends AbstractNode {
     
         lst.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, NbBundle.getMessage(MavenProjectNode.class, "ACT_Build"), null));
         lst.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, NbBundle.getMessage(MavenProjectNode.class, "ACT_Clean_Build"), null));
+        lst.add(ProjectSensitiveActions.projectCommandAction("build-with-dependencies", NbBundle.getMessage(MavenProjectNode.class, "ACT_Build_Deps"), null));
         lst.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, NbBundle.getMessage(MavenProjectNode.class, "ACT_Clean"), null));
         lst.add(ProjectSensitiveActions.projectCommandAction("javadoc", NbBundle.getMessage(MavenProjectNode.class, "ACT_Javadoc"), null)); //NOI18N
         lst.add(null);
@@ -211,12 +212,18 @@ public class MavenProjectNode extends AbstractNode {
     @Override
     public String getShortDescription() {
         StringBuffer buf = new StringBuffer();
+        String desc;
+        if (project.isErrorPom(project.getOriginalMavenProject())) {
+            desc = NbBundle.getMessage(MavenProjectNode.class, "TXT_FailedProjectLoadingDesc");
+        } else {
+            desc = project.getShortDescription();
+        }
         buf.append("<html><i>").append(NbBundle.getMessage(MavenProjectNode.class, "DESC_Project1")).append("</i><b> ").append(FileUtil.getFileDisplayName(project.getProjectDirectory())).append("</b><br><i>"); //NOI18N
         buf.append(NbBundle.getMessage(MavenProjectNode.class, "DESC_Project2")).append("</i><b> ").append(project.getOriginalMavenProject().getGroupId()).append("</b><br><i>");//NOI18N
         buf.append(NbBundle.getMessage(MavenProjectNode.class, "DESC_Project3")).append("</i><b> ").append(project.getOriginalMavenProject().getArtifactId()).append("</b><br><i>");//NOI18N
         buf.append(NbBundle.getMessage(MavenProjectNode.class, "DESC_Project4")).append("</i><b> ").append(project.getOriginalMavenProject().getVersion()).append("</b><br><i>");//NOI18N
         //TODO escape the short description
-        buf.append(NbBundle.getMessage(MavenProjectNode.class, "DESC_Project5")).append("</i> ").append(breakPerLine(project.getShortDescription(), NbBundle.getMessage(MavenProjectNode.class, "DESC_Project5").length()));//NOI18N
+        buf.append(NbBundle.getMessage(MavenProjectNode.class, "DESC_Project5")).append("</i> ").append(breakPerLine(desc, NbBundle.getMessage(MavenProjectNode.class, "DESC_Project5").length()));//NOI18N
         if (reporter.getReports().size() > 0) {
             buf.append("<br><b>").append(NbBundle.getMessage(MavenProjectNode.class, "DESC_Project6")).append("</b><br><ul>");//NOI18N
             Iterator it = reporter.getReports().iterator();

@@ -61,8 +61,8 @@ public class PythonDebugClient {
   public final static int DEFAULTPORT = 29000;
   private final static String _ABORTWAITING_ = "<JPY><ABORT/></JPY>";
   private final static String _EOL_ = "\n";
-  private ServerSocket _tcpServer = null;
-  private Socket _connection;
+  private Socket _outCnx;
+  private Socket _inCnx;
   private BufferedWriter _cmdStream; // Use it to build Python Dbg commands
   private BufferedReader _answStream; // Use it to get Python Dbg returns back
   private JPyDebugXmlParser _parser;
@@ -297,10 +297,12 @@ public class PythonDebugClient {
       _parser.init(null);
       if ((debuggingHost != null) && (connectingPort != -1)) // connecting to server daemon
       {
-        _connection = new Socket(debuggingHost, connectingPort);
+        _outCnx = new Socket(debuggingHost, connectingPort);
+        _inCnx = new Socket(debuggingHost, connectingPort);
       } else // listening for incomming connnection
       {
-        _tcpServer = new ServerSocket(listeningPort, 1);
+        ServerSocket tcpOutServer = new ServerSocket(listeningPort, 1);
+        ServerSocket tcpInServer = new ServerSocket(listeningPort + 1, 1);
         if (localHost(debuggingHost)) {
           localPythonLaunch(debuggingHost, listeningPort, pyPath, classPath, pythonLoc, jnetPyLoc);
         } else {
@@ -309,14 +311,21 @@ public class PythonDebugClient {
             _codePage = codePage;
           }
         }
-        _connection = _tcpServer.accept();
+        tcpOutServer.setSoTimeout(20000) ;
+        _outCnx = tcpOutServer.accept();
+        tcpInServer.setSoTimeout(20000) ;
+        _inCnx = tcpInServer.accept();
+        // safe to close the ServerSocket once the connection is established
+        tcpInServer.close() ;
+        tcpInServer = null ;
+        tcpOutServer.close() ;
+        tcpOutServer = null ; 
       }
-
       _cmdStream = new BufferedWriter(
-              new OutputStreamWriter(_connection.getOutputStream(),
+              new OutputStreamWriter(_outCnx.getOutputStream(),
               _codePage));
       _answStream = new BufferedReader(
-              new InputStreamReader(_connection.getInputStream(),
+              new InputStreamReader(_inCnx.getInputStream(),
               _codePage));
       _TCP_TASK_ task = new _TCP_TASK_();
       task.start();
@@ -325,8 +334,12 @@ public class PythonDebugClient {
       throw new PythonDebugException("Unsupported encoding " +
               e.toString());
 
+    } catch (SocketTimeoutException e) {
+      throw new PythonDebugException("Server Socket listen for debuggee has timed out(more than 20 seconds wait)  " +
+              e.toString());
+
     } catch (IOException e) {
-      throw new PythonDebugException("Socket Write Command error " +
+      throw new PythonDebugException("Socket IO error " +
               e.toString());
 
     }
@@ -359,17 +372,17 @@ public class PythonDebugClient {
   public void terminate()
           throws PythonDebugException {
     try {
-      if (_connection != null) {
-        _connection.close();
+      if (_outCnx != null) {
+        _outCnx.close();
       }
-      if (_tcpServer != null) {
-        _tcpServer.close();
+      if (_inCnx != null) {
+        _inCnx.close();
       }
     } catch (IOException e) {
       throw new PythonDebugException("termination error : " + e.getMessage());
     }
-    _connection = null;
-    _tcpServer = null;
+    _outCnx = null;
+    _inCnx = null;
     _cmdStream = null;
     _answStream = null;
   }

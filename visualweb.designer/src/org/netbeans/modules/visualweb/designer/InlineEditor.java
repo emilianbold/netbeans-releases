@@ -123,7 +123,7 @@ public abstract class InlineEditor {
     private long lastClick = 0L;
 
 //    protected InlineEditor(WebForm webform, MarkupDesignBean bean, String propertyName) {
-    protected InlineEditor(WebForm webform,DomProvider.InlineEditorSupport inlineEditorSupport) {
+    InlineEditor(WebForm webform,DomProvider.InlineEditorSupport inlineEditorSupport) {
         this.webform = webform;
 //        this.bean = bean;
 //        this.propertyName = propertyName;

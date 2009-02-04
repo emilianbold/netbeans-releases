@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
@@ -70,16 +71,20 @@ import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring.EncapsulateFieldInfo;
+import org.netbeans.modules.cnd.refactoring.hints.infrastructure.Utilities;
 import org.netbeans.modules.cnd.refactoring.plugins.EncapsulateFieldRefactoringPlugin;
+import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.refactoring.support.DeclarationGenerator;
+import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils;
 import org.netbeans.modules.cnd.refactoring.support.MemberInfo;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  * Panel used by Encapsulate Field refactoring. Contains components to
@@ -91,11 +96,12 @@ import org.openide.util.NbBundle;
 public final class EncapsulateFieldPanel extends javax.swing.JPanel implements CustomRefactoringPanel {
     
     private DefaultTableModel model;
-    private CsmObject selectedObject;
+    private final CsmObject selectedObject;
+//    private final CsmContext editorContext;
     private CsmClass csmClassContainer;
     private ChangeListener parent;
     private String classname;
-    private static boolean ALWAYS_USE_ACCESSORS = true;
+    private static boolean ALWAYS_USE_ACCESSORS = false;
     private static int FIELD_ACCESS_INDEX = 3;
     private static int METHOD_ACCESS_INDEX = 0;
     
@@ -129,14 +135,22 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
      *
      * @param selectedObjects  array of selected objects
      */
-    public EncapsulateFieldPanel(CsmObject selectedObject, ChangeListener parent) {
+    public EncapsulateFieldPanel(CsmObject selectedObject, CsmContext editorContext, ChangeListener parent) {
         String title = getString("LBL_TitleEncapsulateFields");
-        
-        this.selectedObject = selectedObject;
+
+        if (selectedObject == null) {
+            this.selectedObject = Utilities.extractEnclosingClass(editorContext);
+        } else {
+            this.selectedObject = selectedObject;
+        }
+//        this.editorContext = editorContext;
         this.parent = parent;
         model = new TabM(columnNames, 0);
         initComponents();
         setName(title);
+        jInlineMethods.setSelected(NbPreferences.forModule(DeclarationGenerator.class).getBoolean(DeclarationGenerator.INLINE_PROPERTY, true));
+        jInlineMethods.setEnabled(false);
+        jCheckAccess.setEnabled(false);
         jCheckAccess.setSelected(ALWAYS_USE_ACCESSORS);
         jComboAccess.setSelectedIndex(METHOD_ACCESS_INDEX);
         jComboField.setSelectedIndex(FIELD_ACCESS_INDEX);
@@ -172,11 +186,11 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         }
         CsmObject selectedResolvedObject = CsmRefactoringUtils.getReferencedElement(selectedObject);
         int tableSelection = 0;
-        for (CsmField field : initFields(selectedObject)) {
+        for (CsmField field : initFields(selectedResolvedObject)) {
             boolean createGetter = field.equals(selectedResolvedObject);
             boolean createSetter = createGetter && !isConstant(field);
-            String getName = EncapsulateFieldRefactoringPlugin.computeGetterName(field);
-            String setName = EncapsulateFieldRefactoringPlugin.computeSetterName(field);
+            String getName = GeneratorUtils.computeGetterName(field);
+            String setName = GeneratorUtils.computeSetterName(field);
             model.addRow(new Object[] {
                 MemberInfo.create(field),
                 createGetter ? Boolean.TRUE : Boolean.FALSE,
@@ -234,9 +248,9 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
                 parent.stateChanged(null);
             }
         });
-//
-//        initInsertPoints(selectedPath);
-//        
+
+        initInsertPoints();
+        
         initialized = true;
     }
     
@@ -311,6 +325,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         jCheckAccess = new javax.swing.JCheckBox();
         jScrollField = new javax.swing.JScrollPane();
         jTableFields = new javax.swing.JTable();
+        jInlineMethods = new javax.swing.JCheckBox();
 
         jLblTitle.setLabelFor(jTableFields);
         org.openide.awt.Mnemonics.setLocalizedText(jLblTitle, org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "LBL_FieldList")); // NOI18N
@@ -362,7 +377,6 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
 
         jComboAccess.setModel(new javax.swing.DefaultComboBoxModel(modifierNames));
 
-        jCheckAccess.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(jCheckAccess, org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "LBL_AccessorsEven")); // NOI18N
 
         jTableFields.setModel(model);
@@ -372,20 +386,19 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         jScrollField.setViewportView(jTableFields);
         jTableFields.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "ACSD_jTableFields")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(jInlineMethods, org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "EncapsulateFieldPanel.jInlineMethods.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jCheckAccess)
+                    .add(jInlineMethods)
+                    .add(jLblTitle)
                     .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jCheckAccess))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jLblTitle))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLblAccessVis)
                             .add(jLblFieldVis)
@@ -393,15 +406,14 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
                             .add(jLblSort)
                             .add(jLblJavadoc))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jComboInsertPoint, 0, 546, Short.MAX_VALUE)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(jComboInsertPoint, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(jComboSort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(jComboJavadoc, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(jComboField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(jComboAccess, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jScrollField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(jScrollField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 575, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jButtonSelectSetters)
@@ -428,7 +440,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
                         .add(jButtonSelectGetters)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jButtonSelectSetters))
-                    .add(jScrollField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 135, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jScrollField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLblInsertPoint)
@@ -450,8 +462,10 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
                     .add(jLblAccessVis)
                     .add(jComboAccess, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jInlineMethods)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jCheckAccess)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(27, 27, 27))
         );
 
         jButtonSelectAll.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "EncapsulateFieldPanel.jButtonSelectAll.acsd")); // NOI18N
@@ -464,6 +478,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         jComboField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "ACSD_fieldModifiers")); // NOI18N
         jComboAccess.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "ACSD_methodAcc")); // NOI18N
         jCheckAccess.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "ACSD_useAccessors")); // NOI18N
+        jInlineMethods.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "ACSD_inlineMethods")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void jButtonSelectAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSelectAllActionPerformed
@@ -494,6 +509,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     private javax.swing.JComboBox jComboInsertPoint;
     private javax.swing.JComboBox jComboJavadoc;
     private javax.swing.JComboBox jComboSort;
+    private javax.swing.JCheckBox jInlineMethods;
     private javax.swing.JLabel jLblAccessVis;
     private javax.swing.JLabel jLblFieldVis;
     private javax.swing.JLabel jLblInsertPoint;
@@ -558,63 +574,63 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         return result;
     }
     
-//    private void initInsertPoints(TreePath selectedField, CompilationInfo javac) {
-//        Element elm = javac.getTrees().getElement(selectedField);
-//        TypeElement encloser = null;
-//        if (ElementKind.FIELD == elm.getKind()) {
-//            encloser = (TypeElement) elm.getEnclosingElement();
-//        } else {
-//            encloser = (TypeElement) elm;
-//        }
-//
-//        List<InsertPoint> result = new ArrayList<InsertPoint>();
-//        int idx = 0;
+    private void initInsertPoints() {
+        CsmClass encloser = csmClassContainer;
+
+        List<InsertPoint> result = new ArrayList<InsertPoint>();
+        int idx = 0;
 //        TreePath encloserPath = javac.getTrees().getPath(encloser);
 //        ClassTree encloserTree = (ClassTree) encloserPath.getLeaf();
-//        for (Tree memberTree : encloserTree.getMembers()) {
-//            if (memberTree.getKind() == Tree.Kind.METHOD) {
-//                Element member = javac.getTrees().getElement(new TreePath(encloserPath, memberTree));
-//                if (member != null && !javac.getElementUtilities().isSynthetic(member)) {
-//                    InsertPoint ip = new InsertPoint(idx + 1, NbBundle.getMessage(
-//                            EncapsulateFieldPanel.class,
-//                            "MSG_EncapsulateFieldInsertPointMethod",
-//                            CsmField.create(member, javac).getHtmlText()
-//                            ));
-//                    result.add(ip);
-//                }
-//            }
-//            ++idx;
-//        }
-//        jComboInsertPoint.addItem(InsertPoint.DEFAULT);
-//        if (!result.isEmpty()) {
-//            jComboInsertPoint.addItem(new InsertPoint(result.get(0).index - 1,
-//                    getString("EncapsulateFieldPanel.jComboInsertPoint.first"))); // NOI18N
-//            jComboInsertPoint.addItem(new InsertPoint(result.get(result.size() - 1).index,
-//                    getString("EncapsulateFieldPanel.jComboInsertPoint.last"))); // NOI18N
-//            for (InsertPoint ip : result) {
-//                jComboInsertPoint.addItem(ip);
-//            }
-//        }
-//        jComboInsertPoint.setSelectedItem(InsertPoint.DEFAULT);
-//    }
+        for (CsmMember member : encloser.getMembers()) {
+            if (CsmKindUtilities.isMethod(member)) {
+                CsmMethod method = (CsmMethod) member;
+                InsertPoint ip = new InsertPoint(idx + 1, NbBundle.getMessage(
+                        EncapsulateFieldPanel.class,
+                        "MSG_EncapsulateFieldInsertPointMethod", // NOI18N
+                        MemberInfo.create(method).getHtmlText()
+                        ));
+                result.add(ip);
+            }
+            ++idx;
+        }
+        jComboInsertPoint.addItem(InsertPoint.DEFAULT);
+        if (!result.isEmpty()) {
+            jComboInsertPoint.addItem(new InsertPoint(result.get(0).index - 1,
+                    getString("EncapsulateFieldPanel.jComboInsertPoint.first"))); // NOI18N
+            jComboInsertPoint.addItem(new InsertPoint(result.get(result.size() - 1).index,
+                    getString("EncapsulateFieldPanel.jComboInsertPoint.last"))); // NOI18N
+            for (InsertPoint ip : result) {
+                jComboInsertPoint.addItem(ip);
+            }
+        }
+        jComboInsertPoint.setSelectedItem(InsertPoint.DEFAULT);
+    }
     
     public final Collection<EncapsulateFieldInfo> getAllFields() {
         List<EncapsulateFieldInfo> result = new ArrayList<EncapsulateFieldInfo>();
-//        List rows = model.getDataVector();
-//        for (Iterator rowIt = rows.iterator(); rowIt.hasNext();) {
-//            List row = (List) rowIt.next();
-//            String getterName = (Boolean) row.get(1) ? ((AccessorInfo) row.get(2)).name : null;
-//            String setterName = (Boolean) row.get(3) ? ((AccessorInfo) row.get(4)).name : null;
-//            if (getterName != null || setterName != null) {
-//                CsmField mi = (CsmField) row.get(0);
-//                result.add(new EncapsulateFieldInfo(
-//                        (TreePathHandle) mi.getElementHandle(),
-//                        "".equals(getterName)?null:getterName, // NOI18N
-//                        "".equals(setterName)?null:setterName)); // NOI18N
-//            }
-//        }
+        List rows = model.getDataVector();
+        for (Iterator rowIt = rows.iterator(); rowIt.hasNext();) {
+            List row = (List) rowIt.next();
+            String getterName = (Boolean) row.get(1) ? ((AccessorInfo) row.get(2)).name : null;
+            String setterName = (Boolean) row.get(3) ? ((AccessorInfo) row.get(4)).name : null;
+            if (getterName != null || setterName != null) {
+                // this item contains info about fields
+                @SuppressWarnings("unchecked")
+                MemberInfo<CsmField> mi = (MemberInfo<CsmField>) row.get(0);
+                result.add(new EncapsulateFieldInfo(
+                        mi.getElementHandle(),
+                        "".equals(getterName)?null:getterName, // NOI18N
+                        "".equals(setterName)?null:setterName)); // NOI18N
+            }
+        }
 
         return result;
+    }
+
+    public boolean isMethodInline() {
+        boolean inline = jInlineMethods.isSelected();
+        NbPreferences.forModule(DeclarationGenerator.class).putBoolean(DeclarationGenerator.INLINE_PROPERTY, inline);
+        return inline;
     }
     
     public boolean isCheckAccess() {
@@ -728,7 +744,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         String accessorToolTip;
         String defaultAccessorToolTip;
         MemberInfo<? extends CsmMember> accessor;
-        private CsmUID<CsmField> fieldHandle;
+        private CsmField fieldHandle;
         private boolean isGetter;
 
         public static AccessorInfo createGetter(CsmField field, String proposedName) {
@@ -744,8 +760,8 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         private static AccessorInfo create(CsmField field, CsmMethod method, String proposedName, boolean isGetter) {
             AccessorInfo ai = new AccessorInfo();
             ai.name = ai.defaultName = proposedName;
-            ai.accessor = ai.defaultAccessor = method != null ? MemberInfo.create(method) : null; 
-            ai.accessorToolTip = ai.defaultAccessorToolTip = method != null
+            ai.accessor = ai.defaultAccessor = (method != null) ? MemberInfo.create(method) : null;
+            ai.accessorToolTip = ai.defaultAccessorToolTip = (method != null)
                     ? NbBundle.getMessage(
                             EncapsulateFieldPanel.class,
                             isGetter ? "MSG_EncapsulateFieldDeclaredGetter" : "MSG_EncapsulateFieldDeclaredSetter", // NOI18N
@@ -753,7 +769,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
                             method.getName().toString())
                     : null;
             ai.isGetter = isGetter;
-            ai.fieldHandle = CsmRefactoringUtils.getHandler(field);
+            ai.fieldHandle = field;
             return ai;
         }
         
@@ -765,7 +781,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         
         public void setName(String s) {
             name = s;
-            CsmField field = null;//fieldHandle.resolve(javac);
+            CsmField field = fieldHandle;
             CsmMethod method = null;
             method = isGetter
                     ? EncapsulateFieldRefactoringPlugin.findMethod(field.getContainingClass(), s, Collections.<CsmVariable>emptyList(), true)
@@ -883,7 +899,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
 
     private static boolean isConstant(Object value) {
         if (CsmKindUtilities.isCsmObject(value) && CsmKindUtilities.isVariable((CsmObject)value)) {
-            return false;
+            return GeneratorUtils.isConstant((CsmVariable)value);
         } else {
             return false;
         }
@@ -932,16 +948,16 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
             if (ai == null) {
                 throw new IllegalStateException();
             }
-            String cellEditorValue = ai == null ? null: ai.name;
+            String cellEditorValue = ai.name;
             return super.getTableCellEditorComponent(table, cellEditorValue, isSelected, row, column);
         }
 
         @Override
         public Object getCellEditorValue() {
             String cellEditorValue = (String) super.getCellEditorValue();
-            Object retVal;
+            AccessorInfo retVal;
             if (cellEditorValue == null || cellEditorValue.length() == 0) {
-                if (ai != null || (ai.name != null && ai.name.length() > 0)) {
+                if (ai != null) {
                     ai.name = null;
                     ai.accessor = null;
                     ai.accessorToolTip = null;
@@ -958,9 +974,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         
         private void computeNewValue() {
             AccessorInfo desc = ai;
-            if (desc == null) {
-                return;
-            }
+            assert desc != null;
             desc.setName(((String) super.getCellEditorValue()).trim());
         }
         

@@ -529,8 +529,25 @@ public class Utilities {
             if (i == null) {
                 continue;
             }
+
             // Dependency.TYPE_MODULE
-            for (Dependency d : Dependency.create (Dependency.TYPE_MODULE, mi.getCodeName ())) {
+            Collection<Dependency> dependencies = new HashSet<Dependency> ();
+            dependencies.addAll(Dependency.create (Dependency.TYPE_MODULE, mi.getCodeName ()));
+
+            SortedSet<String> newTokens = new TreeSet<String> (Arrays.asList (mi.getProvides ()));
+            SortedSet<String> oldTokens = new TreeSet<String> (Arrays.asList (((ModuleUpdateElementImpl) Trampoline.API.impl (i)).getModuleInfo ().getProvides ()));
+            oldTokens.removeAll (newTokens);
+            // handle diff
+            for (String tok : oldTokens) {
+                // don't care about provider of platform dependency here
+                if (tok.startsWith ("org.openide.modules.os")) { // NOI18N
+                    continue;
+                }
+                dependencies.addAll (Dependency.create (Dependency.TYPE_REQUIRES, tok));
+                dependencies.addAll (Dependency.create (Dependency.TYPE_NEEDS, tok));
+            }
+
+            for (Dependency d : dependencies) {
                 DependencyAggregator deco = DependencyAggregator.getAggregator (d);
                 if (deco != null) {
                     for (ModuleInfo depMI : deco.getDependening ()) {
@@ -558,41 +575,6 @@ public class Utilities {
                                         deps = newones;
                                     }
                                     moreRequested.add (tryUE);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            // Dependency.TYPE_REQUIRES
-            // Dependency.TYPE_NEEDS
-            SortedSet<String> newTokens = new TreeSet<String> (Arrays.asList (mi.getProvides ()));
-            SortedSet<String> oldTokens = new TreeSet<String> (Arrays.asList (((ModuleUpdateElementImpl) Trampoline.API.impl (i)).getModuleInfo ().getProvides ()));
-            oldTokens.removeAll (newTokens);
-            // handle diff
-            for (String tok : oldTokens) {
-                // don't care about provider of platform dependency here
-                if (tok.startsWith ("org.openide.modules.os")) { // NOI18N
-                    continue;
-                }
-                Collection<Dependency> deps = new HashSet<Dependency> (Dependency.create (Dependency.TYPE_REQUIRES, tok));
-                deps.addAll (Dependency.create (Dependency.TYPE_NEEDS, tok));
-                for (Dependency d : deps) {
-                    DependencyAggregator deco = DependencyAggregator.getAggregator (d);
-                    if (deco != null) {
-                        for (ModuleInfo depMI : deco.getDependening ()) {
-                            Module depM = Utilities.toModule (depMI);
-                            if (depM == null) {
-                                continue;
-                            }
-                            if (depM.getProblems () != null && ! depM.getProblems ().isEmpty ()) {
-                                // skip this module because it has own problems already
-                                continue;
-                            }
-                            for (Dependency toTry : depM.getDependencies ()) {
-                                // check only relevant deps
-                                if (deco.equals (DependencyAggregator.getAggregator (toTry))) {
-                                    brokenDependencies.add (toTry);
                                 }
                             }
                         }

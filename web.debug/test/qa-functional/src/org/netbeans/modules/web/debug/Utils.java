@@ -68,7 +68,10 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
+import org.netbeans.jemmy.operators.ButtonOperator;
 import org.netbeans.jemmy.operators.ContainerOperator;
+import org.netbeans.jemmy.operators.DialogOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JSpinnerOperator;
@@ -318,7 +321,7 @@ public class Utils {
         try {
             // increase time to wait to 240 second (it fails on slower machines)
             MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 240000);
-            MainWindowOperator.getDefault().waitStatusText("Finished building "+projectName+" ("+target+")");
+            MainWindowOperator.getDefault().waitStatusText("Finished building "+projectName+" ("+target+").");
         } finally {
             // start status text tracer again because we use it further
             MainWindowOperator.getDefault().getStatusTextTracer().start();
@@ -343,14 +346,14 @@ public class Utils {
     }
 
     /** Confirming message about Client Side Debugging and setting don't show this message again. */
-    public static void confirmClientSideDebuggingMeassage() {
+    public static void confirmClientSideDebuggingMeassage(String appName) {
         long oldTimeout = MainWindowOperator.getDefault().getTimeouts().getTimeout("Waiter.WaitingTime");
         // increase time to wait to 240 second
-        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 240000);
-        String title = "Client Side JavaScript Debugging";
+        //MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 240000);
+        String title = "Debug Project - "+appName;
         long time = System.currentTimeMillis();
         JDialog dialog = null;
-        while ((System.currentTimeMillis() - 120000 < time) && dialog == null) {
+        while ((System.currentTimeMillis() - 5000 < time) && dialog == null) {
             dialog = NbDialogOperator.findJDialog(title, true, true);
             try {
                 Thread.sleep(1000);
@@ -361,14 +364,14 @@ public class Utils {
         if (dialog != null) {
             // wait for dialog
             NbDialogOperator dialogOperator = new NbDialogOperator(dialog);
-            // turn of client-side debugging
-            new JCheckBoxOperator(dialogOperator, "Enable Client-Side JavaScript Debugging").setSelected(false);
-            String doNotShowTitle = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.web.client.tools.impl.Bundle", "DO_NOT_SHOW_AGAIN");
+            //NbDialogOperator nbd = new NbDialogOperator(title;)
             // choose don't display this message again
+            String doNotShowTitle = "Do not show this again";
             new JCheckBoxOperator(dialogOperator, doNotShowTitle).setSelected(true);
-            dialogOperator.ok();
+            JButtonOperator jbo = new JButtonOperator(dialogOperator, "Debug");
+            jbo.clickMouse();
         }
         // restore default timeout
-        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", oldTimeout);
+        //MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", oldTimeout);
     }
 }

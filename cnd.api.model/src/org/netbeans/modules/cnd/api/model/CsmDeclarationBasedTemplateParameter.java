@@ -43,6 +43,6 @@ package org.netbeans.modules.cnd.api.model;
  *
  * @author eu155513
  */
-public interface CsmDeclarationBasedTemplateParameter extends CsmTemplateParameter, CsmDeclaration<CsmDeclarationBasedTemplateParameter> {
+public interface CsmDeclarationBasedTemplateParameter extends CsmTemplateParameter, CsmDeclaration {
 
 }

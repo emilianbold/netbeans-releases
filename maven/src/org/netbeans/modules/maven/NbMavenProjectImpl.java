@@ -116,6 +116,7 @@ import org.netbeans.modules.maven.debug.MavenDebuggerImpl;
 import org.netbeans.modules.maven.execute.BackwardCompatibilityWithMevenideChecker;
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
 import org.netbeans.modules.maven.execute.PrereqCheckerMerger;
+import org.netbeans.modules.maven.execute.ReactorChecker;
 import org.netbeans.modules.maven.queries.MavenBinaryForSourceQueryImpl;
 import org.netbeans.modules.maven.queries.MavenFileEncodingQueryImpl;
 import org.netbeans.spi.project.LookupMerger;
@@ -149,7 +150,6 @@ public final class NbMavenProjectImpl implements Project {
     private Lookup lookup;
     private Updater updater1;
     private Updater updater2;
-    private Updater updater3;
     private MavenProject project;
     private ProblemReporterImpl problemReporter;
     private Info projectInfo;
@@ -196,9 +196,8 @@ public final class NbMavenProjectImpl implements Project {
         watcher = ACCESSOR.createWatcher(this);
         subs = new SubprojectProviderImpl(this, watcher);
         lookup = new LazyLookup(this, watcher, projectInfo, sharability, subs);
-        updater1 = new Updater(true);
-        updater2 = new Updater(true, USER_DIR_FILES);
-        updater3 = new Updater(false);
+        updater1 = new Updater();
+        updater2 = new Updater(USER_DIR_FILES);
         state = projectState;
         problemReporter = new ProblemReporterImpl(this);
         auxiliary = new M2AuxilaryConfigImpl(this);
@@ -234,13 +233,18 @@ public final class NbMavenProjectImpl implements Project {
             req.setPomFile(projectFile.getAbsolutePath());
             req.setNoSnapshotUpdates(true);
             req.setUpdateSnapshots(false);
-            req.setUserProperties(properties);
+            Properties props = new Properties();
+            if (properties != null) {
+                props.putAll(properties);
+                req.setUserProperties(props);
+            }
             //MEVENIDE-634 i'm wondering if this fixes the issue
             req.setInteractiveMode(false);
             // recursive == false is important to avoid checking all submodules for extensions
             // that will not be used in current pom anyway..
             // #135070
             req.setRecursive(false);
+            req.setProperty("netbeans.execution", "true"); //NOI18N
             MavenExecutionResult res = getEmbedder().readProjectWithDependencies(req);
             if (!res.hasExceptions()) {
                 return res.getProject();
@@ -436,9 +440,6 @@ public final class NbMavenProjectImpl implements Project {
         return updater2;
     }
 
-    Updater getFileUpdater() {
-        return updater3;
-    }
 
     private Image getIcon() {
         if (icon == null) {
@@ -770,10 +771,19 @@ public final class NbMavenProjectImpl implements Project {
                     new DebuggerChecker(),
                     new CosChecker(),
                     CosChecker.createResultChecker(),
+                    new ReactorChecker(),
                     new PrereqCheckerMerger()
                 });
         return staticLookup;
     }
+
+    public boolean isErrorPom(MavenProject pr) {
+        if ("error".equals(pr.getArtifactId()) && "error".equals(pr.getGroupId()) && "unknown".equals(pr.getVersion())) {
+            return true;
+        }
+        return false;
+    }
+
 
     private final class Info implements ProjectInformation {
 
@@ -796,8 +806,13 @@ public final class NbMavenProjectImpl implements Project {
             return toReturn;
         }
 
+
         public String getDisplayName() {
-            String toReturn = NbMavenProjectImpl.this.getOriginalMavenProject().getName();
+            MavenProject pr = NbMavenProjectImpl.this.getOriginalMavenProject();
+            if (isErrorPom(pr)) {
+                return NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_FailedLoadingProject");
+            }
+            String toReturn = pr.getName();
             if (toReturn == null) {
                 String grId = NbMavenProjectImpl.this.getOriginalMavenProject().getGroupId();
                 String artId = NbMavenProjectImpl.this.getOriginalMavenProject().getArtifactId();
@@ -831,7 +846,9 @@ public final class NbMavenProjectImpl implements Project {
     }
     // needs to be binary sorted;
     private static final String[] DEFAULT_FILES = new String[]{
-        "pom.xml" //NOI18N
+        "nb-configuration.xml", //NOI18N
+        "pom.xml",//NOI18N
+        "profiles.xml"//NOI18N
 
     };
     private static final String[] USER_DIR_FILES = new String[]{
@@ -862,18 +879,18 @@ public final class NbMavenProjectImpl implements Project {
 
     }
 
-    private class Updater implements FileChangeListener {
+    class Updater implements FileChangeListener {
 
         //        private FileObject fileObject;
-        private boolean isFolder;
         private String[] filesToWatch;
+        private long lastTime = 0;
+        private FileObject folder;
 
-        Updater(boolean folder) {
-            this(folder, DEFAULT_FILES);
+        Updater() {
+            this(DEFAULT_FILES);
         }
 
-        Updater(boolean folder, String[] toWatch) {
-            isFolder = folder;
+        Updater(String[] toWatch) {
             filesToWatch = toWatch;
         }
 
@@ -881,9 +898,11 @@ public final class NbMavenProjectImpl implements Project {
         }
 
         public void fileChanged(FileEvent fileEvent) {
-            if (!isFolder) {
+            if (!fileEvent.getFile().isFolder()) {
                 String nameExt = fileEvent.getFile().getNameExt();
-                if (Arrays.binarySearch(filesToWatch, nameExt) != -1) {
+                if (Arrays.binarySearch(filesToWatch, nameExt) != -1 && lastTime < fileEvent.getTime()) {
+                    lastTime = System.currentTimeMillis();
+//                    System.out.println("fired based on " + fileEvent.getFile() + fileEvent.getTime());
                     NbMavenProject.fireMavenProjectReload(NbMavenProjectImpl.this);
                 }
             }
@@ -891,28 +910,57 @@ public final class NbMavenProjectImpl implements Project {
 
         public void fileDataCreated(FileEvent fileEvent) {
             //TODO shall also include the parent of the pom if available..
-            if (isFolder) {
+            if (fileEvent.getFile().isFolder()) {
                 String nameExt = fileEvent.getFile().getNameExt();
-                if (Arrays.binarySearch(filesToWatch, nameExt) != -1) {
-                    fileEvent.getFile().addFileChangeListener(getFileUpdater());
+                if (Arrays.binarySearch(filesToWatch, nameExt) != -1 && lastTime < fileEvent.getTime()) {
+                    lastTime = System.currentTimeMillis();
+//                    System.out.println("fired based on " + fileEvent.getFile() + fileEvent.getTime());
+                    fileEvent.getFile().addFileChangeListener(this);
                     NbMavenProject.fireMavenProjectReload(NbMavenProjectImpl.this);
                 }
             }
         }
 
         public void fileDeleted(FileEvent fileEvent) {
-            if (!isFolder) {
-                fileEvent.getFile().removeFileChangeListener(getFileUpdater());
+            if (!fileEvent.getFile().isFolder()) {
+                lastTime = System.currentTimeMillis();
+                fileEvent.getFile().removeFileChangeListener(this);
                 NbMavenProject.fireMavenProjectReload(NbMavenProjectImpl.this);
             }
         }
 
         public void fileFolderCreated(FileEvent fileEvent) {
             //TODO possibly remove this fire.. watch for actual path..
-            NbMavenProject.fireMavenProjectReload(NbMavenProjectImpl.this);
+//            NbMavenProject.fireMavenProjectReload(NbMavenProjectImpl.this);
         }
 
         public void fileRenamed(FileRenameEvent fileRenameEvent) {
+        }
+
+        void attachAll(FileObject fo) {
+            if (fo != null) {
+                folder = fo;
+                fo.addFileChangeListener(this);
+                for (String file : filesToWatch) {
+                    FileObject fobj = fo.getFileObject(file);
+                    if (fobj != null) {
+                        fobj.addFileChangeListener(this);
+                    }
+                }
+            }
+        }
+
+        void detachAll() {
+            if (folder != null) {
+                folder.removeFileChangeListener(this);
+                for (String file : filesToWatch) {
+                    FileObject fobj = folder.getFileObject(file);
+                    if (fobj != null) {
+                        fobj.removeFileChangeListener(this);
+                    }
+                }
+                folder = null;
+            }
         }
     }
 

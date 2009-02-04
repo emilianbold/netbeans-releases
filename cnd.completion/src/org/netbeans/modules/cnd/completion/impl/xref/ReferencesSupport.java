@@ -42,7 +42,12 @@ package org.netbeans.modules.cnd.completion.impl.xref;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +67,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
@@ -229,9 +235,16 @@ public final class ReferencesSupport {
 
     private static CsmObject findDeclaration(final CsmFile csmFile, final Document doc,
             TokenItem<CppTokenId> tokenUnderOffset, final int offset, FileReferencesContext fileReferencesContext) {
+
         // fast check, if possible
         int[] idFunBlk = null;
         CsmObject csmItem = null;
+        // macros have max priority in file
+        List<CsmReference> macroUsages = CsmFileInfoQuery.getDefault().getMacroUsages(csmFile);
+        csmItem = findMacro(macroUsages, offset);
+        if (csmItem != null) {
+            return csmItem;
+        }
         CsmObject objUnderOffset = CsmOffsetResolver.findObject(csmFile, offset, fileReferencesContext);
         // TODO: it would be great to check position in named element, but we don't
         // support this information yet, so
@@ -253,7 +266,7 @@ public final class ReferencesSupport {
             if (CsmKindUtilities.isFunctionDefinition(scope)) {
                 Collection<CsmReference> labels = CsmLabelResolver.getDefault().getLabels(
                         (CsmFunctionDefinition) scope, csmGoto.getLabel(),
-                        CsmLabelResolver.LabelKind.Definiton);
+                        EnumSet.of(CsmLabelResolver.LabelKind.Definiton));
                 if (!labels.isEmpty()) {
                     csmItem = labels.iterator().next().getReferencedObject();
                 }
@@ -311,13 +324,6 @@ public final class ReferencesSupport {
         csmItem = csmItem != null ? csmItem : findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.GLOBAL_QUERY, fileReferencesContext);
         // if still null try macro info from file (IZ# 130897)
         if (csmItem == null) {
-            List<CsmReference> macroUsages = CsmFileInfoQuery.getDefault().getMacroUsages(csmFile);
-            for (CsmReference macroRef : macroUsages) {
-                if (macroRef.getStartOffset() <= offset && offset <= macroRef.getEndOffset()) {
-                    csmItem = macroRef.getReferencedObject();
-                    assert csmItem != null : "must be referenced macro" + macroRef;
-                }
-            }
         }
         return csmItem;
     }
@@ -501,14 +507,34 @@ public final class ReferencesSupport {
         return false;
     }
 
+    private static class FileToDoc {
+        BaseDocument doc;
+        CsmFile file;
+        FileToDoc(BaseDocument doc, CsmFile file){
+            this.doc = doc;
+            this.file = file;
+        }
+    }
+    private static Reference<FileToDoc> lastCsmFile = null;
+
     static BaseDocument getDocument(CsmFile file) {
         BaseDocument doc = null;
         try {
+            Reference<FileToDoc> lcf = lastCsmFile;
+            if (lcf != null) {
+                FileToDoc pair = lcf.get();
+                if (pair != null && pair.file == file) {
+                    return pair.doc;
+                }
+            }
             doc = ReferencesSupport.getBaseDocument(file.getAbsolutePath().toString());
         } catch (DataObjectNotFoundException ex) {
             ex.printStackTrace(System.err);
         } catch (IOException ex) {
             ex.printStackTrace(System.err);
+        }
+        if (doc != null) {
+            lastCsmFile = new WeakReference<FileToDoc>(new FileToDoc(doc,file));
         }
         return doc;
     }
@@ -616,6 +642,77 @@ public final class ReferencesSupport {
             cache.remove(file);
         } finally {
             cacheLock.writeLock().unlock();
+        }
+    }
+
+    private static CsmObject findMacro(List<CsmReference> macroUsages, final int offset) {
+        int index = Collections.binarySearch(macroUsages, new RefOffsetKey(offset), new Comparator<CsmReference>() {
+            public int compare(CsmReference o1, CsmReference o2) {
+                if (o1 instanceof RefOffsetKey) {
+                    if (o2.getStartOffset() <= o1.getStartOffset() &&
+                            o1.getEndOffset() <= o2.getEndOffset()) {
+                        return 0;
+                    }
+                } else if (o2 instanceof RefOffsetKey) {
+                    if (o1.getStartOffset() <= o2.getStartOffset() &&
+                            o2.getEndOffset() <= o1.getEndOffset()) {
+                        return 0;
+                    }
+                }
+                return o1.getStartOffset() - o2.getStartOffset();
+            }
+        });
+        if (index >= 0) {
+            CsmReference macroRef = macroUsages.get(index);
+            CsmObject csmItem = macroRef.getReferencedObject();
+            assert csmItem != null : "must be referenced macro" + macroRef;
+            return csmItem;
+        }
+        return null;
+    }
+    
+    private static final class RefOffsetKey implements CsmReference {
+
+        private final int offset;
+
+        private RefOffsetKey(int offset) {
+            this.offset = offset;
+        }
+
+        public CsmReferenceKind getKind() {
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        }
+
+        public CsmObject getReferencedObject() {
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        }
+
+        public CsmObject getOwner() {
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        }
+
+        public CsmFile getContainingFile() {
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        }
+
+        public int getStartOffset() {
+            return offset;
+        }
+
+        public int getEndOffset() {
+            return offset;
+        }
+
+        public Position getStartPosition() {
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        }
+
+        public Position getEndPosition() {
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        }
+
+        public CharSequence getText() {
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
     }
 }

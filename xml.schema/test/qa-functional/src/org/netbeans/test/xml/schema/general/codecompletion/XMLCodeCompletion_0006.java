@@ -44,12 +44,14 @@ package org.netbeans.test.xml.schema.general.codecompletion;
 import junit.framework.TestSuite;
 
 import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.junit.NbTestCase;
 import java.util.Properties;
 import org.netbeans.junit.RandomlyFails;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.test.xml.schema.lib.SchemaMultiView;
 
 /**
  *
@@ -110,7 +112,15 @@ public class XMLCodeCompletion_0006 extends XMLCodeCompletion {
     {
       startTest( );
 
-      AddElementInternal( SCHEMA_SHORT_NAME_1 + SCHEMA_EXTENSION, "newElement" );
+      // Use design view for adding
+      SchemaMultiView xml = new SchemaMultiView( SCHEMA_SHORT_NAME_1 + SCHEMA_EXTENSION );
+      xml.switchToDesign( );
+      DragSomething( SCHEMA_SHORT_NAME_1 + SCHEMA_EXTENSION, 0, "Element", 0, "newElement" );
+      DragSomething( SCHEMA_SHORT_NAME_1 + SCHEMA_EXTENSION, 0, "Element", 3, "newElement" );
+      xml.switchToSource( );
+      EditorOperator opXML = new EditorOperator( SCHEMA_SHORT_NAME_1 + SCHEMA_EXTENSION );
+      opXML.setCaretPosition( "elementFormDefault=\"qualified\">", false );
+      TypeCode( opXML, "\n<xsd:any/>" );
 
       endTest( );
     }
@@ -131,7 +141,15 @@ public class XMLCodeCompletion_0006 extends XMLCodeCompletion {
     {
       startTest( );
 
-      AddElementInternal( SCHEMA_SHORT_NAME_2 + SCHEMA_EXTENSION, "newElement" );
+      // Use design view for adding
+      SchemaMultiView xml = new SchemaMultiView( SCHEMA_SHORT_NAME_2 + SCHEMA_EXTENSION );
+      xml.switchToDesign( );
+      DragSomething( SCHEMA_SHORT_NAME_2 + SCHEMA_EXTENSION, 0, "Element", 0, "newElement" );
+      DragSomething( SCHEMA_SHORT_NAME_2 + SCHEMA_EXTENSION, 0, "Element", 3, "newElement" );
+      xml.switchToSource( );
+      EditorOperator opXML = new EditorOperator( SCHEMA_SHORT_NAME_1 + SCHEMA_EXTENSION );
+      opXML.setCaretPosition( "elementFormDefault=\"qualified\">", false );
+      TypeCode( opXML, "\n<xsd:any/>" );
 
       endTest( );
     }
@@ -139,6 +157,8 @@ public class XMLCodeCompletion_0006 extends XMLCodeCompletion {
     public void CreateConstrained( )
     {
       startTest( );
+
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenuNoBlock("File|Save All");
 
       CImportClickData[] aimpData =
       {
@@ -165,6 +185,8 @@ public class XMLCodeCompletion_0006 extends XMLCodeCompletion {
     public void StartAndContinueTag( )
     {
       startTest( );
+
+      // TODO : There is an issue possibly.
 
       String[] asCases =
       {

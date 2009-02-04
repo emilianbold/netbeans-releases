@@ -108,7 +108,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     }
 
     private static RemotePathMap getRemotePathMap(String hkey) {
-        return RemotePathMap.getMapper(hkey);
+        return RemotePathMap.getRemotePathMapInstance(hkey);
     }
 
     private synchronized void initTableModel(final String hkey) {

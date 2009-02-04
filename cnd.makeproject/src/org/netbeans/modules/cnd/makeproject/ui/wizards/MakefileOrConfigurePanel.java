@@ -126,25 +126,18 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         String path = (String) wizardDescriptor.getProperty("simpleModeFolder"); // NOI18N
         if (path != null) {
             boolean selected = false;
-            File file = new File(path+"/Makefile"); // NOI18N
-            if (file.exists() && file.isFile() && file.canRead()) {
-                makefileNameTextField.setText(file.getAbsolutePath());
+            String makeFile = SelectModeDescriptorPanel.findMakefile(path);
+            if (makeFile != null) {
+                makefileNameTextField.setText(makeFile);
                 makefileRadioButton.setSelected(true);
                 selected = true;
-            } else {
-                file = new File(path+"/makefile"); // NOI18N
-                if (file.exists() && file.isFile() && file.canRead()) {
-                    makefileNameTextField.setText(file.getAbsolutePath());
-                    makefileRadioButton.setSelected(true);
-                    selected = true;
-                }
             }
-            file = new File(path+"/configure"); // NOI18N
-            if (file.exists() && file.isFile() && file.canRead()) {
+            String configureScript = SelectModeDescriptorPanel.findConfigureScript(path);
+            if (configureScript != null) {
                 if (!selected) {
                     configureRadioButton.setSelected(true);
                     runConfigureCheckBox.setSelected(true);
-                    configureNameTextField.setText(file.getAbsolutePath());
+                    configureNameTextField.setText(configureScript);
                 }
                 configureArgumentsTextField.setText("CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\""); // NOI18N
             }
@@ -230,9 +223,14 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
                 descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); // NOI18N
                 return false;
             }
-            
-            if (!IpeUtils.isPathAbsolute(configureNameTextField.getText()) || !new File(configureNameTextField.getText()).exists() || new File(configureNameTextField.getText()).isDirectory()) {
+            File file = new File(configureNameTextField.getText());
+            if (!IpeUtils.isPathAbsolute(configureNameTextField.getText()) ||
+                !file.exists() || file.isDirectory()) {
                 String msg = NbBundle.getMessage(BuildActionsPanel.class, "CONFIGUREFILEDOESNOTEXIST"); // NOI18N
+                descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); // NOI18N
+                return false;
+            } else if (!SelectModeDescriptorPanel.isRunnable(file)) {
+                String msg = NbBundle.getMessage(BuildActionsPanel.class, "CONFIGUREFILEISNOTEXECUTABLE"); // NOI18N
                 descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); // NOI18N
                 return false;
             }

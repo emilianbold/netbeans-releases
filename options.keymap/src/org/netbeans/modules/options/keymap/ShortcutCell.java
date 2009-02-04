@@ -48,11 +48,13 @@ package org.netbeans.modules.options.keymap;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JList;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
@@ -62,36 +64,57 @@ import javax.swing.SwingUtilities;
  * Panel representing one shortcut cell inside keymap table
  * @author Max Sauer
  */
-public class ShortcutCell extends javax.swing.JPanel implements Comparable {
+public class ShortcutCell extends javax.swing.JPanel implements Comparable, Popupable {
     
     private Popup popup;
-    private static final String[] specialKeys = new String[]{"UP", "DOWN", "LEFT", "RIGHT", "ENTER", "ESCAPE"}; //NOI18N
-    private final JList list = new JList(specialKeys);
+    private final SpecialkeyPanel specialkeyList;
 
     PopupFactory factory = PopupFactory.getSharedInstance();
     /** Creates new form ShortcutCell */
     public ShortcutCell() {
         initComponents();
+        specialkeyList = new SpecialkeyPanel(this, scField);
 
-        list.addMouseListener(new MouseAdapter() {
+        // close the popup when user clicks elsewhere
+        changeButton.addFocusListener(new FocusAdapter() {
 
             @Override
-            public void mouseClicked(MouseEvent e) {
-                int index = list.locationToIndex(new Point(e.getX(), e.getY()));
-                if (popup != null) {
-                    popup.hide();
-                    popup = null;
+            public void focusLost(FocusEvent e) {
+                hidePopup();
+            }
+        });
+
+        // close popup when escape pressed and return to editing state
+        changeButton.addKeyListener(new KeyAdapter() {
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    //XXX: find a better way
+                    JTable table = (JTable) scField.getParent().getParent();
+                    final int editingRow = table.getEditingRow();
+                    table.editCellAt(editingRow, 1);
+                    table.setRowSelectionInterval(editingRow, editingRow);
+                    scField.requestFocus();
                 }
-                String text = scField.getText();
-                if (text.endsWith("+")) // NOI18N
-                    scField.setText(text + list.getModel().getElementAt(index));
-                else
-                    scField.setText(text + " " + list.getModel().getElementAt(index)); //NOI18N
-                scField.requestFocus();
-                scField.selectAll();
-                scField.setCaretPosition(scField.getText().length()-1);
             }
 
+        });
+
+        //set a different icon for more button in edit mode, since it offers different popup
+        scField.addFocusListener(new FocusAdapter() {
+
+            @Override
+            public void focusGained(FocusEvent e) {
+                changeButton.setText(""); // NOI18N
+                changeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/options/keymap/more.png")));
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                changeButton.setIcon(null);
+                changeButton.setText("..."); // NOI18N
+            }
         });
     }
 
@@ -106,6 +129,13 @@ public class ShortcutCell extends javax.swing.JPanel implements Comparable {
      */
     public void setText(String shortcut) {
         scField.setText(shortcut);
+    }
+
+    public void hidePopup() {
+        if (popup != null) {
+            popup.hide();
+            popup = null;
+        }
     }
 
     @Override
@@ -197,7 +227,7 @@ public class ShortcutCell extends javax.swing.JPanel implements Comparable {
         SwingUtilities.convertPointToScreen(p, this);
         //show special key popup
         if (popup == null)
-            popup = factory.getPopup(this, list, p.x, p.y);
+            popup = factory.getPopup(this, specialkeyList, p.x, p.y);
         popup.show();
     }//GEN-LAST:event_changeButtonActionPerformed
 
@@ -208,6 +238,14 @@ public class ShortcutCell extends javax.swing.JPanel implements Comparable {
 
     public int compareTo(Object o) {
         return this.toString().compareTo(o.toString());
+    }
+
+    public Popup getPopup() {
+        return popup;
+    }
+
+    void setButtontext(String text) {
+        changeButton.setText(text);
     }
 
 }

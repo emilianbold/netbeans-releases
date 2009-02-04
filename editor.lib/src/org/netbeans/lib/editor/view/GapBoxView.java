@@ -664,7 +664,7 @@ EstimatedSpanView {
         return isStatusBitsNonZero(ACTIVE_LAYOUT_STATE);
     }
 
-    protected GapBoxViewChildren getChildren() {
+    GapBoxViewChildren getChildren() {
         if (children == null) {
             children = createChildren();
 
@@ -681,7 +681,7 @@ EstimatedSpanView {
     /**
      * Get children or null if the children were not yet initialized.
      */
-    protected final GapBoxViewChildren getChildrenNull() {
+    final GapBoxViewChildren getChildrenNull() {
         return children;
     }
 
@@ -1633,7 +1633,7 @@ EstimatedSpanView {
      * Can be overriden by subclasses to return
      * a different children implementation.
      */
-    protected GapBoxViewChildren createChildren() {
+    GapBoxViewChildren createChildren() {
         return new GapBoxViewChildren(this);
     }
 

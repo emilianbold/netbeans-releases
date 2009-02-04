@@ -66,7 +66,7 @@ public class ImportProjectAction implements ActionListener {
 
             public void run() {
                 FeatureInfo featureInfo = null;
-                for (FeatureInfo info : FeatureManager.featureTypesLookup().lookupAll(FeatureInfo.class)) {
+                for (FeatureInfo info : FeatureManager.features()) {
                     if ("Eclipse".equals(info.getProjectImporter())) { // NOI18N
                         featureInfo = info;
                         break;

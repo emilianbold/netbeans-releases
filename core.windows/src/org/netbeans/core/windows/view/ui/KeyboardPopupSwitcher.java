@@ -60,6 +60,7 @@ import org.netbeans.swing.popupswitcher.SwitcherTable;
 import org.netbeans.swing.popupswitcher.SwitcherTableItem;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Utilities;
+import org.openide.windows.Mode;
 import org.openide.windows.WindowManager;
 
 /**
@@ -136,6 +137,13 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
             !wmi.isSeparateWindow(KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow())) {
             return false;
         }
+
+        if( Boolean.getBoolean("netbeans.winsys.ctrltab.editoronly") ) { //NOI18N
+            Mode activeMode = wmi.getActiveMode();
+            if( !wmi.isEditorMode(activeMode) )
+                return false;
+        }
+
 
         boolean isCtrlTab = kev.getKeyCode() == KeyEvent.VK_TAB &&
                 kev.getModifiers() == InputEvent.CTRL_MASK;

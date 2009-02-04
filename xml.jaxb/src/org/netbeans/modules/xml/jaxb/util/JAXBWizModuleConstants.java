@@ -92,7 +92,7 @@ public class JAXBWizModuleConstants {
     public static final String JAXB_COMPILE_TARGET_DEPENDS = "-pre-pre-compile" ;//NOI18N
     public static final String JAXB_COMPILE_TARGET = "jaxb-code-generation"; //NOI18N
     public static final String JAXB_CLEAN_COMPILE_TARGET = "jaxb-clean-code-generation"; //NOI18N
-    public static final BigDecimal LATEST_CFG_VERSION = new BigDecimal("0.5"); //NOI18n    
+    public static final BigDecimal LATEST_CFG_VERSION = new BigDecimal("1.0"); //NOI18n
     
     private JAXBWizModuleConstants() {
     }

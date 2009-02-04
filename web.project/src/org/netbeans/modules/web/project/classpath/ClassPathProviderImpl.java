@@ -115,8 +115,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                 new String[] {"javac.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH },
                 new String[] {"javac.test.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH },
                 new String[] {"debug.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH },
-                new String[] {"run.test.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH },
-                true);
+                new String[] {"run.test.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH });
     }
 
     private FileObject getDir(final String propname) {
@@ -228,7 +227,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             if (cp == null) {
                 cp = ClassPathSupport.createProxyClassPath(new ClassPath[] {
                         ClassPathFactory.createClassPath(new JspSourcePathImplementation(helper, evaluator)),
-                        ClassPathFactory.createClassPath(ClassPathSupportFactory.createSourcePathImplementation (this.sourceRoots, helper, evaluator, true)),
+                        ClassPathFactory.createClassPath(ClassPathSupportFactory.createSourcePathImplementation (this.sourceRoots, helper, evaluator)),
                     });
                 cache.put(ClassPathCache.WEB_SOURCE, cp);
 

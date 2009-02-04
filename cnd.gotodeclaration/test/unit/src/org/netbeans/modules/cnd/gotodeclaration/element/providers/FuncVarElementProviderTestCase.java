@@ -70,7 +70,7 @@ public class FuncVarElementProviderTestCase extends CppSymbolBaseTestCase {
     }
     
     public void testFuncVarCamelCase() throws Exception {
-        peformTest("GCL", SearchType.CAMEL_CASE);
+        peformTest("GC", SearchType.CAMEL_CASE);
     }
 
     public void testFuncVarPrefix() throws Exception {
@@ -88,5 +88,32 @@ public class FuncVarElementProviderTestCase extends CppSymbolBaseTestCase {
     public void testFuncVarCaseInsensitiveExactName() throws Exception {
         peformTest("Main", SearchType.CASE_INSENSITIVE_EXACT_NAME);
     }
-   
+
+    public void testMacroDotRegexp() throws Exception {
+        peformTest("CPU.H", SearchType.REGEXP);
+    }
+
+    public void testMacroCaseInsensitiveRegexp() throws Exception {
+        peformTest("_cUs.*r_h", SearchType.CASE_INSENSITIVE_REGEXP);
+    }
+
+    public void testMacroCamelCase() throws Exception {
+        peformTest("GD", SearchType.CAMEL_CASE);
+    }
+
+    public void testMacroPrefix() throws Exception {
+        peformTest("M", SearchType.PREFIX);
+    }
+
+    public void testMacroCaseInsensitivePrefix() throws Exception {
+        peformTest("m", SearchType.CASE_INSENSITIVE_PREFIX);
+    }
+
+    public void testMacroExactName() throws Exception {
+        peformTest("DISK_H", SearchType.EXACT_NAME);
+    }
+
+    public void testMacroCaseInsensitiveExactName() throws Exception {
+        peformTest("disk_h", SearchType.CASE_INSENSITIVE_EXACT_NAME);
+    }
 }

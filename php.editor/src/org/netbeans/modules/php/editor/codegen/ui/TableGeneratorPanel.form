@@ -22,7 +22,6 @@
                   <Component id="columnScrollPane" alignment="0" pref="437" max="32767" attributes="0"/>
                   <Component id="dbconnLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="dbconnComboBox" alignment="0" pref="437" max="32767" attributes="0"/>
-                  <Component id="errorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="tableLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="tableComboBox" alignment="0" pref="437" max="32767" attributes="0"/>
                   <Component id="columnLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -52,9 +51,7 @@
               <Component id="connVariableLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="connVariableTextField" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="errorLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -69,6 +66,11 @@
           <ResourceString bundle="org/netbeans/modules/php/editor/codegen/ui/Bundle.properties" key="ConnectionGeneratorPanel.dbconnLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/editor/codegen/ui/Bundle.properties" key="TableGeneratorPanel.dbconnLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JComboBox" name="dbconnComboBox">
       <AccessibilityProperties>
@@ -163,16 +165,6 @@
           <ResourceString bundle="org/netbeans/modules/php/editor/codegen/ui/Bundle.properties" key="TableGeneratorPanel.connVariableTextField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="errorLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/editor/codegen/ui/Bundle.properties" key="TableGeneratorPanel.errorLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ErrorLabel()"/>
-      </AuxValues>
     </Component>
   </SubComponents>
 </Form>

@@ -90,7 +90,7 @@ public abstract class BaseView extends View {
     private int startY = -1;
 
     /** Construct new base view */
-    public BaseView(Element elem) {
+    BaseView(Element elem) {
         super(elem);
     }
 
