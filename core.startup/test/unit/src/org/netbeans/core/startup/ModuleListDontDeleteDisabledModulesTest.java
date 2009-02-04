@@ -46,6 +46,9 @@ import org.netbeans.ModuleManager;
 import java.util.*;
 import org.openide.modules.*;
 import java.io.*;
+import org.netbeans.MockEvents;
+import org.netbeans.MockModuleInstaller;
+import org.netbeans.SetupHid;
 import org.openide.filesystems.*;
 import org.openide.util.test.MockLookup;
 
@@ -88,8 +91,8 @@ public class ModuleListDontDeleteDisabledModulesTest extends SetupHid {
         ud.mkdirs();
         System.setProperty("netbeans.user", ud.getPath());
         
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         mgr = new ModuleManager(installer, ev);
         File dir = getWorkDir();
         File modulesdir = new File(dir, "Modules");
