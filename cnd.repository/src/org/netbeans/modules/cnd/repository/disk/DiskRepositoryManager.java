@@ -121,7 +121,7 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
             
         if (unit == null) {
             synchronized (getUnitLock(unitId)) {
-                unit = units.get(unitName);
+                unit = units.get(unitId);
                 if (unit == null) {
                     if (RepositoryListenersManager.getInstance().fireUnitOpenedEvent(unitName)) {
                         RepositoryTranslatorImpl.loadUnitIndex(unitName);
