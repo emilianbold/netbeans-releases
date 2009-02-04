@@ -91,7 +91,7 @@ public class KenaiREST extends KenaiImpl {
             throw new KenaiException(iOException);
         }
 
-        if (resp.getResponseCode() != 200) return null;
+        if (resp.getResponseCode() != 200) throw new KenaiErrorMessage(resp.getResponseMessage(),resp.getDataAsString());
 
         String sss = resp.getDataAsString();
 
