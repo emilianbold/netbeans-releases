@@ -237,11 +237,9 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
         
         private JEditorPane findPane(){
             TopComponent component = TopComponent.getRegistry().getActivated();
-            if (component instanceof Container){
-                return findPane((Container)component);
-            }
-            return null;
+            return findPane(component);
         }
+        
         private JEditorPane findPane(Container container){ 
             for(Component component : container.getComponents()){
                 if (component instanceof JEditorPane) {
