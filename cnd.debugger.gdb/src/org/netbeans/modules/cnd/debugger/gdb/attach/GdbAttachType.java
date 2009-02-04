@@ -41,17 +41,13 @@ package org.netbeans.modules.cnd.debugger.gdb.attach;
 
 import javax.swing.JComponent;
 import org.netbeans.spi.debugger.ui.AttachType;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author gordonp
  */
+@AttachType.Registration(displayName="#CTL_GdbAttachPanel_name")
 public class GdbAttachType extends AttachType  {
-
-    public String getTypeDisplayName() {
-        return NbBundle.getMessage(GdbAttachType.class, "CTL_GdbAttachPanel_name"); // NOI18N
-    }
 
     public JComponent getCustomizer() {
         return new GdbAttachPanel();
