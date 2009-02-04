@@ -899,7 +899,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
 
     private static boolean isConstant(Object value) {
         if (CsmKindUtilities.isCsmObject(value) && CsmKindUtilities.isVariable((CsmObject)value)) {
-            return false;
+            return GeneratorUtils.isConstant((CsmVariable)value);
         } else {
             return false;
         }
