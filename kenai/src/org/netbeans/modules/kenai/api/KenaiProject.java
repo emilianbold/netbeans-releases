@@ -39,8 +39,11 @@
 
 package org.netbeans.modules.kenai.api;
 
+import com.sun.corba.se.spi.activation.Repository;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.modules.kenai.FeatureData;
 import org.netbeans.modules.kenai.ProjectData;
 
@@ -100,6 +103,23 @@ public final class KenaiProject {
 
     public String[] getTags() {
         return new String[0];
+    }
+
+    private static Pattern repositoryPattern = Pattern.compile("(https|http)://(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)");
+
+    /**
+     * Returns KenaiProject for given repository uri. Current implementation does not work for external repositories
+     * @param uri
+     * @return instance of KenaiProject or null
+     * @throws org.netbeans.modules.kenai.api.KenaiException
+     */
+    public static KenaiProject forRepository(String uri) throws KenaiException {
+        Matcher m = repositoryPattern.matcher(uri);
+        if (m.matches()) {
+            return Kenai.getDefault().getProject(m.group(4));
+        }
+
+        return null;
     }
 
     public synchronized KenaiProjectFeature[] getFeatures() {

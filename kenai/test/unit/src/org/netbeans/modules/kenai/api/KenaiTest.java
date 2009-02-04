@@ -174,7 +174,7 @@ public class KenaiTest {
         String name = "unittestfeature1";
         String displayName = "Feature 1";
         String description = "Test Description";
-        KenaiProject project = instance.getProject("unittestuniquename");
+        KenaiProject project = instance.getProject("unittestuniquename01");
         try {
             KenaiProjectFeature feature = project.createProjectFeature(name, displayName, description, KenaiFeature.FORUM.getId(), null, null, null);
             assert feature.getName().equals(name);
@@ -188,7 +188,7 @@ public class KenaiTest {
     @Test
     public void testGetFeatures() throws KenaiException {
         System.out.println("getFeature");
-        KenaiProject project = instance.getProject("unittestuniquename");
+        KenaiProject project = instance.getProject("unittestuniquename01");
         for (KenaiProjectFeature feature: project.getFeatures()) {
             System.out.println(feature.getName());
         }

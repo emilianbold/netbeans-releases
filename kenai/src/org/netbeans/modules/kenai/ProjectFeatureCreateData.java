@@ -39,11 +39,15 @@
 
 package org.netbeans.modules.kenai;
 
+import org.codeviation.pojson.Pojson.IgnoreNonExisting;
+import org.codeviation.pojson.Pojson.SkipNullValues;
+
 /**
  *
  * @author Jan Becicka
  */
-@org.codeviation.pojson.Pojson.IgnoreNonExisting
+@IgnoreNonExisting
+@SkipNullValues
 public class ProjectFeatureCreateData {
 
     public ProjectFeatureCreateData() {
@@ -52,7 +56,8 @@ public class ProjectFeatureCreateData {
 
     public Feature feature;
 
-    @org.codeviation.pojson.Pojson.IgnoreNonExisting
+    @IgnoreNonExisting
+    @SkipNullValues
     public static class Feature {
         public String name;
         public String display_name;
