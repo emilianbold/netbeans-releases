@@ -67,6 +67,8 @@ import org.netbeans.modules.glassfish.spi.OperationStateListener;
 import org.netbeans.modules.glassfish.spi.Recognizer;
 import org.netbeans.modules.glassfish.spi.RecognizerCookie;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -263,18 +265,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     public Future<OperationState> startServer(final OperationStateListener stateListener) {
         Logger.getLogger("glassfish").log(Level.FINEST, 
                 "CSS.startServer called on thread \"" + Thread.currentThread().getName() + "\"");
-        OperationStateListener startServerListener = new OperationStateListener() {
-            public void operationStateChanged(OperationState newState, String message) {
-                if(newState == OperationState.RUNNING) {
-                    setServerState(ServerState.STARTING);
-                } else if(newState == OperationState.COMPLETED) {
-                    startedByIde = true;
-                    setServerState(ServerState.RUNNING);
-                } else if(newState == OperationState.FAILED) {
-                    setServerState(ServerState.STOPPED);
-                }
-            }
-        };
+        OperationStateListener startServerListener = new StartOperationStateListener();
         FutureTask<OperationState> task = new FutureTask<OperationState>(
                 new StartTask(this, getRecognizers(), startServerListener, stateListener));
         RequestProcessor.getDefault().post(task);
@@ -284,18 +275,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     public Future<OperationState> startServer(final OperationStateListener stateListener, FileObject jdkRoot, String[] jvmArgs) {
         Logger.getLogger("glassfish").log(Level.FINEST, 
                 "CSS.startServer called on thread \"" + Thread.currentThread().getName() + "\"");
-        OperationStateListener startServerListener = new OperationStateListener() {
-            public void operationStateChanged(OperationState newState, String message) {
-                if(newState == OperationState.RUNNING) {
-                    setServerState(ServerState.STARTING);
-                } else if(newState == OperationState.COMPLETED) {
-                    startedByIde = true;
-                    setServerState(ServerState.RUNNING);
-                } else if(newState == OperationState.FAILED) {
-                    setServerState(ServerState.STOPPED);
-                }
-            }
-        };
+        OperationStateListener startServerListener = new StartOperationStateListener();
         FutureTask<OperationState> task = new FutureTask<OperationState>(
                 new StartTask(this, getRecognizers(), jdkRoot, jvmArgs, startServerListener, stateListener));
         RequestProcessor.getDefault().post(task);
@@ -613,4 +593,20 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         return instanceProvider;
     }
 
+
+    class StartOperationStateListener implements OperationStateListener {
+        public void operationStateChanged(OperationState newState, String message) {
+            if(newState == OperationState.RUNNING) {
+                setServerState(ServerState.STARTING);
+            } else if(newState == OperationState.COMPLETED) {
+                startedByIde = true;
+                setServerState(ServerState.RUNNING);
+            } else if(newState == OperationState.FAILED) {
+                setServerState(ServerState.STOPPED);
+                // Open a warning dialog here...
+                NotifyDescriptor nd = new NotifyDescriptor.Message(message);
+                DialogDisplayer.getDefault().notifyLater(nd);
+            }
+        }
+    }
 }
