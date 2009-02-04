@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.maven.profiler;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -51,8 +52,10 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.profiler.AbstractProjectTypeProfiler;
 import org.netbeans.modules.profiler.NetBeansProfiler;
 import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
+import org.netbeans.modules.profiler.spi.ProjectProfilingSupport;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -85,17 +88,6 @@ public class MavenProjectTypeProfiler extends AbstractProjectTypeProfiler {
     
     Properties getLastSessionProperties() {
         return lastSessionProperties;
-    }
-    
-    
-    @Override
-    public boolean isFileObjectSupported(Project project, FileObject fo) {
-        // Profile File, Profile Test not supported in this version
-        if (!"java".equals(fo.getExt()) && !"class".equals(fo.getExt())) {
-            return false; // NOI18N
-        }
-
-        return SourceUtils.isRunnable(fo);
     }
 
     public String getProfilerTargetName(Project project, FileObject buildScript, int type, FileObject profiledClassFile) {
@@ -134,30 +126,10 @@ public class MavenProjectTypeProfiler extends AbstractProjectTypeProfiler {
         
         lastProfilingSettings.load(properties);
         lastSessionSettings.load(properties);
-        
+
         NetBeansProfiler.getDefaultNB().setProfiledProject(project, profiledClassFile);
         
         if (profiledClassFile != null) ProjectUtilities.invokeAction(project, isTest ? "profile-tests":"profile-single"); //NOI18N
         else ProjectUtilities.invokeAction(project, isTest ? "profile-tests" : "profile"); //NOI18N
     }
-
-    @Override
-    public SimpleFilter computePredefinedInstrumentationFilter(Project project, SimpleFilter predefinedInstrFilter, String[][] projectPackagesDescr) {
-//        FIX THIS
-        return super.computePredefinedInstrumentationFilter(project, predefinedInstrFilter, projectPackagesDescr);
-    }
-
-    @Override
-    public void computeProjectPackages(Project project, boolean subprojects, String[][] storage) {
-//        FIX THIS
-        super.computeProjectPackages(project, subprojects, storage);
-    }
-
-//    @Override
-//    public SourceCodeSelection[] getDefaultRootMethods(Project project, FileObject profiledClassFile, boolean profileUnderlyingFramework, String[][] projectPackagesDescr) {
-//        return super.getDefaultRootMethods(project, profiledClassFile, profileUnderlyingFramework, projectPackagesDescr);
-//    }
-
-
-
 }
