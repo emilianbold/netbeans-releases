@@ -39,25 +39,16 @@
 
 package org.netbeans.modules.profiler.oql.language.ui;
 
-import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.Set;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.profiler.spi.OQLEditorImpl;
-import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditorCookie;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.MultiDataObject;
-import org.openide.nodes.CookieSet;
-import org.openide.text.CloneableEditorSupport;
-import org.openide.text.DataEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -69,13 +60,13 @@ import org.openide.util.lookup.ServiceProvider;
 public class OQLEditor extends OQLEditorImpl{
     private JEditorPane newPane() {
         JEditorPane editorPane;
-        String mimeType = "text/x-oql";
+        String mimeType = "text/x-oql"; // NOI18N
         editorPane = new JEditorPane();
 
         editorPane.setEditorKit(MimeLookup.getLookup(mimeType).lookup(EditorKit.class));
         try {
             //NOI18N
-            FileObject fo = FileUtil.createMemoryFileSystem().getRoot().createData("editor.oql");
+            FileObject fo = FileUtil.createMemoryFileSystem().getRoot().createData("editor.oql"); // NOI18N
             DataObject dobj = DataObject.find(fo);
 
             EditorCookie ec = dobj.getCookie(EditorCookie.class);
