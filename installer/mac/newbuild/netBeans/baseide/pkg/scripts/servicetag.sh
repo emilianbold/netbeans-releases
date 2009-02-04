@@ -28,22 +28,24 @@ java_exe="$jdk_home/bin/java"
 
 if [ -n "$1" ] ; then
 
-    . "$script_dir"/env.sh
     netbeansHome=`ls -d "$NETBEANS_INSTALL_DIR"/Contents/Resources/NetBeans*/platform*`
+    install_dir="$2"
 
-    ownership=`ls -nlda ~ | awk ' { print $3 ":" $4 } ' 2>/dev/null`
 
-    "$java_exe" -Dnetbeans.home="$netbeansHome" -Dservicetag.source="$SERVICE_TAG_SOURCE" -jar "$script_dir"/servicetag.jar "$1"
+    "$java_exe" -Dnetbeans.home="$netbeansHome" -Dlocation="$install_dir" -Dservicetag.source="$SERVICE_TAG_SOURCE" -jar "$script_dir"/servicetag.jar "$1"
 
     errorCode=$?
 
-    [ -d ~/.netbeans ]                && chown "$ownership" ~/.netbeans
-    [ -f ~/.netbeans/.superId ]       && chown "$ownership" ~/.netbeans/.superId
 
     if [ $errorCode -ne 0 ] ; then   
 	echo "SERVICE TAGS: Cannot create ST for $1, error code is $errorCode"
     else
 	echo "SERVICE TAGS: ST for $1 was successfully created"
     fi
+
+    ownership=`ls -nlda ~ | awk ' { print $3 ":" $4 } ' 2>/dev/null`
+    [ -d ~/.netbeans ]  && chown "$ownership" ~/.netbeans
+    [ -f ~/.netbeans/.superId ]  && chown "$ownership" ~/.netbeans/.superId
+
 fi
 

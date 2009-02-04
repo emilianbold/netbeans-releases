@@ -63,10 +63,8 @@ import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeTask;
 import org.netbeans.modules.nativeexecution.api.ObservableAction;
 import org.netbeans.modules.nativeexecution.api.support.ConnectionManager;
-import org.netbeans.modules.nativeexecution.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.util.HostInfo;
 import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 
@@ -83,7 +81,7 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
     public static final Column TOP_FUNCTION_INFO = new Column("currentFunction", String.class);
     private static DataTableMetadata dataTableMetadata = new DataTableMetadata("idbe", Arrays.asList(TOP_FUNCTION_INFO));
     private static final Logger log = DLightLogger.getLogger(SunStudioDataCollector.class);
-    private NativeTask collectorTask;
+//    private NativeTask collectorTask;
     private String experimentDir;
     private String execFileName;
     private PerfanDataStorage storage;
@@ -210,13 +208,13 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
         log.fine("Initialize perfan collector and storage for target " + target.toString());
         log.fine("Prepare PerfanDataCollector. Clean directory " + experimentDir);
 
-        NativeTask rmTask = CommonTasksSupport.getRemoveDirectoryTask(
-                target.getExecEnv(), experimentDir, true, null);
-        
-        try {
-            rmTask.invoke(true);
-        } catch (Exception ex) {
-        }
+//        NativeTask rmTask = CommonTasksSupport.getRemoveDirectoryTask(
+//                target.getExecEnv(), experimentDir, true, null);
+//
+//        try {
+//            rmTask.invoke(true);
+//        } catch (Exception ex) {
+//        }
 
         storage = (PerfanDataStorage) dataStorage;
         storage.setCollector(this);
@@ -224,7 +222,8 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
     }
 
     public ExecutionEnvironment getExecEnv() {
-        return isAttachable() ? collectorTask.getExecutionEnvironment() : target.getExecEnv();
+        return null;
+//        return isAttachable() ? collectorTask.getExecutionEnvironment() : target.getExecEnv();
     }
 
     private void targetStarted(DLightTarget target) {
@@ -238,8 +237,8 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
         // Only now we know the PID of the target.
         // Start collector task
         // TODO: collector failures handle
-        collectorTask = new NativeTask(target.getExecEnv(), execFileName, new String[]{"-P", Integer.toString(at.getPID()), "-o", experimentDir});
-        collectorTask.submit(true, false);
+//        collectorTask = new NativeTask(target.getExecEnv(), execFileName, new String[]{"-P", Integer.toString(at.getPID()), "-o", experimentDir});
+//        collectorTask.submit(true, false);
     }
 
     private void targetFinished(DLightTarget target) {
@@ -247,7 +246,7 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
         if (!isAttachable()) {
 //      this.target = null;
         } else {
-            collectorTask.cancel(true);
+//            collectorTask.cancel(true);
         }
 
 //    if (indicatorsNotifyerTask != null) {

@@ -7,11 +7,14 @@
 package org.netbeans.modules.uml.ui.addins.associateDialog;
 
 import java.awt.Dimension;
+import java.lang.reflect.InvocationTargetException;
 import java.util.prefs.Preferences;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JRadioButton;
+import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -24,7 +27,6 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.IRelationFactory;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.RelationFactory;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.ui.addins.associateDialog.AssociateTableModel;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.commondialogs.IErrorDialog;
 import org.netbeans.modules.uml.ui.support.commondialogs.MessageIconKindEnum;
@@ -35,6 +37,7 @@ import org.netbeans.modules.uml.ui.support.finddialog.FindUtilities;
 import org.netbeans.modules.uml.ui.support.finddialog.IFindResults;
 import org.netbeans.modules.uml.ui.swing.finddialog.FindTableModel;
 import org.netbeans.modules.uml.util.DummyCorePreference;
+import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
 /**
@@ -298,7 +301,6 @@ public class AssociateDialogUI extends javax.swing.JDialog implements IAssociate
     public void setResults(IFindResults newVal)
     {
         m_Results = newVal;
-        
     }
     
         /* (non-Javadoc)
@@ -330,7 +332,8 @@ public class AssociateDialogUI extends javax.swing.JDialog implements IAssociate
     {
         m_Status.setText("");
         update = false;
-        clearGrid();
+        boolean clear=true;
+        //clearGrid();
         // get the string that the user typed in
         String searchStr = (String) m_FindCombo.getSelectedItem();
         
@@ -355,35 +358,8 @@ public class AssociateDialogUI extends javax.swing.JDialog implements IAssociate
                     int countD = pDiagrams.size();
                     if (count > 0 || countD > 0)
                     {
-                        // show the results
-                        ETList < Object > findResults =
-                                FindUtilities.loadResultsIntoArray(pResults);
-                        AssociateTableModel model =
-                                new AssociateTableModel(this, findResults);
-                        m_ResultsTable.setModel(model);
-                        m_AssociateAllButton.setEnabled(true);
-                        
-                        long totalC = count + countD;
-                        String strMsg = totalC + " ";
-                        strMsg += FindUtilities.translateString("IDS_NUMFOUND"); // NOI18N
-                        m_Status.setText(strMsg);
-                        enableLockCheck();
-                        //
-                        // This is special code to aid in the automating testing.  We had no way to access
-                        // the information in the grid from the automated scripts and/or VisualTest, so
-                        // if a flag is set in the registry, we will dump the results of the grid to a
-                        // specified file
-                        //
-                                                /* TODO
-                                                if( GETDEBUGFLAG_RELEASE(_T("DumpGridResults"), 0))
-                                                {
-                                                        CComBSTR file = CRegistry::GetItem( CString(_T("DumpGridResultsFile")), CString(_T("")));
-                                                                if (file.Length())
-                                                                {
-                                                                        m_FlexGrid->SaveGrid(file, flexFileCommaText, CComVariant(FALSE));
-                                                                }
-                                                        }
-                                                 */
+                        clear=false;
+                        showResults(pResults, count, countD);
                     }
                     else
                     {
@@ -416,13 +392,34 @@ public class AssociateDialogUI extends javax.swing.JDialog implements IAssociate
             
             m_Status.setText(msg);
         }
+        finally
+        {
+            if(clear)
+            {
+                // clear the grid
+                clearGrid();
+            }
+        }
         m_FindCombo.setSelectedItem(searchStr);
         FindUtilities.endWaitCursor(getContentPane());
         
         update = true;
         m_FindCombo.getEditor().selectAll();
     }
-    
+
+    private void showResults(final FindResults pResults,final int count,final int countD)
+    {
+                     ETList<Object> findResults = FindUtilities.loadResultsIntoArray(pResults);
+                    AssociateTableModel model = new AssociateTableModel(AssociateDialogUI.this, findResults);
+                    m_ResultsTable.setAutoCreateColumnsFromModel(false);
+                    m_ResultsTable.setModel(model);
+                    m_AssociateAllButton.setEnabled(true);
+                    long totalC = count + countD;
+                    String strMsg = totalC + " ";
+                    strMsg += FindUtilities.translateString("IDS_NUMFOUND"); // NOI18N
+                    m_Status.setText(strMsg);
+                    enableLockCheck();
+    }
     
     private void onAssociateButton(java.awt.event.ActionEvent evt)
     {

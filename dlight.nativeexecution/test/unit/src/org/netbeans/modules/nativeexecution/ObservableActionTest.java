@@ -85,7 +85,7 @@ public class ObservableActionTest {
             ObservableAction<Integer> action = new ObservableAction<Integer>("My Action") {
 
                 @Override
-                protected Integer performAction(ActionEvent e) {
+                protected Integer performAction() {
                     System.out.println("Performed!");
                     return 10;
                 }

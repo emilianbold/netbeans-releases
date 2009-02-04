@@ -57,6 +57,7 @@ import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 
 /**
  * SymbolDescriptor implementation for C/C++
@@ -72,7 +73,7 @@ public class CppSymbolDescriptor extends SymbolDescriptor {
     private final CharSequence name;
     
     public CppSymbolDescriptor(CsmOffsetable csmObj) {
-
+        Parameters.notNull("csmObj", csmObj);
         CsmFile csmFile = csmObj.getContainingFile();
         absPath = csmFile.getAbsolutePath();
         offset = csmObj.getStartOffset();
@@ -83,7 +84,7 @@ public class CppSymbolDescriptor extends SymbolDescriptor {
         else if (CsmKindUtilities.isNamedElement(csmObj)) {
             name = ((CsmNamedElement) csmObj).getName();
         } else {
-            throw new IllegalArgumentException("should be CsmNamedElement, in fact " + (csmObj == null ? "null" : csmObj.getClass().getName())); //NOI18N
+            throw new IllegalArgumentException("should be CsmNamedElement, in fact " + csmObj.getClass().getName()); //NOI18N
         }
 
         if (CsmKindUtilities.isMacro(csmObj)) {
@@ -149,11 +150,11 @@ public class CppSymbolDescriptor extends SymbolDescriptor {
 
     @Override
     public String getProjectName() {
-        CharSequence name = project.getName();
+        CharSequence prjName = project.getName();
         if (project.isArtificial()) {
-            name = CsmDisplayUtilities.shrinkPath(name, 32, 2, 2);
+            prjName = CsmDisplayUtilities.shrinkPath(prjName, 32, 2, 2);
         }
-        return name.toString();
+        return prjName.toString();
     }
 
     @Override

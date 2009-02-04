@@ -76,13 +76,13 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
         result.add(new SuiteStartedHandler());
         result.add(new SuiteFinishedHandler());
         result.add(new SuiteErrorOutputHandler());
-        result.add(new TestStartedHandler());
         result.add(new ShouldaTestStartedHandler());
         result.add(new ShouldaTestFailedHandler());
+        result.add(new TestStartedHandler());
         result.add(new TestFailedHandler());
         result.add(new TestErrorHandler());
-        result.add(new TestFinishedHandler());
         result.add(new ShouldaTestFinishedHandler());
+        result.add(new TestFinishedHandler());
         result.add(new TestLoggerHandler());
         result.add(new TestMiscHandler());
         result.add(new SuiteMiscHandler());
