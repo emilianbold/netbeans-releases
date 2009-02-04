@@ -675,8 +675,7 @@ is divided into following sections:
                              classpath="${{wsclientuptodate.classpath}}"/>
                     
                     <mkdir dir="${{build.classes.dir}}"/>
-                    <mkdir dir="${{build.generated.dir}}/wsclient"/>
-                    <mkdir dir="${{build.generated.dir}}/wsbinary"/>
+                    <mkdir dir="${{build.generated.sources.dir}}/jax-rpc"/>
                     
                     <xsl:for-each select="/p:project/p:configuration/jaxrpc:web-service-clients/jaxrpc:web-service-client">
                         <xsl:variable name="wsclientname">
@@ -685,7 +684,7 @@ is divided into following sections:
                         
                         <wsclientuptodate property="wscompile.client.{$wsclientname}.notrequired"
                                           sourcewsdl="${{meta.inf.dir}}/wsdl/{$wsclientname}.wsdl"
-                                          targetdir="${{build.generated.dir}}/wsclient"/>
+                                          targetdir="${{build.generated.sources.dir}}/jax-rpc"/>
                     </xsl:for-each>
                 </target>
             </xsl:if>
@@ -714,7 +713,7 @@ is divided into following sections:
                 <target name="{$wsclientname}-client-wscompile" depends="wscompile-init" unless="wscompile.client.{$wsclientname}.notrequired">
                     <property name="config_target" location="${{meta.inf.dir}}/wsdl"/>
                     <copy file="${{meta.inf.dir}}/wsdl/{$wsclientname}-config.xml"
-                          tofile="${{build.generated.dir}}/wsclient/wsdl/{$wsclientname}-config.xml" filtering="on" encoding="UTF-8">
+                          tofile="${{build.generated.sources.dir}}/jax-rpc/wsdl/{$wsclientname}-config.xml" filtering="on" encoding="UTF-8">
                         <filterset>
                             <!-- replace token with reference to WSDL file in source tree, not build tree, since the
                                  the file probably has not have been copied to the build tree yet. -->
@@ -730,12 +729,12 @@ is divided into following sections:
                         fork="true" keep="true"
                         client="{$useclient}" import="{$useimport}"
                         features="${{wscompile.client.{$wsclientname}.features}}"
-                        base="${{build.generated.dir}}/wsbinary"
-                        sourceBase="${{build.generated.dir}}/wsclient"
+                        base="${{build.generated.sources.dir}}/jax-rpc"
+                        sourceBase="${{build.generated.sources.dir}}/jax-rpc"
                         classpath="${{wscompile.classpath}}:${{javac.classpath}}"
-                        mapping="${{build.generated.dir}}/wsclient/wsdl/{$wsclientname}-mapping.xml"
+                        mapping="${{build.generated.sources.dir}}/jax-rpc/wsdl/{$wsclientname}-mapping.xml"
                         httpproxy="${{wscompile.client.{$wsclientname}.proxy}}"
-                        config="${{build.generated.dir}}/wsclient/wsdl/{$wsclientname}-config.xml">
+                        config="${{build.generated.sources.dir}}/jax-rpc/wsdl/{$wsclientname}-config.xml">
                     </wscompile>
                 </target>
             </xsl:for-each>
@@ -751,12 +750,6 @@ is divided into following sections:
                             <xsl:value-of select="jaxrpc:web-service-client-name"/><xsl:text>-client-wscompile</xsl:text>
                         </xsl:for-each>
                     </xsl:attribute>
-                </target>
-                <target name="-web-service-client-compile-depend" if="do.depend.true">
-                    <j2seproject3:depend srcdir="${{build.generated.dir}}/wsclient" classpath="${{wscompile.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
-                </target>
-                <target name="web-service-client-compile" depends="web-service-client-generate,-web-service-client-compile-depend">
-                    <j2seproject3:javac srcdir="${{build.generated.dir}}/wsclient" classpath="${{wscompile.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
                 </target>
             </xsl:if>
             
@@ -799,7 +792,7 @@ is divided into following sections:
                 </j2seproject3:depend>
             </target>
             <target name="-do-compile">
-                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile<xsl:if test="/p:project/p:configuration/jaxrpc:web-service-clients/jaxrpc:web-service-client">,web-service-client-compile</xsl:if>,-compile-depend</xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile,-compile-depend</xsl:attribute>
                 <xsl:attribute name="if">have.sources</xsl:attribute>
                 <j2seproject3:javac gensrcdir="${{build.generated.sources.dir}}"/>
                 <copy todir="${{build.classes.dir}}">
@@ -827,7 +820,7 @@ is divided into following sections:
             </target>
             
             <target name="-do-compile-single">
-                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile<xsl:if test="/p:project/p:configuration/jaxrpc:web-service-clients/jaxrpc:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile</xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
                 <j2seproject3:force-recompile/>
                 <xsl:element name="j2seproject3:javac">

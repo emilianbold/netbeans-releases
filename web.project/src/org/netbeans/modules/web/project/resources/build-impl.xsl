@@ -712,9 +712,8 @@ exists or setup the property manually. For example like this:
                     <mkdir dir="${{build.web.dir}}/WEB-INF/wsdl"/>
                     <mkdir dir="${{webinf.dir}}/wsdl"/>
                     <mkdir dir="${{build.classes.dir}}"/>
-                    <mkdir dir="${{build.generated.dir}}/wsclient"/>
-                    <mkdir dir="${{build.generated.dir}}/wsservice"/>
-                    <mkdir dir="${{build.generated.dir}}/wsbinary"/>
+                    <mkdir dir="${{build.generated.sources.dir}}/jax-rpc"/>
+                    <mkdir dir="${{build.generated.dir}}/jax-rpc-binaries"/>
                     
                     <xsl:for-each select="/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">
                         <xsl:variable name="wsclientname">
@@ -723,7 +722,7 @@ exists or setup the property manually. For example like this:
                         
                         <wsclientuptodate property="wscompile.client.{$wsclientname}.notrequired"
                                           sourcewsdl="${{webinf.dir}}/wsdl/{$wsclientname}.wsdl"
-                                          targetdir="${{build.generated.dir}}/wsclient"/>
+                                          targetdir="${{build.generated.sources.dir}}/jax-rpc"/>
                     </xsl:for-each>
                 </target>
             </xsl:if>
@@ -747,7 +746,7 @@ exists or setup the property manually. For example like this:
                                        nonClassDir="${{build.web.dir}}/WEB-INF/wsdl"
                                        verbose="true"
                                        xPrintStackTrace="true"
-                                       base="${{build.generated.dir}}/wsbinary"
+                                       base="${{build.generated.dir}}/jax-rpc-binaries"
                                        sourceBase="${{src.dir}}"
                                        keep="true"
                                        fork="true"/>
@@ -759,7 +758,7 @@ exists or setup the property manually. For example like this:
                                 define="true"
                                 fork="true"
                                 keep="true"
-                                base="${{build.generated.dir}}/wsbinary"
+                                base="${{build.generated.dir}}/jax-rpc-binaries"
                                 xPrintStackTrace="true"
                                 verbose="true"
                                 nonClassDir="${{build.web.dir}}/WEB-INF/wsdl"
@@ -767,7 +766,7 @@ exists or setup the property manually. For example like this:
                                 mapping="${{build.web.dir}}/WEB-INF/${{{$wsname}.mapping}}"
                                 config="${{{$wsname}.config.name}}"
                                 features="${{wscompile.service.{$wsname}.features}}"
-                                sourceBase="${{build.generated.dir}}/wsservice">
+                                sourceBase="${{build.generated.sources.dir}}/jax-rpc">
                             </wscompile>
                         </target>
                     </xsl:otherwise>
@@ -798,7 +797,7 @@ exists or setup the property manually. For example like this:
                 <target name="{$wsclientname}-client-wscompile" depends="wscompile-init" unless="wscompile.client.{$wsclientname}.notrequired">
                     <property name="config_target" location="${{webinf.dir}}/wsdl"/>
                     <copy file="${{webinf.dir}}/wsdl/{$wsclientname}-config.xml"
-                          tofile="${{build.generated.dir}}/wsclient/wsdl/{$wsclientname}-config.xml" filtering="on" encoding="UTF-8">
+                          tofile="${{build.generated.sources.dir}}/jax-rpc/wsdl/{$wsclientname}-config.xml" filtering="on" encoding="UTF-8">
                         <filterset>
                             <!-- replace token with reference to WSDL file in source tree, not build tree, since the
                             the file probably has not have been copied to the build tree yet. -->
@@ -814,12 +813,12 @@ exists or setup the property manually. For example like this:
                         fork="true" keep="true"
                         client="{$useclient}" import="{$useimport}"
                         features="${{wscompile.client.{$wsclientname}.features}}"
-                        base="${{build.generated.dir}}/wsbinary"
-                        sourceBase="${{build.generated.dir}}/wsclient"
+                        base="${{build.generated.dir}}/jax-rpc-binaries"
+                        sourceBase="${{build.generated.sources.dir}}/jax-rpc"
                         classpath="${{wscompile.classpath}}:${{javac.classpath}}"
-                        mapping="${{build.generated.dir}}/wsclient/wsdl/{$wsclientname}-mapping.xml"
+                        mapping="${{build.generated.sources.dir}}/jax-rpc/wsdl/{$wsclientname}-mapping.xml"
                         httpproxy="${{wscompile.client.{$wsclientname}.proxy}}"
-                        config="${{build.generated.dir}}/wsclient/wsdl/{$wsclientname}-config.xml">
+                        config="${{build.generated.sources.dir}}/jax-rpc/wsdl/{$wsclientname}-config.xml">
                     </wscompile>
                 </target>
             </xsl:for-each>
@@ -839,12 +838,9 @@ exists or setup the property manually. For example like this:
                         <xsl:variable name="wsclientname">
                             <xsl:value-of select="webproject3:web-service-client-name"/>
                         </xsl:variable>
-                        <copy file="${{build.generated.dir}}/wsclient/wsdl/{$wsclientname}-mapping.xml"
+                        <copy file="${{build.generated.sources.dir}}/jax-rpc/wsdl/{$wsclientname}-mapping.xml"
                               tofile="${{build.web.dir}}/WEB-INF/{$wsclientname}-mapping.xml"/>
                     </xsl:for-each>
-                </target>
-                <target name="web-service-client-compile" depends="web-service-client-generate">
-                    <webproject2:javac srcdir="${{build.generated.dir}}/wsclient" classpath="${{wscompile.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
                 </target>
             </xsl:if>
             
@@ -885,14 +881,9 @@ exists or setup the property manually. For example like this:
                     </copy>
                 </xsl:if>
             </target>
-            
-            <target name="-do-ws-compile">
-                <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">
-                    <xsl:attribute name="depends">web-service-client-compile</xsl:attribute>
-                </xsl:if>
-            </target>
+
             <target name="-do-compile">
-                <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile, -copy-manifest, -copy-persistence-xml, -copy-webdir, library-inclusion-in-archive,library-inclusion-in-manifest,-do-ws-compile</xsl:attribute>
+                <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile, -copy-manifest, -copy-persistence-xml, -copy-webdir, library-inclusion-in-archive,library-inclusion-in-manifest</xsl:attribute>
                 <xsl:attribute name="if">have.sources</xsl:attribute>
                 
                 <webproject2:javac destdir="${{build.classes.dir}}" gensrcdir="${{build.generated.sources.dir}}"/>
@@ -954,7 +945,7 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="-do-compile-single">
-                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile<xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile</xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
                 <webproject2:javac includes="${{javac.includes}}" excludes="" gensrcdir="${{build.generated.sources.dir}}"/>
                 
