@@ -255,7 +255,8 @@ final class NbEvents extends Events {
             logger.log(Level.WARNING, "The extension " + (File)args[0] + " may be multiply loaded by modules: " + (Set/*<File>*/)args[1] + "; see: http://www.netbeans.org/download/dev/javadoc/org-openide-modules/org/openide/modules/doc-files/classpath.html#class-path"); // NOI18N
         } else if (message == MISSING_JAR_FILE) {
             File jar = (File)args[0];
-            logger.log(Level.INFO, NbBundle.getMessage(NbEvents.class, "TEXT_missing_jar_file", jar.getAbsolutePath()));
+            Level level = Boolean.FALSE.equals(args[1]) ? Level.FINE : Level.INFO;
+            logger.log(level, NbBundle.getMessage(NbEvents.class, "TEXT_missing_jar_file", jar.getAbsolutePath()));
         } else if (message == CANT_DELETE_ENABLED_AUTOLOAD) {
             Module m = (Module)args[0];
             logger.log(Level.INFO, NbBundle.getMessage(NbEvents.class, "TEXT_cant_delete_enabled_autoload", m.getDisplayName()));
