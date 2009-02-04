@@ -104,6 +104,8 @@ public abstract class ToolchainManager {
 
         String getCommandFolderPathPattern();
 
+        String getQmakeSpec();
+
         CompilerDescriptor getC();
 
         CompilerDescriptor getCpp();
