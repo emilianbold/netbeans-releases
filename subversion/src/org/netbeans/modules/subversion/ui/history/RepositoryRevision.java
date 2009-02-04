@@ -45,6 +45,7 @@ import org.tigris.subversion.svnclientadapter.ISVNLogMessageChangePath;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 import java.io.File;
 import java.util.*;
+import java.util.ArrayList;
 
 /**
  * Describes log information for a file. This is the result of doing a
@@ -63,6 +64,7 @@ class RepositoryRevision {
      * List of events associated with the revision.
      */ 
     private final List<Event> events = new ArrayList<Event>(1);
+    private File eventsFilter;
 
     public RepositoryRevision(ISVNLogMessage message, SVNUrl rootUrl) {
         this.message = message;
@@ -74,6 +76,15 @@ class RepositoryRevision {
         return repositoryRootUrl;
     }
 
+    /**
+     * Sets a filter for shown events. Affects the <code>getEvents</code> method, which returns only events falling with the filter.
+     * Filter is disabled by default.
+     * @param filter a file which is included in filtered events. If <code>null</code> is passed, filter will be disabled.
+     */
+    public void setFilter(File filter) {
+        this.eventsFilter = filter;
+    }
+
     private void initEvents() {
         ISVNLogMessageChangePath [] paths = message.getChangedPaths();
         if (paths == null) return;
@@ -82,8 +93,25 @@ class RepositoryRevision {
         }
     }
 
+    /**
+     * Returns a list of filtered repository events for this revision. If a filter has been set (by <code>setFilter</code> method),
+     * events on files different from the filter will not be returned. To disable the filter, set the filter to <code>null</code>.
+     * @return a list of filtered repository events
+     */
     public List<Event> getEvents() {
-        return events;
+        List<Event> retval = null;
+        if (eventsFilter == null) {
+            retval = events;
+        } else {
+            retval = new ArrayList<Event>(1);
+            for (Event event : events) {
+                File f = event.getFile();
+                if (eventsFilter.equals(event.getFile())) {
+                    retval.add(event);
+                }
+            }
+        }
+        return retval;
     }
 
     public ISVNLogMessage getLog() {
