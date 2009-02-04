@@ -345,7 +345,9 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
             final Diff diff = Diff.getDefault();
             SVNUrl repotUrl = header.getLogInfoHeader().getRepositoryRootUrl();
             SVNUrl fileUrl = repotUrl.appendPath(header.getChangedPath().getPath());
-            final DiffStreamSource s1 = new DiffStreamSource(header.getFile(), repotUrl, fileUrl, revision1, revision1);
+            // through peg revision always except from 'deleting the file', since the file does not exist in the newver revision
+            final DiffStreamSource s1 = new DiffStreamSource(header.getFile(), repotUrl, fileUrl, revision1,
+                    header.getChangedPath().getAction() == 'D' ? revision1 : revision2, revision1);
             final DiffStreamSource s2 = new DiffStreamSource(header.getFile(), repotUrl, fileUrl, revision2, revision2);
             this.setCancellableDelegate(new Cancellable() {
                 public boolean cancel() {
