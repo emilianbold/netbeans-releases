@@ -78,7 +78,6 @@ public class Hk2JavaEEPlatformFactory extends J2eePlatformFactory {
             new HashSet(Arrays.asList(new ModuleType[] { ModuleType.WAR })),
             new HashSet(Arrays.asList(new String[] {J2eeModule.J2EE_13,
             J2eeModule.J2EE_14, J2eeModule.JAVA_EE_5})));
-        //this(dn,jp,ln,lk,sjp,smt,ss);
     }
 
     public static Hk2JavaEEPlatformFactory createEe6() {
