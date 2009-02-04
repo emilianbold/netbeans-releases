@@ -43,6 +43,7 @@ package org.netbeans;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.security.CodeSource;
 import java.util.ArrayList;
@@ -265,8 +266,13 @@ public abstract class Module extends ModuleInfo {
                     loc = new URL("jar:" + loc + "!/");
                 }
                 URL manifest = new URL(loc, "META-INF/MANIFEST.MF");
-                Manifest mf = new Manifest(manifest.openStream());
-                return codeName.equals(mf.getMainAttributes().getValue("OpenIDE-Module"));
+                InputStream is = manifest.openStream();
+                try {
+                    Manifest mf = new Manifest(is);
+                    return codeName.equals(mf.getMainAttributes().getValue("OpenIDE-Module"));
+                } finally {
+                    is.close();
+                }
             } catch (IOException x) {
                 Logger.getLogger(Module.class.getName()).log(Level.FINE, null, x);
             }

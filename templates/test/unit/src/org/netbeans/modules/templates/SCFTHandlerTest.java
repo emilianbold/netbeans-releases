@@ -51,6 +51,7 @@ import junit.framework.Test;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -326,7 +327,8 @@ public class SCFTHandlerTest extends NbTestCase {
          assertEquals(exp, read);
          
      }
-    
+
+    @RandomlyFails
     public void testTemplateWizardCopiesItsPropertiesToMapForOverridenEntryOnMoreEntries() throws Exception {
         LocalFileSystem fs = new LocalFileSystem();
         fs.setRootDirectory(getWorkDir());

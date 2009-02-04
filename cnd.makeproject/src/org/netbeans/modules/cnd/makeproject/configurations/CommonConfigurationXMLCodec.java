@@ -84,6 +84,9 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  * V54 - NB 7.0
  *   Qt settings are persisted:
  *   QT_ELEMENT
+ *   QT_DESTDIR
+ *   QT_TARGET
+ *   QT_LIB_VERSION
  *   QT_BUILD_MODE_ELEMENT
  *   QT_MODULES_ELEMENT
  *   QT_MOC_DIR_ELEMENT
@@ -303,6 +306,9 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String PACK_TOPDIR_ELEMENT = "packTopDir"; // NOI18N
     // Qt-related
     protected final static String QT_ELEMENT = "qt"; // NOI18N
+    protected final static String QT_DESTDIR_ELEMENT = "destdir"; // NOI18N
+    protected final static String QT_TARGET_ELEMENT = "target"; // NOI18N
+    protected final static String QT_LIB_VERSION_ELEMENT = "libVersion"; // NOI18N
     protected final static String QT_BUILD_MODE_ELEMENT = "buildMode"; // NOI18N
     protected final static String QT_MODULES_ELEMENT = "modules"; // NOI18N
     protected final static String QT_MOC_DIR_ELEMENT = "mocDir"; // NOI18N
@@ -353,11 +359,10 @@ public abstract class CommonConfigurationXMLCodec
                 if (makeConfiguration.isQmakeConfiguration()) {
                     writeQmakeConfiguration(xes, makeConfiguration.getQmakeConfiguration());
                 }
-                if (makeConfiguration.isCompileConfiguration() || makeConfiguration.isQmakeConfiguration()) {
-                    writeCompiledProjectConfBlock(xes, makeConfiguration);
-                }
                 if (makeConfiguration.isMakefileConfiguration()) {
                     writeMakefileProjectConfBlock(xes, makeConfiguration);
+                } else {
+                    writeCompiledProjectConfBlock(xes, makeConfiguration);
                 }
                 writePackaging(xes, makeConfiguration.getPackagingConfiguration());
                 ConfigurationAuxObject[] profileAuxObjects = confs.getConf(i).getAuxObjects();
@@ -412,11 +417,17 @@ public abstract class CommonConfigurationXMLCodec
         writeCCompilerConfiguration(xes, makeConfiguration.getCCompilerConfiguration());
         writeCCCompilerConfiguration(xes, makeConfiguration.getCCCompilerConfiguration());
         writeFortranCompilerConfiguration(xes, makeConfiguration.getFortranCompilerConfiguration());
-        if (makeConfiguration.isLinkerConfiguration()) {
-            writeLinkerConfiguration(xes, makeConfiguration.getLinkerConfiguration());
-        }
-        if (makeConfiguration.isArchiverConfiguration()) {
-            writeArchiverConfiguration(xes, makeConfiguration.getArchiverConfiguration());
+        switch (makeConfiguration.getConfigurationType().getValue()) {
+            case MakeConfiguration.TYPE_APPLICATION:
+            case MakeConfiguration.TYPE_DYNAMIC_LIB:
+            case MakeConfiguration.TYPE_QT_APPLICATION:
+            case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
+                writeLinkerConfiguration(xes, makeConfiguration.getLinkerConfiguration());
+                break;
+            case MakeConfiguration.TYPE_STATIC_LIB:
+            case MakeConfiguration.TYPE_QT_STATIC_LIB:
+                writeArchiverConfiguration(xes, makeConfiguration.getArchiverConfiguration());
+                break;
         }
         writeRequiredProjects(xes, makeConfiguration.getRequiredProjectsConfiguration());
         xes.elementClose(COMPILE_TYPE_ELEMENT);
@@ -424,6 +435,15 @@ public abstract class CommonConfigurationXMLCodec
 
     private void writeQmakeConfiguration(XMLEncoderStream xes, QmakeConfiguration qmake) {
         xes.elementOpen(QT_ELEMENT);
+        if (qmake.getDestdir().getModified()) {
+            xes.element(QT_DESTDIR_ELEMENT, qmake.getDestdirValue());
+        }
+        if (qmake.getTarget().getModified()) {
+            xes.element(QT_TARGET_ELEMENT, qmake.getTargetValue());
+        }
+        if (qmake.getLibVersion().getModified()) {
+            xes.element(QT_LIB_VERSION_ELEMENT, qmake.getLibVersion().getValue());
+        }
         if (qmake.getBuildMode().getModified()) {
             xes.element(QT_BUILD_MODE_ELEMENT, String.valueOf(qmake.getBuildMode().getValue()));
         }

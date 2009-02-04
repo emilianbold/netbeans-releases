@@ -98,40 +98,34 @@ public class MakeArtifact {
 		workingDirectory = projectLocation;
 		buildCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName; // NOI18N
 		cleanCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName + " clean"; // NOI18N
-		if (makeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
-		    configurationType = MakeArtifact.TYPE_UNKNOWN;
-		    output = makeConfiguration.getMakefileConfiguration().getOutput().getValue();
-		}
-		else if (makeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_APPLICATION) {
-		    configurationType = MakeArtifact.TYPE_APPLICATION;
-		    output = makeConfiguration.getLinkerConfiguration().getOutputValue();
-		}
-		else if (makeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
-		    configurationType = MakeArtifact.TYPE_DYNAMIC_LIB;
-		    output = makeConfiguration.getLinkerConfiguration().getOutputValue();
-		}
-		else if (makeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_STATIC_LIB) {
-		    configurationType = MakeArtifact.TYPE_STATIC_LIB;
-		    output = makeConfiguration.getArchiverConfiguration().getOutputValue();
-		}
-        else if (makeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_APPLICATION) {
-            configurationType = MakeArtifact.TYPE_QT_APPLICATION;
-            output = makeConfiguration.getLinkerConfiguration().getOutputValue();
+        switch (makeConfiguration.getConfigurationType().getValue()) {
+            case MakeConfiguration.TYPE_MAKEFILE:
+                configurationType = MakeArtifact.TYPE_UNKNOWN;
+                break;
+            case MakeConfiguration.TYPE_APPLICATION:
+                configurationType = MakeArtifact.TYPE_APPLICATION;
+                break;
+            case MakeConfiguration.TYPE_DYNAMIC_LIB:
+                configurationType = MakeArtifact.TYPE_DYNAMIC_LIB;
+                break;
+            case MakeConfiguration.TYPE_STATIC_LIB:
+                configurationType = MakeArtifact.TYPE_STATIC_LIB;
+                break;
+            case MakeConfiguration.TYPE_QT_APPLICATION:
+                configurationType = MakeArtifact.TYPE_QT_APPLICATION;
+                break;
+            case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
+                configurationType = MakeArtifact.TYPE_QT_DYNAMIC_LIB;
+                break;
+            case MakeConfiguration.TYPE_QT_STATIC_LIB:
+                configurationType = MakeArtifact.TYPE_QT_STATIC_LIB;
+                break;
+            default:
+                assert false; // FIXUP: error
         }
-        else if (makeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_DYNAMIC_LIB) {
-            configurationType = MakeArtifact.TYPE_QT_DYNAMIC_LIB;
-            output = makeConfiguration.getLinkerConfiguration().getOutputValue();
-        }
-        else if (makeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_STATIC_LIB) {
-            configurationType = MakeArtifact.TYPE_QT_STATIC_LIB;
-            output = makeConfiguration.getArchiverConfiguration().getOutputValue();
-        }
-        else {
-            assert false;// FIXUP: error
-        }
-        output = makeConfiguration.expandMacros(output);
+        output = makeConfiguration.expandMacros(makeConfiguration.getOutputValue());
     }
-    
+
     public String getProjectLocation() {
 	return projectLocation;
     }

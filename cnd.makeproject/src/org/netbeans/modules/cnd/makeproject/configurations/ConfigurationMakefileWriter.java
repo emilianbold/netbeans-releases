@@ -338,7 +338,7 @@ public class ConfigurationMakefileWriter {
             writeMakefileTargets(conf, bw);
         } else if (conf.isQmakeConfiguration()) {
             bw.write(".build-conf: ${BUILD_SUBPROJECTS} nbproject/qt-${CONF}.mk\n"); // NOI18N
-            bw.write("\t${MAKE} -f nbproject/qt-${CONF}.mk " + getOutput(conf) + "\n"); // NOI18N
+            bw.write("\t${MAKE} -f nbproject/qt-${CONF}.mk " + output + "\n"); // NOI18N
         }
         writeSubProjectBuildTargets(conf, bw);
         bw.write("\n"); // NOI18N
@@ -610,37 +610,17 @@ public class ConfigurationMakefileWriter {
     }
 
     private String getOutput(MakeConfiguration conf) {
-        String output = null;
+        String output = conf.getOutputValue();
         switch (conf.getConfigurationType().getValue()) {
             case MakeConfiguration.TYPE_APPLICATION:
             case MakeConfiguration.TYPE_QT_APPLICATION:
-                output = conf.getLinkerConfiguration().getOutputValue();
                 if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS &&
                         !output.endsWith(".exe")) { // NOI18N
                     output += ".exe"; // NOI18N
                 }
                 break;
-            case MakeConfiguration.TYPE_DYNAMIC_LIB:
-                output = conf.getLinkerConfiguration().getOutputValue();
-                break;
-            case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
-                output = conf.getLinkerConfiguration().getOutputValue();
-                // TODO: platform-dependent transformation + version
-                break;
-            case MakeConfiguration.TYPE_STATIC_LIB:
-                output = conf.getArchiverConfiguration().getOutputValue();
-                break;
-            case MakeConfiguration.TYPE_QT_STATIC_LIB:
-                output = conf.getArchiverConfiguration().getOutputValue();
-                // TODO: platform-dependent fransformation + version
-                break;
-            case MakeConfiguration.TYPE_MAKEFILE:
-                output = conf.getMakefileConfiguration().getOutput().getValue();
-                break;
-            default:
-                assert false;
         }
-        return output;
+        return conf.expandMacros(output);
     }
 
     public static String getObjectDir(MakeConfiguration conf) {

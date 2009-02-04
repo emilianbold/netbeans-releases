@@ -71,13 +71,13 @@ public class CLIHandlerRemembersSystemInOutErrTest extends NbTestCase {
         super(name);
     }
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         clearWorkDir();
         System.setProperty ("netbeans.user", getWorkDirPath());
         LOG = Logger.getLogger("TEST-" + getName());
     }
 
-    protected Level logLevel() {
+    protected @Override Level logLevel() {
         return Level.ALL;
     }
     
