@@ -50,7 +50,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author karolharezlak
+ * @author karol harezlak
  */
 public final class DatabindingElement implements PropertyEditorElement, CleanUp {
 

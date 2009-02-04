@@ -63,6 +63,18 @@ public final class LocalNativeExecutor extends NativeExecutor {
     private InputStream processError;
     private OutputStream processInput;
 
+    // A temporary hack to set environment.
+    // TODO: remove as soon as setting environment becomes possible
+    private static final String[] ENV;
+    static {
+        String env = System.getProperty("dlight.env");
+        if (env != null) {
+            ENV = new String[] { env };
+        } else {
+            ENV = new String[] {};
+        }
+    }
+
     public LocalNativeExecutor(NativeTask task) {
         super(task);
     }

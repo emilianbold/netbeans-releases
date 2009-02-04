@@ -417,7 +417,6 @@ public class LinkerConfiguration implements AllOptionsProvider {
         String outputName = IpeUtils.getBaseName(getMakeConfiguration().getBaseDir());
         switch (getMakeConfiguration().getConfigurationType().getValue()) {
             case MakeConfiguration.TYPE_APPLICATION:
-            case MakeConfiguration.TYPE_QT_APPLICATION:
                 outputName = outputName.toLowerCase();
                 break;
             case MakeConfiguration.TYPE_DYNAMIC_LIB:
