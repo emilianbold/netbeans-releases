@@ -150,11 +150,11 @@ public class CppSymbolDescriptor extends SymbolDescriptor {
 
     @Override
     public String getProjectName() {
-        CharSequence name = project.getName();
+        CharSequence prjName = project.getName();
         if (project.isArtificial()) {
-            name = CsmDisplayUtilities.shrinkPath(name, 32, 2, 2);
+            prjName = CsmDisplayUtilities.shrinkPath(prjName, 32, 2, 2);
         }
-        return name.toString();
+        return prjName.toString();
     }
 
     @Override
