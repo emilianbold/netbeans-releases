@@ -55,7 +55,6 @@ import org.netbeans.modules.glassfish.spi.AppDesc;
 import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
 
-
 /**
  * Abstraction of commands for V3 server administration
  *
@@ -302,14 +301,26 @@ public class Commands {
     /**
      * Command to deploy a directory
      */
-    public static final class DeployCommand extends ServerCommand {
-        
-        public DeployCommand(final String path, final String name, final String contextRoot, final Boolean preserveSessions) {
+    public static final class DeployCommand extends ServerCommand {        
+
+        private String path = null;
+        private String fileName = null;
+
+        public DeployCommand(final File path, final String name, final String contextRoot, final Boolean preserveSessions) {
             super("deploy"); // NOI18N
             
             StringBuilder cmd = new StringBuilder(128);
             cmd.append("path="); // NOI18N
-            cmd.append(path);
+            String usePath = path.getAbsolutePath();
+            if (path.isFile()) {
+                this.path = usePath;
+                int end = usePath.lastIndexOf(File.separatorChar);
+                if (end > -1) {
+                    usePath = usePath.substring(end+1);
+                }
+            }
+            cmd.append(usePath);
+            fileName = usePath;
             if(name != null && name.length() > 0) {
                 cmd.append(PARAM_SEPARATOR + "name="); // NOI18N
                 cmd.append(name);
@@ -323,6 +334,35 @@ public class Commands {
             query = cmd.toString();
         }
         
+
+        @Override
+        public String getContentType() {
+            return null==path?null:"application/zip"; // NOI18N
+        }
+
+        @Override
+        public boolean getDoOutput() {
+            return path!=null;
+        }
+
+        @Override
+        public InputStream getInputStream() {
+            try {
+                return new FileInputStream(path);
+            } catch (FileNotFoundException ex) {
+                return null;
+            }
+        }
+
+        @Override
+        public String getRequestMethod() {
+            return null==path?super.getRequestMethod():"POST"; // NOI18N
+        }
+
+        @Override
+        public String getInputName() {
+            return fileName;
+        }
     }
     
     /**
