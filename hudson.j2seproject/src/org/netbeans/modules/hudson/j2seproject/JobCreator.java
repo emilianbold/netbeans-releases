@@ -118,10 +118,14 @@ public class JobCreator extends JPanel implements ProjectHudsonJobCreator {
             }
             targetsS.append(target);
         }
-        projectE.appendChild(doc.createElement("builders")).
-                appendChild(doc.createElement("hudson.tasks.Ant")).
-                appendChild(doc.createElement("targets")).
+        Element ant = (Element) projectE.appendChild(doc.createElement("builders")).
+                appendChild(doc.createElement("hudson.tasks.Ant"));
+        ant.appendChild(doc.createElement("targets")).
                 appendChild(doc.createTextNode(targetsS.toString()));
+        if (runTests.isSelected()) {
+            ant.appendChild(doc.createElement("properties")).
+                    appendChild(doc.createTextNode("ignore.failing.tests=true"));
+        }
         Element publishers = (Element) projectE.appendChild(doc.createElement("publishers"));
         // XXX use appropriate properties from project evaluator where possible
         if (buildJar.isSelected()) {
