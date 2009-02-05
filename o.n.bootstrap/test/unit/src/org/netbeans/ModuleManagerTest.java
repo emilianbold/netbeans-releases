@@ -71,6 +71,7 @@ import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
@@ -1809,6 +1810,7 @@ public class ModuleManagerTest extends SetupHid {
     /** Test #21114: after deleting a module, its JARs are released.
      * Would probably always pass on Unix, but on Windows it matters.
      */
+    @RandomlyFails // NB-Core-Build #2081 in ModuleFactoryTest
     public void testModuleDeletion() throws Exception {
         MockModuleInstaller installer = new MockModuleInstaller();
         MockEvents ev = new MockEvents();
