@@ -117,6 +117,9 @@ public class KenaiMockup extends KenaiImpl {
 
     @Override
     public boolean isAuthorized(String projectName, String feature, String activity) throws KenaiException {
+        if (Kenai.getDefault().getPasswordAuthentication() == null) {
+            return false;
+        }
         User user = getUser(Kenai.getDefault().getPasswordAuthentication().getUserName());
         if (user == null) {
             return false;

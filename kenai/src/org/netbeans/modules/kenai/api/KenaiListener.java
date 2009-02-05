@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,27 +34,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai;
+package org.netbeans.modules.kenai.api;
+
+import java.util.EventListener;
 
 /**
- *
- * @author Maros Sandor
- */
-@org.codeviation.pojson.Pojson.IgnoreNonExisting
-public class ProjectData {
-    public String href;
-    public String name;
-    public String display_name;
-    public String image;
-    public String owner;
-    public String description;
-    public String created_at;
-    public String updated_at;
-    public int    member_count;
-    public LicenceData [] licenses;
-    public FeatureData [] features;
-    public String tags;
+ * @author Jan Becicka
+ * @see KenaiEvent#getType()
+ * @see Kenai#addKenaiListener(org.netbeans.modules.kenai.api.KenaiListener)
+ * @see Kenai#removeKenaiListener(org.netbeans.modules.kenai.api.KenaiListener)
+ * @see Kenai#login(java.lang.String, char[])
+ * @see Kenai#logout()
+ * @see KenaiProject#open()
+ * @see KenaiProject#clone()
+ * @see Kenai#getOpenProjects()
+  */
+public interface KenaiListener extends EventListener {
+
+    /**
+     * if type is LOGIN, than getSource returns instance of new
+     * PasswordAuthentication or null, if user logged out.
+     * If type is PROJCT_OPEN/PROJECT_CLOSE than getResource return instance of
+     * KenaiProject being closed/open
+     * @see KenaiEvent#getType()
+     * @see Kenai#addKenaiListener(org.netbeans.modules.kenai.api.KenaiListener)
+     * @see Kenai#removeKenaiListener(org.netbeans.modules.kenai.api.KenaiListener)
+     * @see Kenai#login(java.lang.String, char[])
+     * @see Kenai#logout()
+     * @see KenaiProject#open()
+     * @see KenaiProject#clone()
+     * @see Kenai#getOpenProjects()
+     * @param e
+     */
+    public void stateChanged(KenaiEvent e);
 }
