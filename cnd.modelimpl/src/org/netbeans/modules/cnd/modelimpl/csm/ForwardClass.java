@@ -63,7 +63,7 @@ import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 public final class ForwardClass extends ClassImpl {
 
     private ForwardClass(String name, CsmFile file, AST ast) {
-        super(ast, file);
+        super(name, ast, file);
     }
 
     public static boolean isForwardClass(CsmDeclaration cls) {
