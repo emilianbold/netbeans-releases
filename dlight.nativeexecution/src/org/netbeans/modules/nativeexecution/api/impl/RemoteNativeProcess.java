@@ -157,7 +157,7 @@ public final class RemoteNativeProcess extends NativeProcess {
             try {
                 Thread.sleep(200);
             } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
+                // skip
             }
         }
 

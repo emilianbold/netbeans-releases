@@ -120,7 +120,9 @@ public final class HostInfoUtils {
                     execEnv, cmd_test).setArguments("-f", fname);
 
             try {
-                fileExists = npb.call().exitValue() == 0;
+                fileExists = npb.call().waitFor() == 0;
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
