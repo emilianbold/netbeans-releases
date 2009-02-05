@@ -104,7 +104,7 @@ public abstract class NativeProcess extends Process {
      */
     @Override
     public String toString() {
-        return id;
+        return id.trim();
     }
 
     private final void setState(State state) {
