@@ -38,75 +38,37 @@
  */
 package org.netbeans.modules.nativeexecution.util;
 
-import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.concurrent.CancellationException;
+import java.util.concurrent.Future;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeTask;
-import org.netbeans.modules.nativeexecution.api.NativeTaskListener;
-import org.netbeans.modules.nativeexecution.support.NativeTaskAccessor;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
+import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.openide.windows.InputOutput;
 
 /**
- * This is an utility class that is a factory for several common native tasks
- * such as file copying or removing.
- * The common usage of the class is as follows:
- * <pre>
- *       StringBuilder rmTaskError = new StringBuilder();
- *       boolean forceRemoveReadOnlyFile = false;
- *       String fileToRemove = "/path/to/the/file/to/remove";
- *       ExecutionEnvironment env = new ExecutionEnvironment();
  *
- *       NativeTask rmTask = CommonTasksSupport.getRemoveFileTask(
- *               env, fileToRemove, forceRemoveReadOnlyFile, rmTaskError);
- *
- *       try {
- *           Integer result = rmTask.submit(false);
- *           System.out.println("RESULT: " + result);
- *           if (result != 0) {
- *               System.out.println("ERROR: " + rmTaskError);
- *           }
- *       } catch (Exception ex) {
- *           Exceptions.printStackTrace(ex);
- *       }
- * </pre>
- * or just
- * <pre>
- *       try {
- *           CommonTasksSupport.getRemoveFileTask(new ExecutionEnvironment(),
- *               "/path/to/the/file/to/remove", true, null).submit(false);
- *       } catch (Exception ex) {
- *           Exceptions.printStackTrace(ex);
- *       }
- * </pre>
  */
 public final class CommonTasksSupport {
 
-    /**
-     * Returns <tt>NativeTask</tt> that copies a single file <tt>srcFileName</tt>
-     * from the localhost to the destination (<tt>dstFileName</tt>) on the host,
-     * specified with <tt>execEnv</tt>, setting destination file permissions
-     * mode to <tt>mask</tt>. The implementation is based on scp(1) utility and
-     * any error messages from scp automatically goes to the provided
-     * <tt>Appendable</tt> (if any).
-     *
-     * @param execEnv destination execution environment.
-     * @param srcFileName full path to the source file (on the localhost).
-     * @param dstFileName full path to the destination (on the <tt>execEnv</tt>).
-     * @param mask destination file creation permissions mode.
-     * @param error in case of error, error message will be appended to this
-     * <tt>Appendable</tt>. Could be null.
-     * @return <tt>NativeTask</tt> that performs file copying.
-     */
-    public final static NativeTask getCopyLocalFileTask(
+    public static Future<Integer> copyLocalFile(
             final ExecutionEnvironment execEnv,
             final String srcFileName, final String dstFileName,
-            final int mask, final Appendable error) {
+            final int mask, final Writer error) {
 
         final File localFile = new File(srcFileName);
 
@@ -130,144 +92,44 @@ public final class CommonTasksSupport {
             return null;
         }
 
-        String cmd = "/bin/scp -p -t " + dstFileName; // NOI18N
-        final NativeTask copyTask = new NativeTask(execEnv, cmd, null);
-        final CopyRoutine copyWorker = new CopyRoutine(copyTask, localFile, mask);
-        final FilteredCharArrayWriter scpOutWriter = new FilteredCharArrayWriter();
-        copyTask.redirectOutTo(scpOutWriter);
+        final String cmd = "/bin/scp -p -t " + dstFileName; // NOI18N
 
-        copyTask.addListener(new CommonTaskListener(error) {
+        Listener processListener = new Listener() {
 
-            public void taskStarted(NativeTask task) {
-                copyWorker.start();
-            }
-
-            public void taskFinished(NativeTask task, int result) {
-                if (result != 0) {
-                    String[] errLines = scpOutWriter.toString().split("\n"); // NOI18N
-                    StringBuilder sb = new StringBuilder();
-                    for (String line : errLines) {
-
-                        if (line.contains("scp: protocol error")) { // NOI18N
-                            continue;
-                        }
-
-                        sb.append(line).append("\n"); // NOI18N
-                    }
-
-                    if (error != null) {
-                        try {
-                            error.append(sb.toString().trim());
-                        } catch (IOException ex) {
-                        }
-                    }
+            public void processStateChanged(NativeProcess p,
+                    State oldState, State newState) {
+                if (newState == State.RUNNING) {
+                    new CopyRoutine(p.getOutputStream(), localFile, mask).start();
                 }
             }
-        });
+        };
 
-        return copyTask;
-    }
+        NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, cmd).addNativeProcessListener(processListener);
 
-    /**
-     * Returns <tt>NativeTask</tt> that removes a single file (<tt>fileName</tt>)
-     * from the host, specified by <tt>execEnv</tt>. Implementation is based on
-     * rm(1) and in case of any error, it's output is redirected to the provided
-     * <tt>Appendable</tt> (if any).
-     *
-     * @param execEnv execution environment where task will be executed.
-     * @param fileName path to the file to be removed.
-     * @param force if set to true, even read-only files will be removed
-     * (see rm(1). This is an equivalent of calling /bin/rm -f).
-     * @param error in case of error, error message will be appended to this
-     * <tt>Appendable</tt>. Could be null.
-     *
-     * @return <tt>NativeTask</tt> that performs file removing.
-     */
-    public final static NativeTask getRemoveFileTask(
-            final ExecutionEnvironment execEnv,
-            final String fileName, final boolean force, final Appendable error) {
+        ExecutionDescriptor descriptor =
+                new ExecutionDescriptor().inputOutput(
+                InputOutput.NULL).outProcessorFactory(
+                new InputProcessorFactory() {
 
-        return getRemoveTask(execEnv, fileName, error, force ? "-f" : ""); // NOI18N
-    }
-
-    /**
-     * Returns <tt>NativeTask</tt> that recursively removes a directory
-     * (<tt>dirName</tt>) and it's content from the host, specified by
-     * <tt>execEnv</tt>. Implementation is based on rm(1) and in case of any
-     * error, it's output is redirected to the provided <tt>Appendable</tt> (if
-     * any).
-     *
-     * @param execEnv execution environment where task will be executed.
-     * @param dirName path to the directory to be removed.
-     * @param force if set to true, even read-only files will be removed
-     * (see rm(1). This is an equivalent of calling /bin/rm -rf).
-     * @param error in case of error, error message will be appended to this
-     * <tt>Appendable</tt>. Could be null.
-     *
-     * @return <tt>NativeTask</tt> that performs directory removing.
-     */
-    public final static NativeTask getRemoveDirectoryTask(
-            final ExecutionEnvironment execEnv,
-            final String dirName, final boolean force, final Appendable error) {
-
-        return getRemoveTask(execEnv, dirName, error, force ? "-rf" : "-r"); // NOI18N
-    }
-
-    private static NativeTask getRemoveTask(
-            final ExecutionEnvironment execEnv,
-            final String nodeName, final Appendable error,
-            final String flags) {
-
-        NativeTask removeTask = new NativeTask(execEnv,
-                "/bin/rm", // NOI18N
-                new String[]{flags, nodeName});
-
-        final FilteredCharArrayWriter rmErrWriter = new FilteredCharArrayWriter();
-        removeTask.redirectErrTo(rmErrWriter);
-
-        if (error != null) {
-            removeTask.addListener(new CommonTaskListener(error) {
-
-                public void taskStarted(NativeTask task) {
-                }
-
-                public void taskFinished(NativeTask task, int result) {
-                    if (result != 0 && error != null) {
-                        try {
-                            error.append(rmErrWriter.toString());
-                        } catch (IOException ex) {
-                        }
+                    public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                        return new FilterInputProcessor(InputProcessors.copying(error));
                     }
-                }
-            });
-        }
+                });
 
-        return removeTask;
-    }
+        ExecutionService execService = ExecutionService.newService(
+                npb, descriptor, "scp " + cmd); // NOI18N
 
-    private static class FilteredCharArrayWriter extends CharArrayWriter {
-
-        @Override
-        public String toString() {
-            char[] chars = this.toCharArray();
-            StringBuilder sb = new StringBuilder();
-            for (char c : chars) {
-                if (c >= 32 || c == 10 || c == 13) {
-                    sb.append(c);
-                }
-            }
-            return sb.toString();
-        }
+        return execService.run();
     }
 
     private static final class CopyRoutine extends Thread {
 
-        private final NativeTask task;
+        private final OutputStream outStream;
         private final File srcFile;
         private final int mask;
 
-        public CopyRoutine(NativeTask task, File srcFile, int mask) {
-            this.task = task;
+        public CopyRoutine(OutputStream in, File srcFile, int mask) {
+            this.outStream = in;
             this.srcFile = srcFile;
             this.mask = mask;
         }
@@ -280,7 +142,7 @@ public final class CommonTasksSupport {
             ReadableByteChannel in = null;
 
             try {
-                out = Channels.newChannel(task.getOutputStream());
+                out = Channels.newChannel(outStream);
                 long filesize = srcFile.length();
                 int workUnitsLimit = 1;
                 double workUnitFactor = 1;
@@ -291,9 +153,6 @@ public final class CommonTasksSupport {
                     workUnitsLimit = (int) filesize;
                     workUnitFactor = 1;
                 }
-
-                NativeTaskAccessor taskInfo = NativeTaskAccessor.getDefault();
-                taskInfo.getExecutor(task).setProgressLimit(workUnitsLimit);
 
                 String command = String.format("C0%03d %d %s\n", // NOI18N
                         mask, filesize, srcFile.getName());
@@ -319,8 +178,6 @@ public final class CommonTasksSupport {
                     buffer.clear();
                     sendBytes += len;
                     progress = (int) (sendBytes * workUnitFactor);
-
-                    taskInfo.getExecutor(task).setProgress(progress);
                 }
 
                 // Finally write 0 byte
@@ -359,31 +216,40 @@ public final class CommonTasksSupport {
         }
     }
 
-    private abstract static class CommonTaskListener
-            implements NativeTaskListener {
+    private static class FilterInputProcessor implements InputProcessor {
 
-        private Appendable error;
+        private final InputProcessor delegate;
+        private boolean closed;
 
-        public CommonTaskListener(Appendable error) {
-            this.error = error;
+        public FilterInputProcessor(InputProcessor delegate) {
+            this.delegate = delegate;
         }
 
-        public void taskCancelled(NativeTask task, CancellationException cex) {
-            if (error != null) {
-                try {
-                    error.append("Cancelled"); // NOI18N
-                } catch (IOException ex) {
+        public void processInput(char[] chars) throws IOException {
+            if (closed) {
+                throw new IllegalStateException("Already closed processor"); // NOI18N
+            }
+
+            StringBuilder sb = new StringBuilder(chars.length);
+            for (char c : chars) {
+                if (c >= 32 || c == 10 || c == 13) {
+                    sb.append(c);
                 }
             }
+
+            delegate.processInput(sb.toString().toCharArray());
         }
 
-        public void taskError(NativeTask task, Throwable t) {
-            if (error != null) {
-                try {
-                    error.append(t.toString());
-                } catch (IOException ex) {
-                }
+        public void reset() throws IOException {
+            if (closed) {
+                throw new IllegalStateException("Already closed processor"); // NOI18N
             }
+            delegate.reset();
+        }
+
+        public void close() throws IOException {
+            closed = true;
+            delegate.close();
         }
     }
 }

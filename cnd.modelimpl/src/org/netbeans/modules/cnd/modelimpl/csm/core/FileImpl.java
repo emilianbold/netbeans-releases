@@ -1075,7 +1075,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     public Collection<CsmOffsetableDeclaration> getDeclarations() {
         if (!SKIP_UNNECESSARY_FAKE_FIXES) {
-            fixFakeRegistrations();
+            fixFakeRegistrations(false);
         }
         Collection<CsmOffsetableDeclaration> decls;
         try {
@@ -1090,7 +1090,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFilter filter) {
         if (!SKIP_UNNECESSARY_FAKE_FIXES) {
-            fixFakeRegistrations();
+            fixFakeRegistrations(false);
         }
         Iterator<CsmOffsetableDeclaration> out;
         try {
@@ -1104,7 +1104,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public int getDeclarationsSize(){
         if (!SKIP_UNNECESSARY_FAKE_FIXES) {
-            fixFakeRegistrations();
+            fixFakeRegistrations(false);
         }
         try {
             declarationsLock.readLock().lock();
@@ -1116,7 +1116,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> findDeclarations(CsmDeclaration.Kind[] kinds, String prefix) {
         if (!SKIP_UNNECESSARY_FAKE_FIXES) {
-            fixFakeRegistrations();
+            fixFakeRegistrations(false);
         }
         Collection<CsmUID<CsmOffsetableDeclaration>> out = null;
         try {
@@ -1159,7 +1159,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> getDeclarations(int startOffset, int endOffset) {
         if (!SKIP_UNNECESSARY_FAKE_FIXES) {
-            fixFakeRegistrations();
+            fixFakeRegistrations(false);
         }
         List<CsmUID<CsmOffsetableDeclaration>> res;
         try {
@@ -1187,7 +1187,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public Iterator<CsmOffsetableDeclaration> getDeclarations(int offset) {
         if (!SKIP_UNNECESSARY_FAKE_FIXES) {
-            fixFakeRegistrations();
+            fixFakeRegistrations(false);
         }
         List<CsmUID<CsmOffsetableDeclaration>> res;
         try {
@@ -1462,35 +1462,51 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
         }
         if (SKIP_UNNECESSARY_FAKE_FIXES && fixFakes) {
-            fixFakeRegistrations();
+            fixFakeRegistrations(false);
         }
     }
 
     public void onFakeRegisration(FunctionImplEx decl) {
-        CsmUID<FunctionImplEx> uidDecl = UIDCsmConverter.declarationToUID(decl);
-        fakeRegistrationUIDs.add(uidDecl);
+        synchronized (fakeRegistrationUIDs) {
+            CsmUID<FunctionImplEx> uidDecl = UIDCsmConverter.declarationToUID(decl);
+            fakeRegistrationUIDs.add(uidDecl);
+        }
     }
 
     private void clearFakeRegistrations() {
-        fakeRegistrationUIDs.clear();
+        synchronized (fakeRegistrationUIDs) {
+            fakeRegistrationUIDs.clear();
+        }
     }
 
-    public void fixFakeRegistrations() {
-        if (fakeRegistrationUIDs.size() == 0 || !isValid()) {
-            return;
-        }
-        if (fakeRegistrationUIDs.size() > 0) {
-            List<CsmUID<FunctionImplEx>> fakes = new ArrayList<CsmUID<FunctionImplEx>>(fakeRegistrationUIDs);
-            fakeRegistrationUIDs.clear();
-            for (CsmUID<? extends CsmDeclaration> fakeUid : fakes) {
-                CsmDeclaration curElem = fakeUid.getObject();
-                if (curElem != null) {
-                    if (curElem instanceof FunctionImplEx) {
-                        ((FunctionImplEx) curElem).fixFakeRegistration();
-                        parseCount++;
-                    } else {
-                        DiagnosticExceptoins.register(new Exception("Incorrect fake registration class: " + curElem.getClass())); // NOI18N
+    /**
+     * Fixes ambiguities.
+     *
+     * @param clearFakes - indicates that we should clear list of fake registrations (all have been parsed and we have no chance to fix them in future)
+     */
+    public void fixFakeRegistrations(boolean clearFakes) {
+        synchronized (fakeRegistrationUIDs) {
+            if (fakeRegistrationUIDs.size() == 0 || !isValid()) {
+                return;
+            }
+            if (fakeRegistrationUIDs.size() > 0) {
+                List<CsmUID<FunctionImplEx>> fakes = new ArrayList<CsmUID<FunctionImplEx>>(fakeRegistrationUIDs);
+                // We should clear list any way, becouse of recursion posibulity
+                // Several lines after we'll fill fakeRegistrationUIDs again (if !clearFakes)
+                fakeRegistrationUIDs.clear();
+                for (CsmUID<? extends CsmDeclaration> fakeUid : fakes) {
+                    CsmDeclaration curElem = fakeUid.getObject();
+                    if (curElem != null) {
+                        if (curElem instanceof FunctionImplEx) {
+                            ((FunctionImplEx) curElem).fixFakeRegistration();
+                            parseCount++;
+                        } else {
+                            DiagnosticExceptoins.register(new Exception("Incorrect fake registration class: " + curElem.getClass())); // NOI18N
+                        }
                     }
+                }
+                if (!clearFakes) {
+                    fakeRegistrationUIDs.addAll(fakes);
                 }
             }
         }

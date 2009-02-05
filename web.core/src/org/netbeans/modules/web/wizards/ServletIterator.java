@@ -75,7 +75,7 @@ import org.openide.util.HelpCtx;
  * @author milan.kuchtiak@sun.com
  */
 
-public class ServletIterator implements TemplateWizard.Iterator {
+public class ServletIterator implements TemplateWizard.AsynchronousInstantiatingIterator {
     
     private static final long serialVersionUID = -4147344271705652643L;
 
@@ -99,8 +99,8 @@ public class ServletIterator implements TemplateWizard.Iterator {
 	return new ServletIterator(FileType.FILTER); 
     }
 
-    public void initialize (TemplateWizard wizard) {
-        this.wizard = wizard;
+    public void initialize (WizardDescriptor wiz) {
+        this.wizard = (TemplateWizard) wiz;
         index = 0;
 
 	if(fileType.equals(FileType.SERVLET) ||
@@ -176,7 +176,7 @@ public class ServletIterator implements TemplateWizard.Iterator {
         }
     }
     
-    public Set<DataObject> instantiate(TemplateWizard wizard) throws IOException {
+    public Set<DataObject> instantiate() throws IOException {
 	// Create the target folder. The next piece is independent of
 	// the type of file we create, and it should be moved to the
 	// evaluator class instead. The exact same process
@@ -244,7 +244,7 @@ public class ServletIterator implements TemplateWizard.Iterator {
     } 
 
 
-    public void uninitialize (TemplateWizard wizard) {
+    public void uninitialize (WizardDescriptor wizard) {
         this.wizard = null;
         panels = null;
     }

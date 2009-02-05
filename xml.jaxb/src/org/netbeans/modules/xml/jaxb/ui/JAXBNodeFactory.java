@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.xml.jaxb.ui;
 import org.netbeans.modules.xml.jaxb.api.model.events.JAXBWizEvent;
-import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -60,11 +59,16 @@ import org.netbeans.spi.project.ui.support.NodeList;
  *
  * @author gpatil
  */
-@NodeFactory.Registration(projectType={"org-netbeans-modules-java-j2seproject","org-netbeans-modules-web-project"} ,position=100)
+@NodeFactory.Registration(projectType={"org-netbeans-modules-java-j2seproject"} ,position=275)
 public class JAXBNodeFactory implements NodeFactory {
     public static final String JAXB_NODE_NAME = "JAXB Bindings" ; // NOI18N
 
-    @NodeFactory.Registration(projectType="org-netbeans-modules-j2ee-ejbjarproject",position=125)
+    @NodeFactory.Registration(projectType="org-netbeans-modules-web-project",position=425)
+    public static JAXBNodeFactory webproject() {
+        return new JAXBNodeFactory();
+    }
+
+    @NodeFactory.Registration(projectType="org-netbeans-modules-j2ee-ejbjarproject",position=175)
     public static JAXBNodeFactory ejbproject() {
         return new JAXBNodeFactory();
     }

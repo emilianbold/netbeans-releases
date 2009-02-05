@@ -41,11 +41,11 @@
 
 package org.netbeans.modules.autoupdate.services;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.logging.Level;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -58,6 +58,11 @@ public class InstallDisabledModuleTest extends OperationsTestImpl {
 
     public InstallDisabledModuleTest(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
     }
 
     @Override
@@ -99,9 +104,10 @@ public class InstallDisabledModuleTest extends OperationsTestImpl {
         return "com.sun.testmodule.cluster"; //NOI18N
     }
 
+    @RandomlyFails
     public void testSelf() throws Exception {
         UpdateUnit install = UpdateManagerImpl.getInstance().getUpdateUnit(moduleCodeNameBaseForTest());
         assertNotNull("There is an NBM to install", install);
-        installModule(install, null);
+        installModule(install, null);//fail("OK");
     }
 }

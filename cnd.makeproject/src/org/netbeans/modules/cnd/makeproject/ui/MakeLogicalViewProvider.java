@@ -590,7 +590,14 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
             List<Action> actions = new ArrayList<Action>();
             // Add standard actions
-            Action[] standardActions = getAdditionalActions();
+            Action[] standardActions;
+            MakeConfiguration active = (MakeConfiguration) getMakeConfigurationDescriptor().getConfs().getActive();
+            if (active.isMakefileConfiguration()) { // FIXUP: need better check
+                standardActions = getAdditionalDiskFolderActions();
+            }
+            else {
+                standardActions = getAdditionalLogicalFolderActions();
+            }
             for (int i = 0; i < standardActions.length; i++) {
                 actions.add(standardActions[i]);
             }
@@ -641,7 +648,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
 
         // Private methods -------------------------------------------------
-        private Action[] getAdditionalActions() {
+        private Action[] getAdditionalLogicalFolderActions() {
 
             ResourceBundle bundle = NbBundle.getBundle(MakeLogicalViewProvider.class);
 
@@ -675,7 +682,38 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                         CommonProjectActions.copyProjectAction(),
                         CommonProjectActions.deleteProjectAction(),
                         null,};
+        }
 
+        private Action[] getAdditionalDiskFolderActions() {
+
+            ResourceBundle bundle = NbBundle.getBundle(MakeLogicalViewProvider.class);
+
+            return new Action[]{
+                        CommonProjectActions.newFileAction(),
+                        null,
+                        new AddExternalItemAction(project),
+                        null,
+                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, bundle.getString("LBL_BuildAction_Name"), null), // NOI18N
+                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, bundle.getString("LBL_RebuildAction_Name"), null), // NOI18N
+                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
+                        ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
+                        new RemoteDevelopmentAction(project),
+                        new SetConfigurationAction(project),
+                        null,
+                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, bundle.getString("LBL_RunAction_Name"), null), // NOI18N
+                        //new DebugMenuAction(project, helper),
+                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, bundle.getString("LBL_DebugAction_Name"), null),
+                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG_STEP_INTO, bundle.getString("LBL_DebugAction_Step_Name"), null),
+                        null,
+                        CommonProjectActions.setAsMainProjectAction(),
+                        CommonProjectActions.openSubprojectsAction(),
+                        CommonProjectActions.closeProjectAction(),
+                        null,
+                        CommonProjectActions.renameProjectAction(),
+                        CommonProjectActions.moveProjectAction(),
+                        CommonProjectActions.copyProjectAction(),
+                        CommonProjectActions.deleteProjectAction(),
+                        null,};
         }
 
         public void resultChanged(LookupEvent ev) {
@@ -889,12 +927,20 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public Image getIcon(int type) {
-            return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/logicalFilesFolder.gif"), type); // NOI18N
+            if (folder.isDiskFolder()) {
+                return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/tree_folder.gif"), type); // NOI18N
+            } else {
+                return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/logicalFilesFolder.gif"), type); // NOI18N
+            }
         }
 
         @Override
         public Image getOpenedIcon(int type) {
-            return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/logicalFilesFolderOpened.gif"), type); // NOI18N
+            if (folder.isDiskFolder()) {
+                return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/tree_folder.gif"), type); // NOI18N
+            } else {
+                return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/logicalFilesFolderOpened.gif"), type); // NOI18N
+            }
         }
 
         @Override
@@ -975,6 +1021,23 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public Action[] getActions(boolean context) {
+            if (folder.isDiskFolder()) {
+            return new Action[]{
+                        CommonProjectActions.newFileAction(),
+                        SystemAction.get(org.openide.actions.FindAction.class),
+                        null,
+                        SystemAction.get(CutAction.class),
+                        SystemAction.get(CopyAction.class),
+                        SystemAction.get(PasteAction.class),
+                        null,
+                        new RefreshItemAction((LogicalViewChildren) getChildren(), folder, null),
+                        null,
+                        SystemAction.get(DeleteAction.class),
+                        createRenameAction(),
+                        null,
+                        SystemAction.get(PropertiesFolderAction.class),};
+            }
+            else {
             return new Action[]{
                         CommonProjectActions.newFileAction(),
                         SystemAction.get(AddExistingItemAction.class),
@@ -993,6 +1056,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                         SystemAction.get(org.openide.actions.FindAction.class),
                         null,
                         SystemAction.get(PropertiesFolderAction.class),};
+            }
         }
     }
 
@@ -1377,26 +1441,44 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             // Replace PropertyAction with customizeProjectAction
             Action[] oldActions = super.getActions(false);
             List<Action> newActions = new ArrayList<Action>();
-            for (int i = 0; i < oldActions.length; i++) {
-                if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.OpenAction) {
-                    newActions.add(oldActions[i]);
-                    newActions.add(null);
-                    newActions.add(new RefreshItemAction(childrenKeys, null, getItem()));
-                    newActions.add(null);
-                    newActions.add(SystemAction.get(CompileSingleAction.class));
-                    newActions.add(null);
-                } else if (oldActions[i] != null && oldActions[i] instanceof RenameAction) {
-                    newActions.add(createRenameAction());
-                } else if (oldActions[i] != null && oldActions[i] instanceof DeleteAction) {
-                    newActions.add(SystemAction.get(RemoveItemAction.class));
-                    newActions.add(createDeleteAction());
-                } else if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.PropertiesAction && getFolder().isProjectFiles()) {
-                    newActions.add(SystemAction.get(PropertiesItemAction.class));
-                } else {
-                    newActions.add(oldActions[i]);
+            if (getItem().getFolder().isDiskFolder()) {
+                for (int i = 0; i < oldActions.length; i++) {
+                    if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.OpenAction) {
+                        newActions.add(oldActions[i]);
+                        newActions.add(null);
+                        newActions.add(new RefreshItemAction(childrenKeys, null, getItem()));
+                        newActions.add(null);
+                    } else if (oldActions[i] != null && oldActions[i] instanceof RenameAction) {
+                        newActions.add(createRenameAction());
+                    } else if (oldActions[i] != null && oldActions[i] instanceof DeleteAction) {
+                        newActions.add(createDeleteAction());
+                    } else if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.PropertiesAction && getFolder().isProjectFiles()) {
+                        newActions.add(SystemAction.get(PropertiesItemAction.class));
+                    } else {
+                        newActions.add(oldActions[i]);
+                    }
                 }
+                return newActions.toArray(new Action[newActions.size()]);
             }
-            return newActions.toArray(new Action[newActions.size()]);
+            else {
+                for (int i = 0; i < oldActions.length; i++) {
+                    if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.OpenAction) {
+                        newActions.add(oldActions[i]);
+                        newActions.add(null);
+                        newActions.add(new RefreshItemAction(childrenKeys, null, getItem()));
+                        newActions.add(null);
+                        newActions.add(SystemAction.get(CompileSingleAction.class));
+                        newActions.add(null);
+                    } else if (oldActions[i] != null && oldActions[i] instanceof RenameAction) {
+                        newActions.add(createRenameAction());
+                    } else if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.PropertiesAction && getFolder().isProjectFiles()) {
+                        newActions.add(SystemAction.get(PropertiesItemAction.class));
+                    } else {
+                        newActions.add(oldActions[i]);
+                    }
+                }
+                return newActions.toArray(new Action[newActions.size()]);
+            }
         }
 
         @Override

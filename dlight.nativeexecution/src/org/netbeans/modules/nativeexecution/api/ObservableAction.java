@@ -120,13 +120,12 @@ public abstract class ObservableAction<T> extends AbstractAction {
      *
      * @see #actionPerformed(java.awt.event.ActionEvent)
      */
-    abstract protected T performAction(ActionEvent e);
+    abstract protected T performAction();
 
     /**
      * Invoked when an action occurs.
      * @param e event that causes the action. May be <tt>NULL</tt>
      */
-    @Override
     public final void actionPerformed(final ActionEvent e) {
         // Will not start the task if it is already started.
         if (task != null) {
@@ -139,7 +138,7 @@ public abstract class ObservableAction<T> extends AbstractAction {
 
             public T call() throws Exception {
                 fireStarted();
-                T result = performAction(event);
+                T result = performAction();
                 task = null;
                 fireCompleted(result);
 
@@ -183,16 +182,4 @@ public abstract class ObservableAction<T> extends AbstractAction {
             l.actionCompleted(this, result);
         }
     }
-
-//    /**
-//     * Returns result of most recent finished invokation.
-//     * It is allowed to start action multiply times (though request to start
-//     * action will be disregarded in case action execution is in progress). The
-//     * object stores a value of the result from the last finished invokation.
-//     *
-//     * @return result of most recent finished invokation.
-//     */
-//    public T getLastResult() {
-//        return result;
-//    }
 }

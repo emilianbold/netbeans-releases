@@ -50,6 +50,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.WeakHashMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -250,12 +251,17 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 
                 //projectDescriptor.copyFromProjectDescriptor(clonedProjectdescriptor);
                 makeCustomizer.save();
+
+                List<String> oldSourceRoots = ((MakeConfigurationDescriptor)projectDescriptor).getSourceRoots();
+                List<String> newSourceRoots = ((MakeConfigurationDescriptor)clonedProjectdescriptor).getSourceRoots();
+
                 projectDescriptor.assign(clonedProjectdescriptor);
                 projectDescriptor.setModified();
                 projectDescriptor.save(); // IZ 133606
                 ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedItems(project, folder, item);
+                ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedSourceRoots(oldSourceRoots, newSourceRoots);
 
-                ((MakeSources) ProjectUtils.getSources(project)).descriptorChanged();// FIXUP: should be moved into ProjectDescriptorHelper...
+//                ((MakeSources) ProjectUtils.getSources(project)).descriptorChanged();// FIXUP: should be moved into ProjectDescriptorHelper...
 
                 fireActionEvent(e);
 

@@ -487,7 +487,7 @@ public final class ParserQueue {
 	// TODO: think over, whether this should be under if( notifyListeners
 	ProgressSupport.instance().fireFileParsingStarted(file);
         if( lastFileInProject ) {
-            project.onParseFinish();
+            project.onParseFinish(false);
             if( notifyListeners ) {
                 ProgressSupport.instance().fireProjectParsingFinished(project);
             }
@@ -524,7 +524,7 @@ public final class ParserQueue {
         }
 
         if( lastFileInProject ) {
-            project.onParseFinish();
+            project.onParseFinish(false);
             if( notifyListeners ) {
                 ProgressSupport.instance().fireProjectParsingFinished(project);
             }
@@ -565,7 +565,7 @@ public final class ParserQueue {
             }
         }
         if( lastFileInProject) {
-            project.onParseFinish();
+            project.onParseFinish(false);
             if( data.notifyListeners ) {
                 ProgressSupport.instance().fireProjectParsingFinished(project);
             }
@@ -679,7 +679,7 @@ public final class ParserQueue {
         ProgressSupport.instance().fireFileParsingFinished(file);
         if( lastFileInProject ) {
             if (TraceFlags.TRACE_CLOSE_PROJECT) {System.err.println("Last file in project " + project.getName());}
-            project.onParseFinish();
+            project.onParseFinish(false);
             if( data.notifyListeners ) {
                 ProgressSupport.instance().fireProjectParsingFinished(project);
             }

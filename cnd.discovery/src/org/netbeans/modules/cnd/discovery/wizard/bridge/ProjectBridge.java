@@ -61,8 +61,6 @@ import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
@@ -407,22 +405,25 @@ public class ProjectBridge {
         }
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
+            Set<String> set = new HashSet<String>(item.getUserMacroDefinitions());
             CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration)compilerConfiguration;
             List<String> list = new ArrayList<String>(cccCompilerConfiguration.getPreprocessorConfiguration().getValue());
             for(Map.Entry<String,String> entry : macros.entrySet()) {
                 String s;
-                if (entry.getValue()!=null) {
+                if (entry.getValue() != null) {
                     s = entry.getKey()+"="+entry.getValue(); // NOI18N
                 } else {
                     s = entry.getKey();
                 }
-                boolean find = false;
-                for(String m : list){
-                    if (m.equals(entry.getKey()) ||
-                        m.startsWith(entry.getKey()+"=")) {// NOI18N
-                        find = true;
-                        break;
+                boolean find = set.contains(s);
+                if (!find && (entry.getValue() == null || "".equals(entry.getValue()))) { // NOI18N
+                    find = set.contains(s+"=1"); // NOI18N
+                    if (!find) {
+                        find = set.contains(s+"="); // NOI18N
                     }
+                }
+                if (!find && ("1".equals(entry.getValue()) || "".equals(entry.getValue()))) { // NOI18N
+                    find = set.contains(entry.getKey());
                 }
                 if (!find) {
                     list.add(s);

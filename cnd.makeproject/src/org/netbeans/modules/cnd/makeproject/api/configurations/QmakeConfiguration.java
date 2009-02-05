@@ -77,8 +77,9 @@ public class QmakeConfiguration implements Cloneable {
     private BooleanConfiguration svgEnabled;
     private BooleanConfiguration xmlEnabled;
 
-    // generated files
+    // intermediate files
     private StringConfiguration mocDir;
+    private StringConfiguration rccDir;
     private StringConfiguration uiDir;
 
     // expert
@@ -98,6 +99,7 @@ public class QmakeConfiguration implements Cloneable {
         svgEnabled = new BooleanConfiguration(null, false);
         xmlEnabled = new BooleanConfiguration(null, false);
         mocDir = new StringConfiguration(null, ""); // NOI18N
+        rccDir = new StringConfiguration(null, ""); // NOI18N
         uiDir = new StringConfiguration(null, ""); // NOI18N
         customDefs = new VectorConfiguration<String>(null);
     }
@@ -135,7 +137,8 @@ public class QmakeConfiguration implements Cloneable {
         generatedFiles.setDisplayName(getString("QtIntermediateFilesTxt")); // NOI18N
         generatedFiles.setShortDescription(getString("QtIntermediateFilesHint")); // NOI18N
         generatedFiles.put(new StringNodeProp(mocDir, "QtMocDir", getString("QtMocDirTxt"), getString("QtMocDirHint"))); // NOI18N
-        generatedFiles.put(new StringNodeProp(uiDir, "QtUicDir", getString("QtUiDirTxt"), getString("QtUiDirHint"))); // NOI18N
+        generatedFiles.put(new StringNodeProp(rccDir, "QtRccDir", getString("QtRccDirTxt"), getString("QtRccDirHint"))); // NOI18N
+        generatedFiles.put(new StringNodeProp(uiDir, "QtUiDir", getString("QtUiDirTxt"), getString("QtUiDirHint"))); // NOI18N
         sheet.put(generatedFiles);
 
         Sheet.Set expert = new Sheet.Set();
@@ -339,6 +342,14 @@ public class QmakeConfiguration implements Cloneable {
         this.mocDir = mocDir;
     }
 
+    public StringConfiguration getRccDir() {
+        return rccDir;
+    }
+
+    private void setRccDir(StringConfiguration rccDir) {
+        this.rccDir = rccDir;
+    }
+
     public StringConfiguration getUiDir() {
         return uiDir;
     }
@@ -368,6 +379,7 @@ public class QmakeConfiguration implements Cloneable {
         isSvgEnabled().assign(other.isSvgEnabled());
         isXmlEnabled().assign(other.isXmlEnabled());
         getMocDir().assign(other.getMocDir());
+        getRccDir().assign(other.getRccDir());
         getUiDir().assign(other.getUiDir());
         getCustomDefs().assign(other.getCustomDefs());
     }
@@ -388,6 +400,7 @@ public class QmakeConfiguration implements Cloneable {
             clone.setSvgEnabled(isSvgEnabled().clone());
             clone.setXmlEnabled(isXmlEnabled().clone());
             clone.setMocDir(getMocDir().clone());
+            clone.setRccDir(getRccDir().clone());
             clone.setUiDir(getUiDir().clone());
             clone.setCustomDefs(getCustomDefs().clone());
             return clone;

@@ -217,7 +217,7 @@ public class ConfigurationFactory {
                     for(String key : intersection){
                         String value1 = commonFoldersMacros.get(key);
                         String value2 = subFolder.getUserMacros(false).get(key);
-                        if (value1 == null && value1 == null || value1 != null && value1.equals(value2)){
+                        if (value1 == null && value2 == null || value1 != null && value1.equals(value2)){
                             newcommonFoldersMacros.put(key, value1);
                         }
                     }
@@ -252,7 +252,7 @@ public class ConfigurationFactory {
                     for(String key : intersection){
                         String value1 = commonFilesMacros.get(key);
                         String value2 = file.getUserMacros().get(key);
-                        if (value1 == null && value1 == null || value1 != null && value1.equals(value2)){
+                        if (value1 == null && value2 == null || value1 != null && value1.equals(value2)){
                             newCommonMacros.put(key, value1);
                         }
                     }

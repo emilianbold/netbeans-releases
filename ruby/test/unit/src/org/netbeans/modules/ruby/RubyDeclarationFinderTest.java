@@ -99,6 +99,19 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
         assertEquals(119, loc.getOffset());
     }
 
+    public void testTestDeclarationIssue152703() throws Exception {
+        // Make sure the test file is indexed
+        FileObject fo = getTestFile("testfiles/rd_threads_and_frames_test.rb");
+        GsfTestCompilationInfo info = getInfo(fo);
+        assertNotNull(AstUtilities.getRoot(info));
+        info.getIndex(RubyInstallation.RUBY_MIME_TYPE);
+
+        DeclarationLocation loc = RubyDeclarationFinder.getTestDeclaration(fo, "RDThreadsAndFrames/test_frames", false, false);
+        assertTrue(loc != DeclarationLocation.NONE);
+        assertEquals("rd_threads_and_frames_test.rb", loc.getFileObject().getNameExt());
+        assertEquals(7230, loc.getOffset());
+    }
+
     public void testTestClassDeclaration() throws Exception {
         // Make sure the test file is indexed
         FileObject fo = getTestFile("testfiles/testfile.rb");

@@ -44,6 +44,7 @@ package org.netbeans.modules.junit.output;
 import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import org.openide.nodes.Children;
@@ -58,7 +59,7 @@ final class RootNodeChildren extends Children.Array {
     /** */
     private volatile boolean filtered;
     /** */
-    private Collection<Report> reports;
+    private Collection<Report> reports = new HashSet<Report>();
     /** */
     private volatile int passedSuites;
     /** */
@@ -115,11 +116,7 @@ final class RootNodeChildren extends Children.Array {
 
         TestsuiteNode correspondingNode;
         
-        if (reports == null) {
-            reports = new ArrayList<Report>(10);
-        }
-
-        final boolean isPassedSuite = updateStatistics(report);
+        final boolean isPassedSuite = !report.containsFailed();
         
         if (runningSuiteName != null) {
             runningSuiteName = null;
@@ -152,8 +149,8 @@ final class RootNodeChildren extends Children.Array {
         assert runningSuiteName == null;
         assert runningSuiteNode == null;
 
-        if (!reports.contains(report))
-            reports.add(report);
+        reports.add(report);
+        updateStatistics();
         
         return correspondingNode;
     }
@@ -162,36 +159,23 @@ final class RootNodeChildren extends Children.Array {
      */
     void displayReports(final Collection<Report> newReports) {
         assert EventQueue.isDispatchThread();
-        
-        if (reports == null) {
-            reports = new ArrayList<Report>(newReports);
-        } else {
-            while(newReports.iterator().hasNext()) {
-                Report rep = newReports.iterator().next();
-                if (!reports.contains(rep)) {
-                    reports.add(rep);
-                }
-            }
-        }
 
-        if (!live) {
-            for (Report report : reports) {
-                updateStatistics(report);
-            }
-        } else {
+        reports.addAll(newReports);
+        updateStatistics();
+
+        if (live) {
             Node[] nodesToAdd;
             if (!filtered) {
                 nodesToAdd = new Node[newReports.size()];
                 int index = 0;
                 for (Report report : newReports) {
-                    updateStatistics(report);
                     nodesToAdd[index++] = createNode(report);
                 }
                 add(nodesToAdd);
             } else {
                 List<Node> toAdd = new ArrayList<Node>(newReports.size());
                 for (Report report : newReports) {
-                    boolean isFailed = updateStatistics(report);
+                    boolean isFailed = report.containsFailed();
                     if (isFailed) {
                         toAdd.add(createNode(report));
                     }
@@ -208,23 +192,18 @@ final class RootNodeChildren extends Children.Array {
      * Updates statistics of reports (passed/failed test suites).
      * It is called when a report node is about to be added.
      *
-     * @param  report  report for which a node is to be added
-     * @return  <code>true</code> if the report reports a passed test suite,
-     *          <code>false</code> if the report reports a failed test suite
      */
-    private boolean updateStatistics(final Report report) {
-        
+    private void updateStatistics() {
         /* Called from the EventDispatch thread */
-        
-        final boolean isPassedSuite = !report.containsFailed();
-        if (!reports.contains(report)) {
-            if (isPassedSuite) {
-                passedSuites++;
-            } else {
+        passedSuites = 0;
+        failedSuites = 0;
+        for(Report report: reports){
+            if (report.containsFailed()){
                 failedSuites++;
+            }else{
+                passedSuites++;
             }
         }
-        return isPassedSuite;
     }
     
     // PENDING - synchronization

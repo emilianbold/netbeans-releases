@@ -439,7 +439,22 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
                     // #25082: do not notify an exception if the file comes
                     // from other filesystem than the system filesystem
                     if (src.getFileSystem().isDefault()) {
-                        ERR.log(Level.WARNING, null, new IOException("Parsing " + src + ": " + ex.getMessage()).initCause(ex)); // NOI18N
+                        // read beginning of the file and add it to error message
+                        String fileContent = "";
+                        try {
+                            InputStream is = src.getInputStream();
+                            byte[] content = new byte[8192];
+                            byte read = (byte) is.read();
+                            int i = 0;
+                            while (read != -1) {
+                                content[i++] = read;
+                                read = (byte) is.read();
+                            }
+                            fileContent = "\nFile Content:\n" + new String(content, 0, i);  //NOI18N
+                        } catch (Exception ex1) {
+                            // ignore
+                        }
+                        ERR.log(Level.WARNING, null, new IOException("Parsing " + src + ": " + ex.getMessage() + fileContent).initCause(ex)); // NOI18N
                     }
                 } catch (org.openide.filesystems.FileStateInvalidException fie) {
                     // ignore

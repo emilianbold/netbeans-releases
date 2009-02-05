@@ -109,6 +109,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
             }
         };
         modulesRoot.addFileChangeListener (fca);
+        modulesRoot.getChildren();
     }
     
     @Override

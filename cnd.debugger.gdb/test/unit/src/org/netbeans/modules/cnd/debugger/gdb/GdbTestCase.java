@@ -151,7 +151,7 @@ public abstract class GdbTestCase implements ContextProvider {
         if (service == ProjectActionEvent.class) {
             if (pae == null) {
                 conf = new TestConfiguration();
-                pae = new ProjectActionEvent(project, ProjectActionEvent.DEBUG, testapp, path, null, null, false);
+                pae = new ProjectActionEvent(project, ProjectActionEvent.Type.DEBUG, testapp, path, null, null, false);
             }
             return (T) pae;
         } else {

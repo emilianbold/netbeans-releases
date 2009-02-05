@@ -229,7 +229,6 @@ abstract class Lookup implements ContextProvider {
         private final Map<ModuleInfo, ModuleChangeListener> disabledModuleChangeListeners
                 = new HashMap<ModuleInfo, ModuleChangeListener>();
         private final Set<MetaInfLookupList> lookupLists = new WeakSet<MetaInfLookupList>();
-        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
         
         MetaInf (String rootFolder) {
@@ -365,16 +364,10 @@ abstract class Lookup implements ContextProvider {
             }
         }
 
-        // used by ActionsManager to listen on clearCache events
-        void addClearCacheListener(PropertyChangeListener listener) {
-            pcs.addPropertyChangeListener(listener);
-        }
-        
         private void clearCaches() {
             synchronized (registrationCache) {
                 registrationCache.clear();
             }
-            pcs.firePropertyChange("PROP_CACHE", null, null); // NOI18N
         }
 
         private final class ModuleChangeListener implements PropertyChangeListener, org.openide.util.LookupListener {
