@@ -172,12 +172,12 @@ final class ResultPanelTree extends JPanel
     
     /**
      */
-    void displayReport(final Report report, int[] statistics) {
+    void displayReport(final Report report) {
         assert EventQueue.isDispatchThread();
         
         /* Called from the EventDispatch thread */
         
-        TestsuiteNode node = rootNode.displayReport(report, statistics);
+        TestsuiteNode node = rootNode.displayReport(report);
         if ((node != null) && report.containsFailed()) {
             treeView.expandReportNode(node);
         }
@@ -186,12 +186,12 @@ final class ResultPanelTree extends JPanel
     /**
      * @param  reports  non-empty list of reports to be displayed
      */
-    void displayReports(final List<Report> reports, int[] statistics) {
+    void displayReports(final List<Report> reports) {
         assert EventQueue.isDispatchThread();
         
         /* Called from the EventDispatch thread */
         
-        rootNode.displayReports(reports, statistics);
+        rootNode.displayReports(reports);
     }
     
     /**

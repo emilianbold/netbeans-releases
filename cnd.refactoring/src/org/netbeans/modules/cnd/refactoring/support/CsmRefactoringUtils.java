@@ -259,7 +259,7 @@ public final class CsmRefactoringUtils {
             } else if (CsmKindUtilities.isScopeElement(scope)) {
                 scopeElem = ((CsmScopeElement)scope);
             } else {
-                if (scope == null) System.err.println("scope element without scope " + scopeElem);
+                if (scope == null) { System.err.println("scope element without scope " + scopeElem); }
                 break;
             }
         }
