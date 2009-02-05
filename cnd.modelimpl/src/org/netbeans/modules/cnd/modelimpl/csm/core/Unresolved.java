@@ -141,10 +141,10 @@ public final class Unresolved implements Disposable {
         }
 
         @Override
-        protected void notifyCreation() {
-            // skip registration
+        protected void notify(CsmObject obj, NotifyEvent kind) {
+            // skip
         }
-
+        
 	@Override
 	protected CsmUID<CsmNamespace> createUID() {
 	    return UIDUtilities.createUnresolvedNamespaceUID(getProject());
@@ -247,7 +247,7 @@ public final class Unresolved implements Disposable {
     // doesn't need Repository Keys
     private final UnresolvedFile unresolvedFile;
     // doesn't need Repository Keys
-    private final NamespaceImpl unresolvedNamespace;
+    private final UnresolvedNamespace unresolvedNamespace;
     // doesn't need Repository Keys
     private Map<String, Reference<UnresolvedClass>> dummiesForUnresolved = new HashMap<String, Reference<UnresolvedClass>>();
     
