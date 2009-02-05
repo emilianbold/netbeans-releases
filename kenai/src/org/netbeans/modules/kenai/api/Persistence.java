@@ -96,7 +96,7 @@ class Persistence {
                     FileInputStream fis = new FileInputStream(file);
                     ProjectData data = load.load(fis, ProjectData.class);
                     fis.close();
-                    projects.add(new KenaiProject(data));
+                    projects.add(KenaiProject.get(data));
                 } catch (IOException iOException) {
                     Utils.logWarn(this, iOException);
                     file.delete();

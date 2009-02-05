@@ -43,17 +43,14 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.net.URL;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
- * @author beci
+ * @author Jan Becicka
  */
 public class KenaiProjectTest {
 
@@ -103,6 +100,18 @@ public class KenaiProjectTest {
         String uri = "https://testkenai.com/hg/mykenaitestproject~test-mercurial";
         KenaiProject result = KenaiProject.forRepository(uri);
         assert result.getName().equals("mykenaitestproject");
+    }
+
+    /**
+     * Test of open method, of class KenaiProject.
+     */
+    @Test
+    public void testOpen() throws KenaiException {
+        KenaiProject instance = Kenai.getDefault().getProject("mykenaitestproject");
+        instance.open();
+        for (KenaiProject prj:Kenai.getOpenProjects()) {
+            System.out.println(prj);
+        }
     }
 
 }

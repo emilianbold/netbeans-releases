@@ -39,9 +39,16 @@
 
 package org.netbeans.modules.kenai.api;
 
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EventListener;
+import java.util.EventObject;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import org.netbeans.modules.kenai.FeatureData;
 import org.netbeans.modules.kenai.KenaiREST;
@@ -60,15 +67,19 @@ public final class Kenai {
 
     private static Kenai instance;
 
-    private PasswordAuthentication auth = new PasswordAuthentication(null, new char[0]);
+    private PasswordAuthentication auth = null;
     private static URL url;
+
+    HashMap<String, WeakReference<KenaiProject>> projectsCache = new HashMap<String, WeakReference<KenaiProject>>();
+    private Collection<KenaiProject> openProjects = null;
 
 
     public static synchronized Kenai getDefault() {
         if (instance == null) {
             try {
-                URL url = Kenai.url == null ? new URL("http://kenai.com") : Kenai.url;
-                KenaiImpl impl = new KenaiREST(url);
+                if (Kenai.url == null)
+                    Kenai.url = new URL("http://kenai.com");
+                KenaiImpl impl = new KenaiREST(Kenai.url);
                 instance = new Kenai(impl);
             } catch (MalformedURLException ex) {
                 throw new RuntimeException(ex);
@@ -89,7 +100,8 @@ public final class Kenai {
 
     /**
      * Logs an existing user into Kenai. Login session persists until the login method
-     * is called again. If the login fails then the current session resumes (if any).
+     * is called again or logout is called. If the login fails then the current session
+     * resumes (if any).
      *
      * @param username
      * @param password
@@ -98,7 +110,44 @@ public final class Kenai {
     public void login(final String username, final char [] password) throws KenaiException {
         auth = new PasswordAuthentication(username, password);
         impl.verify(username, password);
+        fireKenaiEvent(new KenaiEvent(getPasswordAuthentication(), KenaiEvent.LOGIN));
     }
+
+    /**
+     * Logs out current session
+     */
+    public void logout() {
+        auth = null;
+        fireKenaiEvent(new KenaiEvent(auth, KenaiEvent.LOGIN));
+    }
+
+    private ArrayList<KenaiListener> listenerList = new ArrayList<KenaiListener>(1);
+
+    /**
+     * Adds listener to Kenai instance
+     * @param l
+     */
+    public synchronized void addKenaiListener(KenaiListener l) {
+        listenerList.add(l);
+    }
+
+
+    /**
+     * Removes listener from Kenai instance
+     * @param l
+     */
+    public synchronized void removeKenaiListener(KenaiListener l) {
+        listenerList.remove(l);
+    }
+
+    
+    synchronized void fireKenaiEvent(KenaiEvent event) {
+        for (KenaiListener l : listenerList) {
+            l.stateChanged(event);
+        }
+    }
+
+
 
     /**
      * Creates a new account in the Kenai system. Note that you must call login() to start
@@ -154,7 +203,7 @@ public final class Kenai {
      */
     public KenaiProject getProject(String name) throws KenaiException {
         ProjectData prj = impl.getProject(name);
-        return new KenaiProject(prj);
+        return KenaiProject.get(prj);
     }
 
     ProjectData getDetails(String name) throws KenaiException {
@@ -183,7 +232,7 @@ public final class Kenai {
             throw new KenaiException("Guest user is not allowed to create new domains");
         }
         ProjectData prj = impl.createProject(name, displayName, description, licenses, tags);
-        return new KenaiProject(prj);
+        return KenaiProject.get(prj);
     }
 
     /**
@@ -209,7 +258,7 @@ public final class Kenai {
             String repository_url,
             String browse_url
             ) throws KenaiException {
-        if (getPasswordAuthentication().getUserName() == null) {
+        if (getPasswordAuthentication() == null) {
             throw new KenaiException("Guest user is not allowed to create new domains");
         }
         FeatureData prj = impl.createProjectFeature(
@@ -224,14 +273,45 @@ public final class Kenai {
         return new KenaiProjectFeature(prj);
     }
 
+    /**
+     * is currently logged user authorized for given activity on given project?
+     * @param project
+     * @param activity
+     * @return
+     * @throws org.netbeans.modules.kenai.api.KenaiException
+     */
     public boolean isAuthorized(KenaiProject project, KenaiActivity activity) throws KenaiException {
         return impl.isAuthorized(project.getName(), activity.getFeature().getId(), activity.getName());
     }
 
+    /**
+     * @return instance of PasswordAuthentication class holding current name 
+     * and passord. If user is not logged in, method returns null;
+     */
     public PasswordAuthentication getPasswordAuthentication() {
         return auth;
     }
 
+    /**
+     * @return the openProjects
+     * @see KenaiProject#open()
+     * @see KenaiProject#close()
+     */
+    public static Collection<KenaiProject> getOpenProjects() {
+        if (Kenai.getDefault().openProjects==null) {
+            instance.openProjects = new HashSet<KenaiProject>();
+            instance.openProjects.addAll(Persistence.getInstance().loadProjects());
+        }
+        return instance.openProjects;
+    }
+
+    Collection<KenaiProject> loadProjects() {
+        return Persistence.getInstance().loadProjects();
+    }
+
+    void storeProjects() {
+        Persistence.getInstance().storeProjects(openProjects);
+    }
 
     private class ProjectsIterator implements Iterator<KenaiProject> {
 
@@ -247,7 +327,7 @@ public final class Kenai {
 
         public KenaiProject next() {
             ProjectData prj = it.next();
-            return new KenaiProject(prj);
+            return KenaiProject.get(prj);
         }
 
         public void remove() {

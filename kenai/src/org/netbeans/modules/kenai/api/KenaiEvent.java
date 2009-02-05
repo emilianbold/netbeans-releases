@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,27 +34,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai;
+package org.netbeans.modules.kenai.api;
+
+import java.util.EventObject;
 
 /**
- *
- * @author Maros Sandor
+ * Kenai instance fires events of following types:
+ * <pre>
+ * LOGIN
+ * PROJECT_OPEN
+ * PROJECT_CLOSE
+ * </pre>
+ * @see #getType()
+ * @see Kenai#addKenaiListener(org.netbeans.modules.kenai.api.KenaiListener)
+ * @see Kenai#removeKenaiListener(org.netbeans.modules.kenai.api.KenaiListener)
+ * @see Kenai#login(java.lang.String, char[])
+ * @see Kenai#logout()
+ * @see KenaiProject#open()
+ * @see KenaiProject#clone()
+ * @see Kenai#getOpenProjects()
+ * @author Jan Becicka
  */
-@org.codeviation.pojson.Pojson.IgnoreNonExisting
-public class ProjectData {
-    public String href;
-    public String name;
-    public String display_name;
-    public String image;
-    public String owner;
-    public String description;
-    public String created_at;
-    public String updated_at;
-    public int    member_count;
-    public LicenceData [] licenses;
-    public FeatureData [] features;
-    public String tags;
+ public final class KenaiEvent extends EventObject {
+
+    public static final int LOGIN = 0;
+    public static final int PROJECT_OPEN = 1;
+    public static final int PROJECT_CLOSE = 3;
+    private int type;
+
+    /**
+     * if type is LOGIN, than getSource returns instance of new
+     * PasswordAuthentication or null, if user logged out.
+     * If type is PROJCT_OPEN/PROJECT_CLOSE than getResource return instance of
+     * KenaiProject being closed/open
+     * @return type of event
+     */
+    public int getType() {
+        return type;
+    }
+
+    KenaiEvent(Object source, int type) {
+        super(source);
+        this.type = type;
+    }
 }

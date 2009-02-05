@@ -100,7 +100,7 @@ public class RestConnection {
                 conn.setAllowUserInteraction(true);
                 //KenaiAuthenticator not working. Why?
                 PasswordAuthentication a = Kenai.getDefault().getPasswordAuthentication();
-                if (a.getUserName()!=null) {
+                if (a!= null && a.getUserName()!=null) {
                     assert a.getPassword()!=null;
                     String userPassword = a.getUserName() + ":" + String.valueOf(a.getPassword());
                     String encoding = new sun.misc.BASE64Encoder().encode(userPassword.getBytes());  

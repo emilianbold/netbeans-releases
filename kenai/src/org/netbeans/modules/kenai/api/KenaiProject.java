@@ -39,8 +39,10 @@
 
 package org.netbeans.modules.kenai.api;
 
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.kenai.FeatureData;
@@ -73,7 +75,7 @@ public final class KenaiProject {
      *
      * @param p
      */
-    KenaiProject(ProjectData p) {
+    private KenaiProject(ProjectData p) {
         this.name = p.name;
         try {
             this.href = new URL(p.href);
@@ -83,25 +85,77 @@ public final class KenaiProject {
         this.data = p;
     }
 
+    static KenaiProject get(ProjectData p) {
+        final HashMap<String, WeakReference<KenaiProject>> projectsCache = Kenai.getDefault().projectsCache;
+        WeakReference<KenaiProject> wr = projectsCache.get(p.name);
+        KenaiProject result = null;
+        if (wr==null || (result = wr.get()) == null) {
+            result = new KenaiProject(p);
+            projectsCache.put(p.name, new WeakReference<KenaiProject>(result));
+        }
+        return result;
+    }
+
+    /**
+     * Unique name of project
+     * @return
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * web location of this project
+     * @return
+     */
     public URL getWebLocation() {
         return href;
     }
 
+    /**
+     * Display name of this project
+     * @return
+     */
     public String getDisplayName() {
         return data.display_name;
     }
 
+    /**
+     * Display name of this project
+     * @return
+     */
     public String getDescription() {
         fetchDetailsIfNotAvailable();
         return data.description;
     }
 
-    public String[] getTags() {
-        return new String[0];
+    /**
+     * @return comma separated tags
+     */
+    public String getTags() {
+        return data.tags;
+    }
+
+    /**
+     * Opens project
+     * @see Kenai#getOpenProjects()
+     */
+    public synchronized void open() {
+        final Kenai kenai = Kenai.getDefault();
+        Kenai.getOpenProjects().add(this);
+        kenai.storeProjects();
+        kenai.fireKenaiEvent(new KenaiEvent(this, KenaiEvent.PROJECT_OPEN));
+    }
+
+    /**
+     * Closes project
+     * @see Kenai#getOpenProjects()
+     */
+    public synchronized void close() {
+        final Kenai kenai = Kenai.getDefault();
+        Kenai.getOpenProjects().remove(this);
+        kenai.storeProjects();
+        kenai.fireKenaiEvent(new KenaiEvent(this, KenaiEvent.PROJECT_CLOSE));
     }
 
     private static Pattern repositoryPattern = Pattern.compile("(https|http)://(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)");
@@ -121,6 +175,10 @@ public final class KenaiProject {
         return null;
     }
 
+    /**
+     * @return features of given project
+     * @see KenaiProjectFeature
+     */
     public synchronized KenaiProjectFeature[] getFeatures() {
         if (features==null) {
             features=new KenaiProjectFeature[data.features.length];
@@ -189,4 +247,28 @@ public final class KenaiProject {
         }
         features=null;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final KenaiProject other = (KenaiProject) obj;
+        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 13 * hash + (this.name != null ? this.name.hashCode() : 0);
+        return hash;
+    }
+
+
 }
