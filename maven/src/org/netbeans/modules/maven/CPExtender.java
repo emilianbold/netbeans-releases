@@ -52,6 +52,9 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.project.MavenProject;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
@@ -346,7 +349,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
     public boolean addLibraries(final Library[] libraries, SourceGroup grp, String type) throws IOException {
         final Boolean[] added = new Boolean[1];
         added[0] = libraries.length > 0;
-        String scope = ClassPath.EXECUTE.equals(type) ? "runtime" : null; //NOI18N
+        String scope = ClassPath.EXECUTE.equals(type) ? Artifact.SCOPE_RUNTIME : null; //NOI18N
         //figure if we deal with test or regular sources.
         String name = grp.getName();
         if (MavenSourcesImpl.NAME_TESTSOURCE.equals(name)) {
@@ -384,7 +387,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
     public boolean addRoots(final URL[] urls, SourceGroup grp, String type) throws IOException {
         final Boolean[] added = new Boolean[1];
         added[0] = urls.length > 0;
-        String scope = ClassPath.EXECUTE.equals(type) ? "runtime" : null;//NOI18N
+        String scope = ClassPath.EXECUTE.equals(type) ? Artifact.SCOPE_RUNTIME : null;//NOI18N
         //figure if we deal with test or regular sources.
         String name = grp.getName();
         if (MavenSourcesImpl.NAME_TESTSOURCE.equals(name)) {
@@ -419,7 +422,42 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
         }
         return added[0];
     }
-    
+
+    @Override
+    protected boolean addProjects(final Project[] projects, SourceGroup sg, String classPathType) throws IOException, UnsupportedOperationException {
+        final Boolean[] added = new Boolean[1];
+
+        added[0] = projects.length > 0;
+        String scope = ClassPath.EXECUTE.equals(classPathType) ? Artifact.SCOPE_RUNTIME : null;//NOI18N
+        //figure if we deal with test or regular sources.
+        String name = sg.getName();
+        if (MavenSourcesImpl.NAME_TESTSOURCE.equals(name)) {
+            scope = "test"; //NOI18N
+        }
+        final String fScope = scope;
+        ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+            public void performOperation(POMModel model) {
+                for (Project prj: projects) {
+                    NbMavenProject nbprj = prj.getLookup().lookup(NbMavenProject.class);
+                    if (nbprj != null) {
+                        MavenProject mp = nbprj.getMavenProject();
+                        Dependency dependency = ModelUtils.checkModelDependency(model, mp.getGroupId(), mp.getArtifactId(), true);
+                        dependency.setVersion(mp.getVersion());
+                        if (fScope != null) {
+                            dependency.setScope(fScope);
+                        }
+                    } else {
+                        Logger.getLogger(CPExtender.class.getName()).warning("Attempting to add a non-Maven project dependency to a Maven project. Skipping."); //NOI18N
+                    }
+                }
+            }
+        };
+        FileObject pom = project.getProjectDirectory().getFileObject(POM_XML);//NOI18N
+        org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
+        return added[0];
+
+    }
+
     public boolean removeRoots(URL[] arg0, SourceGroup arg1, String arg2) throws IOException,
                                                                                     UnsupportedOperationException {
         throw new UnsupportedOperationException("Removing binary dependencies is not supported by Maven projects.");
