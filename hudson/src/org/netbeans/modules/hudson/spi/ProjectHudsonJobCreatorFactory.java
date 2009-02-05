@@ -39,12 +39,15 @@
 
 package org.netbeans.modules.hudson.spi;
 
+import java.io.File;
 import java.io.IOException;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.openide.util.Lookup;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  * Service representing the ability to create Hudson jobs for local projects.
@@ -98,12 +101,37 @@ public interface ProjectHudsonJobCreatorFactory {
 
         /**
          * Provides the desired initial configuration for a project.
-         * @param configXml a document initially consisting of just {@code <project/>}
-         *                  to be populated with subelements
-         *                  following the format of {@code ${workdir}/jobs/${projname}/config.xml}
+         * @return a document initially consisting of just {@code <project/>}
+         *         to be populated with subelements
+         *         following the format of {@code ${workdir}/jobs/${projname}/config.xml}
          * @throws IOException in case project metadata cannot be read or is malformed
+         * @see Helper
          */
-        void configure(Document configXml) throws IOException;
+        Document configure() throws IOException;
+
+    }
+
+    /**
+     * Utilities which can be used by {@link ProjectHudsonJobCreator#configure}.
+     */
+    class Helper {
+
+        /**
+         * Adds version control information appropriate to the project's basedir.
+         * @param basedir the root directory of the source project
+         * @param configXml a {@code config.xml} to which {@code <scm>} will be appended
+         */
+        public static void addSCM(File basedir, Document configXml) {
+            for (HudsonSCM scm : Lookup.getDefault().lookupAll(HudsonSCM.class)) {
+                HudsonSCM.Configuration cfg = scm.forFolder(basedir);
+                if (cfg != null) {
+                    cfg.configure(configXml);
+                    return;
+                }
+            }
+            ((Element) configXml.getDocumentElement().appendChild(configXml.createElement("scm"))).
+                    setAttribute("class", "hudson.scm.NullSCM");
+        }
 
     }
 

@@ -40,8 +40,6 @@
 package org.netbeans.modules.hudson.ui.actions;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -50,29 +48,17 @@ import java.net.URLEncoder;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.AbstractAction;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
-import org.netbeans.modules.hudson.spi.HudsonSCM;
-import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ProjectHudsonJobCreator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.ServiceProvider;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 /**
  * Submenu action to create a job on this server from one of the open projects.
@@ -105,10 +91,8 @@ public class CreateJob extends AbstractAction {
     }
 
     private void finalizeJob(ProjectHudsonJobCreator creator, String name) {
-        // XXX this would be a maven2-moduleset for Maven projects; must not create root element here! change API
-        Document doc = XMLUtil.createDocument("project", null, null, null); // NOI18N
         try {
-            creator.configure(doc);
+            Document doc = creator.configure();
             String createItemURL = instance.getUrl() + "createItem?name=" + URLEncoder.encode(name, "UTF-8"); // NOI18N
             HttpURLConnection conn = (HttpURLConnection) new URL(createItemURL).openConnection();
             conn.setDoOutput(true);
@@ -130,74 +114,6 @@ public class CreateJob extends AbstractAction {
             // XXX remember that the new job corresponds to this project (see ProjectHudsonProvider)
         } catch (IOException x) {
             Exceptions.printStackTrace(x);
-        }
-    }
-
-    @ServiceProvider(service=ProjectHudsonJobCreatorFactory.class)
-    public static class DummyJobCreator implements ProjectHudsonJobCreatorFactory {
-        public ProjectHudsonJobCreator forProject(final Project project) {
-            final File basedir = FileUtil.toFile(project.getProjectDirectory());
-            if (basedir == null) {
-                return null;
-            }
-            return new ProjectHudsonJobCreator() {
-                public String jobName() {
-                    return ProjectUtils.getInformation(project).getName();
-                }
-                private boolean valid = false;
-                private final ChangeSupport cs = new ChangeSupport(this);
-                public JComponent customizer() {
-                    final JCheckBox checkbox = new JCheckBox("<XXX just for testing>");
-                    checkbox.setSelected(false);
-                    checkbox.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            valid = checkbox.isSelected();
-                            cs.fireChange();
-                        }
-                    });
-                    return checkbox;
-                }
-                public String error() {
-                    return valid ? null : "Check the checkbox!";
-                }
-                public void addChangeListener(ChangeListener listener) {
-                    cs.addChangeListener(listener);
-                }
-                public void removeChangeListener(ChangeListener listener) {
-                    cs.removeChangeListener(listener);
-                }
-                public void configure(Document configXml) throws IOException {
-                    configXml.getDocumentElement().
-                            appendChild(configXml.createElement("builders")).
-                            appendChild(configXml.createElement("hudson.tasks.Shell")).
-                            appendChild(configXml.createElement("command")).
-                            appendChild(configXml.createTextNode("echo 'XXX not yet implemented! Just for testing.'"));
-                    for (String dummy : new String[] {"actions", "publishers", "buildWrappers"}) {
-                        configXml.getDocumentElement().
-                                appendChild(configXml.createElement(dummy));
-                    }
-                    Element scmE = (Element) configXml.getDocumentElement().
-                            appendChild(configXml.createElement("scm"));
-                    for (HudsonSCM scm : Lookup.getDefault().lookupAll(HudsonSCM.class)) {
-                        HudsonSCM.Configuration cfg = scm.forFolder(basedir);
-                        if (cfg != null) {
-                            cfg.configure(scmE);
-                            break;
-                        }
-                    }
-                }
-            };
-        }
-    }
-
-    @ServiceProvider(service=HudsonSCM.class, position=9999)
-    public static class NoSCM implements HudsonSCM {
-        public Configuration forFolder(File folder) {
-            return new Configuration() {
-                public void configure(Element configXmlSCM) {
-                    configXmlSCM.setAttribute("class", "hudson.scm.NullSCM");
-                }
-            };
         }
     }
 

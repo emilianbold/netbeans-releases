@@ -37,36 +37,51 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.hudson.spi;
+package org.netbeans.modules.hudson.maven;
 
-import java.io.File;
+import java.io.IOException;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 
-/**
- * Represents one kind of SCM (version control) supported by the Hudson integration.
- * Registered to global lookup.
- */
-public interface HudsonSCM {
+@ServiceProvider(service=ProjectHudsonJobCreatorFactory.class, position=100)
+public class JobCreator implements ProjectHudsonJobCreatorFactory {
 
-    /**
-     * Possibly recognizes a disk folder as being under version control.
-     * @param folder a disk folder which may or may not be versioned
-     * @return information about its versioning, or null if unrecognized
-     */
-    Configuration forFolder(File folder);
+    public ProjectHudsonJobCreator forProject(Project project) {
+        final NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
+        if (prj == null) {
+            return null;
+        }
+        return new ProjectHudsonJobCreator() {
+            
+            public String jobName() {
+                return prj.getMavenProject().getArtifactId();
+            }
 
-    /**
-     * Information about how a folder (such as the basedir of a project) is versioned.
-     */
-    interface Configuration {
+            public JComponent customizer() {
+                return new JPanel();
+            }
 
-        /**
-         * Creates configuration for Hudson.
-         * Would typically append a {@code <scm>} element.
-         * @param configXml Hudson's {@code config.xml}
-         */
-        void configure(Document configXml);
+            public String error() {
+                return null;
+            }
 
+            public void addChangeListener(ChangeListener listener) {}
+            public void removeChangeListener(ChangeListener listener) {}
+
+            public Document configure() throws IOException {
+                Document doc = XMLUtil.createDocument("maven2-moduleset", null, null, null);
+                Helper.addSCM(prj.getMavenProject().getBasedir(), doc);
+                return doc;
+            }
+
+        };
     }
 
 }
