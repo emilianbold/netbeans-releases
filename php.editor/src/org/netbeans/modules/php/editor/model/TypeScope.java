@@ -47,8 +47,19 @@ import org.netbeans.modules.gsf.api.NameKind;
  */
 public interface TypeScope extends Scope {
     PhpModifiers getPhpModifiers();
+    /**
+     * @return declared methods only
+     */
     Collection<? extends MethodScope> getDeclaredMethods();
+    /**
+     * @return inherited methods only
+     */
+    Collection<? extends MethodScope> getInheritedMethods();
+    /**
+     * @return declared+inherited methods
+     */
     Collection<? extends MethodScope> getMethods();
+
     Collection<? extends ClassConstantElement> getDeclaredConstants();
     Collection<? extends ClassConstantElement> getInheritedConstants();
     Collection<? extends InterfaceScope> getSuperInterfaces();

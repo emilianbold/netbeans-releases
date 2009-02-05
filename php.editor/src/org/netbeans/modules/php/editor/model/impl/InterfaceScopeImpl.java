@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import org.netbeans.modules.php.editor.index.IndexedInterface;
@@ -78,10 +77,8 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
         }
         return sb.toString();
     }
-
-    public final List<? extends MethodScope> getMethods() {
-        List<MethodScope> allMethods = new ArrayList<MethodScope>();
-        allMethods.addAll(getDeclaredMethods());
+    public Collection<? extends MethodScope> getInheritedMethods() {
+        Set<MethodScope> allMethods = new HashSet<MethodScope>();
         IndexScope indexScope = ModelUtils.getIndexScope(this);
         PHPIndex index = indexScope.getIndex();
         Set<InterfaceScope> interfaceScopes = new HashSet<InterfaceScope>();
@@ -92,6 +89,13 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
                 allMethods.add(new MethodScopeImpl((InterfaceScopeImpl) iface, indexedFunction, PhpKind.METHOD));
             }
         }
+        return allMethods;
+    }
+
+    public final Collection<? extends MethodScope> getMethods() {
+        Set<MethodScope> allMethods = new HashSet<MethodScope>();
+        allMethods.addAll(getDeclaredMethods());
+        allMethods.addAll(getInheritedMethods());
         return allMethods;
     }
 }

@@ -39,10 +39,15 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import org.netbeans.modules.php.editor.index.*;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
@@ -114,42 +119,17 @@ public class ModelIndexTest extends ModelTestBase {
     }
 
     public void testModelFile1() throws Exception {
-        final String[] clsNames = {"clsModelTest1", "clsModelTest2"};
-        final String[] ifaceNames = {"ifaceModelTest1", "ifaceModelTest2"};
-        TestModelTask task = new TestModelTask() {
+        TestClassMemberTask task = new TestClassMemberTask();
+        task.addDeclaredMethodNamesForClass("clsModelTest1", "methodClsModelTest1");
+        task.addDeclaredMethodNamesForClass("clsModelTest2", "methodClsModelTest2");
+        task.addDeclaredMethodNamesForIface("ifaceModelTest1", "methodIfaceModelTest1");
+        task.addDeclaredMethodNamesForIface("ifaceModelTest2", "methodIfaceModelTest2");
 
-            @Override
-            void testFileScope(Model model, FileScope fScope, IndexScope iScope) {
-                assertExactElements(fScope.getDeclaredClasses(), clsNames);
-                assertExactElements(fScope.getDeclaredInterfaces(), ifaceNames);
-            }
+        task.addInheritedMethodNamesForClass("clsModelTest1", "methodIfaceModelTest1");
+        task.addInheritedMethodNamesForClass("clsModelTest2", "methodClsModelTest1", "methodIfaceModelTest1", "methodIfaceModelTest2");
+        task.addInheritedMethodNamesForIface("ifaceModelTest1");
+        task.addInheritedMethodNamesForIface("ifaceModelTest2", "methodIfaceModelTest1");
 
-            void testClassScope(Model model, FileScope fileScope, ClassScope clsScope, IndexScope indexScope) {
-                assertAnyElement(Collections.singletonList(clsScope), clsNames);
-                String name = clsScope.getName();
-                if (name.equals(clsNames[0])) {
-                    assertExactDeclaredMethods(clsScope, "methodClsModelTest1");
-                    assertExactMethods(clsScope, "methodClsModelTest1",
-                            "methodIfaceModelTest1");
-                } else if (name.equals(clsNames[1])) {
-                    assertExactDeclaredMethods(clsScope, "methodClsModelTest2");
-                    assertAllMethods(clsScope, "methodClsModelTest1", "methodClsModelTest2",
-                            "methodIfaceModelTest1", "methodIfaceModelTest2");
-                }
-            }
-
-            void testIfaceScope(Model model, FileScope fileScope, InterfaceScope ifaceScope, IndexScope indexScope) {
-                assertAnyElement(Collections.singletonList(ifaceScope), ifaceNames);
-                String name = ifaceScope.getName();
-                if (name.equals(ifaceNames[0])) {
-                    assertExactDeclaredMethods(ifaceScope, "methodIfaceModelTest1");
-                    assertExactMethods(ifaceScope, "methodIfaceModelTest1");
-                } else if (name.equals(ifaceNames[1])) {
-                    assertExactDeclaredMethods(ifaceScope, "methodIfaceModelTest2");
-                    assertAllMethods(ifaceScope, "methodIfaceModelTest1", "methodIfaceModelTest2");
-                }
-            }
-        };
         performModelTest(task, "testfiles/model/modelfile1.php");
     }
 
@@ -158,12 +138,12 @@ public class ModelIndexTest extends ModelTestBase {
         return ModelUtils.getFirst(allElements, elementName);
     }
 
-    void performModelTest(TestModelTask task, String testFilePath) throws Exception {
+    void performModelTest(AbstractTestModelTask task, String testFilePath) throws Exception {
         performTest(task, prepareTestFile(testFilePath));
     }
 
     private static <T extends ModelElement> void assertAnyElement(Collection<? extends ModelElement> allElements, String... elemNames) {
-        assertNotEmpty(allElements);
+        assertNotNull(allElements);
         ModelElement anyElement = null;
         for (int i = 0; i < elemNames.length; i++) {
             ModelElement elem = getFirst(allElements, elemNames[i]);
@@ -176,7 +156,7 @@ public class ModelIndexTest extends ModelTestBase {
     }
 
     private static <T extends ModelElement> void assertAllElements(Collection<? extends ModelElement> allElements, String... elemNames) {
-        assertNotEmpty(allElements);
+        assertNotNull(allElements);
         for (int i = 0; i < elemNames.length; i++) {
             ModelElement elem = getFirst(allElements, elemNames[i]);
             assertNotNull(elemNames[i], elem);
@@ -195,8 +175,12 @@ public class ModelIndexTest extends ModelTestBase {
         assertExactElements(typeScope.getDeclaredMethods(), elemNames);
     }
 
+    private static <T extends ModelElement> void assertExactInheritedMethods(TypeScope typeScope, String... elemNames) {
+        assertExactElements(typeScope.getInheritedMethods(), elemNames);
+    }
+
     private static <T extends ModelElement> void assertExactElements(Collection<? extends ModelElement> allElements, String... elemNames) {
-        assertNotEmpty(allElements);
+        assertNotNull(allElements);
         List<ModelElement> testedElems = new ArrayList<ModelElement>();
         for (int i = 0; i < elemNames.length; i++) {
             ModelElement elem = getFirst(allElements, elemNames[i]);
@@ -212,36 +196,6 @@ public class ModelIndexTest extends ModelTestBase {
     private static <T> void assertNotEmpty(final Collection<? extends T> collection) {
         assertNotNull(collection);
         assertFalse(collection.isEmpty());
-    }
-
-    abstract class TestModelTask implements CancellableTask<CompilationInfo> {
-
-        public void cancel() {
-        }
-
-        public void run(CompilationInfo parameter) throws Exception {
-            Model model = ModelFactory.getModel(parameter);
-            assertNotNull(model);
-            FileScope fileScope = model.getFileScope();
-            assertNotNull(fileScope);
-            IndexScope indexScope = fileScope.getIndexScope();
-            assertNotNull(indexScope);
-            testFileScope(model, fileScope, indexScope);
-            for (ClassScope classScope : fileScope.getDeclaredClasses()) {
-                testClassScope(model, fileScope, classScope, indexScope);
-            }
-            for (InterfaceScope ifaceScope : fileScope.getDeclaredInterfaces()) {
-                testIfaceScope(model, fileScope, ifaceScope, indexScope);
-            }
-        }
-
-        abstract void testFileScope(Model model, FileScope fileScope, IndexScope indexScope);
-
-        void testClassScope(Model model, FileScope fileScope, ClassScope classScope, IndexScope indexScope) {
-        }
-
-        void testIfaceScope(Model model, FileScope fileScope, InterfaceScope classScope, IndexScope indexScope) {
-        }
     }
 
     protected static String computeFileName(int index) {
@@ -300,5 +254,170 @@ public class ModelIndexTest extends ModelTestBase {
         assertNotNull(ec);
 
         return ec.openDocument();
+    }
+
+    abstract class AbstractTestModelTask implements CancellableTask<CompilationInfo> {
+
+        public void cancel() {
+        }
+
+        public void run(CompilationInfo parameter) throws Exception {
+            Model model = ModelFactory.getModel(parameter);
+            assertNotNull(model);
+            FileScope fileScope = model.getFileScope();
+            assertNotNull(fileScope);
+            IndexScope indexScope = fileScope.getIndexScope();
+            assertNotNull(indexScope);
+            testFileScope(model, fileScope, indexScope);
+            for (ClassScope classScope : fileScope.getDeclaredClasses()) {
+                testClassScope(model, fileScope, classScope, indexScope);
+            }
+            for (InterfaceScope ifaceScope : fileScope.getDeclaredInterfaces()) {
+                testIfaceScope(model, fileScope, ifaceScope, indexScope);
+            }
+        }
+
+        abstract void testFileScope(Model model, FileScope fileScope, IndexScope indexScope);
+
+        abstract void testClassScope(Model model, FileScope fileScope, ClassScope classScope, IndexScope indexScope);
+
+        abstract void testIfaceScope(Model model, FileScope fileScope, InterfaceScope classScope, IndexScope indexScope);
+    }
+
+    enum MemberType {
+
+        DECLARED, INHERITED, ALL
+    };
+
+    private class TestClassMemberTask extends AbstractTestModelTask {
+
+        private Set<String> clsNames = new LinkedHashSet<String>();
+        private Set<String> ifaceNames = new LinkedHashSet<String>();
+        private Map<String, List<String>> declaredClsMethods = new LinkedHashMap<String, List<String>>();
+        private Map<String, List<String>> declaredIfaceMethods = new LinkedHashMap<String, List<String>>();
+        private Map<String, List<String>> inheritedClsMethods = new LinkedHashMap<String, List<String>>();
+        private Map<String, List<String>> inheritedIfaceMethods = new LinkedHashMap<String, List<String>>();
+        private Map<String, List<String>> allClsMethods = new LinkedHashMap<String, List<String>>();
+        private Map<String, List<String>> allIfaceMethods = new LinkedHashMap<String, List<String>>();
+
+        void addDeclaredMethodNamesForClass(String typeName, String... methodNames) {
+            addMethodNames(typeName, true, MemberType.DECLARED, methodNames);
+        }
+
+        void addDeclaredMethodNamesForIface(String typeName, String... methodNames) {
+            addMethodNames(typeName, false, MemberType.DECLARED, methodNames);
+        }
+
+        void addInheritedMethodNamesForClass(String typeName, String... methodNames) {
+            addMethodNames(typeName, true, MemberType.INHERITED, methodNames);
+        }
+
+        void addInheritedMethodNamesForIface(String typeName, String... methodNames) {
+            addMethodNames(typeName, false, MemberType.INHERITED, methodNames);
+        }
+
+        private void addMethodNames(String typeName, boolean isClass, MemberType memberType, String... methodNames) {
+            Set<String> typeNames = isClass ? clsNames : ifaceNames;
+            Map<String, List<String>> allMethods = isClass ? allClsMethods : allIfaceMethods;
+            Map<String, List<String>> typeMethods = null;
+            switch (memberType) {
+                case ALL:
+                    typeMethods = isClass ? allClsMethods : allIfaceMethods;
+                    break;
+                case DECLARED:
+                    typeMethods = isClass ? declaredClsMethods : declaredIfaceMethods;
+                    break;
+                case INHERITED:
+                    typeMethods = isClass ? inheritedClsMethods : inheritedIfaceMethods;
+                    break;
+                default:
+                    fail();
+            }
+            List<String> methNameList = typeMethods.get(typeName);
+            if (methNameList == null) {
+                methNameList = new ArrayList<String>();
+                typeMethods.put(typeName, methNameList);
+            }
+
+            typeNames.add(typeName);
+            methNameList.addAll(Arrays.asList(methodNames));
+
+            List<String> allMethNameList = allMethods.get(typeName);
+            if (allMethNameList == null) {
+                allMethNameList = new ArrayList<String>();
+                allMethods.put(typeName, allMethNameList);
+            }
+
+            allMethNameList.addAll(Arrays.asList(methodNames));
+
+        }
+
+        @Override
+        void testFileScope(Model model, FileScope fScope, IndexScope iScope) {
+            assertExactElements(fScope.getDeclaredClasses(), getClsNames());
+            assertExactElements(fScope.getDeclaredInterfaces(), getIfaceNames());
+        }
+
+        @Override
+        void testClassScope(Model model, FileScope fileScope, ClassScope clsScope, IndexScope indexScope) {
+            assertDeclaredMethodNames(clsScope, declaredClsMethods);
+            assertInheritedMethodNames(clsScope, inheritedClsMethods);
+            assertMethodNames(clsScope, allClsMethods);
+        }
+
+        @Override
+        void testIfaceScope(Model model, FileScope fileScope, InterfaceScope ifaceScope, IndexScope indexScope) {
+            assertDeclaredMethodNames(ifaceScope, declaredIfaceMethods);
+            assertInheritedMethodNames(ifaceScope, inheritedIfaceMethods);
+            assertMethodNames(ifaceScope, allIfaceMethods);
+        }
+
+        private void assertDeclaredMethodNames(TypeScope typeScope, Map<String, List<String>> methods) {
+            String[] typeNames = methods.keySet().toArray(new String[methods.size()]);
+            assertAnyElement(Collections.singletonList(typeScope), typeNames);
+            String name = typeScope.getName();
+            for (int i = 0; i < typeNames.length; i++) {
+                String iName = typeNames[i];
+                if (name.equals(iName)) {
+                    List<String> names = methods.get(iName);
+
+                    assertExactDeclaredMethods(typeScope, names.toArray(new String[names.size()]));
+                }
+            }
+        }
+
+        private void assertInheritedMethodNames(TypeScope typeScope, Map<String, List<String>> methods) {
+            String[] typeNames = methods.keySet().toArray(new String[methods.size()]);
+            assertAnyElement(Collections.singletonList(typeScope), typeNames);
+            String name = typeScope.getName();
+            for (int i = 0; i < typeNames.length; i++) {
+                String iName = typeNames[i];
+                if (name.equals(iName)) {
+                    List<String> names = methods.get(iName);
+                    assertExactInheritedMethods(typeScope, names.toArray(new String[names.size()]));
+                }
+            }
+        }
+
+        private void assertMethodNames(TypeScope typeScope, Map<String, List<String>> methods) {
+            String[] typeNames = methods.keySet().toArray(new String[methods.size()]);
+            assertAnyElement(Collections.singletonList(typeScope), typeNames);
+            String name = typeScope.getName();
+            for (int i = 0; i < typeNames.length; i++) {
+                String iName = typeNames[i];
+                if (name.equals(iName)) {
+                    List<String> names = methods.get(iName);
+                    assertExactMethods(typeScope, names.toArray(new String[names.size()]));
+                }
+            }
+        }
+
+        private String[] getClsNames() {
+            return clsNames.toArray(new String[clsNames.size()]);
+        }
+
+        private String[] getIfaceNames() {
+            return ifaceNames.toArray(new String[ifaceNames.size()]);
+        }
     }
 }

@@ -171,10 +171,8 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
     }
 
 
-    @Override
-    public Collection<? extends MethodScope> getMethods() {
-        List<MethodScope> allMethods = new ArrayList<MethodScope>();
-        allMethods.addAll(getDeclaredMethods());
+    public Collection<? extends MethodScope> getInheritedMethods() {
+        Set<MethodScope> allMethods = new HashSet<MethodScope>();
         IndexScope indexScopeImpl = ModelUtils.getIndexScope(this);
         PHPIndex index = indexScopeImpl.getIndex();
         ClassScope clz = ModelUtils.getFirst(getSuperClasses());
@@ -188,10 +186,18 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
             interfaces.addAll(clz.getSuperInterfaces());
             clz = ModelUtils.getFirst(clz.getSuperClasses());
         }
-        
+
         for (InterfaceScope ifaceScope : interfaces) {
             allMethods.addAll(ifaceScope.getMethods());
         }
+        return allMethods;
+    }
+
+    @Override
+    public Collection<? extends MethodScope> getMethods() {
+        Set<MethodScope> allMethods = new HashSet<MethodScope>();
+        allMethods.addAll(getDeclaredMethods());
+        allMethods.addAll(getInheritedMethods());
         return allMethods;
     }
 
@@ -276,4 +282,5 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
         }
         return "";//NOI18N
     }
+
 }
