@@ -165,11 +165,17 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         switch (kind) {
             case DECLARATION_ADDED:
                 assert obj instanceof CsmOffsetableDeclaration;
-                Notificator.instance().registerNewDeclaration((CsmOffsetableDeclaration)obj);
+                if (!ForwardClass.isForwardClass((CsmOffsetableDeclaration)obj)) {
+                    // no need to notify about fake classes
+                    Notificator.instance().registerNewDeclaration((CsmOffsetableDeclaration)obj);
+                }
                 break;
             case DECLARATION_REMOVED:
                 assert obj instanceof CsmOffsetableDeclaration;
-                Notificator.instance().registerRemovedDeclaration((CsmOffsetableDeclaration)obj);
+                if (!ForwardClass.isForwardClass((CsmOffsetableDeclaration)obj)) {
+                    // no need to notify about fake classes
+                    Notificator.instance().registerRemovedDeclaration((CsmOffsetableDeclaration)obj);
+                }
                 break;
             case NAMESPACE_ADDED:
                 assert obj instanceof CsmNamespace;
@@ -426,7 +432,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         
         // update repository
         RepositoryUtils.put(this);
-        
+
         notify(declaration, NotifyEvent.DECLARATION_ADDED);
     }
     

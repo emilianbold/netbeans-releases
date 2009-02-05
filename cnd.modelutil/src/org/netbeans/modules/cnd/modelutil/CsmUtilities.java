@@ -86,6 +86,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -135,20 +136,21 @@ public class CsmUtilities {
     public static final int LOCAL_MEMBER_BIT = 0x00000100;
 
     // the bit for local member. the modificator is not saved within this bit.
-    public static final int CONST_MEMBER_BIT = 0x00000200;
     public static final int PUBLIC_LEVEL = 2;
     public static final int PROTECTED_LEVEL = 1;
     public static final int PRIVATE_LEVEL = 0;
-    public static final int GLOBAL = 0x00001000;
-    public static final int LOCAL = 0x00002000;
-    public static final int FILE_LOCAL = 0x00004000;
-    public static final int MEMBER = 0x00008000;
-    public static final int ENUMERATOR = 0x00000400;
-    public static final int CONSTRUCTOR = 0x00000800;
-    public static final int DESTRUCTOR = 0x00020000;
-    public static final int OPERATOR = 0x00040000;
-    public static final int MACRO = 0x00010000;
-    public static final int EXTERN = 0x00080000;
+    public static final int CONST_MEMBER_BIT= 0x00000200;
+    public static final int ENUMERATOR      = 0x00000400;
+    public static final int CONSTRUCTOR     = 0x00000800;
+    public static final int GLOBAL          = 0x00001000;
+    public static final int LOCAL           = 0x00002000;
+    public static final int FILE_LOCAL      = 0x00004000;
+    public static final int MEMBER          = 0x00008000;
+    public static final int MACRO           = 0x00010000;
+    public static final int DESTRUCTOR      = 0x00020000;
+    public static final int OPERATOR        = 0x00040000;
+    public static final int EXTERN          = 0x00080000;
+    public static final int FORWARD         = 0x00100000;
     public static final boolean DEBUG = Boolean.getBoolean("csm.utilities.trace.summary") ||
             Boolean.getBoolean("csm.utilities.trace");
 
@@ -182,6 +184,9 @@ public class CsmUtilities {
             if (CsmKindUtilities.isEnumerator(obj)) {
                 mod |= ENUMERATOR;
             }
+        }
+        if (CsmClassifierResolver.getDefault().isForwardClass(obj)) {
+            mod |= FORWARD;
         }
         if (CsmKindUtilities.isOperator(obj)) {
             mod |= OPERATOR;
