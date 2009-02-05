@@ -1835,7 +1835,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return false;
     }
 
-    public void onParseFinish() {
+    public void onParseFinish(boolean libsAlreadyParsed) {
         synchronized( waitParseLock ) {
             waitParseLock.notifyAll();
         }
@@ -1849,7 +1849,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             if( ! disposing ) {
                 for (Iterator it = getAllFiles().iterator(); it.hasNext();) {
                     FileImpl file= (FileImpl) it.next();
-                    file.fixFakeRegistrations();
+                    file.fixFakeRegistrations(libsAlreadyParsed);
                 }
             }
         }
@@ -1860,11 +1860,19 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             ProjectComponent.setStable(declarationsSorageKey);
             ProjectComponent.setStable(fileContainerKey);
             ProjectComponent.setStable(graphStorageKey);
+
+            if(!libsAlreadyParsed) {
+                ParseFinishNotificator.onParseFinish(this);
+            }
         }
         if (TraceFlags.PARSE_STATISTICS) {
             ParseStatistics.getInstance().printResults(this);
             ParseStatistics.getInstance().clear(this);
         }
+    }
+
+    public void onLibParseFinish() {
+        onParseFinish(true);
     }
 
     /**
