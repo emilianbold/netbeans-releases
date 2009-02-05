@@ -30,7 +30,7 @@ import org.netbeans.spi.debugger.ui.AttachType;
  *
  * @author Sun Microsystems
  */
-@AttachType.Registration(displayName="#CTL_Connector_name")
+@AttachType.Registration(displayName="#CTL_BpelConnector_name")
 public class BpelAttachType extends AttachType {
 
     public JComponent getCustomizer () {
