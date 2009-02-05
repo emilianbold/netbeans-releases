@@ -108,6 +108,8 @@ echo SigTest: Incompatible Changes
 ant check-sigtests-release -Dfail.on.error=false
 echo SigTest: Incompatible Changes Done
 
+# Try to build all tests in the system to make sure they at least compile.
+ant -Dtest.fail.on.error=false build-test-dist
 ###############  Commit validation tests  ##########################
 TESTS_STARTED=`date`
 TESTS_RESULT_DIR="`pwd`/nbbuild/build/test/results"
