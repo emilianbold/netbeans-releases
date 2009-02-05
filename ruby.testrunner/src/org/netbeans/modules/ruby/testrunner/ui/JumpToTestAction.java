@@ -61,7 +61,7 @@ final class JumpToTestAction extends BaseTestMethodNodeAction {
     }
 
     protected void doActionPerformed(ActionEvent e) {
-        DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod(), jumpToClass);
+        DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod(), jumpToClass, false);
         if (!(DeclarationLocation.NONE == location)) {
             GsfUtilities.open(location.getFileObject(), location.getOffset(), null);
         }

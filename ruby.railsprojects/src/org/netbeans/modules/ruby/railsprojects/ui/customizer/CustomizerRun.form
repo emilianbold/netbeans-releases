@@ -50,13 +50,10 @@
                   </Group>
               </Group>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="rakeHelpLabel" min="-2" max="-2" attributes="1"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                  </Group>
+                  <Component id="rakeHelpLabel" alignment="0" min="-2" max="-2" attributes="1"/>
                   <Group type="103" alignment="1" groupAlignment="0" attributes="0">
-                      <Component id="encoding" alignment="0" pref="458" max="32767" attributes="1"/>
-                      <Component id="rakeTextField" alignment="0" pref="458" max="32767" attributes="1"/>
+                      <Component id="encoding" alignment="0" pref="446" max="32767" attributes="1"/>
+                      <Component id="rakeTextField" alignment="0" pref="446" max="32767" attributes="1"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -345,7 +342,9 @@
         </Component>
         <Component class="javax.swing.JLabel" name="urlHelpLabel">
           <Properties>
-            <Property name="text" type="java.lang.String" value="(relative, e.g. products/list)"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/ui/customizer/Bundle.properties" key="LBL_CustomizeRun_URL_Help" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
           </Properties>
         </Component>
       </SubComponents>
