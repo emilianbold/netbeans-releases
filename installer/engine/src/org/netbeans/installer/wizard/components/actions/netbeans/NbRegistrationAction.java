@@ -35,6 +35,7 @@
  */
 package org.netbeans.installer.wizard.components.actions.netbeans;
 
+import javax.swing.event.HyperlinkEvent;
 import org.netbeans.modules.servicetag.RegistrationData;
 import java.io.File;
 import java.io.IOException;
@@ -42,13 +43,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import javax.swing.event.HyperlinkListener;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -190,7 +189,25 @@ public class NbRegistrationAction extends WizardAction {
         }
         return result;
     }
-
+    
+    public static HyperlinkListener createHyperlinkListener() {
+        return new HyperlinkListener() {
+            public void hyperlinkUpdate(HyperlinkEvent hlevt) {
+                if (HyperlinkEvent.EventType.ACTIVATED == hlevt.getEventType()) {
+                    final URL url = hlevt.getURL();
+                    if (url != null) {
+                        try {
+                            openBrowser(url.toURI());
+                        } catch (IOException e) {
+                            LogManager.log(e);
+                        } catch (URISyntaxException e) {
+                            LogManager.log(e);
+                        }
+                    }
+                }
+            }
+        };
+    }
     public static void main(String[] args) {
         new NbRegistrationAction();
     }

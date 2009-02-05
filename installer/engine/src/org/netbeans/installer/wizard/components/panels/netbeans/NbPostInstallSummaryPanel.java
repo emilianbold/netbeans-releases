@@ -36,7 +36,6 @@
 
 package org.netbeans.installer.wizard.components.panels.netbeans;
 
-import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -48,7 +47,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
-import javax.swing.border.LineBorder;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.event.HyperlinkEvent.EventType;
@@ -279,23 +277,7 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                                 DEFAULT_MYSQL_MESSAGE_UNIX,
                             product.getInstallationLocation()));
                     messagePaneMySQL.setVisible(true);
-                    messagePaneMySQL.addHyperlinkListener(new HyperlinkListener() {
-
-                        public void hyperlinkUpdate(HyperlinkEvent hlevt) {
-                            if (EventType.ACTIVATED == hlevt.getEventType()) {
-                                final URL url = hlevt.getURL();
-                                if (url != null) {
-                                    try {
-                                        NbRegistrationAction.openBrowser(url.toURI());
-                                    } catch (IOException e) {
-                                        LogManager.log(e);
-                                    } catch (URISyntaxException e) {
-                                        LogManager.log(e);
-                                    }
-                                }
-                            }
-                        }
-                    });
+                    messagePaneMySQL.addHyperlinkListener(NbRegistrationAction.createHyperlinkListener());
                     break;
                 }
             }
