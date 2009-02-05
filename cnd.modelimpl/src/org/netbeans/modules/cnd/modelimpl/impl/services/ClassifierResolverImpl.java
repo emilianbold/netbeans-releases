@@ -43,7 +43,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
@@ -65,6 +67,11 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
             return ResolverFactory.createResolver((CsmOffsetable) orig, contextFile).getOriginalClassifier(orig);
         }
         return orig;
+    }
+
+    @Override
+    public boolean isForwardClass(CsmObject cls) {
+        return CsmKindUtilities.isDeclaration(cls) && ForwardClass.isForwardClass((CsmDeclaration)cls);
     }
 
     @Override
