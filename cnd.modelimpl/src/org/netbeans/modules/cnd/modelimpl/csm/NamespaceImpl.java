@@ -151,17 +151,44 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             // nb: this.parent should be set first, since getQualidfiedName request parent's fqn
             parent.addNestedNamespace(this);
         }
-        notifyCreation();
+        notify(this, NotifyEvent.NAMESPACE_ADDED);
     }
-    
-    protected void notifyCreation() {
-        assert !isGlobal();
-        Notificator.instance().registerNewNamespace(this);
+
+    protected enum NotifyEvent {
+        DECLARATION_ADDED,
+        DECLARATION_REMOVED,
+        NAMESPACE_ADDED,
+        NAMESPACE_REMOVED,
+    }
+
+    protected void notify(CsmObject obj, NotifyEvent kind) {
+        switch (kind) {
+            case DECLARATION_ADDED:
+                assert obj instanceof CsmOffsetableDeclaration;
+                Notificator.instance().registerNewDeclaration((CsmOffsetableDeclaration)obj);
+                break;
+            case DECLARATION_REMOVED:
+                assert obj instanceof CsmOffsetableDeclaration;
+                Notificator.instance().registerRemovedDeclaration((CsmOffsetableDeclaration)obj);
+                break;
+            case NAMESPACE_ADDED:
+                assert obj instanceof CsmNamespace;
+                assert !((CsmNamespace)obj).isGlobal();
+                Notificator.instance().registerNewNamespace((CsmNamespace)obj);
+                break;
+            case NAMESPACE_REMOVED:
+                assert obj instanceof CsmNamespace;
+                assert !((CsmNamespace)obj).isGlobal();
+                Notificator.instance().registerRemovedNamespace((CsmNamespace)obj);
+                break;
+            default:
+                throw new IllegalArgumentException("unexpected kind " + kind); // NOI18N
+        }
     }
     
     public void dispose() {
         onDispose();
-        notifyRemove();
+        notify(this, NotifyEvent.NAMESPACE_REMOVED);
     }    
     
     private void onDispose() {
@@ -178,11 +205,6 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         } finally {
             projectLock.writeLock().unlock();
         }
-    }
-    
-    protected void notifyRemove() {
-        assert !isGlobal();
-        Notificator.instance().registerRemovedNamespace(this);
     }
     
     private static final String UNNAMED_PREFIX = "<unnamed>";  // NOI18N
@@ -405,7 +427,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         // update repository
         RepositoryUtils.put(this);
         
-        Notificator.instance().registerNewDeclaration(declaration);
+        notify(declaration, NotifyEvent.DECLARATION_ADDED);
     }
     
     @SuppressWarnings("unchecked")
@@ -418,10 +440,10 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             getDeclarationsSorage().removeDeclaration(declaration);
         }
         // do not clean repository, it must be done from physical container of declaration
-        if (false) RepositoryUtils.remove(declarationUid);
+        if (false) { RepositoryUtils.remove(declarationUid); }
         // update repository
         RepositoryUtils.put(this);
-        Notificator.instance().registerRemovedDeclaration(declaration);
+        notify(declaration, NotifyEvent.DECLARATION_REMOVED);
     }
     
     public Collection<CsmNamespaceDefinition> getDefinitions()  {
@@ -459,7 +481,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             nsDefinitionsLock.writeLock().unlock();
         }
         // does not remove unregistered declaration from repository, it's responsibility of physical container
-        if (false) RepositoryUtils.remove(definitionUid);
+        if (false) { RepositoryUtils.remove(definitionUid); }
         // update repository about itself
         RepositoryUtils.put(this);
         try {
