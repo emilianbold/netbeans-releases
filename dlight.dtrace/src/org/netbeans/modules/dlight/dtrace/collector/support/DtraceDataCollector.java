@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -83,6 +84,7 @@ import org.netbeans.modules.nativeexecution.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 import org.netbeans.modules.nativeexecution.util.SolarisPrivilegesSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
@@ -234,8 +236,15 @@ public final class DtraceDataCollector
             File script = new File(localScriptPath);
             scriptPath = "/tmp/" + script.getName(); // NOI18N
 
-            CommonTasksSupport.copyLocalFile(
-                    execEnv, localScriptPath, scriptPath, 777, null);
+            Future<Integer> copyResult = CommonTasksSupport.copyLocalFile(
+                        execEnv, localScriptPath, scriptPath, 777, null);
+            try {
+                copyResult.get();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 
@@ -414,7 +423,7 @@ public final class DtraceDataCollector
             taskCommand += " " + extraParams; // NOI18N
         }
 
-        NativeProcessBuilder npb = new NativeProcessBuilder(taskCommand);
+        NativeProcessBuilder npb = new NativeProcessBuilder(target.getExecEnv(), taskCommand);
 
         ExecutionDescriptor descr = new ExecutionDescriptor();
         descr = descr.outProcessorFactory(new DtraceInputProcessorFactory());

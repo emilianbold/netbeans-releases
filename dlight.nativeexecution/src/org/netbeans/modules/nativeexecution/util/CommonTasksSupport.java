@@ -104,7 +104,7 @@ public final class CommonTasksSupport {
             }
         };
 
-        NativeProcessBuilder npb = new NativeProcessBuilder(cmd).addNativeProcessListener(processListener);
+        NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, cmd).addNativeProcessListener(processListener);
 
         ExecutionDescriptor descriptor =
                 new ExecutionDescriptor().inputOutput(
