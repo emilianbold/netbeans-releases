@@ -39,7 +39,6 @@
  * made subject to such option by the copyright holder.
  */
 
-
 package org.netbeans.modules.glassfish.javaee;
 
 import java.io.File;
@@ -55,8 +54,6 @@ import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
-
-
     
 /**
  *
@@ -275,7 +272,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * @return 
      */
     public String getDisplayName() {
-        return pf.getDisplayName(); // NbBundle.getMessage(Hk2JavaEEPlatformImpl.class, "MSG_MyPreludeServerPlatform");
+        return pf.getDisplayName();
     }
     
     /**
