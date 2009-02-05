@@ -78,7 +78,11 @@ public class OQLParserTask extends ParserResultTask<ParserResult> {
             if (ec != null) {
                 ec.saveDocument();
             }
-
+            if (doc.getLength() == 0) {
+                this.parentPane.firePropertyChange(OQLEditorImpl.VALIDITY_PROPERTY, wasOk, false);
+                wasOk = false;
+                return;
+            }
             Field errorsFld = result.getClass().getDeclaredField("syntaxErrors");
             errorsFld.setAccessible(true);
             List errors = (List) errorsFld.get(result);
