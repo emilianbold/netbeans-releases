@@ -42,7 +42,6 @@ package org.netbeans.modules.maven.graph;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -50,21 +49,15 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JToolBar;
-import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.apache.maven.artifact.Artifact;
@@ -73,7 +66,6 @@ import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
-import org.openide.awt.Actions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -439,13 +431,13 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
             toolbar = new JToolBar();
             toolbar.setFloatable(false);
             toolbar.setRollover(true);
-            Action[] a = new Action[1];
-            Action[] actions = getLookup().lookup(a.getClass());
-            for (Action act : actions) {
-                JButton btn = new JButton();
-                Actions.connect(btn, act);
-                toolbar.add(btn);
-            }
+//            Action[] a = new Action[1];
+//            Action[] actions = getLookup().lookup(a.getClass());
+//            for (Action act : actions) {
+//                JButton btn = new JButton();
+//                Actions.connect(btn, act);
+//                toolbar.add(btn);
+//            }
             toolbar.add(btnBigger);
             toolbar.add(btnSmaller);
             toolbar.add(lblFind);
