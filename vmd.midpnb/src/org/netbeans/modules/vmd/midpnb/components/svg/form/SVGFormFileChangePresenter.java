@@ -67,7 +67,7 @@ import org.netbeans.modules.vmd.api.model.Debug;
  *
  * @author Karol Harezlak
  */
-public class SVGFormFileChangePresneter extends DynamicPresenter implements DesignDocumentAwareness {
+public class SVGFormFileChangePresenter extends DynamicPresenter implements DesignDocumentAwareness {
 
     private WeakReference<FileObject> svgFileObject;
     private SVGFormFileObjectListener imageFileListener;
@@ -97,9 +97,11 @@ public class SVGFormFileChangePresneter extends DynamicPresenter implements Desi
                 SwingUtilities.invokeLater(new Runnable() {
 
                     public void run() {
-                        SVGFormFileObjectListener.regenerateSVGComponentsStructure(svgFileObject_, getComponent(), DataEditorView.Kind.CODE);
                         context = ProjectUtils.getDataObjectContextForDocument(getComponent().getDocument());
-                        context.addDesignDocumentAwareness(SVGFormFileChangePresneter.this);
+                         if (context != null) {
+                            context.addDesignDocumentAwareness(SVGFormFileChangePresenter.this);
+                        }
+                        SVGFormFileObjectListener.regenerateSVGComponentsStructure(svgFileObject_, getComponent(), DataEditorView.Kind.CODE);
                     }
                 });
             }
@@ -152,7 +154,6 @@ public class SVGFormFileChangePresneter extends DynamicPresenter implements Desi
                 Debug.warning(e);
             }
         }
-
     }
 
     @Override
@@ -182,5 +183,4 @@ public class SVGFormFileChangePresneter extends DynamicPresenter implements Desi
         svgFileObject = null;
     }
 
-    
 }
