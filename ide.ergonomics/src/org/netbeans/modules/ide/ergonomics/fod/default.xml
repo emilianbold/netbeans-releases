@@ -69,6 +69,7 @@
         <!-- Profile menu -->
         <folder name="Profile">
             <attr name="position" intvalue="850"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ide.ergonomics.prof.Bundle"/>
             <file name="org-netbeans-modules-prof-actions-AttachAction.instance">
                 <attr name="delegate" newvalue="org.netbeans.modules.ide.ergonomics.prof.AttachAction"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.ide.ergonomics.prof.Bundle#CTL_AttachAction"/>
