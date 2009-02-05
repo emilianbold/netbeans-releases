@@ -1473,6 +1473,9 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                         newActions.add(createRenameAction());
                     } else if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.PropertiesAction && getFolder().isProjectFiles()) {
                         newActions.add(SystemAction.get(PropertiesItemAction.class));
+                    } else if (oldActions[i] != null && oldActions[i] instanceof DeleteAction) {
+                        newActions.add(SystemAction.get(RemoveItemAction.class));
+                        newActions.add(createDeleteAction());
                     } else {
                         newActions.add(oldActions[i]);
                     }
