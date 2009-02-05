@@ -199,6 +199,9 @@ public class Resolver3 implements Resolver {
                     // have to stop with current 'orig' value
                     break;
                 }
+            } else if (ForwardClass.isForwardClass(orig)) {
+                // try to find another class
+                resovedClassifier = this.findClassifier(orig.getQualifiedName());
             } else {
                 break;
             }
