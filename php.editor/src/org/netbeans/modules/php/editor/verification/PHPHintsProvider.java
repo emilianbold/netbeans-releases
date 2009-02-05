@@ -57,7 +57,7 @@ import org.netbeans.modules.gsf.api.Rule.AstRule;
 import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.model.ModelFactory;
-import org.netbeans.modules.php.editor.model.PhpFileScope;
+import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;
 
@@ -82,7 +82,7 @@ public class PHPHintsProvider implements HintsProvider {
         CompilationInfo info = context.compilationInfo;
         List<? extends AstRule> modelHints = allHints.get(MODEL_HINTS);
         if (modelHints != null) {
-            PhpFileScope modelScope = ModelFactory.getModel(info).getFileScope();
+            FileScope modelScope = ModelFactory.getModel(info).getFileScope();
             for (AstRule astRule : modelHints) {
                 if (astRule instanceof ModelRule) {
                     if (mgr.isEnabled(astRule)) {

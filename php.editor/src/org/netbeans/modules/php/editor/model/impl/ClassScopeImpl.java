@@ -60,7 +60,7 @@ import org.openide.util.Union2;
  *
  * @author Radek Matous
  */
-final class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
+class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
 
     private Union2<String, List<ClassScopeImpl>> superClass;
 
@@ -119,14 +119,14 @@ final class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
         return sb.toString();
     }
 
-    public List<? extends FieldElementImpl> getDeclaredFields() {
+    public List<? extends FieldElement> getDeclaredFields() {
         return findDeclaredFields();
     }
 
-    public List<? extends FieldElementImpl> findDeclaredFields(final int... modifiers) {
+    public List<? extends FieldElement> findDeclaredFields(final int... modifiers) {
         if (ModelUtils.getFileScope(this) == null) {
-            IndexScopeImpl indexScopeImpl = (IndexScopeImpl) ModelUtils.getIndexScope(this);
-            return indexScopeImpl.getFields(this, modifiers);
+            IndexScope indexScopeImpl =  ModelUtils.getIndexScope(this);
+            return indexScopeImpl.findFields(this, modifiers);
         }
         return filter(getElements(), new ElementFilter() {
 
@@ -138,10 +138,10 @@ final class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
         });
     }
 
-    public List<? extends FieldElementImpl> findDeclaredFields(final String queryName, final int... modifiers) {
+    public List<? extends FieldElement> findDeclaredFields(final String queryName, final int... modifiers) {
         if (ModelUtils.getFileScope(this) == null) {
-            IndexScopeImpl indexScopeImpl = (IndexScopeImpl) ModelUtils.getIndexScope(this);
-            return indexScopeImpl.getFields(this, queryName, modifiers);
+            IndexScope indexScopeImpl = ModelUtils.getIndexScope(this);
+            return indexScopeImpl.findFields(this, queryName, modifiers);
         }
         return filter(getElements(), new ElementFilter() {
 
@@ -154,10 +154,10 @@ final class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
         });
     }
 
-   public List<? extends FieldElementImpl> findDeclaredFields(final NameKind nameKind, final String queryName, final int... modifiers) {
+   public List<? extends FieldElement> findDeclaredFields(final NameKind nameKind, final String queryName, final int... modifiers) {
         if (ModelUtils.getFileScope(this) == null) {
-            IndexScopeImpl indexScopeImpl = (IndexScopeImpl) ModelUtils.getIndexScope(this);
-            return indexScopeImpl.getFields(nameKind, this, queryName, modifiers);
+            IndexScope indexScopeImpl = (IndexScopeImpl) ModelUtils.getIndexScope(this);
+            return indexScopeImpl.findFields(nameKind, this, queryName, modifiers);
         }
         return filter(null, new ElementFilter() {
 
@@ -172,7 +172,7 @@ final class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
 
 
     @Override
-    public List<? extends MethodScope> getMethods() {
+    public List<? extends MethodScope> getInheritedMethods() {
         List<MethodScope> allMethods = new ArrayList<MethodScope>();
         allMethods.addAll(getDeclaredMethods());
         IndexScope indexScopeImpl = ModelUtils.getIndexScope(this);
@@ -190,7 +190,7 @@ final class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
         }
         
         for (InterfaceScope ifaceScope : interfaces) {
-            allMethods.addAll(ifaceScope.getMethods());
+            allMethods.addAll(ifaceScope.getInheritedMethods());
         }
         return allMethods;
     }
@@ -213,9 +213,9 @@ final class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
         return allFlds;
     }
 
-    public List<? extends FieldElementImpl> findInheritedFields(String queryName) {
+    public List<? extends FieldElement> findInheritedFields(String queryName) {
         assert queryName.startsWith("$");
-        List<FieldElementImpl> allFields = new ArrayList<FieldElementImpl>();
+        List<FieldElement> allFields = new ArrayList<FieldElement>();
         allFields.addAll(findDeclaredFields(queryName));
         if (allFields.isEmpty()) {
             IndexScope indexScope = ModelUtils.getIndexScope(this);

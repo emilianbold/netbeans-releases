@@ -66,7 +66,7 @@ public final class TypeResolver {
                 //TODO: impl. doesn't count with more types
                 type = ModelUtils.getFirst(var.getTypes(offset));
             }
-            if (varScope instanceof PhpFileScope) {
+            if (varScope instanceof FileScope) {
                 varScope = null;
             } else {
                 varScope = ModelUtils.getFileScope(varScope);

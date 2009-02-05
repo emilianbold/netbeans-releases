@@ -59,7 +59,7 @@ import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
-import org.netbeans.modules.php.editor.model.PhpFileScope;
+import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
@@ -95,7 +95,7 @@ public class ImplementAbstractMethods extends ModelRule {
     }
 
     @Override
-    void check(PhpFileScope modelScope, RuleContext context, List<Hint> hints) {
+    void check(FileScope modelScope, RuleContext context, List<Hint> hints) {
         List<? extends TypeScope> allClasses = modelScope.getDeclaredTypes();
         long computedDigest = computeDigest(allClasses);
         if (computedDigest != diggest || !cahcedFixedInfo.isEmpty()) {            
@@ -139,7 +139,7 @@ public class ImplementAbstractMethods extends ModelRule {
                 List<? extends InterfaceScope> interfaces = typeScope.getSuperInterfaces();
                 if ((cls != null  || interfaces.size() > 0) && !typeScope.getPhpModifiers().isAbstract() && typeScope instanceof ClassScope) {
                     Set<String> methNames = new HashSet<String>();
-                    List<? extends MethodScope> allInheritedMethods = typeScope.getMethods();
+                    List<? extends MethodScope> allInheritedMethods = typeScope.getInheritedMethods();
                     List<? extends MethodScope> allMethods = typeScope.getDeclaredMethods();
                     Set<String> methodNames = new HashSet<String>();
                     for (MethodScope methodScope : allMethods) {

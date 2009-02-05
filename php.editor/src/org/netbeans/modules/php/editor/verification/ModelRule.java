@@ -46,15 +46,15 @@ import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.HintSeverity;
 import org.netbeans.modules.gsf.api.Rule.AstRule;
 import org.netbeans.modules.gsf.api.RuleContext;
-import org.netbeans.modules.php.editor.model.PhpFileScope;
+import org.netbeans.modules.php.editor.model.FileScope;
 
 /**
  *
  * @author Radek Matous
  */
 abstract class ModelRule implements AstRule {
-    private PhpFileScope modelScope;
-    abstract void check (PhpFileScope modelScope, RuleContext context, List<Hint> hints);
+    private FileScope modelScope;
+    abstract void check (FileScope modelScope, RuleContext context, List<Hint> hints);
 
     @Override
     public Set<? extends Object> getKinds() {

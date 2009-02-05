@@ -65,12 +65,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
     MethodScopeImpl(Scope inScope, IndexedFunction element, PhpKind kind) {
         super(inScope, element, kind);
         assert inScope instanceof TypeScope;
-        String in = element.getIn();
-        if (in != null) {
-            classNormName = in;
-        } else {
-            classNormName = inScope.getNormalizedName();
-        }
+        classNormName = inScope.getNormalizedName();
     }
 
     @Override

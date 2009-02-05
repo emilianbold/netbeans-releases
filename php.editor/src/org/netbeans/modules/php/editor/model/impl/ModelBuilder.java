@@ -64,12 +64,12 @@ import org.netbeans.modules.php.editor.parser.astnodes.Program;
  * @author Radek Matous
  */
 class ModelBuilder {
-    private final FileScope fileScope;
+    private final FileScopeImpl fileScope;
     private Stack<ScopeImpl> currentScope;
     private Program program;
     private final Map<VariableContainerImpl, Map<String, VariableNameImpl>> vars;
 
-    ModelBuilder(FileScope fileScope, int offset) {
+    ModelBuilder(FileScopeImpl fileScope, int offset) {
         this.fileScope = fileScope;
         this.currentScope = new Stack<ScopeImpl>();
         this.vars = new HashMap<VariableContainerImpl, Map<String, VariableNameImpl>>();
@@ -121,7 +121,7 @@ class ModelBuilder {
     /**
      * @return the fileScope
      */
-    FileScope getFileScope() {
+    FileScopeImpl getFileScope() {
         return fileScope;
     }
 

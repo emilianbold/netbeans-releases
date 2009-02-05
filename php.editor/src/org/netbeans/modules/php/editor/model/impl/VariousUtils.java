@@ -50,7 +50,7 @@ import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
-import org.netbeans.modules.php.editor.model.PhpFileScope;
+import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
@@ -178,7 +178,7 @@ public class VariousUtils {
     }
 
     //TODO: needs to be improved to properly return more types
-    public static List<? extends TypeScope> getType(PhpFileScope topScope, VariableScope varScope, String semiTypeName, int offset, boolean justDispatcher) throws IllegalStateException {
+    public static List<? extends TypeScope> getType(FileScope topScope, VariableScope varScope, String semiTypeName, int offset, boolean justDispatcher) throws IllegalStateException {
         Stack<String> stack = new Stack<String>();
         TypeScope type = null;
         if (semiTypeName != null && semiTypeName.contains("@")) {
@@ -345,7 +345,7 @@ public class VariousUtils {
         return Collections.<TypeScope>emptyList();
     }
 
-    public static Stack<? extends ModelElement> getElemenst(PhpFileScope topScope, VariableScope varScope, String semiTypeName, int offset) throws IllegalStateException {
+    public static Stack<? extends ModelElement> getElemenst(FileScope topScope, VariableScope varScope, String semiTypeName, int offset) throws IllegalStateException {
         Stack<ModelElement> emptyStack = new Stack<ModelElement>();
         Stack<ModelElement> retval = new Stack<ModelElement>();
         Stack<String> stack = new Stack<String>();

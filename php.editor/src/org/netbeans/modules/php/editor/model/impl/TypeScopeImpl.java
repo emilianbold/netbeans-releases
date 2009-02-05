@@ -53,7 +53,6 @@ import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.IndexedInterface;
 import org.netbeans.modules.php.editor.index.PHPIndex;
-import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
@@ -100,14 +99,14 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         for (String ifaceName : keySet) {
             List<? extends InterfaceScope> iface = ifaces.get(ifaceName);
             if (iface == null) {
-                PhpFileScope top = (PhpFileScope) getInScope();
-                FileScope ps = (FileScope) top;
+                FileScope top = (FileScope) getInScope();
+                FileScopeImpl ps = (FileScopeImpl) top;
                 retval.addAll(iface = ModelUtils.filter(ps.getDeclaredInterfaces(), ifaceName));
                 ifaces.put(ifaceName,iface);
                 /*for (InterfaceScopeImpl interfaceScope : iface) {
                     retval.addAll(interfaceScope.getInterfaces());
                 }*/
-                if (retval.isEmpty() && top instanceof FileScope) {
+                if (retval.isEmpty() && top instanceof FileScopeImpl) {
                     IndexScope indexScope = ModelUtils.getIndexScope(ps);
                     if (indexScope != null) {
                         List<? extends InterfaceScope> cIfaces =CachingSupport.getInterfaces(ifaceName, this);
@@ -132,14 +131,14 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
     }
 
     public List<? extends MethodScope> getDeclaredMethods() {
-        return findDeclaredMethods();
+        return getDeclaredMethodsImpl();
     }
 
-    public List<? extends MethodScope> findDeclaredMethods(final int... modifiers) {
+    public List<? extends MethodScope> getDeclaredMethodsImpl(final int... modifiers) {
         if (ModelUtils.getFileScope(this) == null) {
             IndexScope indexScopeImpl = ModelUtils.getIndexScope(this);
             return indexScopeImpl.findMethods(this,"", modifiers);
-        } 
+        }
         return filter(getElements(), new ElementFilter() {
 
             public boolean isAccepted(ModelElement element) {
@@ -199,7 +198,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         });
     }
 
-    public List<? extends ClassConstantElement> getDeclaredConstants() {
+    public final List<? extends ClassConstantElement> getDeclaredConstants() {
         return findDeclaredConstants();
     }
 
@@ -220,6 +219,41 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
                         queryName.length == 0 || ModelElementImpl.nameKindMatch(element.getName(), nameKind, queryName);
             }
         });
+    }
+
+    public final List<? extends ClassConstantElement> getInheritedConstants() {
+        List<ClassConstantElement> allConstants = new ArrayList<ClassConstantElement>();
+        allConstants.addAll(getDeclaredConstants());
+        if (allConstants.isEmpty()) {
+            IndexScope indexScope = ModelUtils.getIndexScope(this);
+            PHPIndex index = indexScope.getIndex();
+            TypeScope type = this;
+            if (type instanceof ClassScope) {
+                ClassScope clz = (ClassScope) type;
+                while (clz != null && allConstants.isEmpty()) {
+                    clz = ModelUtils.getFirst(clz.getSuperClasses());
+                    if (clz != null) {
+                        Collection<IndexedConstant> indexedConstants = index.getClassConstants(null, clz.getName(), "", NameKind.PREFIX);//NOI18N
+                        for (IndexedConstant indexedConstant : indexedConstants) {
+                            allConstants.add(new ClassConstantElementImpl((TypeScopeImpl) type, indexedConstant));
+                        }
+                    }
+                }
+            } else if (type instanceof InterfaceScope) {
+                InterfaceScope iface = (InterfaceScope) type;
+                List<? extends InterfaceScope> interfaceScopes = iface.getSuperInterfaces();
+                for (int i = 0; allConstants.isEmpty() && i < interfaceScopes.size(); i++) {
+                    InterfaceScope ifaceScope = interfaceScopes.get(i);
+                    Collection<IndexedConstant> indexedConstants = index.getClassConstants(null, ifaceScope.getName(), "", NameKind.PREFIX);//NOI18N
+                    for (IndexedConstant indexedConstant : indexedConstants) {
+                        allConstants.add(new ClassConstantElementImpl((TypeScopeImpl) ifaceScope, indexedConstant));
+                    }
+                }
+            } else {
+                throw new IllegalStateException();
+            }
+        }
+        return allConstants;
     }
 
     public List<? extends ClassConstantElement> findInheritedConstants(String queryName) {
@@ -255,6 +289,42 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
             }
         }
         return allConstants;
+    }
+
+      protected List<? extends MethodScope> getInheritedMethodsImpl() {
+        List<MethodScope> allMethods = new ArrayList<MethodScope>();
+        allMethods.addAll(getDeclaredMethods());
+        if (allMethods.isEmpty()) {
+            IndexScope indexScope = ModelUtils.getIndexScope(this);
+            PHPIndex index = indexScope.getIndex();
+            TypeScope type = this;
+            if (type instanceof ClassScope) {
+                ClassScope clz = (ClassScope) type;
+                while (clz != null && allMethods.isEmpty()) {
+                    clz = ModelUtils.getFirst(clz.getSuperClasses());
+                    if (clz != null) {
+                        Collection<IndexedFunction> indexedFunctions = index.getMethods(null, clz.getName(), "", NameKind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);//NOI18N
+                        for (IndexedFunction indexedFunction : indexedFunctions) {
+                            allMethods.add(new MethodScopeImpl((TypeScopeImpl) clz, indexedFunction, PhpKind.METHOD));
+                        }
+                    }
+                }
+            } else if (type instanceof InterfaceScope) {
+                InterfaceScope iface = (InterfaceScope) type;
+                List<? extends InterfaceScope> interfaceScopes = iface.getSuperInterfaces();
+                for (int i = 0; allMethods.isEmpty() && i < interfaceScopes.size(); i++) {
+                    InterfaceScope ifaceScope = interfaceScopes.get(i);
+                    Collection<IndexedFunction> indexedFunctions = index.getMethods(null, ifaceScope.getName(), "", NameKind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);//NOI18N
+                    for (IndexedFunction indexedFunction : indexedFunctions) {
+                        allMethods.add(new MethodScopeImpl((TypeScopeImpl) ifaceScope, indexedFunction, PhpKind.METHOD));
+                    }
+                }
+            } else {
+                throw new IllegalStateException();
+            }
+
+        }
+        return allMethods;
     }
 
     public List<? extends MethodScope> findInheritedMethods(String queryName) {

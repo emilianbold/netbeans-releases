@@ -62,7 +62,7 @@ import org.openide.util.Union2;
  *
  * @author Radek Matous
  */
-final class FileScope extends ScopeImpl implements PhpFileScope, VariableContainerImpl {
+final class FileScopeImpl extends ScopeImpl implements FileScope, VariableContainerImpl {
 
     private CachingSupport cachedModelSupport;
     private CompilationInfo info;
@@ -87,12 +87,12 @@ final class FileScope extends ScopeImpl implements PhpFileScope, VariableContain
         return retval;
     }
 
-    FileScope(CompilationInfo info) {
+    FileScopeImpl(CompilationInfo info) {
         this(info, "program", PhpKind.PROGRAM);//NOI18N
         cachedModelSupport = new CachingSupport(this);
     }
 
-    private FileScope(CompilationInfo info, String name, PhpKind kind) {
+    private FileScopeImpl(CompilationInfo info, String name, PhpKind kind) {
         super(null, name, Union2.<String, FileObject>createSecond(info != null ? info.getFileObject() : null), new OffsetRange(0, 0), kind);//NOI18N
         this.info = info;
     }

@@ -54,15 +54,15 @@ class OccurenceImpl implements Occurence {
     private OffsetRange occurenceRange;
     private ModelElement declaration;
     private List<? extends ModelElement> allDeclarations;
-    private FileScope fileScope;
+    private FileScopeImpl fileScope;
     private ModelElement gotDeclaration;
 
 
-    public OccurenceImpl(List<? extends ModelElement> allDeclarations, OffsetRange occurenceRange,FileScope fileScope) {
+    public OccurenceImpl(List<? extends ModelElement> allDeclarations, OffsetRange occurenceRange,FileScopeImpl fileScope) {
         this(allDeclarations, ModelUtils.getFirst(allDeclarations), occurenceRange, fileScope);
     }
 
-    public OccurenceImpl(List<? extends ModelElement> allDeclarations, ModelElement declaration, OffsetRange occurenceRange,FileScope fileScope) {
+    public OccurenceImpl(List<? extends ModelElement> allDeclarations, ModelElement declaration, OffsetRange occurenceRange,FileScopeImpl fileScope) {
         this.allDeclarations = allDeclarations;
         this.declaration = declaration;
         //TODO: wrong bugfix when sometimes is offered just one declaration
@@ -73,7 +73,7 @@ class OccurenceImpl implements Occurence {
         this.fileScope = fileScope;
     }
 
-    public OccurenceImpl(ModelElement declaration, OffsetRange occurenceRange, FileScope fileScope) {
+    public OccurenceImpl(ModelElement declaration, OffsetRange occurenceRange, FileScopeImpl fileScope) {
         this.occurenceRange = occurenceRange;
         this.declaration = declaration;
         this.fileScope = fileScope;
@@ -117,7 +117,7 @@ class OccurenceImpl implements Occurence {
                             geModelElement().getName());
                     break;
                 case FIELD:
-                    allDeclarations = indexScope.getFields((ClassScopeImpl) geModelElement().getInScope(),
+                    allDeclarations = indexScope.findFields((ClassScopeImpl) geModelElement().getInScope(),
                             geModelElement().getName());
                     break;
                 case CLASS_CONSTANT:

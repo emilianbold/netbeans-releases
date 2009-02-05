@@ -110,7 +110,7 @@ import org.openide.filesystems.FileObject;
  * @author Radek Matous
  */
 public final class ModelVisitor extends DefaultTreePathVisitor {
-    private final FileScope fileScope;
+    private final FileScopeImpl fileScope;
     private Map<VariableContainerImpl, Map<String, VariableNameImpl>> vars;
     private Map<String, List<PhpDocTypeTagInfo>> varTypeComments;
     private OccurenceBuilder occurencesBuilder;
@@ -123,7 +123,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     }
 
     public ModelVisitor(CompilationInfo info, int offset) {
-        this.fileScope = new FileScope(info);
+        this.fileScope = new FileScopeImpl(info);
         varTypeComments = new HashMap<String, List<PhpDocTypeTagInfo>>();
         //var2TypeName = new HashMap<String, String>();
         occurencesBuilder = new OccurenceBuilder(offset);
@@ -513,22 +513,22 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         //Scope scope = currentScope.peek();
         ScopeImpl scope = modelBuilder.getCurrentScope();
         assert scope != null && ((scope instanceof FunctionScope) ||
-                (scope instanceof MethodScope) || (scope instanceof FileScope));
-        if (scope instanceof FileScope) {
-            FileScope ps = (FileScope) scope;
+                (scope instanceof MethodScope) || (scope instanceof FileScopeImpl));
+        if (scope instanceof FileScopeImpl) {
+            FileScopeImpl ps = (FileScopeImpl) scope;
             FunctionScopeImpl fncScope = ps.createElement(modelBuilder.getProgram(), node);
             //currentScope.push(scope = fncScope);
             modelBuilder.setCurrentScope(scope = fncScope);
             occurencesBuilder.prepare(node, fncScope);
             markerBuilder.prepare(node, modelBuilder.getCurrentScope());
             checkComments(node);
-        } else if (!(scope instanceof PhpFileScope)) {
+        } else if (!(scope instanceof FileScope)) {
             Scope tmpScope = scope;
-            while (!(tmpScope instanceof PhpFileScope)) {
+            while (!(tmpScope instanceof FileScope)) {
                 tmpScope = tmpScope.getInScope();
             }
-            if (tmpScope instanceof FileScope) {
-                FileScope ps = (FileScope) tmpScope;
+            if (tmpScope instanceof FileScopeImpl) {
+                FileScopeImpl ps = (FileScopeImpl) tmpScope;
                 FunctionScopeImpl fncScope = ps.createElement(modelBuilder.getProgram(), node);
                 //currentScope.push(scope = fncScope);
                 modelBuilder.setCurrentScope(scope = fncScope);
@@ -615,13 +615,13 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         super.visit(node);
     }
 
-    public PhpFileScope getModelScope() {
+    public FileScope getModelScope() {
         return fileScope;
     }
 
     @CheckForNull
     public CodeMarker getCodeMarker(int offset) {
-        return findStrictCodeMarker((FileScope) getModelScope(), offset, null);
+        return findStrictCodeMarker((FileScopeImpl) getModelScope(), offset, null);
     }
 
     private void checkComments(ASTNode node) {
@@ -671,7 +671,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         return null;
     }
 
-    private CodeMarker findStrictCodeMarker(FileScope scope, int offset, CodeMarker atOffset) {
+    private CodeMarker findStrictCodeMarker(FileScopeImpl scope, int offset, CodeMarker atOffset) {
         buildCodeMarks();
         List<? extends CodeMarker> markers = scope.getMarkers();
         for (CodeMarker codeMarker : markers) {
@@ -685,11 +685,11 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @CheckForNull
     public Occurence getOccurence(int offset) {
-        return findStrictOccurence((FileScope) getModelScope(), offset, null);
+        return findStrictOccurence((FileScopeImpl) getModelScope(), offset, null);
     }
 
     public VariableScope getNearestVariableScope(int offset) {
-        return findNearestVarScope((FileScope) getModelScope(), offset, null);
+        return findNearestVarScope((FileScopeImpl) getModelScope(), offset, null);
     }
 
     public VariableScope getVariableScope(int offset) {
@@ -722,7 +722,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         return retval;
     }
 
-    static List<Occurence> getAllOccurences(PhpFileScope modelScope, Occurence occurence) {
+    static List<Occurence> getAllOccurences(FileScope modelScope, Occurence occurence) {
         ModelElementImpl declaration = (ModelElementImpl) occurence.getDeclaration();
         if (declaration instanceof MethodScope) {
             MethodScope methodScope = (MethodScope) declaration;
@@ -734,7 +734,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             VarAssignmentImpl impl = (VarAssignmentImpl) declaration;
             declaration = impl.getContainer();
         }
-        FileScope fileScope = (FileScope) modelScope;
+        FileScopeImpl fileScope = (FileScopeImpl) modelScope;
         return fileScope.getAllOccurences(declaration);
     }
 
@@ -760,7 +760,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
     }
 
-    private Occurence findStrictOccurence(FileScope scope, int offset,
+    private Occurence findStrictOccurence(FileScopeImpl scope, int offset,
             Occurence atOffset) {
         buildOccurences();
         //FileObject fileObject = scope.getFileObject();
@@ -837,7 +837,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     if (varInstance == null) {
                         if (varScope instanceof Scope) {
                             Scope scp = (Scope) varScope;
-                            varInstance = new VariableNameImpl(scp, name, scp.getFile(), phpDocTypeTagInfo.getRange(), scp instanceof FileScope);
+                            varInstance = new VariableNameImpl(scp, name, scp.getFile(), phpDocTypeTagInfo.getRange(), scp instanceof FileScopeImpl);
                         }
                     }
                     if (varInstance != null) {

@@ -47,26 +47,31 @@ import org.netbeans.modules.php.editor.index.PHPIndex;
  * @author Radek Matous
  */
 public interface IndexScope extends Scope {
-
+    //for now implemented on top of PHPIndex
     PHPIndex getIndex();
-    List<? extends MethodScope>  findInheritedMethods(TypeScope typeScope, String methodName);
-    List<? extends MethodScope> findMethods(TypeScope type, final String queryName, final int... modifiers);
-    List<? extends MethodScope> findMethods(TypeScope type, final NameKind nameKind, final String... queryName);
-    List<? extends MethodScope> findMethods(TypeScope type, final NameKind nameKind, final String queryName, final int... modifiers);
-    List<? extends TypeScope> findTypes(final String... queryName);
-    List<? extends TypeScope> findTypes(final NameKind nameKind, final String... queryName);
-    List<? extends ConstantElement> findConstants(final String... queryName);
-    List<? extends ConstantElement> findConstants(final NameKind nameKind, final String... queryName);
-    List<? extends ClassConstantElement> findClassConstants(TypeScope aThis, String... queryName);
+    //globally visible
+    List<? extends InterfaceScope> findInterfaces(final String... ifaceName);
+    List<? extends InterfaceScope> findInterfaces(final NameKind nameKind, final String... ifaceName);
+    List<? extends TypeScope> findTypes(final String... typeName);
+    List<? extends TypeScope> findTypes(final NameKind nameKind, final String... typeName);
+    List<? extends ClassScope> findClasses(final String... className);
+    List<? extends ClassScope> findClasses(final NameKind nameKind, final String... className);
+    List<? extends FunctionScope> findFunctions(final String... fncName);
+    List<? extends FunctionScope> findFunctions(final NameKind nameKind, final String... fncName);
+    List<? extends ConstantElement> findConstants(final String... constName);
+    List<? extends ConstantElement> findConstants(final NameKind nameKind, final String... constName);
+    List<? extends VariableName> findVariables(final String... varName);
+    List<? extends VariableName> findVariables(final NameKind nameKind, final String... varName);
+    //class members
+    List<? extends MethodScope> findMethods(TypeScope type, final String methName, final int... modifiers);
+    List<? extends MethodScope> findMethods(TypeScope type, final NameKind nameKind, final String... methName);
+    List<? extends MethodScope> findMethods(TypeScope type, final NameKind nameKind, final String methName, final int... modifiers);
+    List<? extends MethodScope>  findInheritedMethods(TypeScope typeScope, String methName);
+    List<? extends ClassConstantElement> findClassConstants(TypeScope type, String... clsConstName);
+    List<? extends ClassConstantElement> findClassConstants(final NameKind nameKind, TypeScope type, final String... clsConstName);
     List<? extends ClassConstantElement> findInheritedClassConstants(ClassScope clsScope, String constName);
+    List<? extends FieldElement> findFields(NameKind nameKind, ClassScope cls, String fieldName, int... modifiers);
+    List<? extends FieldElement> findFields(ClassScope cls, String field, int... modifiers);
+    List<? extends FieldElement>findFields(ClassScope cls, int... modifiers);
     List<? extends FieldElement> findInheritedFields(ClassScope clsScope, String fieldName);
-    List<? extends ClassScope> findClasses(final String... queryName);
-    List<? extends ClassScope> findClasses(final NameKind nameKind, final String... queryName);
-    List<? extends InterfaceScope> findInterfaces(final String... queryName);
-    List<? extends InterfaceScope> findInterfaces(final NameKind nameKind, final String... queryName);
-    List<? extends FunctionScope> findFunctions(final String... queryName);
-    List<? extends FunctionScope> findFunctions(final NameKind nameKind, final String... queryName);
-    List<? extends VariableName> findVariables(final String... queryName);
-    List<? extends VariableName> findVariables(final NameKind nameKind, final String... queryName);
-
 }

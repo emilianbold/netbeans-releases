@@ -111,11 +111,11 @@ public class ModelUtils {
 
     //TODO: put it directly to ModelElement
     @CheckForNull
-    public static PhpFileScope getFileScope(ModelElement element) {
-        PhpFileScope retval = (element instanceof PhpFileScope) ? (PhpFileScope)element : null;
+    public static FileScope getFileScope(ModelElement element) {
+        FileScope retval = (element instanceof FileScope) ? (FileScope)element : null;
         while (retval == null && element != null) {
             element = element.getInScope();
-            retval = (PhpFileScope) ((element instanceof PhpFileScope) ? element : null);
+            retval = (FileScope) ((element instanceof FileScope) ? element : null);
         }
         return retval;
     }
@@ -129,7 +129,7 @@ public class ModelUtils {
             retval = (IndexScope) ((tmpElement instanceof IndexScope) ? tmpElement : null);
         }
         if (retval == null) {
-            PhpFileScope fileScope = getFileScope(element);
+            FileScope fileScope = getFileScope(element);
             assert fileScope != null;
             retval = fileScope.getIndexScope();
         }

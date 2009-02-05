@@ -41,7 +41,7 @@ package org.netbeans.modules.php.editor.model.impl;
 import java.util.List;
 import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.php.editor.model.PhpFileScope;
+import org.netbeans.modules.php.editor.model.FileScope;
 
 /**
  * @author Radek Matous
@@ -54,7 +54,7 @@ public class ModelTest extends ModelTestBase {
 
     public void testOccurencesBasicFileScope() throws Exception {
         Model model = getModel(prepareTestFile("testfiles/model/basicFileScope.php"));
-        PhpFileScope topScope = model.getFileScope();
+        FileScope topScope = model.getFileScope();
         assertFalse(topScope.getElements().isEmpty());
         FunctionScope fncScope = ModelUtils.getFirst(ModelUtils.filter(topScope.getDeclaredFunctions(),"myfnc"));
         assertNotNull(fncScope);
@@ -65,7 +65,7 @@ public class ModelTest extends ModelTestBase {
         assertEquals(PhpKind.FUNCTION, underCaret.getDeclaration().getPhpKind());
         assertEquals(fncScope.getName(), underCaret.getDeclaration().getName());
         
-        PhpFileScope topScope2 = ModelUtils.getFileScope(underCaret.getDeclaration());
+        FileScope topScope2 = ModelUtils.getFileScope(underCaret.getDeclaration());
         assertNotNull(ModelUtils.getFirst(ModelUtils.filter(topScope.getDeclaredFunctions(),underCaret.getDeclaration().getName())));
 
         List<Occurence> allOccurences = underCaret.getAllOccurences();
@@ -74,7 +74,7 @@ public class ModelTest extends ModelTestBase {
 
     public void testVarsForBasicFileScope() throws Exception {
         Model model = getModel(prepareTestFile("testfiles/model/basicFileScope.php"));
-        PhpFileScope topScope = model.getFileScope();
+        FileScope topScope = model.getFileScope();
         FunctionScope fncScope = ModelUtils.getFirst(ModelUtils.filter(topScope.getDeclaredFunctions(),"myfnc"));
         assertNotNull(fncScope);
         VariableName varA = ModelUtils.getFirst(ModelUtils.filter(fncScope.getDeclaredVariables(),"$a"));
@@ -101,13 +101,13 @@ public class ModelTest extends ModelTestBase {
 
     public void testGlobalVars2() throws Exception {
         Model model = getModel(prepareTestFile("testfiles/model/globalvars2.php"));
-        PhpFileScope topScope = model.getFileScope();
+        FileScope topScope = model.getFileScope();
         varContainerTestForGlobal2(topScope);
     }
 
     public void testGlobalVars3() throws Exception {
         Model model = getModel(prepareTestFile("testfiles/model/globalvars3.php"));
-        PhpFileScope topScope = model.getFileScope();
+        FileScope topScope = model.getFileScope();
         FunctionScope fncScope = ModelUtils.getFirst(ModelUtils.filter(topScope.getDeclaredFunctions(),"fnc"));
         assertNotNull(fncScope);
         VariableName varA = ModelUtils.getFirst(ModelUtils.filter(topScope.getDeclaredVariables(),"$varA"));
@@ -129,7 +129,7 @@ public class ModelTest extends ModelTestBase {
 
     public void testFunctionVars2() throws Exception {
         Model model = getModel(prepareTestFile("testfiles/model/globalvars2.php"));
-        PhpFileScope topScope = model.getFileScope();
+        FileScope topScope = model.getFileScope();
         FunctionScope fncScope = ModelUtils.getFirst(ModelUtils.filter(topScope.getDeclaredFunctions(),"myfnc"));
         assertNotNull(fncScope);
         varContainerTestForGlobal2(fncScope);
@@ -137,7 +137,7 @@ public class ModelTest extends ModelTestBase {
 
     public void testScopes() throws Exception {
         Model model = getModel(prepareTestFile("testfiles/model/scope.php"));
-        PhpFileScope topScope = model.getFileScope();
+        FileScope topScope = model.getFileScope();
 
 
         List<? extends TypeScope> types = topScope.getDeclaredTypes();
@@ -157,19 +157,19 @@ public class ModelTest extends ModelTestBase {
                 case CLASS:
                     assertTrue(elm.getName().startsWith("cls"));
                     assertTrue(elm instanceof Scope);
-                    assertTrue(elm.getInScope() instanceof PhpFileScope);
+                    assertTrue(elm.getInScope() instanceof FileScope);
                     assertTrue(elm.getInScope() == topScope);
                     break;
                 case IFACE:
                     assertTrue(elm.getName().startsWith("iface"));
                     assertTrue(elm instanceof Scope);
-                    assertTrue(elm.getInScope() instanceof PhpFileScope);
+                    assertTrue(elm.getInScope() instanceof FileScope);
                     assertTrue(elm.getInScope() == topScope);
                     break;
                 case FUNCTION:
                     assertTrue(elm.getName().contains("fnc"));
                     assertTrue(elm instanceof Scope);
-                    assertTrue(elm.getInScope() instanceof PhpFileScope);
+                    assertTrue(elm.getInScope() instanceof FileScope);
                     assertTrue(elm.getInScope() == topScope);
                     break;
                 case VARIABLE:
@@ -184,13 +184,13 @@ public class ModelTest extends ModelTestBase {
 
     public void testFunctionScopes() throws Exception {
         Model model = getModel(prepareTestFile("testfiles/model/scope.php"));
-        PhpFileScope topScope = model.getFileScope();
+        FileScope topScope = model.getFileScope();
         assertEquals(1, ModelUtils.filter(topScope.getDeclaredFunctions(),"fnca").size());
         assertEquals(2,  ModelUtils.filter(topScope.getDeclaredFunctions(),"fnca", "fncb").size());
 
         FunctionScope fnca = ModelUtils.getFirst( ModelUtils.filter(topScope.getDeclaredFunctions(),"fnca"));
         assertNotNull(fnca);
-        assertTrue(fnca.getInScope() instanceof PhpFileScope);
+        assertTrue(fnca.getInScope() instanceof FileScope);
         assertSame(topScope, fnca.getInScope());
 
 
@@ -209,7 +209,7 @@ public class ModelTest extends ModelTestBase {
 
     public void testBasicFileScope() throws Exception {
         Model model = getModel(prepareTestFile("testfiles/model/basicFileScope.php"));
-        PhpFileScope program = model.getFileScope();
+        FileScope program = model.getFileScope();
         assertNotNull(program);
         assertEquals(12, program.getElements().size());
         //classes

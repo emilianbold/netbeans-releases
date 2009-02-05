@@ -44,7 +44,7 @@ import java.util.List;
 /**
  * @author Radek Matous
  */
-public interface PhpFileScope extends VariableScope {
+public interface FileScope extends VariableScope {
     List<? extends TypeScope> getDeclaredTypes();
     List<? extends ClassScope> getDeclaredClasses();
     List<? extends InterfaceScope> getDeclaredInterfaces();

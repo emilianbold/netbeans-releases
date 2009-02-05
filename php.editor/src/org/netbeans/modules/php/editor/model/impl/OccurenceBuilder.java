@@ -61,7 +61,7 @@ import org.netbeans.modules.php.editor.model.IndexScope;
 import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
-import org.netbeans.modules.php.editor.model.PhpFileScope;
+import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.Parameter;
@@ -336,7 +336,7 @@ class OccurenceBuilder {
         setOccurenceAsCurrent(nodeInfo);
     }
 
-    private void buildFieldDeclarations(String queryName, FileScope fileScope) {
+    private void buildFieldDeclarations(String queryName, FileScopeImpl fileScope) {
         //queryName = queryName.startsWith("$") ? queryName : ("$"+queryName);
         for (Entry<SingleFieldDeclarationInfo, FieldElementImpl> entry : fldDeclarations.entrySet()) {
             SingleFieldDeclarationInfo nodeInfo = entry.getKey();
@@ -346,7 +346,7 @@ class OccurenceBuilder {
         }
     }
     
-    private void buildFieldInvocations(String queryName, FileScope fileScope) {
+    private void buildFieldInvocations(String queryName, FileScopeImpl fileScope) {
         Map<String, List<FieldElementImpl>> unknownFieldNameCache = new HashMap<String, List<FieldElementImpl>>();
         for (Entry<ASTNodeInfo<FieldAccess>, Scope> entry : fieldInvocations.entrySet()) {
             ASTNodeInfo<FieldAccess> nodeInfo = entry.getKey();
@@ -392,7 +392,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildMethodDeclarations(String queryName, FileScope fileScope) {
+    private void buildMethodDeclarations(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<MethodDeclaration>, MethodScope> entry : methodDeclarations.entrySet()) {
             ASTNodeInfo<MethodDeclaration> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -401,7 +401,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildMethodInvocations(String queryName, FileScope fileScope) {
+    private void buildMethodInvocations(String queryName, FileScopeImpl fileScope) {
         Map<String, List<MethodScope>> unknownMethodNameCache = new HashMap<String, List<MethodScope>>();
         for (Entry<ASTNodeInfo<MethodInvocation>, Scope> entry : methodInvocations.entrySet()) {
             ASTNodeInfo<MethodInvocation> nodeInfo = entry.getKey();
@@ -437,7 +437,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildIncludes(String queryName, FileScope fileScope) {
+    private void buildIncludes(String queryName, FileScopeImpl fileScope) {
         for (Entry<IncludeInfo, IncludeElement> entry : includes.entrySet()) {
             IncludeInfo nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -446,7 +446,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildConstantInvocations(String queryName, FileScope fileScope) {
+    private void buildConstantInvocations(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<Scalar>, Scope> entry : constInvocations.entrySet()) {
             ASTNodeInfo<Scalar> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -458,7 +458,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildConstantDeclarations(String queryName, FileScope fileScope) {
+    private void buildConstantDeclarations(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<Scalar>, ConstantElement> entry : constDeclarations.entrySet()) {
             ASTNodeInfo<Scalar> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -468,7 +468,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildStaticConstantDeclarations(String queryName, FileScope fileScope) {
+    private void buildStaticConstantDeclarations(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<Identifier>, ClassConstantElement> entry : classConstantDeclarations.entrySet()) {
             ASTNodeInfo<Identifier> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -478,7 +478,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildStaticMethodInvocations(String queryName, FileScope fileScope) {
+    private void buildStaticMethodInvocations(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<StaticMethodInvocation>, Scope> entry : staticMethodInvocations.entrySet()) {
             ASTNodeInfo<StaticMethodInvocation> nodeInfo = entry.getKey();
             String methodName = nodeInfo.getName();
@@ -508,7 +508,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildStaticFieldInvocations(String queryName, FileScope fileScope) {
+    private void buildStaticFieldInvocations(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<StaticFieldAccess>, Scope> entry : staticFieldInvocations.entrySet()) {
             ASTNodeInfo<StaticFieldAccess> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -530,7 +530,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildStaticConstantInvocations(String queryName, FileScope fileScope) {
+    private void buildStaticConstantInvocations(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<StaticConstantAccess>, Scope> entry : staticConstantInvocations.entrySet()) {
             ASTNodeInfo<StaticConstantAccess> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -552,7 +552,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildDocTagsForClasses(String queryName, FileScope fileScope) {
+    private void buildDocTagsForClasses(String queryName, FileScopeImpl fileScope) {
         for (Entry<PhpDocTypeTagInfo, Scope> entry : docTags.entrySet()) {
             PhpDocTypeTagInfo nodeInfo = entry.getKey();
             if (Kind.CLASS.equals(nodeInfo.getKind()) && queryName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -566,7 +566,7 @@ class OccurenceBuilder {
         }
     }
     
-    private void buildClassInstanceCreation(String queryName, FileScope fileScope) {
+    private void buildClassInstanceCreation(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<ClassInstanceCreation>, Scope> entry : clasInstanceCreations.entrySet()) {
             ASTNodeInfo<ClassInstanceCreation> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -587,7 +587,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildClassNames(String queryName, FileScope fileScope) {
+    private void buildClassNames(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<ClassName>, Scope> entry : clasNames.entrySet()) {
             ASTNodeInfo<ClassName> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -600,7 +600,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildInterfaceIDs(String queryName, FileScope fileScope) {
+    private void buildInterfaceIDs(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<Identifier>, Scope> entry : ifaceIDs.entrySet()) {
             ASTNodeInfo<Identifier> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -613,7 +613,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildClassIDs(String queryName, FileScope fileScope) {
+    private void buildClassIDs(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<Identifier>, Scope> entry : clasIDs.entrySet()) {
             ASTNodeInfo<Identifier> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -627,7 +627,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildInterfaceDeclarations(String queryName, FileScope fileScope) {
+    private void buildInterfaceDeclarations(String queryName, FileScopeImpl fileScope) {
         for (Entry<InterfaceDeclarationInfo, InterfaceScope> entry : ifaceDeclarations.entrySet()) {
             InterfaceDeclarationInfo nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -637,7 +637,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildClassDeclarations(String queryName, FileScope fileScope) {
+    private void buildClassDeclarations(String queryName, FileScopeImpl fileScope) {
         for (Entry<ClassDeclarationInfo, ClassScope> entry : clasDeclarations.entrySet()) {
             ClassDeclarationInfo nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -647,7 +647,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildFunctionDeclarations(String queryName, FileScope fileScope) {
+    private void buildFunctionDeclarations(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<FunctionDeclaration>, FunctionScope> entry : fncDeclarations.entrySet()) {
             ASTNodeInfo<FunctionDeclaration> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -657,7 +657,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildFunctionInvocations(String queryName, FileScope fileScope) {
+    private void buildFunctionInvocations(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<FunctionInvocation>, Scope> entry : fncInvocations.entrySet()) {
             ASTNodeInfo<FunctionInvocation> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -670,7 +670,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildDocTagsForVars(String queryName, FileScope fileScope) {
+    private void buildDocTagsForVars(String queryName, FileScopeImpl fileScope) {
         for (Entry<PhpDocTypeTagInfo, Scope> entry : docTags.entrySet()) {
             PhpDocTypeTagInfo nodeInfo = entry.getKey();
             String name = nodeInfo.getName();
@@ -689,7 +689,7 @@ class OccurenceBuilder {
             }
         }
     }
-    private void buildDocTagsForFields(String queryName, FileScope fileScope) {
+    private void buildDocTagsForFields(String queryName, FileScopeImpl fileScope) {
         for (Entry<PhpDocTypeTagInfo, Scope> entry : docTags.entrySet()) {
             PhpDocTypeTagInfo nodeInfo = entry.getKey();
             String name = nodeInfo.getName();
@@ -717,7 +717,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildVariables(String queryName, FileScope fileScope) {
+    private void buildVariables(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<Variable>, Scope> entry : variables.entrySet()) {
             ASTNodeInfo<Variable> nodeInfo = entry.getKey();
             String name = nodeInfo.getName();
@@ -736,7 +736,7 @@ class OccurenceBuilder {
         }
     }
 
-    void build(FileScope fileScope) {
+    void build(FileScopeImpl fileScope) {
         if (currentNodeInfo != null) {
             ASTNodeInfo.Kind kind = currentNodeInfo.getKind();
             String name = currentNodeInfo.getName();
@@ -819,7 +819,7 @@ class OccurenceBuilder {
     private static List<? extends TypeScope> getClassName(VariableScope scp, VariableBase varBase) {
         String vartype = VariousUtils.extractTypeFroVariableBase(varBase, 
                 Collections.<String,AssignmentImpl>emptyMap());
-        PhpFileScope fileScope = ModelUtils.getFileScope(scp);
+        FileScope fileScope = ModelUtils.getFileScope(scp);
         return VariousUtils.getType(fileScope, scp, vartype, varBase.getStartOffset(), true);
     }
 
@@ -851,7 +851,7 @@ class OccurenceBuilder {
     }
 
     @SuppressWarnings("unchecked")
-    private static List<MethodScope> methods4TypeNames(FileScope fileScope, Set<String> typeNamesForIdentifier, final String name) {
+    private static List<MethodScope> methods4TypeNames(FileScopeImpl fileScope, Set<String> typeNamesForIdentifier, final String name) {
         List<ClassScope> classes = new ArrayList<ClassScope>();
         for (Iterator<String> it = typeNamesForIdentifier.iterator(); it.hasNext();) {
             String type = it.next();
@@ -867,7 +867,7 @@ class OccurenceBuilder {
     }
 
     @SuppressWarnings("unchecked")
-    private static List<FieldElementImpl> flds4TypeNames(FileScope fileScope, Set<String> typeNamesForIdentifier, final String name) {
+    private static List<FieldElementImpl> flds4TypeNames(FileScopeImpl fileScope, Set<String> typeNamesForIdentifier, final String name) {
         List<ClassScope> classes = new ArrayList<ClassScope>();
         for (Iterator<String> it = typeNamesForIdentifier.iterator(); it.hasNext();) {
             String type = it.next();
@@ -883,7 +883,7 @@ class OccurenceBuilder {
         return fields;
     }
 
-    private static List<MethodScope> name2Methods(FileScope fileScope, final String name, ASTNodeInfo<MethodInvocation> nodeInfo ) {
+    private static List<MethodScope> name2Methods(FileScopeImpl fileScope, final String name, ASTNodeInfo<MethodInvocation> nodeInfo ) {
         IndexScope indexScope = fileScope.getIndexScope();
         PHPIndex index = indexScope.getIndex();
         Set<String> typeNamesForIdentifier = index.typeNamesForIdentifier(name, null, NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.of(SearchScope.SOURCE, SearchScope.DEPENDENCIES));
@@ -906,7 +906,7 @@ class OccurenceBuilder {
         return methods;
     }
 
-    private static List<FieldElementImpl> name2Fields(FileScope fileScope, String name) {
+    private static List<FieldElementImpl> name2Fields(FileScopeImpl fileScope, String name) {
         IndexScope indexScope = fileScope.getIndexScope();
         PHPIndex index = indexScope.getIndex();
         Set<String> typeNamesForIdentifier = index.typeNamesForIdentifier((name.startsWith("$")) ? name.substring(1) : name,

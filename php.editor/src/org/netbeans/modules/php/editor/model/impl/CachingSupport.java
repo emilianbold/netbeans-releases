@@ -68,11 +68,11 @@ class CachingSupport {
 
     @CheckForNull
     static CachingSupport getInstance(ModelElement elem) {
-        FileScope fileScope = (FileScope) ModelUtils.getFileScope(elem);
+        FileScopeImpl fileScope = (FileScopeImpl) ModelUtils.getFileScope(elem);
         return (fileScope != null) ? fileScope.getCachingSupport() : null;
     }
 
-    private FileScope fileScope;
+    private FileScopeImpl fileScope;
     private List<ClassScope> classScopes = new ArrayList<ClassScope>();
     private List<InterfaceScope> ifaceScopes = new ArrayList<InterfaceScope>();
     private List<ConstantElement> constantScopes = new ArrayList<ConstantElement>();
@@ -85,7 +85,7 @@ class CachingSupport {
             new LinkedHashMap <TypeScope,List<ClassConstantElement>>();
 
 
-    CachingSupport(FileScope fileScope) {
+    CachingSupport(FileScopeImpl fileScope) {
         this.fileScope = fileScope;
     }
 

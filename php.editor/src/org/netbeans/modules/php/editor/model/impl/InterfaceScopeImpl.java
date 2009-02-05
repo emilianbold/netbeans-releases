@@ -55,7 +55,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
  *
  * @author Radek Matous
  */
-final class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
+class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
     InterfaceScopeImpl(Scope inScope, InterfaceDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo);
     }
@@ -79,7 +79,7 @@ final class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
         return sb.toString();
     }
 
-    public List<? extends MethodScope> getMethods() {
+    public final List<? extends MethodScope> getInheritedMethods() {
         List<MethodScope> allMethods = new ArrayList<MethodScope>();
         allMethods.addAll(getDeclaredMethods());
         IndexScope indexScope = ModelUtils.getIndexScope(this);

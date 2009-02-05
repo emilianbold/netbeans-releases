@@ -56,7 +56,7 @@ public final class Model {
         this.offset = -1;
     }
 
-    public PhpFileScope getFileScope() {
+    public FileScope getFileScope() {
         return getModelVisitor(-1).getModelScope();
     }
 

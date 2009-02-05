@@ -48,9 +48,9 @@ public interface ClassScope extends TypeScope {
     List<? extends InterfaceScope> getSuperInterfaces();
     List<? extends ClassScope> getSuperClasses();
     List<? extends MethodScope> getDeclaredMethods();
+    List<? extends MethodScope> getInheritedMethods();
     List<? extends FieldElement> getDeclaredFields();
     List<? extends ClassConstantElement> getDeclaredConstants();
-    List<? extends MethodScope> getMethods();
     List<? extends FieldElement> getFields();
 
     
