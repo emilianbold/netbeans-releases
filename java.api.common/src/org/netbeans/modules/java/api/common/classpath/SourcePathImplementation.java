@@ -208,19 +208,8 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                     }
                     result.add(new PRI());
                 }
-                // adds build/generated/wsclient to resources to be available for code completion
+                // add build/generated-sources subfolders to source roots
                 try {
-                    String buildDir = evaluator.getProperty(BUILD_DIR);
-                    if (buildDir!=null) {
-                        // generated/wsclient
-                        File f = new File (projectHelper.resolveFile(buildDir),"generated/wsclient"); //NOI18N
-                        URL url = f.toURI().toURL();
-                        if (!f.exists()) {  //NOI18N
-                            assert !url.toExternalForm().endsWith("/");  //NOI18N
-                            url = new URL (url.toExternalForm()+'/');   //NOI18N
-                        }
-                        result.add(ClassPathSupport.createResource(url));
-                    }
                     String buildGeneratedDirS = evaluator.getProperty(BUILD_GENERATED_DIR);
                     if (buildGeneratedDirS != null) {
                         File _buildGeneratedDir = projectHelper.resolveFile(buildGeneratedDirS);
@@ -240,9 +229,9 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                             }
                         }
                     }
-                    } catch (MalformedURLException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
                 this.resources = Collections.unmodifiableList(result);
             }
             return this.resources;

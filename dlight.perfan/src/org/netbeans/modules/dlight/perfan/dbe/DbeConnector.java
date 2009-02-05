@@ -38,319 +38,326 @@
  */
 package org.netbeans.modules.dlight.perfan.dbe;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.nio.channels.Channels;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.util.Locale;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.Future;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.modules.dlight.perfan.ipc.IPCException;
 import org.netbeans.modules.dlight.util.ExecUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.util.HostInfo;
-import org.netbeans.modules.nativeexecution.api.NativeTask;
-import org.netbeans.modules.nativeexecution.api.NativeTaskListener;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
+import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.util.HostInfoUtils;
 import org.openide.util.Exceptions;
 
-public class DbeConnector implements NativeTaskListener {
+public class DbeConnector implements Listener {
 
-  public final Object lock = new Object();
-  private static final char[] hex = {
-    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
-  };
-  protected Reader processOutput,  processError;
-  protected OutputStream processInput;
+    public final Object lock = new Object();
+    private static final char[] hex = {
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
+    };
+    protected Reader processOutput,  processError;
+    protected OutputStream processInput;
 //  private static final int L_PROGRESS = 0;
-  private static final int L_INTEGER = 1;
-  private static final int L_BOOLEAN = 2;
-  private static final int L_LONG = 3;
-  private static final int L_STRING = 4;
-  private static final int L_DOUBLE = 5;
-  private static final int L_ARRAY = 6;
-  private static final int L_OBJECT = 7;
-  private static final int L_CHAR = 8;
-  private int iVal;
-  private boolean bVal;
-  private long lVal;
-  private String sVal;
-  private Object aVal;
-  private DecimalFormat format;
-  private NativeTask idbeTask;
-  private final ExecutionEnvironment execEnv;
-  private final String experimentDirectory;
-  private volatile IDBEInterface idbe;
-  private String idbeCmd;
-  private ConnectorListener listener;
+    private static final int L_INTEGER = 1;
+    private static final int L_BOOLEAN = 2;
+    private static final int L_LONG = 3;
+    private static final int L_STRING = 4;
+    private static final int L_DOUBLE = 5;
+    private static final int L_ARRAY = 6;
+    private static final int L_OBJECT = 7;
+    private static final int L_CHAR = 8;
+    private int iVal;
+    private boolean bVal;
+    private long lVal;
+    private String sVal;
+    private Object aVal;
+    private DecimalFormat format;
+    private Future<Integer> idbeTask;
+    private final ExecutionEnvironment execEnv;
+    private final String experimentDirectory;
+    private volatile IDBEInterface idbe;
+    private String idbeCmd;
+    private ConnectorListener listener;
 
-
-  public DbeConnector(final ExecutionEnvironment execEnv, String experimentDirectory) {
-    format = new DecimalFormat();
-    format.setDecimalFormatSymbols(
-            new DecimalFormatSymbols(Locale.getDefault()));
-    this.execEnv = execEnv;
-    this.experimentDirectory = experimentDirectory;
-    idbeCmd = ExecUtil.getFullPath("perfan/" + HostInfo.getPlatformPath(execEnv) + "/prod/bin/idbe");
-    idbe = null;
-  }
-
-  public boolean connect(ConnectorListener listener) throws IOException {
-    if (idbe != null) {
-      return true;
+    public DbeConnector(final ExecutionEnvironment execEnv, String experimentDirectory) {
+        format = new DecimalFormat();
+        format.setDecimalFormatSymbols(
+                new DecimalFormatSymbols(Locale.getDefault()));
+        this.execEnv = execEnv;
+        this.experimentDirectory = experimentDirectory;
+        idbeCmd = ExecUtil.getFullPath("perfan/" + HostInfoUtils.getPlatformPath(execEnv) + "/prod/bin/idbe");
+        idbe = null;
     }
 
-    this.listener = listener;
-    
-    idbeTask = new NativeTask(execEnv, idbeCmd, null);
-    idbeTask.addListener(this);
-    idbeTask.submit(true, false);
-
-    try {
-      processOutput = new InputStreamReader(idbeTask.getInputStream());
-      processError = new BufferedReader(Channels.newReader(Channels.newChannel(idbeTask.getErrorStream()), "UTF-8"));
-      processInput = idbeTask.getOutputStream();
-
-      idbe = new IDBEInterface(this);
-
-      try {
-        idbe.waitForExperiment(experimentDirectory);
-        listener.connected(idbe);
-      } catch (TimeoutException ex) {
-        Exceptions.printStackTrace(ex);
-      }
-
-    } catch (IOException ex) {
-      Exceptions.printStackTrace(ex);
-    }
-
-    return true;
-  }
-
-  public void disconnect() {
-    idbeTask.cancel(true);
-    idbeTask.removeListener(this);
-    idbeTask = null;
-    idbe = null;
-  }
-
-  private int readByte() {
-    int val = 0;
-    try {
-      for (int i = 0; i < 2; i++) {
-        final int c = processOutput.read();
-        switch (c) {
-          case '0':
-          case '1':
-          case '2':
-          case '3':
-          case '4':
-          case '5':
-          case '6':
-          case '7':
-          case '8':
-          case '9':
-            val = val * 16 + c - '0';
-            break;
-          case 'a':
-          case 'b':
-          case 'c':
-          case 'd':
-          case 'e':
-          case 'f':
-            val = val * 16 + c - 'a' + 10;
-            break;
+    public boolean connect(ConnectorListener listener) throws IOException {
+        if (idbe != null) {
+            return true;
         }
-      }
-    } catch (IOException ioe) {
-      throw new IPCException(ioe);
-    }
-    return val;
-  }
 
-  private int readIntegerValue() {
-    // read 4 bytes ...
-    int val = readByte();
-    for (int i = 0; i < 3; i++) {
-      val = val * 256 + readByte();
-    }
-    return val;
-  }
+        this.listener = listener;
 
-  private long readLVal() {
-    long val = readByte();
-    for (int i = 0; i < 7; i++) {
-      val = val * 256 + readByte();
-    }
-    return val;
-  }
+        NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, idbeCmd).addNativeProcessListener(this);
+        ExecutionDescriptor descriptor = new ExecutionDescriptor().outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
 
-  private boolean readBVal() {
-    final int val = readByte();
-    return val != 0;
-  }
+            public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        });
 
-  private char readCVal() {
-    final int val = readByte();
-    return (char) val;
-  }
+        ExecutionService service = ExecutionService.newService(npb, descriptor, "idbe"); // NOI18N
+        idbeTask = service.run();
 
-  private double readDVal() {
-    final String s = readSVal();
-    final double DValue;
-    try {
-      DValue = format.parse(s).doubleValue();
-    } catch (ParseException ex) {
-      ex.printStackTrace();
-      return 0.0;
-    }
-    return DValue;
-  }
+//    try {
+//      processOutput = new InputStreamReader(idbeTask.getInputStream());
+//      processError = new BufferedReader(Channels.newReader(Channels.newChannel(idbeTask.getErrorStream()), "UTF-8"));
+//      processInput = idbeTask.getOutputStream();
+//
+//      idbe = new IDBEInterface(this);
+//
+//      try {
+//        idbe.waitForExperiment(experimentDirectory);
+//        listener.connected(idbe);
+//      } catch (TimeoutException ex) {
+//        Exceptions.printStackTrace(ex);
+//      }
+//
+//    } catch (IOException ex) {
+//      Exceptions.printStackTrace(ex);
+//    }
 
-  private String readSVal() {
-    StringBuilder sb = new StringBuilder();
-
-    int remainingLength = readIntegerValue();
-
-    if (remainingLength == -1) {
-      return null;
+        return true;
     }
 
-    try {
-      for (int i = 0; i < remainingLength; i++) {
-        sb.append((char)processOutput.read());
-      }
-    } catch (IOException ioe) {
-      throw new IPCException(ioe);
+    public void disconnect() {
+//    idbeTask.cancel(true);
+//    idbeTask.removeListener(this);
+        idbeTask = null;
+        idbe = null;
     }
 
-    return sb.toString();
-  }
-
-  private Object readAVal() {
-    boolean twoD = false;
-    int type = readByte();
-    if (type == L_ARRAY) {
-      twoD = true;
-      type = readByte();
-    }
-    final int len = readIntegerValue();
-    if (len == -1) {
-      return null;
-    }
-    switch (type) {
-      case L_INTEGER:
-        if (twoD) {
-          final int[][] array = new int[len][];
-          for (int i = 0; i < len; i++) {
-            array[i] = (int[]) readAVal();
-          }
-          return array;
-        } else {
-          final int[] array = new int[len];
-          for (int i = 0; i < len; i++) {
-            array[i] = readIntegerValue();
-          }
-          return array;
+    private int readByte() {
+        int val = 0;
+        try {
+            for (int i = 0; i < 2; i++) {
+                final int c = processOutput.read();
+                switch (c) {
+                    case '0':
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                    case '5':
+                    case '6':
+                    case '7':
+                    case '8':
+                    case '9':
+                        val = val * 16 + c - '0';
+                        break;
+                    case 'a':
+                    case 'b':
+                    case 'c':
+                    case 'd':
+                    case 'e':
+                    case 'f':
+                        val = val * 16 + c - 'a' + 10;
+                        break;
+                }
+            }
+        } catch (IOException ioe) {
+            throw new IPCException(ioe);
         }
-      //break;
-      case L_LONG:
-        if (twoD) {
-          final long[][] array = new long[len][];
-          for (int i = 0; i < len; i++) {
-            array[i] = (long[]) readAVal();
-          }
-          return array;
-        } else {
-          final long[] array = new long[len];
-          for (int i = 0; i < len; i++) {
-            array[i] = readLVal();
-          }
-          return array;
-        }
-      //break;
-      case L_DOUBLE:
-        if (twoD) {
-          final double[][] array = new double[len][];
-          for (int i = 0; i < len; i++) {
-            array[i] = (double[]) readAVal();
-          }
-          return array;
-        } else {
-          final double[] array = new double[len];
-          for (int i = 0; i < len; i++) {
-            array[i] = readDVal();
-          }
-          return array;
-        }
-      //break;
-      case L_BOOLEAN:
-        if (twoD) {
-          final boolean[][] array = new boolean[len][];
-          for (int i = 0; i < len; i++) {
-            array[i] = (boolean[]) readAVal();
-          }
-          return array;
-        } else {
-          final boolean[] array = new boolean[len];
-          for (int i = 0; i < len; i++) {
-            array[i] = readBVal();
-          }
-          return array;
-        }
-      //break;
-      case L_CHAR:
-        if (twoD) {
-          final char[][] array = new char[len][];
-          for (int i = 0; i < len; i++) {
-            array[i] = (char[]) readAVal();
-          }
-          return array;
-        } else {
-          final char[] array = new char[len];
-          for (int i = 0; i < len; i++) {
-            array[i] = readCVal();
-          }
-          return array;
-        }
-      //break;
-      case L_STRING:
-        if (twoD) {
-          final String[][] array = new String[len][];
-          for (int i = 0; i < len; i++) {
-            array[i] = (String[]) readAVal();
-          }
-          return array;
-        } else {
-          final String[] array = new String[len];
-          for (int i = 0; i < len; i++) {
-            array[i] = readSVal();
-          }
-          return array;
-        }
-      //break;
-      case L_OBJECT:
-        if (twoD) {
-          final Object[][] array = new Object[len][];
-          for (int i = 0; i < len; i++) {
-            array[i] = (Object[]) readAVal();
-          }
-          return array;
-        } else {
-          final Object[] array = new Object[len];
-          for (int i = 0; i < len; i++) {
-            array[i] = readAVal();
-          }
-          return array;
-        }
-      //break;
+        return val;
     }
-    return null;
-  }
+
+    private int readIntegerValue() {
+        // read 4 bytes ...
+        int val = readByte();
+        for (int i = 0; i < 3; i++) {
+            val = val * 256 + readByte();
+        }
+        return val;
+    }
+
+    private long readLVal() {
+        long val = readByte();
+        for (int i = 0; i < 7; i++) {
+            val = val * 256 + readByte();
+        }
+        return val;
+    }
+
+    private boolean readBVal() {
+        final int val = readByte();
+        return val != 0;
+    }
+
+    private char readCVal() {
+        final int val = readByte();
+        return (char) val;
+    }
+
+    private double readDVal() {
+        final String s = readSVal();
+        final double DValue;
+        try {
+            DValue = format.parse(s).doubleValue();
+        } catch (ParseException ex) {
+            ex.printStackTrace();
+            return 0.0;
+        }
+        return DValue;
+    }
+
+    private String readSVal() {
+        StringBuilder sb = new StringBuilder();
+
+        int remainingLength = readIntegerValue();
+
+        if (remainingLength == -1) {
+            return null;
+        }
+
+        try {
+            for (int i = 0; i < remainingLength; i++) {
+                sb.append((char) processOutput.read());
+            }
+        } catch (IOException ioe) {
+            throw new IPCException(ioe);
+        }
+
+        return sb.toString();
+    }
+
+    private Object readAVal() {
+        boolean twoD = false;
+        int type = readByte();
+        if (type == L_ARRAY) {
+            twoD = true;
+            type = readByte();
+        }
+        final int len = readIntegerValue();
+        if (len == -1) {
+            return null;
+        }
+        switch (type) {
+            case L_INTEGER:
+                if (twoD) {
+                    final int[][] array = new int[len][];
+                    for (int i = 0; i < len; i++) {
+                        array[i] = (int[]) readAVal();
+                    }
+                    return array;
+                } else {
+                    final int[] array = new int[len];
+                    for (int i = 0; i < len; i++) {
+                        array[i] = readIntegerValue();
+                    }
+                    return array;
+                }
+            //break;
+            case L_LONG:
+                if (twoD) {
+                    final long[][] array = new long[len][];
+                    for (int i = 0; i < len; i++) {
+                        array[i] = (long[]) readAVal();
+                    }
+                    return array;
+                } else {
+                    final long[] array = new long[len];
+                    for (int i = 0; i < len; i++) {
+                        array[i] = readLVal();
+                    }
+                    return array;
+                }
+            //break;
+            case L_DOUBLE:
+                if (twoD) {
+                    final double[][] array = new double[len][];
+                    for (int i = 0; i < len; i++) {
+                        array[i] = (double[]) readAVal();
+                    }
+                    return array;
+                } else {
+                    final double[] array = new double[len];
+                    for (int i = 0; i < len; i++) {
+                        array[i] = readDVal();
+                    }
+                    return array;
+                }
+            //break;
+            case L_BOOLEAN:
+                if (twoD) {
+                    final boolean[][] array = new boolean[len][];
+                    for (int i = 0; i < len; i++) {
+                        array[i] = (boolean[]) readAVal();
+                    }
+                    return array;
+                } else {
+                    final boolean[] array = new boolean[len];
+                    for (int i = 0; i < len; i++) {
+                        array[i] = readBVal();
+                    }
+                    return array;
+                }
+            //break;
+            case L_CHAR:
+                if (twoD) {
+                    final char[][] array = new char[len][];
+                    for (int i = 0; i < len; i++) {
+                        array[i] = (char[]) readAVal();
+                    }
+                    return array;
+                } else {
+                    final char[] array = new char[len];
+                    for (int i = 0; i < len; i++) {
+                        array[i] = readCVal();
+                    }
+                    return array;
+                }
+            //break;
+            case L_STRING:
+                if (twoD) {
+                    final String[][] array = new String[len][];
+                    for (int i = 0; i < len; i++) {
+                        array[i] = (String[]) readAVal();
+                    }
+                    return array;
+                } else {
+                    final String[] array = new String[len];
+                    for (int i = 0; i < len; i++) {
+                        array[i] = readSVal();
+                    }
+                    return array;
+                }
+            //break;
+            case L_OBJECT:
+                if (twoD) {
+                    final Object[][] array = new Object[len][];
+                    for (int i = 0; i < len; i++) {
+                        array[i] = (Object[]) readAVal();
+                    }
+                    return array;
+                } else {
+                    final Object[] array = new Object[len];
+                    for (int i = 0; i < len; i++) {
+                        array[i] = readAVal();
+                    }
+                    return array;
+                }
+            //break;
+        }
+        return null;
+    }
 
 //  private void readProgress() {
 //    //STUB
@@ -369,254 +376,257 @@ public class DbeConnector implements NativeTaskListener {
 //      }
 //    }
 //  }
-  private void readResult() {
-    for (;;) {
-      final int tVal = readByte();
-      switch (tVal) {
+    private void readResult() {
+        for (;;) {
+            final int tVal = readByte();
+            switch (tVal) {
 //        case L_PROGRESS:
 //          readProgress();
 //          continue;
-        case L_INTEGER:
-          iVal = readIntegerValue();
+                case L_INTEGER:
+                    iVal = readIntegerValue();
 //          System.out.println("L_INTEGER " + iVal + " recieved!");
-          break;
-        case L_LONG:
-          lVal = readLVal();
+                    break;
+                case L_LONG:
+                    lVal = readLVal();
 //          System.out.println("L_LONG " + lVal + " recieved!");
-          break;
-        case L_BOOLEAN:
-          bVal = readBVal();
+                    break;
+                case L_BOOLEAN:
+                    bVal = readBVal();
 //          System.out.println("L_BOOLEAN " + bVal + " recieved!");
-          break;
-        case L_STRING:
-          sVal = readSVal();
+                    break;
+                case L_STRING:
+                    sVal = readSVal();
 //          System.out.println("L_STRING " + sVal + " recieved!");
-          break;
-        case L_ARRAY:
-          aVal = readAVal();
+                    break;
+                case L_ARRAY:
+                    aVal = readAVal();
 //          System.out.println("L_ARRAY " + aVal + " recieved!");
-          break;
-        default:
+                    break;
+                default:
 //          Gizmo.err.log("IPC error in readResult(): Unknown code " + tVal); // NOI18N
 //          System.out.println("UNKNOWN!!! " + tVal + " recieved!");
-          break;
-      }
-      return;
-    }
-  }
-
-  public int recvInt() {
-    readResult();
-    return iVal;
-  }
-
-  public String recvString() {
-    readResult();
-    return sVal;
-  }
-
-  public long recvLong() {
-    readResult();
-    return lVal;
-  }
-
-  public boolean recvBoolean() {
-    readResult();
-    return bVal;
-  }
-
-  public Object recvObject() {
-    readResult();
-    return aVal;
-  }
-
-  private void sendByte(final int b) {
-    synchronized (lock) {
-      try {
-        processInput.write(hex[(b >> 4) & 0xf]);
-        processInput.write(hex[b & 0xf]);
-        processInput.flush();
-      } catch (IOException ioe) {
-        throw new IPCException(ioe);
-      }
-    }
-  }
-
-  private void sendVal(final String s) {
-    synchronized (lock) {
-      if (s == null) {
-        sendVal(-1);
-        return;
-      }
-      byte[] sb = s.getBytes();
-      sendVal(sb.length);
-      try {
-        processInput.write(sb, 0, sb.length);
-        processInput.flush();
-      } catch (IOException ioe) {
-        throw new IPCException(ioe);
-      }
-    }
-  }
-
-  private void sendVal(final int i) {
-    synchronized (lock) {
-      try {
-        for (int j = 28; j >= 0; j = j - 4) {
-          processInput.write(hex[(i >> j) & 0xf]);
+                    break;
+            }
+            return;
         }
-        processInput.flush();
-      } catch (IOException ioe) {
-        throw new IPCException(ioe);
-      }
     }
-  }
 
-  private void sendVal(final long l) {
-    synchronized (lock) {
-      try {
-        for (int j = 60; j >= 0; j = j - 4) {
-          processInput.write(hex[(int) ((l >> j) & 0xf)]);
+    public int recvInt() {
+        readResult();
+        return iVal;
+    }
+
+    public String recvString() {
+        readResult();
+        return sVal;
+    }
+
+    public long recvLong() {
+        readResult();
+        return lVal;
+    }
+
+    public boolean recvBoolean() {
+        readResult();
+        return bVal;
+    }
+
+    public Object recvObject() {
+        readResult();
+        return aVal;
+    }
+
+    private void sendByte(final int b) {
+        synchronized (lock) {
+            try {
+                processInput.write(hex[(b >> 4) & 0xf]);
+                processInput.write(hex[b & 0xf]);
+                processInput.flush();
+            } catch (IOException ioe) {
+                throw new IPCException(ioe);
+            }
         }
-        processInput.flush();
-      } catch (IOException ioe) {
-        throw new IPCException(ioe);
-      }
     }
-  }
 
-  private void sendVal(final boolean b) {
-    sendByte(b ? 1 : 0);
-  }
-
-  private void sendVal(final char c) {
-    sendByte((int) c);
-  }
-
-  private void sendVal(final double d) {
-    sendVal(Double.toString(d));
-  }
-
-  private void sendVal(final Object object) {
-    synchronized (lock) {
-      if (object == null) {
-        sendByte(L_INTEGER);
-        sendVal(-1);
-        return;
-      }
-
-      if (object instanceof double[]) {
-        sendByte(L_DOUBLE);
-        final double[] array = (double[]) object;
-        sendVal(array.length);
-        for (int i = 0; i < array.length; i++) {
-          sendVal(array[i]);
+    private void sendVal(final String s) {
+        synchronized (lock) {
+            if (s == null) {
+                sendVal(-1);
+                return;
+            }
+            byte[] sb = s.getBytes();
+            sendVal(sb.length);
+            try {
+                processInput.write(sb, 0, sb.length);
+                processInput.flush();
+            } catch (IOException ioe) {
+                throw new IPCException(ioe);
+            }
         }
-      } else if (object instanceof int[]) {
-        sendByte(L_INTEGER);
-        final int[] array = (int[]) object;
-        sendVal(array.length);
-        for (int i = 0; i < array.length; i++) {
-          sendVal(array[i]);
+    }
+
+    private void sendVal(final int i) {
+        synchronized (lock) {
+            try {
+                for (int j = 28; j >= 0; j = j - 4) {
+                    processInput.write(hex[(i >> j) & 0xf]);
+                }
+                processInput.flush();
+            } catch (IOException ioe) {
+                throw new IPCException(ioe);
+            }
         }
-      } else if (object instanceof long[]) {
-        sendByte(L_LONG);
-        final long[] array = (long[]) object;
-        sendVal(array.length);
-        for (int i = 0; i < array.length; i++) {
-          sendVal(array[i]);
+    }
+
+    private void sendVal(final long l) {
+        synchronized (lock) {
+            try {
+                for (int j = 60; j >= 0; j = j - 4) {
+                    processInput.write(hex[(int) ((l >> j) & 0xf)]);
+                }
+                processInput.flush();
+            } catch (IOException ioe) {
+                throw new IPCException(ioe);
+            }
         }
-      } else if (object instanceof char[]) {
-        sendByte(L_CHAR);
-        final char[] array = (char[]) object;
-        sendVal(array.length);
-        for (int i = 0; i < array.length; i++) {
-          sendVal(array[i]);
+    }
+
+    private void sendVal(final boolean b) {
+        sendByte(b ? 1 : 0);
+    }
+
+    private void sendVal(final char c) {
+        sendByte((int) c);
+    }
+
+    private void sendVal(final double d) {
+        sendVal(Double.toString(d));
+    }
+
+    private void sendVal(final Object object) {
+        synchronized (lock) {
+            if (object == null) {
+                sendByte(L_INTEGER);
+                sendVal(-1);
+                return;
+            }
+
+            if (object instanceof double[]) {
+                sendByte(L_DOUBLE);
+                final double[] array = (double[]) object;
+                sendVal(array.length);
+                for (int i = 0; i < array.length; i++) {
+                    sendVal(array[i]);
+                }
+            } else if (object instanceof int[]) {
+                sendByte(L_INTEGER);
+                final int[] array = (int[]) object;
+                sendVal(array.length);
+                for (int i = 0; i < array.length; i++) {
+                    sendVal(array[i]);
+                }
+            } else if (object instanceof long[]) {
+                sendByte(L_LONG);
+                final long[] array = (long[]) object;
+                sendVal(array.length);
+                for (int i = 0; i < array.length; i++) {
+                    sendVal(array[i]);
+                }
+            } else if (object instanceof char[]) {
+                sendByte(L_CHAR);
+                final char[] array = (char[]) object;
+                sendVal(array.length);
+                for (int i = 0; i < array.length; i++) {
+                    sendVal(array[i]);
+                }
+            } else if (object instanceof boolean[]) {
+                sendByte(L_BOOLEAN);
+                final boolean[] array = (boolean[]) object;
+                sendVal(array.length);
+                for (int i = 0; i < array.length; i++) {
+                    sendVal(array[i]);
+                }
+            } else if (object instanceof String[]) {
+                sendByte(L_STRING);
+                final String[] array = (String[]) object;
+                sendVal(array.length);
+                for (int i = 0; i < array.length; i++) {
+                    sendVal(array[i]);
+                }
+            } else if (object instanceof Object[]) {
+                sendByte(L_OBJECT);
+                final Object[] array = (Object[]) object;
+                sendVal(array.length);
+                for (int i = 0; i < array.length; i++) {
+                    sendVal(array[i]);
+                }
+            }
         }
-      } else if (object instanceof boolean[]) {
-        sendByte(L_BOOLEAN);
-        final boolean[] array = (boolean[]) object;
-        sendVal(array.length);
-        for (int i = 0; i < array.length; i++) {
-          sendVal(array[i]);
+    }
+
+    public void send(final int i) {
+        synchronized (lock) {
+            sendByte(L_INTEGER);
+            sendVal(i);
         }
-      } else if (object instanceof String[]) {
-        sendByte(L_STRING);
-        final String[] array = (String[]) object;
-        sendVal(array.length);
-        for (int i = 0; i < array.length; i++) {
-          sendVal(array[i]);
+    }
+
+    public void send(final long l) {
+        synchronized (lock) {
+            sendByte(L_LONG);
+            sendVal(l);
         }
-      } else if (object instanceof Object[]) {
-        sendByte(L_OBJECT);
-        final Object[] array = (Object[]) object;
-        sendVal(array.length);
-        for (int i = 0; i < array.length; i++) {
-          sendVal(array[i]);
+    }
+
+    public void send(final boolean b) {
+        synchronized (lock) {
+            sendByte(L_BOOLEAN);
+            sendVal(b);
         }
-      }
     }
-  }
 
-  public void send(final int i) {
-    synchronized (lock) {
-      sendByte(L_INTEGER);
-      sendVal(i);
+    public void send(final String s) {
+        synchronized (lock) {
+            sendByte(L_STRING);
+            sendVal(s);
+        }
     }
-  }
 
-  public void send(final long l) {
-    synchronized (lock) {
-      sendByte(L_LONG);
-      sendVal(l);
+    public void send(final Object object) {
+        synchronized (lock) {
+            sendByte(L_ARRAY);
+            sendVal(object);
+        }
     }
-  }
 
-  public void send(final boolean b) {
-    synchronized (lock) {
-      sendByte(L_BOOLEAN);
-      sendVal(b);
+    private void reconnect() {
+        idbe = null;
+        try {
+            connect(listener);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
-  }
 
-  public void send(final String s) {
-    synchronized (lock) {
-      sendByte(L_STRING);
-      sendVal(s);
+//  public void taskStarted(NativeTask task) {
+//  }
+//
+//  public void taskFinished(NativeTask task, int result) {
+//    System.out.println("XXXXXXXXXX Idbe finished!");
+//    reconnect();
+//  }
+//
+//  public void taskCancelled(NativeTask task, CancellationException cex) {
+//    System.out.println("XXXXXXXXXX Idbe cancelled!");
+//    idbe = null;
+//  }
+//
+//  public void taskError(NativeTask task, Throwable t) {
+//    System.out.println("XXXXXXXXXX Idbe Error - Need restarting!");
+//    reconnect();
+//  }
+    public void processStateChanged(NativeProcess process, State oldState, State newState) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
-  }
-
-  public void send(final Object object) {
-    synchronized (lock) {
-      sendByte(L_ARRAY);
-      sendVal(object);
-    }
-  }
-
-  private void reconnect() {
-    idbe = null;
-    try {
-      connect(listener);
-    } catch (IOException ex) {
-      Exceptions.printStackTrace(ex);
-    }
-  }
-
-  public void taskStarted(NativeTask task) {
-  }
-
-  public void taskFinished(NativeTask task, int result) {
-    System.out.println("XXXXXXXXXX Idbe finished!");
-    reconnect();
-  }
-
-  public void taskCancelled(NativeTask task, CancellationException cex) {
-    System.out.println("XXXXXXXXXX Idbe cancelled!");
-    idbe = null;
-  }
-
-  public void taskError(NativeTask task, Throwable t) {
-    System.out.println("XXXXXXXXXX Idbe Error - Need restarting!");
-    reconnect();
-  }
 }

@@ -38,14 +38,11 @@
  */
 package org.netbeans.modules.nativeexecution.util;
 
-import org.netbeans.modules.nativeexecution.api.support.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.NativeTask;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ObservableAction;
 import com.jcraft.jsch.ChannelShell;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-import java.awt.event.ActionEvent;
 import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.IOException;
@@ -62,17 +59,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.nativeexecution.support.ConnectionManagerAccessor;
-import org.netbeans.modules.nativeexecution.ui.GrantPrivilegesDialog;
+import org.netbeans.modules.nativeexecution.api.impl.ConnectionManagerAccessor;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.support.ui.GrantPrivilegesDialog;
 import org.netbeans.modules.nativeexecution.support.Encrypter;
+import org.netbeans.modules.nativeexecution.support.InputRedirectorFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.windows.InputOutput;
 
 /**
  * Supporting class to provide functionality of requesting additional
@@ -162,16 +165,23 @@ public final class SolarisPrivilegesSupport {
          */
 
         CharArrayWriter outWriter = new CharArrayWriter();
-        NativeTask ppriv = new NativeTask(
-                execEnv,
-                "/bin/ppriv", // NOI18N
-                new String[]{"-v $$ | /bin/grep [IL]"}); // NOI18N
-        ppriv.redirectOutTo(outWriter);
-        ppriv.submit(true, false);
+
+        NativeProcessBuilder npb =
+                new NativeProcessBuilder(execEnv, "/bin/ppriv").setArguments("-v $$ | /bin/grep [IL]"); // NOI18N
+
+        ExecutionDescriptor descriptor =
+                new ExecutionDescriptor().inputOutput(
+                InputOutput.NULL).outProcessorFactory(
+                new InputRedirectorFactory(outWriter));
+
+        ExecutionService execService = ExecutionService.newService(
+                npb, descriptor, "getExecutionPrivileges"); // NOI18N
+
+        Future<Integer> fresult = execService.run();
         int result = -1;
 
         try {
-            result = ppriv.get();
+            result = fresult.get();
         } catch (ExecutionException ex) {
             Exceptions.printStackTrace(ex);
             return Collections.emptyList();
@@ -304,7 +314,7 @@ public final class SolarisPrivilegesSupport {
         }
 
         @Override
-        protected Boolean performAction(ActionEvent e) {
+        protected Boolean performAction() {
             SolarisPrivilegesSupport sup = SolarisPrivilegesSupport.getInstance();
             return sup.requestExecutionPrivileges(execEnv, requestedPrivileges);
         }
@@ -346,7 +356,7 @@ public final class SolarisPrivilegesSupport {
         private static void doRequestLocal(final ExecutionEnvironment execEnv,
                 final String requestedPrivs, String user, String passwd) {
 
-            String osPath = HostInfo.getPlatformPath(execEnv);
+            String osPath = HostInfoUtils.getPlatformPath(execEnv);
             String privp = String.format("bin/%s/privp", osPath); // NOI18N
 
             InstalledFileLocator fl = InstalledFileLocator.getDefault();

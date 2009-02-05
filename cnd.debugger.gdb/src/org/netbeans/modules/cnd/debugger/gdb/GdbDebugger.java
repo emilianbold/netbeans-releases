@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.debugger.gdb;
 
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -88,8 +87,8 @@ import org.netbeans.modules.cnd.debugger.gdb.timer.GdbTimer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.netbeans.modules.cnd.execution.Unbuffer;
-import org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -140,7 +139,7 @@ public class GdbDebugger implements PropertyChangeListener {
     private LastGoState                 lastGo;
     private String                      lastStop;
 
-    private static final int            DEBUG_ATTACH = ProjectActionEvent.CHECK_EXECUTABLE;
+    private static final ProjectActionEvent.Type DEBUG_ATTACH = ProjectActionEvent.Type.CHECK_EXECUTABLE;
 
     /** ID of GDB Debugger Engine for C */
     public static final String          ENGINE_ID = "netbeans-cnd-GdbSession/C"; // NOI18N
@@ -251,7 +250,7 @@ public class GdbDebugger implements PropertyChangeListener {
             profile = (GdbProfile) pae.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
             conType = hkey.equals(CompilerSetManager.LOCALHOST) ? pae.getProfile().getConsoleType().getValue() : RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
             platform = ((MakeConfiguration) pae.getConfiguration()).getPlatform().getValue();
-            if (platform != PlatformTypes.PLATFORM_WINDOWS && conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW && pae.getID() != DEBUG_ATTACH) {
+            if (platform != PlatformTypes.PLATFORM_WINDOWS && conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW && pae.getType() != DEBUG_ATTACH) {
                 termpath = pae.getProfile().getTerminalPath();
             }
             if (!Boolean.getBoolean("gdb.suppress.timeout")) {
@@ -280,7 +279,7 @@ public class GdbDebugger implements PropertyChangeListener {
             gdb.environment_directory(runDirectory);
             gdb.gdb_show("language"); // NOI18N
             gdb.gdb_set("print repeat", Integer.toString(CppSettings.getDefault().getArrayRepeatThreshold())); // NOI18N
-            if (pae.getID() == DEBUG_ATTACH) {
+            if (pae.getType() == DEBUG_ATTACH) {
                 String pgm = null;
                 boolean isSharedLibrary = false;
                 final String path = getFullPath(baseDir, pae.getExecutable());
@@ -366,7 +365,7 @@ public class GdbDebugger implements PropertyChangeListener {
                         gdb.set_new_console();
                     }
                 }
-                if (pae.getID() == ProjectActionEvent.DEBUG_STEPINTO) {
+                if (pae.getType() == ProjectActionEvent.Type.DEBUG_STEPINTO) {
                     continueAfterFirstStop = false; // step into project
                 }
                 gdb.break_insert_temporary("main"); // NOI18N
@@ -877,11 +876,11 @@ public class GdbDebugger implements PropertyChangeListener {
                     ProjectActionEvent pae = lookupProvider.lookupFirst(null, ProjectActionEvent.class);
                     if (state == State.RUNNING) {
                         gdb.exec_interrupt();
-                        if (pae.getID() != DEBUG_ATTACH) {
+                        if (pae.getType() != DEBUG_ATTACH) {
                             gdb.exec_abort();
                         }
                     }
-                    if (pae.getID() == DEBUG_ATTACH) {
+                    if (pae.getType() == DEBUG_ATTACH) {
                         gdb.target_detach();
                     }
                     gdb.gdb_exit();
@@ -1937,7 +1936,7 @@ public class GdbDebugger implements PropertyChangeListener {
 
             if (path != null) {
                 ProjectActionEvent pae = new ProjectActionEvent(project,
-                        ProjectActionEvent.CHECK_EXECUTABLE, pinfo.getDisplayName(), path, conf, null, false);
+                        ProjectActionEvent.Type.CHECK_EXECUTABLE, pinfo.getDisplayName(), path, conf, null, false);
                 DebuggerEngine[] es = DebuggerManager.getDebuggerManager().startDebugging(
                         DebuggerInfo.create(SESSION_PROVIDER_ID, new Object[] { pae, Long.valueOf(pid) }));
                 if (es == null) {
@@ -1977,9 +1976,8 @@ public class GdbDebugger implements PropertyChangeListener {
 
         if (path.length() == 0) {
             ProjectActionEvent pae = new ProjectActionEvent(pinfo.getProject(),
-                    ProjectActionEvent.CHECK_EXECUTABLE, pinfo.getDisplayName(), path, conf, null, false);
-            DefaultProjectActionHandler.getInstance().actionPerformed( new ActionEvent(
-                    new ProjectActionEvent[] { pae }, ProjectActionEvent.CHECK_EXECUTABLE, null));
+                    ProjectActionEvent.Type.CHECK_EXECUTABLE, pinfo.getDisplayName(), path, conf, null, false);
+            ProjectActionSupport.getInstance().fireActionPerformed(new ProjectActionEvent[] { pae });
             path = conf.getMakefileConfiguration().getOutput().getValue().replace("\\", "/"); // NOI18N
         }
         return path;
@@ -2484,7 +2482,7 @@ public class GdbDebugger implements PropertyChangeListener {
 
     private boolean isAttaching() {
         ProjectActionEvent pae = lookupProvider.lookupFirst(null, ProjectActionEvent.class);
-        return pae.getID() == DEBUG_ATTACH;
+        return pae.getType() == DEBUG_ATTACH;
     }
 
     private static double parseGdbVersionString(String msg) {

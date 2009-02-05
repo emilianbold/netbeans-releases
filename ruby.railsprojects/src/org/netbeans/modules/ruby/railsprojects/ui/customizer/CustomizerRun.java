@@ -416,7 +416,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(urlHelpLabel, "(relative, e.g. products/list)");
+        org.openide.awt.Mnemonics.setLocalizedText(urlHelpLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_URL_Help")); // NOI18N
 
         org.jdesktop.layout.GroupLayout mainPanelLayout = new org.jdesktop.layout.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
@@ -510,12 +510,10 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                         .add(rakeLabel)
                         .add(34, 34, 34)))
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(rakeHelpLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
+                    .add(rakeHelpLabel)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                        .add(encoding, 0, 458, Short.MAX_VALUE)
-                        .add(rakeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE)))
+                        .add(encoding, 0, 446, Short.MAX_VALUE)
+                        .add(rakeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(

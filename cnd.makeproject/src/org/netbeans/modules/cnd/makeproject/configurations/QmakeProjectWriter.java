@@ -92,6 +92,7 @@ public class QmakeProjectWriter {
         QMAKE_CC,
         QMAKE_CXX,
         MOC_DIR,
+        RCC_DIR,
         UI_DIR,
         OBJECTS_DIR
     }
@@ -177,6 +178,8 @@ public class QmakeProjectWriter {
                 configuration.expandMacros(ConfigurationMakefileWriter.getObjectDir(configuration)));
         write(bw, Variable.MOC_DIR, Operation.SET,
                 configuration.expandMacros(configuration.getQmakeConfiguration().getMocDir().getValue()));
+        write(bw, Variable.RCC_DIR, Operation.SET,
+                configuration.expandMacros(configuration.getQmakeConfiguration().getRccDir().getValue()));
         write(bw, Variable.UI_DIR, Operation.SET,
                 configuration.expandMacros(configuration.getQmakeConfiguration().getUiDir().getValue()));
 
@@ -188,10 +191,8 @@ public class QmakeProjectWriter {
         CompilerSet compilerSet = configuration.getCompilerSet().getCompilerSet();
         OptionToString optionVisitor = new OptionToString(compilerSet, null);
         write(bw, Variable.DEFINES, Operation.ADD,
-                configuration.getCCompilerConfiguration().getPreprocessorConfiguration().toString(optionVisitor) +
                 configuration.getCCCompilerConfiguration().getPreprocessorConfiguration().toString(optionVisitor));
         write(bw, Variable.INCLUDEPATH, Operation.ADD,
-                configuration.getCCompilerConfiguration().getIncludeDirectories().toString(optionVisitor) +
                 configuration.getCCCompilerConfiguration().getIncludeDirectories().toString(optionVisitor));
         LibraryToString libVisitor = new LibraryToString();
         write(bw, Variable.LIBS, Operation.ADD,
