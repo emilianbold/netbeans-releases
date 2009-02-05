@@ -280,7 +280,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             String cspath = getCompilerSetPath(pae);
             gdb = new GdbProxy(this, gdbCommand, pae.getProfile().getEnvironment().getenv(),
                     runDirectory, termpath, cspath);
-            gdb.gdb_version();
+            // we should not continue until gdb version is initialized
+            initGdbVersion();
+
             gdb.environment_directory(runDirectory);
             gdb.gdb_show("language"); // NOI18N
             gdb.gdb_set("print repeat",  // NOI18N
@@ -464,6 +466,22 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
 		    finish(false);
 		}
 	    });
+        }
+    }
+
+    private final void initGdbVersion() {
+        String message = gdb.gdb_version().getResponse();
+
+        if (startupTimer != null) {
+            // Cancel the startup timer - we've got our first response from gdb
+            startupTimer.cancel();
+            startupTimer = null;
+        }
+
+        gdbVersion = parseGdbVersionString(message.substring(8));
+        //versionPeculiarity = GdbVersionPeculiarity.create(gdbVersion, platform);
+        if (message.contains("cygwin")) { // NOI18N
+            cygwin = true;
         }
     }
 
@@ -1178,7 +1196,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
 
     /** Handle gdb responses starting with '~' */
     public void consoleStreamOutput(int token, String omsg) {
-        CommandBuffer cb = gdb.getCommandBuffer(token);
         String msg;
 
         if (omsg.endsWith("\\n")) { // NOI18N
@@ -1186,20 +1203,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         } else {
             msg = omsg;
         }
+
+        CommandBuffer cb = gdb.getCommandBuffer(token);
         if (cb != null) {
             cb.append(omsg);
-        } else if (msg.startsWith("GNU gdb ")) { // NOI18N
-            if (startupTimer != null) {
-                // Cancel the startup timer - we've got our first response from gdb
-                startupTimer.cancel();
-                startupTimer = null;
-            }
-
-            // Now process the version information
-            gdbVersion = parseGdbVersionString(msg.substring(8));
-            if (msg.contains("cygwin")) { // NOI18N
-                cygwin = true;
-            }
         } else if (msg.toLowerCase().contains("mingw")) { // NOI18N
             mingw = true;
         } else if (msg.startsWith("Breakpoint ") && msg.contains(" at 0x")) { // NOI18N
