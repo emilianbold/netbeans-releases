@@ -87,9 +87,12 @@ public class GdbProxyEngine {
     private boolean active;
     private InteractiveCommandProvider provider = null;
     private RequestProcessor.Task gdbReader = null;
+
+    // This queue was created due to the issue 156138
+    private final RequestProcessor sendQueue = new RequestProcessor("sendQueue"); // NOI18N
     private final boolean timerOn = Boolean.getBoolean("gdb.proxy.timer"); // NOI18N
     
-    private final Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
+    private static final Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
 
     /**
      * Create a gdb process
@@ -221,7 +224,7 @@ public class GdbProxyEngine {
         }
     }
     
-    private int nextToken() {
+    private synchronized int nextToken() {
         return nextToken++;
     }
     
@@ -230,29 +233,18 @@ public class GdbProxyEngine {
      *
      * @param cmd - a command to be sent to the debugger
      */
-    public int sendCommand(String cmd) {
-        return sendCommand(null, cmd, false);
+    int sendCommand(String cmd) {
+        int token = nextToken();
+        sendCommand(token, cmd);
+        return token;
     }
     
-    public int sendCommand(CommandBuffer cb, String cmd) {
-        return sendCommand(cb, cmd, false);
-    }
-    
-    public synchronized int sendCommand(CommandBuffer cb, String cmd, boolean consoleCommand) {
+    private synchronized void sendCommand(final int token, final String cmd) {
         if (active) {
-            String time;
-            if (timerOn) {
-                time = Long.toString(System.currentTimeMillis()) + ':';
-            } else {
-                time = "";
-            }
-            int token = nextToken();
-            if (cb != null) {
-                cb.setID(token);
-            }
-            if (consoleCommand) {
-                token += 10000;
-            } else if (cmd.charAt(0) != '-') {
+            sendQueue.post(new Runnable() {
+                public void run() {
+                    String time = CommandBuffer.getTimePrefix(timerOn);
+                    if (cmd.charAt(0) != '-') {
                 tokenList.add(new CommandInfo(token, cmd));
             }
             StringBuilder fullcmd = new StringBuilder(String.valueOf(token));
@@ -260,16 +252,31 @@ public class GdbProxyEngine {
             fullcmd.append('\n');
             gdbProxy.getLogger().logMessage(time + fullcmd.toString());
             toGdb.print(fullcmd.toString());
-            return token;
-        } else {
-            return -1;
         }
+            });
+    }
     }
     
-    public int sendConsoleCommand(String cmd) {
-        return sendCommand(null, cmd, true);
+    CommandBuffer sendCommandEx(String cmd) {
+        return sendCommandEx(cmd, true);
     }
     
+    CommandBuffer sendCommandEx(String cmd, boolean waitForCompletion) {
+        int token = nextToken();
+        CommandBuffer cb = new CommandBuffer(gdbProxy, token);
+        gdbProxy.putCB(token, cb);
+        sendCommand(token, cmd);
+        if (waitForCompletion) {
+            cb.waitForCompletion();
+        }
+        return cb;
+    }
+
+    void sendConsoleCommand(String cmd) {
+        int token = nextToken() + 10000;
+        sendCommand(token, cmd);
+    }
+
     void stopSending() {
         active = false;
     }
@@ -280,12 +287,7 @@ public class GdbProxyEngine {
      * @return null if the reply is not recognized, otherwise return reply
      */
     private void processMessage(String msg) {
-        String time;
-        if (timerOn) {
-            time = Long.toString(System.currentTimeMillis()) + ':';
-        } else {
-            time = "";
-        }
+        String time = CommandBuffer.getTimePrefix(timerOn);
         if (msg.equals("(gdb)")) { // NOI18N
             return; // skip prompts
         }

@@ -44,10 +44,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
-import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
 
 /**
  * Describes a context of debugging
@@ -63,18 +60,25 @@ public class GdbContext implements PropertyChangeListener {
     private static final int SYNC_UPDATE_TIMEOUT=30000;
     
     public static final String PROP_REGISTERS = "Registers"; // NOI18N
+    public static final String PROP_STEP = "Step"; // NOI18N
+    public static final String PROP_EXIT = "Exit"; // NOI18N
     
     private GdbContext() {
         requests.put(PROP_REGISTERS, new Request() {
-            protected void request(CommandBuffer cb, GdbProxy gdb) {
-                gdb.data_list_register_values(cb, ""); // NOI18N
-                gdb.data_list_changed_registers(cb);
+            protected void request(GdbProxy gdb) {
+                gdb.data_list_register_values(""); // NOI18N
+                gdb.data_list_changed_registers();
             }
         });
         pcs.addPropertyChangeListener(this); // used to notify sync updates
     }
+
+    public void gdbExit() {
+        invalidate(true);
+        pcs.firePropertyChange(PROP_EXIT, 0, 1);
+    }
     
-    public void invalidate(boolean fireUpdates) {
+    private void invalidate(boolean fireUpdates) {
         cache.clear();
         
         // fire updates if requested
@@ -87,14 +91,15 @@ public class GdbContext implements PropertyChangeListener {
         }
     }
     
-    public void update() {
+    public void gdbStep() {
         invalidate(false);
         //request update of all properties that have listeners
         for (Map.Entry<String,Request> entry : requests.entrySet()) {
             if (hasListeners(entry.getKey())) {
-                entry.getValue().run(true);
+                entry.getValue().run(/*true*/);
             }
         }
+        pcs.firePropertyChange(PROP_STEP, 0, 1);
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -118,7 +123,7 @@ public class GdbContext implements PropertyChangeListener {
             }
             synchronized (lock) {
                 waitLocks.put(name, lock);
-                if (child || requests.get(name).run(true)) {
+                if (child || requests.get(name).run(/*true*/)) {
                     try {
                         lock.wait(SYNC_UPDATE_TIMEOUT);
                     } catch (InterruptedException ie) {
@@ -140,7 +145,10 @@ public class GdbContext implements PropertyChangeListener {
         pcs.addPropertyChangeListener(propertyName, listener);
         //request property update if needed
         if (!cache.containsKey(propertyName)) {
-            requests.get(propertyName).run(true);
+            Request request = requests.get(propertyName);
+            if (request != null) {
+                requests.get(propertyName).run(/*true*/);
+            }
         }
     }
     
@@ -161,11 +169,7 @@ public class GdbContext implements PropertyChangeListener {
     }
     
     public static GdbProxy getCurrentGdb() {
-        DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
-        if (currentEngine == null) {
-            return null;
-        }
-        GdbDebugger debugger = currentEngine.lookupFirst(null, GdbDebugger.class);
+        GdbDebugger debugger = GdbDebugger.getGdbDebugger();
         if (debugger == null) {
             return null;
         }
@@ -174,22 +178,22 @@ public class GdbContext implements PropertyChangeListener {
     
     /////// Request
     private static abstract class Request {
-        public boolean run(boolean async) {
+        public boolean run(/*boolean async*/) {
             GdbProxy gdb = getCurrentGdb();
             if (gdb != null) {
-                CommandBuffer cb = null;
-                if (!async) {
-                    cb = new CommandBuffer(gdb);
-                }
-                request(cb, gdb);
-                if (cb != null) {
-                    cb.waitForCompletion();
-                }
+//                CommandBuffer cb = null;
+//                if (!async) {
+//                    cb = new CommandBuffer(gdb);
+//                }
+                request(/*cb,*/ gdb);
+//                if (cb != null) {
+//                    cb.waitForCompletion();
+//                }
                 return true;
             }
             return false;
         }
         
-        protected abstract void request(CommandBuffer cb, GdbProxy gdb);
+        protected abstract void request(/*CommandBuffer cb, */GdbProxy gdb);
     }
 }

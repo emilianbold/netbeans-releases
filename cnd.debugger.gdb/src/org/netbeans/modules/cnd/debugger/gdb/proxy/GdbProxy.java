@@ -52,6 +52,7 @@ package org.netbeans.modules.cnd.debugger.gdb.proxy;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,9 +84,9 @@ public class GdbProxy implements GdbMiDefinitions {
     private final GdbDebugger debugger;
     private final GdbProxyEngine engine;
     private final GdbLogger gdbLogger;
-    private final Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
+    private static final Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
     
-    private final Map<Integer, CommandBuffer> map = new HashMap<Integer, CommandBuffer>();
+    private final Map<Integer, CommandBuffer> map = Collections.synchronizedMap(new HashMap<Integer, CommandBuffer>());
 
     /**
      * Creates a new instance of GdbProxy
@@ -145,9 +146,9 @@ public class GdbProxy implements GdbMiDefinitions {
     }
     
     /** Attach to a running program */
-    public int target_attach(CommandBuffer cb, String pid) {
+    public CommandBuffer target_attach(String pid) {
 //        return engine.sendCommand("-target-attach " + pid); // NOI18N - no implementaion
-        return engine.sendCommand(cb, "attach " + pid); // NOI18N
+        return engine.sendCommandEx("attach " + pid); // NOI18N
     }
     
     /** Detach from a running program */
@@ -166,8 +167,8 @@ public class GdbProxy implements GdbMiDefinitions {
     }
 
     /** Ask gdb for its version */
-    public int gdb_version() {
-        return engine.sendCommand("-gdb-version"); // NOI18N
+    public CommandBuffer gdb_version() {
+        return engine.sendCommandEx("-gdb-version"); // NOI18N
     }
 
     /** Ask gdb about a variable (currently used to find the current language) */
@@ -239,18 +240,14 @@ public class GdbProxy implements GdbMiDefinitions {
      *  Note: In gdb 6.5.50 the -threads-list-all-threads command isn't implemented so we
      *  revert to the gdb command "info threads".
      */
-    public int info_threads(CommandBuffer cb) {
-        return engine.sendCommand(cb, "info threads"); // NOI18N;
+    public CommandBuffer info_threads() {
+        return engine.sendCommandEx("info threads"); // NOI18N;
     }
     
-    public int info_threads() {
-        return engine.sendCommand("info threads"); // NOI18N;
+    public CommandBuffer info_files() {
+        return engine.sendCommandEx("info files"); // NOI18N
     }
     
-    public int info_files(CommandBuffer cb) {
-        return engine.sendCommand(cb, "info files"); // NOI18N
-    }
-
     /** Set the current thread */
     public int thread_select(String id) {
         return engine.sendCommand("-thread-select " + id); // NOI18N
@@ -264,19 +261,15 @@ public class GdbProxy implements GdbMiDefinitions {
         return engine.sendCommand("info proc"); // NOI18N
     }
     
-    public int info_share() {
-        return engine.sendCommand("info share"); // NOI18N
+    public CommandBuffer info_share(boolean waitForCompletion) {
+        return engine.sendCommandEx("info share", waitForCompletion); // NOI18N
     }
     
-    public int info_share(CommandBuffer cb) {
-        return engine.sendCommand(cb, "info share"); // NOI18N
-    }
-
     /**
      *  Use this to call _CndSigInit() to initialize signals in Cygwin processes.
      */
-    public int data_evaluate_expression(CommandBuffer cb, String string) {
-        return engine.sendCommand(cb, "-data-evaluate-expression " + string); // NOI18N
+    public CommandBuffer data_evaluate_expressionEx(String string) {
+        return engine.sendCommandEx("-data-evaluate-expression " + string); // NOI18N
     }
 
     /**
@@ -294,14 +287,14 @@ public class GdbProxy implements GdbMiDefinitions {
     
     /**
      */
-    public int data_list_register_values(CommandBuffer cb, String regIds) {
-        return engine.sendCommand(cb, "-data-list-register-values x " + regIds); // NOI18N
+    public void data_list_register_values(String regIds) {
+        engine.sendCommand("-data-list-register-values x " + regIds); // NOI18N
     }
     
     /**
      */
-    public int data_list_changed_registers(CommandBuffer cb) {
-        return engine.sendCommand(cb, "-data-list-changed-registers"); // NOI18N
+    public void data_list_changed_registers() {
+        engine.sendCommand("-data-list-changed-registers"); // NOI18N
     }
     
     /*
@@ -325,12 +318,12 @@ public class GdbProxy implements GdbMiDefinitions {
     /*
      * @param addr - address to read from
      */
-    public int data_read_memory(CommandBuffer cb, String addr, int lines) {
-        return engine.sendCommand(cb, "-data-read-memory " + addr + " x 1 " + lines + " " + MEMORY_READ_WIDTH + " ."); // NOI18N
+    public CommandBuffer data_read_memory(String addr, int lines) {
+        return engine.sendCommandEx("-data-read-memory " + addr + " x 1 " + lines + " " + MEMORY_READ_WIDTH + " ."); // NOI18N
     }
     
-    public int print(CommandBuffer cb, String expression) {
-        return engine.sendCommand(cb, "print " + expression); // NOI18N
+    public CommandBuffer print(String expression) {
+        return engine.sendCommandEx("print " + expression); // NOI18N
     }
 
     /**
@@ -340,8 +333,8 @@ public class GdbProxy implements GdbMiDefinitions {
      *
      * @return null if action is accepted, otherwise return error message
      */
-    public int file_list_exec_source_file() {
-        return engine.sendCommand("-file-list-exec-source-file"); // NOI18N
+    public CommandBuffer file_list_exec_source_file() {
+        return engine.sendCommandEx("-file-list-exec-source-file"); // NOI18N
     }
 
     /**
@@ -628,8 +621,8 @@ public class GdbProxy implements GdbMiDefinitions {
     }
 
     /** Request a stack dump from gdb */
-    public int stack_list_frames(CommandBuffer cb) {
-        return engine.sendCommand(cb, "-stack-list-frames "); // NOI18N
+    public CommandBuffer stack_list_framesEx() {
+        return engine.sendCommandEx("-stack-list-frames "); // NOI18N
     }
     
     public int gdb_set(String command, String value) {
@@ -661,8 +654,8 @@ public class GdbProxy implements GdbMiDefinitions {
      * Request the type of a symbol. As of gdb 6.6, this is unimplemented so we send a
      * non-mi command "ptype". We should only be called when symbol is in scope.
      */
-    public int symbol_type(CommandBuffer cb, String symbol) {
-        return engine.sendCommand(cb, "ptype " + symbol); // NOI18N
+    public CommandBuffer symbol_type(String symbol) {
+        return engine.sendCommandEx("ptype " + symbol); // NOI18N
     }
 
     /**
@@ -670,17 +663,16 @@ public class GdbProxy implements GdbMiDefinitions {
      * so we send a gdb "whatis" command. This is different from -system-type in the case
      * of abstract data structures (structs and classes). Its the same for other types.
      */
-    public int whatis(CommandBuffer cb, String symbol) {
-        return engine.sendCommand(cb, "whatis " + symbol); // NOI18N
+    public CommandBuffer whatis(String symbol) {
+        return engine.sendCommandEx("whatis " + symbol); // NOI18N
     }
 
     /**
      * Send "-gdb-exit" to the debugger
      * This command forces gdb to exit immediately.
      */
-    public int gdb_exit() {
-        int token = engine.sendCommand("-gdb-exit "); // NOI18N
+    public void gdb_exit() {
+        engine.sendCommand("-gdb-exit "); // NOI18N
         engine.stopSending();
-        return token;
     }
 } /* End of public class GdbProxy */

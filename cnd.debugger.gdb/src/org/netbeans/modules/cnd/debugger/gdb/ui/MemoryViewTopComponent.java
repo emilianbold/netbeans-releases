@@ -40,10 +40,13 @@
 package org.netbeans.modules.cnd.debugger.gdb.ui;
 
 import java.awt.Font;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.debugger.gdb.GdbContext;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
@@ -52,12 +55,11 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-import org.openide.util.Utilities;
 
 /**
  * Top component which displays something.
  */
-final class MemoryViewTopComponent extends TopComponent {
+final class MemoryViewTopComponent extends TopComponent implements PropertyChangeListener {
 
     private static MemoryViewTopComponent instance;
     /** path to the icon used by the component and its open action */
@@ -170,7 +172,6 @@ final class MemoryViewTopComponent extends TopComponent {
         if (gdb == null) {
             return;
         }
-        CommandBuffer cb = new CommandBuffer(gdb);
         String addr = tfAddress.getText();
         if (addr == null || addr.length() == 0) {
             return;
@@ -188,13 +189,12 @@ final class MemoryViewTopComponent extends TopComponent {
         if (len < 1) {
             return;
         }
-        gdb.data_read_memory(cb, addr, (len-1)/GdbProxy.MEMORY_READ_WIDTH+1);
-        String msg = cb.waitForCompletion();
-        if (cb.getState() == CommandBuffer.STATE_ERROR) {
+        CommandBuffer cb = gdb.data_read_memory(addr, (len-1)/GdbProxy.MEMORY_READ_WIDTH+1);
+        if (cb.isError()) {
             taResult.setText(cb.getError());
         } else {
             // parse output
-            Map<String,String> res = GdbUtils.createMapFromString(msg);
+            Map<String,String> res = GdbUtils.createMapFromString(cb.getResponse());
             String mem = res.get("memory"); // NOI18N
             List<String> lines = GdbUtils.createListOfValues(mem);
             StringBuilder text = new StringBuilder();
@@ -283,12 +283,28 @@ final class MemoryViewTopComponent extends TopComponent {
 
     @Override
     public void componentOpened() {
-        // TODO add custom code on component opening
+        GdbContext.getInstance().addPropertyChangeListener(GdbContext.PROP_STEP, this);
+        GdbContext.getInstance().addPropertyChangeListener(GdbContext.PROP_EXIT, this);
+        update();
     }
 
     @Override
     public void componentClosed() {
-        // TODO add custom code on component closing
+        GdbContext.getInstance().addPropertyChangeListener(GdbContext.PROP_STEP, this);
+        GdbContext.getInstance().addPropertyChangeListener(GdbContext.PROP_EXIT, this);
+    }
+
+    @Override
+    protected void componentShowing() {
+        update();
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                update();
+            }
+        });
     }
 
     /** replaces this in object stream */
