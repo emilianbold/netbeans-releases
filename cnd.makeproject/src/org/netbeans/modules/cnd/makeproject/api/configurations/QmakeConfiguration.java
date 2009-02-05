@@ -65,7 +65,7 @@ public class QmakeConfiguration implements Cloneable {
     // general
     private StringConfiguration destdir;
     private StringConfiguration target;
-    private StringConfiguration libVersion;
+    private StringConfiguration version;
     private IntConfiguration buildMode;
 
     // modules
@@ -89,7 +89,7 @@ public class QmakeConfiguration implements Cloneable {
         this.makeConfiguration = makeConfiguration;
         destdir = new StringConfiguration(null, ""); // NOI18N
         target = new StringConfiguration(null, ""); // NOI18N
-        libVersion = new StringConfiguration(null, "1.0.0"); // NOI18N
+        version = new StringConfiguration(null, "1.0.0"); // NOI18N
         buildMode = new IntConfiguration(null, 0, BUILD_MODE_NAMES, BUILD_NODE_OPTIONS);
         coreEnabled = new BooleanConfiguration(null, true);
         guiEnabled = new BooleanConfiguration(null, true);
@@ -113,9 +113,7 @@ public class QmakeConfiguration implements Cloneable {
         basic.setShortDescription(getString("QtGeneralHint")); // NOI18N
         basic.put(new StringNodeProp(destdir, getDestdirDefault(), "QtDestdir", getString("QtDestdirTxt"), getString("QtDestdirHint"))); // NOI18N
         basic.put(new StringNodeProp(target, getTargetDefault(), "QtTarget", getString("QtTargetTxt"), getString("QtTargetHint"))); // NOI18N
-        if (makeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_DYNAMIC_LIB) {
-            basic.put(new StringNodeProp(libVersion, "QtVersion", getString("QtVersionTxt"), getString("QtVersionHint"))); // NOI18N
-        }
+        basic.put(new StringNodeProp(version, "QtVersion", getString("QtVersionTxt"), getString("QtVersionHint"))); // NOI18N
         basic.put(new IntNodeProp(buildMode, true, "QtBuildMode", getString("QtBuildModeTxt"), getString("QtBuildModeHint"))); // NOI18N
         sheet.put(basic);
 
@@ -191,12 +189,12 @@ public class QmakeConfiguration implements Cloneable {
         this.target = target;
     }
 
-    public StringConfiguration getLibVersion() {
-        return libVersion;
+    public StringConfiguration getVersion() {
+        return version;
     }
 
-    private void setLibVersion(StringConfiguration libVersion) {
-        this.libVersion = libVersion;
+    private void setVersion(StringConfiguration version) {
+        this.version = version;
     }
 
     public String getOutputValue() {
@@ -204,7 +202,7 @@ public class QmakeConfiguration implements Cloneable {
         String file = getTargetValue();
         switch (makeConfiguration.getConfigurationType().getValue()) {
             case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
-                file = Platforms.getPlatform(makeConfiguration.getPlatform().getValue()).getQtLibraryName(file, getLibVersion().getValue());
+                file = Platforms.getPlatform(makeConfiguration.getPlatform().getValue()).getQtLibraryName(file, getVersion().getValue());
                 break;
             case MakeConfiguration.TYPE_QT_STATIC_LIB:
                 file = "lib" + file + ".a"; // NOI18N
@@ -369,7 +367,7 @@ public class QmakeConfiguration implements Cloneable {
     public void assign(QmakeConfiguration other) {
         getDestdir().assign(other.getDestdir());
         getTarget().assign(other.getTarget());
-        getLibVersion().assign(other.getLibVersion());
+        getVersion().assign(other.getVersion());
         getBuildMode().assign(other.getBuildMode());
         isCoreEnabled().assign(other.isCoreEnabled());
         isGuiEnabled().assign(other.isGuiEnabled());
@@ -390,7 +388,7 @@ public class QmakeConfiguration implements Cloneable {
             QmakeConfiguration clone = (QmakeConfiguration) super.clone();
             clone.setDestdir(getDestdir().clone());
             clone.setTarget(getTarget().clone());
-            clone.setLibVersion(getLibVersion().clone());
+            clone.setVersion(getVersion().clone());
             clone.setBuildMode(getBuildMode().clone());
             clone.setCoreEnabled(isCoreEnabled().clone());
             clone.setGuiEnabled(isGuiEnabled().clone());

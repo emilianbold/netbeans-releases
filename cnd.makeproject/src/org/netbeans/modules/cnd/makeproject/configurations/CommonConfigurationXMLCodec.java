@@ -86,7 +86,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  *   QT_ELEMENT
  *   QT_DESTDIR_ELEMENT
  *   QT_TARGET_ELEMENT
- *   QT_LIB_VERSION_ELEMENT
+ *   QT_TARGET_VERSION_ELEMENT
  *   QT_BUILD_MODE_ELEMENT
  *   QT_MODULES_ELEMENT
  *   QT_MOC_DIR_ELEMENT
@@ -309,7 +309,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String QT_ELEMENT = "qt"; // NOI18N
     protected final static String QT_DESTDIR_ELEMENT = "destdir"; // NOI18N
     protected final static String QT_TARGET_ELEMENT = "target"; // NOI18N
-    protected final static String QT_LIB_VERSION_ELEMENT = "libVersion"; // NOI18N
+    protected final static String QT_VERSION_ELEMENT = "version"; // NOI18N
     protected final static String QT_BUILD_MODE_ELEMENT = "buildMode"; // NOI18N
     protected final static String QT_MODULES_ELEMENT = "modules"; // NOI18N
     protected final static String QT_MOC_DIR_ELEMENT = "mocDir"; // NOI18N
@@ -443,8 +443,8 @@ public abstract class CommonConfigurationXMLCodec
         if (qmake.getTarget().getModified()) {
             xes.element(QT_TARGET_ELEMENT, qmake.getTargetValue());
         }
-        if (qmake.getLibVersion().getModified()) {
-            xes.element(QT_LIB_VERSION_ELEMENT, qmake.getLibVersion().getValue());
+        if (qmake.getVersion().getModified()) {
+            xes.element(QT_VERSION_ELEMENT, qmake.getVersion().getValue());
         }
         if (qmake.getBuildMode().getModified()) {
             xes.element(QT_BUILD_MODE_ELEMENT, String.valueOf(qmake.getBuildMode().getValue()));

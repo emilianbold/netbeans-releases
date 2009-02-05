@@ -205,7 +205,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
     public void dispose() {
         // nobody disposes the fake forward class => we should take care of this
         CsmClass cls = getCsmClass();
-        if (cls instanceof ForwardClass) {
+        if (ForwardClass.isForwardClass(cls)) {
             ((ForwardClass) cls).dispose();
         }
         super.dispose();
