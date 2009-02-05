@@ -113,8 +113,10 @@ public final class FeatureInfo {
             }
             if (key.startsWith(prefXPath)) {
                 try {
-                    String xpath = p.getProperty(key);
-                    info.projectFile(key.substring(prefXPath.length()), xpath, "");
+                    String xpaths = p.getProperty(key);
+                    for (String xp : xpaths.split(",")) {
+                        info.projectFile(key.substring(prefXPath.length()), xp, "");
+                    }
                 } catch (XPathExpressionException ex) {
                     IOException e = new IOException(ex.getMessage());
                     e.initCause(ex);
