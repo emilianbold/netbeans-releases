@@ -49,12 +49,11 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
+//import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.xml.api.model.GrammarEnvironment;
 import org.netbeans.modules.xml.api.model.GrammarQuery;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.netbeans.modules.xml.api.model.DTDUtil;
@@ -158,11 +157,11 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     File platformRootDir=null;
     
     /** Creates a new instance of RunTimeDDCatalog */
-    public RunTimeDDCatalog() {
+    public RunTimeDDCatalog(File rootDir) {
         // lazy call to possible registration. This is called only when needed (i.e runtime tab DTD exploration
         InstanceProperties.getInstanceList();
         PluginProperties.configureDefaultServerInstance();        
-        platformRootDir = ServerLocationManager.getLatestPlatformLocation();
+        platformRootDir = rootDir; // ServerLocationManager.getLatestPlatformLocation();
     }
     private static RunTimeDDCatalog ddCatalog;
     
