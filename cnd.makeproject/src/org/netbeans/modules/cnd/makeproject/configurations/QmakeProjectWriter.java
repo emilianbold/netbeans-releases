@@ -162,7 +162,7 @@ public class QmakeProjectWriter {
         write(bw, Variable.TEMPLATE, Operation.SET, getTemplate());
         write(bw, Variable.DESTDIR, Operation.SET, configuration.expandMacros(configuration.getQmakeConfiguration().getDestdirValue()));
         write(bw, Variable.TARGET, Operation.SET, configuration.expandMacros(configuration.getQmakeConfiguration().getTargetValue()));
-        write(bw, Variable.VERSION, Operation.SET, configuration.getQmakeConfiguration().getLibVersion().getValue());
+        write(bw, Variable.VERSION, Operation.SET, configuration.getQmakeConfiguration().getVersion().getValue());
         write(bw, Variable.CONFIG, Operation.SUB, "debug_and_release"); // NOI18N
         write(bw, Variable.CONFIG, Operation.ADD, getConfig());
         write(bw, Variable.QT, Operation.SET, configuration.getQmakeConfiguration().getEnabledModules());
