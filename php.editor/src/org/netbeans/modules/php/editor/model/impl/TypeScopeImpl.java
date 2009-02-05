@@ -130,11 +130,11 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         return new ArrayList<InterfaceScope>(retval);
     }
 
-    public List<? extends MethodScope> getDeclaredMethods() {
+    public Collection<? extends MethodScope> getDeclaredMethods() {
         return getDeclaredMethodsImpl();
     }
 
-    public List<? extends MethodScope> getDeclaredMethodsImpl(final int... modifiers) {
+    public Collection<? extends MethodScope> getDeclaredMethodsImpl(final int... modifiers) {
         if (ModelUtils.getFileScope(this) == null) {
             IndexScope indexScopeImpl = ModelUtils.getIndexScope(this);
             return indexScopeImpl.findMethods(this,"", modifiers);
@@ -149,7 +149,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         });
     }
 
-    public List<? extends MethodScope> findDeclaredMethods(final String queryName, final int... modifiers) {
+    public Collection<? extends MethodScope> findDeclaredMethods(final String queryName, final int... modifiers) {
         if (ModelUtils.getFileScope(this) == null) {
             IndexScopeImpl indexScopeImpl = (IndexScopeImpl) ModelUtils.getIndexScope(this);
             return indexScopeImpl.findMethods(this, queryName, modifiers);
@@ -166,7 +166,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         });
     }
 
-    public List<? extends MethodScope> findDeclaredMethods(final NameKind nameKind, final String queryName,
+    public Collection<? extends MethodScope> findDeclaredMethods(final NameKind nameKind, final String queryName,
             final int... modifiers) {
         if (ModelUtils.getFileScope(this) == null) {
             IndexScope indexScopeImpl = ModelUtils.getIndexScope(this);
@@ -198,15 +198,15 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         });
     }
 
-    public final List<? extends ClassConstantElement> getDeclaredConstants() {
+    public final Collection<? extends ClassConstantElement> getDeclaredConstants() {
         return findDeclaredConstants();
     }
 
-    public List<? extends ClassConstantElement> findDeclaredConstants(String... queryName) {
+    public Collection<? extends ClassConstantElement> findDeclaredConstants(String... queryName) {
         return findDeclaredConstants(NameKind.EXACT_NAME, queryName);
     }
 
-    public List<? extends ClassConstantElement> findDeclaredConstants(final NameKind nameKind, final String... queryName) {
+    public Collection<? extends ClassConstantElement> findDeclaredConstants(final NameKind nameKind, final String... queryName) {
         if (ModelUtils.getFileScope(this) == null) {
             IndexScopeImpl indexScopeImpl = (IndexScopeImpl) ModelUtils.getIndexScope(this);
             return indexScopeImpl.findClassConstants(this, queryName);
@@ -221,7 +221,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         });
     }
 
-    public final List<? extends ClassConstantElement> getInheritedConstants() {
+    public final Collection<? extends ClassConstantElement> getInheritedConstants() {
         List<ClassConstantElement> allConstants = new ArrayList<ClassConstantElement>();
         allConstants.addAll(getDeclaredConstants());
         if (allConstants.isEmpty()) {
@@ -241,12 +241,14 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
                 }
             } else if (type instanceof InterfaceScope) {
                 InterfaceScope iface = (InterfaceScope) type;
-                List<? extends InterfaceScope> interfaceScopes = iface.getSuperInterfaces();
-                for (int i = 0; allConstants.isEmpty() && i < interfaceScopes.size(); i++) {
-                    InterfaceScope ifaceScope = interfaceScopes.get(i);
-                    Collection<IndexedConstant> indexedConstants = index.getClassConstants(null, ifaceScope.getName(), "", NameKind.PREFIX);//NOI18N
-                    for (IndexedConstant indexedConstant : indexedConstants) {
-                        allConstants.add(new ClassConstantElementImpl((TypeScopeImpl) ifaceScope, indexedConstant));
+                Collection<? extends InterfaceScope> interfaceScopes = iface.getSuperInterfaces();
+                if (allConstants.isEmpty()) {
+                    for (InterfaceScope ifaceScope : interfaceScopes) {
+                        Collection<IndexedConstant> indexedConstants = index.getClassConstants(null, ifaceScope.getName(), "", NameKind.PREFIX);//NOI18N
+                        for (IndexedConstant indexedConstant : indexedConstants) {
+                            allConstants.add(new ClassConstantElementImpl((TypeScopeImpl) ifaceScope, indexedConstant));
+                            break;
+                        }
                     }
                 }
             } else {
@@ -256,7 +258,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         return allConstants;
     }
 
-    public List<? extends ClassConstantElement> findInheritedConstants(String queryName) {
+    public Collection<? extends ClassConstantElement> findInheritedConstants(String queryName) {
         List<ClassConstantElement> allConstants = new ArrayList<ClassConstantElement>();
         allConstants.addAll(findDeclaredConstants(queryName));
         if (allConstants.isEmpty()) {
@@ -276,12 +278,14 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
                 }
             } else if (type instanceof InterfaceScope) {
                 InterfaceScope iface = (InterfaceScope) type;
-                List<? extends InterfaceScope> interfaceScopes = iface.getSuperInterfaces();
-                for (int i = 0; allConstants.isEmpty() && i < interfaceScopes.size(); i++) {
-                    InterfaceScope ifaceScope = interfaceScopes.get(i);
-                    Collection<IndexedConstant> indexedConstants = index.getClassConstants(null, ifaceScope.getName(), queryName, NameKind.PREFIX);
-                    for (IndexedConstant indexedConstant : indexedConstants) {
-                        allConstants.add(new ClassConstantElementImpl((TypeScopeImpl) ifaceScope, indexedConstant));
+                Collection<? extends InterfaceScope> interfaceScopes = iface.getSuperInterfaces();
+                if (allConstants.isEmpty()) {
+                    for (InterfaceScope ifaceScope : interfaceScopes) {
+                        Collection<IndexedConstant> indexedConstants = index.getClassConstants(null, ifaceScope.getName(), "", NameKind.PREFIX);//NOI18N
+                        for (IndexedConstant indexedConstant : indexedConstants) {
+                            allConstants.add(new ClassConstantElementImpl((TypeScopeImpl) ifaceScope, indexedConstant));
+                            break;
+                        }
                     }
                 }
             } else {
@@ -311,12 +315,14 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
                 }
             } else if (type instanceof InterfaceScope) {
                 InterfaceScope iface = (InterfaceScope) type;
-                List<? extends InterfaceScope> interfaceScopes = iface.getSuperInterfaces();
-                for (int i = 0; allMethods.isEmpty() && i < interfaceScopes.size(); i++) {
-                    InterfaceScope ifaceScope = interfaceScopes.get(i);
-                    Collection<IndexedFunction> indexedFunctions = index.getMethods(null, ifaceScope.getName(), "", NameKind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);//NOI18N
-                    for (IndexedFunction indexedFunction : indexedFunctions) {
-                        allMethods.add(new MethodScopeImpl((TypeScopeImpl) ifaceScope, indexedFunction, PhpKind.METHOD));
+                Collection<? extends InterfaceScope> interfaceScopes = iface.getSuperInterfaces();
+                if (allMethods.isEmpty()) {
+                    for (InterfaceScope ifaceScope : interfaceScopes) {
+                        Collection<IndexedFunction> indexedFunctions = index.getMethods(null, ifaceScope.getName(), "", NameKind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);//NOI18N
+                        for (IndexedFunction indexedFunction : indexedFunctions) {
+                            allMethods.add(new MethodScopeImpl((TypeScopeImpl) ifaceScope, indexedFunction, PhpKind.METHOD));
+                            break;
+                        }
                     }
                 }
             } else {
@@ -347,14 +353,17 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
                 }
             } else if (type instanceof InterfaceScope) {
                 InterfaceScope iface = (InterfaceScope) type;
-                List<? extends InterfaceScope> interfaceScopes = iface.getSuperInterfaces();
-                for (int i = 0; allMethods.isEmpty() && i < interfaceScopes.size(); i++) {
-                    InterfaceScope ifaceScope = interfaceScopes.get(i);
-                    Collection<IndexedFunction> indexedFunctions = index.getMethods(null, ifaceScope.getName(), queryName, NameKind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
-                    for (IndexedFunction indexedFunction : indexedFunctions) {
-                        allMethods.add(new MethodScopeImpl((TypeScopeImpl) ifaceScope, indexedFunction, PhpKind.METHOD));
+                Collection<? extends InterfaceScope> interfaceScopes = iface.getSuperInterfaces();
+                if (allMethods.isEmpty()) {
+                    for (InterfaceScope ifaceScope : interfaceScopes) {
+                        Collection<IndexedFunction> indexedFunctions = index.getMethods(null, ifaceScope.getName(), "", NameKind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);//NOI18N
+                        for (IndexedFunction indexedFunction : indexedFunctions) {
+                            allMethods.add(new MethodScopeImpl((TypeScopeImpl) ifaceScope, indexedFunction, PhpKind.METHOD));
+                            break;
+                        }
                     }
                 }
+
             } else {
                 throw new IllegalStateException();
             }

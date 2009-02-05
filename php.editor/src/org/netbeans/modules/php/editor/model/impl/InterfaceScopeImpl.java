@@ -79,7 +79,7 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
         return sb.toString();
     }
 
-    public final List<? extends MethodScope> getInheritedMethods() {
+    public final List<? extends MethodScope> getMethods() {
         List<MethodScope> allMethods = new ArrayList<MethodScope>();
         allMethods.addAll(getDeclaredMethods());
         IndexScope indexScope = ModelUtils.getIndexScope(this);

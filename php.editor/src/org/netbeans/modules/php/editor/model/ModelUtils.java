@@ -39,6 +39,7 @@
 package org.netbeans.modules.php.editor.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
 import org.netbeans.modules.gsf.api.NameKind;
@@ -47,7 +48,6 @@ import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.openide.filesystems.FileObject;
 
 /**
- *
  * @author Radek Matous
  */
 public class ModelUtils {
@@ -56,13 +56,19 @@ public class ModelUtils {
     }
 
     @CheckForNull
-    public static <T extends ModelElement> T getFirst(List<? extends T> all) {
-        return all.size() > 0 ? all.get(0) : null;
+    public static <T extends ModelElement> T getFirst(Collection<? extends T> all) {
+        if (all instanceof List) {
+            return all.size() > 0 ? ((List<T>)all).get(0) : null;
+        }
+        return all.size() > 0 ? all.iterator().next() : null;
     }
 
     @CheckForNull
-    public static <T extends Occurence> T getFirst(List<? extends T> all) {
-        return all.size() > 0 ? all.get(0) : null;
+    public static <T extends Occurence> T getFirst(Collection<? extends T> all) {
+        if (all instanceof List) {
+            return all.size() > 0 ? ((List<T>)all).get(0) : null;
+        }
+        return all.size() > 0 ? all.iterator().next() : null;
     }
 
     @CheckForNull
@@ -70,39 +76,66 @@ public class ModelUtils {
         return all.size() > 0 ? all.get(all.size()-1) : null;
     }
 
-
     @NonNull
-    public static <T extends ModelElement> List<? extends T> filter(List<T> instances,
-            final String... queryName) {
-        return filter(instances, NameKind.EXACT_NAME, queryName);
+    public static <T extends ModelElement> List<? extends T> filter(Collection<T> allElements,
+            final String... elementName) {
+        return filter(allElements, NameKind.EXACT_NAME, elementName);
     }
 
     @NonNull
-    public static <T extends ModelElement> List<? extends T> filter(List<T> instances,
-            final NameKind nameKind, final String... queryName) {
-        return filter(instances, new ElementFilter<T>() {
+    public static <T extends ModelElement> List<? extends T> filter(Collection<T> allElements,
+            final NameKind nameKind, final String... elementName) {
+        return filter(allElements, new ElementFilter<T>() {
             public boolean isAccepted(T element) {
-                return (queryName.length == 0 || nameKindMatch(element.getName(), nameKind, queryName));
+                return (elementName.length == 0 || nameKindMatch(element.getName(), nameKind, elementName));
             }
         });
     }
 
     @NonNull
-    public static <T extends ModelElement> List<? extends T> filter(List<? extends T> instances, FileObject fileObject) {
+    public static <T extends ModelElement> List<? extends T> filter(Collection<? extends T> allElements,
+            FileObject fileObject) {
         List<T> retval = new ArrayList<T>();
-        for (T element : instances) {
+        for (T element : allElements) {
             if (element.getFileObject() == fileObject) {
                 retval.add(element);
             }
         }
         return retval;
     }
+    @NonNull
+    public static <T extends ModelElement> T getFirst(Collection<T> allElements,
+            final String... elementName) {
+        return getFirst(filter(allElements, NameKind.EXACT_NAME, elementName));
+    }
+
+    @NonNull
+    public static <T extends ModelElement> T getFirst(Collection<T> allElements,
+            final NameKind nameKind, final String... elementName) {
+        return getFirst(filter(allElements, new ElementFilter<T>() {
+            public boolean isAccepted(T element) {
+                return (elementName.length == 0 || nameKindMatch(element.getName(), nameKind, elementName));
+            }
+        }));
+    }
+
+    @NonNull
+    public static <T extends ModelElement> T getFirst(Collection<? extends T> allElements,
+            FileObject fileObject) {
+        List<T> retval = new ArrayList<T>();
+        for (T element : allElements) {
+            if (element.getFileObject() == fileObject) {
+                retval.add(element);
+            }
+        }
+        return getFirst(retval);
+    }
 
     @SuppressWarnings("unchecked")
     @NonNull
-    public static <T extends ModelElement> List<? extends T> merge(List<? extends T>... all) {
+    public static <T extends ModelElement> Collection<? extends T> merge(Collection<? extends T>... all) {
         List<T> retval = new ArrayList<T>();
-        for (List<? extends T> list : all) {
+        for (Collection<? extends T> list : all) {
             retval.addAll(list);
         }
         return retval;
@@ -136,7 +169,7 @@ public class ModelUtils {
         return retval;
     }
 
-    public static <T extends ModelElement> List<? extends T> filter(final List<T> instances, final ElementFilter<T> filter) {
+    public static <T extends ModelElement> List<? extends T> filter(final Collection<T> instances, final ElementFilter<T> filter) {
         List<T> retval = new ArrayList<T>();
         for (T baseElement : instances) {
             boolean accepted = filter.isAccepted(baseElement);

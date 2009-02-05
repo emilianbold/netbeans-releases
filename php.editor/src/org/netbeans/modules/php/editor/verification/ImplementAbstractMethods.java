@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -96,7 +96,7 @@ public class ImplementAbstractMethods extends ModelRule {
 
     @Override
     void check(FileScope modelScope, RuleContext context, List<Hint> hints) {
-        List<? extends TypeScope> allClasses = modelScope.getDeclaredTypes();
+        Collection<? extends TypeScope> allClasses = modelScope.getDeclaredTypes();
         long computedDigest = computeDigest(allClasses);
         if (computedDigest != diggest || !cahcedFixedInfo.isEmpty()) {            
             fillCachedFixedInfo(allClasses, computedDigest != diggest);
@@ -110,12 +110,12 @@ public class ImplementAbstractMethods extends ModelRule {
         }
     }
 
-    private long computeDigest(List<? extends TypeScope> allTypes) {
+    private long computeDigest(Collection<? extends TypeScope> allTypes) {
         CRC32 crc32 = new CRC32();
         for (TypeScope typeScope : allTypes) {
             crc32.update(String.valueOf(typeScope.hashCode()).getBytes());
             crc32.update(String.valueOf(typeScope.getPhpModifiers().hashCode()).getBytes());
-            List<? extends MethodScope> allMethods = typeScope.getDeclaredMethods();
+            Collection<? extends MethodScope> allMethods = typeScope.getDeclaredMethods();
             for (MethodScope methodScope : allMethods) {
                 crc32.update(String.valueOf(methodScope.hashCode()).getBytes());
             }
@@ -123,7 +123,7 @@ public class ImplementAbstractMethods extends ModelRule {
         return crc32.getValue();
     }
 
-    private void fillCachedFixedInfo(List<? extends TypeScope> allTypes, boolean changed) {
+    private void fillCachedFixedInfo(Collection<? extends TypeScope> allTypes, boolean changed) {
         if (!changed && !cahcedFixedInfo.isEmpty()) {
             for (TypeScope classScope : allTypes) {
                 CachedFixInfo fixInfo = cahcedFixedInfo.get(classScope.hashCode());
@@ -136,11 +136,11 @@ public class ImplementAbstractMethods extends ModelRule {
             for (TypeScope typeScope : allTypes) {
                 LinkedHashSet<MethodScope> abstrMethods = new LinkedHashSet<MethodScope>();
                 ClassScope cls = (typeScope instanceof ClassScope) ? ModelUtils.getFirst(((ClassScope)typeScope).getSuperClasses()) : null;
-                List<? extends InterfaceScope> interfaces = typeScope.getSuperInterfaces();
+                Collection<? extends InterfaceScope> interfaces = typeScope.getSuperInterfaces();
                 if ((cls != null  || interfaces.size() > 0) && !typeScope.getPhpModifiers().isAbstract() && typeScope instanceof ClassScope) {
                     Set<String> methNames = new HashSet<String>();
-                    List<? extends MethodScope> allInheritedMethods = typeScope.getInheritedMethods();
-                    List<? extends MethodScope> allMethods = typeScope.getDeclaredMethods();
+                    Collection<? extends MethodScope> allInheritedMethods = typeScope.getMethods();
+                    Collection<? extends MethodScope> allMethods = typeScope.getDeclaredMethods();
                     Set<String> methodNames = new HashSet<String>();
                     for (MethodScope methodScope : allMethods) {
                         methodNames.add(methodScope.getName());

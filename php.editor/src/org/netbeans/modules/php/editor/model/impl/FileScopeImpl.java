@@ -142,7 +142,7 @@ final class FileScopeImpl extends ScopeImpl implements FileScope, VariableContai
         return getAllOccurences(occurence.getDeclaration());
     }
 
-    public List<? extends ClassScopeImpl> getDeclaredClasses() {
+    public Collection<? extends ClassScopeImpl> getDeclaredClasses() {
         return filter(getElements(), new ElementFilter<ModelElement>() {
             public boolean isAccepted(ModelElement element) {
                 return element.getPhpKind().equals(PhpKind.CLASS);
@@ -164,7 +164,7 @@ final class FileScopeImpl extends ScopeImpl implements FileScope, VariableContai
         });
     }*/
 
-    public List<? extends InterfaceScope> getDeclaredInterfaces() {
+    public Collection<? extends InterfaceScope> getDeclaredInterfaces() {
         return filter(getElements(), new ElementFilter() {
             public boolean isAccepted(ModelElement element) {
                 return element.getPhpKind().equals(PhpKind.IFACE);
@@ -186,7 +186,7 @@ final class FileScopeImpl extends ScopeImpl implements FileScope, VariableContai
         });
     }*/
 
-    public List<? extends ConstantElement> getDeclaredConstants() {
+    public Collection<? extends ConstantElement> getDeclaredConstants() {
         return filter(getElements(), new ElementFilter() {
             public boolean isAccepted(ModelElement element) {
                 return element.getPhpKind().equals(PhpKind.CONSTANT);
@@ -208,7 +208,7 @@ final class FileScopeImpl extends ScopeImpl implements FileScope, VariableContai
         });
     }*/
 
-    public List<? extends FunctionScope> getDeclaredFunctions() {
+    public Collection<? extends FunctionScope> getDeclaredFunctions() {
         return filter(getElements(), new ElementFilter() {
             public boolean isAccepted(ModelElement element) {
                 return element.getPhpKind().equals(PhpKind.FUNCTION);
@@ -218,27 +218,27 @@ final class FileScopeImpl extends ScopeImpl implements FileScope, VariableContai
 
 
     @SuppressWarnings("unchecked")
-    public List<? extends TypeScope> getDeclaredTypes() {
-        List<? extends ClassScope> classes = getDeclaredClasses();
-        List<? extends InterfaceScope> interfaces = getDeclaredInterfaces();
+    public Collection<? extends TypeScope> getDeclaredTypes() {
+        Collection<? extends ClassScope> classes = getDeclaredClasses();
+        Collection<? extends InterfaceScope> interfaces = getDeclaredInterfaces();
         return ModelUtils.merge(classes, interfaces);
     }
 
 
-    public List<? extends VariableName> getDeclaredVariables() {
+    public Collection<? extends VariableName> getDeclaredVariables() {
         return getVariablesImpl();
     }
 
 
-    public List<? extends VariableName> getAllVariablesImpl() {
+    public Collection<? extends VariableName> getAllVariablesImpl() {
         return getVariablesImpl();
     }
 
-    public List<? extends VariableName> getVariablesImpl(String... queryName) {
+    public Collection<? extends VariableName> getVariablesImpl(String... queryName) {
         return getVariablesImpl(NameKind.EXACT_NAME, queryName);
     }
 
-    public List<? extends VariableName> getVariablesImpl(final NameKind nameKind, final String... queryName) {
+    public Collection<? extends VariableName> getVariablesImpl(final NameKind nameKind, final String... queryName) {
         return filter(getElements(), new ElementFilter() {
 
             public boolean isAccepted(ModelElement element) {

@@ -39,17 +39,17 @@
 
 package org.netbeans.modules.php.editor.model;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * @author Radek Matous
  */
 public interface FileScope extends VariableScope {
-    List<? extends TypeScope> getDeclaredTypes();
-    List<? extends ClassScope> getDeclaredClasses();
-    List<? extends InterfaceScope> getDeclaredInterfaces();
-    List<? extends ConstantElement> getDeclaredConstants();
-    List<? extends FunctionScope> getDeclaredFunctions();
-    List<? extends VariableName> getDeclaredVariables();
+    Collection<? extends TypeScope> getDeclaredTypes();
+    Collection<? extends ClassScope> getDeclaredClasses();
+    Collection<? extends InterfaceScope> getDeclaredInterfaces();
+    Collection<? extends ConstantElement> getDeclaredConstants();
+    Collection<? extends FunctionScope> getDeclaredFunctions();
+    Collection<? extends VariableName> getDeclaredVariables();
     IndexScope getIndexScope();
 }

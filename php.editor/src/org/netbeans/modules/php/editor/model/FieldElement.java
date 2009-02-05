@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.php.editor.model;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  *
@@ -47,5 +47,5 @@ import java.util.List;
  */
 public interface FieldElement extends ClassMemberElement {
     PhpModifiers getPhpModifiers();
-    List<? extends TypeScope> getTypes(int offset);    
+    Collection<? extends TypeScope> getTypes(int offset);
 }

@@ -41,6 +41,7 @@ package org.netbeans.modules.php.editor.codegen;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -166,7 +167,7 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
         Model model = ModelFactory.getModel(info);
         VariableScope varScope = model.getVariableScope(caretOffset);
         if (varScope != null) {
-            List<? extends VariableName> allVariables = varScope.getDeclaredVariables();
+            Collection<? extends VariableName> allVariables = varScope.getDeclaredVariables();
             for (VariableName variableName : allVariables) {
                 if (var == null) {
                     var = variableName;

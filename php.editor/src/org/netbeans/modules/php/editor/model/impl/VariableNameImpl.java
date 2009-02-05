@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -105,18 +106,14 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     }
 
     public List<? extends VarAssignmentImpl> getAssignments() {
-        return filter(getElements(), new ElementFilter() {
-            public boolean isAccepted(ModelElement element) {
-                return true;
-            }
-        });
+        return (List<? extends VarAssignmentImpl>) getElements();
     }
 
     public AssignmentImpl findAssignment(int offset) {
         VarAssignmentImpl retval = null;
-        List<? extends VarAssignmentImpl> assignments = getAssignments();
+        Collection<? extends VarAssignmentImpl> assignments = getAssignments();
         if (assignments.size() == 1) {
-            retval = assignments.get(0);
+            retval = assignments.iterator().next();
         } else {
             for (VarAssignmentImpl varAssignmentImpl : assignments) {
                 if (varAssignmentImpl.getBlockRange().containsInclusive(offset)) {
@@ -142,7 +139,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         return (inScope != null && !isGloballyVisible()) ? inScope.getName()+getName() : getName();
     }
 
-    public List<? extends TypeScope> getTypes(int offset) {
+    public Collection<? extends TypeScope> getTypes(int offset) {
         List<? extends TypeScope> empty = Collections.emptyList();
         if (representsThis()) {
             MethodScope methodScope = (MethodScope) getInScope();

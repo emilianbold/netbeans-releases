@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
-import java.util.List;
+import java.util.Collection;
 import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.php.editor.model.FileScope;
@@ -68,7 +68,7 @@ public class ModelTest extends ModelTestBase {
         FileScope topScope2 = ModelUtils.getFileScope(underCaret.getDeclaration());
         assertNotNull(ModelUtils.getFirst(ModelUtils.filter(topScope.getDeclaredFunctions(),underCaret.getDeclaration().getName())));
 
-        List<Occurence> allOccurences = underCaret.getAllOccurences();
+        Collection<Occurence> allOccurences = underCaret.getAllOccurences();
         assertEquals(3, allOccurences.size());
     }
 
@@ -140,14 +140,14 @@ public class ModelTest extends ModelTestBase {
         FileScope topScope = model.getFileScope();
 
 
-        List<? extends TypeScope> types = topScope.getDeclaredTypes();
-        List<? extends ClassScope> classes = topScope.getDeclaredClasses();
-        List<? extends InterfaceScope> interfaces = topScope.getDeclaredInterfaces();
+        Collection<? extends TypeScope> types = topScope.getDeclaredTypes();
+        Collection<? extends ClassScope> classes = topScope.getDeclaredClasses();
+        Collection<? extends InterfaceScope> interfaces = topScope.getDeclaredInterfaces();
         assertEquals(types.size(), classes.size() + interfaces.size());
-        List<? extends FunctionScope> functions = topScope.getDeclaredFunctions();
-        List<? extends VariableName> allVariables = topScope.getDeclaredVariables();
+        Collection<? extends FunctionScope> functions = topScope.getDeclaredFunctions();
+        Collection<? extends VariableName> allVariables = topScope.getDeclaredVariables();
 
-        List<? extends ModelElement> elements = topScope.getElements();
+        Collection<? extends ModelElement> elements = topScope.getElements();
         assertEquals(13, elements.size());
         assertEquals(elements.size(), types.size() + functions.size() + allVariables.size());
 

@@ -38,10 +38,10 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.php.editor.model.IndexScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.Occurence;
@@ -53,16 +53,16 @@ import org.netbeans.modules.php.editor.model.Occurence;
 class OccurenceImpl implements Occurence {
     private OffsetRange occurenceRange;
     private ModelElement declaration;
-    private List<? extends ModelElement> allDeclarations;
+    private Collection<? extends ModelElement> allDeclarations;
     private FileScopeImpl fileScope;
     private ModelElement gotDeclaration;
 
 
-    public OccurenceImpl(List<? extends ModelElement> allDeclarations, OffsetRange occurenceRange,FileScopeImpl fileScope) {
+    public OccurenceImpl(Collection<? extends ModelElement> allDeclarations, OffsetRange occurenceRange,FileScopeImpl fileScope) {
         this(allDeclarations, ModelUtils.getFirst(allDeclarations), occurenceRange, fileScope);
     }
 
-    public OccurenceImpl(List<? extends ModelElement> allDeclarations, ModelElement declaration, OffsetRange occurenceRange,FileScopeImpl fileScope) {
+    public OccurenceImpl(Collection<? extends ModelElement> allDeclarations, ModelElement declaration, OffsetRange occurenceRange,FileScopeImpl fileScope) {
         this.allDeclarations = allDeclarations;
         this.declaration = declaration;
         //TODO: wrong bugfix when sometimes is offered just one declaration
@@ -92,7 +92,7 @@ class OccurenceImpl implements Occurence {
     }
 
     @SuppressWarnings("unchecked")
-    public List<? extends ModelElement> getAllDeclarations() {
+    public Collection<? extends ModelElement> getAllDeclarations() {
         if ((gotDeclaration != null)) {
             return Collections.<ModelElement>emptyList();
         }

@@ -38,26 +38,26 @@
  */
 package org.netbeans.modules.php.editor.model;
 
-import java.util.List;
+import java.util.Collection;
 import org.netbeans.modules.gsf.api.NameKind;
 
 /**
  * @author Radek Matous
  */
 public interface ClassScope extends TypeScope {
-    List<? extends InterfaceScope> getSuperInterfaces();
-    List<? extends ClassScope> getSuperClasses();
-    List<? extends MethodScope> getDeclaredMethods();
-    List<? extends MethodScope> getInheritedMethods();
-    List<? extends FieldElement> getDeclaredFields();
-    List<? extends ClassConstantElement> getDeclaredConstants();
-    List<? extends FieldElement> getFields();
+    Collection<? extends InterfaceScope> getSuperInterfaces();
+    Collection<? extends ClassScope> getSuperClasses();
+    Collection<? extends MethodScope> getDeclaredMethods();
+    Collection<? extends MethodScope> getMethods();
+    Collection<? extends FieldElement> getDeclaredFields();
+    Collection<? extends ClassConstantElement> getDeclaredConstants();
+    Collection<? extends FieldElement> getFields();
 
     
-    List<? extends FieldElement> findDeclaredFields(final int... modifiers);
-    List<? extends FieldElement> findDeclaredFields(final String queryName, final int... modifiers);
-    List<? extends FieldElement> findDeclaredFields(final NameKind nameKind, final String queryName, final int... modifiers);
-    List<? extends FieldElement> findInheritedFields(String fieldName);
+    Collection<? extends FieldElement> findDeclaredFields(final int... modifiers);
+    Collection<? extends FieldElement> findDeclaredFields(final String queryName, final int... modifiers);
+    Collection<? extends FieldElement> findDeclaredFields(final NameKind nameKind, final String queryName, final int... modifiers);
+    Collection<? extends FieldElement> findInheritedFields(String fieldName);
 
     //TODO: add getAllInheritedSuperClasses()
     //TODO: add getAllInheritedInterfaces()

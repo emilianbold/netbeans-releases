@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.php.editor.model;
 
-import java.util.List;
+import java.util.Collection;
 import org.netbeans.modules.gsf.api.NameKind;
 
 /**
@@ -47,16 +47,16 @@ import org.netbeans.modules.gsf.api.NameKind;
  */
 public interface TypeScope extends Scope {
     PhpModifiers getPhpModifiers();
-    List<? extends MethodScope> getDeclaredMethods();
-    List<? extends MethodScope> getInheritedMethods();
-    List<? extends ClassConstantElement> getDeclaredConstants();
-    List<? extends ClassConstantElement> getInheritedConstants();
-    List<? extends InterfaceScope> getSuperInterfaces();
+    Collection<? extends MethodScope> getDeclaredMethods();
+    Collection<? extends MethodScope> getMethods();
+    Collection<? extends ClassConstantElement> getDeclaredConstants();
+    Collection<? extends ClassConstantElement> getInheritedConstants();
+    Collection<? extends InterfaceScope> getSuperInterfaces();
 
-    List<? extends ClassConstantElement> findInheritedConstants(String constName);
-    List<? extends MethodScope> findInheritedMethods(final String queryName);
-    List<? extends MethodScope> findDeclaredMethods(final String queryName, final int... modifiers);
-    List<? extends MethodScope> findDeclaredMethods(final NameKind nameKind, final String queryName, final int... modifiers);
-    List<? extends ClassConstantElement> findDeclaredConstants(final String... queryName);
-    List<? extends ClassConstantElement> findDeclaredConstants(final NameKind nameKind, final String... queryName);     
+    Collection<? extends ClassConstantElement> findInheritedConstants(String constName);
+    Collection<? extends MethodScope> findInheritedMethods(final String queryName);
+    Collection<? extends MethodScope> findDeclaredMethods(final String queryName, final int... modifiers);
+    Collection<? extends MethodScope> findDeclaredMethods(final NameKind nameKind, final String queryName, final int... modifiers);
+    Collection<? extends ClassConstantElement> findDeclaredConstants(final String... queryName);
+    Collection<? extends ClassConstantElement> findDeclaredConstants(final NameKind nameKind, final String... queryName);
 }

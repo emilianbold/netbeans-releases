@@ -119,11 +119,11 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
         return sb.toString();
     }
 
-    public List<? extends FieldElement> getDeclaredFields() {
+    public Collection<? extends FieldElement> getDeclaredFields() {
         return findDeclaredFields();
     }
 
-    public List<? extends FieldElement> findDeclaredFields(final int... modifiers) {
+    public Collection<? extends FieldElement> findDeclaredFields(final int... modifiers) {
         if (ModelUtils.getFileScope(this) == null) {
             IndexScope indexScopeImpl =  ModelUtils.getIndexScope(this);
             return indexScopeImpl.findFields(this, modifiers);
@@ -138,7 +138,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
         });
     }
 
-    public List<? extends FieldElement> findDeclaredFields(final String queryName, final int... modifiers) {
+    public Collection<? extends FieldElement> findDeclaredFields(final String queryName, final int... modifiers) {
         if (ModelUtils.getFileScope(this) == null) {
             IndexScope indexScopeImpl = ModelUtils.getIndexScope(this);
             return indexScopeImpl.findFields(this, queryName, modifiers);
@@ -154,7 +154,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
         });
     }
 
-   public List<? extends FieldElement> findDeclaredFields(final NameKind nameKind, final String queryName, final int... modifiers) {
+   public Collection<? extends FieldElement> findDeclaredFields(final NameKind nameKind, final String queryName, final int... modifiers) {
         if (ModelUtils.getFileScope(this) == null) {
             IndexScope indexScopeImpl = (IndexScopeImpl) ModelUtils.getIndexScope(this);
             return indexScopeImpl.findFields(nameKind, this, queryName, modifiers);
@@ -172,7 +172,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
 
 
     @Override
-    public List<? extends MethodScope> getInheritedMethods() {
+    public Collection<? extends MethodScope> getMethods() {
         List<MethodScope> allMethods = new ArrayList<MethodScope>();
         allMethods.addAll(getDeclaredMethods());
         IndexScope indexScopeImpl = ModelUtils.getIndexScope(this);
@@ -190,7 +190,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
         }
         
         for (InterfaceScope ifaceScope : interfaces) {
-            allMethods.addAll(ifaceScope.getInheritedMethods());
+            allMethods.addAll(ifaceScope.getMethods());
         }
         return allMethods;
     }
@@ -245,7 +245,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
 
     private static Set<ClassScope> collectSuperClassesChain(Set<ClassScope> result, ClassScope classScope) {
         result.add(classScope);
-        List<? extends ClassScope> superClasses = classScope.getSuperClasses();
+        Collection<? extends ClassScope> superClasses = classScope.getSuperClasses();
         for (ClassScope superCls : superClasses) {
             collectSuperClassesChain(result, superCls);
         }

@@ -41,7 +41,10 @@ package org.netbeans.modules.php.editor.model.impl;
 import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.model.ModelElement;
@@ -107,9 +110,9 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
     }
 
     @SuppressWarnings("unchecked")
-    static <T extends ModelElement> List<? extends T> filter(final List<? extends ModelElement> original,
+    static <T extends ModelElement> Collection<? extends T> filter(final Collection<? extends ModelElement> original,
             final ElementFilter<ModelElement> filter) {
-        List<T> retval = new ArrayList<T>();
+        Set<T> retval = new HashSet<T>();
         for (ModelElement baseElement : original) {
             boolean accepted = filter.isAccepted(baseElement);
             if (accepted) {

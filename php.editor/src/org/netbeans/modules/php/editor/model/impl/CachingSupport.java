@@ -39,6 +39,8 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -89,8 +91,8 @@ class CachingSupport {
         this.fileScope = fileScope;
     }
 
-    static List<? extends ClassConstantElement> getInheritedConstants(ClassScope clsScope, String constName, ModelElement elem) {
-        List<? extends ClassConstantElement> retval;
+    static Collection<? extends ClassConstantElement> getInheritedConstants(ClassScope clsScope, String constName, ModelElement elem) {
+        Collection<? extends ClassConstantElement> retval;
         CachingSupport modelSupport = CachingSupport.getInstance(elem);
         if (modelSupport != null) {
             retval = modelSupport.getInheritedMergedConstants((ClassScopeImpl)clsScope, constName);
@@ -101,9 +103,9 @@ class CachingSupport {
     }
 
     //TODO: modifiers not taken into account
-    static List<? extends FieldElement> getInheritedFields(ClassScope clsScope, String fieldName, ModelElement elem, final int... modifiers) {
+    static Collection<? extends FieldElement> getInheritedFields(ClassScope clsScope, String fieldName, ModelElement elem, final int... modifiers) {
         assert fieldName.startsWith("$");
-        List<? extends FieldElement> retval;
+        Collection<? extends FieldElement> retval;
         CachingSupport cachingSupport = CachingSupport.getInstance(elem);
         if (cachingSupport != null) {
             retval = cachingSupport.getInheritedMergedFields((ClassScopeImpl)clsScope, fieldName);
@@ -113,8 +115,8 @@ class CachingSupport {
         return retval;
     }
 
-    static List<? extends MethodScope> getMethods(ClassScope clsScope, String methodName, ModelElement elem, final int... modifiers) {
-        List<? extends MethodScope> retval;
+    static Collection<? extends MethodScope> getMethods(ClassScope clsScope, String methodName, ModelElement elem, final int... modifiers) {
+        Collection<? extends MethodScope> retval;
         CachingSupport cachingSupport = CachingSupport.getInstance(elem);
         if (cachingSupport != null) {
             retval = cachingSupport.getMergedMethods((ClassScopeImpl)clsScope, methodName);
@@ -125,8 +127,8 @@ class CachingSupport {
     }
 
     //TODO: modifiers not taken into account
-    static List<? extends MethodScope> getInheritedMethods(TypeScope typeScope, String methodName, ModelElement elem, final int... modifiers) {
-        List<? extends MethodScope> retval;
+    static Collection<? extends MethodScope> getInheritedMethods(TypeScope typeScope, String methodName, ModelElement elem, final int... modifiers) {
+        Collection<? extends MethodScope> retval;
         CachingSupport cachingSupport = CachingSupport.getInstance(elem);
         if (cachingSupport != null) {
             retval = cachingSupport.getInheritedMergedMethods((TypeScopeImpl)typeScope, methodName);
@@ -136,8 +138,8 @@ class CachingSupport {
         return retval;
     }
 
-    static List<? extends TypeScope> getTypes(String typeName, ModelElement elem) {
-        List<? extends TypeScope> retval;
+    static Collection<? extends TypeScope> getTypes(String typeName, ModelElement elem) {
+        Collection<? extends TypeScope> retval;
         IndexScope indexScope = ModelUtils.getIndexScope(elem);
         CachingSupport cachingSupport = CachingSupport.getInstance(elem);
         if (cachingSupport != null) {
@@ -184,8 +186,8 @@ class CachingSupport {
         return retval;
     }
 
-    static List<? extends FunctionScope> getFunctions(String fncName, ModelElement elem) {
-        List<? extends FunctionScope> retval;
+    static Collection<? extends FunctionScope> getFunctions(String fncName, ModelElement elem) {
+        Collection<? extends FunctionScope> retval;
         IndexScope indexScope = ModelUtils.getIndexScope(elem);
         CachingSupport cachingSupport = CachingSupport.getInstance(elem);
         if (cachingSupport != null) {
@@ -197,8 +199,8 @@ class CachingSupport {
     }
 
 
-    private List<? extends ClassConstantElement> getInheritedMergedConstants(ClassScopeImpl clsScope, String constName) {
-        List<? extends ClassConstantElement> fields = getCachedClassConstants(clsScope, constName);
+    private Collection<? extends ClassConstantElement> getInheritedMergedConstants(ClassScopeImpl clsScope, String constName) {
+        Collection<? extends ClassConstantElement> fields = getCachedClassConstants(clsScope, constName);
         if (fields.isEmpty()) {
             clsScope.findInheritedConstants(constName);
             fields = (clsScope != null ? clsScope.findInheritedConstants(constName) : Collections.<ClassConstantElementImpl>emptyList());
@@ -257,8 +259,8 @@ class CachingSupport {
 
     }
 
-    private List<? extends MethodScope> getMergedMethods(ClassScopeImpl clsScope, String methodName, final int... modifiers) {
-        List<? extends MethodScope> methods = getCachedMethods(clsScope, methodName);
+    private Collection<? extends MethodScope> getMergedMethods(ClassScopeImpl clsScope, String methodName, final int... modifiers) {
+        Collection<? extends MethodScope> methods = getCachedMethods(clsScope, methodName);
         if (methods.isEmpty()) {
             methods = (clsScope != null ? clsScope.findDeclaredMethods(methodName, modifiers) : Collections.<MethodScopeImpl>emptyList());
             if (methods.isEmpty()) {
@@ -315,8 +317,8 @@ class CachingSupport {
         return classes;
     }
 
-    private List<? extends TypeScope> getMergedTypes(String typeName) {
-        List<? extends TypeScope> types = getCachedTypes(typeName);
+    private Collection<? extends TypeScope> getMergedTypes(String typeName) {
+        Collection<? extends TypeScope> types = getCachedTypes(typeName);
         if (types.isEmpty()) {
             types = (typeName != null ? ModelUtils.filter(fileScope.getDeclaredTypes(), typeName) : Collections.<TypeScope>emptyList());
             if (types.isEmpty()) {
@@ -443,11 +445,11 @@ class CachingSupport {
         return retval;
     }
 
-    private List<? extends InterfaceScope> getCachedIfaces(final String... queryName) {
+    private Collection<? extends InterfaceScope> getCachedIfaces(final String... queryName) {
         return getCachedIfaces(NameKind.EXACT_NAME, queryName);
     }
 
-    private List<? extends InterfaceScope> getCachedIfaces(final NameKind nameKind, final String... queryName) {
+    private Collection<? extends InterfaceScope> getCachedIfaces(final NameKind nameKind, final String... queryName) {
         return ModelUtils.filter(ifaceScopes, new ModelUtils.ElementFilter<InterfaceScope>() {
             public boolean isAccepted(InterfaceScope element) {
                 return (queryName.length == 0 || ScopeImpl.nameKindMatch(element.getName(), nameKind, queryName));
@@ -455,12 +457,12 @@ class CachingSupport {
         });
     }
 
-    private List<? extends TypeScope> getCachedTypes(final String... queryName) {
+    private Collection<? extends TypeScope> getCachedTypes(final String... queryName) {
         return getCachedTypes(NameKind.EXACT_NAME, queryName);
     }
 
     @SuppressWarnings("unchecked")
-    private List<? extends TypeScope> getCachedTypes(final NameKind nameKind, final String... queryName) {
+    private Collection<? extends TypeScope> getCachedTypes(final NameKind nameKind, final String... queryName) {
         return ModelUtils.merge(getCachedClasses(nameKind, queryName),getCachedIfaces(nameKind, queryName));
     }
 

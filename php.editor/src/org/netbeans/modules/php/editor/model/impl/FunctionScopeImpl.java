@@ -40,6 +40,7 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.model.*;
@@ -109,7 +110,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
     //old contructors
     
 
-    public final List<? extends TypeScope> getReturnTypes() {
+    public final Collection<? extends TypeScope> getReturnTypes() {
         return (returnType != null && returnType.length() > 0) ?
             CachingSupport.getTypes(returnType.split("\\|")[0], this) :
             Collections.<TypeScopeImpl>emptyList();
@@ -133,12 +134,13 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        List<? extends TypeScope> returnTypes = getReturnTypes();
+        Collection<? extends TypeScope> returnTypes = getReturnTypes();
         sb.append('[');
-        for (int i = 0; i < returnTypes.size(); i++) {
-            TypeScope typeScope = returnTypes.get(i);
+        for (TypeScope typeScope : returnTypes) {
+            if (sb.length() == 1) {
+                sb.append("|");
+            }
             sb.append(typeScope.getName());
-            if (i+1 < returnTypes.size()) sb.append("|");
         }
         sb.append("] ");
         sb.append(super.toString()).append("(");
@@ -153,27 +155,27 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
         return sb.toString();
     }
 
-    public List<? extends VariableName> getDeclaredVariables() {
+    public Collection<? extends VariableName> getDeclaredVariables() {
         return getAllVariablesImpl();
     }
 
-    public List<? extends VariableName> findDeclaredVariables(String... queryName) {
+    public Collection<? extends VariableName> findDeclaredVariables(String... queryName) {
         return getVariablesImpl(queryName);
     }
 
-    public List<? extends VariableName> findDeclaredVariables(NameKind nameKind, String... queryName) {
+    public Collection<? extends VariableName> findDeclaredVariables(NameKind nameKind, String... queryName) {
         return findDeclaredVariables(nameKind, queryName);
     }
 
-    public List<? extends VariableName> getAllVariablesImpl() {
+    public Collection<? extends VariableName> getAllVariablesImpl() {
         return getVariablesImpl();
     }
 
-    public List<? extends VariableName> getVariablesImpl(String... queryName) {
+    public Collection<? extends VariableName> getVariablesImpl(String... queryName) {
         return getVariablesImpl(NameKind.EXACT_NAME, queryName);
     }
 
-    public List<? extends VariableName> getVariablesImpl(final NameKind nameKind, final String... queryName) {
+    public Collection<? extends VariableName> getVariablesImpl(final NameKind nameKind, final String... queryName) {
         return filter(getElements(), new ElementFilter() {
             public boolean isAccepted(ModelElement element) {
                 return element.getPhpKind().equals(PhpKind.VARIABLE)  &&

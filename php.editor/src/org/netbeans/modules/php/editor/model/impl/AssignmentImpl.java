@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.php.editor.model.*;
 import java.util.List;
@@ -107,7 +108,7 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
         return sb.toString();
     }
 
-    public List<? extends TypeScope> getTypes() {
+    public Collection<? extends TypeScope> getTypes() {
         String name = container.getName();
         List<? extends TypeScope> empty = Collections.emptyList();
         FileScope topScope = ModelUtils.getFileScope(this);

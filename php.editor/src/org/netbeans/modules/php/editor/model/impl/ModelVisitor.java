@@ -39,6 +39,7 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -361,7 +362,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             Scope scope = modelBuilder.getCurrentScope();
             if (scope instanceof VariableContainerImpl) {
                 VariableContainerImpl vc = (VariableContainerImpl) scope;
-                List<? extends VariableName> variablesImpl = vc.getVariablesImpl(varName);
+                Collection<? extends VariableName> variablesImpl = vc.getVariablesImpl(varName);
                 VariableNameImpl varElem = (VariableNameImpl) ModelUtils.getFirst(variablesImpl);
                 if (varElem != null) {
                     varElem.setGloballyVisible(true);
@@ -423,7 +424,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             FieldAccess fieldAccess = (FieldAccess) leftHandSide;
             VariableNameImpl varN = findVariable(modelBuilder.getCurrentScope(), fieldAccess.getDispatcher());
             if (varN != null) {
-                List<? extends TypeScope> types = varN.getTypes(fieldAccess.getStartOffset());
+                Collection<? extends TypeScope> types = varN.getTypes(fieldAccess.getStartOffset());
                 //TODO: getFirst must be reviewed
                 TypeScope type = ModelUtils.getFirst(types);
                 if (type instanceof ClassScope) {
@@ -708,7 +709,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 }
             } else if (modelElement instanceof ClassScope) {
                 ClassScope clsScope = (ClassScope) modelElement;
-                List<? extends MethodScope> allMethods = clsScope.getDeclaredMethods();
+                Collection<? extends MethodScope> allMethods = clsScope.getDeclaredMethods();
                 for (MethodScope methodScope : allMethods) {
                     if (methodScope.getBlockRange().containsInclusive(offset)) {
                         if (retval == null ||
@@ -776,7 +777,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     private VariableScope findNearestVarScope(Scope scope, int offset, VariableScope atOffset) {
         buildOccurences();
-        List<? extends ModelElement> elements = scope.getElements();
+        Collection<? extends ModelElement> elements = scope.getElements();
         for (ModelElement varScope : elements) {
             if (varScope instanceof ClassScope) {
                 atOffset = findNearestVarScope((ClassScope)varScope, offset, atOffset);
