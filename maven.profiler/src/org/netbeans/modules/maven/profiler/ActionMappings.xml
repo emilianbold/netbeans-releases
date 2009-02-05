@@ -64,6 +64,7 @@ made subject to such option by the copyright holder.
         <packagings>
             <packaging>war</packaging>
             <packaging>ejb</packaging>
+            <packaging>ear</packaging>
         </packagings>
         <goals>
             <goal>package</goal>
@@ -77,7 +78,7 @@ made subject to such option by the copyright holder.
     <action>
         <actionName>profile-single</actionName>
         <packagings>
-            <packaging>*</packaging>
+            <packaging>jar</packaging>
         </packagings>
         <goals>
             <goal>process-classes</goal>
@@ -88,6 +89,20 @@ made subject to such option by the copyright holder.
             <exec.executable>${profiler.java}</exec.executable>
             <exec.classpathScope>${classPathScope}</exec.classpathScope>
             <profiler.action>profile-single</profiler.action>
+        </properties>
+    </action>
+
+    <action>
+        <actionName>profile-single</actionName>
+        <packagings>
+            <packaging>war</packaging>
+        </packagings>
+        <goals>
+            <goal>package</goal>
+        </goals>
+        <properties>
+            <netbeans.deploy>true</netbeans.deploy>
+            <netbeans.deploy.profilemode>true</netbeans.deploy.profilemode>
         </properties>
     </action>
 
