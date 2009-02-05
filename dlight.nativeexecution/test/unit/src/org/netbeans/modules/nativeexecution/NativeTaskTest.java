@@ -52,10 +52,12 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.util.ExternalTerminal;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.util.ExternalTerminalProvider;
 import org.openide.util.Exceptions;
 
 /**
@@ -102,11 +104,12 @@ public class NativeTaskTest {
                 if (newState == State.STARTING) {
                     return;
                 }
-                System.out.println("Process " + process.toString() + "[" + process.getPID() + "] " + newState);
+                System.out.println("Process " + process.toString() + " [" + process.getPID() + "] -> " + newState);
             }
         };
 
-        NativeProcessBuilder npb = new NativeProcessBuilder(ee, cmd).addEnvironmentVariable("MY_ENV_VAR2", "IT_WORKS").setWorkingDirectory("/tmp").useExternalTerminal(true).addNativeProcessListener(l);
+        ExternalTerminal term = ExternalTerminalProvider.getTerminal("gnome-terminal").setTitle("My favorite title");
+        NativeProcessBuilder npb = new NativeProcessBuilder(ee, cmd).setArguments("1", "2").addEnvironmentVariable("MY_ENV_VAR2", "IT_WORKS").setWorkingDirectory("/tmp").useExternalTerminal(term).addNativeProcessListener(l);
 
         ExecutionDescriptor descr = new ExecutionDescriptor().outLineBased(true).outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
 
