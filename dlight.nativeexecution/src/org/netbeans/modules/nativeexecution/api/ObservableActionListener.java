@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.nativeexecution.api;
 
 import javax.swing.Action;
@@ -51,7 +50,6 @@ import javax.swing.Action;
  * 
  * @param <T> type of action's result.
  */
-
 public interface ObservableActionListener<T> {
 
     /**

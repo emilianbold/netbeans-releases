@@ -20,8 +20,7 @@ import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.NativeTaskConfig;
-import org.netbeans.modules.nativeexecution.api.support.ConnectionManager;
+import org.netbeans.modules.nativeexecution.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.support.InputRedirectorFactory;
 import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
@@ -29,7 +28,7 @@ import org.openide.windows.InputOutput;
 /**
  * Utility class that provides information about particual host.
  */
-public final class HostInfo {
+public final class HostInfoUtils {
 
     /**
      * String constant that can be used to identify a localhost.
@@ -117,10 +116,8 @@ public final class HostInfo {
                 throw new HostNotConnectedException();
             }
 
-            NativeTaskConfig ntc = new NativeTaskConfig(execEnv, cmd_test);
-            ntc = ntc.setArguments("-f", fname); // NOI18N
-
-            NativeProcessBuilder npb = new NativeProcessBuilder(ntc, null);
+            NativeProcessBuilder npb = new NativeProcessBuilder(
+                    execEnv, cmd_test).setArguments("-f", fname);
 
             try {
                 fileExists = npb.call().exitValue() == 0;
@@ -157,14 +154,14 @@ public final class HostInfo {
         }
 
         CharArrayWriter taskOutput = new CharArrayWriter();
-        NativeTaskConfig ntc = new NativeTaskConfig(execEnv, cmd_uname);
-        ntc = ntc.setArguments("-s"); // NOI18N
+
         ExecutionDescriptor descriptor =
                 new ExecutionDescriptor().outProcessorFactory(
                 new InputRedirectorFactory(taskOutput));
 
         ExecutionService execService = ExecutionService.newService(
-                new NativeProcessBuilder(ntc, null), descriptor, ""); // NOI18N
+                new NativeProcessBuilder(execEnv, cmd_uname).setArguments("-s"), // NOI18N
+                descriptor, ""); // NOI18N
 
         int result = -1;
 
@@ -216,16 +213,14 @@ public final class HostInfo {
             return platformPathsHash.get(key);
         }
 
-        NativeTaskConfig ntc =
-                new NativeTaskConfig(execEnv, cmd_sh).setArguments(
+        NativeProcessBuilder npb =
+                new NativeProcessBuilder(execEnv, cmd_sh).setArguments(
                 "-c", "\"" + // NOI18N
                 cmd_uname + " -s; " + // NOI18N
                 cmd_uname + " -p; " + // NOI18N
                 cmd_uname + " -m\"");
 
         final CharArrayWriter taskOutput = new CharArrayWriter();
-
-        NativeProcessBuilder npb = new NativeProcessBuilder(ntc, null);
 
         ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
                 InputOutput.NULL).outProcessorFactory(

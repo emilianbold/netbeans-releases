@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.nativeexecution.util;
 
-import org.netbeans.modules.nativeexecution.api.support.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ObservableAction;
 import com.jcraft.jsch.ChannelShell;
@@ -66,9 +65,8 @@ import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.nativeexecution.access.ConnectionManagerAccessor;
+import org.netbeans.modules.nativeexecution.api.impl.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.NativeTaskConfig;
 import org.netbeans.modules.nativeexecution.support.ui.GrantPrivilegesDialog;
 import org.netbeans.modules.nativeexecution.support.Encrypter;
 import org.netbeans.modules.nativeexecution.support.InputRedirectorFactory;
@@ -168,15 +166,13 @@ public final class SolarisPrivilegesSupport {
 
         CharArrayWriter outWriter = new CharArrayWriter();
 
-        NativeTaskConfig ntc =
-                new NativeTaskConfig(execEnv, "/bin/ppriv").setArguments("-v $$ | /bin/grep [IL]"); // NOI18N
+        NativeProcessBuilder npb =
+                new NativeProcessBuilder(execEnv, "/bin/ppriv").setArguments("-v $$ | /bin/grep [IL]"); // NOI18N
 
         ExecutionDescriptor descriptor =
                 new ExecutionDescriptor().inputOutput(
                 InputOutput.NULL).outProcessorFactory(
                 new InputRedirectorFactory(outWriter));
-
-        NativeProcessBuilder npb = new NativeProcessBuilder(ntc, null);
 
         ExecutionService execService = ExecutionService.newService(
                 npb, descriptor, "getExecutionPrivileges"); // NOI18N
@@ -360,7 +356,7 @@ public final class SolarisPrivilegesSupport {
         private static void doRequestLocal(final ExecutionEnvironment execEnv,
                 final String requestedPrivs, String user, String passwd) {
 
-            String osPath = HostInfo.getPlatformPath(execEnv);
+            String osPath = HostInfoUtils.getPlatformPath(execEnv);
             String privp = String.format("bin/%s/privp", osPath); // NOI18N
 
             InstalledFileLocator fl = InstalledFileLocator.getDefault();

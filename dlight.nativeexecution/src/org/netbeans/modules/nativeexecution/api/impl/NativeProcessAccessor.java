@@ -36,17 +36,17 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.access;
+package org.netbeans.modules.nativeexecution.api.impl;
 
-import java.util.Map;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeTaskConfig;
+import java.util.Collection;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
 
-public abstract class NativeTaskConfigAccessor {
+public abstract class NativeProcessAccessor {
 
-    private static volatile NativeTaskConfigAccessor DEFAULT;
+    private static volatile NativeProcessAccessor DEFAULT;
 
-    public static void setDefault(NativeTaskConfigAccessor accessor) {
+    public static void setDefault(NativeProcessAccessor accessor) {
         if (DEFAULT != null) {
             throw new IllegalStateException(
                     "NativeTaskInfoAccessor is already defined"); // NOI18N
@@ -55,25 +55,23 @@ public abstract class NativeTaskConfigAccessor {
         DEFAULT = accessor;
     }
 
-    public static synchronized NativeTaskConfigAccessor getDefault() {
+    public static synchronized NativeProcessAccessor getDefault() {
         if (DEFAULT != null) {
             return DEFAULT;
         }
 
         try {
-            Class.forName(NativeTaskConfig.class.getName(), true,
-                    NativeTaskConfig.class.getClassLoader());
+            Class.forName(NativeProcess.class.getName(), true,
+                    NativeProcess.class.getClassLoader());
         } catch (ClassNotFoundException ex) {
         }
 
         return DEFAULT;
     }
 
-    public abstract String getWorkingDirectory(NativeTaskConfig config);
+    public abstract void setID(NativeProcess process, String id);
 
-    public abstract ExecutionEnvironment getExecutionEnvironment(NativeTaskConfig config);
+    public abstract void setListeners(NativeProcess process, Collection<Listener> listeners);
 
-    public abstract Map<String, String> getEnvVariables(NativeTaskConfig config);
-
-    public abstract String getCommandLine(NativeTaskConfig config);
+    public abstract void setState(NativeProcess process, NativeProcess.State state);
 }

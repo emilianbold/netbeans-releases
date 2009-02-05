@@ -38,21 +38,13 @@
  */
 package org.netbeans.modules.nativeexecution;
 
-import java.io.CharArrayWriter;
-import java.util.concurrent.Future;
-import org.netbeans.modules.nativeexecution.util.HostInfo;
+import org.netbeans.modules.nativeexecution.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.modules.nativeexecution.api.ExecutionControl;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.NativeTaskConfig;
-import org.netbeans.modules.nativeexecution.support.InputRedirectorFactory;
 import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 import org.openide.util.Exceptions;
 import static org.junit.Assert.*;
@@ -95,7 +87,7 @@ public class HostInfoTest {
 
         try {
             expResult = "SunOS";
-            result = HostInfo.getOS(new ExecutionEnvironment("ak119685", "127.0.0.1"));
+            result = HostInfoUtils.getOS(new ExecutionEnvironment("ak119685", "127.0.0.1"));
             System.out.printf("Expected result is %s, actual result is %s\n", expResult, result);
             assertEquals(expResult, result);
         } catch (HostNotConnectedException ex) {
@@ -164,7 +156,7 @@ public class HostInfoTest {
 
         try {
             fname = "/etc/passwd1";
-            result = HostInfo.fileExists(ee, fname);
+            result = HostInfoUtils.fileExists(ee, fname);
             expResult = false;
             System.out.println(fname + (result == false ? " doesn't exist" : " exists"));
             assertEquals(expResult, result);
@@ -175,7 +167,7 @@ public class HostInfoTest {
 
         try {
             fname = "/etc/passwd";
-            result = HostInfo.fileExists(ee, fname);
+            result = HostInfoUtils.fileExists(ee, fname);
             expResult = true;
             System.out.println(fname + (result == false ? " doesn't exist" : " exists"));
             assertEquals(expResult, result);
@@ -249,7 +241,7 @@ public class HostInfoTest {
         System.out.println("isLocalhost");
         String host = "localhost";
         boolean expResult = true;
-        boolean result = HostInfo.isLocalhost(host);
+        boolean result = HostInfoUtils.isLocalhost(host);
         assertEquals(expResult, result);
     }
 
@@ -260,7 +252,7 @@ public class HostInfoTest {
         String result = "";
 
         for (int i = 0; i < 3; i++) {
-            result = HostInfo.getPlatformPath(new ExecutionEnvironment(null, null));
+            result = HostInfoUtils.getPlatformPath(new ExecutionEnvironment(null, null));
             System.out.println("Platform PATH is " + result);
         }
         assertEquals(expResult, result);

@@ -182,16 +182,4 @@ public abstract class ObservableAction<T> extends AbstractAction {
             l.actionCompleted(this, result);
         }
     }
-
-//    /**
-//     * Returns result of most recent finished invokation.
-//     * It is allowed to start action multiply times (though request to start
-//     * action will be disregarded in case action execution is in progress). The
-//     * object stores a value of the result from the last finished invokation.
-//     *
-//     * @return result of most recent finished invokation.
-//     */
-//    public T getLastResult() {
-//        return result;
-//    }
 }

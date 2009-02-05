@@ -36,12 +36,10 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.nativeexecution;
 
 import org.netbeans.modules.nativeexecution.api.ObservableAction;
 import org.netbeans.modules.nativeexecution.api.ObservableActionListener;
-import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -123,5 +121,4 @@ public class ObservableActionTest {
             Exceptions.printStackTrace(ex);
         }
     }
-
 }

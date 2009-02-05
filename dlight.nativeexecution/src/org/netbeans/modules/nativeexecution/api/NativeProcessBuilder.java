@@ -39,48 +39,80 @@
 package org.netbeans.modules.nativeexecution.api;
 
 import java.io.IOException;
-import org.netbeans.modules.nativeexecution.support.LocalNativeProcess;
+import org.netbeans.modules.nativeexecution.api.impl.LocalNativeProcess;
 import java.util.concurrent.Callable;
-import org.netbeans.modules.nativeexecution.access.ExecutionControlAccessor;
-import org.netbeans.modules.nativeexecution.support.RemoteNativeProcess;
-import org.netbeans.modules.nativeexecution.access.NativeTaskConfigAccessor;
-//import org.netbeans.modules.nativeexecution.support.TerminalLocalNativeProcess;
+import org.netbeans.modules.nativeexecution.api.impl.NativeProcessInfo;
+import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
+import org.netbeans.modules.nativeexecution.api.impl.RemoteNativeProcess;
+import org.netbeans.modules.nativeexecution.api.impl.TerminalLocalNativeProcess;
 
 /**
- *
+ * Utility class for external process creation.
+ * <p>
+ * Depending on {@link NativeProcessConfiguration} and {@link ExecutionControl}
  */
-public class NativeProcessBuilder implements Callable<Process> {
+public final class NativeProcessBuilder implements Callable<Process> {
 
-    private final NativeTaskConfig config;
-    private final ExecutionControl executionControl;
+    private NativeProcessInfo info = null;
+    private boolean useExternalTerminal = false;
     private NativeProcess process = null;
 
-    public NativeProcessBuilder(NativeTaskConfig config, ExecutionControl executionControl) {
-        this.config = config;
-        this.executionControl = executionControl == null 
-                ? ExecutionControl.getDefault()
-                : executionControl;
+    public NativeProcessBuilder(
+            final ExecutionEnvironment execEnv,
+            final String command) {
+        info = new NativeProcessInfo(execEnv, command);
+    }
+
+    public NativeProcessBuilder(final String command) {
+        this(new ExecutionEnvironment(), command);
+    }
+
+    private NativeProcessBuilder(NativeProcessBuilder b) {
+        info = new NativeProcessInfo(b.info);
+        useExternalTerminal = b.useExternalTerminal;
+    }
+
+    public NativeProcessBuilder addNativeProcessListener(Listener listener) {
+        NativeProcessBuilder result = new NativeProcessBuilder(this);
+        result.info.addNativeProcessListener(listener);
+        return result;
     }
 
     public NativeProcess call() throws IOException {
-        final NativeTaskConfigAccessor configInfo =
-                NativeTaskConfigAccessor.getDefault();
-
-        final ExecutionControlAccessor ctrlInfo =
-                ExecutionControlAccessor.getDefault();
-        
-        ExecutionEnvironment execEnv = configInfo.getExecutionEnvironment(config);
-
-        if (execEnv.isRemote()) {
-            process = new RemoteNativeProcess(config, executionControl);
+        if (info.getExecutionEnvironment().isRemote()) {
+            process = new RemoteNativeProcess(info);
         } else {
-            if (ctrlInfo.getUseTerminal(executionControl) == true) {
-//                process = new TerminalLocalNativeProcess(config, executionControl);
+            if (useExternalTerminal == true) {
+                process = new TerminalLocalNativeProcess(info);
             } else {
-                process = new LocalNativeProcess(config, executionControl);
+                process = new LocalNativeProcess(info);
             }
         }
 
         return process;
+    }
+
+    public NativeProcessBuilder setWorkingDirectory(String workingDirectory) {
+        NativeProcessBuilder result = new NativeProcessBuilder(this);
+        result.info.setWorkingDirectory(workingDirectory);
+        return result;
+    }
+
+    public NativeProcessBuilder addEnvironmentVariable(String name, String value) {
+        NativeProcessBuilder result = new NativeProcessBuilder(this);
+        result.info.addEnvironmentVariable(name, value);
+        return result;
+    }
+
+    public NativeProcessBuilder setArguments(String... arguments) {
+        NativeProcessBuilder result = new NativeProcessBuilder(this);
+        result.info.setArguments(arguments);
+        return result;
+    }
+
+    public NativeProcessBuilder useExternalTerminal(boolean useExternalTerminal) {
+        NativeProcessBuilder result = new NativeProcessBuilder(this);
+        result.useExternalTerminal = useExternalTerminal;
+        return result;
     }
 }

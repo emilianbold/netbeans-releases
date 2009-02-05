@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,19 +34,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support;
+package org.netbeans.modules.nativeexecution.api.impl;
 
-import javax.swing.ImageIcon;
+import com.jcraft.jsch.Session;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.util.ConnectionManager;
 
-public class ImageLoader {
+public abstract class ConnectionManagerAccessor {
 
-    private static final String prefix =
-            "/org/netbeans/modules/nativeexecution/resources/"; // NOI18N
+    private static volatile ConnectionManagerAccessor DEFAULT;
 
-    public static final ImageIcon loadIcon(String resourceFileName) {
-        return new ImageIcon(
-                ImageLoader.class.getResource(prefix + resourceFileName));
+    public static void setDefault(ConnectionManagerAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException(
+                    "ConnectionManagerAccessor is already defined"); // NOI18N
+        }
+
+        DEFAULT = accessor;
     }
+
+    public static synchronized ConnectionManagerAccessor getDefault() {
+        if (DEFAULT != null) {
+            return DEFAULT;
+        }
+
+        try {
+            Class.forName(ConnectionManager.class.getName(), true,
+                    ConnectionManager.class.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+        }
+
+        return DEFAULT;
+    }
+
+    public abstract Session getConnectionSession(
+            final ConnectionManager mgr, final ExecutionEnvironment env);
 }
