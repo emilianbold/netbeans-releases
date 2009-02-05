@@ -766,7 +766,7 @@ the ${netbeans.dest}/bin/ directory.
         <mapper type="glob" from="*" to="*.dir"/>
     </resolvelist>
     <pathconvert property="nb.clusters.includes" pathsep=",">
-        <dirset dir="${netbeans.dest.dir}" includes="${nb.clusters.dirs},etc"/>
+        <dirset dir="${netbeans.dest.dir}" includes="${nb.clusters.dirs},etc,bin"/>
         <mapper type="regexp" from=".*/([^/\\]*)" to="\1/**/*"/>
     </pathconvert>
     <pathconvert property="nb.clusters.exe.includes" pathsep=",">
@@ -789,6 +789,13 @@ the ${netbeans.dest}/bin/ directory.
         dir="${netbeans.dest.dir}" prefix="${netbeans.dest}"
         includes="${nb.clusters.includes}" excludes="${nb-extra-files}"
       />
+      <zipfileset
+        dir="${netbeans.dest.dir}" prefix="${netbeans.dest}"
+        excludes="${nb-extra-files}">
+            <include name="*.txt"/>
+            <include name="*.css"/>
+            <include name="*.html"/>
+      </zipfileset>
     </zip>
   </target>
 
