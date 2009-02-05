@@ -460,37 +460,31 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     
     public void addNamespaceDefinition(CsmNamespaceDefinition def) {
         CsmUID<CsmNamespaceDefinition> definitionUid = RepositoryUtils.put(def);
+        boolean add = false;
         try {
             nsDefinitionsLock.writeLock().lock();
+            add = nsDefinitions.size() == 0;
             nsDefinitions.put(getSortKey(def), definitionUid);
         } finally {
             nsDefinitionsLock.writeLock().unlock();
         }
         // update repository
         RepositoryUtils.put(this);
+        if (add){
+            addRemoveInParentNamespace(true);
+        }
     }
     
-    public void removeNamespaceDefinition(CsmNamespaceDefinition def) {
-        assert !this.isGlobal();
-        boolean remove = false;
-        CsmUID<CsmNamespaceDefinition> definitionUid = null;
-        try {
-            nsDefinitionsLock.writeLock().lock();
-            definitionUid = nsDefinitions.remove(getSortKey(def));
-        } finally {
-            nsDefinitionsLock.writeLock().unlock();
-        }
-        // does not remove unregistered declaration from repository, it's responsibility of physical container
-        if (false) { RepositoryUtils.remove(definitionUid); }
-        // update repository about itself
-        RepositoryUtils.put(this);
-        try {
-            nsDefinitionsLock.readLock().lock();
-            remove =  (nsDefinitions.size() == 0);
-        } finally {
-            nsDefinitionsLock.readLock().unlock();
-        }
-        if (remove) {
+    private synchronized void addRemoveInParentNamespace(boolean add){
+        if (add){
+            // add this namespace in the parent namespace
+            NamespaceImpl parent = (NamespaceImpl) _getParentNamespace();
+            if (parent != null) {
+                parent.addNestedNamespace(this);
+            }
+            _getProject().registerNamespace(this);
+        } else {
+            // remove this namespace from the parent namespace
             NamespaceImpl parent = (NamespaceImpl) _getParentNamespace();
             if (parent != null) {
                 parent.removeNestedNamespace(this);
@@ -498,6 +492,26 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             projectRef = _getProject();
             ((ProjectBase)projectRef).unregisterNamesace(this);
             dispose();            
+        }
+    }
+
+    public void removeNamespaceDefinition(CsmNamespaceDefinition def) {
+        assert !this.isGlobal();
+        boolean remove = false;
+        CsmUID<CsmNamespaceDefinition> definitionUid = null;
+        try {
+            nsDefinitionsLock.writeLock().lock();
+            definitionUid = nsDefinitions.remove(getSortKey(def));
+            remove =  (nsDefinitions.size() == 0);
+        } finally {
+            nsDefinitionsLock.writeLock().unlock();
+        }
+        // does not remove unregistered declaration from repository, it's responsibility of physical container
+        if (false) { RepositoryUtils.remove(definitionUid); }
+        // update repository about itself
+        RepositoryUtils.put(this);
+        if (remove) {
+            addRemoveInParentNamespace(false);
         }
     }
     
