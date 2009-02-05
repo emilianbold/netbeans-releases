@@ -378,8 +378,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
     public boolean removeLibraries(Library[] arg0, SourceGroup arg1,
                                       String arg2) throws IOException,
                                                           UnsupportedOperationException {
-        Logger.getLogger(CPExtender.class.getName()).info("Removing libraries is not supported by Maven projects.");
-        return false;
+        throw new UnsupportedOperationException("Not supported in maven projects.");//NOI18N
     }
     
     public boolean addRoots(final URL[] urls, SourceGroup grp, String type) throws IOException {
@@ -423,20 +422,17 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
     
     public boolean removeRoots(URL[] arg0, SourceGroup arg1, String arg2) throws IOException,
                                                                                     UnsupportedOperationException {
-        Logger.getLogger(CPExtender.class.getName()).info("Removing binary dependencies is not supported by Maven projects.");
-        return false;
+        throw new UnsupportedOperationException("Removing binary dependencies is not supported by Maven projects.");
     }
     
     public boolean addAntArtifacts(AntArtifact[] arg0, URI[] arg1,
-                                      SourceGroup arg2, String arg3) throws IOException {
-        Logger.getLogger(CPExtender.class.getName()).info("Adding Ant projects as dependencies is not supported by Maven projects.");
-        return false;
+                                      SourceGroup arg2, String arg3) throws IOException, UnsupportedOperationException {
+        throw new UnsupportedOperationException("Cannot add Ant based projects as subprojects to Maven projects.");//NOI18N
     }
     
     public boolean removeAntArtifacts(AntArtifact[] arg0, URI[] arg1,
-                                         SourceGroup arg2, String arg3) throws IOException {
-        Logger.getLogger(CPExtender.class.getName()).info("Removing ant projects as dependencies is not supported by Maven projects.");
-        return false;
+                                         SourceGroup arg2, String arg3) throws IOException, UnsupportedOperationException {
+        throw new UnsupportedOperationException("Cannot remove Ant based projects as subprojects from Maven projects.");//NOI18N
     }
     
     private void addJarToPrivateRepo(FileObject file, POMModel mdl, String[] dep) throws IOException {
