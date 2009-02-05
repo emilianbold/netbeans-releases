@@ -81,5 +81,4 @@ public class ProfilerActionsProvider extends AbstractMavenActionsProvider {
             assert in != null : "no instream for " + path; //NOI18N
             return in;
     }
-
 }

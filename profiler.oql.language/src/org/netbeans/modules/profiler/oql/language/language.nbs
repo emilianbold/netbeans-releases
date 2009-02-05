@@ -40,106 +40,19 @@
 
 
 ########### tokens #############################################################
-
-TOKEN:oql_keyword:( "select" | "from" | "where" | "instanceof")
-TOKEN:oql_method:( "objectid" | "classof" | "sizeof" | "identical" |
-                   "referrers" | "referees" | "reachables" | "root" |
-                   "forEachReferrer" | "toHtml" | "concat" | "contains" |
-                   "count" | "filter" | "length" | "map" | "min" | "max" |
-                   "sum" | "sort" | "toArray" | "unique" | "forEachClass" |
-                   "forEachObject" | "findClass" | "findObject" | "classes" |
-                   "objects" | "finalizables" | "livePaths" | "roots"
-                 )
-
-TOKEN:js_comment: ("/*" - "*/")
-TOKEN:js_comment: ("<!--" | "-->")
-TOKEN:js_line_comment: ("//"[^"\n""\r"]*)
-TOKEN:js_keyword: (
-    "abstract" |
-    "boolean" |
-    "break" |
-    "byte" |
-    "case" |
-    "catch" |
-    "char" |
-    "class" |
-    "const" |
-    "continue" |
-    "debugger" |
-    "default" |
-    "delete" |
-    "do" |
-    "double" |
-    "else" |
-    "enum" |
-    "export" |
-    "extends" |
-    "false" |
-    "final" |
-    "finally" |
-    "float" |
-    "for" |
-    "function" |
-    "goto" |
-    "if" |
-    "implements" |
-    "import" |
-    "in" |
-    "instanceof" |
-    "int" |
-    "interface" |
-    "long" |
-    "native" |
-    "new" |
-    "null" |
-    "package" |
-    "private" |
-    "protected" |
-    "public" |
-    "return" |
-    "short" |
-    "static" |
-    "super" |
-    "switch" |
-    "synchronized" |
-    "this" |
-    "throw" |
-    "throws" |
-    "transient" |
-    "true" |
-    "try" |
-    "typeof" |
-    "var" |
-    "void" |
-    "volatile" |
-    "while" |
-    "with"
+TOKEN:numeric:(
+    ["0"-"9"] ['l' 'L']? |
+    ["1"-"9"] ["0"-"9"]* ['l' 'L']? |
+    "0" ["0"-"7"]+ ['l' 'L']? |
+    ["0"-"9"]+ "." ["0"-"9"]* (["e" "E"] ["+" "-"]? ["0"-"9"]+)? ["f" "F" "d" "D"]? |
+    "." ["0"-"9"]+ (["e" "E"] ["+" "-"]? ["0"-"9"]+)? ["f" "F" "d" "D"]? |
+    ["0"-"9"]+ ["e" "E"] ["+" "-"]? ["0"-"9"]+ ["f" "F" "d" "D"]? |
+    ["0"-"9"]+ (["e" "E"] ["+" "-"]? ["0"-"9"]+)? ["f" "F" "d" "D"]
 )
-
-TOKEN:js_operator: (
-    "==" | "!=" | "<<" | ">>" | ">>>" | ">=" | "<=" | "++" | "--" |
-    "+=" | "-=" | "*=" | "/=" | "%=" | "<<=" | ">>=" | ">>>=" | "&=" |
-    "^=" | "|=" | "&&" | "||" | "===" | "!==" |
-    "?" | ":" | "<" | ">" | "*" | "-" | "+" | "." | "," | "=" |
-     "(" | ")" | "[" | "]" | "!" | "@" | "#" | "%" | "^" | "&" |
-    "~" | "|" | "\\"
+TOKEN:hex_number:(
+    "0" ["x" "X"] ["0"-"9" "a"-"f" "A"-"F"]+ ['l' 'L']?
 )
-
-TOKEN:js_separator: ( [";" "{" "}"] )
-
-TOKEN:js_string: (
-    "\"" (
-        [^ "\\" "\"" "\n" "\r"] |
-        ("\\" (
-            . |
-            (["0"-"7"] ["0"-"7"] ["0"-"7"]) |
-            ("x" ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"]) |
-            ("u" ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"])
-        ))
-    )*
-    "\""
-)
-TOKEN:js_string: (
+TOKEN:string:(
     "\'" (
         [^ "\\" "\'" "\n" "\r"] |
         ("\\" (
@@ -152,382 +65,119 @@ TOKEN:js_string: (
     "\'"
 )
 
-TOKEN:js_error_string: (
-    "\"" (
-        [^ "\\" "\"" "\n" "\r"] |
-        ("\\" (
-            . |
-            (["0"-"7"] ["0"-"7"] ["0"-"7"]) |
-            ("x" ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"]) |
-            ("u" ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"])
-        ))
-    )*
-)
-TOKEN:js_error_string: (
-    "\'" (
-        [^ "\\" "\'" "\n" "\r"] |
-        ("\\" (
-            . |
-            (["0"-"7"] ["0"-"7"] ["0"-"7"]) |
-            ("x" ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"]) |
-            ("u" ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"])
-        ))
-    )*
-)
-#TOKEN:js_regularExpression: (
-#    "/" ( [^ "\n" "\r"] )* "/" ['g' 'i' 'm']*
-#)
+TOKEN:operator: ( ">" | "<" | "==" | "<=" | ">=" | "!=" | "*" | "/" | "+" | "-" | "%" )
+TOKEN:braces: ( "(" | ")" | "[" | "]" )
 
-TOKEN:js_regularExpression: {
-    pattern:( "/" );
-    call:org.netbeans.modules.profiler.oql.language.javascript.JavaScript.parseRegularExpression;
+TOKEN:keyword:( "select" ):<SELECT>
+
+<SELECT> {
+    TOKEN:whitespace:( ["\n" "\r" " "]+ ):<SELECTOR>
 }
 
-TOKEN:js_number: (
-    ["0"-"9"] ['l' 'L']? |
-    ["1"-"9"] ["0"-"9"]* ['l' 'L']? |
-    "0" ["0"-"7"]+ ['l' 'L']? |
-    "0" ["x" "X"] ["0"-"9" "a"-"f" "A"-"F"]+ ['l' 'L']? |
-    ["0"-"9"]+ "." ["0"-"9"]* (["e" "E"] ["+" "-"]? ["0"-"9"]+)? ["f" "F" "d" "D"]? |
-    "." ["0"-"9"]+ (["e" "E"] ["+" "-"]? ["0"-"9"]+)? ["f" "F" "d" "D"]? |
-    ["0"-"9"]+ ["e" "E"] ["+" "-"]? ["0"-"9"]+ ["f" "F" "d" "D"]? |
-    ["0"-"9"]+ (["e" "E"] ["+" "-"]? ["0"-"9"]+)? ["f" "F" "d" "D"]
-)
-
-TOKEN:js_whitespace: ([" " "\t" "\n" "\r"]+)
-
-TOKEN:js_identifier: (
-    ["a"-"z" "A"-"Z" "_" "$"]
-    ["a"-"z" "A"-"Z" "0"-"9" "_" "$"
-    ]*
-)
-
-########### grammar ############################################################
-
-SKIP:js_whitespace
-SKIP:js_comment
-SKIP:js_line_comment
-
-#S = (SourceElement)+;
-S = OQLSelect;
-OQLSelect = "select" ExpressionStatement ["from" ["instanceof"] JavaClass <js_identifier> ["where" ExpressionStatement]];
-#SourceElement = Statement;
-
-JavaClass = <js_identifier> ("." <js_identifier>)*;
-
-FormalParameterList = [Parameter ("," Parameter)*];
-Parameter = <js_identifier>;
-
-Statement = <GAP> | EmptyStatement | ExpressionStatement | VariableStatement |
-    Block | LabelledStatement | IfStatement | SwitchStatement |
-    DoStatement | WhileStatement | ForStatement |
-    WithStatement | ContinueStatement | BreakStatement | ReturnStatement |
-    ThrowStatement | TryStatement;
-Block = "{" (Statement)* "}";
-VariableStatement = "var" VariableDeclaration ("," VariableDeclaration)* [";"];
-VariableDeclaration = VariableName [Initializer];
-VariableName = <js_identifier>;
-Initializer = "=" AssignmentExpression;
-EmptyStatement = ";";
-ExpressionStatement = ExpressionInitial [";"];
-IfStatement = "if" "(" Expression ")" Statement ["else" Statement];
-DoStatement = "do" Statement "while" "(" Expression ")" [";"];
-WhileStatement = "while" "(" Expression ")" Statement;
-ForStatement =
-    "for" "(" ["var"] VariableDeclarationNoIn (
-        ("," VariableDeclarationNoIn)* ";" [Expression] ";" [Expression] |
-        "in" Expression
-    ) ")" Statement;
-#HACK                     "for" "(" LeftHandSideExpression "in" Expression ")" Statement;
-VariableDeclarationNoIn = <js_identifier> [InitializerNoIn];
-InitializerNoIn = "=" AssignmentExpressionNoIn;
-ContinueStatement = "continue" [<js_identifier>] [";"];
-BreakStatement = "break" [<js_identifier>] [";"];
-ReturnStatement = "return" [Expression] [";"];
-WithStatement = "with" "(" Expression ")" Statement;
-SwitchStatement = "switch" "(" Expression ")" "{" (CaseClause)* [DefaultClause] (CaseClause)* "}";
-CaseClause = "case" Expression ":" (Statement)*;
-DefaultClause = "default" ":" (Statement)*;
-LabelledStatement = <js_identifier> ":" Statement;
-ThrowStatement = "throw" Expression ";";
-TryStatement = "try" Block [Catch] [Finally];
-Catch = "catch" "(" <js_identifier> ")" Block;
-Finally = "finally" Block;
-
-ExpressionInitial = AssignmentExpressionInitial ("," AssignmentExpression)*;
-Expression = <GAP> | AssignmentExpression ("," AssignmentExpression)*;
-ExpressionInitialNoIn = AssignmentExpressionInitialNoIn ("," AssignmentExpressionNoIn)*;
-ExpressionNoIn = AssignmentExpressionNoIn ("," AssignmentExpressionNoIn)*;
-AssignmentExpression = ConditionalExpression (AssignmentOperator ConditionalExpression)*;
-AssignmentExpressionInitial = ConditionalExpressionInitial (AssignmentOperator ConditionalExpression)*;
-AssignmentExpressionNoIn = ConditionalExpressionNoIn (AssignmentOperator ConditionalExpressionNoIn)*;
-AssignmentExpressionInitialNoIn = ConditionalExpressionInitialNoIn (AssignmentOperator ConditionalExpressionNoIn)*;
-AssignmentOperator = "=" | "*=" | "/=" | "%=" | "+=" | "-=" | "<<=" | ">>=" | ">>>=" | "&=" | "^=" | "|=";
-ConditionalExpression = LogicalORExpression ["?" AssignmentExpression ":" AssignmentExpression];
-ConditionalExpressionInitial = LogicalORExpressionInitial ["?" AssignmentExpression ":" AssignmentExpression];
-ConditionalExpressionNoIn = LogicalORExpressionNoIn ["?" AssignmentExpressionNoIn ":" AssignmentExpressionNoIn];
-ConditionalExpressionInitialNoIn = LogicalORExpressionInitialNoIn ["?" AssignmentExpressionNoIn ":" AssignmentExpressionNoIn];
-LogicalORExpression = LogicalANDExpression ("||" LogicalANDExpression)*;
-LogicalORExpressionInitial = LogicalANDExpressionInitial ("||" LogicalANDExpression)*;
-LogicalORExpressionNoIn = LogicalANDExpressionNoIn ("||" LogicalANDExpressionNoIn)*;
-LogicalORExpressionInitialNoIn = LogicalANDExpressionInitialNoIn ("||" LogicalANDExpressionNoIn)*;
-LogicalANDExpression = BitwiseORExpression ("&&" BitwiseORExpression)*;
-LogicalANDExpressionInitial = BitwiseORExpressionInitial ("&&" BitwiseORExpression)*;
-LogicalANDExpressionNoIn = BitwiseORExpressionNoIn ("&&" BitwiseORExpressionNoIn)*;
-LogicalANDExpressionInitialNoIn = BitwiseORExpressionInitialNoIn ("&&" BitwiseORExpressionNoIn)*;
-BitwiseORExpression = BitwiseXORExpression ("|" BitwiseXORExpression)*;
-BitwiseORExpressionInitial = BitwiseXORExpressionInitial ("|" BitwiseXORExpression)*;
-BitwiseORExpressionNoIn = BitwiseXORExpressionNoIn ("|" BitwiseXORExpressionNoIn)*;
-BitwiseORExpressionInitialNoIn = BitwiseXORExpressionInitialNoIn ("|" BitwiseXORExpressionNoIn)*;
-BitwiseXORExpression = BitwiseANDExpression ("^" BitwiseANDExpression)*;
-BitwiseXORExpressionInitial = BitwiseANDExpressionInitial ("^" BitwiseANDExpression)*;
-BitwiseXORExpressionNoIn = BitwiseANDExpressionNoIn ("^" BitwiseANDExpressionNoIn)*;
-BitwiseXORExpressionInitialNoIn = BitwiseANDExpressionInitialNoIn ("^" BitwiseANDExpressionNoIn)*;
-BitwiseANDExpression = EqualityExpression ("&" EqualityExpression)*;
-BitwiseANDExpressionInitial = EqualityExpressionInitial ("&" EqualityExpression)*;
-BitwiseANDExpressionNoIn = EqualityExpressionNoIn ("&" EqualityExpressionNoIn)*;
-BitwiseANDExpressionInitialNoIn = EqualityExpressionInitialNoIn ("&" EqualityExpressionNoIn)*;
-EqualityExpression = RelationalExpression (EqualityOperator EqualityExpression)*;
-EqualityExpressionInitial = RelationalExpressionInitial (EqualityOperator EqualityExpression)*;
-EqualityExpressionNoIn = RelationalExpressionNoIn (EqualityOperator EqualityExpressionNoIn)*;
-EqualityExpressionInitialNoIn = RelationalExpressionInitialNoIn (EqualityOperator EqualityExpressionNoIn)*;
-EqualityOperator = "==" | "!=" | "===" | "!==";
-RelationalExpression = ShiftExpression ((RelationalOperator | "in") ShiftExpression)*;
-RelationalExpressionInitial = ShiftExpressionInitial ((RelationalOperator | "in") RelationalExpression)*;
-RelationalExpressionNoIn = ShiftExpression (RelationalOperator ShiftExpression)*;
-RelationalExpressionInitialNoIn = ShiftExpressionInitial (RelationalOperator ShiftExpression)*;
-RelationalOperator = "<" | ">" | "<=" | ">=" | "instanceof";
-ShiftExpression = AdditiveExpression (("<<" | ">>" | ">>>") AdditiveExpression)*;
-ShiftExpressionInitial = AdditiveExpressionInitial (("<<" | ">>" | ">>>") AdditiveExpression)*;
-AdditiveExpression = MultiplicativeExpression (("+" | "-") MultiplicativeExpression)*;
-AdditiveExpressionInitial = MultiplicativeExpressionInitial (("+" | "-") MultiplicativeExpression)*;
-MultiplicativeExpression = UnaryExpression (("*" | "/" | "%") UnaryExpression)*;
-MultiplicativeExpressionInitial = UnaryExpressionInitial (("*" | "/" | "%") UnaryExpression)*;
-UnaryExpression = <GAP> |
-    PostfixExpression |
-    "delete" UnaryExpression |
-    "void" UnaryExpression |
-    "typeof" UnaryExpression |
-    "++" UnaryExpression |
-    "--" UnaryExpression |
-    "+" UnaryExpression |
-    "-" UnaryExpression |
-    "~" UnaryExpression |
-    "!" UnaryExpression;
-UnaryExpressionInitial = PostfixExpressionInitial |
-    "delete" UnaryExpression |
-    "void" UnaryExpression |
-    "typeof" UnaryExpression |
-    "++" UnaryExpression |
-    "--" UnaryExpression |
-    "+" UnaryExpression |
-    "-" UnaryExpression |
-    "~" UnaryExpression |
-    "!" UnaryExpression;
-PostfixExpression = LeftHandSideExpression ["++" | "--"];
-PostfixExpressionInitial = LeftHandSideExpressionInitial ["++" | "--"];
-LeftHandSideExpression = CallExpression | NewExpression;
-LeftHandSideExpressionInitial = CallExpressionInitial | NewExpression;
-CallExpression = PrimaryExpression (MemberOperator | Arguments)*;
-CallExpressionInitial = PrimaryExpressionInitial (MemberOperator | Arguments)*;
-NewExpression = "new" NewSubExpression (MemberOperator | Arguments)*;
-NewSubExpression = PrimaryExpression (MemberOperator)* | NewExpression;
-MemberOperator = "[" Expression "]" | "." (<js_identifier> | <oql_method>);
-Arguments = "(" [AssignmentExpression ("," AssignmentExpression)*] ")";
-PrimaryExpression = PrimaryExpressionInitial | ObjectLiteral;
-PrimaryExpressionInitial = "this" | "null" | "true" | "false" |
-    <js_number> | <js_string> | <js_identifier> | <oql_method> | RegularExpression |
-    "(" Expression ")" | ArrayLiteral | FunctionDeclaration;
-ArrayLiteral = "[" (",")* [AssignmentExpression] ( (",")+ AssignmentExpression)* (",")* "]";
-ObjectLiteral = "{" [PropertyNameAndValue ("," PropertyNameAndValue)*] "}";
-PropertyNameAndValue = PropertyName ":" AssignmentExpression;
-PropertyName = <js_identifier> | <js_string> | <js_number>;
-FunctionDeclaration = FunctionHeader FunctionBody;
-FunctionHeader = "function" [<GAP>] [FunctionName] "(" FormalParameterList ")";
-FunctionName = <GAP> | <js_identifier>;
-FunctionBody = Block;
-
-RegularExpression = <js_regularExpression>;
-#RegularExpression = "/";
-#PARSE:RegularExpression:org.netbeans.modules.languages.javascript.JavaScript.parseRegularExpression
-
-
-SYNTAX_ERROR:FunctionHeader: {
-    token_identifier:"{";
-    nt:"FunctionDeclaration";
+<SELECTOR> {
+    TOKEN:keyword:( "from" ):<FROM>
+    TOKEN:from_adept:( ["f" "r" "o" "m"]+ )
+    TOKEN:selector:( [^ "\n" "\r" " "]+ )
+    TOKEN:whitespace:( ["\n" "\r" " "]+ )
 }
 
-SYNTAX_ERROR:FunctionHeader: {
-    token_identifier:";";
-    nt:"PrimaryExpressionInitial";
+<FROM> {
+    TOKEN:instanceof:( "instanceof" )
+    TOKEN:instanceof_adept:( ["i" "n" "s" "t" "a" "c" "e" "o" "f"]+ )
+    TOKEN:class:( ["a"-"z" "A"-"Z"]+ ("." ["a"-"z" "A"-"Z"]+)* ):<CLASS_ALIAS>
+    TOKEN:whitespace:( ["\n" "\r" " "]+ )
 }
 
-SYNTAX_ERROR:Statement: {
-    token_identifier:";";
-    nt:"Statement";
+<CLASS_ALIAS> {
+    TOKEN:whitespace:( ["\n" "\r" " "]+ ):<IN_CLASS_ALIAS>
 }
 
-AST {
-    removeSimple:"!FormalParameterList,FunctionBody,FunctionDeclaration,Statement,VariableDeclaration,Parameter,VariableName,PropertyName,PropertyNameAndValue,Initializer,Error,FunctionName,AssignmentExpressionInitial,AssignmentOperator";
+<IN_CLASS_ALIAS> {
+    TOKEN:identifier:( ["a"-"z" "A"-"Z"]+ )
+    TOKEN:whitespace:( ["\n" "\r" " "]+ ):<AFTER_CLASS_ALIAS>
 }
 
-########### colors #############################################################
-
-COLOR:js_separator: {
-    color_name: "js_operator";
+<AFTER_CLASS_ALIAS> {
+    TOKEN:keyword: ( "where" ):<WHERE>
+    TOKEN:unknown_keyword:( ["a"-"z" "A"-"Z"]+ )
+    TOKEN:whitespace:( ["\n" "\r" " "]+ )
 }
 
-COLOR:js_error_string: {
-    default_coloring: "string";
+<WHERE> {
+    TOKEN:condition:( [^ "\n" "\r" " "]+ )
+    TOKEN:whitespace:( ["\n" "\r" " "]+ )
 }
 
-#COLOR:FunctionName: {
-#    color_name: "js_method";
-#    default_coloring: "default";
-#    condition:org.netbeans.modules.languages.javascript.JavaScript.isUsedMethod;
-#    font_type: "bold";
-#}
+TOKEN:unknown_keyword:( ["a"-"z" "A"-"Z"]+ )
 
-#COLOR:FunctionName: {
-#    color_name: "js_unused_method";
-#    default_coloring: "default";
-#    condition:org.netbeans.modules.languages.javascript.JavaScript.isUnusedMethod;
-#    font_type: "bold";
-#    foreground_color: "0x737373";
-#}
-COLOR:js_regularExpression: {
-    font_type: "bold";
-    foreground_color: "0x006f00";
-}
-
-
-########### indentation ########################################################
-
-
-########### code folding #######################################################
-
-FOLD:FunctionBody: {
-    expand_type_action_name:"LBL_ExpandMethods";
-    collapse_type_action_name:"LBL_CollapseMethods";
-}
-FOLD:js_comment: {
-    expand_type_action_name:"LBL_ExpandComments";
-    collapse_type_action_name:"LBL_CollapseComments";
-}
-
-########### brace matching #####################################################
+SKIP:whitespace
 
 BRACE "(:)"
 BRACE "{:}"
 BRACE "[:]"
 
-########### navigator ##########################################################
-
-NAVIGATOR:FunctionDeclaration: {
-    display_name: org.netbeans.modules.profiler.oql.language.javascript.JavaScript.functionName;
-    icon: "/org/netbeans/modules/languages/resources/method.gif";
-}
-
-NAVIGATOR:VariableDeclaration: {
-    display_name: org.netbeans.modules.languages.javascript.JavaScript.variableName;
-    tooltip: "$VariableName$ $Initializer$";
-    icon: org.netbeans.modules.profiler.oql.language.javascript.JavaScript.variableIcon;
-}
-
-NAVIGATOR:PropertyNameAndValue: {
-    display_name: org.netbeans.modules.profiler.oql.language.javascript.JavaScript.propertyName;
-    icon: org.netbeans.modules.profiler.oql.language.javascript.JavaScript.propertyIcon;
-}
-
-
-MARK:ERROR: {
-    type:"Error";
-    message:"LBL_SYNTAX_ERROR";
-}
-
-MARK:error: {
-    type:"Error";
-    message:"LBL_UNEXPECTED_CHARACTER";
-}
-
-COMPLETION:js_identifier, js_keyword, js_whitespace, js_operator, js_separator, js_comment: {
-    text1:org.netbeans.modules.profiler.oql.language.javascript.JavaScript.completionItems;
-    confirmChars:";(,.";
-}
-
-SEMANTIC_DECLARATION:VariableName: {
-    name:"$$";
-    type:"field";
-    local:"method";
-}
-SEMANTIC_DECLARATION:FunctionName: {
-    name:"$$";
-    type:"method";
-}
-SEMANTIC_DECLARATION:Parameter: {
-    name:"$$";
-    type:"parameter";
-}
-SEMANTIC_CONTEXT:Block
-
-SEMANTIC_CONTEXT:FunctionDeclaration: {
-    type:"method";
-}
-SEMANTIC_USAGE:js_identifier: {
-    name:"$$";
-    declaration_precedes_usage:"false";
-}
-
-
-#HYPERLINK:js_identifier: org.netbeans.modules.languages.javascript.JavaScript.hyperlink
-
 COMPLETE "(:)"
 COMPLETE "{:}"
-COMPLETE "\":\""
 COMPLETE "':'"
 COMPLETE "[:]"
 
 INDENT "(:)"
 INDENT "{:}"
 INDENT "[:]"
-INDENT "\\s*(((if|while)\\s*\\(|else\\s*|else\\s+if\\s*\\(|for\\s*\\(.*\\))[^{;]*)"
 
-#FORMAT:Statement: "NewLine"
-
-PROPERTIES {
-    #traceSteps:"true";
-    #printRules:"true";
-    #printFirst:"true";
-    projectsViewIcon:"org/netbeans/modules/profiler/oql/language/OQL.jpg";
+COMPLETION:class: {
+    text1:org.netbeans.modules.profiler.oql.language.CodeCompletion.getClasses;
+    confirmChars:" \t";
 }
 
-BUNDLE "org.netbeans.modules.profiler.oql.language.Bundle"
-
-SELECTION ( ["a"-"z" "A"-"Z" "0"-"9" "_" "$"] )
-
-COMMENT_LINE {
-    prefix:"//";
+COMPLETION:whitespace,unknown_keyword: {
+    recursive: "true";
+    text1: "select";
+    text2: "where";
 }
 
-########### actions ############################################################
-
-#ACTION:delete_method: {
-#    name:"LBL_DeleteCurrentMethod";
-#    performer:org.netbeans.modules.languages.javascript.JavaScript.performDeleteCurrentMethod;
-#    enabled:org.netbeans.modules.languages.javascript.JavaScript.enabledDeleteCurrentMethod;
-#    explorer:"false";
-#}
-
-ACTION:run_script: {
-    name:"LBL_Run";
-    performer:org.netbeans.modules.languages.javascript.JavaScript.performRun;
-    enabled:org.netbeans.modules.languages.javascript.JavaScript.enabledRun;
-    explorer:"false";
+COMPLETION:whitespace,instanceof_adept: {
+    text1: "instanceof";
 }
 
-IMPORT:js_string: {
-    mimeType:"text/x-string";
-    startSkipLength:"1";
-    endSkipLength:"1";
+COMPLETION:whitepsace,from_adept: {
+    text1: "from";
 }
 
+COMPLETION:whitespace,selector, condition: {
+    text1: "objectid";
+    text2: "classof";
+    text3: "sizeof";
+    text4: "identical";
+    text5: "referrers";
+    text6: "referees";
+    text7: "reachables";
+    text8: "root";
+    text9: "forEachReferrer";
+    text10: "toHtml";
+    text11: "concat";
+    text12: "contains";
+    text13: "count";
+    text14: "filter";
+    text15: "length";
+    text16: "map";
+    text17: "min";
+    text18: "max";
+    text19: "sum";
+    text20: "sort";
+    text21: "toArray";
+    text22: "unique";
+    text23: "forEachClass";
+    text24: "forEachObject";
+    text25: "findClass";
+    text26: "findObject";
+    text27: "classes";
+    text28: "objects";
+    text29: "finalizables";
+    text30: "livePaths";
+    text31: "roots";
+}
+
+S = SelectStatement;
+
+SelectStatement = "select" <selector>+ ["from" ["instanceof"] <class> <identifier> ["where" <condition>+]];

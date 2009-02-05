@@ -37,54 +37,28 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.profiler.oql.language.ui;
+package org.netbeans.modules.profiler.spi;
 
-import java.io.IOException;
-import javax.swing.JEditorPane;
-import javax.swing.text.Document;
-import javax.swing.text.EditorKit;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.modules.profiler.spi.OQLEditorImpl;
-import org.openide.cookies.EditorCookie;
+import org.netbeans.api.project.Project;
+import org.netbeans.lib.profiler.client.ClientUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-@ServiceProvider(service=OQLEditorImpl.class)
-public class OQLEditor extends OQLEditorImpl{
-    private JEditorPane newPane() {
-        JEditorPane editorPane;
-        String mimeType = "text/x-oql"; // NOI18N
-        editorPane = new JEditorPane();
+abstract public class ProjectProfilingSupport {
+    private Project project;
 
-        editorPane.setEditorKit(MimeLookup.getLookup(mimeType).lookup(EditorKit.class));
-        try {
-            //NOI18N
-            FileObject fo = FileUtil.createMemoryFileSystem().getRoot().createData("editor.oql"); // NOI18N
-            DataObject dobj = DataObject.find(fo);
-
-            EditorCookie ec = dobj.getCookie(EditorCookie.class);
-
-            Document doc = ec.openDocument();
-            doc.putProperty(EditorCookie.class, ec);
-            doc.putProperty(JEditorPane.class, editorPane);
-            editorPane.setDocument(doc);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        editorPane.setOpaque(false);
-
-        return editorPane;
+    protected ProjectProfilingSupport(Project project) {
+        this.project = project;
     }
 
-    public JEditorPane getEditorPane() {
-        return newPane();
+    protected Project getProject() {
+        return project;
     }
+
+    abstract public String getFilter(boolean useSubprojects);
+    abstract public ClientUtils.SourceCodeSelection[] getRootMethods(FileObject profiledClassFile);
+    abstract public boolean canProfileFile(FileObject file);
 }
