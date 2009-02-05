@@ -100,7 +100,7 @@ public class DataObjectEncodingQueryImplementation extends FileEncodingQueryImpl
             }
         }
         Boolean useDataObjectLookup = MIME_TYPE_CHECK_MAP.get(mimeType);
-        if (useDataObjectLookup == null || useDataObjectLookup.booleanValue()) {
+        if (useDataObjectLookup == null || useDataObjectLookup.booleanValue() || "content/unknown".equals(mimeType)) {  //NOI18N
             DataObject dobj;
             try {
                 dobj = DataObject.find(file);
