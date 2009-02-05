@@ -41,7 +41,8 @@
 package org.netbeans.modules.mobility.svgcore.export;
 
 import java.awt.Dialog;
-import java.awt.Dimension;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.microedition.m2g.SVGImage;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
@@ -70,10 +71,20 @@ public final class SaveElementAsImage extends AbstractSaveAction {// implements 
             int state = getAnimatorState(doj);
             float time = stopAnimator(doj);
             try {
-                SVGImageRasterizerPanel panel = new SVGImageRasterizerPanel(doj, svgObj.getElementId());
-                DialogDescriptor        dd    = new DialogDescriptor(panel, NbBundle.getMessage(SaveElementAsImage.class, "TITLE_ImageExport"));
+                final SVGImageRasterizerPanel panel = new SVGImageRasterizerPanel(doj, svgObj.getElementId());
+                final DialogDescriptor  dd    = new DialogDescriptor(panel,
+                        NbBundle.getMessage(SaveElementAsImage.class, "TITLE_ImageExport"));
+
+                panel.addPropertyChangeListener(DialogDescriptor.PROP_VALID,
+                        new PropertyChangeListener() {
+                            public void propertyChange(PropertyChangeEvent evt) {
+                                dd.setValid(panel.isDialogValid());
+                            }
+                        });
+                        
                 Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
                 SaveAnimationAsImageAction.setDialogMinimumSize( dlg);
+                dd.setValid(panel.isDialogValid());
                 dlg.setVisible(true);
                 
                 if (dd.getValue() == DialogDescriptor.OK_OPTION){

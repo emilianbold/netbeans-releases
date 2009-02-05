@@ -92,6 +92,7 @@ public class QmakeProjectWriter {
         QMAKE_CC,
         QMAKE_CXX,
         MOC_DIR,
+        RCC_DIR,
         UI_DIR,
         OBJECTS_DIR
     }
@@ -161,7 +162,7 @@ public class QmakeProjectWriter {
         write(bw, Variable.TEMPLATE, Operation.SET, getTemplate());
         write(bw, Variable.DESTDIR, Operation.SET, configuration.expandMacros(configuration.getQmakeConfiguration().getDestdirValue()));
         write(bw, Variable.TARGET, Operation.SET, configuration.expandMacros(configuration.getQmakeConfiguration().getTargetValue()));
-        write(bw, Variable.VERSION, Operation.SET, configuration.getQmakeConfiguration().getLibVersion().getValue());
+        write(bw, Variable.VERSION, Operation.SET, configuration.getQmakeConfiguration().getVersion().getValue());
         write(bw, Variable.CONFIG, Operation.SUB, "debug_and_release"); // NOI18N
         write(bw, Variable.CONFIG, Operation.ADD, getConfig());
         write(bw, Variable.QT, Operation.SET, configuration.getQmakeConfiguration().getEnabledModules());
@@ -177,6 +178,8 @@ public class QmakeProjectWriter {
                 configuration.expandMacros(ConfigurationMakefileWriter.getObjectDir(configuration)));
         write(bw, Variable.MOC_DIR, Operation.SET,
                 configuration.expandMacros(configuration.getQmakeConfiguration().getMocDir().getValue()));
+        write(bw, Variable.RCC_DIR, Operation.SET,
+                configuration.expandMacros(configuration.getQmakeConfiguration().getRccDir().getValue()));
         write(bw, Variable.UI_DIR, Operation.SET,
                 configuration.expandMacros(configuration.getQmakeConfiguration().getUiDir().getValue()));
 
@@ -188,10 +191,8 @@ public class QmakeProjectWriter {
         CompilerSet compilerSet = configuration.getCompilerSet().getCompilerSet();
         OptionToString optionVisitor = new OptionToString(compilerSet, null);
         write(bw, Variable.DEFINES, Operation.ADD,
-                configuration.getCCompilerConfiguration().getPreprocessorConfiguration().toString(optionVisitor) +
                 configuration.getCCCompilerConfiguration().getPreprocessorConfiguration().toString(optionVisitor));
         write(bw, Variable.INCLUDEPATH, Operation.ADD,
-                configuration.getCCompilerConfiguration().getIncludeDirectories().toString(optionVisitor) +
                 configuration.getCCCompilerConfiguration().getIncludeDirectories().toString(optionVisitor));
         LibraryToString libVisitor = new LibraryToString();
         write(bw, Variable.LIBS, Operation.ADD,

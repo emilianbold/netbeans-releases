@@ -64,7 +64,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ContextRootConfig
 import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
 
-
 /**
  *
  * @author Ludovic Champenois
@@ -188,7 +187,6 @@ public class FastDeploy extends IncrementalDeployment {
         }
 
         return true;
-        
     }
     
     /**
@@ -196,7 +194,6 @@ public class FastDeploy extends IncrementalDeployment {
      *   server can accept the deployment from an arbitrary directory.
      */
     public File getDirectoryForNewApplication(Target target, J2eeModule app, ModuleConfiguration configuration) {
-//        System.out.println("getDirectoryForNewApplication");
         return null;
     }
     

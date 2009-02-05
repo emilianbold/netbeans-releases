@@ -1630,9 +1630,9 @@ public class Installer extends ModuleInstall implements Runnable {
             checkingResult = true;
             try {
                 String login = URLEncoder.encode(panel.getUserName(), "UTF-8");
-                String passwd = URLEncoder.encode(panel.getPasswd(), "UTF-8");
+                String encryptedPasswd = URLEncoder.encode(PasswdEncryption.encrypt(panel.getPasswd()), "UTF-8");
                 char[] array = new char[100];
-                URL checkingServerURL = new URL(NbBundle.getMessage(Installer.class, "CHECKING_SERVER_URL", login, passwd));
+                URL checkingServerURL = new URL(NbBundle.getMessage(Installer.class, "CHECKING_SERVER_URL", login, encryptedPasswd));
                 URLConnection connection = checkingServerURL.openConnection();
                 connection.setRequestProperty("User-Agent", "NetBeans");
                 connection.setReadTimeout(20000);

@@ -43,14 +43,14 @@ BASENAME=netbeans-$BUILDNUM
 mkdir -p $DIST/zip/moduleclusters
 
 #Pack the distributions
-ant zip-cluster-config -Dcluster.config=full -Dzip.name=$DIST/zip/$NAME.zip || exit 1
+ant zip-cluster-config -Dcluster.config=full -Dzip.name=$DIST/zip/$BASENAME.zip || exit 1
 
-#ant zip-cluster-config -Dcluster.config=platform -Dzip.name=$DIST/zip/$NAME-platform.zip || exit 1
-ant zip-cluster-config -Dcluster.config=basic -Dzip.name=$DIST/zip/$NAME-javase.zip || exit 1
-ant zip-cluster-config -Dcluster.config=standard -Dzip.name=$DIST/zip/$NAME-java.zip || exit 1
-ant zip-cluster-config -Dcluster.config=ruby -Dzip.name=$DIST/zip/$NAME-ruby.zip || exit 1
-ant zip-cluster-config -Dcluster.config=php -Dzip.name=$DIST/zip/$NAME-php.zip || exit 1
-ant zip-cluster-config -Dcluster.config=cnd -Dzip.name=$DIST/zip/$NAME-cpp.zip || exit 1
+#ant zip-cluster-config -Dcluster.config=platform -Dzip.name=$DIST/zip/$BASENAME-platform.zip || exit 1
+ant zip-cluster-config -Dcluster.config=basic -Dzip.name=$DIST/zip/$BASENAME-javase.zip || exit 1
+ant zip-cluster-config -Dcluster.config=standard -Dzip.name=$DIST/zip/$BASENAME-java.zip || exit 1
+ant zip-cluster-config -Dcluster.config=ruby -Dzip.name=$DIST/zip/$BASENAME-ruby.zip || exit 1
+ant zip-cluster-config -Dcluster.config=php -Dzip.name=$DIST/zip/$BASENAME-php.zip || exit 1
+ant zip-cluster-config -Dcluster.config=cnd -Dzip.name=$DIST/zip/$BASENAME-cpp.zip || exit 1
 
 cd netbeans
 expat='extra|testtools'
@@ -108,6 +108,8 @@ echo SigTest: Incompatible Changes
 ant check-sigtests-release -Dfail.on.error=false
 echo SigTest: Incompatible Changes Done
 
+# Try to build all tests in the system to make sure they at least compile.
+ant -Dtest.fail.on.error=false build-test-dist
 ###############  Commit validation tests  ##########################
 TESTS_STARTED=`date`
 TESTS_RESULT_DIR="`pwd`/nbbuild/build/test/results"
