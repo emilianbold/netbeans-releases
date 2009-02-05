@@ -99,7 +99,7 @@ public final class RemoteNativeProcess extends NativeProcess {
             err = channel.getErrStream();
             in = channel.getOutputStream();
         } catch (Exception e) {
-            Logger.severe("Failed to get streams from ChannelExec"); // NOI18N
+            log.severe("Failed to get streams from ChannelExec"); // NOI18N
             e.printStackTrace();
         }
 

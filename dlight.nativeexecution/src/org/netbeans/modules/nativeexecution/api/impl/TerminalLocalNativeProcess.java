@@ -36,32 +36,37 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.nativeexecution.api.impl;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import org.netbeans.modules.nativeexecution.util.ExternalTerminal;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
  */
-public class TerminalLocalNativeProcess extends NativeProcess {
-    private final Integer TIMEOUT_TO_USE = Integer.valueOf(System.getProperty(
+public final class TerminalLocalNativeProcess extends NativeProcess {
+
+    private final static String dorunScript;
+    private final static Integer TIMEOUT_TO_USE =
+            Integer.valueOf(System.getProperty(
             "dlight.localnativeexecutor.timeout", "3")); // NOI18N
-    
     private final InputStream processOutput;
     private final InputStream processError;
     private final OutputStream processInput;
@@ -69,8 +74,19 @@ public class TerminalLocalNativeProcess extends NativeProcess {
     private final Integer pid;
     private final File pidFile;
     private final Process process;
+//    private final PipedInputStream pin = new PipedInputStream();
+//    private final PipedOutputStream pout = new PipedOutputStream(pin);
 
-    public TerminalLocalNativeProcess(NativeProcessInfo info) throws IOException {
+
+    static {
+        InstalledFileLocator fl = InstalledFileLocator.getDefault();
+        File file = fl.locate("bin/dorun.sh", null, false); // NOI18N
+        dorunScript = file.toString();
+    }
+
+    public TerminalLocalNativeProcess(final ExternalTerminal t,
+            final NativeProcessInfo info) throws IOException {
+        ExternalTerminal terminal = t;
         Integer ppid = null;
 
         final NativeProcessAccessor processInfo =
@@ -87,29 +103,35 @@ public class TerminalLocalNativeProcess extends NativeProcess {
 
         processInfo.setID(this, commandLine);
 
-        System.out.println("PIDFILE " + pidFileName);
+        final ExternalTerminalAccessor terminalInfo =
+                ExternalTerminalAccessor.getDefault();
+
+        if (terminalInfo.getTitle(terminal) == null) {
+            terminal = terminal.setTitle(commandLine);
+        }
+
+        List<String> command = terminalInfo.wrapCommand(terminal,
+                dorunScript,
+                "-p", pidFileName, // NOI18N
+                "-x", terminalInfo.getPrompt(terminal), // NOI18N
+                commandLine);
 
         synchronized (rt) {
-            ProcessBuilder pb = new ProcessBuilder(Arrays.asList(
-                "/usr/bin/gnome-terminal",
-                "--hide-menu",
-                "--disable-factory",
-                "--title=TEST",
-                "--execute", "/export/home/ak119685/netbeans-src/dorun.sh", pidFileName, commandLine));
-
+            ProcessBuilder pb = new ProcessBuilder(command);
             pb.environment().putAll(info.getEnvVariables());
-            
+
             final String wdir = info.getWorkingDirectory();
-            
+
             if (wdir != null) {
                 pb.directory(new File(wdir));
             }
-            
+
             process = pb.start();
-            
-            processOutput = process.getInputStream();
-            processError = process.getErrorStream();
-            processInput = process.getOutputStream();
+
+            processOutput = new ByteArrayInputStream(new byte[0]);
+            processError = new ByteArrayInputStream(new byte[0]);
+//            processError = pin;
+            processInput = null;
 
             /*
              * For some reason sometimes I hang here... (on reading first
@@ -135,7 +157,7 @@ public class TerminalLocalNativeProcess extends NativeProcess {
         }
 
         pid = ppid;
-
+//        pout.write(loc("TerminalLocalNativeProcess.JobStarted.text").getBytes()); // NOI18N
         processInfo.setState(this, State.RUNNING);
     }
 
@@ -158,13 +180,25 @@ public class TerminalLocalNativeProcess extends NativeProcess {
 
     @Override
     protected int waitResult() throws InterruptedException {
-        File f = new File("/proc/" + pid);
-        
+        File f = new File("/proc/" + pid); // NOI18N
+
         while (f.exists()) {
             Thread.sleep(300);
         }
 
-        return 0;
+        try {
+            processError.close();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        try {
+            processOutput.close();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return 999;
     }
 
     @Override
@@ -182,6 +216,10 @@ public class TerminalLocalNativeProcess extends NativeProcess {
         return processError;
     }
 
+    private static String loc(String key, String... params) {
+        return NbBundle.getMessage(TerminalLocalNativeProcess.class, key, params);
+    }
+
     private class PIDReader implements Callable<Integer> {
 
         public Integer call() throws Exception {
@@ -194,9 +232,8 @@ public class TerminalLocalNativeProcess extends NativeProcess {
                     break;
                 }
             }
-            
+
             return new Integer(pidLine);
         }
-
     }
 }
