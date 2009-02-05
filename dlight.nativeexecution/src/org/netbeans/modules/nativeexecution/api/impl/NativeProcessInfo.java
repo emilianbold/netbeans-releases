@@ -36,63 +36,92 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.api;
+package org.netbeans.modules.nativeexecution.api.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
-import org.netbeans.modules.nativeexecution.access.ExecutionControlAccessor;
 
-public class ExecutionControl {
+/**
+ *
+ */
+public class NativeProcessInfo {
 
+    private final ExecutionEnvironment execEnv;
+    private final String command;
+    private final List<String> arguments = new ArrayList<String>();
+    private final Map<String, String> envVariables =
+            new HashMap<String, String>();
+    private String workingDirectory;
     private Collection<Listener> listeners = null;
-    private boolean useExternalTerminal = false;
 
+    public NativeProcessInfo(NativeProcessInfo info) {
+        this(info.execEnv, info.command);
+        workingDirectory = info.workingDirectory;
+        envVariables.putAll(info.envVariables);
+        arguments.addAll(info.arguments);
 
-    static {
-        ExecutionControlAccessor.setDefault(new ExecutionControlAccessorImpl());
-    }
-
-    private ExecutionControl() {
-    }
-
-    private ExecutionControl(ExecutionControl ctrl) {
-        if (ctrl.listeners != null) {
-            listeners = new ArrayList<Listener>(ctrl.listeners);
+        if (info.listeners != null) {
+            listeners = new ArrayList<Listener>(info.listeners);
         }
     }
 
-    public static ExecutionControl getDefault() {
-        return new ExecutionControl();
+    public NativeProcessInfo(ExecutionEnvironment execEnv, String command) {
+        this.execEnv = execEnv;
+        this.command = command;
     }
 
-    public ExecutionControl addNativeProcessListener(Listener listener) {
-        ExecutionControl newControl = new ExecutionControl(this);
-        if (newControl.listeners == null) {
-            newControl.listeners = new ArrayList<Listener>();
+    public void addNativeProcessListener(Listener listener) {
+        if (listeners == null) {
+            listeners = new ArrayList<Listener>();
         }
-        
-        newControl.listeners.add(listener);
-        return newControl;
+
+        listeners.add(listener);
     }
 
-    public ExecutionControl useExternalTerminal(boolean useExternalTerminal) {
-        ExecutionControl newControl = new ExecutionControl(this);
-        newControl.useExternalTerminal = useExternalTerminal;
-        return newControl;
+    public void setWorkingDirectory(String workingDirectory) {
+        this.workingDirectory = workingDirectory;
     }
 
-    private static class ExecutionControlAccessorImpl
-            extends ExecutionControlAccessor {
+    public void addEnvironmentVariable(String name, String value) {
+        envVariables.put(name, value);
+    }
 
-        @Override
-        public Collection<Listener> getListeners(ExecutionControl ctrl) {
-            return ctrl.listeners;
+    public void setArguments(String... arguments) {
+        this.arguments.clear();
+        this.arguments.addAll(Arrays.asList(arguments));
+    }
+
+    public String getCommandLine() {
+        StringBuilder sb = new StringBuilder(command);
+
+        if (!arguments.isEmpty()) {
+            for (String arg : arguments) {
+                sb.append(' ').append(arg);
+            }
         }
 
-        @Override
-        public boolean getUseTerminal(ExecutionControl ctrl) {
-            return ctrl.useExternalTerminal;
-        }
+        return sb.toString().trim();
+    }
+
+    public ExecutionEnvironment getExecutionEnvironment() {
+        return execEnv;
+    }
+
+    public Collection<Listener> getListeners() {
+        return listeners;
+    }
+
+    public String getWorkingDirectory() {
+        return workingDirectory;
+    }
+
+    public Map<String, String> getEnvVariables() {
+        return envVariables;
     }
 }

@@ -2,9 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.netbeans.modules.nativeexecution.support;
+package org.netbeans.modules.nativeexecution.api.impl;
 
-import org.netbeans.modules.nativeexecution.api.support.*;
+import org.netbeans.modules.nativeexecution.util.ConnectionManager;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
@@ -14,13 +14,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.Map;
-import org.netbeans.modules.nativeexecution.api.ExecutionControl;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
-import org.netbeans.modules.nativeexecution.api.NativeTaskConfig;
-import org.netbeans.modules.nativeexecution.access.ConnectionManagerAccessor;
-import org.netbeans.modules.nativeexecution.access.NativeProcessAccessor;
-import org.netbeans.modules.nativeexecution.access.NativeTaskConfigAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -37,25 +33,20 @@ public final class RemoteNativeProcess extends NativeProcess {
     private OutputStream in = null;
     private Integer exitValue = null;
 
-    public RemoteNativeProcess(NativeTaskConfig config, ExecutionControl executionControl) throws IOException {
-        super(executionControl);
-        
+    public RemoteNativeProcess(NativeProcessInfo info) throws IOException {
         final NativeProcessAccessor processInfo =
                 NativeProcessAccessor.getDefault();
 
+        processInfo.setListeners(this, info.getListeners());
         processInfo.setState(this, State.STARTING);
-        
+
         final ConnectionManager mgr = ConnectionManager.getInstance();
         ChannelExec echannel = null;
 
-        final NativeTaskConfigAccessor configInfo =
-                NativeTaskConfigAccessor.getDefault();
-
-        final String commandLine = configInfo.getCommandLine(config);
+        final String commandLine = info.getCommandLine();
 
         synchronized (mgr) {
-            final ExecutionEnvironment execEnv =
-                    configInfo.getExecutionEnvironment(config);
+            final ExecutionEnvironment execEnv = info.getExecutionEnvironment();
 
             final Session session = ConnectionManagerAccessor.getDefault().
                     getConnectionSession(mgr, execEnv);
@@ -64,12 +55,11 @@ public final class RemoteNativeProcess extends NativeProcess {
                 throw new IOException("Unable to create remote session!"); // NOI18N
             }
 
-            NativeTaskConfigAccessor taskInfo = NativeTaskConfigAccessor.getDefault();
-            final String workingDirectory = taskInfo.getWorkingDirectory(config);
-            final Map<String, String> envVars = taskInfo.getEnvVariables(config);
+            final String workingDirectory = info.getWorkingDirectory();
+            final Map<String, String> envVars = info.getEnvVariables();
 
             String envSetup = "";
-            
+
             if (!envVars.isEmpty()) {
                 final StringBuilder envVarsAssign = new StringBuilder();
                 final StringBuilder envVarsExport = new StringBuilder();
@@ -84,15 +74,15 @@ public final class RemoteNativeProcess extends NativeProcess {
             }
 
             final StringBuilder cmd = new StringBuilder();
-            
+
             if (workingDirectory != null) {
                 cmd.append("cd " + workingDirectory + " && "); // NOI18N
             }
-            
+
             cmd.append("/bin/echo $$ " + envSetup + " && exec " + commandLine); // NOI18N
 
             processInfo.setID(this, commandLine);
-            
+
             try {
                 echannel = (ChannelExec) session.openChannel("exec"); // NOI18N                
                 echannel.setCommand(cmd.toString());
@@ -129,7 +119,7 @@ public final class RemoteNativeProcess extends NativeProcess {
         }
 
         pid = ppid;
-        
+
         processInfo.setState(this, State.RUNNING);
     }
 
@@ -175,7 +165,6 @@ public final class RemoteNativeProcess extends NativeProcess {
 
         return exitValue.intValue();
     }
-
     private static final Object cancelLock = new Object();
 
     @Override

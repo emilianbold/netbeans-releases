@@ -39,8 +39,7 @@
 package org.netbeans.modules.nativeexecution.api;
 
 import java.util.Collection;
-import org.netbeans.modules.nativeexecution.access.ExecutionControlAccessor;
-import org.netbeans.modules.nativeexecution.access.NativeProcessAccessor;
+import org.netbeans.modules.nativeexecution.api.impl.NativeProcessAccessor;
 import org.netbeans.modules.nativeexecution.support.Logger;
 
 /**
@@ -53,28 +52,15 @@ import org.netbeans.modules.nativeexecution.support.Logger;
 public abstract class NativeProcess extends Process {
 
     private final static java.util.logging.Logger log = Logger.getInstance();
-    private final ExecutionControl executionControl;
     private final Object stateLock = new Object();
     private Collection<Listener> listeners = null;
     private State state = State.INITIAL;
     private Integer exitValue = null;
     private String id = "";
 
+
     static {
         NativeProcessAccessor.setDefault(new NativeProcessAccessorImpl());
-    }
-
-    /**
-     * Constructor.
-     * @param executionControl 
-     */
-    protected NativeProcess(ExecutionControl executionControl) {
-        this.executionControl = executionControl;
-        if (executionControl != null) {
-            ExecutionControlAccessor ctrlInfo =
-                    ExecutionControlAccessor.getDefault();
-            listeners = ctrlInfo.getListeners(executionControl);
-        }
     }
 
     /**
@@ -239,8 +225,8 @@ public abstract class NativeProcess extends Process {
          */
         INITIAL,
         /**
-         * Task is starting. This means that it is submitted, but no PID is recieved
-         * yet
+         * Task is starting. This means that it is submitted, but no PID
+         * is recieved yet.
          */
         STARTING,
         /**
@@ -272,7 +258,8 @@ public abstract class NativeProcess extends Process {
          * @param oldState
          * @param newState
          */
-        public void processStateChanged(NativeProcess process, State oldState, State newState);
+        public void processStateChanged(
+                NativeProcess process, State oldState, State newState);
     }
 
     private static class NativeProcessAccessorImpl
@@ -287,6 +274,11 @@ public abstract class NativeProcess extends Process {
         public void setState(NativeProcess process, State state) {
             process.setState(state);
         }
-    }
 
+        @Override
+        public void setListeners(NativeProcess process,
+                Collection<Listener> listeners) {
+            process.listeners = listeners;
+        }
+    }
 }

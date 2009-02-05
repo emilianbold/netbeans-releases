@@ -36,86 +36,77 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support;
 
-import org.netbeans.modules.nativeexecution.api.NativeTaskConfig;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
+package org.netbeans.modules.nativeexecution.api.impl;
+
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Map;
+import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.netbeans.modules.nativeexecution.access.NativeProcessAccessor;
-import org.netbeans.modules.nativeexecution.api.ExecutionControl;
-import org.netbeans.modules.nativeexecution.access.NativeTaskConfigAccessor;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.openide.util.Exceptions;
 
 /**
  *
  */
-public final class LocalNativeProcess extends NativeProcess {
-
+public class TerminalLocalNativeProcess extends NativeProcess {
+    private final Integer TIMEOUT_TO_USE = Integer.valueOf(System.getProperty(
+            "dlight.localnativeexecutor.timeout", "3")); // NOI18N
+    
     private final InputStream processOutput;
     private final InputStream processError;
     private final OutputStream processInput;
     private static final Runtime rt = Runtime.getRuntime();
-    private final Integer TIMEOUT_TO_USE = Integer.valueOf(System.getProperty(
-            "dlight.localnativeexecutor.timeout", "3")); // NOI18N
     private final Integer pid;
+    private final File pidFile;
     private final Process process;
 
-    public LocalNativeProcess(NativeTaskConfig cfg,
-            ExecutionControl executionControl) throws IOException {
-
-        super(executionControl);
+    public TerminalLocalNativeProcess(NativeProcessInfo info) throws IOException {
+        Integer ppid = null;
 
         final NativeProcessAccessor processInfo =
                 NativeProcessAccessor.getDefault();
 
-        processInfo.setState(this, State.STARTING);
+        processInfo.setListeners(this, info.getListeners());
 
-        Integer ppid = null;
+        final String commandLine = info.getCommandLine();
 
-        final NativeTaskConfigAccessor taskInfo =
-                NativeTaskConfigAccessor.getDefault();
+        pidFile = File.createTempFile("termexec", "pid"); // NOI18N
+        pidFile.deleteOnExit();
 
-        final String commandLine = taskInfo.getCommandLine(cfg);
-
-        final String workingDirectory = taskInfo.getWorkingDirectory(cfg);
-        final File wdir =
-                workingDirectory == null ? null : new File(workingDirectory);
-
-        final Map<String, String> envVars = taskInfo.getEnvVariables(cfg);
-        final ArrayList<String> envArr = new ArrayList<String>();
-
-        final ArrayList<String> command = new ArrayList<String>();
-
-        if (!envVars.isEmpty()) {
-            for (String var : envVars.keySet()) {
-                envArr.add(var + "=" + envVars.get(var)); // NOI18N
-            }
-        }
-
-        command.add("/bin/sh"); // NOI18N
-        command.add("-c"); // NOI18N
-        command.add("/bin/echo $$ && exec " + commandLine); // NOI18N
+        String pidFileName = pidFile.toString();
 
         processInfo.setID(this, commandLine);
 
-        synchronized (rt) {
-            process = rt.exec(
-                    command.toArray(new String[0]),
-                    envArr.toArray(new String[0]),
-                    wdir);
+        System.out.println("PIDFILE " + pidFileName);
 
+        synchronized (rt) {
+            ProcessBuilder pb = new ProcessBuilder(Arrays.asList(
+                "/usr/bin/gnome-terminal",
+                "--hide-menu",
+                "--disable-factory",
+                "--title=TEST",
+                "--execute", "/export/home/ak119685/netbeans-src/dorun.sh", pidFileName, commandLine));
+
+            pb.environment().putAll(info.getEnvVariables());
+            
+            final String wdir = info.getWorkingDirectory();
+            
+            if (wdir != null) {
+                pb.directory(new File(wdir));
+            }
+            
+            process = pb.start();
+            
             processOutput = process.getInputStream();
             processError = process.getErrorStream();
             processInput = process.getOutputStream();
@@ -151,10 +142,29 @@ public final class LocalNativeProcess extends NativeProcess {
     @Override
     public int getPID() {
         if (pid == null) {
-            throw new IllegalStateException("Process was not started"); // NOI18N
+            throw new IllegalStateException();
+        }
+        return pid.intValue();
+    }
+
+    @Override
+    protected void cancel() {
+        try {
+            rt.exec("/bin/kill -9 " + pid);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    @Override
+    protected int waitResult() throws InterruptedException {
+        File f = new File("/proc/" + pid);
+        
+        while (f.exists()) {
+            Thread.sleep(300);
         }
 
-        return pid.intValue();
+        return 0;
     }
 
     @Override
@@ -172,35 +182,21 @@ public final class LocalNativeProcess extends NativeProcess {
         return processError;
     }
 
-    @Override
-    public final int waitResult() throws InterruptedException {
-        int result = process.waitFor();
-//        // TODO: How to wait for all buffers?
-        Thread.yield();
-        return result;
-    }
-
-    @Override
-    public void cancel() {
-        process.destroy();
-    }
-
     private class PIDReader implements Callable<Integer> {
 
         public Integer call() throws Exception {
-            Integer pid = null;
+            BufferedReader in = new BufferedReader(new FileReader(pidFile));
+            String pidLine = "-1";
 
-            try {
-                BufferedReader br = new BufferedReader(
-                        new InputStreamReader(processOutput));
-                String pidLine = br.readLine().trim();
-                pid = new Integer(pidLine);
-            } catch (NumberFormatException e) {
-            } catch (Exception e) {
-                // Not interested in these exceptions....
+            while (true) {
+                pidLine = in.readLine();
+                if (pidLine != null) {
+                    break;
+                }
             }
-
-            return pid;
+            
+            return new Integer(pidLine);
         }
+
     }
 }

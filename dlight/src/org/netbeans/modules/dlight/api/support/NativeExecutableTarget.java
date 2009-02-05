@@ -51,12 +51,10 @@ import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.dlight.api.execution.SubstitutableTarget;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.nativeexecution.api.ExecutionControl;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.NativeTaskConfig;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -164,16 +162,16 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     }
 
     private void start() {
-        NativeTaskConfig task = new NativeTaskConfig(execEnv, cmd).setArguments(args);
+        NativeProcessBuilder processBuilder = new NativeProcessBuilder(execEnv, cmd).setArguments(args).addNativeProcessListener(NativeExecutableTarget.this);
         ExecutionDescriptor descr = new ExecutionDescriptor().controllable(true).frontWindow(true);
-        ExecutionControl ctrl = ExecutionControl.getDefault().addNativeProcessListener(NativeExecutableTarget.this);
-        NativeProcessBuilder processBuilder = new NativeProcessBuilder(task, ctrl);
 
         final ExecutionService es = ExecutionService.newService(
                 processBuilder,
                 descr,
                 toString());
 
+        // Because of possible prompts for passwords we need to start
+        // this in non-AWT thread...
         Runnable r = new Runnable() {
 
             public void run() {

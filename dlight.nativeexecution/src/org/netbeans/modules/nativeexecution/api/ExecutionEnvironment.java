@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution.api;
 
-import org.netbeans.modules.nativeexecution.util.HostInfo;
+import org.netbeans.modules.nativeexecution.util.HostInfoUtils;
 
 /**
  * Configuration of environment for
@@ -92,12 +92,12 @@ final public class ExecutionEnvironment {
         }
 
         if (host == null) {
-            this.host = HostInfo.LOCALHOST;
+            this.host = HostInfoUtils.LOCALHOST;
         } else {
             this.host = host;
         }
 
-        if (!HostInfo.isLocalhost(host) && sshPort == 0) {
+        if (!HostInfoUtils.isLocalhost(host) && sshPort == 0) {
             this.sshPort = 22;
         } else {
             this.sshPort = sshPort;
@@ -186,10 +186,11 @@ final public class ExecutionEnvironment {
             return false;
         }
 
-        boolean result = ((HostInfo.isLocalhost(ee.host) && HostInfo.isLocalhost(host)) ||
-                ee.host.equals(host)) &&
-                ee.user.equals(user) &&
-                ee.sshPort == sshPort;
+        boolean bothLocalhost = HostInfoUtils.isLocalhost(ee.host) &&
+                HostInfoUtils.isLocalhost(host);
+
+        boolean result = (bothLocalhost || ee.host.equals(host)) &&
+                ee.user.equals(user) && ee.sshPort == sshPort;
 
         return result;
     }
@@ -202,16 +203,4 @@ final public class ExecutionEnvironment {
         hash = 97 * hash + this.sshPort;
         return hash;
     }
-
-//    /**
-//     * Returns OS name that is run on the host, reffered by this execution
-//     * environment.
-//     * @return String that represents OS name
-//     * @throws HostNotConnectedException if the host, reffered by this execution
-//     * environment is not connected yet.
-//     * @see HostInfo
-//     */
-//    public String getOS() throws HostNotConnectedException {
-//        return HostInfo.getOS(this);
-//    }
 }

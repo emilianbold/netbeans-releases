@@ -64,8 +64,8 @@ import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ObservableAction;
-import org.netbeans.modules.nativeexecution.api.support.ConnectionManager;
-import org.netbeans.modules.nativeexecution.util.HostInfo;
+import org.netbeans.modules.nativeexecution.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 
 /**
@@ -133,7 +133,7 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
         String os = null;
 
         try {
-            os = HostInfo.getOS(targetToValidate.getExecEnv());
+            os = HostInfoUtils.getOS(targetToValidate.getExecEnv());
         } catch (HostNotConnectedException ex) {
             ObservableAction<Boolean> connectAction = ConnectionManager.getInstance().
                     getConnectToAction(targetToValidate.getExecEnv());

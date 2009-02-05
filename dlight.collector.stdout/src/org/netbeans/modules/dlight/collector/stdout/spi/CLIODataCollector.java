@@ -73,11 +73,10 @@ import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.NativeTaskConfig;
 import org.netbeans.modules.nativeexecution.api.ObservableAction;
 import org.netbeans.modules.nativeexecution.api.ObservableActionListener;
-import org.netbeans.modules.nativeexecution.api.support.ConnectionManager;
-import org.netbeans.modules.nativeexecution.util.HostInfo;
+import org.netbeans.modules.nativeexecution.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
@@ -167,15 +166,14 @@ public final class CLIODataCollector
             cmd += argsTemplate;
         }
 
-        NativeTaskConfig ntc = new NativeTaskConfig(target.getExecEnv(), cmd);
-        
+        NativeProcessBuilder npb =
+                new NativeProcessBuilder(target.getExecEnv(), cmd);
+
         ExecutionDescriptor descriptor =
                 new ExecutionDescriptor().inputOutput(
                 InputOutput.NULL).outProcessorFactory(
                 new CLIOInputProcessorFactory());
 
-        NativeProcessBuilder npb = new NativeProcessBuilder(ntc, null);
-        
         ExecutionService execService = ExecutionService.newService(
                 npb, descriptor, "CLIODataCollector " + cmd); // NOI18N
 
@@ -282,7 +280,7 @@ public final class CLIODataCollector
         boolean connected = true;
 
         try {
-            fileExists = HostInfo.fileExists(target.getExecEnv(), command);
+            fileExists = HostInfoUtils.fileExists(target.getExecEnv(), command);
         } catch (HostNotConnectedException ex) {
             connected = false;
         }

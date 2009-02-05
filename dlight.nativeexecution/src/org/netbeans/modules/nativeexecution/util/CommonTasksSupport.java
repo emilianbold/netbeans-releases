@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.nativeexecution.util;
 
-import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -54,14 +53,11 @@ import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
-import org.netbeans.modules.nativeexecution.api.ExecutionControl;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.NativeTaskConfig;
-import org.netbeans.modules.nativeexecution.support.InputRedirectorFactory;
 import org.openide.windows.InputOutput;
 
 /**
@@ -97,7 +93,19 @@ public final class CommonTasksSupport {
         }
 
         final String cmd = "/bin/scp -p -t " + dstFileName; // NOI18N
-        NativeTaskConfig ntc = new NativeTaskConfig(cmd);
+
+        Listener processListener = new Listener() {
+
+            public void processStateChanged(NativeProcess p,
+                    State oldState, State newState) {
+                if (newState == State.RUNNING) {
+                    new CopyRoutine(p.getOutputStream(), localFile, mask).start();
+                }
+            }
+        };
+
+        NativeProcessBuilder npb = new NativeProcessBuilder(cmd).addNativeProcessListener(processListener);
+
         ExecutionDescriptor descriptor =
                 new ExecutionDescriptor().inputOutput(
                 InputOutput.NULL).outProcessorFactory(
@@ -107,17 +115,6 @@ public final class CommonTasksSupport {
                         return new FilterInputProcessor(InputProcessors.copying(error));
                     }
                 });
-
-        ExecutionControl ctrl = ExecutionControl.getDefault().addNativeProcessListener(new Listener() {
-
-            public void processStateChanged(NativeProcess process, State oldState, State newState) {
-                if (newState == State.RUNNING) {
-                    new CopyRoutine(process.getOutputStream(), localFile, mask).start();
-                }
-            }
-        });
-
-        NativeProcessBuilder npb = new NativeProcessBuilder(ntc, ctrl);
 
         ExecutionService execService = ExecutionService.newService(
                 npb, descriptor, "scp " + cmd); // NOI18N

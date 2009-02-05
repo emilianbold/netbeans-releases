@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.api.support;
+package org.netbeans.modules.nativeexecution.util;
 
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import java.util.concurrent.ExecutionException;
@@ -54,7 +54,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ObservableAction;
 import org.netbeans.modules.nativeexecution.api.ObservableActionListener;
-import org.netbeans.modules.nativeexecution.access.ConnectionManagerAccessor;
+import org.netbeans.modules.nativeexecution.api.impl.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.support.RemoteUserInfo;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -209,7 +209,7 @@ public final class ConnectionManager {
         if (execEnv.isLocal()) {
             return true;
         }
-        
+
         if (sessions == null) {
             return false;
         }
@@ -313,6 +313,5 @@ public final class ConnectionManager {
         public Session getConnectionSession(ConnectionManager mgr, ExecutionEnvironment env) {
             return mgr.getConnectionSession(env);
         }
-
     }
 }
