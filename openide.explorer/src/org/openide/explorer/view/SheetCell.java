@@ -517,7 +517,7 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
     }
 
     /** Table cell renderer component. Paints focus border on property panel. */
-    private static class FocusedPropertyPanel extends PropertyPanel {
+    static class FocusedPropertyPanel extends PropertyPanel {
         //XXX delete this class when new property panel is committed
         boolean focused;
         

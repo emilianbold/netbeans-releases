@@ -69,7 +69,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.accessibility.AccessibleContext;
-import javax.accessibility.AccessibleRole;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
@@ -77,6 +76,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.*;
 
 import org.netbeans.modules.openide.explorer.TTVEnvBridge;
+import org.openide.explorer.view.SheetCell.FocusedPropertyPanel;
 
 
 /**
@@ -692,149 +692,4 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
         }
     }
 
-    /** Table cell renderer component. Paints focus border on property panel. */
-    private static class FocusedPropertyPanel extends PropertyPanel {
-        //XXX delete this class when new property panel is committed
-        boolean focused;
-
-        public FocusedPropertyPanel(Property p, int preferences) {
-            super(p, preferences);
-        }
-
-        public void setFocused(boolean focused) {
-            this.focused = focused;
-        }
-
-        @Override
-        public String getToolTipText() {
-            String superTooltip = super.getToolTipText();
-            String propertyTooltip = getProperty().getShortDescription();
-            if (propertyTooltip != null) {
-                return propertyTooltip;
-            } else {
-                return superTooltip;
-            }
-        }
-        
-        @Override
-        public void addComponentListener(java.awt.event.ComponentListener l) {
-            //do nothing
-        }
-
-        @Override
-        public void addHierarchyListener(java.awt.event.HierarchyListener l) {
-            //do nothing
-        }
-
-        @Override
-        public void repaint(long tm, int x, int y, int width, int height) {
-            //do nothing
-        }
-
-        @Override
-        public void revalidate() {
-            //do nothing
-        }
-
-        @Override
-        public void firePropertyChange(String s, Object a, Object b) {
-            //do nothing
-            if ("flat".equals(s)) {
-                super.firePropertyChange(s, a, b);
-            }
-        }
-
-        @Override
-        public boolean isShowing() {
-            return true;
-        }
-
-        @Override
-        public void update(Graphics g) {
-            //do nothing
-        }
-
-        @Override
-        public void paint(Graphics g) {
-            //do this for self-painting editors in Options window - because
-            //we've turned off most property changes, the background won't be
-            //painted correctly otherwise
-            Color c = getBackground();
-            Color old = g.getColor();
-            g.setColor(c);
-            g.fillRect(0, 0, getWidth(), getHeight());
-            g.setColor(old);
-
-            super.paint(g);
-
-            if (focused) {
-                Color bdr = UIManager.getColor("Tree.selectionBorderColor"); //NOI18N
-
-                if (bdr == null) {
-                    //Button focus color doesn't work on win classic - better to
-                    //get the color from a value we know will work - Tim
-                    if (getForeground().equals(Color.BLACK)) { //typical
-                        bdr = getBackground().darker();
-                    } else {
-                        bdr = getForeground().darker();
-                    }
-                }
-
-                g.setColor(bdr);
-                g.drawRect(1, 1, getWidth() - 3, getHeight() - 3);
-            }
-
-            g.setColor(old);
-        }
-
-        ////////////////// Accessibility support ///////////////////////////////
-        @Override
-        public AccessibleContext getAccessibleContext() {
-            if (accessibleContext == null) {
-                accessibleContext = new AccessibleFocusedPropertyPanel();
-            }
-
-            return accessibleContext;
-        }
-
-        private class AccessibleFocusedPropertyPanel extends AccessibleJComponent {
-            AccessibleFocusedPropertyPanel() {
-            }
-
-            @Override
-            public AccessibleRole getAccessibleRole() {
-                return AccessibleRole.PANEL;
-            }
-
-            @Override
-            public String getAccessibleName() {
-                @SuppressWarnings("deprecation")
-                FeatureDescriptor fd = ((ExPropertyModel) getModel()).getFeatureDescriptor();
-                @SuppressWarnings("deprecation")
-                PropertyEditor editor = getPropertyEditor();
-
-                return MessageFormat.format(
-                    getString("ACS_PropertyPanelRenderer"),
-                    new Object[] { fd.getDisplayName(), (editor == null) ? getString("CTL_No_value") : editor.getAsText() }
-                );
-            }
-
-            @Override
-            public String getAccessibleDescription() {
-                @SuppressWarnings("deprecation")
-                FeatureDescriptor fd = ((ExPropertyModel) getModel()).getFeatureDescriptor();
-                @SuppressWarnings("deprecation")
-                Node node = (Node) ((ExPropertyModel) getModel()).getBeans()[0];
-                Class clazz = getModel().getPropertyType();
-
-                return MessageFormat.format(
-                    getString("ACSD_PropertyPanelRenderer"),
-                    new Object[] {
-                        fd.getShortDescription(), (clazz == null) ? getString("CTL_No_type") : clazz.getName(),
-                        node.getDisplayName()
-                    }
-                );
-            }
-        }
-    }
 }
