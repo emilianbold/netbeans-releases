@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -148,6 +148,7 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
      * @param ev event
      * @return <code>false</code>
      */
+    @Override
     public boolean shouldSelectCell(EventObject ev) {
         return true;
     }
@@ -156,6 +157,7 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
      * @param e event
      * @return <code>true</code>
      */
+    @Override
     public boolean isCellEditable(EventObject e) {
         return true;
     }
@@ -165,6 +167,7 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
      * Calls <code>fireEditingStopped</code> and returns true.
      * @return true
      */
+    @Override
     public boolean stopCellEditing() {
         if (prop != null)
             detachEditor();
@@ -175,6 +178,7 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
      * Detaches listeners.
      * Calls <code>fireEditingCanceled</code>.
      */
+    @Override
     public void  cancelCellEditing() { 
         if (prop != null)
             detachEditor();
@@ -253,19 +257,19 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
             return comp;
         }
 
-        Property prop = (Property)value;
-        Node node = nodeForRow(row);
+        Property property = (Property)value;
+        Node n = nodeForRow(row);
 
-        if (prop != null) {
-            FocusedPropertyPanel propPanel = getRenderer (prop, node);
+        if (property != null) {
+            FocusedPropertyPanel propPanel = getRenderer (property, n);
             propPanel.setFocused(hasFocus);
             Object computeTooltip = table.getClientProperty("ComputingTooltip");
             if (Boolean.TRUE.equals(computeTooltip)) {
                 String toolT = null;
-                PropertyEditor propEd = prop.getPropertyEditor();
+                PropertyEditor propEd = property.getPropertyEditor();
                 if (propEd != null) {
                     try {
-                        propEd.setValue(prop.getValue());
+                        propEd.setValue(property.getValue());
                         toolT = propEd.getAsText();
                     } catch (Exception ex) {
                         // no problem here - just leave null tooltip
@@ -275,7 +279,7 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
                 if (toolT == null) {
                     Object val = null;
                     try {
-                        val = prop.getValue();
+                        val = property.getValue();
                     } catch (Exception ex) {
                         // no problem here - just leave null tooltip
                     }
@@ -323,10 +327,10 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
         }
 
         if (nullPanel == null) {
-            nullPanel = new NullPanel(node);
+            nullPanel = new NullPanel(n);
             nullPanel.setOpaque(true);
         } else {
-            nullPanel.setNode(node);
+            nullPanel.setNode(n);
         }
 
         if (isSelected) {
@@ -397,16 +401,17 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
     }
     
     private static class NullPanel extends JPanel {
-        private WeakReference weakNode;
+        private WeakReference<Node> weakNode;
         
         NullPanel(Node node) {
-            this.weakNode = new WeakReference(node);
+            this.weakNode = new WeakReference<Node> (node);
         }
         
         void setNode(Node node) {
-            this.weakNode = new WeakReference(node);
+            this.weakNode = new WeakReference<Node> (node);
         }
 
+        @Override
         public AccessibleContext getAccessibleContext() {
             if (accessibleContext == null) {
                 accessibleContext = new AccessibleNullPanel();
@@ -419,6 +424,7 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
             focused = val;
         }
         
+        @Override
         public void paintComponent (Graphics g) {
             super.paintComponent(g);
             if (focused) {
@@ -438,40 +444,49 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
             }
         }
         
+        @Override
         public void addComponentListener (java.awt.event.ComponentListener l) {
             //do nothing
         }
         
+        @Override
         public void addHierarchyListener (java.awt.event.HierarchyListener l) {
             //do nothing
         }
         
+        @Override
         public void repaint() {
             //do nothing
         }
         
+        @Override
         public void repaint (int x, int y, int width, int height) {
             //do nothing
         }
         
+        @Override
         public void invalidate() {
             //do nothing
         }
         
+        @Override
         public void revalidate() {
             //do nothing
         }
         
+        @Override
         public void validate() {
             //do nothing
         }
         
+        @Override
         public void firePropertyChange (String s, Object a, Object b) {
             //do nothing
         }        
 
         private class AccessibleNullPanel extends AccessibleJPanel {
             AccessibleNullPanel() {}
+            @Override
             public String getAccessibleName() {
                 String name = super.getAccessibleName();
 
@@ -481,11 +496,12 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
                 return name;
             }
 
+            @Override
             public String getAccessibleDescription() {
                 String description = super.getAccessibleDescription();
 
                 if (description == null) {
-                    Node node = (Node)weakNode.get();
+                    Node node = weakNode.get ();
                     if (node != null) {
                         description = MessageFormat.format(
                             getString("ACSD_NullPanel"),
@@ -514,22 +530,27 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
             this.focused = focused;
         }
 
+        @Override
         public void addComponentListener (java.awt.event.ComponentListener l) {
             //do nothing
         }
         
+        @Override
         public void addHierarchyListener (java.awt.event.HierarchyListener l) {
             //do nothing
         }
         
+        @Override
         public void repaint(long tm, int x, int y, int width, int height) {
             //do nothing
         }
         
+        @Override
         public void revalidate() {
             //do nothing
         }
 
+        @Override
         public void firePropertyChange (String s, Object a, Object b) {
             //do nothing
             if ("flat".equals (s)) {
@@ -537,18 +558,22 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
             }
         }
         
+        @Override
         public boolean isValid() {
             return true;
         }
         
+        @Override
         public boolean isShowing() {
             return true;
         }
         
+        @Override
         public void update(Graphics g) {
             //do nothing
         }
         
+        @Override
         public void paint(Graphics g) {
             //do this for self-painting editors in Options window - because
             //we've turned off most property changes, the background won't be
@@ -580,6 +605,7 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
         
         ////////////////// Accessibility support ///////////////////////////////
 
+        @Override
         public AccessibleContext getAccessibleContext() {
             if (accessibleContext == null) {
                 accessibleContext = new AccessibleFocusedPropertyPanel();
@@ -589,12 +615,16 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
 
         private class AccessibleFocusedPropertyPanel extends AccessibleJComponent {
             AccessibleFocusedPropertyPanel() {}
+            @Override
             public AccessibleRole getAccessibleRole() {
                 return AccessibleRole.PANEL;
             }
 
+            @Override
             public String getAccessibleName() {
+                @SuppressWarnings("deprecation")
                 FeatureDescriptor fd = ((ExPropertyModel)getModel()).getFeatureDescriptor();
+                @SuppressWarnings("deprecation")
                 PropertyEditor editor = getPropertyEditor();
                 
                 return MessageFormat.format(
@@ -606,8 +636,11 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
                 );
             }
 
+            @Override
             public String getAccessibleDescription() {
+                @SuppressWarnings("deprecation")
                 FeatureDescriptor fd = ((ExPropertyModel)getModel()).getFeatureDescriptor();
+                @SuppressWarnings("deprecation")
                 Node node = (Node)((ExPropertyModel)getModel()).getBeans()[0];
                 Class clazz = getModel().getPropertyType();
                 return MessageFormat.format(
@@ -687,10 +720,12 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
     //        stopCellEditing(); //XXX ?
             tableModel.fireTableDataChanged();
         }
+        @Override
         protected void detachEditor() {
             super.detachEditor();
             tableModel.removeTableModelListener(this);
         }
+        @Override
         public Component getTableCellEditorComponent(JTable table,
                                                  Object value,
                                                  boolean isSelected,
@@ -717,11 +752,13 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
             stopCellEditing();
             outline.tableChanged(new TableModelEvent(outline.getModel(), 0, outline.getRowCount()));
         }
+        @Override
         protected void detachEditor() {
             super.detachEditor();
             TableModel tableModel = outline.getModel();
             tableModel.removeTableModelListener(this);
         }
+        @Override
         public Component getTableCellEditorComponent(JTable table,
                                                  Object value,
                                                  boolean isSelected,
