@@ -199,7 +199,6 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     }
 
     /**
-     * Obtains a filesystem representing the remote workspace as accessed by Hudson web services.
      * Requires Hudson 1.264 or later.
      */
     public FileSystem getRemoteWorkspace() {

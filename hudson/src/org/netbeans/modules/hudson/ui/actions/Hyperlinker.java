@@ -39,21 +39,22 @@
 
 package org.netbeans.modules.hudson.ui.actions;
 
-import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.hudson.impl.HudsonJobImpl;
+import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.spi.HudsonLogger;
+import org.netbeans.modules.hudson.spi.HudsonLogger.HudsonLogSession;
 import org.openide.awt.StatusDisplayer;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.text.Line;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
@@ -65,43 +66,65 @@ class Hyperlinker {
 
     private static final Logger LOG = Logger.getLogger(Hyperlinker.class.getName());
 
-    private final HudsonJobImpl job;
-    /** Looks for errors mentioning workspace files. Prefix captures Maven's [WARNING], Ant's [javac], etc. */
-    private final Pattern hyperlinkable;
+    private final HudsonLogSession[] sessions;
 
-    public Hyperlinker(HudsonJobImpl job) {
-        this.job = job;
-        // XXX support Windows build servers (using backslashes)
-        hyperlinkable = Pattern.compile("(?:\\[.+\\] )?/.+/jobs/\\Q" + job.getName() +
-            "\\E/workspace/([^:]+):(?:([0-9]+):(?:([0-9]+):)?)? (?:warning: )?(.+)");
+    public Hyperlinker(HudsonJob job) {
+        List<HudsonLogSession> _sessions = new ArrayList<HudsonLogSession>();
+        for (HudsonLogger logger : Lookup.getDefault().lookupAll(HudsonLogger.class)) {
+            _sessions.add(logger.createSession(job));
+        }
+        sessions = _sessions.toArray(new HudsonLogSession[_sessions.size()]);
     }
 
     public void handleLine(String line, OutputWriter stream) {
-        Matcher m = hyperlinkable.matcher(line);
-        if (m.matches()) {
-            final String path = m.group(1);
-            final int row = m.group(2) != null ? Integer.parseInt(m.group(2)) - 1 : -1;
-            final int col = m.group(3) != null ? Integer.parseInt(m.group(3)) - 1 : -1;
-            final String message = m.group(4);
-            try {
-                stream.println(line, new Hyperlink(path, message, row, col));
-            } catch (IOException x) {
-                LOG.log(Level.INFO, null, x);
-                stream.println(line);
+        for (HudsonLogSession session : sessions) {
+            if (session.handle(line, stream)) {
+                break;
             }
-        } else {
-            stream.println(line);
+        }
+        // PlainLogger is last and always handles it
+    }
+
+    @ServiceProvider(service=HudsonLogger.class)
+    public static final class PlainLogger implements HudsonLogger {
+        public HudsonLogSession createSession(final HudsonJob job) {
+            return new HudsonLogSession() {
+                // XXX support Windows build servers (using backslashes)
+                /** Looks for errors mentioning workspace files. Prefix captures Maven's [WARNING], Ant's [javac], etc. */
+                private final Pattern hyperlinkable = Pattern.compile("(?:\\[.+\\] )?/.+/jobs/\\Q" + job.getName() +
+                        "\\E/workspace/([^:]+):(?:([0-9]+):(?:([0-9]+):)?)? (?:warning: )?(.+)");
+                public boolean handle(String line, OutputWriter stream) {
+                    Matcher m = hyperlinkable.matcher(line);
+                    if (m.matches()) {
+                        final String path = m.group(1);
+                        final int row = m.group(2) != null ? Integer.parseInt(m.group(2)) - 1 : -1;
+                        final int col = m.group(3) != null ? Integer.parseInt(m.group(3)) - 1 : -1;
+                        final String message = m.group(4);
+                        try {
+                            stream.println(line, new Hyperlink(job, path, message, row, col));
+                        } catch (IOException x) {
+                            LOG.log(Level.INFO, null, x);
+                            stream.println(line);
+                        }
+                    } else {
+                        stream.println(line);
+                    }
+                    return true;
+                }
+            };
         }
     }
 
-    private class Hyperlink implements OutputListener {
+    private static class Hyperlink implements OutputListener {
 
+        private final HudsonJob job;
         private final String path;
         private final String message;
         private final int row;
         private final int col;
 
-        public Hyperlink(String path, String message, int row, int col) {
+        public Hyperlink(HudsonJob job, String path, String message, int row, int col) {
+            this.job = job;
             this.path = path;
             this.message = message;
             this.row = row;
@@ -118,7 +141,6 @@ class Hyperlinker {
 
         private void acted(final boolean force) {
             RequestProcessor.getDefault().post(new Runnable() {
-
                 public void run() {
                     FileObject f = job.getRemoteWorkspace().findResource(path);
                     if (f == null) {
@@ -130,46 +152,7 @@ class Hyperlinker {
                     }
                     // XXX could be useful to select this file in the workspace node
                     StatusDisplayer.getDefault().setStatusText(message);
-                    try {
-                        DataObject d = DataObject.find(f);
-                        if (row == -1) {
-                            if (force) {
-                                final EditorCookie c = d.getLookup().lookup(EditorCookie.class);
-                                if (c == null) {
-                                    LOG.fine("no EditorCookie found for " + f);
-                                    return;
-                                }
-                                EventQueue.invokeLater(new Runnable() {
-                                    public void run() {
-                                        try {
-                                            c.openDocument();
-                                        } catch (IOException x) {
-                                            LOG.log(Level.INFO, null, x);
-                                        }
-                                    }
-                                });
-                            }
-                            return;
-                        }
-                        LineCookie c = d.getLookup().lookup(LineCookie.class);
-                        if (c == null) {
-                            LOG.fine("no LineCookie found for " + f);
-                            return;
-                        }
-                        try {
-                            final Line l = c.getLineSet().getOriginal(row);
-                            EventQueue.invokeLater(new Runnable() {
-                                public void run() {
-                                    l.show(force ? Line.ShowOpenType.REUSE : Line.ShowOpenType.NONE,
-                                            force ? Line.ShowVisibilityType.FOCUS : Line.ShowVisibilityType.FRONT, col);
-                                }
-                            });
-                        } catch (IndexOutOfBoundsException x) {
-                            LOG.log(Level.INFO, null, x);
-                        }
-                    } catch (IOException x) {
-                        LOG.log(Level.INFO, null, x);
-                    }
+                    HudsonLogger.Helper.openAt(f, row, col, force);
                 }
             });
         }

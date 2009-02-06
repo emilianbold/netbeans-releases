@@ -42,6 +42,7 @@
 package org.netbeans.modules.hudson.api;
 
 import java.util.Collection;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
 
 /**
@@ -156,4 +157,10 @@ public interface HudsonJob extends Lookup.Provider, Comparable<HudsonJob> {
      * @return default job lookup
      */
     public Lookup getLookup();
+
+    /**
+     * Obtains a filesystem representing the remote workspace as accessed by Hudson web services.
+     */
+    FileSystem getRemoteWorkspace();
+
 }
