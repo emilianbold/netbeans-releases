@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.refactoring.plugins;
 
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -87,36 +88,19 @@ public abstract class CsmModificationRefactoringPlugin extends CsmRefactoringPlu
     protected final CsmContext getEditorContext() {
         return editorContext;
     }
-    protected abstract Collection<? extends CsmObject> getRefactoredObjects();
 
     public final Problem prepare(RefactoringElementsBag elements) {
-        Collection<? extends CsmObject> referencedObjects = getRefactoredObjects();
-        if (referencedObjects == null || referencedObjects.size() == 0) {
-            return null;
+        try {
+            Collection<CsmFile> files = getRefactoredFiles();
+            fireProgressListenerStart(ProgressEvent.START, files.size());
+            createAndAddElements(files, elements, refactoring);
+        } finally {
+            fireProgressListenerStop();
         }
-        Collection<CsmFile> files = new HashSet<CsmFile>();
-        CsmFile startFile = getStartCsmFile();
-        for (CsmObject obj : referencedObjects) {
-            Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(obj, true);
-            CsmProject[] ar = prjs.toArray(new CsmProject[prjs.size()]);
-            refactoring.getContext().add(ar);
-            files.addAll(getRelevantFiles(startFile, obj, refactoring));
-        }
-        fireProgressListenerStart(ProgressEvent.START, files.size());
-        createAndAddElements(files, elements, refactoring);
-        fireProgressListenerStop();
         return null;
     }
 
-    private CsmFile getStartCsmFile() {
-        CsmFile startFile = getCsmFile(getStartReferenceObject());
-        if (startFile == null) {
-            if (getEditorContext() != null) {
-                startFile = getEditorContext().getFile();
-            }
-        }
-        return startFile;
-    }
+    protected abstract Collection<CsmFile> getRefactoredFiles();
 
     protected final Problem checkIfModificationPossible(Problem problem, CsmObject referencedObject,
             String fatalMessage, String warnMessage) {

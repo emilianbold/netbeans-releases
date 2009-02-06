@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
@@ -89,11 +90,12 @@ import org.openide.windows.InputOutput;
  */
 public final class CLIODataCollector
         extends IndicatorDataProvider<CLIODCConfiguration>
-        implements DataCollector<CLIODCConfiguration> {
+        implements DataCollector<CLIODCConfiguration>, DLightTarget.ExecutionEnvVariablesProvider {
 
     private static final Logger log =
             DLightLogger.getLogger(CLIODataCollector.class);
     private String command;
+    private final Map<String, String> envs;
     private String argsTemplate;
     private DataStorage storage;
     private Future<Integer> collectorTask;
@@ -112,13 +114,14 @@ public final class CLIODataCollector
      * @param dataTablesMetadata describes the tables to store parsed data in
      */
     CLIODataCollector(CLIODCConfiguration configuration) {
-        CLIODCConfigurationAccessor access =
+        CLIODCConfigurationAccessor accessor =
                 CLIODCConfigurationAccessor.getDefault();
 
-        this.command = access.getCommand(configuration);
-        this.argsTemplate = access.getArguments(configuration);
-        this.parser = access.getParser(configuration);
-        this.dataTablesMetadata = access.getDataTablesMetadata(configuration);
+        this.command = accessor.getCommand(configuration);
+        this.argsTemplate = accessor.getArguments(configuration);
+        this.parser = accessor.getParser(configuration);
+        this.dataTablesMetadata = accessor.getDataTablesMetadata(configuration);
+        this.envs = accessor.getDLightTargetExecutionEnv(configuration);
     }
 
     /**
@@ -340,6 +343,10 @@ public final class CLIODataCollector
                 targetFinished(source);
                 return;
         }
+    }
+
+    public Map<String, String> getExecutionEnv() {
+        return envs;
     }
 
     private class CLIOInputProcessorFactory implements InputProcessorFactory {

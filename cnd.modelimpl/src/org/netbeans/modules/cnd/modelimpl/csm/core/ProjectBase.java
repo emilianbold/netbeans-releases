@@ -270,18 +270,29 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return nsp;
     }
 
-    public NamespaceImpl findNamespaceCreateIfNeeded(NamespaceImpl parent, CharSequence name) {
-        String qualifiedName = Utils.getNestedNamespaceQualifiedName(name, parent, true);
-        NamespaceImpl nsp = _getNamespace(qualifiedName);
-        if( nsp == null ) {
-            synchronized (namespaceLock) {
-                nsp = _getNamespace(qualifiedName);
-                if( nsp == null ) {
-                    nsp = new NamespaceImpl(this, parent, name.toString(), qualifiedName);
-                }
+    private static String getNestedNamespaceQualifiedName(CharSequence name, NamespaceImpl parent, boolean createForEmptyNames) {
+        StringBuilder sb = new StringBuilder(name);
+        if (parent != null) {
+            if (name.length() == 0 && createForEmptyNames) {
+                sb.append(parent.getNameForUnnamedElement());
+            }
+            if (!parent.isGlobal()) {
+                sb.insert(0, "::"); // NOI18N
+                sb.insert(0, parent.getQualifiedName());
             }
         }
-        return nsp;
+        return sb.toString();
+    }
+
+    public NamespaceImpl findNamespaceCreateIfNeeded(NamespaceImpl parent, CharSequence name) {
+        synchronized (namespaceLock) {
+            String qualifiedName = ProjectBase.getNestedNamespaceQualifiedName(name, parent, true);
+            NamespaceImpl nsp = _getNamespace(qualifiedName);
+            if( nsp == null ) {
+                nsp = new NamespaceImpl(this, parent, name.toString(), qualifiedName);
+            }
+            return nsp;
+        }
     }
 
     public final void registerNamespace(NamespaceImpl namespace) {
