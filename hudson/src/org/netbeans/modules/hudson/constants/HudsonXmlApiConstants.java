@@ -69,6 +69,7 @@ public class HudsonXmlApiConstants {
     public static final String XML_API_LAST_STABLE_BUILD_ELEMENT = "lastStableBuild";
     public static final String XML_API_LAST_SUCCESSFUL_BUILD_ELEMENT = "lastSuccessfulBuild";
     public static final String XML_API_LAST_FAILED_BUILD_ELEMENT = "lastFailedBuild";
+    public static final String XML_API_LAST_COMPLETED_BUILD_ELEMENT = "lastCompletedBuild";
     
     // Hudson Job Build Elements
     public static final String XML_API_BUILDING_ELEMENT = "building";
