@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -187,6 +187,7 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
      * @param ev event
      * @return <code>false</code>
      */
+    @Override
     public boolean shouldSelectCell(EventObject ev) {
         return true;
     }
@@ -195,6 +196,7 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
      * @param e event
      * @return <code>true</code>
      */
+    @Override
     public boolean isCellEditable(EventObject e) {
         return true;
     }
@@ -204,7 +206,7 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
      */
     public void propertyChange(PropertyChangeEvent evt) {
         //        stopCellEditing(); //XXX ?
-        ((NodeTableModel) tableModel).fireTableDataChanged();
+        tableModel.fireTableDataChanged();
     }
 
     /**
@@ -212,6 +214,7 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
      * Calls <code>fireEditingStopped</code> and returns true.
      * @return true
      */
+    @Override
     public boolean stopCellEditing() {
         if (prop != null) {
             detachEditor();
@@ -224,6 +227,7 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
      * Detaches listeners.
      * Calls <code>fireEditingCanceled</code>.
      */
+    @Override
     public void cancelCellEditing() {
         if (prop != null) {
             detachEditor();
@@ -290,17 +294,17 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
             return comp;
         }
 
-        Property prop = (Property) value;
-        Node node = tableModel.nodeForRow(row);
+        Property property = (Property) value;
+        Node n = tableModel.nodeForRow(row);
 
-        if (prop != null) {
-            FocusedPropertyPanel propPanel = getRenderer(prop, node);
+        if (property != null) {
+            FocusedPropertyPanel propPanel = getRenderer(property, n);
             propPanel.setFocused(hasFocus);
 
             String tooltipText = null;
 
             try {
-                Object tooltipValue = prop.getValue();
+                Object tooltipValue = property.getValue();
 
                 if (null != tooltipValue) {
                     tooltipText = tooltipValue.toString();
@@ -341,10 +345,10 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
         }
 
         if (nullPanel == null) {
-            nullPanel = new NullPanel(node);
+            nullPanel = new NullPanel(n);
             nullPanel.setOpaque(true);
         } else {
-            nullPanel.setNode(node);
+            nullPanel.setNode(n);
         }
 
         if (isSelected) {
@@ -578,6 +582,7 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
             this.weakNode = new WeakReference<Node>(node);
         }
 
+        @Override
         public AccessibleContext getAccessibleContext() {
             if (accessibleContext == null) {
                 accessibleContext = new AccessibleNullPanel();
@@ -590,6 +595,7 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
             focused = val;
         }
 
+        @Override
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
 
@@ -612,34 +618,42 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
             }
         }
 
+        @Override
         public void addComponentListener(java.awt.event.ComponentListener l) {
             //do nothing
         }
 
+        @Override
         public void addHierarchyListener(java.awt.event.HierarchyListener l) {
             //do nothing
         }
 
+        @Override
         public void repaint() {
             //do nothing
         }
 
+        @Override
         public void repaint(int x, int y, int width, int height) {
             //do nothing
         }
 
+        @Override
         public void invalidate() {
             //do nothing
         }
 
+        @Override
         public void revalidate() {
             //do nothing
         }
 
+        @Override
         public void validate() {
             //do nothing
         }
 
+        @Override
         public void firePropertyChange(String s, Object a, Object b) {
             //do nothing
         }
@@ -648,6 +662,7 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
             AccessibleNullPanel() {
             }
 
+            @Override
             public String getAccessibleName() {
                 String name = super.getAccessibleName();
 
@@ -658,11 +673,12 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
                 return name;
             }
 
+            @Override
             public String getAccessibleDescription() {
                 String description = super.getAccessibleDescription();
 
                 if (description == null) {
-                    Node node = (Node) weakNode.get();
+                    Node node = weakNode.get ();
 
                     if (node != null) {
                         description = MessageFormat.format(
@@ -689,6 +705,7 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
             this.focused = focused;
         }
 
+        @Override
         public String getToolTipText() {
             String superTooltip = super.getToolTipText();
             String propertyTooltip = getProperty().getShortDescription();
@@ -699,22 +716,27 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
             }
         }
         
+        @Override
         public void addComponentListener(java.awt.event.ComponentListener l) {
             //do nothing
         }
 
+        @Override
         public void addHierarchyListener(java.awt.event.HierarchyListener l) {
             //do nothing
         }
 
+        @Override
         public void repaint(long tm, int x, int y, int width, int height) {
             //do nothing
         }
 
+        @Override
         public void revalidate() {
             //do nothing
         }
 
+        @Override
         public void firePropertyChange(String s, Object a, Object b) {
             //do nothing
             if ("flat".equals(s)) {
@@ -722,18 +744,22 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
             }
         }
 
+        @Override
         public boolean isValid() {
             return true;
         }
 
+        @Override
         public boolean isShowing() {
             return true;
         }
 
+        @Override
         public void update(Graphics g) {
             //do nothing
         }
 
+        @Override
         public void paint(Graphics g) {
             //do this for self-painting editors in Options window - because
             //we've turned off most property changes, the background won't be
@@ -767,6 +793,7 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
         }
 
         ////////////////// Accessibility support ///////////////////////////////
+        @Override
         public AccessibleContext getAccessibleContext() {
             if (accessibleContext == null) {
                 accessibleContext = new AccessibleFocusedPropertyPanel();
@@ -779,12 +806,16 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
             AccessibleFocusedPropertyPanel() {
             }
 
+            @Override
             public AccessibleRole getAccessibleRole() {
                 return AccessibleRole.PANEL;
             }
 
+            @Override
             public String getAccessibleName() {
+                @SuppressWarnings("deprecation")
                 FeatureDescriptor fd = ((ExPropertyModel) getModel()).getFeatureDescriptor();
+                @SuppressWarnings("deprecation")
                 PropertyEditor editor = getPropertyEditor();
 
                 return MessageFormat.format(
@@ -793,8 +824,11 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
                 );
             }
 
+            @Override
             public String getAccessibleDescription() {
+                @SuppressWarnings("deprecation")
                 FeatureDescriptor fd = ((ExPropertyModel) getModel()).getFeatureDescriptor();
+                @SuppressWarnings("deprecation")
                 Node node = (Node) ((ExPropertyModel) getModel()).getBeans()[0];
                 Class clazz = getModel().getPropertyType();
 
