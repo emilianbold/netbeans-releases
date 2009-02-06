@@ -41,7 +41,6 @@ package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import org.netbeans.modules.vmd.midp.palette.DatabindingPaletteProvider;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 import org.openide.util.NbBundle;
 
@@ -110,8 +109,8 @@ private static final String BUNDLE_PREFIX = "vmd-midp/palette/";// NOI18N
                 return getBundleMessage(MidpPaletteProvider.class,
                         MidpPaletteProvider.CATEGORY_CUSTOM);
             case CATEGORY_DATABINDING:
-                return getBundleMessage(DatabindingPaletteProvider.class,
-                        DatabindingPaletteProvider.CATEGORY_DATABINDING);
+                return getBundleMessage(MidpPaletteProvider.class,
+                        MidpPaletteProvider.CATEGORY_DATABINDING);
             default:
                 return getBundleMessage(MidpPaletteProvider.class,
                         MidpPaletteProvider.CATEGORY_DISPLAYABLES);
