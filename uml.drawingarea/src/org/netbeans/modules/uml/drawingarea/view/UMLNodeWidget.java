@@ -321,7 +321,10 @@ public abstract class UMLNodeWidget extends Widget
         };
     }
     
-    
+    /**
+     * in fact it duplicates getResizeControlPoints() funtionality and need to be changed later
+     * @param resizable
+     */
     public void setResizable(boolean resizable)
     {
         this.resizable = resizable;
@@ -1300,6 +1303,4 @@ public abstract class UMLNodeWidget extends Widget
         }
         
     }
-
-
 }
