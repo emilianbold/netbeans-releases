@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,46 +37,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.uml.diagrams.actions;
+package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
-import java.awt.Point;
-import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.uml.diagrams.nodes.CompartmentWidget;
-import org.netbeans.modules.uml.diagrams.nodes.CompositeNodeWidget;
-import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
+import java.io.IOException;
+import java.io.OutputStream;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- *
- * This select provider is used to set a flag on inner widget that 
- * is designed to be "unselectable" (see issue 138533), e.g. state region, sub partition, which does not
- * provide its own context menu, but rather attached to its outer node widget. However, some attached popup
- * menu items, for instance, 'Delete Region', still need the context as which inner widget is targeted.
+ * 
+ * @author Jiri Skrivanek
  */
-public class CompositeWidgetSelectProvider extends DiagramEngine.DesignSelectProvider
-{
-    private CompositeNodeWidget compositeWidget;
-    
-    public CompositeWidgetSelectProvider(CompositeNodeWidget w)
-    {
-        compositeWidget = w;
+public class FileObjTest extends NbTestCase {
+
+    public FileObjTest(String testName) {
+        super(testName);
     }
-    
-    @Override
-    public void select(Widget widget, Point localLocation, boolean invertSelection)
-    {
-        super.select(widget, localLocation, invertSelection);
-        
-        for (CompartmentWidget w : compositeWidget.getCompartmentWidgets())
-        {
-            if (w.isHitAt(w.convertSceneToLocal(widget.convertLocalToScene(localLocation))))
-                w.setSelected(true);
-            else
-                w.setSelected(false);
+
+    /** Tests it is not possible to create duplicate FileObject for the same path.
+     * - create FO1
+     * - create FO2
+     * - delete FO1 => FO1 is invalid now
+     * - rename FO2 to FO1
+     * - try to write to FO1.getOutputStream() => it should not be possible because FO1 is still invalid
+     */
+    public void testDuplicateFileObject130998() throws IOException {
+        clearWorkDir();
+        FileObject testFolder = FileUtil.toFileObject(getWorkDir());
+        FileObject fileObject1 = testFolder.createData("fileObject1");
+        FileObject fileObject2 = testFolder.createData("fileObject2");
+        fileObject1.delete();
+        assertFalse("fileObject1 should be invalid after delete.", fileObject1.isValid());
+
+        FileLock lock = fileObject2.lock();
+        fileObject2.rename(lock, fileObject1.getName(), null);
+        lock.releaseLock();
+
+        try {
+            fileObject1.getOutputStream();
+            fail("Should not be possible to get OutputStream on invalid FileObject.");
+        } catch (Exception e) {
+            // OK - fileObject1 is invalid
         }
     }
 }
