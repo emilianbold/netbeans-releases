@@ -67,11 +67,13 @@ public final class PhpUnit extends PhpProgram {
     // cli options
     public static final String PARAM_VERSION = "--version"; // NOI18N
     public static final String PARAM_XML_LOG = "--log-xml"; // NOI18N
+    public static final String PARAM_COVERAGE_LOG = "--coverage-clover"; // NOI18N
     public static final String PARAM_SKELETON = "--skeleton-test"; // NOI18N
     // for older PHP Unit versions
     public static final String PARAM_SKELETON_OLD = "--skeleton"; // NOI18N
     // output files
     public static final File XML_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-phpunit-log.xml"); // NOI18N
+    public static final File COVERAGE_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-phpunit-coverage.xml"); // NOI18N
 
     static int[] version = null;
 

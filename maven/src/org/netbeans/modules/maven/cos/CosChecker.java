@@ -232,7 +232,7 @@ public class CosChecker implements PrerequisitesChecker {
   //                      System.out.println("relpath=" + relPath);
                         FileObject fo = outputDir.getFileObject(relPath);
                         if (fo == null) {
-                            File outFileDir = new File(FileUtil.toFile(outputDir), relPath).getParentFile();
+                            File outFileDir = FileUtil.normalizeFile(new File(FileUtil.toFile(outputDir), relPath).getParentFile());
                             outFileDir.mkdirs();
                             FileUtil.refreshFor(outFileDir);
                             FileObject parentDir = FileUtil.toFileObject(outFileDir);

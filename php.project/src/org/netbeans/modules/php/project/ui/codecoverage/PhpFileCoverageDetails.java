@@ -37,58 +37,76 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.ui.actions.support;
+package org.netbeans.modules.php.project.ui.codecoverage;
 
-import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.ui.actions.UploadCommand;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.gsf.codecoverage.api.CoverageType;
+import org.netbeans.modules.gsf.codecoverage.api.FileCoverageDetails;
+import org.netbeans.modules.gsf.codecoverage.api.FileCoverageSummary;
+import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.FileVO;
+import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.LineVO;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+import org.openide.filesystems.FileUtil;
 
 /**
- * Action implementation for REMOTE configuration.
- * It means uploading, running and debugging web pages on a remote web server.
  * @author Tomas Mysik
  */
-public class ConfigActionRemote extends ConfigActionLocal {
+public class PhpFileCoverageDetails implements FileCoverageDetails {
+    private final FileObject fo;
+    private final FileVO file;
+    private final long generated;
 
-    protected ConfigActionRemote(PhpProject project) {
-        super(project);
+    public PhpFileCoverageDetails(FileObject fo, FileVO file) {
+        assert fo != null;
+        assert file != null;
+
+        this.fo = fo;
+        this.file = file;
+        this.generated = FileUtil.toFile(fo).lastModified();
     }
 
-    @Override
-    public void runProject() {
-        eventuallyUploadFiles();
-        super.runProject();
+    public FileObject getFile() {
+        return fo;
     }
 
-    @Override
-    public void debugProject() {
-        eventuallyUploadFiles();
-        super.debugProject();
+    public int getLineCount() {
+        return file.getMetrics().loc;
     }
 
-    @Override
-    protected void preShowUrl(Lookup context) {
-        eventuallyUploadFiles(CommandUtils.filesForSelectedNodes());
+    public boolean hasHitCounts() {
+        return true;
     }
 
-    private void eventuallyUploadFiles() {
-        eventuallyUploadFiles((FileObject[]) null);
+    public long lastUpdated() {
+        return generated;
     }
 
-    private void eventuallyUploadFiles(FileObject... preselectedFiles) {
-        UploadCommand uploadCommand = (UploadCommand) CommandUtils.getCommand(project, UploadCommand.ID);
-        if (!uploadCommand.isActionEnabled(null)) {
-            return;
+    public FileCoverageSummary getSummary() {
+        return PhpCoverageProvider.getFileCoverageSummary(file);
+    }
+
+    public CoverageType getType(int lineNo) {
+        lineNo++;
+        // XXX when to return CoverageType.INFERRED?
+        // XXX optimize - hold lines in hash map
+        for (LineVO line : file.getLines()) {
+            if (line.num == lineNo) {
+                if (line.count > 0) {
+                    return CoverageType.COVERED;
+                } else {
+                    return CoverageType.NOT_COVERED;
+                }
+            }
         }
+        return CoverageType.INFERRED;
+    }
 
-        PhpProjectProperties.UploadFiles uploadFiles = ProjectPropertiesSupport.getRemoteUpload(project);
-        assert uploadFiles != null;
-
-        if (PhpProjectProperties.UploadFiles.ON_RUN.equals(uploadFiles)) {
-            uploadCommand.uploadFiles(new FileObject[] {ProjectPropertiesSupport.getSourcesDirectory(project)}, preselectedFiles);
+    public int getHitCount(int lineNo) {
+        lineNo++;
+        for (LineVO line : file.getLines()) {
+            if (line.num == lineNo) {
+                return line.count;
+            }
         }
+        return 0;
     }
 }
