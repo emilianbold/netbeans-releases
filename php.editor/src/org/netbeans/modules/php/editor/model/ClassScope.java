@@ -36,23 +36,28 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor.model;
 
-import java.util.List;
+import java.util.Collection;
 import org.netbeans.modules.gsf.api.NameKind;
 
 /**
  * @author Radek Matous
  */
 public interface ClassScope extends TypeScope {
+    Collection<? extends InterfaceScope> getSuperInterfaces();
+    Collection<? extends ClassScope> getSuperClasses();
+    Collection<? extends MethodScope> getDeclaredMethods();
+    Collection<? extends MethodScope> getMethods();
+    Collection<? extends FieldElement> getDeclaredFields();
+    Collection<? extends ClassConstantElement> getDeclaredConstants();
+    Collection<? extends FieldElement> getFields();
 
-    List<? extends ClassScope> getSuperClasses();
-    List<? extends FieldElement> getAllFields();
-    List<? extends FieldElement> getFields(final int... modifiers);
-    List<? extends FieldElement> getFields(final String queryName, final int... modifiers);
-    List<? extends FieldElement> getFields(final NameKind nameKind, final String queryName, final int... modifiers);
-    List<? extends FieldElement> getInheritedFields(String fieldName);
+    
+    Collection<? extends FieldElement> findDeclaredFields(final int... modifiers);
+    Collection<? extends FieldElement> findDeclaredFields(final String queryName, final int... modifiers);
+    Collection<? extends FieldElement> findDeclaredFields(final NameKind nameKind, final String queryName, final int... modifiers);
+    Collection<? extends FieldElement> findInheritedFields(String fieldName);
 
     //TODO: add getAllInheritedSuperClasses()
     //TODO: add getAllInheritedInterfaces()

@@ -41,6 +41,7 @@ package org.netbeans.modules.php.editor.codegen;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -115,7 +116,7 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
             varName = "$" + varName; //NOI18N
         }
 
-        List<? extends VariableName> variables = varScope.getVariables(varName);
+        List<? extends VariableName> variables = ModelUtils.filter(varScope.getDeclaredVariables(), varName);
         VariableName first = ModelUtils.getFirst(variables);
         if (first != null) {
             ArrayList<String> uniqueTypeNames = new ArrayList<String>();
@@ -166,7 +167,7 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
         Model model = ModelFactory.getModel(info);
         VariableScope varScope = model.getVariableScope(caretOffset);
         if (varScope != null) {
-            List<? extends VariableName> allVariables = varScope.getAllVariables();
+            Collection<? extends VariableName> allVariables = varScope.getDeclaredVariables();
             for (VariableName variableName : allVariables) {
                 if (var == null) {
                     var = variableName;
