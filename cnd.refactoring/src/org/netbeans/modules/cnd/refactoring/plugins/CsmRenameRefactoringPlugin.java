@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -91,11 +92,6 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
     public CsmRenameRefactoringPlugin(RenameRefactoring rename) {
         super(rename);
         this.refactoring = rename;
-    }
-
-    @Override
-    protected Collection<CsmObject> getRefactoredObjects() {
-        return referencedObjects == null ? null : Collections.unmodifiableCollection(referencedObjects);
     }
 
     @Override
@@ -168,6 +164,36 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
                 this.referencedObjects.add(referencedObject);
             }
         }
+    }
+
+    protected Collection<CsmFile> getRefactoredFiles() {
+        Collection<? extends CsmObject> objs = getRefactoredObjects();
+        if (objs == null || objs.size() == 0) {
+            return Collections.emptySet();
+        }
+        Collection<CsmFile> files = new HashSet<CsmFile>();
+        CsmFile startFile = getStartCsmFile();
+        for (CsmObject obj : objs) {
+            Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(obj, true);
+            CsmProject[] ar = prjs.toArray(new CsmProject[prjs.size()]);
+            refactoring.getContext().add(ar);
+            files.addAll(getRelevantFiles(startFile, obj, refactoring));
+        }
+        return files;
+    }
+
+    private CsmFile getStartCsmFile() {
+        CsmFile startFile = getCsmFile(getStartReferenceObject());
+        if (startFile == null) {
+            if (getEditorContext() != null) {
+                startFile = getEditorContext().getFile();
+            }
+        }
+        return startFile;
+    }
+
+    private Collection<CsmObject> getRefactoredObjects() {
+        return referencedObjects == null ? Collections.<CsmObject>emptyList() : Collections.unmodifiableCollection(referencedObjects);
     }
 
     private Collection<? extends CsmObject> getRenamingClassObjects(CsmClass clazz) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,32 +37,21 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.model.impl;
+package org.netbeans.modules.maven.samples;
 
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
-import org.netbeans.modules.php.editor.model.ModelScope;
-import org.netbeans.modules.php.editor.model.PhpKind;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Union2;
+import org.openide.WizardDescriptor;
 
 /**
  *
- * @author Radek Matous
+ * @author Tomasz.Slota@Sun.COM
  */
-abstract class ModelScopeImpl extends ScopeImpl implements ModelScope  {
-    ModelScopeImpl(CompilationInfo info, String name, PhpKind kind) {
-        super(null, name, Union2.<String, FileObject>createSecond(info != null ? info.getFileObject() : null), new OffsetRange(0, 0), kind);//NOI18N
-    }
-
-    @CheckForNull
-    abstract CachedModelSupport getCachedModelSupport();
-    abstract IndexScopeImpl getIndexScope();
+interface WizardProperties {
+    String NAME = "name"; //NOI18N
+    String PROJ_DIR = "projdir"; //NOI18N
+    String WIZARD_ERROR_MSG = WizardDescriptor.PROP_ERROR_MESSAGE; //NOI18N
+    String SELECTED_INDEX = WizardDescriptor.PROP_CONTENT_SELECTED_INDEX; //NOI18N
+    String CONTENT_DATA = WizardDescriptor.PROP_CONTENT_DATA; //NOI18N
+    String DB_NAME = "dbName"; //NOI18N
 }

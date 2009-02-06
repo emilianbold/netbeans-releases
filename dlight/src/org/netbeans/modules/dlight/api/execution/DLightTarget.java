@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.api.execution;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.impl.DLightTargetAccessor;
 import org.netbeans.modules.dlight.util.DLightLogger;
@@ -111,6 +112,7 @@ public abstract class DLightTarget {
         for (DLightTargetListener l : ls) {
             final DLightTargetListener listener = l;
             RequestProcessor.getDefault().post(new Runnable() {
+
                 public void run() {
                     listener.targetStateChanged(DLightTarget.this, oldState, newState);
                 }
@@ -178,15 +180,33 @@ public abstract class DLightTarget {
 
         /**
          * Start target
-         * @param target targeto start
+         * @param target targe to start
+         * @param executionEnvProvider  execution enviroment provider
          */
-        public void start(T target);
+        public void start(T target, ExecutionEnvVariablesProvider executionEnvProvider);
 
         /**
          * Terminate target
          * @param target target to terminate
          */
         public void terminate(T target);
+    }
+
+    /**
+     * This provider is supposed to be implemented by the implementator of
+     * {@link org.netbeans.modules.dlight.spi.collector.DataCollector} or
+     * {@link org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider> if
+     * some additional setting up is required before target is stared as an example
+     * LD_PRELOAD can be considered
+     */
+    public interface ExecutionEnvVariablesProvider {
+
+        /**
+         * Returns enviroment variables map (name - value) which should
+         * be set up before DLightTarget is started
+         * @return enviroment variables map to set up before target is starting
+         */
+        Map<String, String> getExecutionEnv();
     }
 
     private static final class DLightTargetAccessorImpl extends DLightTargetAccessor {
