@@ -19,6 +19,7 @@
 
             <folder name ="Import">
                 <attr name="position" intvalue="1426"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ide.ergonomics.Bundle"/>
                 <file name="org-netbeans-modules-projectimport-eclipse-core-ImportProjectAction.instance">
                     <attr name="delegate" newvalue="org.netbeans.modules.ide.ergonomics.ImportProjectAction"/>
                     <attr name="displayName" bundlevalue="org.netbeans.modules.ide.ergonomics.Bundle#CTL_ImportProject"/>
