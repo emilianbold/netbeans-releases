@@ -164,17 +164,15 @@ Microsystems, Inc. All Rights Reserved.
     tasks. There are two types of UserTask. Simple 
     <a href="org/netbeans/modules/parsing/api/UserTask.html">UserTask</a>
     that supports some computations based on one block code written in one language. 
-    And 
-    <a href="org/netbeans/modules/parsing/api/MultiLanguageUserTask.html">MultiLanguageUserTask</a>
-    that supports scanning of all blocks of code written in different languages
-    embedded in one Source.
+    And MultiLanguageUserTask (???) that supports scanning of all blocks of code 
+    written in different languages embedded in one Source.
   </p>
   <p>
     User of Parsing API can register various implementations of 
     <a href="org/netbeans/modules/parsing/spi/SchedulerTask.html">SchedulerTask</a> 
     for any language. Each SchedulerTask is registered for some specific 
-    <a href="org/netbeans/modules/parsing/spi/TaskScheduler.html">TaskScheduler</a>.
-    TaskScheduler defines when task shoud be started (for example
+    <a href="org/netbeans/modules/parsing/spi/Scheduler.html">Scheduler</a>.
+    Scheduler defines when task shoud be started (for example
     when current editor is changed, when some nodes are selected in Project View, or
     when cursor position is changed). 
   </p>
