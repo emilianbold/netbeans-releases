@@ -285,8 +285,8 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
 
         for (DataCollector toolCollector : collectors) {
             DataStorage storage = DataStorageManager.getInstance().getDataStorageFor(toolCollector);
-            if (toolCollector instanceof DLightTarget.DLightTargetExecutionEnvProvider){
-                context.addDLightTargetExecutionEnviromentProvider((DLightTarget.DLightTargetExecutionEnvProvider)toolCollector);
+            if (toolCollector instanceof DLightTarget.ExecutionEnvVariablesProvider){
+                context.addDLightTargetExecutionEnviromentProvider((DLightTarget.ExecutionEnvVariablesProvider)toolCollector);
             }
             if (storage != null) {
                 if (notAttachableDataCollector == null && !toolCollector.isAttachable()) {
@@ -312,8 +312,8 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             List<IndicatorDataProvider> idps = DLightToolAccessor.getDefault().getIndicatorDataProviders(tool);
             if (idps != null) {
                 for (IndicatorDataProvider idp : idps) {
-                    if (idp instanceof DLightTarget.DLightTargetExecutionEnvProvider){
-                        context.addDLightTargetExecutionEnviromentProvider((DLightTarget.DLightTargetExecutionEnvProvider)idp);
+                    if (idp instanceof DLightTarget.ExecutionEnvVariablesProvider){
+                        context.addDLightTargetExecutionEnviromentProvider((DLightTarget.ExecutionEnvVariablesProvider)idp);
                     }
                     List<Indicator> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
                     for (Indicator i : indicators) {

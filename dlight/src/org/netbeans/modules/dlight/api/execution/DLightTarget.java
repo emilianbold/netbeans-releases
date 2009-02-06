@@ -183,7 +183,7 @@ public abstract class DLightTarget {
          * @param target targe to start
          * @param executionEnvProvider  execution enviroment provider
          */
-        public void start(T target, DLightTargetExecutionEnvProvider executionEnvProvider);
+        public void start(T target, ExecutionEnvVariablesProvider executionEnvProvider);
 
         /**
          * Terminate target
@@ -199,7 +199,7 @@ public abstract class DLightTarget {
      * some additional setting up is required before target is stared as an example
      * LD_PRELOAD can be considered
      */
-    public interface DLightTargetExecutionEnvProvider {
+    public interface ExecutionEnvVariablesProvider {
 
         /**
          * Returns enviroment variables map (name - value) which should
