@@ -40,6 +40,8 @@ package org.netbeans.modules.nativeexecution.api;
 
 import org.netbeans.modules.nativeexecution.util.ExternalTerminal;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.impl.LocalNativeProcess;
 import java.util.concurrent.Callable;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -171,6 +173,30 @@ public final class NativeProcessBuilder implements Callable<Process> {
     public NativeProcessBuilder addEnvironmentVariable(String name, String value) {
         NativeProcessBuilder result = new NativeProcessBuilder(this);
         result.info.addEnvironmentVariable(name, value);
+        return result;
+    }
+    /**
+     * Returns a builder with additional environment variables for the command.
+     * <p>
+     * By default no additional environment variables are configured.
+     * <p>
+     * All other properties of the returned builder are inherited from
+     * <tt>this</tt>.
+     *
+     * @param envs map of value, name of additional env variables
+     * @return new instance of the <tt>NativeProcessBuilder</tt> with additional
+     * environment variables for the command.
+     */
+    public NativeProcessBuilder addEnvironmentVariables(Map<String, String> envs) {
+        NativeProcessBuilder result = new NativeProcessBuilder(this);
+        if (envs == null || envs.isEmpty()){
+            return result;
+        }
+        Iterator<String> names = envs.keySet().iterator();
+        while (names.hasNext()){
+            String name = names.next();
+            result.info.addEnvironmentVariable(name, envs.get(name));
+        }        
         return result;
     }
 

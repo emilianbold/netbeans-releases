@@ -63,21 +63,31 @@ final class ExecutionContext {
     private static final Logger log = DLightLogger.getLogger(ExecutionContext.class);
     private volatile boolean validationInProgress = false;
     private final DLightTarget target;
+    private final DLightTargetExecutionEnvProviderCollection envProvider;
     private final List<DLightTool> tools = Collections.synchronizedList(new ArrayList<DLightTool>());
     private List<ExecutionContextListener> listeners = null;
 
     ExecutionContext(final DLightTarget target, final List<DLightTool> tools) {
         this.target = target;
         this.tools.addAll(tools);
+        envProvider = new DLightTargetExecutionEnvProviderCollection();
     }
 
     void clear() {
+        envProvider.clear();
     }
 
     DLightTarget getTarget() {
         return target;
     }
 
+    void addDLightTargetExecutionEnviromentProvider(DLightTarget.DLightTargetExecutionEnvProvider executionEnvProvider){
+        envProvider.add(executionEnvProvider);
+    }
+
+    DLightTarget.DLightTargetExecutionEnvProvider getDLightTargetExecutionEnvProvider(){
+        return envProvider;
+    }
     /**
      * Do not call directly - use DLightSession.addDLightContextListener()
      */
@@ -210,5 +220,26 @@ final class ExecutionContext {
 
     List<DLightTool> getTools() {
         return tools;
+    }
+
+    final class DLightTargetExecutionEnvProviderCollection implements DLightTarget.DLightTargetExecutionEnvProvider{
+        private Map<String, String> envs;
+
+        DLightTargetExecutionEnvProviderCollection(){
+            envs = new HashMap<String, String>();
+        }
+
+        void clear(){
+            envs.clear();
+        }
+
+        void add(DLightTarget.DLightTargetExecutionEnvProvider provider){
+            envs.putAll(provider.getExecutionEnv());
+        }
+        
+        public Map<String, String> getExecutionEnv() {
+            return envs;
+        }
+
     }
 }
