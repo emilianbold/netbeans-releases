@@ -41,22 +41,28 @@
 
 package org.netbeans.nbbuild;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
@@ -94,6 +100,11 @@ public class LayerIndex extends Task {
         output = f;
     }
 
+    private File serviceOutput;
+    public void setServiceOutput(File f) {
+        serviceOutput = f;
+    }
+
     private String resourceId;
     private List<ZipResource> resources;
     /** If this parameter is provided, then this tasks creates a resource
@@ -113,6 +124,8 @@ public class LayerIndex extends Task {
         SortedMap<String,String> files = new TreeMap<String,String>(); // layer path -> cnb
         SortedMap<String,SortedMap<String,String>> labels = new TreeMap<String,SortedMap<String,String>>(); // layer path -> cnb -> label
         final Map<String,Integer> positions = new TreeMap<String,Integer>(); // layer path -> position
+        SortedMap<String,Set<String>> serviceImpls = new TreeMap<String,Set<String>>(); // interface -> [impl]
+        Map<String,Integer> servicePositions = new HashMap<String,Integer>(); // impl -> position
         for (FileSet fs : filesets) {
             DirectoryScanner ds = fs.getDirectoryScanner(getProject());
             File basedir = ds.getBasedir();
@@ -148,6 +161,10 @@ public class LayerIndex extends Task {
                                 parse(jf.getInputStream(generatedLayer), files, labels, positions, cnb, jf);
                             }
                         }
+                        if (serviceOutput != null) {
+                            // Could remember CNBs too.
+                            parseServices(jf, serviceImpls, servicePositions);
+                        }
                     } finally {
                         jf.close();
                     }
@@ -162,94 +179,13 @@ public class LayerIndex extends Task {
             return;
         }
 
-        int maxlength = 0;
-        for (String cnb : files.values()) {
-            maxlength = Math.max(maxlength, shortenCNB(cnb).length());
-        }
         try {
-            PrintWriter pw = output != null ? new PrintWriter(output) : null;
-            SortedSet<String> layerPaths = new TreeSet<String>(new Comparator<String>() {
-                public int compare(String p1, String p2) {
-                    StringTokenizer tok1 = new StringTokenizer(p1, "/");
-                    StringTokenizer tok2 = new StringTokenizer(p2, "/");
-                    String prefix = "";
-                    while (tok1.hasMoreTokens()) {
-                        String piece1 = tok1.nextToken();
-                        if (tok2.hasMoreTokens()) {
-                            String piece2 = tok2.nextToken();
-                            if (piece1.equals(piece2)) {
-                                prefix += piece1 + "/";
-                            } else {
-                                Integer pos1 = pos(prefix + piece1);
-                                Integer pos2 = pos(prefix + piece2);
-                                if (pos1 == null) {
-                                    if (pos2 == null) {
-                                        return piece1.compareTo(piece2);
-                                    } else {
-                                        return 1;
-                                    }
-                                } else {
-                                    if (pos2 == null) {
-                                        return -1;
-                                    } else {
-                                        int diff = pos1 - pos2;
-                                        if (diff != 0) {
-                                            return diff;
-                                        } else {
-                                            return piece1.compareTo(piece2);
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            return 1;
-                        }
-                    }
-                    if (tok2.hasMoreTokens()) {
-                        return -1;
-                    }
-                    assert p1.equals(p2) : p1 + " vs. " + p2;
-                    return 0;
-                }
-                Integer pos(String path) {
-                    return positions.containsKey(path) ? positions.get(path) : positions.get(path + "/");
-                }
-            });
-            layerPaths.addAll(files.keySet());
-            SortedSet<String> remaining = new TreeSet<String>(files.keySet());
-            remaining.removeAll(layerPaths);
-            assert remaining.isEmpty() : remaining;
-            for (String path : layerPaths) {
-                String cnb = files.get(path);
-                String line = String.format("%-" + maxlength + "s %s", shortenCNB(cnb), shortenPath(path));
-                Integer pos = positions.get(path);
-                if (pos != null) {
-                    line += String.format(" @%d", pos);
-                }
-                SortedMap<String,String> cnb2Label = labels.get(path);
-                if (cnb2Label != null) {
-                    if (cnb2Label.size() == 1 && cnb2Label.keySet().iterator().next().equals(cnb)) {
-                        line += String.format(" (\"%s\")", cnb2Label.values().iterator().next());
-                    } else {
-                        for (Map.Entry<String,String> labelEntry : cnb2Label.entrySet()) {
-                            line += String.format(" (%s: \"%s\")", shortenCNB(labelEntry.getKey()), labelEntry.getValue());
-                        }
-                    }
-                }
-                if (pw != null) {
-                    pw.println(line);
-                } else {
-                    log(line);
-                }
+            writeLayerIndex(files, positions, labels);
+            if (serviceOutput != null) {
+                writeServiceIndex(serviceImpls, servicePositions);
             }
-            if (pw != null) {
-                pw.close();
-            }
-        } catch (FileNotFoundException x) {
+        } catch (IOException x) {
             throw new BuildException(x, getLocation());
-        }
-        if (output != null) {
-            log(output + ": layer index written");
         }
     }
 
@@ -346,6 +282,38 @@ public class LayerIndex extends Task {
         });
     }
 
+    private void parseServices(JarFile jf, SortedMap<String,Set<String>> serviceImpls, Map<String,Integer> servicePositions) throws IOException {
+        Enumeration<JarEntry> entries = jf.entries();
+        while (entries.hasMoreElements()) {
+            JarEntry entry = entries.nextElement();
+            if (!entry.getName().startsWith("META-INF/services/")) {
+                continue;
+            }
+            String xface = entry.getName().substring("META-INF/services/".length());
+            InputStream is = jf.getInputStream(entry);
+            try {
+                BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+                String lastImpl = null;
+                String line;
+                while ((line = r.readLine()) != null) {
+                    if (line.startsWith("#position=") && lastImpl != null) {
+                        servicePositions.put(lastImpl, Integer.parseInt(line.substring("#position=".length())));
+                    } else if (line.startsWith("#-") || (line.length() > 0 && !line.startsWith("#"))) {
+                        lastImpl = line;
+                        Set<String> impls = serviceImpls.get(xface);
+                        if (impls == null) {
+                            impls = new HashSet<String>();
+                            serviceImpls.put(xface, impls);
+                        }
+                        impls.add(lastImpl);
+                    }
+                }
+            } finally {
+                is.close();
+            }
+        }
+    }
+
     private static final class ZipArray extends ArrayList<ZipResource>
     implements ResourceCollection {
         public boolean isFilesystemOnly() {
@@ -380,4 +348,155 @@ public class LayerIndex extends Task {
         }
 
     }
+
+    private void writeLayerIndex(SortedMap<String,String> files, final Map<String,Integer> positions,
+            SortedMap<String,SortedMap<String,String>> labels) throws IOException {
+        int maxlength = 0;
+        for (String cnb : files.values()) {
+            maxlength = Math.max(maxlength, shortenCNB(cnb).length());
+        }
+        PrintWriter pw = output != null ? new PrintWriter(output, "UTF-8") : null;
+        SortedSet<String> layerPaths = new TreeSet<String>(new LayerPathComparator(positions));
+        layerPaths.addAll(files.keySet());
+        SortedSet<String> remaining = new TreeSet<String>(files.keySet());
+        remaining.removeAll(layerPaths);
+        assert remaining.isEmpty() : remaining;
+        for (String path : layerPaths) {
+            String cnb = files.get(path);
+            String line = String.format("%-" + maxlength + "s %s", shortenCNB(cnb), shortenPath(path));
+            Integer pos = positions.get(path);
+            if (pos != null) {
+                line += String.format(" @%d", pos);
+            }
+            SortedMap<String,String> cnb2Label = labels.get(path);
+            if (cnb2Label != null) {
+                if (cnb2Label.size() == 1 && cnb2Label.keySet().iterator().next().equals(cnb)) {
+                    line += String.format(" (\"%s\")", cnb2Label.values().iterator().next());
+                } else {
+                    for (Map.Entry<String,String> labelEntry : cnb2Label.entrySet()) {
+                        line += String.format(" (%s: \"%s\")", shortenCNB(labelEntry.getKey()), labelEntry.getValue());
+                    }
+                }
+            }
+            if (pw != null) {
+                pw.println(line);
+            } else {
+                log(line);
+            }
+        }
+        if (pw != null) {
+            pw.close();
+        }
+        if (output != null) {
+            log(output + ": layer index written");
+        }
+    }
+
+    private static class LayerPathComparator implements Comparator<String> {
+        private final Map<String,Integer> positions;
+        public LayerPathComparator(Map<String,Integer> positions) {
+            this.positions = positions;
+        }
+        public int compare(String p1, String p2) {
+            StringTokenizer tok1 = new StringTokenizer(p1, "/");
+            StringTokenizer tok2 = new StringTokenizer(p2, "/");
+            String prefix = "";
+            while (tok1.hasMoreTokens()) {
+                String piece1 = tok1.nextToken();
+                if (tok2.hasMoreTokens()) {
+                    String piece2 = tok2.nextToken();
+                    if (piece1.equals(piece2)) {
+                        prefix += piece1 + "/";
+                    } else {
+                        Integer pos1 = pos(prefix + piece1);
+                        Integer pos2 = pos(prefix + piece2);
+                        if (pos1 == null) {
+                            if (pos2 == null) {
+                                return piece1.compareTo(piece2);
+                            } else {
+                                return 1;
+                            }
+                        } else {
+                            if (pos2 == null) {
+                                return -1;
+                            } else {
+                                int diff = pos1 - pos2;
+                                if (diff != 0) {
+                                    return diff;
+                                } else {
+                                    return piece1.compareTo(piece2);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    return 1;
+                }
+            }
+            if (tok2.hasMoreTokens()) {
+                return -1;
+            }
+            assert p1.equals(p2) : p1 + " vs. " + p2;
+            return 0;
+        }
+        Integer pos(String path) {
+            return positions.containsKey(path) ? positions.get(path) : positions.get(path + "/");
+        }
+    }
+
+    private void writeServiceIndex(SortedMap<String,Set<String>> serviceImpls,
+            final Map<String,Integer> servicePositions) throws IOException {
+        PrintWriter pw = new PrintWriter(serviceOutput, "UTF-8");
+        for (Map.Entry<String,Set<String>> entry : serviceImpls.entrySet()) {
+            pw.println(entry.getKey());
+            SortedSet<String> impls = new TreeSet<String>(new ServiceComparator(servicePositions));
+            impls.addAll(entry.getValue());
+            Set<String> masked = new HashSet<String>();
+            for (String impl : impls) {
+                if (impl.startsWith("#-")) {
+                    masked.add(impl);
+                    masked.add(impl.substring(2));
+                }
+            }
+            impls.removeAll(masked);
+            for (String impl : impls) {
+                if (servicePositions.containsKey(impl)) {
+                    impl += " @" + servicePositions.get(impl);
+                }
+                pw.println("  " + impl);
+            }
+        }
+        pw.close();
+        log(serviceOutput + ": service index written");
+    }
+
+    private static class ServiceComparator implements Comparator<String> {
+        private final Map<String,Integer> servicePositions;
+        public ServiceComparator(Map<String,Integer> servicePositions) {
+            this.servicePositions = servicePositions;
+        }
+        public int compare(String i1, String i2) {
+            Integer pos1 = servicePositions.get(i1);
+            Integer pos2 = servicePositions.get(i2);
+            if (pos1 == null) {
+                if (pos2 == null) {
+                    return i1.compareTo(i2);
+                } else {
+                    return 1;
+                }
+            } else {
+                if (pos2 == null) {
+                    return -1;
+                } else {
+                    int diff = pos1 - pos2;
+                    if (diff != 0) {
+                        return diff;
+                    } else {
+                        return i1.compareTo(i2);
+                    }
+                }
+            }
+        }
+    }
+
 }
