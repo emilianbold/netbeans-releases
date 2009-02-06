@@ -265,8 +265,10 @@ public class RubyValidation extends JellyTestCase {
         
         filename = "myapp_controller_test.rb"; // NOI18N
         new EditorOperator(filename);
-        // "Functional Tests"
-        String functionalTestsLabel = Bundle.getString(railsProjectBundle,"test_functional");
-        new Node(projectRootNode, functionalTestsLabel+"|"+filename);
+        // "Test Files"
+        String testFilesLabel = Bundle.getString(railsProjectBundle, "test");
+        // test/functional
+        String functionalTestsLabel = "functional"; //NOI18N
+        new Node(projectRootNode, testFilesLabel+"|"+functionalTestsLabel+"|"+filename);
     }
 }

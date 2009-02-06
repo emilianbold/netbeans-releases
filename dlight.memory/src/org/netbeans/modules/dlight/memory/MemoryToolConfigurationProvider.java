@@ -126,12 +126,12 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
             "FROM mem, node AS node, func, ( " +
             "   SELECT MAX(timestamp) as leak_timestamp FROM mem, ( " +
             "       SELECT address as leak_address, sum(kind*size) AS leak_size FROM mem GROUP BY address HAVING sum(kind*size) > 0 " +
-            "   ) WHERE address = leak_address GROUP BY address " +
-            ") WHERE timestamp = leak_timestamp " +
+            "   ) AS vt1 WHERE address = leak_address GROUP BY address " +
+            ") AS vt2 WHERE timestamp = leak_timestamp " +
             "AND stackid = node.node_id and node.func_id = func.func_id " +
-            "GROUP BY node.func_id";
+            "GROUP BY node.func_id, func.func_name";
 
-        DataTableMetadata viewTableMetadata = new DataTableMetadata("sync", viewColumns, sql, Arrays.asList(rawTableMetadata));
+        DataTableMetadata viewTableMetadata = new DataTableMetadata("mem", viewColumns, sql, Arrays.asList(rawTableMetadata));
         return new TableVisualizerConfiguration(viewTableMetadata);
     }
 

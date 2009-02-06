@@ -61,7 +61,7 @@ public class RemoteProcessBuilder implements Callable<Process> {
         return new RemoteProcess();
     }
 
-    private class RemoteProcess extends Process {
+    private static class RemoteProcess extends Process {
 
         private ExtProcessRemoteCommandSupport support;
 

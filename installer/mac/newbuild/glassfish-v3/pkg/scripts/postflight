@@ -74,3 +74,5 @@ fi
 
 #add Product ID
 "$script_dir"/addproduct_id.sh "GFMOD"
+
+"$script_dir"/servicetag.sh "gf-v3" "$2"

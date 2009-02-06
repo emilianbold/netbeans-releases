@@ -63,6 +63,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWriter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -207,7 +208,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 externalFileItems.addItem(new Item(importantItems.next()));
             }
         }
-        addSourceFilesFromFolders(sourceFileFolders, false, false);
+        addSourceFilesFromFolders(sourceFileFolders, false, false, true);
         setModified(true);
     }
 
@@ -788,16 +789,83 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
     }
 
-    public void setSourceRootsList(List<String> list) {
-        synchronized (sourceRoots) {
-            sourceRoots.clear();
-            for (String l : list) {
-                addSourceRoot(l);
+//    public void setSourceRootsList(List<String> list) {
+//        synchronized (sourceRoots) {
+//            sourceRoots.clear();
+//            for (String l : list) {
+//                addSourceRoot(l);
+//            }
+//        }
+//        MakeSources makeSources = getProject().getLookup().lookup(MakeSources.class);
+//        if (makeSources != null) {
+//            makeSources.sourceRootsChanged();
+//        }
+//    }
+
+    private boolean inList(List<String> list, String s) {
+        for (String l : list) {
+            if (l.equals(s)) {
+                return true;
             }
         }
-        MakeSources makeSources = getProject().getLookup().lookup(MakeSources.class);
-        if (makeSources != null) {
-            makeSources.sourceRootsChanged();
+        return false;
+    }
+
+    public void checkForChangedSourceRoots(List<String> oldList, List<String> newList) {
+        synchronized (sourceRoots) {
+            sourceRoots.clear();
+            for (String l : newList) {
+                addSourceRoot(l);
+            }
+
+            List<String> toBeAdded = new ArrayList<String>();
+            for (String s : sourceRoots) {
+                if (!inList(oldList, s)) {
+                    toBeAdded.add(s);
+                }
+            }
+            List<String> toBeRemoved = new ArrayList<String>();
+            for (String s : oldList) {
+                if (!inList(sourceRoots, s)) {
+                    toBeRemoved.add(s);
+                }
+            }
+
+            if (toBeAdded.size() > 0) {
+                AllSourceFileFilter filter = AllSourceFileFilter.getInstance();
+                Vector<SourceFolderInfo> data = new Vector<SourceFolderInfo>();
+                for (String root : toBeAdded) {
+                    String absSourceRoot = IpeUtils.toAbsolutePath(getBaseDir(), root);
+                    File absSourceRootFile = new File(absSourceRoot);
+                    FolderEntry folderEntry = new FolderEntry(absSourceRootFile, absSourceRootFile.getName());
+                    folderEntry.setAddSubfoldersSelected(true);
+                    folderEntry.setFileFilter(filter);
+                    data.add(folderEntry);
+                }
+                MakeConfiguration active = (MakeConfiguration) getConfs().getActive(); // FIXUP: need better check
+                addSourceFilesFromFolders(data.iterator(), true, false, active.isMakefileConfiguration());
+                setModified();
+            }
+
+
+            if (toBeRemoved.size() > 0) {
+                for (String rootToBeRemoved : toBeRemoved) {
+                    Vector<Folder> rootFolders = getLogicalFolders().getAllFolders(modified);
+                    for (Folder root : rootFolders) {
+                        if (root.getRoot() != null && root.getRoot().equals(rootToBeRemoved)) {
+                            getLogicalFolders().removeFolderAction(root);
+                        }
+                    }
+                }
+                setModified();
+            }
+
+            if (toBeAdded.size() > 0 || toBeRemoved.size() > 0) {
+                MakeSources makeSources = getProject().getLookup().lookup(MakeSources.class);
+                if (makeSources != null) {
+                    makeSources.sourceRootsChanged();
+                }
+            }
         }
     }
 
@@ -876,16 +944,16 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
     }
 
-    public void addSourceFilesFromFolders(Iterator<SourceFolderInfo> sourceFileFolders, boolean acrynchron, boolean notify) {
-        addSourceFilesFromFolders(rootFolder, sourceFileFolders, acrynchron, notify);
+    public void addSourceFilesFromFolders(Iterator<SourceFolderInfo> sourceFileFolders, boolean acrynchron, boolean notify, boolean asDiskFolders) {
+        addSourceFilesFromFolders(rootFolder, sourceFileFolders, acrynchron, notify, asDiskFolders);
     }
 
-    public void addSourceFilesFromFolders(Folder folder, Iterator<? extends SourceFolderInfo> sourceFileFoldersIterator, boolean acrynchron, boolean notify) {
+    public void addSourceFilesFromFolders(Folder folder, Iterator<? extends SourceFolderInfo> sourceFileFoldersIterator, boolean acrynchron, boolean notify, boolean asDiskFolders) {
         if (sourceFileFoldersIterator == null) {
             return;
         }
         if (acrynchron) {
-            new AddFilesThread(sourceFileFoldersIterator, folder, notify).start();
+            new AddFilesThread(sourceFileFoldersIterator, folder, notify, asDiskFolders).start();
         } else {
             while (sourceFileFoldersIterator.hasNext()) {
                 ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
@@ -918,11 +986,13 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         Folder folder;
         private ProgressHandle handle;
         private boolean notify;
+        private boolean asDiskFolders;
 
-        AddFilesThread(Iterator iterator, Folder folder, boolean notify) {
+        AddFilesThread(Iterator iterator, Folder folder, boolean notify, boolean asDiskFolders) {
             this.iterator = iterator;
             this.folder = folder;
             this.notify = notify;
+            this.asDiskFolders = asDiskFolders;
             handle = ProgressHandleFactory.createHandle(getString("AddingFilesTxt"));
         }
 
@@ -934,9 +1004,13 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 handle.start();
                 while (iterator.hasNext()) {
                     FolderEntry folderEntry = (FolderEntry) iterator.next();
-                    Folder top = folder.findFolderByName(folderEntry.getFile().getName());
+                    Folder top = null;//folder.findFolderByName(folderEntry.getFile().getName());
                     if (top == null) {
                         top = new Folder(folder.getConfigurationDescriptor(), folder, folderEntry.getFile().getName(), folderEntry.getFile().getName(), true);
+                        if (asDiskFolders) {
+                            String relativeRoot = FilePathAdaptor.normalize(IpeUtils.toRelativePath(getBaseDir(), folderEntry.getFile().getPath()));
+                            top.setRoot(relativeRoot);
+                        }
                         folder.addFolder(top);
                     }
                     addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), folderEntry.getFileFilter(), handle, filesAdded, true);
@@ -983,6 +1057,10 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 {
                     continue;
                 }
+                if (files[i].getName().equals("nbproject")) // NOI18N
+                {
+                    continue;
+                }
                 Folder dirfolder = folder;
                 if (addSubFolders) {
                     dirfolder = folder.findFolderByName(files[i].getName());
@@ -991,9 +1069,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                     }
                 }
                 addFiles(dirfolder, files[i], addSubFolders, filter, handle, filesAdded, notify);
-                if (dirfolder.size() == 0) {
-                    folder.removeFolder(dirfolder);
-                }
+//                if (dirfolder.size() == 0) {
+//                    folder.removeFolder(dirfolder);
+//                }
             } else {
                 String filePath;
                 if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {

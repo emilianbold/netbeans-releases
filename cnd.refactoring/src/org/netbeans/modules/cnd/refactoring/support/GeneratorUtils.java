@@ -344,6 +344,31 @@ public class GeneratorUtils {
                 position = decl.getEndOffset();
                 if (CsmKindUtilities.isClassMember(decl)) {
                     enclClass = ((CsmMember)decl).getContainingClass();
+                    if (CsmKindUtilities.isField(decl)) {
+                        // we are on field, so let's try to find better place for insert point
+                        CsmMember lastPublicMethod = null;
+                        CsmMember firstPublicMethod = null;
+                        CsmMember lastPublicConstructor = null;
+                        CsmMember firstPublicConstructor = null;
+                        for (CsmMember member : enclClass.getMembers()) {
+                            if ((member.getVisibility() == CsmVisibility.PUBLIC) && CsmKindUtilities.isMethod(member)) {
+                                lastPublicMethod = member;
+                                if (firstPublicMethod == null) {
+                                    firstPublicMethod = member;
+                                }
+                                if (CsmKindUtilities.isConstructor(member)) {
+                                    lastPublicConstructor = member;
+                                    if (firstPublicConstructor == null) {
+                                        firstPublicConstructor = member;
+                                    }
+                                }
+                            }
+                        }
+                        // let's try to put after last public method
+                        if (lastPublicMethod != null) {
+                            position = lastPublicMethod.getEndOffset();
+                        }
+                    }
                 } else if (enclClass == null) {
                     enclClass = path.getEnclosingClass();
                 }

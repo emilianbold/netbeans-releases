@@ -164,7 +164,6 @@ public final class ResultBar extends JComponent {
         }
 
         int amountFull = (int) (barRectWidth * passedPercentage / 100.0f);
-        System.out.println("Painting, pp: " + passedPercentage);
 
         Graphics2D g2 = (Graphics2D) g;
 
