@@ -52,6 +52,7 @@ import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.ObservableAction;
 import org.netbeans.modules.nativeexecution.api.ObservableActionListener;
 import org.netbeans.modules.nativeexecution.api.impl.ConnectionManagerAccessor;
@@ -63,8 +64,8 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- * Manages connections that needed for remote
- * {@link org.netbeans.modules.nativeexecution.api.NativeTask} execution.
+ * Manages connections that are needed for remote {@link NativeProcess}
+ * execution.
  * It is a singleton and should be accessed via static {@link #getInstance()}
  * method.
  *
