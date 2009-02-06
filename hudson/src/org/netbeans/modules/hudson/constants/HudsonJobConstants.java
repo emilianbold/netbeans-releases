@@ -71,7 +71,9 @@ public class HudsonJobConstants {
     public static final String JOB_LAST_STABLE_BUILD = "job_last_stable_build";
     
     public static final String JOB_LAST_SUCCESSFUL_BUILD = "job_last_successful_build";
-    
+
+    public static final String JOB_LAST_COMPLETED_BUILD = "job_last_completed_build";
+
     public static final String JOB_LAST_FAILED_BUILD = "job_last_failed_build";
 
 }

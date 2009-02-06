@@ -115,9 +115,9 @@ public class HudsonJobNode extends AbstractNode {
         actions.add(SystemAction.get(ShowJobDetailAction.class));
         actions.add(SystemAction.get(StartJobAction.class));
         actions.add(new ShowBuildConsole(job, job.getLastBuild()));
-        int lastFailed = job.getLastFailedBuild();
-        if (lastFailed > 0) {
-            actions.add(new ShowFailures(job, lastFailed));
+        int last = job.getLastCompletedBuild();
+        if (last != 0 && last != job.getLastStableBuild()) {
+            actions.add(new ShowFailures(job, last));
         }
         actions.add(null);
         actions.add(SystemAction.get(OpenUrlAction.class));

@@ -75,17 +75,21 @@ public class ShowFailures extends AbstractAction implements Runnable {
     }
 
     public void run() {
-        String title = job.getDisplayName() + " #" + buildNumber + " Test Failures"; // XXX I18N
-        InputOutput io = IOProvider.getDefault().getIO(title, new Action[0]);
-        io.select();
-        final OutputWriter w = io.getOut();
         try {
             XMLReader parser = XMLUtil.createXMLReader();
             parser.setContentHandler(new DefaultHandler() {
+                InputOutput io;
                 StringBuilder buf;
-                // XXX could collect and display other info, e.g. <className>.<name>
+                private void prepareOutput() {
+                    if (io == null) {
+                        String title = job.getDisplayName() + " #" + buildNumber + " Test Failures"; // XXX I18N
+                        io = IOProvider.getDefault().getIO(title, new Action[0]);
+                        io.select();
+                    }
+                }
+                // XXX could collect and display other info, e.g. case/className or suite/name
                 public @Override void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-                    if (qName.equals("errorStackTrace")) { // NOI18N
+                    if (qName.matches("errorStackTrace|stdout|stderr")) { // NOI18N
                         buf = new StringBuilder();
                     }
                 }
@@ -95,22 +99,30 @@ public class ShowFailures extends AbstractAction implements Runnable {
                     }
                 }
                 public @Override void endElement(String uri, String localName, String qName) throws SAXException {
-                    if (qName.equals("errorStackTrace")) { // NOI18N
-                        char[] cs = new char[buf.length()];
-                        buf.getChars(0, cs.length, cs, 0);
-                        w.write(cs);
+                    if (qName.matches("errorStackTrace|stdout|stderr")) { // NOI18N
+                        prepareOutput();
+                        OutputWriter w = qName.equals("stdout") ? io.getOut() : io.getErr();
+                        // XXX err.write(multilineString) does not work, only last line is in red
+                        for (String line : buf.toString().split("\r\n?|\n")) {
+                            w.println(line);
+                        }
                         buf = null;
                     }
                 }
+                public @Override void endDocument() throws SAXException {
+                    if (io != null) {
+                        io.getOut().close();
+                        io.getErr().close();
+                    }
+                }
             });
-            parser.parse(job.getUrl() + buildNumber + "/testReport/api/xml"); // NOI18N
+            // Requires Hudson 1.281 or later:
+            parser.parse(job.getUrl() + buildNumber + "/testReport/api/xml?xpath=//suite[case/errorStackTrace]&wrapper=failures"); // NOI18N
         } catch (FileNotFoundException x) {
             Toolkit.getDefaultToolkit().beep();
         } catch (Exception x) {
             Exceptions.printStackTrace(x);
         }
-        w.close();
-        io.getErr().close();
     }
 
 }
