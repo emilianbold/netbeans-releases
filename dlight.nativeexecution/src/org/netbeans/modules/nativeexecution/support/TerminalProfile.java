@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,46 +31,76 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.uml.diagrams.actions;
+package org.netbeans.modules.nativeexecution.support;
 
-import java.awt.Point;
-import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.uml.diagrams.nodes.CompartmentWidget;
-import org.netbeans.modules.uml.diagrams.nodes.CompositeNodeWidget;
-import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
- *
- * This select provider is used to set a flag on inner widget that 
- * is designed to be "unselectable" (see issue 138533), e.g. state region, sub partition, which does not
- * provide its own context menu, but rather attached to its outer node widget. However, some attached popup
- * menu items, for instance, 'Delete Region', still need the context as which inner widget is targeted.
  */
-public class CompositeWidgetSelectProvider extends DiagramEngine.DesignSelectProvider
-{
-    private CompositeNodeWidget compositeWidget;
-    
-    public CompositeWidgetSelectProvider(CompositeNodeWidget w)
-    {
-        compositeWidget = w;
+public final class TerminalProfile {
+    private String command;
+    private List<String> arguments = new ArrayList<String>();
+    private List<String> searchPaths = new ArrayList<String>();
+    private String id;
+    private String platforms;
+
+    public TerminalProfile() {
     }
-    
-    @Override
-    public void select(Widget widget, Point localLocation, boolean invertSelection)
-    {
-        super.select(widget, localLocation, invertSelection);
-        
-        for (CompartmentWidget w : compositeWidget.getCompartmentWidgets())
-        {
-            if (w.isHitAt(w.convertSceneToLocal(widget.convertLocalToScene(localLocation))))
-                w.setSelected(true);
-            else
-                w.setSelected(false);
+
+    public void addArgument(String arg) {
+        this.arguments.add(arg);
+    }
+
+    public String getID() {
+        return id;
+    }
+
+    public void setCommand(String command) {
+        this.command = command;
+    }
+
+    public void setID(String id) {
+        this.id = id;
+    }
+
+    public void setSupportedPlatforms(String platforms) {
+        this.platforms = platforms;
+    }
+
+    public String getCommand() {
+        return command;
+    }
+
+    public List<String> wrapCommand(String title, String... args) {
+        String cmd = searchPaths.get(0) + "/" + command;
+        ArrayList<String> result = new ArrayList<String>();
+
+        result.add(cmd);
+
+        for (String arg : arguments) {
+            if ("$@".equals(arg)) {
+                result.addAll(Arrays.asList(args));
+                continue;
+            }
+
+            if (arg.contains("$title")){
+                arg = arg.replace("$title", title);
+            }
+
+            result.add(arg);
         }
+
+        return result;
+    }
+
+    public void addSearchPath(String path) {
+        searchPaths.add(path);
     }
 }

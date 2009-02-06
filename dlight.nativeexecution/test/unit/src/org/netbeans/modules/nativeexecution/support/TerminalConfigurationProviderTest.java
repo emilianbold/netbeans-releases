@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,46 +31,53 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.uml.diagrams.actions;
 
-import java.awt.Point;
-import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.uml.diagrams.nodes.CompartmentWidget;
-import org.netbeans.modules.uml.diagrams.nodes.CompositeNodeWidget;
-import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
+package org.netbeans.modules.nativeexecution.support;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.netbeans.modules.nativeexecution.util.ExternalTerminal;
+import org.netbeans.modules.nativeexecution.util.ExternalTerminalProvider;
 
 /**
  *
- * This select provider is used to set a flag on inner widget that 
- * is designed to be "unselectable" (see issue 138533), e.g. state region, sub partition, which does not
- * provide its own context menu, but rather attached to its outer node widget. However, some attached popup
- * menu items, for instance, 'Delete Region', still need the context as which inner widget is targeted.
+ * @author ak119685
  */
-public class CompositeWidgetSelectProvider extends DiagramEngine.DesignSelectProvider
-{
-    private CompositeNodeWidget compositeWidget;
-    
-    public CompositeWidgetSelectProvider(CompositeNodeWidget w)
-    {
-        compositeWidget = w;
+public class TerminalConfigurationProviderTest {
+
+    public TerminalConfigurationProviderTest() {
     }
-    
-    @Override
-    public void select(Widget widget, Point localLocation, boolean invertSelection)
-    {
-        super.select(widget, localLocation, invertSelection);
-        
-        for (CompartmentWidget w : compositeWidget.getCompartmentWidgets())
-        {
-            if (w.isHitAt(w.convertSceneToLocal(widget.convertLocalToScene(localLocation))))
-                w.setSelected(true);
-            else
-                w.setSelected(false);
-        }
+
+    @BeforeClass
+    public static void setUpClass() throws Exception {
     }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
+    }
+
+    @Test
+    public void testProvider() throws InterruptedException {
+        ExternalTerminal term = ExternalTerminalProvider.getTerminal("gnome-terminal");
+
+        System.out.println(term.toString());
+    }
+
+
 }

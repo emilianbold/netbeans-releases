@@ -55,6 +55,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.util.ExternalTerminalProvider;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -105,7 +106,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
 
     public void processStateChanged(NativeProcess process, NativeProcess.State oldState, NativeProcess.State newState) {
         final DLightTarget.State prevState = state;
-        
+
         switch (newState) {
             case INITIAL:
                 state = State.INIT;
@@ -162,11 +163,23 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     }
 
     private void start() {
-        NativeProcessBuilder processBuilder = new NativeProcessBuilder(execEnv, cmd).setArguments(args).addNativeProcessListener(NativeExecutableTarget.this);
-        ExecutionDescriptor descr = new ExecutionDescriptor().controllable(true).frontWindow(true);
+        NativeProcessBuilder pb = new NativeProcessBuilder(execEnv, cmd);
+        pb = pb.setArguments(args);
+        pb = pb.addNativeProcessListener(NativeExecutableTarget.this);
+
+        ExecutionDescriptor descr = new ExecutionDescriptor();
+        descr = descr.controllable(true).frontWindow(true);
+
+        boolean useTerm = true;
+
+        if (useTerm) {
+            pb = pb.useExternalTerminal(
+                    ExternalTerminalProvider.getTerminal("gnome-terminal"));
+            descr.inputVisible(false);
+        }
 
         final ExecutionService es = ExecutionService.newService(
-                processBuilder,
+                pb,
                 descr,
                 toString());
 

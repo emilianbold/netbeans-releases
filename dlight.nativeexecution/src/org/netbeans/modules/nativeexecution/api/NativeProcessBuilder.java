@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution.api;
 
+import org.netbeans.modules.nativeexecution.util.ExternalTerminal;
 import java.io.IOException;
 import org.netbeans.modules.nativeexecution.api.impl.LocalNativeProcess;
 import java.util.concurrent.Callable;
@@ -54,7 +55,7 @@ import org.netbeans.modules.nativeexecution.api.impl.TerminalLocalNativeProcess;
 public final class NativeProcessBuilder implements Callable<Process> {
 
     private NativeProcessInfo info = null;
-    private boolean useExternalTerminal = false;
+    private ExternalTerminal externalTerminal = null;
     private NativeProcess process = null;
 
     public NativeProcessBuilder(
@@ -69,7 +70,7 @@ public final class NativeProcessBuilder implements Callable<Process> {
 
     private NativeProcessBuilder(NativeProcessBuilder b) {
         info = new NativeProcessInfo(b.info);
-        useExternalTerminal = b.useExternalTerminal;
+        externalTerminal = b.externalTerminal;
     }
 
     public NativeProcessBuilder addNativeProcessListener(Listener listener) {
@@ -82,8 +83,8 @@ public final class NativeProcessBuilder implements Callable<Process> {
         if (info.getExecutionEnvironment().isRemote()) {
             process = new RemoteNativeProcess(info);
         } else {
-            if (useExternalTerminal == true) {
-                process = new TerminalLocalNativeProcess(info);
+            if (externalTerminal != null) {
+                process = new TerminalLocalNativeProcess(externalTerminal, info);
             } else {
                 process = new LocalNativeProcess(info);
             }
@@ -110,9 +111,9 @@ public final class NativeProcessBuilder implements Callable<Process> {
         return result;
     }
 
-    public NativeProcessBuilder useExternalTerminal(boolean useExternalTerminal) {
+    public NativeProcessBuilder useExternalTerminal(ExternalTerminal terminal) {
         NativeProcessBuilder result = new NativeProcessBuilder(this);
-        result.useExternalTerminal = useExternalTerminal;
+        result.externalTerminal = terminal;
         return result;
     }
 }
