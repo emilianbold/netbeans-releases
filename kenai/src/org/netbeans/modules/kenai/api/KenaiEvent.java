@@ -60,24 +60,39 @@ import java.util.EventObject;
  */
  public final class KenaiEvent extends EventObject {
 
-    public static final int LOGIN = 0;
-    public static final int PROJECT_OPEN = 1;
-    public static final int PROJECT_CLOSE = 3;
-    private int type;
+     /**
+      * PasswordAuthentication getSource() logged in
+      */
+     public static final int LOGIN = 0;
+     /**
+      * Project getSource() was open
+      */
+     public static final int PROJECT_OPEN = 1;
 
-    /**
-     * if type is LOGIN, than getSource returns instance of new
-     * PasswordAuthentication or null, if user logged out.
-     * If type is PROJCT_OPEN/PROJECT_CLOSE than getResource return instance of
-     * KenaiProject being closed/open
-     * @return type of event
-     */
-    public int getType() {
-        return type;
-    }
+     /**
+      * Project getSource() was closed
+      */
+     public static final int PROJECT_CLOSE = 3;
 
-    KenaiEvent(Object source, int type) {
-        super(source);
-        this.type = type;
-    }
+     /**
+      * Project getSource() was refreshed from server
+      */
+     public static final int PROJECT_CHANGED = 4;
+     private int type;
+
+     /**
+      * if type is LOGIN, than getSource returns instance of new
+      * PasswordAuthentication or null, if user logged out.
+      * If type is PROJCT_OPEN/PROJECT_CLOSE/PROJECT_CHANGED than getResource return instance of
+      * KenaiProject being closed/open
+      * @return type of event
+      */
+     public int getType() {
+         return type;
+     }
+
+     KenaiEvent(Object source, int type) {
+         super(source);
+         this.type = type;
+     }
 }

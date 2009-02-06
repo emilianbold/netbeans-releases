@@ -39,28 +39,86 @@
 
 package org.netbeans.modules.kenai.ui;
 
-import java.awt.Color;
-import java.awt.Component;
+import org.netbeans.modules.kenai.ui.spi.LinkNode;
+import org.netbeans.modules.kenai.ui.spi.KenaiProjectUI;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTextPane;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.UIQuery.Type;
-import org.netbeans.modules.kenai.ui.api.UIUtils;
-import sun.awt.HorizBagLayout;
+import org.netbeans.modules.kenai.ui.spi.LinkNode.RefreshCallback;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Jan Becicka
  */
-public class TestUIQueryImpl implements UIQueryImpl {
+@ServiceProvider(service=KenaiProjectUI.class)
+public class TestUIQueryImpl implements KenaiProjectUI {
+
+//    /**
+//     *
+//     * @param t
+//     * @param k
+//     * @return
+//     */
+//    public JComponent getComponent(Type t, KenaiProject k, RefreshCallback callback) {
+//        switch (t) {
+//            case BUILDS:
+//                JLabel title = new JLabel("Builds");
+//                title.setBackground(Color.WHITE);
+//
+//                final JTextPane textPane = UIUtils.createHTMLPane();
+//                textPane.setText("<html><body> " +
+//                        "<table border=\"0\" borderwith=\"0\" width=\"80%\" align=\"left\" ><tbody>" +
+//                        "<tr>" +
+//                        "<td>" +
+//                        "MyApplication" +
+//                        "</td>" +
+//                        "<td class=\"green\">" +
+//                        "running" +
+//                        "</td>" +
+//                        "</tr>" +
+//                        "<tr>" +
+//                        "<td>" +
+//                        "SomeOtherApp" +
+//                        "</td>" +
+//                        "<td class=\"green\">" +
+//                        "stable" +
+//                        "</td>" +
+//                        "</tr>" +
+//                        "<tr>" +
+//                        "<td>" +
+//                        "AnotherApp" +
+//                        "</td>" +
+//                        "<td class=\"red\">" +
+//                        "failing" +
+//                        "</td>" +
+//                        "</tr>" +
+//                        "</tbody>" +
+//                        "</table>" +
+//                        "<a href=\"details\">See more...</a>" +
+//                        "</body>" +
+//                        "</html>");
+//
+//                textPane.addHyperlinkListener(new HyperlinkListener() {
+//                    public void hyperlinkUpdate(HyperlinkEvent e) {
+//                        if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED)
+//                            JOptionPane.showMessageDialog(textPane, e.getDescription());
+//                    }
+//                });
+//
+//
+//                ExpandableWidget widget = new ExpandableWidget(title, textPane, true);
+//                return widget;
+//
+//            case ISSUES:
+//            case REVIEWS:
+//            case SOURCES:
+//                return null;
+//        }
+//        return null;
+//    }
 
     /**
      *
@@ -68,75 +126,11 @@ public class TestUIQueryImpl implements UIQueryImpl {
      * @param k
      * @return
      */
-    public JComponent getComponent(Type t, KenaiProject k) {
-        switch (t) {
-            case BUILDS:
-                JLabel title = new JLabel("Builds");
-                title.setBackground(Color.WHITE);
-                
-                final JTextPane textPane = UIUtils.createHTMLPane();
-                textPane.setText("<html><body> " +
-                        "<table border=\"0\" borderwith=\"0\" width=\"80%\" align=\"left\" ><tbody>" +
-                        "<tr>" +
-                        "<td>" +
-                        "MyApplication" +
-                        "</td>" +
-                        "<td class=\"green\">" +
-                        "running" +
-                        "</td>" +
-                        "</tr>" +
-                        "<tr>" +
-                        "<td>" +
-                        "SomeOtherApp" +
-                        "</td>" +
-                        "<td class=\"green\">" +
-                        "stable" +
-                        "</td>" +
-                        "</tr>" +
-                        "<tr>" +
-                        "<td>" +
-                        "AnotherApp" +
-                        "</td>" +
-                        "<td class=\"red\">" +
-                        "failing" +
-                        "</td>" +
-                        "</tr>" +
-                        "</tbody>" +
-                        "</table>" +
-                        "<a href=\"details\">See more...</a>" +
-                        "</body>" +
-                        "</html>");
-
-                textPane.addHyperlinkListener(new HyperlinkListener() {
-                    public void hyperlinkUpdate(HyperlinkEvent e) {
-                        if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED)
-                            JOptionPane.showMessageDialog(textPane, e.getDescription());
-                    }
-                });
-
-                
-                ExpandableWidget widget = new ExpandableWidget(title, textPane, true);
-                return widget;
-
-            case ISSUES:
-            case REVIEWS:
-            case SOURCES:
-                return null;
-        }
-        return null;
-    }
-
-    /**
-     *
-     * @param t
-     * @param k
-     * @return
-     */
-    public Collection<LinkNode> getNodes(Type t, KenaiProject k) {
+    public Collection<LinkNode> getNodes(Type t, KenaiProject k, RefreshCallback callback) {
        ArrayList<LinkNode> result = new ArrayList<LinkNode>();
        result.add(new LinkNodeImpl("<html><b>MyApp</b>: running</html>"));
-       result.add(new LinkNodeImpl("<html><b>OtherApp</b>: <a href=\"test\">failed</a></html>"));
-       result.add(new LinkNodeImpl("<html>Issues <a href=\"68\">68</a>,<a href=\"new\">new</a></html>"));
+       result.add(new LinkNodeImpl("<html><b>OtherApp</b>: <a href=\"http://www.netbeans.org/issues/buglist.cgi?issue_id=157832,157876,157918,157951\">failed</a></html>"));
+       result.add(new LinkNodeImpl("<html>Issues <a href=\"http://www.netbeans.org/issues/buglist.cgi?issue_id=157832,157876,157918,157951\">68</a>,<a href=\"http://www.netbeans.org/issues/buglist.cgi?issue_id=157832,157876,157918,157951\">new</a></html>"));
        return result;
     }
 
@@ -147,12 +141,8 @@ public class TestUIQueryImpl implements UIQueryImpl {
             this.html=text;
         }
 
-        public String getString() {
+        public String getHtmlString() {
             return html;
-        }
-
-        public void handleLink(String link) {
-            JOptionPane.showMessageDialog(null, link);
         }
 
         public Action[] getActions() {

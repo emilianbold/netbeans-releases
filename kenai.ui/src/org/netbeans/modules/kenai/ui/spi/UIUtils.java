@@ -37,11 +37,11 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui.api;
+package org.netbeans.modules.kenai.ui.spi;
 
 import java.awt.Cursor;
+import java.awt.Dialog;
 import java.awt.Font;
-import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JButton;
@@ -49,12 +49,19 @@ import javax.swing.JTextPane;
 import javax.swing.UIManager;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.StyleSheet;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.ui.LoginPanel;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.Exceptions;
 
 /**
- * not final
+ * This class is not yet final. We be changed
  * @author Jan Becicka
  */
 public final class UIUtils {
+    private UIUtils () {}
     public static final JTextPane createHTMLPane() {
         JTextPane textPane = new JTextPane();
         textPane.setContentType("text/html");
@@ -93,4 +100,25 @@ public final class UIUtils {
         });
         return hyperlink;
     }
+
+    /**
+     * Invokes login dialog
+     * @return true, if user was succesfully logged in
+     */
+    public static boolean showLogin() {
+        final LoginPanel loginPanel = new LoginPanel();
+        DialogDescriptor login = new DialogDescriptor(loginPanel, "Login to Kenai", true, new Object[]{"Login", "Cancel"}, "Login", DialogDescriptor.DEFAULT_ALIGN, null, null);
+        Dialog d = DialogDisplayer.getDefault().createDialog(login);
+        d.setVisible(true);
+        if (login.getValue().equals("Login")) {
+            try {
+                Kenai.getDefault().login(loginPanel.getUsername(), loginPanel.getPassword());
+            } catch (KenaiException ex) {
+                Exceptions.printStackTrace(ex);
+                return false;
+            }
+        }
+        return true;
+    }
+
 }

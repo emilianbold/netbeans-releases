@@ -38,14 +38,9 @@
  */
 package org.netbeans.modules.kenai.ui;
 
-import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiException;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.kenai.ui.spi.UIUtils;
 
 
 /**
@@ -54,20 +49,10 @@ import org.openide.util.Exceptions;
 public final class LoginAction implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
-        final LoginPanel loginPanel = new LoginPanel();
-        DialogDescriptor login = new DialogDescriptor(loginPanel, "Login to Kenai", true, new Object[]{"Login", "Cancel"},"Login", DialogDescriptor.DEFAULT_ALIGN, null, null);
-        Dialog d = DialogDisplayer.getDefault().createDialog(login);
-        d.setVisible(true);
-        if (login.getValue().equals("Login")) {
-            try {
-                Kenai.getDefault().login(loginPanel.getUsername(), loginPanel.getPassword());
-            } catch (KenaiException ex) {
-                Exceptions.printStackTrace(ex);
-                return;
-            }
-        }
+        if (!UIUtils.showLogin()) return;
         final KenaiTopComponent kenaiTC = KenaiTopComponent.getDefault();
         kenaiTC.open();
         kenaiTC.requestActive();
     }
+
 }

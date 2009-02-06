@@ -250,6 +250,7 @@ public final class KenaiProject {
             throw new IllegalArgumentException(ex);
         }
         features=null;
+        Kenai.getDefault().fireKenaiEvent(new KenaiEvent(this, KenaiEvent.PROJECT_CHANGED));
     }
 
     @Override
