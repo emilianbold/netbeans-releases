@@ -98,13 +98,6 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
 
     public Point locationSuggested (Widget widget, Point originalLocation, Point suggestedLocation) {
         
-        
-//        if(movingWidgets == null)
-//        {
-//            if(originalLocation.equals(suggestedLocation))return suggestedLocation;//do not move if no real movement started
-//            initializeMovingWidgets(widget.getScene(), widget);
-//        }
-        
         if(movingWidgets.size() > 1)
         {
             return suggestedLocation;
@@ -143,7 +136,6 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
             manager.cancelPalette();
         }
         moveWidgetInitialized=false;
-//        initializeMovingWidgets(scene, widget);
     }
 
     public void movementFinished (Widget widget) {
@@ -228,9 +220,6 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
         
         if(location != null && original != null)
         {
-            //int dx = location.x - original.x;
-            //int dy = location.y - original.y;
-
             // Determine if the new location of the widget has actually moved.
             //
             // Originally we used the dx and dy variables to determine if the
@@ -780,5 +769,4 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
             }
         }
     }
-
 }
