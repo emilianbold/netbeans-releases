@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -69,7 +69,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.accessibility.AccessibleContext;
-import javax.accessibility.AccessibleRole;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
@@ -77,6 +76,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.*;
 
 import org.netbeans.modules.openide.explorer.TTVEnvBridge;
+import org.openide.explorer.view.SheetCell.FocusedPropertyPanel;
 
 
 /**
@@ -187,6 +187,7 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
      * @param ev event
      * @return <code>false</code>
      */
+    @Override
     public boolean shouldSelectCell(EventObject ev) {
         return true;
     }
@@ -195,6 +196,7 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
      * @param e event
      * @return <code>true</code>
      */
+    @Override
     public boolean isCellEditable(EventObject e) {
         return true;
     }
@@ -204,7 +206,7 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
      */
     public void propertyChange(PropertyChangeEvent evt) {
         //        stopCellEditing(); //XXX ?
-        ((NodeTableModel) tableModel).fireTableDataChanged();
+        tableModel.fireTableDataChanged();
     }
 
     /**
@@ -212,6 +214,7 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
      * Calls <code>fireEditingStopped</code> and returns true.
      * @return true
      */
+    @Override
     public boolean stopCellEditing() {
         if (prop != null) {
             detachEditor();
@@ -224,6 +227,7 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
      * Detaches listeners.
      * Calls <code>fireEditingCanceled</code>.
      */
+    @Override
     public void cancelCellEditing() {
         if (prop != null) {
             detachEditor();
@@ -290,17 +294,17 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
             return comp;
         }
 
-        Property prop = (Property) value;
-        Node node = tableModel.nodeForRow(row);
+        Property property = (Property) value;
+        Node n = tableModel.nodeForRow(row);
 
-        if (prop != null) {
-            FocusedPropertyPanel propPanel = getRenderer(prop, node);
+        if (property != null) {
+            FocusedPropertyPanel propPanel = getRenderer(property, n);
             propPanel.setFocused(hasFocus);
 
             String tooltipText = null;
 
             try {
-                Object tooltipValue = prop.getValue();
+                Object tooltipValue = property.getValue();
 
                 if (null != tooltipValue) {
                     tooltipText = tooltipValue.toString();
@@ -341,10 +345,10 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
         }
 
         if (nullPanel == null) {
-            nullPanel = new NullPanel(node);
+            nullPanel = new NullPanel(n);
             nullPanel.setOpaque(true);
         } else {
-            nullPanel.setNode(node);
+            nullPanel.setNode(n);
         }
 
         if (isSelected) {
@@ -578,6 +582,7 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
             this.weakNode = new WeakReference<Node>(node);
         }
 
+        @Override
         public AccessibleContext getAccessibleContext() {
             if (accessibleContext == null) {
                 accessibleContext = new AccessibleNullPanel();
@@ -590,6 +595,7 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
             focused = val;
         }
 
+        @Override
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
 
@@ -612,34 +618,42 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
             }
         }
 
+        @Override
         public void addComponentListener(java.awt.event.ComponentListener l) {
             //do nothing
         }
 
+        @Override
         public void addHierarchyListener(java.awt.event.HierarchyListener l) {
             //do nothing
         }
 
+        @Override
         public void repaint() {
             //do nothing
         }
 
+        @Override
         public void repaint(int x, int y, int width, int height) {
             //do nothing
         }
 
+        @Override
         public void invalidate() {
             //do nothing
         }
 
+        @Override
         public void revalidate() {
             //do nothing
         }
 
+        @Override
         public void validate() {
             //do nothing
         }
 
+        @Override
         public void firePropertyChange(String s, Object a, Object b) {
             //do nothing
         }
@@ -648,6 +662,7 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
             AccessibleNullPanel() {
             }
 
+            @Override
             public String getAccessibleName() {
                 String name = super.getAccessibleName();
 
@@ -658,11 +673,12 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
                 return name;
             }
 
+            @Override
             public String getAccessibleDescription() {
                 String description = super.getAccessibleDescription();
 
                 if (description == null) {
-                    Node node = (Node) weakNode.get();
+                    Node node = weakNode.get ();
 
                     if (node != null) {
                         description = MessageFormat.format(
@@ -676,136 +692,4 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
         }
     }
 
-    /** Table cell renderer component. Paints focus border on property panel. */
-    private static class FocusedPropertyPanel extends PropertyPanel {
-        //XXX delete this class when new property panel is committed
-        boolean focused;
-
-        public FocusedPropertyPanel(Property p, int preferences) {
-            super(p, preferences);
-        }
-
-        public void setFocused(boolean focused) {
-            this.focused = focused;
-        }
-
-        public String getToolTipText() {
-            String superTooltip = super.getToolTipText();
-            String propertyTooltip = getProperty().getShortDescription();
-            if (propertyTooltip != null) {
-                return propertyTooltip;
-            } else {
-                return superTooltip;
-            }
-        }
-        
-        public void addComponentListener(java.awt.event.ComponentListener l) {
-            //do nothing
-        }
-
-        public void addHierarchyListener(java.awt.event.HierarchyListener l) {
-            //do nothing
-        }
-
-        public void repaint(long tm, int x, int y, int width, int height) {
-            //do nothing
-        }
-
-        public void revalidate() {
-            //do nothing
-        }
-
-        public void firePropertyChange(String s, Object a, Object b) {
-            //do nothing
-            if ("flat".equals(s)) {
-                super.firePropertyChange(s, a, b);
-            }
-        }
-
-        public boolean isValid() {
-            return true;
-        }
-
-        public boolean isShowing() {
-            return true;
-        }
-
-        public void update(Graphics g) {
-            //do nothing
-        }
-
-        public void paint(Graphics g) {
-            //do this for self-painting editors in Options window - because
-            //we've turned off most property changes, the background won't be
-            //painted correctly otherwise
-            Color c = getBackground();
-            Color old = g.getColor();
-            g.setColor(c);
-            g.fillRect(0, 0, getWidth(), getHeight());
-            g.setColor(old);
-
-            super.paint(g);
-
-            if (focused) {
-                Color bdr = UIManager.getColor("Tree.selectionBorderColor"); //NOI18N
-
-                if (bdr == null) {
-                    //Button focus color doesn't work on win classic - better to
-                    //get the color from a value we know will work - Tim
-                    if (getForeground().equals(Color.BLACK)) { //typical
-                        bdr = getBackground().darker();
-                    } else {
-                        bdr = getForeground().darker();
-                    }
-                }
-
-                g.setColor(bdr);
-                g.drawRect(1, 1, getWidth() - 3, getHeight() - 3);
-            }
-
-            g.setColor(old);
-        }
-
-        ////////////////// Accessibility support ///////////////////////////////
-        public AccessibleContext getAccessibleContext() {
-            if (accessibleContext == null) {
-                accessibleContext = new AccessibleFocusedPropertyPanel();
-            }
-
-            return accessibleContext;
-        }
-
-        private class AccessibleFocusedPropertyPanel extends AccessibleJComponent {
-            AccessibleFocusedPropertyPanel() {
-            }
-
-            public AccessibleRole getAccessibleRole() {
-                return AccessibleRole.PANEL;
-            }
-
-            public String getAccessibleName() {
-                FeatureDescriptor fd = ((ExPropertyModel) getModel()).getFeatureDescriptor();
-                PropertyEditor editor = getPropertyEditor();
-
-                return MessageFormat.format(
-                    getString("ACS_PropertyPanelRenderer"),
-                    new Object[] { fd.getDisplayName(), (editor == null) ? getString("CTL_No_value") : editor.getAsText() }
-                );
-            }
-
-            public String getAccessibleDescription() {
-                FeatureDescriptor fd = ((ExPropertyModel) getModel()).getFeatureDescriptor();
-                Node node = (Node) ((ExPropertyModel) getModel()).getBeans()[0];
-                Class clazz = getModel().getPropertyType();
-
-                return MessageFormat.format(
-                    getString("ACSD_PropertyPanelRenderer"),
-                    new Object[] {
-                        fd.getShortDescription(), (clazz == null) ? getString("CTL_No_type") : clazz.getName(),
-                        node.getDisplayName()
-                    }
-                );
-            }
-        }
-    }
 }
