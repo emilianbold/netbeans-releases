@@ -49,7 +49,6 @@ import javax.swing.JList;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 public class StdLibPanel extends javax.swing.JPanel {
 
@@ -69,7 +68,8 @@ public class StdLibPanel extends javax.swing.JPanel {
         getAccessibleContext().setAccessibleDescription(getString("LIBRARY_LIST_SD"));
     }
 
-    private final class MyListCellRenderer extends DefaultListCellRenderer {
+    private static final class MyListCellRenderer extends DefaultListCellRenderer {
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 	    JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 	    LibraryItem libraryItem = (LibraryItem)value;
@@ -80,11 +80,12 @@ public class StdLibPanel extends javax.swing.JPanel {
     }   
 
     public LibraryItem.StdLibItem[] getSelectedStdLibs() {
-	Object[] selectedValues = libraryList.getSelectedValues();
-	LibraryItem.StdLibItem[] selectedLibs = new LibraryItem.StdLibItem[selectedValues.length];
-	for (int i = 0; i < selectedValues.length; i++)
-	    selectedLibs[i] = (LibraryItem.StdLibItem)selectedValues[i];
-	return selectedLibs;
+    	Object[] selectedValues = libraryList.getSelectedValues();
+        LibraryItem.StdLibItem[] selectedLibs = new LibraryItem.StdLibItem[selectedValues.length];
+        for (int i = 0; i < selectedValues.length; i++) {
+            selectedLibs[i] = (LibraryItem.StdLibItem) selectedValues[i];
+        }
+        return selectedLibs;
     }
 
     

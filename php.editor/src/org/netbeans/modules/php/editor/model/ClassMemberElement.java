@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,29 +34,15 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.model.impl;
-
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
-import org.netbeans.modules.php.editor.model.ModelScope;
-import org.netbeans.modules.php.editor.model.PhpKind;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Union2;
+package org.netbeans.modules.php.editor.model;
 
 /**
  *
- * @author Radek Matous
+ * @author rmatous
  */
-abstract class ModelScopeImpl extends ScopeImpl implements ModelScope  {
-    ModelScopeImpl(CompilationInfo info, String name, PhpKind kind) {
-        super(null, name, Union2.<String, FileObject>createSecond(info != null ? info.getFileObject() : null), new OffsetRange(0, 0), kind);//NOI18N
-    }
+public interface ClassMemberElement extends ModelElement {
 
-    @CheckForNull
-    abstract CachedModelSupport getCachedModelSupport();
-    abstract IndexScopeImpl getIndexScope();
 }

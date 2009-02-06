@@ -468,6 +468,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     public boolean acceptNativeItem(NativeFileItem item) {
+        if (item.getFile() == null) {
+            return false;
+        }
         NativeFileItem.Language language = item.getLanguage();
         return (language == NativeFileItem.Language.C ||
                 language == NativeFileItem.Language.CPP ||
@@ -701,8 +704,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             return;
         }
         File file = nativeFile.getFile();
-        APTPreprocHandler preprocHandler = createPreprocHandler(nativeFile);
-        assert preprocHandler != null;
         int fileType = isSourceFile ? getFileType(nativeFile) : FileImpl.HEADER_FILE;
 
         FileAndHandler fileAndHandler = createOrFindFileImpl(ModelSupport.getFileBuffer(file), nativeFile, fileType);
@@ -1499,7 +1500,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             // Try to find native file
             if (getPlatformProject() instanceof NativeProject){
                 NativeProject prj = nativeFile.getNativeProject();
-                if (prj != null){
+                if (prj != null && nativeFile.getFile() != null){
                     preprocHandler = createPreprocHandler(nativeFile);
                 }
             }
@@ -1945,8 +1946,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         FileImpl csmFile = startProject == null ? null : startProject.getFile(new File(startEntry.getStartFile()));
 	if (csmFile != null) {
 	    NativeFileItem nativeFile = csmFile.getNativeFileItem();
-	    if( nativeFile != null ) {
-                preprocHandler = startProject.createPreprocHandler(nativeFile);
+	    if( nativeFile != null && nativeFile.getFile() != null) {
+            preprocHandler = startProject.createPreprocHandler(nativeFile);
 	    }
 	}
 	return new StartEntryInfo(preprocHandler, startProject, csmFile);

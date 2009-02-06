@@ -64,12 +64,12 @@ public class DebugProjectCommand extends Command implements Displayable {
             // property not set yet
             return;
         }
-        getConfigAction().debugProject(getProject());
+        getConfigAction().debugProject();
     }
 
     @Override
     public boolean isActionEnabled(Lookup context) {
-        return getConfigAction().isDebugProjectEnabled(getProject());
+        return getConfigAction().isDebugProjectEnabled();
     }
 
     @Override

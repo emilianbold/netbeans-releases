@@ -76,7 +76,6 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;

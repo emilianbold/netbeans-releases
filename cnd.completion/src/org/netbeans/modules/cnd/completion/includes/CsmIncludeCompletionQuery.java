@@ -40,6 +40,8 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMESupport;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ExtensionList;
 
 /**
@@ -176,8 +178,15 @@ public class CsmIncludeCompletionQuery {
 
         public boolean accept(File pathname) {
             return !specialFile(pathname) &&
-                    (exts.isRegistered(pathname.getName()) || pathname.isDirectory());
+                    (exts.isRegistered(pathname.getName()) || pathname.isDirectory() || isHeaderFileWoExt(pathname));
         }
+    }
+
+    private static boolean isHeaderFileWoExt(File pathname) {
+        if (FileUtil.getExtension(pathname.getName()).length() == 0) {
+            return MIMENames.HEADER_MIME_TYPE.equals(MIMESupport.getFileMIMEType(pathname));
+        }
+        return false;
     }
 
     private static boolean specialFile(File file) {

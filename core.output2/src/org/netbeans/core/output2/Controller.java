@@ -44,6 +44,7 @@ package org.netbeans.core.output2;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.FileDialog;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
@@ -81,6 +82,7 @@ import org.openide.actions.FindAction;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
@@ -122,6 +124,8 @@ public class Controller { //XXX public only for debug access to logging code
     private static final int ACTION_CLEAR = 12;
     private static final int ACTION_NEXTTAB = 13;
     private static final int ACTION_PREVTAB = 14;
+    private static final int ACTION_LARGER = 15;
+    private static final int ACTION_SMALLER = 16;
 // issue 59447    
 //    private static final int ACTION_TO_EDITOR = 15;
     
@@ -147,6 +151,15 @@ public class Controller { //XXX public only for debug access to logging code
             "ACTION_FIND_NEXT"); //NOI18N
     Action findPreviousAction = new ControllerAction (ACTION_FINDPREVIOUS,
             "ACTION_FIND_PREVIOUS"); //NOI18N
+    Action largerAction = new ControllerAction (ACTION_LARGER,
+            NbBundle.getMessage(Controller.class,"ACTION_LARGER"), //NOI18N
+            KeyStroke.getKeyStroke (KeyEvent.VK_EQUALS,
+            KeyEvent.CTRL_DOWN_MASK)); //NOI18N
+    Action smallerAction = new ControllerAction (ACTION_SMALLER,
+            NbBundle.getMessage(Controller.class,"ACTION_SMALLER"), //NOI18N
+            KeyStroke.getKeyStroke (KeyEvent.VK_MINUS,
+            KeyEvent.CTRL_DOWN_MASK)); //NOI18N
+
     Action navToLineAction = new ControllerAction (ACTION_NAVTOLINE, "navToLine", //NOI18N
             KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
     Action postMenuAction = new ControllerAction (ACTION_POSTMENU, "postMenu", //NOI18N
@@ -165,16 +178,41 @@ public class Controller { //XXX public only for debug access to logging code
     private Object[] popupItems = new Object[] {
         copyAction, new JSeparator(), findAction, findNextAction,
         new JSeparator(),
-        wrapAction, new JSeparator(), saveAsAction, clearAction, closeAction,
+        wrapAction, largerAction, smallerAction,
+        new JSeparator(), saveAsAction, clearAction, closeAction,
     };
     
     private Action[] kbdActions = new Action[] {
         copyAction, selectAllAction, findAction, findNextAction, 
         findPreviousAction, wrapAction, saveAsAction, closeAction,
-        navToLineAction, postMenuAction, clearAction, //toEditorAction,
+        navToLineAction, postMenuAction, clearAction,
+        largerAction, smallerAction,
     };
 
     Controller() {}
+
+
+    private static final String KEY_FONTSIZE = "fontsize";
+    public void changeFontSizes(AbstractOutputTab tab, OutputWindow win, int i) {
+        int sz = tab.getOutputPane().getViewFont().getSize();
+        float newSize = Math.max (7, Math.min(72, sz + i));
+        Font f = tab.getOutputPane().getViewFont().deriveFont(newSize);
+        NbPreferences.forModule(Controller.class).putInt(KEY_FONTSIZE, (int)newSize);
+        for (AbstractOutputTab t : win.getTabs()) {
+            t.getOutputPane().setViewFont(f);
+        }
+    }
+
+    public static int getDefaultFontSize() {
+        int result = NbPreferences.forModule(Controller.class).getInt(KEY_FONTSIZE, -1);
+        if (result == -1) {
+            result = UIManager.getInt("uiFontSize");
+            if (result < 7) {
+                result = -1;
+            }
+        }
+        return result;
+    }
 
     private OutputTab createOutputTab (OutputWindow win, NbIO io, boolean activateContainer, boolean reuse) {
         AbstractOutputTab[] ov = win.getTabs();
@@ -456,6 +494,13 @@ public class Controller { //XXX public only for debug access to logging code
                 if (LOG) log ("Action PREVTAB received");
                 win.selectPreviousTab(tab);
                 break;
+            case ACTION_SMALLER :
+                changeFontSizes(tab, win, -1);
+                break;
+            case ACTION_LARGER :
+                changeFontSizes(tab, win, 1);
+                break;
+
 // #issue 59447                
 //            case ACTION_TO_EDITOR :
 //                if (log) log ("Action TO_EDITOR received"); //NOI18N

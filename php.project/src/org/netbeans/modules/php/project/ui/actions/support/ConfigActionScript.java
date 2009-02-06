@@ -61,61 +61,57 @@ import org.openide.util.Lookup;
  * @author Tomas Mysik
  */
 public class ConfigActionScript extends ConfigAction {
+    private final FileObject sourceRoot;
 
-    @Override
-    public boolean isRunProjectEnabled(PhpProject project) {
-        return isRunProjectEnabled();
+    protected ConfigActionScript(PhpProject project) {
+        super(project);
+        sourceRoot = ProjectPropertiesSupport.getSourcesDirectory(project);
+        assert sourceRoot != null;
     }
 
     @Override
-    public boolean isDebugProjectEnabled(PhpProject project) {
-        return isDebugProjectEnabled();
-    }
-
-    @Override
-    public boolean isRunFileEnabled(PhpProject project, Lookup context) {
-        FileObject rootFolder = ProjectPropertiesSupport.getSourcesDirectory(project);
-        FileObject file = CommandUtils.fileForContextOrSelectedNodes(context, rootFolder);
+    public boolean isRunFileEnabled(Lookup context) {
+        FileObject file = CommandUtils.fileForContextOrSelectedNodes(context, sourceRoot);
         return file != null && CommandUtils.isPhpFile(file);
     }
 
     @Override
-    public boolean isDebugFileEnabled(PhpProject project, Lookup context) {
+    public boolean isDebugFileEnabled(Lookup context) {
         if (XDebugStarterFactory.getInstance() == null) {
             return false;
         }
-        return isRunFileEnabled(project, context);
+        return isRunFileEnabled(context);
     }
 
     @Override
-    public void runProject(PhpProject project) {
-        new RunScript(new ScriptProvider(project, null)).run();
+    public void runProject() {
+        new RunScript(new ScriptProvider()).run();
     }
 
     @Override
-    public void debugProject(PhpProject project) {
-        new DebugScript(new ScriptProvider(project, null)).run();
+    public void debugProject() {
+        new DebugScript(new ScriptProvider()).run();
     }
 
     @Override
-    public void runFile(PhpProject project, Lookup context) {
-        new RunScript(new ScriptProvider(project, context)).run();
+    public void runFile(Lookup context) {
+        new RunScript(new ScriptProvider(context)).run();
     }
 
     @Override
-    public void debugFile(PhpProject project, Lookup context) {
-        new DebugScript(new ScriptProvider(project, context)).run();
+    public void debugFile(Lookup context) {
+        new DebugScript(new ScriptProvider(context)).run();
     }
 
     private final class ScriptProvider implements DebugScript.Provider {
-        private final PhpProject project;
         private final PhpProgram program;
         private final File startFile;
 
-        public ScriptProvider(PhpProject project, Lookup context) {
-            assert project != null;
+        public ScriptProvider() {
+            this(null);
+        }
 
-            this.project = project;
+        public ScriptProvider(Lookup context) {
             program = ProjectPropertiesSupport.getPhpInterpreter(project);
             startFile = getStartFile(context);
         }
@@ -170,7 +166,6 @@ public class ConfigActionScript extends ConfigAction {
 
         private File getStartFile(Lookup context) {
             FileObject file = null;
-            FileObject sourceRoot = ProjectPropertiesSupport.getSourcesDirectory(project);
             if (context == null) {
                 file = CommandUtils.fileForProject(project, sourceRoot);
             } else {
