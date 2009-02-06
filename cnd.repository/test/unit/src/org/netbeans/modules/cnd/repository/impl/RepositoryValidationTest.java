@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.test.BaseTestSuite;
 public class RepositoryValidationTest extends BaseTestSuite {
 
     static {
-        System.setProperty("cnd.modelimpl.parser.threads", "4");
+        System.setProperty("cnd.modelimpl.parser.threads", "8");
     }
 
     public RepositoryValidationTest() {
