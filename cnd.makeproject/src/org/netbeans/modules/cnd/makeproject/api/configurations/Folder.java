@@ -70,7 +70,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
-public class Folder {
+public class Folder implements FileChangeListener {
 
     public static final String DEFAULT_FOLDER_NAME = "f"; // NOI18N
     public static final String DEFAULT_FOLDER_DISPLAY_NAME = getString("NewFolderName");
@@ -95,6 +95,8 @@ public class Folder {
         this.projectFiles = projectFiles;
         this.items = new Vector<Object>();
         this.sortName = displayName.toLowerCase();
+
+        log.setLevel(Level.ALL);
     }
 
     public void setRoot(String root) {
@@ -110,7 +112,7 @@ public class Folder {
     }
     
     public void attachListenersAndRefresh() {
-        log.setLevel(Level.OFF);
+        log.fine("----------- attachListeners " + getPath()); // NOI18N
         String rootPath = getRootPath();
         String AbsRootPath = IpeUtils.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
         Vector<Folder> subFolders = getFolders();
@@ -140,8 +142,14 @@ public class Folder {
         if (folderFileObject == null) {
             return; // FIXUP: error ?
         }
-//        folderFileObject.addFileChangeListener(new FolderFileChangeListener());
-//        log.fine("-------------------- attachListenersAndRefresh " + folderFileObject); // NOI18N
+        FileUtil.addFileChangeListener(this, folderFile);
+        log.fine("----------- attachListener " + folderFileObject); // NOI18N
+    }
+
+    public void detachListener() {
+        log.fine("------------ detachListener " + getPath()); // NOI18N
+        FileUtil.removeFileChangeListener(this);
+        folderFileObject = null;
     }
 
     public int size() {
@@ -510,6 +518,9 @@ public class Folder {
     public boolean removeFolder(Folder folder) {
         boolean ret = false;
         if (folder != null) {
+            if (folder.isDiskFolder()) {
+                folder.detachListener();
+            }
             folder.removeAll();
             ret = items.removeElement(folder);
             if (isProjectFiles()) {
@@ -836,7 +847,6 @@ public class Folder {
         }
     }
 
-    class FolderFileChangeListener implements FileChangeListener {
 
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
@@ -847,8 +857,8 @@ public class Folder {
         public void fileDataCreated(FileEvent fe) {
             FileObject fileObject = fe.getFile();
             File file = FileUtil.toFile(fileObject);
-            log.fine("------------fileDataCreated " + file); // NOI18N
-            if (true) return;
+            log.fine("------------fileDataCreated " + file + " in " + getThis().getPath()); // NOI18N
+            //if (true) return;
             if (!file.exists() || file.isDirectory()) {
                 return; // FIXUP: error
             }
@@ -863,10 +873,11 @@ public class Folder {
         public void fileFolderCreated(FileEvent fe) {
             FileObject fileObject = fe.getFile();
             File file = FileUtil.toFile(fileObject);
-            log.fine("------------fileFolderCreated " + file.getPath()); // NOI18N
-            if (true) return;
+            log.fine("------------fileFolderCreated " + file.getPath() + " in " + getThis().getPath()); // NOI18N
+            //if (true) return;
             if (!file.exists() || !file.isDirectory()) {
-                return; // FIXUP: error
+                assert false;
+                return;
             }
             AllSourceFileFilter filter = AllSourceFileFilter.getInstance();
             Vector<SourceFolderInfo> data = new Vector<SourceFolderInfo>();
@@ -874,25 +885,24 @@ public class Folder {
             folderEntry.setAddSubfoldersSelected(true);
             folderEntry.setFileFilter(filter);
             data.add(folderEntry);
-            ((MakeConfigurationDescriptor)getConfigurationDescriptor()).addSourceFilesFromFolders(getThis(), data.iterator(), true, false, true);
+            ((MakeConfigurationDescriptor)getConfigurationDescriptor()).addSourceFilesFromFolders(getThis(), data.iterator(), false, false, false);
             getConfigurationDescriptor().setModified();
 
-            String path = getRootPath() + '/' + file.getName();
-            if (path.startsWith("./")) { // NOI18N
-                path = path.substring(2);
-            }
             Folder folder = findFolderByName(file.getName());
             if (folder != null) {
                 folder.setRoot(null);
                 folder.attachListenersAndRefresh();
+            }
+            else {
+                log.fine("------------fileFolderCreated - cannot find folder " + file.getName() + " in " + getThis().getPath()); // NOI18N
             }
         }
 
         public void fileDeleted(FileEvent fe) {
             FileObject fileObject = fe.getFile();
             File file = FileUtil.toFile(fileObject);
-            log.fine("------------fileDeleted " + file.getPath()); // NOI18N
-            if (true) return;
+            log.fine("------------fileDeleted " + file.getPath() + " in " + getThis().getPath()); // NOI18N
+            //if (true) return;
             String path = getRootPath() + '/' + file.getName();
             if (path.startsWith("./")) { // NOI18N
                 path = path.substring(2);
@@ -905,7 +915,7 @@ public class Folder {
                 return;
             }
             // then folder
-            Folder folder = findFolderByPath(path);
+            Folder folder = findFolderByName(file.getName());
             if (folder != null) {
                 removeFolderAction(folder);
                 getConfigurationDescriptor().setModified();
@@ -919,8 +929,6 @@ public class Folder {
             log.fine("------------fileRenamed " + file.getPath()); // NOI18N
             if (true) return;
         }
-
-    }
 
 
     /** Look up i18n strings here */
