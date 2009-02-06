@@ -69,7 +69,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -84,12 +83,11 @@ import org.openide.util.Utilities;
  */
 public class CompilerSetManager {
 
-    /* Legacy defines for CND 5.5 compiler set definitions */
-    public static final int SUN_COMPILER_SET = 0;
-    public static final int GNU_COMPILER_SET = 1;
-    public static final Object STATE_PENDING = "state_pending"; // NOI18N
-    public static final Object STATE_COMPLETE = "state_complete"; // NOI18N
-    public static final Object STATE_UNINITIALIZED = "state_uninitialized"; // NOI18N
+    private static enum State { 
+        STATE_PENDING,
+        STATE_COMPLETE,
+        STATE_UNINITIALIZED
+    }
     public static final String LOCALHOST = "localhost"; // NOI18N
 
     /* Persistance information */
@@ -123,7 +121,7 @@ public class CompilerSetManager {
     public static final String GNU = "GNU"; // NOI18N
     private List<CompilerSet> sets = new ArrayList<CompilerSet>();
     private final String hkey;
-    private Object state;
+    private State state;
     private int platform = -1;
     private Task remoteInitialization;
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
@@ -305,7 +303,7 @@ public class CompilerSetManager {
 
     private CompilerSetManager(String key) {
         hkey = key;
-        state = STATE_PENDING;
+        state = State.STATE_PENDING;
         init();
     }
 
@@ -314,11 +312,11 @@ public class CompilerSetManager {
         this.sets = sets;
         this.platform = platform;
         if (!LOCALHOST.equals(hkey) && isEmpty()) {
-            this.state = STATE_UNINITIALIZED;
+            this.state = State.STATE_UNINITIALIZED;
             log.fine("CSM restoring from pref: Adding empty CS to host " + hkey);
             add(CompilerSet.createEmptyCompilerSet(platform));
         } else {
-            this.state = STATE_COMPLETE;
+            this.state = State.STATE_COMPLETE;
         }
     }
 
@@ -326,7 +324,7 @@ public class CompilerSetManager {
         if (hkey.equals(LOCALHOST)) {
             platform = computeLocalPlatform();
             initCompilerSets(Path.getPath());
-            state = STATE_COMPLETE;
+            state = State.STATE_COMPLETE;
         } else {
             log.fine("CSM.init: initializing remote compiler set for: " + hkey);
             initRemoteCompilerSets(hkey, false);
@@ -338,15 +336,15 @@ public class CompilerSetManager {
     }
 
     public boolean isPending() {
-        return state == STATE_PENDING;
+        return state == State.STATE_PENDING;
     }
 
     public boolean isUninitialized() {
-        return state == STATE_UNINITIALIZED;
+        return state == State.STATE_UNINITIALIZED;
     }
 
     public boolean isComplete() {
-        return state == STATE_COMPLETE;
+        return state == State.STATE_COMPLETE;
     }
 
     public synchronized void initialize(boolean save) {
@@ -596,7 +594,7 @@ public class CompilerSetManager {
 
     /** Initialize remote CompilerSets */
     private synchronized void initRemoteCompilerSets(final String key, boolean connect) {
-        if (state == STATE_COMPLETE) {
+        if (state == State.STATE_COMPLETE) {
             return;
         }
         if (remoteInitialization != null) {
@@ -645,7 +643,7 @@ public class CompilerSetManager {
                     } else {
                         report("Done. Found " + sets.size() + " tool collection(s).\n");//NOI18N
                     }
-                    state = STATE_COMPLETE;
+                    state = State.STATE_COMPLETE;
 
                     report("Your host was successfully configured.\n");//NOI18N
                     provider.loadCompilerSetData(setsCopy).addTaskListener(new TaskListener() {
@@ -662,7 +660,7 @@ public class CompilerSetManager {
             // create empty CSM
             log.fine("CSM.initRemoteCompilerSets: Adding empty CS to OFFLINE host " + key);
             add(CompilerSet.createEmptyCompilerSet(PlatformTypes.PLATFORM_NONE));
-            state = STATE_UNINITIALIZED;
+            state = State.STATE_UNINITIALIZED;
         }
     }
 
