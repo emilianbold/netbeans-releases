@@ -858,7 +858,7 @@ public final class UI {
     public static final String LS = System.getProperty("line.separator"); // NOI18N
     public static final String FS = System.getProperty("file.separator"); // NOI18N
     private static final Border CORNER_BORDER = new CornerBorder();
-    private static final boolean ENABLE_LOG = System.getProperty("org.netbeans.modules.log") != null; // NOI18N
     private static final boolean ENABLE_OUT = System.getProperty("org.netbeans.modules.out") != null; // NOI18N
+    private static final boolean ENABLE_LOG = System.getProperty("org.netbeans.modules.log") != null; // NOI18N
     private static final boolean ENABLE_TIM = System.getProperty("org.netbeans.modules.tim") != null; // NOI18N
 }

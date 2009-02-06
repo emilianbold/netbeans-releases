@@ -73,6 +73,7 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
 
     @Override
     public void install(Progress progress) throws InstallationException {
+        super.install(progress);
         String type = System.getProperty(NbWelcomePanel.WELCOME_PAGE_TYPE_PROPERTY);
         if(type!=null && BundleType.getType(type).equals(BundleType.JAVA)) {
             // Issue 157484. JavaSE should be enabled in "Java" distribution

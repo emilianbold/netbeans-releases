@@ -138,13 +138,13 @@ public class RunDialogAction extends NodeAction {
             path = IpeUtils.toRelativePath(profile.getRunDirectory(), path); // FIXUP: should use rel or abs ...
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                     project,
-                    ProjectActionEvent.RUN,
+                    ProjectActionEvent.Type.RUN,
                     IpeUtils.getBaseName(path) + " (run)", // NOI18N
                     path,
                     ConfigurationSupport.getProjectDescriptor(project).getConfs().getActive(),
                     profile,
                     false);
-            ProjectActionSupport.fireActionPerformed(new ProjectActionEvent[]{projectActionEvent});
+            ProjectActionSupport.getInstance().fireActionPerformed(new ProjectActionEvent[]{projectActionEvent});
         }
     }
 

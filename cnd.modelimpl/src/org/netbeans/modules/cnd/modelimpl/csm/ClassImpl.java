@@ -580,9 +580,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 //        this.kind = CsmDeclaration.Kind.CLASS;
 //        register();
 //    }
-    protected ClassImpl(AST ast, CsmFile file) {
+    protected ClassImpl(String name, AST ast, CsmFile file) {
         // we call findId(..., true) because there might be qualified name - in the case of nested class template specializations
-        super(AstUtil.findId(ast, CPPTokenTypes.RCURLY, true), file, ast);
+        super((name != null ? name : AstUtil.findId(ast, CPPTokenTypes.RCURLY, true)), file, ast);
         kind = findKind(ast);
     }
 
@@ -603,7 +603,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     }
 
     public static ClassImpl create(AST ast, CsmScope scope, CsmFile file, boolean register) {
-        ClassImpl impl = new ClassImpl(ast, file);
+        ClassImpl impl = new ClassImpl(null, ast, file);
         impl.init(scope, ast, register);
         return impl;
     }
