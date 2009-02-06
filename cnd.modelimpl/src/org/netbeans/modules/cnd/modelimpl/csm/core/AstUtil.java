@@ -67,6 +67,9 @@ import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
  */
 public class AstUtil {
 
+    private AstUtil() {
+    }
+
     public static boolean isEmpty(AST ast, boolean hasFakeChild) {
 	if( isEmpty(ast) ) {
 	    return true;
@@ -354,7 +357,7 @@ public class AstUtil {
         try {
             File out = File.createTempFile(prefix, suffix);
             if (false) { System.err.println("...saving AST of file " + file.getAbsolutePath() + " into tmp file " + out); } // NOI18N
-            long astTime = System.currentTimeMillis();
+            //long astTime = System.currentTimeMillis();
             // write
             ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(out), TraceFlags.BUF_SIZE));
             try {
@@ -362,9 +365,9 @@ public class AstUtil {
             } finally {
                 oos.close();
             }
-            long writeTime = System.currentTimeMillis() - astTime;
-            if (false) { System.err.println("saved AST of file " + file.getAbsolutePath() + " withing " + writeTime + "ms"); } // NOI18N
-            astTime = System.currentTimeMillis();
+            //long writeTime = System.currentTimeMillis() - astTime;
+            //if (false) { System.err.println("saved AST of file " + file.getAbsolutePath() + " withing " + writeTime + "ms"); } // NOI18N
+            //astTime = System.currentTimeMillis();
             // read
             ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(out), TraceFlags.BUF_SIZE));
             try {
@@ -374,8 +377,8 @@ public class AstUtil {
             } finally {
                 ois.close();
             }
-            long readTime = System.currentTimeMillis() - astTime;
-            if (false) { System.err.println("read AST of file " + file.getAbsolutePath() + " withing " + readTime + "ms"); } // NOI18N
+            //long readTime = System.currentTimeMillis() - astTime;
+            //if (false) { System.err.println("read AST of file " + file.getAbsolutePath() + " withing " + readTime + "ms"); } // NOI18N
             out.delete();
         } catch (IOException ex) {
             DiagnosticExceptoins.register(ex);

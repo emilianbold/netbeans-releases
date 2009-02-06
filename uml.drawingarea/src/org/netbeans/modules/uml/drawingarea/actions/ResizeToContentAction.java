@@ -89,7 +89,7 @@ public class ResizeToContentAction extends SceneNodeAction
                     {
                         manager.cancelPalette();
                     }
-
+                    boolean resized=false;
                     for(Object selected: selectedObjs) 
                     {
                         if (selected instanceof IPresentationElement)
@@ -97,7 +97,12 @@ public class ResizeToContentAction extends SceneNodeAction
                             IPresentationElement selectedPE = (IPresentationElement) selected;
                             Widget w = scene.findWidget(selectedPE);
                             Util.resizeNodeToContents(w);
+                            resized=true;
                         }
+                    }
+                    if(resized)
+                    {
+                        scene.getDiagram().setDirty(true);
                     }
                     scene.validate();
 

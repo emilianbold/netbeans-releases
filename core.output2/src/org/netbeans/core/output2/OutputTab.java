@@ -139,6 +139,10 @@ final class OutputTab extends AbstractOutputTab {
     }
 
     private long timestamp = 0;
+
+    void changeFontSizeBy(int amt) {
+        findOutputWindow().changeFontSizeBy(amt, this);
+    }
     void updateTimestamp() {
         timestamp = System.currentTimeMillis();
     }

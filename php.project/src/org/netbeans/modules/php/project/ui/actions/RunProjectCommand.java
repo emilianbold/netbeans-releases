@@ -68,12 +68,12 @@ public class RunProjectCommand extends Command implements Displayable {
             // property not set yet
             return;
         }
-        getConfigAction().runProject(getProject());
+        getConfigAction().runProject();
     }
 
     @Override
     public boolean isActionEnabled(Lookup context) {
-        return getConfigAction().isRunProjectEnabled(getProject());
+        return getConfigAction().isRunProjectEnabled();
     }
 
     @Override

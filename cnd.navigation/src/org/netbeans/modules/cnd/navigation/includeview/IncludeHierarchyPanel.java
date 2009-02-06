@@ -591,7 +591,7 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
         }
     }
 
-    private class MyBeanTreeView extends BeanTreeView {
+    private static class MyBeanTreeView extends BeanTreeView {
         public MyBeanTreeView(){
         }
         public void addCloseAction(final Action action){

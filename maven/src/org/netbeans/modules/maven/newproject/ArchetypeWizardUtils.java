@@ -189,6 +189,10 @@ public class ArchetypeWizardUtils {
         config.setInteractive(false);
         props.setProperty("archetype.interactive", "false");//NOI18N
         config.setProperties(props);
+        //#136853 make sure to get the latest snapshot always..
+        if (arch.getVersion().contains("SNAPSHOT")) { //NOI18N
+            config.setUpdateSnapshots(true);
+        }
 
         config.setTaskDisplayName(NbBundle.getMessage(ArchetypeWizardUtils.class, "RUN_Maven"));
         // setup executor now..

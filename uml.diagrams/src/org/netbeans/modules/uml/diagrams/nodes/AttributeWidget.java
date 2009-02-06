@@ -48,7 +48,6 @@ import java.util.HashMap;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.diagrams.DefaultWidgetContext;
 import org.netbeans.modules.uml.diagrams.Util;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
@@ -67,7 +66,6 @@ public class AttributeWidget extends FeatureWidget implements PropertyChangeList
         super(scene);
 
         addToLookup(new DefaultWidgetContext("Attribute"));
-//        createActions(DesignerTools.SELECT).addAction(new FeatureMoveAction());
     }
 
     ///////////////////////////////////////////////////////////////
@@ -79,8 +77,15 @@ public class AttributeWidget extends FeatureWidget implements PropertyChangeList
     public void propertyChange(PropertyChangeEvent event) {
         String eventName = event.getPropertyName();
         if (eventName.equals(ModelElementChangedKind.ELEMENTMODIFIED.toString()) == false) {
-            //updateUI();update cause problem with currently selected because of label recreation
             String formatedStr = formatElement();
+            if(getElement()!=null && getElement() instanceof IAttribute)
+            {
+                IAttribute attr=(IAttribute) getElement();
+                if(attr.getIsPrimaryKey())//not sure how it was implemented in 6.1, but formattr do not return proper string
+                {
+                    formatedStr=attr.getName() + "{PK}";
+                }
+            }
             if (formatedStr == null)
             {
                 return;

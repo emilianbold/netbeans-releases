@@ -270,18 +270,29 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return nsp;
     }
 
-    public NamespaceImpl findNamespaceCreateIfNeeded(NamespaceImpl parent, CharSequence name) {
-        String qualifiedName = Utils.getNestedNamespaceQualifiedName(name, parent, true);
-        NamespaceImpl nsp = _getNamespace(qualifiedName);
-        if( nsp == null ) {
-            synchronized (namespaceLock) {
-                nsp = _getNamespace(qualifiedName);
-                if( nsp == null ) {
-                    nsp = new NamespaceImpl(this, parent, name.toString(), qualifiedName);
-                }
+    private static String getNestedNamespaceQualifiedName(CharSequence name, NamespaceImpl parent, boolean createForEmptyNames) {
+        StringBuilder sb = new StringBuilder(name);
+        if (parent != null) {
+            if (name.length() == 0 && createForEmptyNames) {
+                sb.append(parent.getNameForUnnamedElement());
+            }
+            if (!parent.isGlobal()) {
+                sb.insert(0, "::"); // NOI18N
+                sb.insert(0, parent.getQualifiedName());
             }
         }
-        return nsp;
+        return sb.toString();
+    }
+
+    public NamespaceImpl findNamespaceCreateIfNeeded(NamespaceImpl parent, CharSequence name) {
+        synchronized (namespaceLock) {
+            String qualifiedName = ProjectBase.getNestedNamespaceQualifiedName(name, parent, true);
+            NamespaceImpl nsp = _getNamespace(qualifiedName);
+            if( nsp == null ) {
+                nsp = new NamespaceImpl(this, parent, name.toString(), qualifiedName);
+            }
+            return nsp;
+        }
     }
 
     public final void registerNamespace(NamespaceImpl namespace) {
@@ -468,6 +479,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     public boolean acceptNativeItem(NativeFileItem item) {
+        if (item.getFile() == null) {
+            return false;
+        }
         NativeFileItem.Language language = item.getLanguage();
         return (language == NativeFileItem.Language.C ||
                 language == NativeFileItem.Language.CPP ||
@@ -701,8 +715,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             return;
         }
         File file = nativeFile.getFile();
-        APTPreprocHandler preprocHandler = createPreprocHandler(nativeFile);
-        assert preprocHandler != null;
         int fileType = isSourceFile ? getFileType(nativeFile) : FileImpl.HEADER_FILE;
 
         FileAndHandler fileAndHandler = createOrFindFileImpl(ModelSupport.getFileBuffer(file), nativeFile, fileType);
@@ -1499,7 +1511,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             // Try to find native file
             if (getPlatformProject() instanceof NativeProject){
                 NativeProject prj = nativeFile.getNativeProject();
-                if (prj != null){
+                if (prj != null && nativeFile.getFile() != null){
                     preprocHandler = createPreprocHandler(nativeFile);
                 }
             }
@@ -1945,8 +1957,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         FileImpl csmFile = startProject == null ? null : startProject.getFile(new File(startEntry.getStartFile()));
 	if (csmFile != null) {
 	    NativeFileItem nativeFile = csmFile.getNativeFileItem();
-	    if( nativeFile != null ) {
-                preprocHandler = startProject.createPreprocHandler(nativeFile);
+	    if( nativeFile != null && nativeFile.getFile() != null) {
+            preprocHandler = startProject.createPreprocHandler(nativeFile);
 	    }
 	}
 	return new StartEntryInfo(preprocHandler, startProject, csmFile);

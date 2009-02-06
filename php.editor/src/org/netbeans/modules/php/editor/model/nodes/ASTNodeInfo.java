@@ -126,7 +126,6 @@ public class ASTNodeInfo<T extends ASTNode> {
         throw new IllegalStateException();
     }
     
-
     public OffsetRange getRange() {
         return toOffsetRange(getOriginalNode());
     }

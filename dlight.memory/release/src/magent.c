@@ -106,3 +106,11 @@ init_function(void) {
     // setitimer(ITIMER_REAL, &tout_val, 0);
     signal(SIGUSR1, control_reporting); /* set the control signal capture */
 }
+
+void
+__attribute__ ((destructor))
+fini_function (void) {
+    if (msqid > 0) {
+        int rc = msgctl (msqid, IPC_RMID, NULL);
+    }
+}

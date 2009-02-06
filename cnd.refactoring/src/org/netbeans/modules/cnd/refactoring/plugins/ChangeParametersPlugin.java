@@ -77,10 +77,15 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
         super(refactoring);
         this.refactoring = refactoring;
     }
+//
+//    @Override
+//    protected Collection<CsmObject> getRefactoredObjects() {
+//        return referencedObjects;
+//    }
 
     @Override
-    protected Collection<CsmObject> getRefactoredObjects() {
-        return referencedObjects;
+    protected Collection<CsmFile> getRefactoredFiles() {
+        return Collections.emptySet();
     }
 
     @Override

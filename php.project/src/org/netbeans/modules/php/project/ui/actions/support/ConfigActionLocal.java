@@ -74,34 +74,30 @@ import org.openide.util.lookup.Lookups;
  * @author Tomas Mysik
  */
 public class ConfigActionLocal extends ConfigAction {
+    private final FileObject webRoot;
 
-    @Override
-    public boolean isRunProjectEnabled(PhpProject project) {
-        return isRunProjectEnabled();
+    protected ConfigActionLocal(PhpProject project) {
+        super(project);
+        webRoot = ProjectPropertiesSupport.getWebRootDirectory(project);
+        assert webRoot != null;
     }
 
     @Override
-    public boolean isDebugProjectEnabled(PhpProject project) {
-        return isDebugProjectEnabled();
-    }
-
-    @Override
-    public boolean isRunFileEnabled(PhpProject project, Lookup context) {
-        FileObject webRoot = ProjectPropertiesSupport.getWebRootDirectory(project);
+    public boolean isRunFileEnabled(Lookup context) {
         FileObject file = CommandUtils.fileForContextOrSelectedNodes(context, webRoot);
         return file != null;
     }
 
     @Override
-    public boolean isDebugFileEnabled(PhpProject project, Lookup context) {
+    public boolean isDebugFileEnabled(Lookup context) {
         if (XDebugStarterFactory.getInstance() == null) {
             return false;
         }
-        return isRunFileEnabled(project, context);
+        return isRunFileEnabled(context);
     }
 
     @Override
-    public void runProject(PhpProject project) {
+    public void runProject() {
         try {
             HtmlBrowser.URLDisplayer.getDefault().showURL(CommandUtils.urlForProject(project));
         } catch (MalformedURLException ex) {
@@ -110,7 +106,7 @@ public class ConfigActionLocal extends ConfigAction {
     }
 
     @Override
-    public void debugProject(final PhpProject project) {
+    public void debugProject() {
         Runnable runnable = new Runnable() {
             public void run() {
                     try {
@@ -118,7 +114,7 @@ public class ConfigActionLocal extends ConfigAction {
                         assert debugUrl != null;
                         if (CommandUtils.getDebugInfo(project).debugClient) {
                             try {
-                                launchJavaScriptDebugger(project, debugUrl);
+                                launchJavaScriptDebugger(debugUrl);
                             } catch (URISyntaxException ex) {
                                 Exceptions.printStackTrace(ex);
                             }
@@ -146,13 +142,12 @@ public class ConfigActionLocal extends ConfigAction {
                 if (dbgStarter.isAlreadyRunning()) {
                     if (CommandUtils.warnNoMoreDebugSession()) {
                         dbgStarter.stop();
-                        debugProject(project);
+                        debugProject();
                     }
                 } else {
-                    FileObject webRoot = ProjectPropertiesSupport.getWebRootDirectory(project);
                     final FileObject fileForProject = CommandUtils.fileForProject(project, webRoot);
                     if (fileForProject != null) {
-                        startDebugger(project, dbgStarter, runnable, fileForProject);
+                        startDebugger(dbgStarter, runnable, fileForProject);
                     } else {
                         String idxFileName = ProjectPropertiesSupport.getIndexFile(project);
                         String err = NbBundle.getMessage(ConfigActionLocal.class, "ERR_Missing_IndexFile", idxFileName);
@@ -168,13 +163,13 @@ public class ConfigActionLocal extends ConfigAction {
     }
 
     @Override
-    public void runFile(PhpProject project, Lookup context) {
+    public void runFile(Lookup context) {
         try {
             // need to fetch these vars _before_ focus changes (can happen in eventuallyUploadFiles() method)
             final URL url = CommandUtils.urlForContext(project, context);
             assert url != null;
 
-            preShowUrl(project, context);
+            preShowUrl(context);
 
             HtmlBrowser.URLDisplayer.getDefault().showURL(url);
         } catch (MalformedURLException ex) {
@@ -184,9 +179,8 @@ public class ConfigActionLocal extends ConfigAction {
     }
 
     @Override
-    public void debugFile(final PhpProject project, Lookup context) {
+    public void debugFile(Lookup context) {
         // need to fetch these vars _before_ focus changes (can happen in eventuallyUploadFiles() method)
-        FileObject webRoot = ProjectPropertiesSupport.getWebRootDirectory(project);
         final FileObject selectedFile = CommandUtils.fileForContextOrSelectedNodes(context, webRoot);
         URL url = null;
         try {
@@ -199,14 +193,14 @@ public class ConfigActionLocal extends ConfigAction {
         assert url != null;
         final URL debugUrl = url;
 
-        preShowUrl(project, context);
+        preShowUrl(context);
 
         Runnable runnable = new Runnable() {
             public void run() {
                 try {
                     if (CommandUtils.getDebugInfo(project).debugClient) {
                         try {
-                            launchJavaScriptDebugger(project, debugUrl);
+                            launchJavaScriptDebugger(debugUrl);
                         } catch (URISyntaxException ex) {
                             Exceptions.printStackTrace(ex);
                         }
@@ -234,10 +228,10 @@ public class ConfigActionLocal extends ConfigAction {
                 if (dbgStarter.isAlreadyRunning()) {
                     if (CommandUtils.warnNoMoreDebugSession()) {
                         dbgStarter.stop();
-                        debugFile(project, context);
+                        debugFile(context);
                     }
                 } else {
-                    startDebugger(project, dbgStarter, runnable, selectedFile);
+                    startDebugger(dbgStarter, runnable, selectedFile);
                 }
             }
         } else {
@@ -245,11 +239,11 @@ public class ConfigActionLocal extends ConfigAction {
         }
     }
 
-    protected void preShowUrl(PhpProject project, Lookup context) {
+    protected void preShowUrl(Lookup context) {
         // hook for subclasses
     }
 
-    private void startDebugger(final PhpProject project, final XDebugStarter dbgStarter, final Runnable initDebuggingCode,
+    private void startDebugger(final XDebugStarter dbgStarter, final Runnable initDebuggingCode,
             final FileObject debuggedFile) {
         Cancellable cancellable = new Cancellable() {
             public boolean cancel() {
@@ -260,7 +254,7 @@ public class ConfigActionLocal extends ConfigAction {
         dbgStarter.start(project, initDebuggingCallable, debuggedFile, false);
     }
 
-    private void launchJavaScriptDebugger(PhpProject project, URL url) throws MalformedURLException, URISyntaxException {
+    private void launchJavaScriptDebugger(URL url) throws MalformedURLException, URISyntaxException {
         LocationMappersFactory mapperFactory = Lookup.getDefault().lookup(LocationMappersFactory.class);
         Lookup debuggerLookup = null;
         if (mapperFactory != null) {

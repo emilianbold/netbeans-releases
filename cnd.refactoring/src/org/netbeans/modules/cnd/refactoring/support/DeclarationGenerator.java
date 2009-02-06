@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.api.model.CsmField;
 public final class DeclarationGenerator {
 
     public static final String INLINE_PROPERTY = "inline_method"; // NOI18N
+    public static final String INSERT_CODE_INLINE_PROPERTY = "insert_code_inline_method"; // NOI18N
 
     public enum Kind {
         INLINE_DEFINITION,
