@@ -745,11 +745,6 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
         }
 
         @Override
-        public boolean isValid() {
-            return true;
-        }
-
-        @Override
         public boolean isShowing() {
             return true;
         }
