@@ -1340,7 +1340,7 @@ public class MakefileGenerator {
     }
 
     /** A class holding module definition and use information for a Fortran file */
-    private class FortranFile {
+    private static class FortranFile {
 
         /** The file name of a Fortran 90 file */
         private String name;
@@ -1985,7 +1985,7 @@ public class MakefileGenerator {
      *  creates these names for us. To cut down on object creation its intended
      *  to be reused with different variables and targets.
      */
-    private final class MakeVarName {
+    private static final class MakeVarName {
 
         private String targetName;		// this gets appended to name
         private StringBuffer lastName;		// save the last name created
@@ -2097,7 +2097,7 @@ public class MakefileGenerator {
         }
     }
 
-    private final class MakefileGenerationException extends Exception {
+    private static final class MakefileGenerationException extends Exception {
 
         public MakefileGenerationException() {
             super();
