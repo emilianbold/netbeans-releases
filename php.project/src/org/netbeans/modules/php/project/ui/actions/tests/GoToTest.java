@@ -128,7 +128,7 @@ public class GoToTest implements TestLocator {
         return new LocationResult(NbBundle.getMessage(GoToTest.class, "MSG_SrcNotFound", testFo.getName()));
     }
 
-    private LocationResult findTest(PhpProject project, FileObject srcFo) {
+    public static LocationResult findTest(PhpProject project, FileObject srcFo) {
         FileObject testFo = getTests(project).getFileObject(findRelativeTestFileName(project, srcFo));
         if (testFo == null) {
             return new LocationResult(NbBundle.getMessage(GoToTest.class, "MSG_TestNotFound", srcFo.getName()));
