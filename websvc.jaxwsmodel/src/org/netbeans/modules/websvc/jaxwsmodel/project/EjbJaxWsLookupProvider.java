@@ -302,7 +302,7 @@ public class EjbJaxWsLookupProvider implements LookupProvider {
                 extension.addDependency("-pre-pre-compile", "wsimport-client-generate"); //NOI18N
             }
             if (fromWsdlServicesLength > 0) {
-                extension.addDependency("-pre-pre-compile", "wsimport-service-generate"); //NOI18N              
+                extension.addDependency("-pre-pre-compile", "wsimport-service-generate"); //NOI18N
             }
         }
     }

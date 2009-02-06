@@ -153,7 +153,7 @@ public final class MEDesignDataObject extends J2MEDataObject implements DataObje
     }
 
     public void fileRenamed (FileRenameEvent fe) {
-        // do nothing
+        getEditorSupport().updateDisplayName();
     }
 
     public void fileAttributeChanged (FileAttributeEvent fe) {

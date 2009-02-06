@@ -186,7 +186,7 @@ public class SVGFormCD extends ComponentDescriptor {
                 //actions
                 ActionsPresenter.create(20, SystemAction.get(EditSVGFileAction.class)),
                 //other
-                new SVGFormFileChangePresneter(),
+                new SVGFormFileChangePresenter(),
                 //flow
                 new SVGComponentEventSourceOrder(),
                 //delete

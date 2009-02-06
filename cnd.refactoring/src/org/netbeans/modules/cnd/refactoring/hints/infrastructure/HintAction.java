@@ -35,6 +35,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import org.netbeans.modules.cnd.refactoring.support.CsmContext;
+import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -65,6 +66,9 @@ public abstract class HintAction extends TextAction implements PropertyChangeLis
 
     @Override
     public boolean isEnabled() {
+        if (!CsmRefactoringUtils.REFACTORING_EXTRA) {
+            return false;
+        }
         updateEnabled();
         return super.isEnabled();
     }

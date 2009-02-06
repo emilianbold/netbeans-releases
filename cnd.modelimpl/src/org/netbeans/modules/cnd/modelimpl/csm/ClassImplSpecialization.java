@@ -58,7 +58,7 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
     private String qualifiedNameSuffix = "";
 
     private ClassImplSpecialization(AST ast, CsmFile file) {
-        super(ast, file);
+        super(null, ast, file);
     }
 
     @Override

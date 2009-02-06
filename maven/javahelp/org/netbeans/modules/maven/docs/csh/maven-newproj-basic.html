@@ -19,23 +19,22 @@
         <p>The New Maven Application wizard enables you to create a new Maven project.
         You open the wizard by opening the New Project wizard and selecting the
         Maven template from the General category.</p>
-        <p>In the Name and Location page you specify the archetype you want to
-        use as the template for your project.
-        You can choose an archetype displayed in the list or click Add to create
-        a custom archetype.</p>
+        
 
-        <p>In the Name and Location page, you have to set the following properties:</p>
+        <p>In the Name and Location page, you set the following properties:</p>
         <ul>
             <li><strong>Project Name.</strong> Specifies the display name of the project.
             This name is also used to create the project folder.</li>
             <li><strong>Project Location.</strong> Specifies the folder where you want to store the project metadata and source code.
             When you create an empty Java project, you cannot store the project folder and the project source code in separate locations
             like you can with projects from existing source code.</li>
+            <li><strong>Project Folder.</strong> (Read-only) The project folder is generated
+            based on the name of the project.</li>
             <li><strong>Artifact Id.</strong>
             The Artifact Id is based on the project name.</li>
-            <li><strong>Group Id.</strong>
-            </li>
-            <li><strong>Version.</strong></li>
+            <li><strong>Group Id.</strong> Specifies the Group Id for the artifact.</li>
+            <li><strong>Version.</strong>Specifies the Version of the artifact.
+            The default version is <tt>1.0-SNAPSHOT</tt>.</li>
             <li><strong>Package.</strong> The IDE will automatically create a source package structure
             based on this field. </li>
         </ul>

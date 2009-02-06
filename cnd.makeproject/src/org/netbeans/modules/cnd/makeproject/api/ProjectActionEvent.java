@@ -48,35 +48,38 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.openide.util.NbBundle;
 
 public class ProjectActionEvent {
-    public static final int BUILD = 0;
-    public static final int CLEAN = 1;
-    public static final int RUN = 2;
-    public static final int DEBUG = 3;
-    public static final int DEBUG_STEPINTO = 4;
-    public static final int DEBUG_LOAD_ONLY = 5;
-    public static final int CHECK_EXECUTABLE = 6;
-    public static final int CUSTOM_ACTION = 7;
-    
-    public static final String[] actionNames  = {
-        getString("BuildActionName"),
-        getString("CleanActionName"),
-        getString("RunActionName"),
-        getString("DebugActionName"),
-        getString("DebugActionName"),
-        getString("DebugActionName"),
-        getString("CheckExecutableActionName"),
-        getString("CustomActionName"),
-    };
+
+    public static enum Type {
+        BUILD("Build"), // NOI18N
+        CLEAN("Clean"), // NOI18N
+        RUN("Run"), // NOI18N
+        DEBUG("Debug"), // NOI18N
+        DEBUG_STEPINTO("Debug"), // NOI18N
+        DEBUG_LOAD_ONLY("Debug"), // NOI18N
+        CHECK_EXECUTABLE("CheckExecutable"), // NOI18N
+        CUSTOM_ACTION("Custom"); // NOI18N
+
+        private final String localizedName;
+
+        private Type(String resourceNamePrefix) {
+            localizedName = getString(resourceNamePrefix + "ActionName"); // NOI18N
+        }
+
+        public String getLocalizedName() {
+            return localizedName;
+        }
+
+    }
 
     private Project project;
-    private int type;
+    private Type type;
     private String tabName;
     private String executable;
     private Configuration configuration;
     private RunProfile profile;
     private boolean wait;
 
-    public ProjectActionEvent(Project project, int type, String tabName, String executable, Configuration configuration, RunProfile profile, boolean wait) {
+    public ProjectActionEvent(Project project, Type type, String tabName, String executable, Configuration configuration, RunProfile profile, boolean wait) {
         this.project = project;
         this.type = type;
 	this.tabName = tabName;
@@ -90,16 +93,16 @@ public class ProjectActionEvent {
         return project;
     }
     
-    public int getID() {
+    public Type getType() {
         return type;
     }
 
     public String getTabName() {
-	return tabName;
+        return tabName;
     }
 
     public String getActionName() {
-        return actionNames[getID()];
+        return type.getLocalizedName();
     }
 
     public String getExecutable() {
@@ -115,14 +118,15 @@ public class ProjectActionEvent {
     }
 
     public RunProfile getProfile() {
-	if (profile != null)
-	    return profile;
-	else
-	    return configuration.getProfile();
+        if (profile != null) {
+            return profile;
+        } else {
+            return configuration.getProfile();
+        }
     }
 
     public boolean getWait() {
-	return wait;
+        return wait;
     }
     
      /** Look up i18n strings here */

@@ -159,7 +159,7 @@ public final class MacroExpansionViewUtils {
                     view.open();
                 }
                 view.setDocuments(newExpandedContextDoc, expandedMacroDoc);
-                view.setStatusBarText(NbBundle.getMessage(MacroExpansionTopComponent.class, "CTL_MacroExpansionStatusBarLine") + expansionsNumber); // NOI18N
+                view.setStatusBarText(NbBundle.getMessage(MacroExpansionTopComponent.class, "CTL_MacroExpansionStatusBarLine", expansionsNumber)); // NOI18N
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {

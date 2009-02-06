@@ -58,6 +58,8 @@ import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.helper.swing.NbiComboBox;
 import org.netbeans.installer.utils.helper.swing.NbiDirectoryChooser;
 import org.netbeans.installer.utils.helper.swing.NbiTextField;
+import org.netbeans.installer.utils.helper.swing.NbiTextPane;
+import org.netbeans.installer.wizard.components.actions.netbeans.NbRegistrationAction;
 import org.netbeans.installer.wizard.components.panels.ApplicationLocationPanel.LocationValidator;
 import org.netbeans.installer.wizard.components.panels.ApplicationLocationPanel.LocationsComboBoxEditor;
 import org.netbeans.installer.wizard.components.panels.ApplicationLocationPanel.LocationsComboBoxModel;
@@ -235,7 +237,7 @@ public class NbBasePanel extends DestinationPanel {
         private NbiLabel jdkLocationLabel;
         private NbiComboBox jdkLocationComboBox;
         private NbiButton browseButton;
-        private NbiLabel statusLabel;
+        private NbiTextPane statusLabel;
         
         private NbiTextField jdkLocationField;
         
@@ -264,11 +266,15 @@ public class NbBasePanel extends DestinationPanel {
                         JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY));
                 final Version maxVersion = Version.getVersion(jdkLocationPanel.getProperty(
                         JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY));
-                
+
+                statusLabel.setContentType("text/html");
                 statusLabel.setText(StringUtils.format(
                         jdkLocationPanel.getProperty(JdkLocationPanel.ERROR_NOTHING_FOUND_PROPERTY),
                         minVersion.toJdkStyle(),
-                        maxVersion.toJdkStyle()));
+                        maxVersion.toJdkStyle(),
+                        jdkLocationPanel.getProperty(JdkLocationPanel.JAVA_DOWNLOAD_PAGE_PROPERTY)));
+
+                statusLabel.addHyperlinkListener(NbRegistrationAction.createHyperlinkListener());
             } else {
                 statusLabel.clearText();
                 statusLabel.setVisible(false);
@@ -373,7 +379,7 @@ public class NbBasePanel extends DestinationPanel {
             });
             
             // statusLabel //////////////////////////////////////////////////////////
-            statusLabel = new NbiLabel();
+            statusLabel = new NbiTextPane();
             
             // fileChooser //////////////////////////////////////////////////////////
             fileChooser = new NbiDirectoryChooser();
