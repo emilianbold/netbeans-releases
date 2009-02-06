@@ -71,6 +71,8 @@ public class NativeTaskTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        String dirs = System.getProperty("netbeans.dirs", "");
+        System.setProperty("netbeans.dirs", "/export/home/ak119685/netbeans-src/main/dlight.suite/build/cluster:" + dirs);
     }
 
     @AfterClass
@@ -79,6 +81,7 @@ public class NativeTaskTest {
 
     @Before
     public void setUp() {
+
     }
 
     @After
@@ -109,7 +112,7 @@ public class NativeTaskTest {
         };
 
         ExternalTerminal term = ExternalTerminalProvider.getTerminal("gnome-terminal").setTitle("My favorite title");
-        NativeProcessBuilder npb = new NativeProcessBuilder(ee, cmd).setArguments("1", "2").addEnvironmentVariable("MY_ENV_VAR2", "IT_WORKS").setWorkingDirectory("/tmp").useExternalTerminal(term).addNativeProcessListener(l);
+        NativeProcessBuilder npb = new NativeProcessBuilder(ee, cmd).setArguments("1", "2").addEnvironmentVariable("MY_VAR2", "IT_WORKS").setWorkingDirectory("/tmp").useExternalTerminal(term).addNativeProcessListener(l);
 
         ExecutionDescriptor descr = new ExecutionDescriptor().outLineBased(true).outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
 
