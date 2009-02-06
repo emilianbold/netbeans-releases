@@ -711,7 +711,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 ClassScope clsScope = (ClassScope) modelElement;
                 Collection<? extends MethodScope> allMethods = clsScope.getDeclaredMethods();
                 for (MethodScope methodScope : allMethods) {
-                    if (methodScope.getBlockRange().containsInclusive(offset)) {
+                    OffsetRange blockRange = methodScope.getBlockRange();
+                    if (blockRange != null && blockRange.containsInclusive(offset)) {
                         if (retval == null ||
                                 retval.getBlockRange().overlaps(methodScope.getBlockRange())) {
                             retval = methodScope;
