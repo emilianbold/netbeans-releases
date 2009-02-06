@@ -37,28 +37,48 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.model;
+package org.netbeans.modules.php.editor.model.impl;
 
+import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.php.editor.model.*;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.php.editor.model.Occurence;
+import org.netbeans.modules.php.editor.nav.TestBase;
 
 /**
+ *
  * @author Radek Matous
  */
-public interface ModelScope extends VariableScope {
-    public List<? extends TypeScope> getAllTypes();
-    public List<? extends TypeScope> getTypes(final String... queryName);
-    public List<? extends TypeScope> getTypes(final NameKind nameKind, final String... queryName);
-    public List<? extends ConstantElement> getAllConstants();
-    public List<? extends ConstantElement> getConstants(final String... queryName);
-    public List<? extends ConstantElement> getConstants(final NameKind nameKind, final String... queryName);
-    public List<? extends ClassScope> getAllClasses();
-    public List<? extends ClassScope> getClasses(final String... queryName);
-    public List<? extends ClassScope> getClasses(final NameKind nameKind, final String... queryName);
-    public List<? extends InterfaceScope> getAllInterfaces();
-    public List<? extends InterfaceScope> getInterfaces(final String... queryName);
-    public List<? extends InterfaceScope> getInterfaces(final NameKind nameKind, final String... queryName);
-    public List<? extends FunctionScope> getAllFunctions();
-    public List<? extends FunctionScope> getFunctions(final String... queryName);
-    public List<? extends FunctionScope> getFunctions(final NameKind nameKind, final String... queryName);
+public class ModelTestBase extends TestBase {
+    public ModelTestBase(String testName) {
+        super(testName);        
+    }
+
+    public Model getModel(String code) throws Exception {
+        final Model[] globals = new Model[1];
+        super.performTest(new String[] {code}, new CancellableTask<CompilationInfo>() {
+            public void cancel() {}
+            public void run(CompilationInfo parameter) throws Exception {
+                Model model = ModelFactory.getModel(parameter);
+                globals[0] = model;
+            }
+        });
+        return globals[0];
+    }
+    
+    public Occurence underCaret(final Model model,String code, final int offset) throws Exception {
+        final List<Occurence> occurences = new ArrayList<Occurence>();
+        super.performTest(new String[] {code}, new CancellableTask<CompilationInfo>() {
+            public void cancel() {}
+            public void run(CompilationInfo parameter) throws Exception {
+                Model mod = model != null ? model : ModelFactory.getModel(parameter);
+                OccurencesSupport occurencesSupport = mod.getOccurencesSupport(offset);
+                Occurence underCaret = occurencesSupport.getOccurence();
+                occurences.add(underCaret);
+            }
+        });
+        return occurences.get(0);
+    }
 }

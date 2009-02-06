@@ -39,6 +39,7 @@
 package org.netbeans.modules.php.editor.nav;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -105,7 +106,7 @@ public class InstantRenamerImpl implements InstantRenamer {
 
     private boolean checkAll(Occurence caretOccurence) {
         List<Occurence> collected = new ArrayList<Occurence>();
-        List<Occurence> all = caretOccurence.getAllOccurences();
+        Collection<Occurence> all = caretOccurence.getAllOccurences();
         for (Occurence occurence : all) {
             if (occurence.getAllDeclarations().size() == 1 ) {
                 collected.add(occurence);

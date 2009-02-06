@@ -40,34 +40,16 @@
 package org.netbeans.modules.php.editor.model;
 
 import java.util.Collection;
-import org.netbeans.modules.gsf.api.NameKind;
 
 /**
  * @author Radek Matous
  */
-public interface TypeScope extends Scope {
-    PhpModifiers getPhpModifiers();
-    /**
-     * @return declared methods only
-     */
-    Collection<? extends MethodScope> getDeclaredMethods();
-    /**
-     * @return inherited methods only
-     */
-    Collection<? extends MethodScope> getInheritedMethods();
-    /**
-     * @return declared+inherited methods
-     */
-    Collection<? extends MethodScope> getMethods();
-
-    Collection<? extends ClassConstantElement> getDeclaredConstants();
-    Collection<? extends ClassConstantElement> getInheritedConstants();
-    Collection<? extends InterfaceScope> getSuperInterfaces();
-
-    Collection<? extends ClassConstantElement> findInheritedConstants(String constName);
-    Collection<? extends MethodScope> findInheritedMethods(final String queryName);
-    Collection<? extends MethodScope> findDeclaredMethods(final String queryName, final int... modifiers);
-    Collection<? extends MethodScope> findDeclaredMethods(final NameKind nameKind, final String queryName, final int... modifiers);
-    Collection<? extends ClassConstantElement> findDeclaredConstants(final String... queryName);
-    Collection<? extends ClassConstantElement> findDeclaredConstants(final NameKind nameKind, final String... queryName);
+public interface FileScope extends VariableScope {
+    Collection<? extends TypeScope> getDeclaredTypes();
+    Collection<? extends ClassScope> getDeclaredClasses();
+    Collection<? extends InterfaceScope> getDeclaredInterfaces();
+    Collection<? extends ConstantElement> getDeclaredConstants();
+    Collection<? extends FunctionScope> getDeclaredFunctions();
+    Collection<? extends VariableName> getDeclaredVariables();
+    IndexScope getIndexScope();
 }
