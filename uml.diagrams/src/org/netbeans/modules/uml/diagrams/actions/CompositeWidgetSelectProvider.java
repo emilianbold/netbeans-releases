@@ -60,6 +60,7 @@ public class CompositeWidgetSelectProvider extends DiagramEngine.DesignSelectPro
         compositeWidget = w;
     }
     
+    @Override
     public void select(Widget widget, Point localLocation, boolean invertSelection)
     {
         super.select(widget, localLocation, invertSelection);
