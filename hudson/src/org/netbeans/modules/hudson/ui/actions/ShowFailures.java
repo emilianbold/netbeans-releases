@@ -44,7 +44,7 @@ import java.awt.event.ActionEvent;
 import java.io.FileNotFoundException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.impl.HudsonJobImpl;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
@@ -61,10 +61,10 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class ShowFailures extends AbstractAction implements Runnable {
 
-    private final HudsonJob job;
+    private final HudsonJobImpl job;
     private final int buildNumber;
 
-    public ShowFailures(HudsonJob job, int buildNumber) {
+    public ShowFailures(HudsonJobImpl job, int buildNumber) {
         this.job = job;
         this.buildNumber = buildNumber;
         putValue(NAME, "Show Test Failures"); // XXX I18N
@@ -80,6 +80,7 @@ public class ShowFailures extends AbstractAction implements Runnable {
             parser.setContentHandler(new DefaultHandler() {
                 InputOutput io;
                 StringBuilder buf;
+                Hyperlinker hyperlinker = new Hyperlinker(job);
                 private void prepareOutput() {
                     if (io == null) {
                         String title = job.getDisplayName() + " #" + buildNumber + " Test Failures"; // XXX I18N
@@ -102,9 +103,8 @@ public class ShowFailures extends AbstractAction implements Runnable {
                     if (qName.matches("errorStackTrace|stdout|stderr")) { // NOI18N
                         prepareOutput();
                         OutputWriter w = qName.equals("stdout") ? io.getOut() : io.getErr();
-                        // XXX err.write(multilineString) does not work, only last line is in red
                         for (String line : buf.toString().split("\r\n?|\n")) {
-                            w.println(line);
+                            hyperlinker.handleLine(line, w);
                         }
                         buf = null;
                     }
