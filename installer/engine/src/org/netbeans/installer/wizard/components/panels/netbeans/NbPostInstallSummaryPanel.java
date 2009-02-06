@@ -42,16 +42,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
-import javax.swing.event.HyperlinkEvent.EventType;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.utils.BrowserUtils;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
@@ -62,12 +57,10 @@ import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiSeparator;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 import org.netbeans.installer.wizard.components.WizardPanel;
-import org.netbeans.installer.wizard.components.actions.netbeans.NbRegistrationAction;
 import org.netbeans.installer.wizard.containers.SwingContainer;
 import org.netbeans.installer.wizard.containers.SwingFrameContainer;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
-import org.netbeans.modules.reglib.BrowserSupport;
 import static org.netbeans.installer.utils.helper.DetailedStatus.INSTALLED_SUCCESSFULLY;
 import static org.netbeans.installer.utils.helper.DetailedStatus.INSTALLED_WITH_WARNINGS;
 import static org.netbeans.installer.utils.helper.DetailedStatus.FAILED_TO_INSTALL;
@@ -277,7 +270,7 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                                 DEFAULT_MYSQL_MESSAGE_UNIX,
                             product.getInstallationLocation()));
                     messagePaneMySQL.setVisible(true);
-                    messagePaneMySQL.addHyperlinkListener(NbRegistrationAction.createHyperlinkListener());
+                    messagePaneMySQL.addHyperlinkListener(BrowserUtils.createHyperlinkListener());
                     break;
                 }
             }
@@ -314,9 +307,7 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                     !toRegister.isEmpty()  && // if anything to register
                     !SystemUtils.isMacOS() && // no support on mac
                     Boolean.getBoolean(ALLOW_SERVICETAG_REGISTRATION_PROPERTY) && //system property is defined
-                    (BrowserSupport.isSupported() ||                   // if JDK6 supports browser or
-                    SystemUtils.isWindows() ||                         // on windows we can find browser in registry or
-                    NbRegistrationAction.getUnixBrowser() != null);    // on unix we can found it in some predefined locations
+                    BrowserUtils.isBrowseSupported();
             
             if (!registrationEnabled) {
                 //separator.setVisible(false);
@@ -411,22 +402,8 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                             "" + metricsCheckbox.isSelected());
                 }
             });
-            metricsInfo.addHyperlinkListener(new HyperlinkListener() {
-                public void hyperlinkUpdate(HyperlinkEvent hlevt) {
-                    if (EventType.ACTIVATED == hlevt.getEventType()) {
-                        final URL url = hlevt.getURL();
-                        if (url != null) {
-                            try {
-                                NbRegistrationAction.openBrowser(url.toURI());
-                            } catch (IOException e) {
-                                LogManager.log(e);
-                            } catch (URISyntaxException e) {
-                                LogManager.log(e);
-                            }
-                        }
-                    }
-                }
-            });
+            metricsInfo.addHyperlinkListener(BrowserUtils.createHyperlinkListener());
+            
             metricsPanel.add(metricsCheckbox, new GridBagConstraints(
                     0, 0, // x, y
                     1, 1, // width, height

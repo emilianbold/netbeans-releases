@@ -55,6 +55,7 @@ import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.filters.OrFilter;
 import org.netbeans.installer.product.filters.ProductFilter;
 import org.netbeans.installer.product.filters.RegistryFilter;
+import org.netbeans.installer.utils.BrowserUtils;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.ResourceUtils;
@@ -386,7 +387,7 @@ public class GlassFishPanel extends DestinationPanel {
                         maxVersion.toJdkStyle(),
                         jdkLocationPanel.getProperty(JdkLocationPanel.JAVA_DOWNLOAD_PAGE_PROPERTY)));
 
-                statusLabel.addHyperlinkListener(NbRegistrationAction.createHyperlinkListener());
+                statusLabel.addHyperlinkListener(BrowserUtils.createHyperlinkListener());
             } else {
                 statusLabel.clearText();
                 statusLabel.setVisible(false);
