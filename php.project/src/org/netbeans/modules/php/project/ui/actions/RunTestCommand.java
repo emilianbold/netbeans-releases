@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,27 +37,40 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.project.ui.actions;
 
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.support.Displayable;
+import org.netbeans.modules.php.project.ui.actions.tests.GoToTest;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
-public class TestProjectCommand extends Command implements Displayable {
-    public static final String ID = ActionProvider.COMMAND_TEST;
-    public static final String DISPLAY_NAME = NbBundle.getMessage(TestProjectCommand.class, "LBL_TestProject");
+/**
+ * @author Tomas Mysik
+ */
+public class RunTestCommand extends Command implements Displayable {
+    public static final String ID = ActionProvider.COMMAND_TEST_SINGLE;
+    public static final String DISPLAY_NAME = NbBundle.getMessage(RunTestCommand.class, "LBL_TestFile");
 
-    public TestProjectCommand(PhpProject project) {
+    public RunTestCommand(PhpProject project) {
         super(project);
+    }
+
+    @Override
+    public void invokeAction(Lookup context) {
+        assert findTest(context) != null : "File object for Test action must be found if action is enabled";
+        getProject().getLookup().lookup(ActionProvider.class).invokeAction(RunFileCommand.ID, Lookups.fixed(findTest(context)));
+    }
+
+    @Override
+    public boolean isActionEnabled(Lookup context) {
+        return findTest(context) != null;
     }
 
     @Override
@@ -60,21 +79,15 @@ public class TestProjectCommand extends Command implements Displayable {
     }
 
     @Override
-    public void invokeAction(Lookup context) {
-        getConfigAction().runProject();
-    }
-
-    @Override
-    public boolean isActionEnabled(Lookup context) {
-        return getConfigAction().isRunProjectEnabled();
-    }
-
     public String getDisplayName() {
         return DISPLAY_NAME;
     }
 
-    @Override
-    protected ConfigAction getConfigAction() {
-        return ConfigAction.get(ConfigAction.Type.TEST, getProject());
+    private FileObject findTest(Lookup context) {
+        FileObject fo = CommandUtils.fileForContextOrSelectedNodes(context, ProjectPropertiesSupport.getSourcesDirectory(getProject()));
+        if (fo == null) {
+            return null;
+        }
+        return GoToTest.findTest(getProject(), fo).getFileObject();
     }
 }
