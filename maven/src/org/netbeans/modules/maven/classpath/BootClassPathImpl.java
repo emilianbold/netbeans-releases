@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -122,6 +123,7 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
         JavaPlatform plat = getActivePlatform(val);
         if (plat == null) {
             //TODO report how?
+            Logger.getLogger(BootClassPathImpl.class.getName()).fine("Cannot find java platform with id of '" + val + "'"); //NOI18N
             plat = platformManager.getDefaultPlatform();
             activePlatformValid = false;
         }

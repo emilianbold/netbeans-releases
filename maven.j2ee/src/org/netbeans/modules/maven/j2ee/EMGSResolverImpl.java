@@ -44,7 +44,10 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
+import org.netbeans.modules.j2ee.core.api.support.classpath.ContainerClassPathModifier;
 import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ApplicationManagedResourceTransactionInjectableInWeb;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ApplicationManagedResourceTransactionNonInjectableInWeb;
@@ -76,15 +79,36 @@ public class EMGSResolverImpl implements EntityManagerGenerationStrategyResolver
         boolean isContainerManaged = (jtaDataSource != null && !jtaDataSource.equals("")) && isJTA; //NO18N
 
         if (isContainerManaged) { // Container-managed persistence context
+            Project prj = FileOwnerQuery.getOwner(target);
+            if (prj != null) {
+                ContainerClassPathModifier modifier = prj.getLookup().lookup(ContainerClassPathModifier.class);
+                if (modifier != null) {
+                    modifier.extendClasspath(target,
+                        new String[] {
+                            ContainerClassPathModifier.API_ANNOTATION,
+                            ContainerClassPathModifier.API_PERSISTENCE,
+                            ContainerClassPathModifier.API_TRANSACTION
+                        });
+
+                }
+            }
             if (isInjectionTarget) { // servlet, JSF managed bean ...
+                //uses javax.persistence.PersistenceContext
+                // andjavax.transaction.UserTransaction, javax.naming.Context
+                //add jee5 on classpath
+
                 return ContainerManagedJTAInjectableInWeb.class;
             } else { // other classes
+                //javax.transaction.UserTransaction
+                //javax.naming.Context
                 return ContainerManagedJTANonInjectableInWeb.class;
             }
         } else if (!isJTA){ // Application-managed persistence context (Resource-transaction)
             if (isInjectionTarget) { // servlet, JSF managed bean ...
+                //javax.persistence.EntityManager
                 return ApplicationManagedResourceTransactionInjectableInWeb.class;
             } else { // other classes
+                //javax.persistence.EntityManager
                 return ApplicationManagedResourceTransactionNonInjectableInWeb.class;
             }
         }

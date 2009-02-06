@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.ref.Reference;
@@ -142,10 +141,10 @@ public final class Unresolved implements Disposable {
         }
 
         @Override
-        protected void notifyCreation() {
-            // skip registration
+        protected void notify(CsmObject obj, NotifyEvent kind) {
+            // skip
         }
-
+        
 	@Override
 	protected CsmUID<CsmNamespace> createUID() {
 	    return UIDUtilities.createUnresolvedNamespaceUID(getProject());
@@ -158,7 +157,7 @@ public final class Unresolved implements Disposable {
 	}
     }
     
-    public final class UnresolvedFile implements CsmFile, CsmIdentifiable {
+    public final class UnresolvedFile implements CsmFile, CsmIdentifiable, Disposable {
 	
         private UnresolvedFile() {
         }
@@ -235,6 +234,10 @@ public final class Unresolved implements Disposable {
         public Collection<CsmErrorDirective> getErrors() {
             return Collections.<CsmErrorDirective>emptyList();
         }
+
+        public void dispose() {
+            UIDUtilities.disposeUnresolved(uid);
+        }
     };
     
     // only one of projectRef/projectUID must be used (based on USE_UID_TO_CONTAINER)
@@ -242,9 +245,9 @@ public final class Unresolved implements Disposable {
     private final CsmUID<CsmProject> projectUID;
     
     // doesn't need Repository Keys
-    private final CsmFile unresolvedFile;
+    private final UnresolvedFile unresolvedFile;
     // doesn't need Repository Keys
-    private final NamespaceImpl unresolvedNamespace;
+    private final UnresolvedNamespace unresolvedNamespace;
     // doesn't need Repository Keys
     private Map<String, Reference<UnresolvedClass>> dummiesForUnresolved = new HashMap<String, Reference<UnresolvedClass>>();
     
@@ -257,6 +260,7 @@ public final class Unresolved implements Disposable {
     
     public void dispose() {
         onDispose();
+        disposeAll();
     }
     
     private synchronized void onDispose() {
@@ -266,6 +270,10 @@ public final class Unresolved implements Disposable {
             assert (this.projectRef != null || this.projectUID == null) : "empty project for UID " + this.projectUID;
         }
     }    
+
+    private void disposeAll() {
+        this.unresolvedFile.dispose();
+    }
     
     public CsmClass getDummyForUnresolved(CharSequence[] nameTokens) {
         return getDummyForUnresolved(getName(nameTokens));

@@ -760,9 +760,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (currentQmakeConfiguration != null) {
                 currentQmakeConfiguration.getTarget().setValue(getString(currentText));
             }
-        } else if (element.equals(QT_LIB_VERSION_ELEMENT)) {
+        } else if (element.equals(QT_VERSION_ELEMENT)) {
             if (currentQmakeConfiguration != null) {
-                currentQmakeConfiguration.getLibVersion().setValue(getString(currentText));
+                currentQmakeConfiguration.getVersion().setValue(getString(currentText));
             }
         } else if (element.equals(QT_MODULES_ELEMENT)) {
             if (currentQmakeConfiguration != null) {
@@ -771,6 +771,10 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(QT_MOC_DIR_ELEMENT)) {
             if (currentQmakeConfiguration != null) {
                 currentQmakeConfiguration.getMocDir().setValue(getString(currentText));
+            }
+        } else if (element.equals(QT_RCC_DIR_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.getRccDir().setValue(getString(currentText));
             }
         } else if (element.equals(QT_UI_DIR_ELEMENT)) {
             if (currentQmakeConfiguration != null) {

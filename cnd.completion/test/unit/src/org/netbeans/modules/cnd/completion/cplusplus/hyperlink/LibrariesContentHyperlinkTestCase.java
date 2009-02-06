@@ -190,8 +190,8 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("src/iz140787_cout.cc", 10, 10, "sys_include2/include2.h", 28, 5);
     }
 
-//    public void testQtUsage() throws Exception {
-//        // IZ#155122: Completion doesn't work for Qt examples
-//        performTest("src/qt_usage.cc", 8, 25, "sys_include/QtDecls.h", 4, 5);
-//    }
+    public void testQtUsage() throws Exception {
+        // IZ#155122: Completion doesn't work for Qt examples
+        performTest("src/qt_usage.cc", 8, 25, "sys_include/QtDecls.h", 4, 5);
+    }
 }

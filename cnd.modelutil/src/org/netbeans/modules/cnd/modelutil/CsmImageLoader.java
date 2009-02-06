@@ -202,9 +202,17 @@ public class CsmImageLoader implements CsmImageName {
         } else if (kind == CsmDeclaration.Kind.MACRO){
             iconPath = MACRO;
         } else if (kind == CsmDeclaration.Kind.CLASS) {
-            iconPath = CLASS;
+            if ((modifiers & CsmUtilities.FORWARD) == 0) {
+                iconPath = CLASS;
+            } else {
+                iconPath = CLASS_FORWARD;
+            }
         } else if (kind == CsmDeclaration.Kind.STRUCT) {
-            iconPath = STRUCT;
+            if ((modifiers & CsmUtilities.FORWARD) == 0) {
+                iconPath = STRUCT;
+            } else {
+                iconPath = STRUCT_FORWARD;
+            }
         } else if (kind == CsmDeclaration.Kind.UNION) {
             iconPath = UNION; 
         } else if (kind == CsmDeclaration.Kind.TYPEDEF) {

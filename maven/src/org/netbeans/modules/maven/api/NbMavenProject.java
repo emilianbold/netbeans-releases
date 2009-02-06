@@ -299,8 +299,9 @@ public final class NbMavenProject {
     }
 
     public synchronized void synchronousDependencyDownload() {
-        assert !SwingUtilities.isEventDispatchThread();
-        task.run();
+        assert !SwingUtilities.isEventDispatchThread() : " Not to be called from AWT, can take significant amount ot time to download dependencies from the network."; //NOI18N
+        task.schedule(0);
+        task.waitFinished();
     }
     
     public synchronized void removeWatchedPath(String relPath) {
