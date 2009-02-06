@@ -81,11 +81,11 @@ final class ExecutionContext {
         return target;
     }
 
-    void addDLightTargetExecutionEnviromentProvider(DLightTarget.DLightTargetExecutionEnvProvider executionEnvProvider){
+    void addDLightTargetExecutionEnviromentProvider(DLightTarget.ExecutionEnvVariablesProvider executionEnvProvider){
         envProvider.add(executionEnvProvider);
     }
 
-    DLightTarget.DLightTargetExecutionEnvProvider getDLightTargetExecutionEnvProvider(){
+    DLightTarget.ExecutionEnvVariablesProvider getDLightTargetExecutionEnvProvider(){
         return envProvider;
     }
     /**
@@ -222,7 +222,7 @@ final class ExecutionContext {
         return tools;
     }
 
-    final class DLightTargetExecutionEnvProviderCollection implements DLightTarget.DLightTargetExecutionEnvProvider{
+    final class DLightTargetExecutionEnvProviderCollection implements DLightTarget.ExecutionEnvVariablesProvider{
         private Map<String, String> envs;
 
         DLightTargetExecutionEnvProviderCollection(){
@@ -233,7 +233,7 @@ final class ExecutionContext {
             envs.clear();
         }
 
-        void add(DLightTarget.DLightTargetExecutionEnvProvider provider){
+        void add(DLightTarget.ExecutionEnvVariablesProvider provider){
             envs.putAll(provider.getExecutionEnv());
         }
         
