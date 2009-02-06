@@ -68,6 +68,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmField;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -102,6 +103,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
     private CsmClass csmClassContainer;
     private ChangeListener parent;
     private String classname;
+    private boolean hasOutOfClassMemberDefinitions = false;
     private static boolean ALWAYS_USE_ACCESSORS = false;
     private static int FIELD_ACCESS_INDEX = 3;
     private static int METHOD_ACCESS_INDEX = 0;
@@ -149,8 +151,6 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         model = new TabM(columnNames, 0);
         initComponents();
         setName(title);
-        jInlineMethods.setSelected(NbPreferences.forModule(DeclarationGenerator.class).getBoolean(DeclarationGenerator.INLINE_PROPERTY, true));
-        jInlineMethods.setEnabled(false);
         jCheckAccess.setEnabled(false);
         jCheckAccess.setSelected(ALWAYS_USE_ACCESSORS);
         jComboAccess.setSelectedIndex(METHOD_ACCESS_INDEX);
@@ -587,16 +587,19 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
 
         List<InsertPoint> result = new ArrayList<InsertPoint>();
         int idx = 0;
-//        TreePath encloserPath = javac.getTrees().getPath(encloser);
-//        ClassTree encloserTree = (ClassTree) encloserPath.getLeaf();
+        hasOutOfClassMemberDefinitions = false;
         for (CsmMember member : encloser.getMembers()) {
             if (CsmKindUtilities.isMethod(member)) {
                 CsmMethod method = (CsmMethod) member;
-                InsertPoint ip = new InsertPoint(method, idx + 1, NbBundle.getMessage(
+                CsmFunction definition = ((CsmFunction)method).getDefinition();
+                InsertPoint ip = new InsertPoint(method, definition, idx + 1, NbBundle.getMessage(
                         EncapsulateFieldPanel.class,
                         "MSG_EncapsulateFieldInsertPointMethod", // NOI18N
                         MemberInfo.create(method).getHtmlText()
                         ));
+                if (definition != null && definition != method) {
+                    hasOutOfClassMemberDefinitions = true;
+                }
                 result.add(ip);
             }
             ++idx;
@@ -610,6 +613,13 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
             }
         }
         jComboInsertPoint.setSelectedItem(InsertPoint.DEFAULT);
+        if (hasOutOfClassMemberDefinitions) {
+            jInlineMethods.setSelected(NbPreferences.forModule(DeclarationGenerator.class).getBoolean(DeclarationGenerator.INLINE_PROPERTY, false));
+            jInlineMethods.setEnabled(true);
+        } else {
+            jInlineMethods.setSelected(true);
+            jInlineMethods.setEnabled(false);
+        }
     }
     
     public final Collection<EncapsulateFieldInfo> getAllFields() {
@@ -635,7 +645,9 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
 
     public boolean isMethodInline() {
         boolean inline = jInlineMethods.isSelected();
-        NbPreferences.forModule(DeclarationGenerator.class).putBoolean(DeclarationGenerator.INLINE_PROPERTY, inline);
+        if (hasOutOfClassMemberDefinitions) {
+            NbPreferences.forModule(DeclarationGenerator.class).putBoolean(DeclarationGenerator.INLINE_PROPERTY, inline);
+        }
         return inline;
     }
     
@@ -869,24 +881,30 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     
     public static final class InsertPoint {
         
-        public static final InsertPoint DEFAULT = new InsertPoint(null, Integer.MIN_VALUE,
+        public static final InsertPoint DEFAULT = new InsertPoint(null, null, Integer.MIN_VALUE,
                 getString("EncapsulateFieldPanel.jComboInsertPoint.default")); // NOI18N
-        public static final InsertPoint FIRST = new InsertPoint(null, Integer.MIN_VALUE,
+        public static final InsertPoint FIRST = new InsertPoint(null, null, Integer.MIN_VALUE,
                 getString("EncapsulateFieldPanel.jComboInsertPoint.first")); // NOI18N
-        public static final InsertPoint LAST = new InsertPoint(null, Integer.MAX_VALUE,
+        public static final InsertPoint LAST = new InsertPoint(null, null, Integer.MAX_VALUE,
                 getString("EncapsulateFieldPanel.jComboInsertPoint.last")); // NOI18N
         private final int index;
         private final String description;
-        private final CsmOffsetable elem;
+        private final CsmOffsetable elemDecl;
+        private final CsmOffsetable elemDef;
 
-        private InsertPoint(CsmOffsetable elem, int index, String description) {
+        private InsertPoint(CsmOffsetable elemDecl, CsmOffsetable elemDef, int index, String description) {
             this.index = index;
             this.description = description;
-            this.elem = elem;
+            this.elemDecl = elemDecl;
+            this.elemDef = elemDef;
         }
 
-        public CsmOffsetable getElement() {
-            return elem;
+        public CsmOffsetable getElementDeclaration() {
+            return elemDecl;
+        }
+
+        public CsmOffsetable getElementDefinition() {
+            return elemDef;
         }
 
         public int getIndex() {
