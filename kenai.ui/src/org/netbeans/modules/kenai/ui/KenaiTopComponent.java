@@ -41,6 +41,7 @@ package org.netbeans.modules.kenai.ui;
 import java.net.MalformedURLException;
 import org.netbeans.modules.kenai.ui.spi.LinkNode;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.Rectangle;
@@ -114,7 +115,7 @@ final class KenaiTopComponent extends TopComponent {
         tree = new JTree();
         tree.setRootVisible(false);
 
-        //tree.putClientProperty("JTree.lineStyle", "None");
+        tree.putClientProperty("JTree.lineStyle", "None");
 //        tree.setUI(new BasicTreeUI() {
 //
 //            @Override
@@ -176,9 +177,10 @@ final class KenaiTopComponent extends TopComponent {
                 System.out.println("");
             }
         });
+        tree.setShowsRootHandles(true);
         DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer) tree.getCellRenderer();
-        //renderer.setOpenIcon(null);
-        //renderer.setClosedIcon(null);
+        renderer.setOpenIcon(null);
+        renderer.setClosedIcon(null);
         renderer.setLeafIcon(null);
         //tree.setCellRenderer(renderer);
         //ui.setLeftChildIndent(0);
