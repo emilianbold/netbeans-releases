@@ -84,7 +84,7 @@ TOKEN:keyword:( "select" ):<SELECT>
 <FROM> {
     TOKEN:instanceof:( "instanceof" )
     TOKEN:instanceof_adept:( ["i" "n" "s" "t" "a" "c" "e" "o" "f"]+ )
-    TOKEN:class:( ["a"-"z" "A"-"Z"]+ ("." ["a"-"z" "A"-"Z"]+)* ):<CLASS_ALIAS>
+    TOKEN:class:( ["a"-"z" "A"-"Z"]+ ("." ["a"-"z" "A"-"Z"]+)* ("[" "]")* ):<CLASS_ALIAS>
     TOKEN:whitespace:( ["\n" "\r" " "]+ )
 }
 
