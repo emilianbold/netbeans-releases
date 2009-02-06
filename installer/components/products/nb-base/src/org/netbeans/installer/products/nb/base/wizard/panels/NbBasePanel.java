@@ -50,6 +50,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.utils.BrowserUtils;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.ResourceUtils;
@@ -274,7 +275,7 @@ public class NbBasePanel extends DestinationPanel {
                         maxVersion.toJdkStyle(),
                         jdkLocationPanel.getProperty(JdkLocationPanel.JAVA_DOWNLOAD_PAGE_PROPERTY)));
 
-                statusLabel.addHyperlinkListener(NbRegistrationAction.createHyperlinkListener());
+                statusLabel.addHyperlinkListener(BrowserUtils.createHyperlinkListener());
             } else {
                 statusLabel.clearText();
                 statusLabel.setVisible(false);

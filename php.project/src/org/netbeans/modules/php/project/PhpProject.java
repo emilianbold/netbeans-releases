@@ -58,6 +58,7 @@ import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
 import org.netbeans.modules.php.project.api.PhpSeleniumProvider;
 import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.php.project.classpath.IncludePathClassPathProvider;
+import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -338,6 +339,7 @@ public class PhpProject implements Project {
                 this,
                 CopySupport.getInstance(),
                 new SeleniumProvider(),
+                new PhpCoverageProvider(this),
                 new Info(),
                 configuration,
                 new PhpOpenedHook(),
@@ -407,6 +409,12 @@ public class PhpProject implements Project {
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             for (ClassPath classPath : bootClassPaths) {
                 IncludePathClassPathProvider.addProjectIncludePath(classPath);
+            }
+
+            // ensure that code coverage is initialized in case it's enabled...
+            PhpCoverageProvider coverageProvider = getLookup().lookup(PhpCoverageProvider.class);
+            if (coverageProvider.isEnabled()) {
+                PhpCoverageProvider.notifyProjectOpened(PhpProject.this);
             }
 
             final CopySupport copySupport = getCopySupport();

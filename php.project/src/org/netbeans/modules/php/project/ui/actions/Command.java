@@ -87,7 +87,7 @@ public abstract class Command {
     }
 
     protected ConfigAction getConfigAction() {
-        return ConfigAction.get(ConfigAction.convert(ProjectPropertiesSupport.getRunAs(getProject())));
+        return ConfigAction.get(ConfigAction.convert(ProjectPropertiesSupport.getRunAs(project)), project);
     }
 
     protected boolean isTestFile(Lookup context) {

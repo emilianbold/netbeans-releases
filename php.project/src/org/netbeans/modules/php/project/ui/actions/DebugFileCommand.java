@@ -62,14 +62,14 @@ public class DebugFileCommand extends Command implements Displayable {
     public void invokeAction(final Lookup context) {
         if (isTestFile(context)) {
             // test
-            ConfigAction.get(ConfigAction.Type.TEST).debugFile(getProject(), context);
+            ConfigAction.get(ConfigAction.Type.TEST, getProject()).debugFile(context);
         } else {
             // source
             if (!isRunConfigurationValid(false)) {
                 // property not set yet
                 return;
             }
-            getConfigAction().debugFile(getProject(), context);
+            getConfigAction().debugFile(context);
         }
     }
 
@@ -77,10 +77,10 @@ public class DebugFileCommand extends Command implements Displayable {
     public boolean isActionEnabled(Lookup context) {
         if (isTestFile(context)) {
             // test
-            return ConfigAction.get(ConfigAction.Type.TEST).isDebugFileEnabled(getProject(), context);
+            return ConfigAction.get(ConfigAction.Type.TEST, getProject()).isDebugFileEnabled(context);
         }
         // source
-        return getConfigAction().isDebugFileEnabled(getProject(), context);
+        return getConfigAction().isDebugFileEnabled(context);
     }
 
     @Override

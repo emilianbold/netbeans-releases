@@ -237,10 +237,8 @@ public class CsmFinderImpl implements CsmFinder {
 
         // System.out.println("findNamespaces: " + name); //NOI18N
 
-        List<CsmNamespace> ret = new ArrayList<CsmNamespace>();
         CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
-        ret = contResolver.getNestedNamespaces(nmsp, name, exactMatch);
-        return ret;
+        return contResolver.getNestedNamespaces(nmsp, name, exactMatch);
     }
 
     /** Find elements (classes, variables, enumerators) by name and possibly in some namespace

@@ -469,7 +469,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         boolean add = false;
         try {
             nsDefinitionsLock.writeLock().lock();
-            add = nsDefinitions.size() == 0;
+            add = nsDefinitions.isEmpty();
             nsDefinitions.put(getSortKey(def), definitionUid);
         } finally {
             nsDefinitionsLock.writeLock().unlock();
@@ -491,6 +491,16 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             _getProject().registerNamespace(this);
         } else {
             // remove this namespace from the parent namespace
+            try {
+                nsDefinitionsLock.readLock().lock();
+                if (!nsDefinitions.isEmpty()) {
+                    // someone already registered in definitions
+                    // do not unregister
+                    return;
+                }
+            } finally {
+                nsDefinitionsLock.readLock().unlock();
+            }
             NamespaceImpl parent = (NamespaceImpl) _getParentNamespace();
             if (parent != null) {
                 parent.removeNestedNamespace(this);
@@ -508,7 +518,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         try {
             nsDefinitionsLock.writeLock().lock();
             definitionUid = nsDefinitions.remove(getSortKey(def));
-            remove =  (nsDefinitions.size() == 0);
+            remove =  nsDefinitions.isEmpty();
         } finally {
             nsDefinitionsLock.writeLock().unlock();
         }
