@@ -322,9 +322,6 @@ public final class ReferencesSupport {
         }
         // then full check if needed
         csmItem = csmItem != null ? csmItem : findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.GLOBAL_QUERY, fileReferencesContext);
-        // if still null try macro info from file (IZ# 130897)
-        if (csmItem == null) {
-        }
         return csmItem;
     }
 
