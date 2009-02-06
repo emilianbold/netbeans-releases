@@ -37,10 +37,9 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui;
+package org.netbeans.modules.kenai.ui.spi;
 
 import java.util.Collection;
-import javax.swing.JComponent;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.openide.util.Lookup;
 
@@ -48,16 +47,7 @@ import org.openide.util.Lookup;
  *
  * @author Jan Becicka
  */
-public final class UIQuery {
-    /**
-     * 
-     */
-    public enum Type {
-        BUILDS,
-        ISSUES,
-        REVIEWS,
-        SOURCES
-    }
+public final class KenaiProjectUIQuery {
 
     /**
      *
@@ -65,27 +55,10 @@ public final class UIQuery {
      * @param k
      * @return
      */
-    public static JComponent getComponent(Type t, KenaiProject k) {
-        JComponent result = null;
-        for (UIQueryImpl ui : Lookup.getDefault().lookupAll(UIQueryImpl.class)) {
-            result = ui.getComponent(t, k);
-            if (result!=null) {
-                break;
-            }
-        }
-        return result;
-    }
-
-    /**
-     *
-     * @param t
-     * @param k
-     * @return
-     */
-    public static Collection<LinkNode> getNodes(Type t, KenaiProject k) {
+    public static Collection<LinkNode> getNodes(KenaiProjectUI.Type t, KenaiProject k, LinkNode.RefreshCallback callback) {
         Collection<LinkNode> result = null;
-        for (UIQueryImpl ui : Lookup.getDefault().lookupAll(UIQueryImpl.class)) {
-            result = ui.getNodes(t, k);
+        for (KenaiProjectUI ui : Lookup.getDefault().lookupAll(KenaiProjectUI.class)) {
+            result = ui.getNodes(t, k, callback);
             if (result!=null) {
                 break;
             }

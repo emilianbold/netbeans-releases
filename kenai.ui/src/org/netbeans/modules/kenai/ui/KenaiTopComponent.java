@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.kenai.ui;
 
+import java.net.MalformedURLException;
+import org.netbeans.modules.kenai.ui.spi.LinkNode;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Font;
@@ -48,6 +50,7 @@ import java.awt.event.MouseMotionAdapter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringReader;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JTree;
@@ -64,6 +67,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import org.openide.awt.HtmlBrowser;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -220,7 +225,11 @@ final class KenaiTopComponent extends TopComponent {
                         final String link = getLink(node.toString(), e.getX() - bounds.x);
                         if (link != null) {
                             tree.getSelectionModel().setSelectionPath(oldLeadSelectionPath);
-                            ((LinkNode) ((DefaultMutableTreeNode) node).getUserObject()).handleLink(link);
+                            try {
+                                HtmlBrowser.URLDisplayer.getDefault().showURL(new URL(link));
+                            } catch (MalformedURLException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
                         }
                     }
                 }

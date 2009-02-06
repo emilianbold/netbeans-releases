@@ -37,16 +37,22 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui;
+package org.netbeans.modules.kenai.ui.spi;
 
-import javax.swing.Action;
+import java.util.Collection;
+import org.netbeans.modules.kenai.api.KenaiProject;
 
 /**
  *
  * @author Jan Becicka
  */
-public interface LinkNode {
-    String getString();
-    void handleLink(String link);
-    Action[] getActions();
+public interface KenaiProjectUI {
+    public enum Type {
+        BUILDS,
+        ISSUES,
+        REVIEWS,
+        SOURCES
+    }
+
+    public Collection<LinkNode> getNodes(Type t, KenaiProject k, LinkNode.RefreshCallback refreshCallback);
 }

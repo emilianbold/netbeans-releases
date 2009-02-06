@@ -37,19 +37,40 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui;
+package org.netbeans.modules.kenai.ui.spi;
 
-import java.util.Collection;
-import javax.swing.JComponent;
-import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.UIQuery.Type;
+import javax.swing.Action;
 
 /**
- *
+ * Represents one leaf node in Kenai Window
  * @author Jan Becicka
  */
-interface UIQueryImpl {
+public interface LinkNode {
+    /**
+     * html string representing leaf node
+     * supported tags are only
+     * <pre>
+     * <b>
+     * <a href="">
+     * </pre>
+     * @return
+     */
+    public String getHtmlString();
 
-    public Collection<LinkNode> getNodes(Type t, KenaiProject k);
-    public JComponent getComponent(Type t, KenaiProject k);
+    /**
+     * actions available on this node
+     * @return never returns null
+     */
+    public Action[] getActions();
+    /**
+     * @see KenaiProjectUI#getNodes(org.netbeans.modules.kenai.ui.spi.KenaiProjectUI.Type, org.netbeans.modules.kenai.api.KenaiProject, org.netbeans.modules.kenai.ui.spi.LinkNode.RefreshCallback) 
+     * @see KenaiProjectUIQuery#getNodes(org.netbeans.modules.kenai.ui.spi.KenaiProjectUI.Type, org.netbeans.modules.kenai.api.KenaiProject, org.netbeans.modules.kenai.ui.spi.LinkNode.RefreshCallback) 
+     */
+    public interface RefreshCallback {
+        /**
+         * Called when node wants to be refreshed
+         * @param node
+         */
+        public void refresh(LinkNode node);
+    }
 }

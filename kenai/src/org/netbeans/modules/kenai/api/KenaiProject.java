@@ -85,7 +85,7 @@ public final class KenaiProject {
         this.data = p;
     }
 
-    static KenaiProject get(ProjectData p) {
+    static synchronized KenaiProject get(ProjectData p) {
         final HashMap<String, WeakReference<KenaiProject>> projectsCache = Kenai.getDefault().projectsCache;
         WeakReference<KenaiProject> wr = projectsCache.get(p.name);
         KenaiProject result = null;
@@ -236,7 +236,11 @@ public final class KenaiProject {
 //        }
     }
 
-    private void refresh() throws KenaiException {
+    /**
+     * Reloads project from kenai.com server
+     * @throws org.netbeans.modules.kenai.api.KenaiException
+     */
+    public synchronized  void refresh() throws KenaiException {
         this.data = Kenai.getDefault().getDetails(getName());
 
         this.name = data.name;
@@ -246,6 +250,7 @@ public final class KenaiProject {
             throw new IllegalArgumentException(ex);
         }
         features=null;
+        Kenai.getDefault().fireKenaiEvent(new KenaiEvent(this, KenaiEvent.PROJECT_CHANGED));
     }
 
     @Override

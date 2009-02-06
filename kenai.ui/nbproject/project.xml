@@ -72,7 +72,7 @@
                 </dependency>
             </module-dependencies>
             <public-packages>
-                <package>org.netbeans.modules.kenai.ui.api</package>
+                <package>org.netbeans.modules.kenai.ui.spi</package>
             </public-packages>
         </data>
     </configuration>

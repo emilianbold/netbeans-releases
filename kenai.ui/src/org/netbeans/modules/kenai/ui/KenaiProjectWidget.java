@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.kenai.ui;
 
+import org.netbeans.modules.kenai.ui.spi.KenaiProjectUIQuery;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
@@ -46,13 +47,15 @@ import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.api.UIUtils;
+import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import org.netbeans.modules.kenai.ui.spi.KenaiProjectUI.Type;
+import org.netbeans.modules.kenai.ui.spi.LinkNode;
 
 /**
  *
  * @author Jan Becicka
  */
-public class KenaiProjectWidget extends JPanel {
+public class KenaiProjectWidget extends JPanel implements LinkNode.RefreshCallback {
     private KenaiProject project;
 
     public KenaiProjectWidget(KenaiProject project) {
@@ -80,9 +83,13 @@ public class KenaiProjectWidget extends JPanel {
                 }
             }
         });
-        ExpandableWidget widget = new ExpandableWidget(title, UIQuery.getComponent(UIQuery.Type.BUILDS, project), false);
-        add(widget);
+//        ExpandableWidget widget = new ExpandableWidget(title, KenaiProjectUIQuery.getComponent(Type.BUILDS, project, this), false);
+//        add(widget);
         validate();
+    }
+
+    public void refresh(LinkNode node) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

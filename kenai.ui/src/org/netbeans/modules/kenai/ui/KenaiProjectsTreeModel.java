@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.kenai.ui;
 
+import org.netbeans.modules.kenai.ui.spi.LinkNode;
+import org.netbeans.modules.kenai.ui.spi.KenaiProjectUIQuery;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
@@ -53,7 +55,7 @@ public class KenaiProjectsTreeModel extends DefaultTreeModel {
         DefaultMutableTreeNode project1 = new DefaultMutableTreeNode("My Kenai Project");
         DefaultMutableTreeNode project1Builds = new DefaultMutableTreeNode("Builds");
         project1.add(project1Builds);
-        for (LinkNode line :  UIQuery.getNodes(null, null)) {
+        for (LinkNode line :  KenaiProjectUIQuery.getNodes(null, null, null)) {
             project1Builds.add(new DefaultMutableTreeNode(line));
         }
         ((DefaultMutableTreeNode) getRoot()).add(project1);
