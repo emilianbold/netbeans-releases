@@ -576,13 +576,13 @@ public class GeneratorUtils {
         return pref.toString();
     }
 
-    private static enum TypeKind {
+    public static enum TypeKind {
         VOID,
         BOOLEAN,
         UNKNOWN
     };
     
-    private static TypeKind getTypeKind(CsmType type) {
+    public static TypeKind getTypeKind(CsmType type) {
         CharSequence text = type.getClassifierText();
         if (CharSequenceKey.Comparator.compare("void", text) == 0) { // NOI18N
             return TypeKind.VOID;
@@ -593,7 +593,7 @@ public class GeneratorUtils {
         return TypeKind.UNKNOWN;
     }
 
-    private static boolean isSameType(CsmType type1, CsmType type2) {
+    public static boolean isSameType(CsmType type1, CsmType type2) {
         if (type1.equals(type2)) {
             return true;
         } else if (type2 != null) {

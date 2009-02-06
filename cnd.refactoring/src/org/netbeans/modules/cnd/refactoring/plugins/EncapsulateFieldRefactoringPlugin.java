@@ -42,21 +42,23 @@ package org.netbeans.modules.cnd.refactoring.plugins;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldRefactoring;
+import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -76,7 +78,7 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
     // objects affected by refactoring
     private Collection<CsmObject> referencedObjects;
     
-    private CsmUID<CsmClass> fieldEncloserHandle;
+    private CsmClass fieldEncloser;
     /**
      * most restrictive accessibility modifier on tree path 
      */
@@ -84,9 +86,9 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
     /**
      * present accessibility of field
      */
-    private Set<CsmVisibility> fieldAccessibility;
-    private CsmUID<CsmMethod> currentGetter;
-    private CsmUID<CsmMethod> currentSetter;
+    private CsmVisibility fieldAccessibility;
+    private CsmMethod currentGetter;
+    private CsmMethod currentSetter;
     private static Set<CsmVisibility> accessModifiers = EnumSet.of(CsmVisibility.PRIVATE, CsmVisibility.PROTECTED, CsmVisibility.PUBLIC);
     private static List<CsmVisibility> MODIFIERS = Arrays.asList(CsmVisibility.PRIVATE, null, CsmVisibility.PROTECTED, CsmVisibility.PUBLIC);
     private final EncapsulateFieldRefactoring refactoring;
@@ -113,16 +115,12 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
     public Problem preCheck() {
         fireProgressListenerStart(AbstractRefactoring.PRE_CHECK, 2);
         try {
-//            javac.toPhase(JavaSource.Phase.RESOLVED);
-//            sourceType = this.refactoring.getSourceType();
-//            Problem result = isElementAvail(sourceType, javac);
-            Problem result = null;
+            CsmField field = refactoring.getSourceType();
+            Problem result = checkIfModificationPossible(null, field, "", ""); // NOI18N
             if (result != null) {
                 return result;
             }
-//
-//            Element field = sourceType.resolveElement(javac);
-//            fireProgressListenerStep();
+            fireProgressListenerStep();
 //            if (ElementKind.FIELD == field.getKind()) {
 //               TreePath tp = javac.getTrees().getPath(field);
 //               sourceType = TreePathHandle.create(tp, javac);
@@ -133,15 +131,11 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
 //                return new Problem(true, NbBundle.getMessage(EncapsulateFieldRefactoring.class, "ERR_ProjectNotOpened"));
 //            }
 //
-//            CsmClass encloser = (CsmClass) field.getEnclosingElement();
-//            ElementKind classKind = encloser.getKind();
-//            if (classKind == ElementKind.INTERFACE || classKind == ElementKind.ANNOTATION_TYPE) {
-//                return createProblem(result, true, NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_EncapsulateInIntf"));
-//            }
+            fieldEncloser = field.getContainingClass();
+            fieldAccessibility = field.getVisibility();
 //
-//            fieldEncloserHandle = ElementHandle.create(encloser);
 //            fieldAccessibility = field.getModifiers();
-//            fieldEncloserAccessibility = resolveVisibility(encloser);
+//            fieldEncloserAccessibility = resolveVisibility(fieldEncloser);
 //
             return result;
         } finally {
@@ -151,56 +145,58 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
     
     @Override
     public Problem fastCheckParameters() {
-        return fastCheckParameters(refactoring.getGetterName(), refactoring.getSetterName(), refactoring.getMethodModifiers(), refactoring.getFieldModifiers(), refactoring.isAlwaysUseAccessors());
+        return fastCheckParameters(refactoring.getGetterName(), refactoring.getSetterName());
     }
 
     @Override
     public Problem checkParameters() {
         Problem p = null;
-//        Element field = sourceType.resolveElement(javac);
-//        CsmClass clazz = (CsmClass) field.getEnclosingElement();
-//        String getname = refactoring.getGetterName();
-//        String setname = refactoring.getSetterName();
-//        ExecutableElement getter = null;
-//        ExecutableElement setter = null;
-//
-//        if (getname != null) {
-//            getter = findMethod(javac, clazz, getname, Collections.<CsmField>emptyList(), true);
-//        }
-//
-//        if (getter != null) {
-//            Types types = javac.getTypes();
-//            if (!types.isSameType(field.asType(), getter.getReturnType())) {
-//                String msg = NbBundle.getMessage(
-//                        EncapsulateFieldRefactoringPlugin.class,
-//                        "ERR_EncapsulateWrongGetter",
-//                        getname,
-//                        getter.getReturnType().toString());
-//                p = createProblem(p, false, msg);
-//            }
-//            if (getter.getEnclosingElement() == field.getEnclosingElement()) {
-//                currentGetter = ElementHandle.create(getter);
-//            }
-//        }
-//
-//        if (setname != null) {
-//            setter = findMethod(javac, clazz, setname, Collections.singletonList((CsmField) field), true);
-//        }
-//
-//        if (setter != null) {
-//            if (TypeKind.VOID != setter.getReturnType().getKind()) {
-//                p = createProblem(p, false, NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_EncapsulateWrongSetter", setname, setter.getReturnType()));
-//            }
-//            if (setter.getEnclosingElement() == field.getEnclosingElement()) {
-//                currentSetter = ElementHandle.create(setter);
-//            }
-//        }
+        CsmField field = refactoring.getSourceType();
+        CsmClass clazz = field.getContainingClass();
+        String getname = refactoring.getGetterName();
+        String setname = refactoring.getSetterName();
+        CsmMethod getter = null;
+        CsmMethod setter = null;
+
+        if (getname != null) {
+            getter = findMethod(clazz, getname, Collections.<CsmVariable>emptyList(), true);
+        }
+
+        if (getter != null) {
+            if (!GeneratorUtils.isSameType(field.getType(), getter.getReturnType())) {
+                String msg = NbBundle.getMessage(
+                        EncapsulateFieldRefactoringPlugin.class,
+                        "ERR_EncapsulateWrongGetter", // NOI18N
+                        getname,
+                        getter.getReturnType().getCanonicalText());
+                p = createProblem(p, false, msg);
+            }
+            if (clazz.equals(getter.getContainingClass())) {
+                currentGetter = getter;
+            }
+        }
+
+        if (setname != null) {
+            setter = findMethod(clazz, setname, Collections.singletonList(field), true);
+        }
+
+        if (setter != null) {
+            if (GeneratorUtils.getTypeKind(setter.getReturnType()) != GeneratorUtils.TypeKind.VOID) {
+                p = createProblem(p, false, NbBundle.getMessage(
+                        EncapsulateFieldRefactoringPlugin.class,
+                        "ERR_EncapsulateWrongSetter", // NOI18N
+                        setname,
+                        setter.getReturnType().getCanonicalText()));
+            }
+
+            if (clazz.equals(setter.getContainingClass())) {
+                currentSetter = setter;
+            }
+        }
         return p;
     }
     
-    private Problem fastCheckParameters(String getter, String setter,
-            Set<CsmVisibility> methodModifier, Set<CsmVisibility> fieldModifier,
-            boolean alwaysUseAccessors) {
+    private Problem fastCheckParameters(String getter, String setter) {
         
         if ((getter != null && !Utilities.isJavaIdentifier(getter))
                 || (setter != null && !Utilities.isJavaIdentifier(setter))
@@ -331,9 +327,14 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
     }
 
     @Override
-    protected Collection<CsmObject> getRefactoredObjects() {
-        return referencedObjects;
+    protected Collection<CsmFile> getRefactoredFiles() {
+        return Collections.emptySet();
     }
+
+//    @Override
+//    protected Collection<CsmObject> getRefactoredObjects() {
+//        return referencedObjects;
+//    }
 
     @Override
     protected void processFile(CsmFile csmFile, ModificationResult mr) {
