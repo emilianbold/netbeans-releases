@@ -609,7 +609,6 @@ public class GeneratorUtils {
         if (candidates != null) {
             CsmType type = field.getType();
             for (CsmMethod candidate : candidates) {
-                @SuppressWarnings("unchecked")
                 Collection<CsmParameter> parameters = candidate.getParameters();
                 if (getTypeKind(candidate.getReturnType()) == TypeKind.VOID && parameters.size() == 1 && isSameType(parameters.iterator().next().getType(), type)) {
                     return true;
