@@ -220,8 +220,11 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
             if (interrupter != null && interrupter.cancelled()){
                 break;
             }
-            // this is candidate to resolve
-            refs.add(CsmReferenceResolver.getDefault().findReference(file, token.getOffset()));
+            CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, token.getOffset());
+            if (ref != null) {
+                // this is candidate to resolve
+                refs.add(ref);
+            }
         }
         final Collection<CsmReference> out = new ArrayList<CsmReference>(20);
         ReferenceVisitor visitor = new ReferenceVisitor() {
