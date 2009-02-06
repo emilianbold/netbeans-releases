@@ -119,7 +119,7 @@ public class ModelIndexTest extends ModelTestBase {
     }
 
     public void testModelFile1() throws Exception {
-        TestClassMemberTask task = new TestClassMemberTask();
+        TestModelTask task = new TestModelTask();
         task.addDeclaredMethodNamesForClass("clsModelTest1", "methodClsModelTest1");
         task.addDeclaredMethodNamesForClass("clsModelTest2", "methodClsModelTest2");
         task.addDeclaredMethodNamesForIface("ifaceModelTest1", "methodIfaceModelTest1");
@@ -268,6 +268,7 @@ public class ModelIndexTest extends ModelTestBase {
             assertNotNull(fileScope);
             IndexScope indexScope = fileScope.getIndexScope();
             assertNotNull(indexScope);
+            testIndexScope(model, fileScope, indexScope);
             testFileScope(model, fileScope, indexScope);
             for (ClassScope classScope : fileScope.getDeclaredClasses()) {
                 testClassScope(model, fileScope, classScope, indexScope);
@@ -276,6 +277,7 @@ public class ModelIndexTest extends ModelTestBase {
                 testIfaceScope(model, fileScope, ifaceScope, indexScope);
             }
         }
+        abstract void testIndexScope(Model model, FileScope fileScope, IndexScope indexScope);
 
         abstract void testFileScope(Model model, FileScope fileScope, IndexScope indexScope);
 
@@ -289,7 +291,7 @@ public class ModelIndexTest extends ModelTestBase {
         DECLARED, INHERITED, ALL
     };
 
-    private class TestClassMemberTask extends AbstractTestModelTask {
+    private class TestModelTask extends AbstractTestModelTask {
 
         private Set<String> clsNames = new LinkedHashSet<String>();
         private Set<String> ifaceNames = new LinkedHashSet<String>();
@@ -350,6 +352,14 @@ public class ModelIndexTest extends ModelTestBase {
 
             allMethNameList.addAll(Arrays.asList(methodNames));
 
+        }
+
+        @Override
+        void testIndexScope(Model model, FileScope fScope, IndexScope iScope) {
+            Collection<? extends ClassScope> declaredClasses = fScope.getDeclaredClasses();
+            for (ClassScope classScope : declaredClasses) {
+                assertNotNull(classScope.getName(), getFirst(iScope.findClasses(classScope.getName())));
+            }
         }
 
         @Override
