@@ -962,7 +962,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 if (top == null) {
                     top = new Folder(folder.getConfigurationDescriptor(), folder, folderEntry.getFile().getName(), folderEntry.getFile().getName(), true);
                     String relativeRoot = FilePathAdaptor.normalize(IpeUtils.toRelativePath(getBaseDir(), folderEntry.getFile().getPath()));
-                    top.setRoot(relativeRoot);
+                    if (asDiskFolders) {
+                        top.setRoot(relativeRoot);
+                    }
                     folder.addFolder(top);
                 }
                 addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), folderEntry.getFileFilter(), null, filesAdded, notify);
@@ -1049,7 +1051,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 {
                     continue;
                 }
-                if (files[i].getName().equals(".hg")) // NOI18N
+                if (files[i].getName().startsWith(".")) // NOI18N
                 {
                     continue;
                 }
