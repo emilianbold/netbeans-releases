@@ -109,6 +109,9 @@ public class AutoupdateCatalogCache {
             }
             assert new File (dir, codeName).exists () : "Cache " + cache + " exists.";
             err.log (Level.FINER, "Cache file " + cache + " was wrote from original URL " + original);
+            if(cache.exists() && cache.length()==0) {
+                err.log (Level.INFO, "Written cache size is zero bytes");
+            }
             return url;
         }
     }
@@ -207,11 +210,13 @@ public class AutoupdateCatalogCache {
         
         OutputStream os = null;
         int read = 0;
+        int totalRead = 0;
         
         try {
             os = new BufferedOutputStream(new FileOutputStream (temp));
             while ((read = is.read ()) != -1) {
                 os.write (read);
+                totalRead+=read;
             }
             is.close ();
             os.flush ();
@@ -227,8 +232,17 @@ public class AutoupdateCatalogCache {
                     cache.delete();
                 }
             }
+            if(totalRead==0) {
+                err.log (Level.INFO, "Read zero bytes from server");
+            }
+            if(temp.length()==0) {
+                err.log (Level.INFO, "Temp cache size is zero bytes");
+            }
             if (! temp.renameTo (cache)) {
                 err.log (Level.INFO, "Cannot rename temp " + temp + " to cache " + cache);
+            }
+            if(cache.exists() && cache.length()==0) {
+                err.log (Level.INFO, "Final cache size is zero bytes");
             }
         } catch (IOException ioe) {
             err.log (Level.INFO, "Writing content of URL " + sourceUrl + " failed.", ioe);
