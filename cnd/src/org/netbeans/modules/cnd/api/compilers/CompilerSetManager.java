@@ -620,31 +620,32 @@ public class CompilerSetManager {
         log.fine("CSM.initRemoteCompilerSets for " + key + " [" + state + "]");
         final boolean wasOffline = record.isOffline();
         if (wasOffline) {
-            CompilerSetReporter.report("Connecting to " + RemoteUtils.getHostName(key) + "..."); //NOI18N
+            CompilerSetReporter.report("CSM_Conn", false, RemoteUtils.getHostName(key)); //NOI18N
         }
         record.validate(connect);
         if (record.isOnline()) {
             if (wasOffline) {
-                CompilerSetReporter.report("done.\n"); //NOI18N
+                CompilerSetReporter.report("CSM_Done"); //NOI18N
             }
             remoteInitialization = RequestProcessor.getDefault().post(new Runnable() {
 
                 @SuppressWarnings("unchecked")
                 public void run() {
-                    CompilerSetReporter.report("Configuring host.\n");//NOI18N
+                    CompilerSetReporter.report("CSM_ConfHost");//NOI18N
                     provider.init(key); //NOI18N
                     platform = provider.getPlatform();
-                    CompilerSetReporter.report("Validating platform...found " + PlatformTypes.toString(platform) + ".\nLooking for tool collections:\n");//NOI18N
+                    CompilerSetReporter.report("CSM_ValPlatf", true, PlatformTypes.toString(platform));//NOI18N
+                    CompilerSetReporter.report("CSM_LFTC");
                     log.fine("CSM.initRemoteCompileSets: platform = " + platform);
                     getPreferences().putInt(CSM + hkey + SET_PLATFORM, platform);
                     while (provider.hasMoreCompilerSets()) {
                         String data = provider.getNextCompilerSetData();
                         CompilerSet cs = parseCompilerSetString(key, platform, data);
                         if (cs != null) {
-                            CompilerSetReporter.report("  Found " + cs.getDisplayName() + " at " + cs.getDirectory() + ".\n");//NOI18N
+                            CompilerSetReporter.report("CSM_Found", true, cs.getDisplayName(), cs.getDirectory());//NOI18N
                             add(cs);
                         } else if(CompilerSetReporter.canReport()) {
-                            CompilerSetReporter.report("  Error creating compiler set " + data + ".\n");//NOI18N
+                            CompilerSetReporter.report("CSM_Err", true, data);//NOI18N
                         }
                     }
                     completeCompilerSets(platform);
@@ -658,13 +659,13 @@ public class CompilerSetManager {
                     }
                     log.fine("CSM.initRemoteCompilerSets: Found " + sets.size() + " compiler sets");
                     if (sets.size() == 0) {
-                        CompilerSetReporter.report("Done. No tool collections were found in default locations. You can configure them manually later using Tools > Options dialog.\n"); //NOI18N
+                        CompilerSetReporter.report("CSM_Done_NF"); //NOI18N
                     } else {
-                        CompilerSetReporter.report("Done. Found " + sets.size() + " tool collection(s).\n");//NOI18N
+                        CompilerSetReporter.report("CSM_Done_OK", true,  sets.size());//NOI18N
                     }
                     state = State.STATE_COMPLETE;
 
-                    CompilerSetReporter.report("Your host was successfully configured.\n");//NOI18N
+                    CompilerSetReporter.report("CSM_Conigured");//NOI18N
                     provider.loadCompilerSetData(setsCopy).addTaskListener(new TaskListener() {
 
                         public void taskFinished(org.openide.util.Task task) {
@@ -675,7 +676,7 @@ public class CompilerSetManager {
                 }
             });
         } else {
-            CompilerSetReporter.report("...failed. Hostname is wrong or host is offline.\n");//NOI18N
+            CompilerSetReporter.report("CSM_Fail");//NOI18N
             // create empty CSM
             log.fine("CSM.initRemoteCompilerSets: Adding empty CS to OFFLINE host " + key);
             add(CompilerSet.createEmptyCompilerSet(PlatformTypes.PLATFORM_NONE));

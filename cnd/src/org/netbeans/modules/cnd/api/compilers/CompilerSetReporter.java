@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.api.compilers;
 
 import java.io.IOException;
 import java.io.Writer;
+import org.openide.util.NbBundle;
 
 /**
  * Sometimes we need to make process of setting up compiler set verbose.
@@ -61,10 +62,18 @@ public class CompilerSetReporter {
     }
 
     /* package-local */
-    static void report(String msg) {
+    static void report(String msgKey) {
+        report(msgKey, true);
+    }
+
+    /* package-local */
+    static void report(String msgKey, boolean addLineFeed, Object... params) {
         if (writer != null) {
             try {
-                writer.write(msg);
+                writer.write(NbBundle.getMessage(CompilerSetReporter.class, msgKey, params));
+                if (addLineFeed) {
+                    writer.write('\n');
+                }
             } catch (IOException ex) {
             }
         }
