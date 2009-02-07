@@ -270,10 +270,12 @@ public final class CreateHostVisualPanel2 extends JPanel {
                 if (!alreadyOnline) {
                     addOuputTextInUiThread(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgConnectingTo",
                             RemoteUtils.getHostName(hostKey)));
-                    record.init(null);
-                    addOuputTextInUiThread(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgDone") + '\n');
+                    record.init(null);                    
                 }
                 if (record.isOnline()) {
+                    if (!alreadyOnline) {
+                        addOuputTextInUiThread(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgDone") + '\n');
+                    }
                     CompilerSetReporter.setWriter(new Writer() {
 
                         @Override
@@ -294,6 +296,9 @@ public final class CreateHostVisualPanel2 extends JPanel {
                     csm.initialize(false);
                     hostFound = csm.getHost(); //TODO: no validations, pure cheat
                     wizardListener.stateChanged(null);
+                } else {
+                    addOuputTextInUiThread(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.ErrConn")
+                            + '\n' + record.getReason()); //NOI18N
                 }
                 phandle.finish();
                 CompilerSetReporter.setWriter(null);
