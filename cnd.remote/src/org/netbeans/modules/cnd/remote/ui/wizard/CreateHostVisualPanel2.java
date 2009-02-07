@@ -52,6 +52,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetReporter;
+import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
@@ -248,7 +249,7 @@ public final class CreateHostVisualPanel2 extends JPanel {
         final boolean alreadyOnline = record.isOnline();
         enableButtons(false);
         if (alreadyOnline) {
-            String message = NbBundle.getMessage(getClass(), "AlreadyConnectedMsg1");
+            String message = NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgAlreadyConnected1");
             message = String.format(message, hostKey);
             tpOutput.setText(message);
         } else {
@@ -267,7 +268,10 @@ public final class CreateHostVisualPanel2 extends JPanel {
 
             public void run() {
                 if (!alreadyOnline) {
+                    addOuputTextInUiThread(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgConnectingTo",
+                            RemoteUtils.getHostName(hostKey)));
                     record.init(null);
+                    addOuputTextInUiThread(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgDone") + '\n');
                 }
                 if (record.isOnline()) {
                     CompilerSetReporter.setWriter(new Writer() {
@@ -275,18 +279,7 @@ public final class CreateHostVisualPanel2 extends JPanel {
                         @Override
                         public void write(char[] cbuf, int off, int len) throws IOException {
                             final String value = new String(cbuf, off, len);
-                            try {
-                                SwingUtilities.invokeAndWait(new Runnable() {
-
-                                    public void run() {
-                                        tpOutput.setText(tpOutput.getText() + value);
-                                    }
-                                });
-                            } catch (InterruptedException ex) {
-                                Exceptions.printStackTrace(ex);
-                            } catch (InvocationTargetException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
+                            addOuputTextInUiThread(value);
                         }
 
                         @Override
@@ -296,7 +289,6 @@ public final class CreateHostVisualPanel2 extends JPanel {
                         @Override
                         public void close() throws IOException {
                         }
-
                     });
                     CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(hostKey);
                     csm.initialize(false);
@@ -311,13 +303,31 @@ public final class CreateHostVisualPanel2 extends JPanel {
                         pbarStatusPanel.setVisible(false);
                         enableButtons(true);
                         if (alreadyOnline) {
-                            tpOutput.setText(tpOutput.getText() + '\n' + //NOI18N
-                                    NbBundle.getMessage(getClass(), "AlreadyConnectedMsg2"));
+                            addOuputTextInUiThread('\n' + NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgAlreadyConnected2"));
                         }
                     }
                 });
             }
         });
+    }
+
+    private void addOuputTextInUiThread(final String value) {
+        Runnable r = new Runnable() {
+                public void run() {
+                    tpOutput.setText(tpOutput.getText() + value);
+                }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(r);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

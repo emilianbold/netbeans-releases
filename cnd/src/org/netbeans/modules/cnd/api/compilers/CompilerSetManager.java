@@ -618,10 +618,15 @@ public class CompilerSetManager {
         assert record != null;
 
         log.fine("CSM.initRemoteCompilerSets for " + key + " [" + state + "]");
-        CompilerSetReporter.report("Connecting to " + RemoteUtils.getHostName(key) + "..."); //NOI18N
+        final boolean wasOffline = record.isOffline();
+        if (wasOffline) {
+            CompilerSetReporter.report("Connecting to " + RemoteUtils.getHostName(key) + "..."); //NOI18N
+        }
         record.validate(connect);
         if (record.isOnline()) {
-            CompilerSetReporter.report("done.\n"); //NOI18N
+            if (wasOffline) {
+                CompilerSetReporter.report("done.\n"); //NOI18N
+            }
             remoteInitialization = RequestProcessor.getDefault().post(new Runnable() {
 
                 @SuppressWarnings("unchecked")
