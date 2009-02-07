@@ -84,7 +84,7 @@ public class Folder implements FileChangeListener {
     private final boolean projectFiles;
     private String id = null;
     private String root;
-    private FileObject folderFileObject;
+//    private FileObject folderFileObject;
     private final Logger log = Logger.getLogger("makeproject.folder"); // NOI18N
 
     public Folder(ConfigurationDescriptor configurationDescriptor, Folder parent, String name, String displayName, boolean projectFiles) {
@@ -96,7 +96,7 @@ public class Folder implements FileChangeListener {
         this.items = new Vector<Object>();
         this.sortName = displayName.toLowerCase();
 
-        log.setLevel(Level.ALL);
+        log.setLevel(Level.FINER);
     }
 
     public void setRoot(String root) {
@@ -112,44 +112,86 @@ public class Folder implements FileChangeListener {
     }
     
     public void attachListenersAndRefresh() {
-        log.fine("----------- attachListeners " + getPath()); // NOI18N
+        if (true) return;
+        log.finer("----------attachListenersAndRefresh " + getPath()); // NOI18N
         String rootPath = getRootPath();
         String AbsRootPath = IpeUtils.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
-        Vector<Folder> subFolders = getFolders();
-        for (Folder f : subFolders) {
-            f.attachListenersAndRefresh();
-        }
+
         File folderFile = new File(AbsRootPath);
+
+        // Folders to be removed
         if (!folderFile.exists() || !folderFile.isDirectory()) {
             // Remove it plus all subfolders and items from project
-            log.fine("-------- to be removed " + rootPath); // NOI18N
+            log.fine("------------removing folder " + getPath() + " in " + getParent().getPath()); // NOI18N
+            getParent().removeFolder(this);
+            return;
         }
-
-        // Refresh
+        // Items to be removed
+        for (Item item : getItemsAsArray()) {
+            if (!item.getFile().exists()) {
+                log.fine("------------removing item " + item.getPath() + " in " + getPath()); // NOI18N
+                removeItem(item);
+            }
+        }
+        // files/folders to be added
         File files[] = folderFile.listFiles();
         if (files == null) {
             return;
         }
         List<File> fileList = new ArrayList<File>();
         for (int i = 0; i < files.length; i++) {
-            if (AllSourceFileFilter.getInstance().accept(files[i]) &&
-                    !files[i].getName().equals("nbproject")) { // NOI18N
+            if (AllSourceFileFilter.getInstance().accept(files[i]) && // NOI18N
+                    !files[i].getName().equals("nbproject") && // NOI18N
+                    !files[i].getName().equals("CVS") && // NOI18N
+                    !files[i].getName().equals("SCCS") && // NOI18N
+                    !files[i].getName().startsWith(".")) { // NOI18N
                 fileList.add(files[i]);
             }
         }
-
-        folderFileObject = FileUtil.toFileObject(folderFile);
-        if (folderFileObject == null) {
-            return; // FIXUP: error ?
+        for (File file : fileList) {
+            if (file.isDirectory()) {
+                if (findFolderByName(file.getName()) == null) {
+                    log.fine("------------adding folder " + file.getPath() + " in " + getPath()); // NOI18N
+                    AllSourceFileFilter filter = AllSourceFileFilter.getInstance();
+                    Vector<SourceFolderInfo> data = new Vector<SourceFolderInfo>();
+                    FolderEntry folderEntry = new FolderEntry(file, file.getName());
+                    folderEntry.setAddSubfoldersSelected(true);
+                    folderEntry.setFileFilter(filter);
+                    data.add(folderEntry);
+                    ((MakeConfigurationDescriptor)getConfigurationDescriptor()).addSourceFilesFromFolders(this, data.iterator(), false, false, false);
+                }
+            }
+            else {
+                String path = getRootPath() + '/' + file.getName();
+                if (path.startsWith("./")) { // NOI18N
+                    path = path.substring(2);
+                }
+                if (findItemByPath(path) == null) {
+                    log.fine("------------adding item " + file.getPath() + " in " + getPath()); // NOI18N
+                    addItem(new Item(path));
+                }
+            }
         }
+
+//        folderFileObject = FileUtil.toFileObject(folderFile);
+//        if (folderFileObject == null) {
+//            return; // FIXUP: error ?
+//        }
+
         FileUtil.addFileChangeListener(this, folderFile);
-        log.fine("----------- attachListener " + folderFileObject); // NOI18N
+        log.finer("-----------attachListener " + getPath()); // NOI18N
+
+        // Repeast for all sub folders
+        Vector<Folder> subFolders = getFolders();
+        for (Folder f : subFolders) {
+            f.attachListenersAndRefresh();
+        }
     }
 
     public void detachListener() {
-        log.fine("------------ detachListener " + getPath()); // NOI18N
+        log.finer("-----------detachListener " + getPath()); // NOI18N
         FileUtil.removeFileChangeListener(this);
-        folderFileObject = null;
+//        folderFileObject = null;
     }
 
     public int size() {
