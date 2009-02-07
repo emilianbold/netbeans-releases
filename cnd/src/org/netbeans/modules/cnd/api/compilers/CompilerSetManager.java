@@ -634,8 +634,8 @@ public class CompilerSetManager {
                     CompilerSetReporter.report("CSM_ConfHost");//NOI18N
                     provider.init(key); //NOI18N
                     platform = provider.getPlatform();
-                    CompilerSetReporter.report("CSM_ValPlatf", true, PlatformTypes.toString(platform));//NOI18N
-                    CompilerSetReporter.report("CSM_LFTC");
+                    CompilerSetReporter.report("CSM_ValPlatf", true, PlatformTypes.toString(platform)); //NOI18N
+                    CompilerSetReporter.report("CSM_LFTC"); //NOI18N
                     log.fine("CSM.initRemoteCompileSets: platform = " + platform);
                     getPreferences().putInt(CSM + hkey + SET_PLATFORM, platform);
                     while (provider.hasMoreCompilerSets()) {
