@@ -45,6 +45,7 @@ import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.gsf.codecoverage.api.CoverageActionFactory;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.spi.project.ActionProvider;
@@ -196,6 +197,8 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             actions.add(provider.getAction(ActionProvider.COMMAND_RUN));
             actions.add(provider.getAction(ActionProvider.COMMAND_DEBUG));
             actions.add(provider.getAction(ActionProvider.COMMAND_TEST));
+            actions.add(null);
+            actions.add(CoverageActionFactory.createCollectorAction(null, null));
             actions.add(null);
             actions.add(CommonProjectActions.setProjectConfigurationAction());
             actions.add(null);

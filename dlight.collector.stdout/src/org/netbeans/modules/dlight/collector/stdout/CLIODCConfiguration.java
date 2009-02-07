@@ -38,7 +38,9 @@
  */
 package org.netbeans.modules.dlight.collector.stdout;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
@@ -63,6 +65,7 @@ public final class CLIODCConfiguration
     private final String command;
     private final String arguments;
     private final CLIOParser parser;
+    private final Map<String, String> envs;
     private final List<DataTableMetadata> dataTablesMetadata;
     private boolean indicatorDataProvider;
 
@@ -96,6 +99,7 @@ public final class CLIODCConfiguration
         this.arguments = arguments;
         this.parser = parser;
         this.dataTablesMetadata = dataTablesMetadata;
+        this.envs = new HashMap<String, String>();
     }
 
     /**
@@ -104,6 +108,11 @@ public final class CLIODCConfiguration
      */
     public void registerAsIndicatorDataProvider(boolean indicatorDataProvider) {
         this.indicatorDataProvider = indicatorDataProvider;
+    }
+
+    public void setDLightTargetExecutionEnv(Map<String, String> envs){
+        this.envs.clear();
+        this.envs.putAll(envs);
     }
 
     /**
@@ -175,6 +184,11 @@ public final class CLIODCConfiguration
         public boolean registerAsIndicatorDataProvider(
                 CLIODCConfiguration configuration) {
             return configuration.registerAsIndicatorDataProvider();
+        }
+
+        @Override
+        public Map<String, String> getDLightTargetExecutionEnv(CLIODCConfiguration configuration) {
+            return configuration.envs;
         }
     }
 }

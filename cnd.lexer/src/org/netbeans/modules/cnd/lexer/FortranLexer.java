@@ -866,7 +866,7 @@ public class FortranLexer implements Lexer<FortranTokenId> {
     /**
      * State of lexing process
      */
-    private class State {
+    private static class State {
         // State of lexer
 
         int lexerState;

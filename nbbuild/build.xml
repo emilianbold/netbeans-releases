@@ -1885,7 +1885,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
           </condition>
       </fail>
       <taskdef name="layerindex" classname="org.netbeans.nbbuild.LayerIndex" classpath="nbantext.jar"/>
-      <layerindex output="${generated.files.dir}/layers.txt">
+      <layerindex output="${generated.files.dir}/layers.txt" serviceoutput="${generated.files.dir}/services.txt">
           <modules dir="${build}">
               <include name="**/*.jar"/>
               <exclude name="testtools/"/>

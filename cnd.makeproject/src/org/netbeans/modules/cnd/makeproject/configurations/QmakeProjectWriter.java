@@ -160,9 +160,9 @@ public class QmakeProjectWriter {
 
     private void write(BufferedWriter bw) throws IOException {
         write(bw, Variable.TEMPLATE, Operation.SET, getTemplate());
-        write(bw, Variable.DESTDIR, Operation.SET, configuration.expandMacros(configuration.getQmakeConfiguration().getDestdirValue()));
-        write(bw, Variable.TARGET, Operation.SET, configuration.expandMacros(configuration.getQmakeConfiguration().getTargetValue()));
-        write(bw, Variable.VERSION, Operation.SET, configuration.getQmakeConfiguration().getVersion().getValue());
+        write(bw, Variable.DESTDIR, Operation.SET, expandAndQuote(configuration.getQmakeConfiguration().getDestdirValue()));
+        write(bw, Variable.TARGET, Operation.SET, expandAndQuote(configuration.getQmakeConfiguration().getTargetValue()));
+        write(bw, Variable.VERSION, Operation.SET, expandAndQuote(configuration.getQmakeConfiguration().getVersion().getValue()));
         write(bw, Variable.CONFIG, Operation.SUB, "debug_and_release"); // NOI18N
         write(bw, Variable.CONFIG, Operation.ADD, getConfig());
         write(bw, Variable.QT, Operation.SET, configuration.getQmakeConfiguration().getEnabledModules());
@@ -175,13 +175,13 @@ public class QmakeProjectWriter {
         write(bw, Variable.TRANSLATIONS, Operation.ADD, getItems(items, MIMENames.QT_TRANSLATION_MIME_TYPE));
 
         write(bw, Variable.OBJECTS_DIR, Operation.SET,
-                configuration.expandMacros(ConfigurationMakefileWriter.getObjectDir(configuration)));
+                expandAndQuote(ConfigurationMakefileWriter.getObjectDir(configuration)));
         write(bw, Variable.MOC_DIR, Operation.SET,
-                configuration.expandMacros(configuration.getQmakeConfiguration().getMocDir().getValue()));
+                expandAndQuote(configuration.getQmakeConfiguration().getMocDir().getValue()));
         write(bw, Variable.RCC_DIR, Operation.SET,
-                configuration.expandMacros(configuration.getQmakeConfiguration().getRccDir().getValue()));
+                expandAndQuote(configuration.getQmakeConfiguration().getRccDir().getValue()));
         write(bw, Variable.UI_DIR, Operation.SET,
-                configuration.expandMacros(configuration.getQmakeConfiguration().getUiDir().getValue()));
+                expandAndQuote(configuration.getQmakeConfiguration().getUiDir().getValue()));
 
         write(bw, Variable.QMAKE_CC, Operation.SET,
                 ConfigurationMakefileWriter.getCompilerName(configuration, Tool.CCompiler));
@@ -189,11 +189,12 @@ public class QmakeProjectWriter {
                 ConfigurationMakefileWriter.getCompilerName(configuration, Tool.CCCompiler));
 
         CompilerSet compilerSet = configuration.getCompilerSet().getCompilerSet();
-        OptionToString optionVisitor = new OptionToString(compilerSet, null);
+        OptionToString defineVisitor = new OptionToString(compilerSet, null);
         write(bw, Variable.DEFINES, Operation.ADD,
-                configuration.getCCCompilerConfiguration().getPreprocessorConfiguration().toString(optionVisitor));
+                configuration.getCCCompilerConfiguration().getPreprocessorConfiguration().toString(defineVisitor));
+        IncludeToString includeVisitor = new IncludeToString(compilerSet);
         write(bw, Variable.INCLUDEPATH, Operation.ADD,
-                configuration.getCCCompilerConfiguration().getIncludeDirectories().toString(optionVisitor));
+                configuration.getCCCompilerConfiguration().getIncludeDirectories().toString(includeVisitor));
         LibraryToString libVisitor = new LibraryToString();
         write(bw, Variable.LIBS, Operation.ADD,
                 configuration.getLinkerConfiguration().getLibrariesConfiguration().toString(libVisitor));
@@ -272,6 +273,10 @@ public class QmakeProjectWriter {
         return list;
     }
 
+    private String expandAndQuote(String s) {
+        return IpeUtils.quoteIfNecessary(configuration.expandMacros(s));
+    }
+
     private static class LibraryToString implements VectorConfiguration.ToString<LibraryItem> {
 
         public String toString(LibraryItem item) {
@@ -289,4 +294,26 @@ public class QmakeProjectWriter {
         }
 
     }
+
+    private static class IncludeToString implements VectorConfiguration.ToString<String> {
+
+        private final CompilerSet compilerSet;
+
+        public IncludeToString(CompilerSet compilerSet) {
+            this.compilerSet = compilerSet;
+        }
+
+        public String toString(String item) {
+            if (0 < item.length()) {
+                if (compilerSet != null) {
+                    item = compilerSet.normalizeDriveLetter(item);
+                }
+                return IpeUtils.quoteIfNecessary(item);
+            } else {
+                return ""; // NOI18N
+            }
+        }
+
+    }
+
 }

@@ -206,13 +206,13 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         if (TraceFlags.TRACE_XREF_REPOSITORY) {
             System.err.println("resolving " + name + " in file " + file.getAbsolutePath());
         }
-        long time = 0;
-        if (TraceFlags.TRACE_XREF_REPOSITORY) {
-            time = System.currentTimeMillis();
-        }
+        //long time = 0;
+        //if (TraceFlags.TRACE_XREF_REPOSITORY) {
+        //    time = System.currentTimeMillis();
+        //}
         Collection<APTToken> tokens = getTokensToResolve(file, name.toString(), startOffset, endOffset);
         if (TraceFlags.TRACE_XREF_REPOSITORY) {
-            time = System.currentTimeMillis() - time;
+            //time = System.currentTimeMillis() - time;
             System.err.println("collecting tokens");
         }
         Collection<CsmReference> refs = new ArrayList<CsmReference>(20);
@@ -220,8 +220,11 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
             if (interrupter != null && interrupter.cancelled()){
                 break;
             }
-            // this is candidate to resolve
-            refs.add(CsmReferenceResolver.getDefault().findReference(file, token.getOffset()));
+            CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, token.getOffset());
+            if (ref != null) {
+                // this is candidate to resolve
+                refs.add(ref);
+            }
         }
         final Collection<CsmReference> out = new ArrayList<CsmReference>(20);
         ReferenceVisitor visitor = new ReferenceVisitor() {

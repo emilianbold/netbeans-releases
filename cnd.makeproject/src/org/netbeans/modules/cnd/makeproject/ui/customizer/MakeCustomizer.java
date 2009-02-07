@@ -858,7 +858,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 descriptions.toArray(new CustomizerNode[descriptions.size()]));
     }
 
-    class BuildCustomizerNode extends CustomizerNode {
+    static class BuildCustomizerNode extends CustomizerNode {
 
         public BuildCustomizerNode(String name, String displayName, CustomizerNode[] children) {
             super(name, displayName, children);
@@ -883,7 +883,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 null);
     }
 
-    class GeneralItemCustomizerNode extends CustomizerNode {
+    static class GeneralItemCustomizerNode extends CustomizerNode {
 
         private Item item;
 
@@ -907,7 +907,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 null);
     }
 
-    class GeneralFolderCustomizerNode extends CustomizerNode {
+    static class GeneralFolderCustomizerNode extends CustomizerNode {
 
         private Folder folder;
 
@@ -930,7 +930,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 null);
     }
 
-    class CustomBuildItemCustomizerNode extends CustomizerNode {
+    static class CustomBuildItemCustomizerNode extends CustomizerNode {
 
         private Item item;
 
@@ -975,7 +975,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 null);
     }
 
-    class MakefileCustomizerNode extends CustomizerNode {
+    static class MakefileCustomizerNode extends CustomizerNode {
 
         public MakefileCustomizerNode(String name, String displayName, CustomizerNode[] children) {
             super(name, displayName, children);
@@ -1000,7 +1000,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 null);
     }
 
-    class RequiredProjectsCustomizerNode extends CustomizerNode {
+    static class RequiredProjectsCustomizerNode extends CustomizerNode {
 
         public RequiredProjectsCustomizerNode(String name, String displayName, CustomizerNode[] children) {
             super(name, displayName, children);
@@ -1037,7 +1037,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         return generalLinkerNode;
     }
 
-    class LinkerGeneralCustomizerNode extends CustomizerNode {
+    static class LinkerGeneralCustomizerNode extends CustomizerNode {
 
         private boolean isQtMode;
 
@@ -1063,7 +1063,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         return generalNode;
     }
 
-    class ArchiverGeneralCustomizerNode extends CustomizerNode {
+    static class ArchiverGeneralCustomizerNode extends CustomizerNode {
 
         public ArchiverGeneralCustomizerNode(String name, String displayName, CustomizerNode[] children) {
             super(name, displayName, children);
@@ -1163,7 +1163,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         return host;
     }
 
-    class CCompilerCustomizerNode extends CustomizerNode {
+    static class CCompilerCustomizerNode extends CustomizerNode {
 
         private Item item;
         private Folder folder;
@@ -1209,7 +1209,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         return ccCompilerCustomizerNode;
     }
 
-    class CCCompilerCustomizerNode extends CustomizerNode {
+    static class CCCompilerCustomizerNode extends CustomizerNode {
 
         private Item item;
         private Folder folder;
@@ -1253,7 +1253,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         return fortranCompilerCustomizerNode;
     }
 
-    class FortranCompilerCustomizerNode extends CustomizerNode {
+    static class FortranCompilerCustomizerNode extends CustomizerNode {
 
         private Item item;
 
@@ -1291,7 +1291,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         return assemblerCustomizerNode;
     }
 
-    class AssemblerCustomizerNode extends CustomizerNode {
+    static class AssemblerCustomizerNode extends CustomizerNode {
 
         private Item item;
 
@@ -1337,7 +1337,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         return label;
     }
 
-    private class DummyNode extends AbstractNode {
+    private static class DummyNode extends AbstractNode {
 
         public DummyNode(Sheet sheet, String name) {
             super(Children.LEAF);

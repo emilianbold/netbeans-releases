@@ -1057,6 +1057,10 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 {
                     continue;
                 }
+                if (files[i].getName().equals("nbproject")) // NOI18N
+                {
+                    continue;
+                }
                 Folder dirfolder = folder;
                 if (addSubFolders) {
                     dirfolder = folder.findFolderByName(files[i].getName());
@@ -1065,9 +1069,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                     }
                 }
                 addFiles(dirfolder, files[i], addSubFolders, filter, handle, filesAdded, notify);
-                if (dirfolder.size() == 0) {
-                    folder.removeFolder(dirfolder);
-                }
+//                if (dirfolder.size() == 0) {
+//                    folder.removeFolder(dirfolder);
+//                }
             } else {
                 String filePath;
                 if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {

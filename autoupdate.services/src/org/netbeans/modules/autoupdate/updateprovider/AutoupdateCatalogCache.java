@@ -119,6 +119,9 @@ public class AutoupdateCatalogCache {
         File cache = new File (dir, codeName);
         
         if (cache != null && cache.exists ()) {
+            if(cache.length() == 0) {
+                err.log(Level.INFO, "Cache file " + cache + " exists and of zero size");
+            }
             URL url = null;
             try {
                 url = cache.toURI ().toURL ();

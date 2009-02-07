@@ -328,6 +328,7 @@ public class ProjectActionSupport {
                         ProjectActionHandler handler = currentHandler = factory.createHandler();
                         initHandler(handler, pae);
                         handler.execute(ioTab);
+                        break;
                     }
                 }
 

@@ -118,21 +118,21 @@ class Reporter < Spec::Runner::Reporter
 
   def example_started(example)
     start_timer
-    puts "%RSPEC_TEST_STARTED% #{example.description}"
+    puts "%RSPEC_TEST_STARTED% #{description(example)}"
     super
   end
 
   def failure(example, error)
     backtrace_tweaker.tweak_backtrace(error)
     error_msg = error.message != nil ? error.message : ""
-    puts "%RSPEC_TEST_FAILED% file=#{location(example)} description=#{example.description} time=#{elapsed_time} message=#{error_msg.to_s.gsub($/, " ")} location=#{error.backtrace[0]}"
+    puts "%RSPEC_TEST_FAILED% file=#{location(example)} description=#{description(example)} time=#{elapsed_time} message=#{error_msg.to_s.gsub($/, " ")} location=#{error.backtrace[0]}"
     super
   end
   alias_method :example_failed, :failure
 
   private
   def example_passed(example)
-    puts "%RSPEC_TEST_FINISHED% file=#{location(example)} description=#{example.description} time=#{elapsed_time}"
+    puts "%RSPEC_TEST_FINISHED% file=#{location(example)} description=#{description(example)} time=#{elapsed_time}"
     super
   end
 
@@ -148,10 +148,10 @@ class Reporter < Spec::Runner::Reporter
     case args[1]
     when String
       # 1.1.4
-      puts "%RSPEC_TEST_PENDING% file=#{location(args[0])} description=#{args[0].description} time=#{elapsed_time} message=#{args[1]}"
+      puts "%RSPEC_TEST_PENDING% file=#{location(args[0])} description=#{description(args[0])} time=#{elapsed_time} message=#{description(args[1])}"
     else
       # 1.1.3 or older
-      puts "%RSPEC_TEST_PENDING% file=#{location(args[1])} description=#{args[1].description} time=#{elapsed_time} message=#{args[2]}"
+      puts "%RSPEC_TEST_PENDING% file=#{location(args[1])} description=#{description(args[1])} time=#{elapsed_time} message=#{args[2]}"
     end
   end
 
@@ -171,6 +171,12 @@ class Reporter < Spec::Runner::Reporter
       location = backtrace[0] unless backtrace.length == 0
     end
     location
+  end
+
+  # returns the description for the given example
+  # see IZ156839 - in edge rspec the given example is a string
+  def description(example)
+    example.respond_to?(:description, false) ? example.description : example
   end
 
 end

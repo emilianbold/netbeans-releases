@@ -118,7 +118,6 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
                 }
                 CsmClassifier cls = ns.getProject().findClassifier(qn);
                 if (cls != null) {
-                    scope = (CsmScope) cls;
                     if (CsmKindUtilities.isClass(cls)) {
                         CsmClass container = (CsmClass) cls;
                         Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers(container,

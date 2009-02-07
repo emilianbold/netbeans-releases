@@ -77,6 +77,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.DebugGraphics;
@@ -102,6 +103,7 @@ import org.netbeans.modules.vmd.game.model.TiledLayerListener;
 import org.netbeans.modules.vmd.game.view.ColorConstants;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 
@@ -119,6 +121,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
     
     private static final Color GRID_COLOR = ColorConstants.COLOR_OUTLINE_PLAIN;
     private static final Color ANIMATED_TILE_GRID_COLOR = Color.CYAN;
+    private static final Color INCORRECT_TILE_GRID_COLOR = Color.RED;
     private static final Color HILITE_COLOR = new Color(0, 0, 255, 20);
         
     private static final int CELL_BORDER_WIDTH = 0;
@@ -314,6 +317,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
         if (DEBUG) System.out.println("Paint cell: " + rect); // NOI18N
         Position topLeft = this.getCellAtPoint(rect.getLocation());
         Position bottomRight = this.getCellAtCoordinates(rect.getLocation().x + rect.width, rect.getLocation().y + rect.height);
+        boolean haveIncorrectTiles = false;
         //if (DEBUG) System.out.println("topLeft: " + topLeft + ", bottomRight: " + bottomRight);
         //rows
         for (int row = topLeft.getRow(); row <= bottomRight.getRow(); row++) {
@@ -321,28 +325,52 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
             for (int col = topLeft.getCol(); col <= bottomRight.getCol(); col++) {
                 Position cell = new Position(row, col);
                 //if (DEBUG) System.out.println("Looking at: " + cell + " compared to " + this.cellHiLited);
-                this.paintCellContents(g, cell);
-                
-                //paint selected cells
-                if (this.currentSelectedColor != null && (this.cellsSelected.contains(cell))) {
-                    this.paintCellSelection(g, cell, this.currentSelectedColor);
-                }
-                
-                //hi-lite animated tiles
-                if (this.tiledLayer.getTileAt(cell).getIndex() < 0) {
-                    //if (DEBUG) System.out.println("animated grid");
-                    this.paintGridHiLite(g, cell, ANIMATED_TILE_GRID_COLOR);
+                if (this.paintCellContents(g, cell)) {
+
+                    //paint selected cells
+                    if (this.currentSelectedColor != null && (this.cellsSelected.contains(cell))) {
+                        this.paintCellSelection(g, cell, this.currentSelectedColor);
+                    }
+
+                    //hi-lite animated tiles
+                    if (this.tiledLayer.getTileAt(cell).getIndex() < 0) {
+                        //if (DEBUG) System.out.println("animated grid");
+                        this.paintGridHiLite(g, cell, ANIMATED_TILE_GRID_COLOR);
+                    }
+                } else {
+                    // TODO hilight error tile
+                    this.paintGridHiLite(g, cell, INCORRECT_TILE_GRID_COLOR);
+                    haveIncorrectTiles = true;
                 }
             }
         }
+        if (haveIncorrectTiles){
+            DialogDisplayer.getDefault().notifyLater( new NotifyDescriptor.Message(
+                    NbBundle.getMessage(TiledLayerEditorComponent.class,
+                        "TiledLayerEditorComponent.incorrectTileIndex.errorMessage"), // NOI18N
+                    NotifyDescriptor.ERROR_MESSAGE));
+        }
     }
-    
-    private void paintCellContents(Graphics2D g, Position cell) {
+
+    /**
+     *
+     * @param g
+     * @param cell
+     * @return if cell was painted. false if tile with specified position diesn't exist.
+     * Is used to catch problems with not existing cells
+     * (e.g. there is an index of not created animated tile )
+     */
+    private boolean paintCellContents(Graphics2D g, Position cell) {
         Tile tile = this.tiledLayer.getTileAt(cell.getRow(), cell.getCol());
-        Rectangle rect = this.getCellArea(cell);
-        int x = rect.x + CELL_BORDER_WIDTH;
-        int y = rect.y + CELL_BORDER_WIDTH;
-        tile.paint(g, x, y);
+        if (tile != null) {
+            Rectangle rect = this.getCellArea(cell);
+            int x = rect.x + CELL_BORDER_WIDTH;
+            int y = rect.y + CELL_BORDER_WIDTH;
+            tile.paint(g, x, y);
+            return true;
+        } else {
+            return false;
+        }
     }
     private void paintCellSelection(Graphics2D g, Position cell, Color color) {
         //if (DEBUG) System.out.println("paintCellSelection: " + cell.toString());
