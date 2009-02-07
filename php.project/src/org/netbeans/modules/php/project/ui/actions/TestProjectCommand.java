@@ -61,12 +61,12 @@ public class TestProjectCommand extends Command implements Displayable {
 
     @Override
     public void invokeAction(Lookup context) {
-        getConfigAction().runProject(getProject());
+        getConfigAction().runProject();
     }
 
     @Override
     public boolean isActionEnabled(Lookup context) {
-        return getConfigAction().isRunProjectEnabled(getProject());
+        return getConfigAction().isRunProjectEnabled();
     }
 
     public String getDisplayName() {
@@ -75,6 +75,6 @@ public class TestProjectCommand extends Command implements Displayable {
 
     @Override
     protected ConfigAction getConfigAction() {
-        return ConfigAction.get(ConfigAction.Type.TEST);
+        return ConfigAction.get(ConfigAction.Type.TEST, getProject());
     }
 }

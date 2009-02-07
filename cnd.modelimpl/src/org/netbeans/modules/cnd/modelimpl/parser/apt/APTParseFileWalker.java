@@ -189,7 +189,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             last = define.getName();
         } else {
             last = (APTToken) bodyTokens.get(bodyTokens.size() - 1);
-            APTToken start = (APTToken) bodyTokens.get(0);
+            //APTToken start = (APTToken) bodyTokens.get(0);
             // FIXUP (performance/memory). For now:
             // 1) nobody uses macros.getText
             // 2) its realization is ineffective

@@ -40,17 +40,32 @@ package org.netbeans.modules.nativeexecution.api;
 
 import org.netbeans.modules.nativeexecution.util.ExternalTerminal;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.impl.LocalNativeProcess;
 import java.util.concurrent.Callable;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.nativeexecution.api.impl.NativeProcessInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
 import org.netbeans.modules.nativeexecution.api.impl.RemoteNativeProcess;
 import org.netbeans.modules.nativeexecution.api.impl.TerminalLocalNativeProcess;
 
 /**
- * Utility class for external process creation.
+ * Utility class for the {@link NativeProcess external native process} creation.
  * <p>
- * Depending on {@link NativeProcessConfiguration} and {@link ExecutionControl}
+ * Depending on {@link ExecutionEnvironment} it creates whether local process or
+ * remote one. This class was designed to be used with {@link ExecutionService}
+ * provided by the
+ * <a href="http://bits.netbeans.org/dev/javadoc/org-netbeans-modules-extexecution/index.html?overview-summary.html" target="_blank">External Execution Support</a>
+ * NetBeans module.
+ * <p>
+ * Builder handles command, working directory, environment,
+ * {@link Listener listeners} and execution in an external terminal.
+ * <p>
+ * Note that <tt>NativeProcessBuilder</tt> is immutable. This means that it
+ * cannot be changed and every it's method returns a new instance of the native
+ * process builder with additionally configured properties.
  */
 public final class NativeProcessBuilder implements Callable<Process> {
 
@@ -58,12 +73,24 @@ public final class NativeProcessBuilder implements Callable<Process> {
     private ExternalTerminal externalTerminal = null;
     private NativeProcess process = null;
 
+    /**
+     * Creates a new instance of the builder that will create a {@link NativeProcess}
+     * by running <tt>executable</tt> in the specified execution environment.
+     * @param execEnv execution environment that defines <b>where</b> a native
+     *        process will be started.
+     * @param executable executable to run.
+     */
     public NativeProcessBuilder(
             final ExecutionEnvironment execEnv,
-            final String command) {
-        info = new NativeProcessInfo(execEnv, command);
+            final String executable) {
+        info = new NativeProcessInfo(execEnv, executable);
     }
 
+    /**
+     * Creates a new instance of the builder that will create a {@link NativeProcess}
+     * by running <tt>executable</tt> on the localhost.
+     * @param command executable to run.
+     */
     public NativeProcessBuilder(final String command) {
         this(new ExecutionEnvironment(), command);
     }
@@ -73,12 +100,30 @@ public final class NativeProcessBuilder implements Callable<Process> {
         externalTerminal = b.externalTerminal;
     }
 
+    /**
+     * Returns new instance of the <tt>NativeProcessBuilder</tt> with registered
+     * <tt>NativeProcess.Listener</tt>
+     * <p>
+     * All other properties of the returned builder are inherited from
+     * <tt>this</tt>.
+     * @param listener NativeProcess.Listener to be registered to recieve process'
+     *        state change events.
+     * @return new instance of the <tt>NativeProcessBuilder</tt> with
+     *        registered listener.
+     */
     public NativeProcessBuilder addNativeProcessListener(Listener listener) {
         NativeProcessBuilder result = new NativeProcessBuilder(this);
         result.info.addNativeProcessListener(listener);
         return result;
     }
 
+    /**
+     * Creates a new {@link NativeProcess} based on the properties configured
+     * in this builder.
+     * @return new {@link NativeProcess} based on the properties configured
+     *             in this builder
+     * @throws IOException if the process could not be created
+     */
     public NativeProcess call() throws IOException {
         if (info.getExecutionEnvironment().isRemote()) {
             process = new RemoteNativeProcess(info);
@@ -93,25 +138,99 @@ public final class NativeProcessBuilder implements Callable<Process> {
         return process;
     }
 
+    /**
+     * Returns a builder with configured working directory.
+     * Process subsequently created by the call() method on returned builder
+     * will be executed with this directory as a current working dir.
+     * <p>
+     * The default value is undefined.
+     * <p>
+     * All other properties of the returned builder are inherited from
+     * <tt>this</tt>.
+     * @param workingDirectory working directory to start process in.
+     * @return new instance of the <tt>NativeProcessBuilder</tt> with configured
+     *         working directory
+     */
     public NativeProcessBuilder setWorkingDirectory(String workingDirectory) {
         NativeProcessBuilder result = new NativeProcessBuilder(this);
         result.info.setWorkingDirectory(workingDirectory);
         return result;
     }
 
+    /**
+     * Returns a builder with additional environment variable for the command.
+     * <p>
+     * By default no additional environment variables are configured.
+     * <p>
+     * All other properties of the returned builder are inherited from
+     * <tt>this</tt>.
+     *
+     * @param name name of the variable
+     * @param value value of the variable
+     * @return new instance of the <tt>NativeProcessBuilder</tt> with additional
+     * environment variable for the command.
+     */
     public NativeProcessBuilder addEnvironmentVariable(String name, String value) {
         NativeProcessBuilder result = new NativeProcessBuilder(this);
         result.info.addEnvironmentVariable(name, value);
         return result;
     }
+    /**
+     * Returns a builder with additional environment variables for the command.
+     * <p>
+     * By default no additional environment variables are configured.
+     * <p>
+     * All other properties of the returned builder are inherited from
+     * <tt>this</tt>.
+     *
+     * @param envs map of value, name of additional env variables
+     * @return new instance of the <tt>NativeProcessBuilder</tt> with additional
+     * environment variables for the command.
+     */
+    public NativeProcessBuilder addEnvironmentVariables(Map<String, String> envs) {
+        NativeProcessBuilder result = new NativeProcessBuilder(this);
+        if (envs == null || envs.isEmpty()){
+            return result;
+        }
+        Iterator<String> names = envs.keySet().iterator();
+        while (names.hasNext()){
+            String name = names.next();
+            result.info.addEnvironmentVariable(name, envs.get(name));
+        }        
+        return result;
+    }
 
+    /**
+     * Returns a builder with configured arguments of the command.
+     * <p>
+     * By default executable is started without any arguments.
+     * <p>
+     * Previously configured arguments are cleared. All other properties of the
+     * returned builder are inherited from <tt>this</tt>.
+     * <p>
+     * If there is a need to parse arguments already provided as one big string
+     * the method that can help is
+     * {@link org.openide.util.Utilitiesies#parseParameters(java.lang.String)}.
+     *
+     * @param arguments command arguments
+     * @return new instance of the <tt>NativeProcessBuilder</tt> with configured
+     * arguments to be passed to the executable.
+     */
     public NativeProcessBuilder setArguments(String... arguments) {
         NativeProcessBuilder result = new NativeProcessBuilder(this);
         result.info.setArguments(arguments);
         return result;
     }
 
-    public NativeProcessBuilder useExternalTerminal(ExternalTerminal terminal) {
+    /**
+     * Returns a builder that will start {@link NativeProcess} in an external
+     * terminal specified by <tt>terminal</tt>.
+     * <p>
+     * @param terminal terminal specification
+     * @return new instance of the <tt>NativeProcessBuilder</tt> with configured
+     *         external terminal to be used for process execution.
+     */
+    public NativeProcessBuilder useExternalTerminal(@NullAllowed ExternalTerminal terminal) {
         NativeProcessBuilder result = new NativeProcessBuilder(this);
         result.externalTerminal = terminal;
         return result;

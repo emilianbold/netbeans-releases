@@ -75,7 +75,7 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
         add(elementView, BorderLayout.CENTER);
         if (supportInline) {
             Mnemonics.setLocalizedText(inline, NbBundle.getMessage(ElementSelectorPanel.class, "LBL_inline_implementation")); // NOI18N
-            inlineMethod = NbPreferences.forModule(DeclarationGenerator.class).getBoolean(DeclarationGenerator.INLINE_PROPERTY, true);
+            inlineMethod = NbPreferences.forModule(DeclarationGenerator.class).getBoolean(DeclarationGenerator.INSERT_CODE_INLINE_PROPERTY, true);
             inline.setSelected(inlineMethod);
             inline.setEnabled(false);
             add(inline, BorderLayout.SOUTH);
@@ -97,7 +97,7 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
 
     public boolean isMethodInline() {
         inlineMethod = inline.isSelected();
-        NbPreferences.forModule(DeclarationGenerator.class).putBoolean(DeclarationGenerator.INLINE_PROPERTY, inlineMethod);
+        NbPreferences.forModule(DeclarationGenerator.class).putBoolean(DeclarationGenerator.INSERT_CODE_INLINE_PROPERTY, inlineMethod);
         return inlineMethod;
     }
 

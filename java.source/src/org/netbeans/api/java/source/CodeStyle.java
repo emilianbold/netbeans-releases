@@ -45,6 +45,7 @@ import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
+import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.ui.FmtOptions;
 
 import org.openide.filesystems.FileObject;
@@ -99,7 +100,7 @@ public final class CodeStyle {
      * @since 0.39
      */
     public synchronized static CodeStyle getDefault(FileObject file) {
-        Preferences prefs = CodeStylePreferences.get(file).getPreferences();
+        Preferences prefs = CodeStylePreferences.get(file, JavacParser.MIME_TYPE).getPreferences();
         return FmtOptions.codeStyleProducer.create(prefs);
     }
 
@@ -115,7 +116,7 @@ public final class CodeStyle {
      * @since 0.39
      */
     public synchronized static CodeStyle getDefault(Document doc) {
-        Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+        Preferences prefs = CodeStylePreferences.get(doc, JavacParser.MIME_TYPE).getPreferences();
         return FmtOptions.codeStyleProducer.create(prefs);
     }
     

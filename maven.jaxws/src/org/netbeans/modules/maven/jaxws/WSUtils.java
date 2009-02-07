@@ -428,6 +428,16 @@ public class WSUtils {
         }
     }
 
+    public static boolean generateNonJsr109Artifacts(Project prj) {
+        NotifyDescriptor desc = new NotifyDescriptor.Confirmation(
+                NbBundle.getMessage(WSUtils.class,"MSG_GenerateDDEntries",
+                    prj.getProjectDirectory().getName()),
+                NbBundle.getMessage(WSUtils.class,"TTL_GenerateDDEntries"),
+                NotifyDescriptor.YES_NO_OPTION);
+        Object result = DialogDisplayer.getDefault().notify(desc);
+        return NotifyDescriptor.YES_OPTION.equals(result);
+    }
+
     public static boolean isJsr109Supported(Project project) {
         J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
         if (j2eeModuleProvider == null) {

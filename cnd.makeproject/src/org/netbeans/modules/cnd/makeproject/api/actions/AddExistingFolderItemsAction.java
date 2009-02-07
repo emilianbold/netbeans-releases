@@ -49,7 +49,6 @@ import javax.swing.JTextArea;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.SourceFilesPanel;
 import org.openide.DialogDescriptor;
@@ -62,13 +61,16 @@ import org.openide.util.actions.NodeAction;
 public class AddExistingFolderItemsAction extends NodeAction {
     
     protected boolean enable(Node[] activatedNodes)  {
-        if (activatedNodes.length != 1)
+        if (activatedNodes.length != 1) {
             return false;
+        }
         Folder folder = (Folder)activatedNodes[0].getValue("Folder"); // NOI18N
-        if (folder == null)
+        if (folder == null) {
             return false;
-        if (!folder.isProjectFiles())
+        }
+        if (!folder.isProjectFiles()) {
             return false;
+        }
         return true;
     }
     
@@ -77,7 +79,7 @@ public class AddExistingFolderItemsAction extends NodeAction {
     }
     
     public void performAction(Node[] activatedNodes) {
-        boolean notifySources = false;
+        //boolean notifySources = false;
         Node n = activatedNodes[0];
         Project project = (Project)n.getValue("Project"); // NOI18N
         assert project != null;
@@ -90,13 +92,13 @@ public class AddExistingFolderItemsAction extends NodeAction {
         if (!makeConfigurationDescriptor.okToChange()) {
             return;
         }
-        String seed = null;
-        if (FileChooser.getCurrectChooserFile() != null) {
-            seed = FileChooser.getCurrectChooserFile().getPath();
-        }
-        if (seed == null) {
-            seed = makeConfigurationDescriptor.getBaseDir();
-        }
+        //String seed = null;
+        //if (FileChooser.getCurrectChooserFile() != null) {
+        //    seed = FileChooser.getCurrectChooserFile().getPath();
+        //}
+        //if (seed == null) {
+        //    seed = makeConfigurationDescriptor.getBaseDir();
+        //}
         
         JButton addButton = new JButton(getString("AddButtonText"));
         addButton.getAccessibleContext().setAccessibleDescription(getString("AddButtonAD"));
@@ -153,6 +155,7 @@ public class AddExistingFolderItemsAction extends NodeAction {
         return null;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }

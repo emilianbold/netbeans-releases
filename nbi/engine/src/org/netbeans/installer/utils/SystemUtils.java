@@ -40,6 +40,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.lang.reflect.Method;
+import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -278,7 +280,7 @@ public final class SystemUtils {
         
         return new ExecutionResults(errorLevel, processStdOut.toString(), processStdErr.toString());
     }
-    
+
     public static boolean isPathValid(String path) {
         return getNativeUtils().isPathValid(path);
     }
@@ -598,5 +600,5 @@ public final class SystemUtils {
     public static final String USER_HOME = 
             System.getProperty("user.home");//NOI18N
     public static final String NO_SPACE_CHECK_PROPERTY = 
-            "no.space.check";//NOI18N      
+            "no.space.check";//NOI18N
 }

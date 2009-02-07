@@ -105,6 +105,20 @@ is the proper place.
 
     <changes>
 
+        <change id="CodeStylePreferences.for.embedded.mimeTypes">
+            <summary>Adding CodeStylePreferences.get(Document doc, String mimeType)
+            and CodeStylePreferences.get(FileObject file, String mimeType).</summary>
+            <version major="1" minor="11"/>
+            <date day="5" month="2" year="2008"/>
+            <author login="dbalek"/>
+            <compatibility source="compatible" binary="compatible" deletion="no" addition="yes" modification="no"/>
+            <description>
+                The new methods were added to allow for getting the formatting/indentation
+                preferences of embedded mimeTypes.
+            </description>
+            <issue number="153957"/>
+        </change>
+
         <change id="CodeStylePreferences">
             <summary>Adding org.netbeans.modules.editor.indent.spi.CodeStylePreferences</summary>
             <version major="1" minor="9"/>

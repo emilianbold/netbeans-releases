@@ -71,14 +71,20 @@ ifeq (Darwin,$(UNAME_S))
 	OSNAME = Mac_OS_X
 endif
 
-#LDFLAGS-Windows_XP = -mno-cygwin -Wl,--out-implib,build/$(OSNAME)-$(PLATFORM)/lib${LIB_NAME}.import.a -shared
-LDFLAGS-Linux = -g -shared -fPIC
-LDFLAGS-SunOS = -g -shared -fPIC
-LDFLAGS-Mac_OS_X = -dynamiclib -g -fPIC -install_name ${LIB_NAME}-${OSNAME}-${PLATFORM}.${SOEXT}
+#LDFLAGS_LIB-Windows_XP = -mno-cygwin -Wl,--out-implib,build/$(OSNAME)-$(PLATFORM)/lib${LIB_NAME}.import.a -shared
+LDFLAGS_LIB-Linux = -g -shared -fPIC
+LDFLAGS_LIB-SunOS = -g -shared -fPIC
+LDFLAGS_LIB-Mac_OS_X = -dynamiclib -g -fPIC -install_name ${LIB_NAME}-${OSNAME}-${PLATFORM}.${SOEXT}
+
+#LDFLAGS_APP-Windows_XP = -mno-cygwin -Wl
+LDFLAGS_APP-Linux = -g -shared -fPIC
+LDFLAGS_LIB-SunOS = -g -shared -fPIC
+LDFLAGS_LIB-Mac_OS_X = -dynamiclib -g -fPIC -install_name ${LIB_NAME}-${OSNAME}-${PLATFORM}.${SOEXT}
 
 SOEXT := ${SOEXT-${OSNAME}}
 CFLAGS := ${CFLAGS-${OSNAME}} ${FLAG64}
-LDFLAGS = ${LDFLAGS-${OSNAME}} ${FLAG64}
+LDFLAGS_LIB = ${LDFLAGS_LIB-${OSNAME}} ${FLAG64}
+LDFLAGS_APP = ${LDFLAGS_APP-${OSNAME}} ${FLAG64}
 
 ifdef 64BITS
     PLATFORM_64 := _64
@@ -113,16 +119,14 @@ all: check init ${LIB_PATH} ${APP_PATH}
 
 #agent shared library lib:
 ${LIB_PATH}: ${LIB_OBJ}
-	gcc ${LDFLAGS} -o ${LIB_PATH} ${LIB_OBJ}
+	gcc ${LDFLAGS_LIB} -o ${LIB_PATH} ${LIB_OBJ}
 
 ${LIB_OBJ}: ${LIB_NAME}.c
 	gcc ${CFLAGS} -o ${LIB_OBJ} ${LIB_NAME}.c
 
 #appliction:
-${APP_PATH}: \
-		${APP_OBJ}
-	gcc ${LDFLAGS} -o ${APP_PATH} \
-		${APP_OBJ}
+${APP_PATH}: ${APP_OBJ}
+	gcc ${LDFLAGS_APP} -o ${APP_PATH} ${APP_OBJ}
 
 ${APP_OBJ}: ${APP_NAME}.c
 	gcc ${CFLAGS} -o ${APP_OBJ} ${APP_NAME}.c
@@ -162,6 +166,7 @@ test:
 	@echo "PLATFORM = [${PLATFORM}]"
 	@echo "SOEXT = [${SOEXT}]"
 	@echo "CFLAGS = [${CFLAGS}]"
-	@echo "LDFLAGS = [${LDFLAGS}]"
+	@echo "LDFLAGS_LIB = [${LDFLAGS_LIB}]"
+	@echo "LDFLAGS_APP = [${LDFLAGS_APP}]"
 	@echo "${LIB_NAME} = [${LIB_PATH}]"	
 	@echo "${APP_NAME} = [${APP_PATH}]"

@@ -79,6 +79,7 @@ import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.classpath.AbstractProjectClassPathImpl;
+import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.maven.classpath.RuntimeClassPathImpl;
 import org.netbeans.modules.maven.classpath.TestRuntimeClassPathImpl;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
@@ -232,7 +233,7 @@ public class CosChecker implements PrerequisitesChecker {
   //                      System.out.println("relpath=" + relPath);
                         FileObject fo = outputDir.getFileObject(relPath);
                         if (fo == null) {
-                            File outFileDir = new File(FileUtil.toFile(outputDir), relPath).getParentFile();
+                            File outFileDir = FileUtil.normalizeFile(new File(FileUtil.toFile(outputDir), relPath).getParentFile());
                             outFileDir.mkdirs();
                             FileUtil.refreshFor(outFileDir);
                             FileObject parentDir = FileUtil.toFileObject(outFileDir);
@@ -378,9 +379,24 @@ public class CosChecker implements PrerequisitesChecker {
                 return true;
             }
 
-
-            params.put(JavaRunner.PROP_EXECUTE_FILE, config.getSelectedFileObject());
-
+            //#
+            FileObject selected = config.getSelectedFileObject();
+            ClassPathProviderImpl cpp = config.getProject().getLookup().lookup(ClassPathProviderImpl.class);
+            ClassPath srcs = cpp.getProjectSourcesClassPath(ClassPath.SOURCE);
+            String path = srcs.getResourceName(selected);
+            if (path != null) {
+                //now we have a source file, need to convert to testSource..
+                String nameExt = selected.getNameExt().replace(".java", "Test.java"); //NOI18N
+                path = path.replace(selected.getNameExt(), nameExt);
+                ClassPath[] cps = cpp.getProjectClassPaths(ClassPath.SOURCE);
+                ClassPath cp = ClassPathSupport.createProxyClassPath(cps);
+                FileObject testFo = cp.findResource(path);
+                if (testFo != null) {
+                    selected = testFo;
+                }
+            }
+            params.put(JavaRunner.PROP_EXECUTE_FILE, selected);
+            
             List<String> jvmProps = new ArrayList<String>();
             Set<String> jvmPropNames = new HashSet<String>();
             params.put(JavaRunner.PROP_PROJECT_NAME, config.getExecutionName());
