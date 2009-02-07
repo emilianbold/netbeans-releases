@@ -51,6 +51,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetReporter;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
@@ -269,7 +270,7 @@ public final class CreateHostVisualPanel2 extends JPanel {
                     record.init(null);
                 }
                 if (record.isOnline()) {
-                    CompilerSetManager.writer = new Writer() {
+                    CompilerSetReporter.setWriter(new Writer() {
 
                         @Override
                         public void write(char[] cbuf, int off, int len) throws IOException {
@@ -296,14 +297,14 @@ public final class CreateHostVisualPanel2 extends JPanel {
                         public void close() throws IOException {
                         }
 
-                    };
+                    });
                     CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(hostKey);
                     csm.initialize(false);
                     hostFound = csm.getHost(); //TODO: no validations, pure cheat
                     wizardListener.stateChanged(null);
                 }
                 phandle.finish();
-                CompilerSetManager.writer = null;
+                CompilerSetReporter.setWriter(null);
                 // back to EDT to work with Swing
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
