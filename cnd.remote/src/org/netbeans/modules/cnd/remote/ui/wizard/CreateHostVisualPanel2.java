@@ -43,7 +43,6 @@ import java.awt.BorderLayout;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
@@ -51,13 +50,15 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetReporter;
+import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 public final class CreateHostVisualPanel2 extends JPanel {
@@ -223,8 +224,7 @@ public final class CreateHostVisualPanel2 extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btConnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btConnectActionPerformed
-        final String entry = getLoginName() + '@' + hostname;
-        revalidateRecord(entry, getPassword(), cbSavePassword.isSelected());
+        revalidateRecord(getPassword(), cbSavePassword.isSelected());
     }//GEN-LAST:event_btConnectActionPerformed
 
     private void enableButtons(boolean enable) {
@@ -232,77 +232,101 @@ public final class CreateHostVisualPanel2 extends JPanel {
     }
 
     private ProgressHandle phandle;
-
-    String hostFound() {
+    
+    /* package-local */String hostFound() {
         return hostFound;
     }
 
     private String hostFound = null;
 
+    private String getHostKey() {
+        return getLoginName() + '@' + hostname;
+    }
 
-    private void revalidateRecord(final String entry, String password, boolean rememberPassword) {
-        final RemoteServerRecord record = (RemoteServerRecord) RemoteServerList.getInstance().get(entry);
-        if (!record.isOnline()) {
+    private void revalidateRecord(String password, boolean rememberPassword) {
+        final String hostKey = getHostKey();
+        final RemoteServerRecord record = (RemoteServerRecord) RemoteServerList.getInstance().get(hostKey);
+        final boolean alreadyOnline = record.isOnline();
+        enableButtons(false);
+        if (alreadyOnline) {
+            String message = NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgAlreadyConnected1");
+            message = String.format(message, hostKey);
+            tpOutput.setText(message);
+        } else {
             record.resetOfflineState(); // this is a do-over
-            enableButtons(false);
-            RemoteUserInfo userInfo = RemoteUserInfo.getUserInfo(entry, true);
+            RemoteUserInfo userInfo = RemoteUserInfo.getUserInfo(hostKey, true);
             userInfo.setPassword(password, rememberPassword);
-            phandle = ProgressHandleFactory.createHandle(""); ////NOI18N
-            pbarStatusPanel.removeAll();
-            pbarStatusPanel.add(ProgressHandleFactory.createProgressComponent(phandle), BorderLayout.CENTER);
-            pbarStatusPanel.validate();
-            phandle.start();
             tpOutput.setText("");
-            // move expensive operation out of EDT
-            RequestProcessor.getDefault().post(new Runnable() {
+        }
+        phandle = ProgressHandleFactory.createHandle(""); ////NOI18N
+        pbarStatusPanel.removeAll();
+        pbarStatusPanel.add(ProgressHandleFactory.createProgressComponent(phandle), BorderLayout.CENTER);
+        pbarStatusPanel.validate();
+        phandle.start();        
+        // move expensive operation out of EDT
+        RequestProcessor.getDefault().post(new Runnable() {
 
-                public void run() {
+            public void run() {
+                if (!alreadyOnline) {
+                    addOuputTextInUiThread(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgConnectingTo",
+                            RemoteUtils.getHostName(hostKey)));
                     record.init(null);
-                    if (record.isOnline()) {
-                        CompilerSetManager.writer = new Writer() {
+                    addOuputTextInUiThread(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgDone") + '\n');
+                }
+                if (record.isOnline()) {
+                    CompilerSetReporter.setWriter(new Writer() {
 
-                            @Override
-                            public void write(char[] cbuf, int off, int len) throws IOException {
-                                final String value = new String(cbuf, off, len);
-                                try {
-                                    SwingUtilities.invokeAndWait(new Runnable() {
+                        @Override
+                        public void write(char[] cbuf, int off, int len) throws IOException {
+                            final String value = new String(cbuf, off, len);
+                            addOuputTextInUiThread(value);
+                        }
 
-                                        public void run() {
-                                            tpOutput.setText(tpOutput.getText() + value);
-                                        }
-                                    });
-                                } catch (InterruptedException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                } catch (InvocationTargetException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-                            }
+                        @Override
+                        public void flush() throws IOException {
+                        }
 
-                            @Override
-                            public void flush() throws IOException {
-                            }
-
-                            @Override
-                            public void close() throws IOException {
-                            }
-
-                        };
-                        CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(entry);
-                        csm.initialize(false);
-                        hostFound = csm.getHost(); //TODO: no validations, pure cheat
-                        wizardListener.stateChanged(null);
-                    }
-                    phandle.finish();
-                    CompilerSetManager.writer = null;
-                    // back to EDT to work with Swing
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            pbarStatusPanel.setVisible(false);
-                            enableButtons(true);
+                        @Override
+                        public void close() throws IOException {
                         }
                     });
+                    CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(hostKey);
+                    csm.initialize(false);
+                    hostFound = csm.getHost(); //TODO: no validations, pure cheat
+                    wizardListener.stateChanged(null);
                 }
-            });
+                phandle.finish();
+                CompilerSetReporter.setWriter(null);
+                // back to EDT to work with Swing
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        pbarStatusPanel.setVisible(false);
+                        enableButtons(true);
+                        if (alreadyOnline) {
+                            addOuputTextInUiThread('\n' + NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgAlreadyConnected2"));
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    private void addOuputTextInUiThread(final String value) {
+        Runnable r = new Runnable() {
+                public void run() {
+                    tpOutput.setText(tpOutput.getText() + value);
+                }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(r);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 
