@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import org.netbeans.modules.php.editor.index.IndexedInterface;
@@ -55,59 +54,48 @@ import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
  *
  * @author Radek Matous
  */
-final class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
-    InterfaceScopeImpl(ScopeImpl inScope, InterfaceDeclarationInfo nodeInfo) {
+class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
+    InterfaceScopeImpl(Scope inScope, InterfaceDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo);
     }
 
-    InterfaceScopeImpl(IndexScopeImpl inScope, IndexedInterface indexedIface) {
+    InterfaceScopeImpl(IndexScope inScope, IndexedInterface indexedIface) {
         //TODO: in idx is no info about ifaces
         super(inScope, indexedIface);
-    }
-
-    @Override
-    void checkModifiersAssert() {
-        assert getPhpModifiers() != null;
-        assert getPhpModifiers().isPublic();
-        assert !getPhpModifiers().isFinal();
-    }
-
-    @Override
-    void checkScopeAssert() {
-        assert getInScope() != null;
-        assert getInScope() instanceof FileScope;
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(super.toString());
-        List<? extends InterfaceScopeImpl> implementedInterfaces = getInterfaces();
+        List<? extends InterfaceScope> implementedInterfaces = getSuperInterfaces();
         if (implementedInterfaces.size() > 0) {
             sb.append(" implements ");
-            for (InterfaceScopeImpl interfaceScope : implementedInterfaces) {
+            for (InterfaceScope interfaceScope : implementedInterfaces) {
                 sb.append(interfaceScope.getName()).append(" ");
             }
         }
         return sb.toString();
     }
-
-    public List<? extends MethodScope> getAllInheritedMethods() {
-        List<MethodScope> allMethods = new ArrayList<MethodScope>();
-        allMethods.addAll(getAllMethods());
-        IndexScopeImpl indexScopeImpl = getTopIndexScopeImpl();
-        if (indexScopeImpl == null) {
-            indexScopeImpl = ((ModelScopeImpl) ModelUtils.getModelScope(this)).getIndexScope();
-        }
-        PHPIndex index = indexScopeImpl.getIndex();
+    public Collection<? extends MethodScope> getInheritedMethods() {
+        Set<MethodScope> allMethods = new HashSet<MethodScope>();
+        IndexScope indexScope = ModelUtils.getIndexScope(this);
+        PHPIndex index = indexScope.getIndex();
         Set<InterfaceScope> interfaceScopes = new HashSet<InterfaceScope>();
-        interfaceScopes.addAll(getInterfaces());
+        interfaceScopes.addAll(getSuperInterfaces());
         for (InterfaceScope iface : interfaceScopes) {
             Collection<IndexedFunction> indexedFunctions = index.getAllMethods(null, iface.getName(), "", NameKind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
             for (IndexedFunction indexedFunction : indexedFunctions) {
                 allMethods.add(new MethodScopeImpl((InterfaceScopeImpl) iface, indexedFunction, PhpKind.METHOD));
             }
         }
+        return allMethods;
+    }
+
+    public final Collection<? extends MethodScope> getMethods() {
+        Set<MethodScope> allMethods = new HashSet<MethodScope>();
+        allMethods.addAll(getDeclaredMethods());
+        allMethods.addAll(getInheritedMethods());
         return allMethods;
     }
 }

@@ -46,11 +46,12 @@ import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.databinding.DataSetCD;
-import org.netbeans.modules.vmd.midp.palette.DatabindingPaletteProvider;
+
 import org.netbeans.modules.vmd.midp.components.databinding.ContactsDataSetCD;
 import org.netbeans.modules.vmd.midp.components.databinding.DataSetAbstractCD;
 import org.netbeans.modules.vmd.midp.components.databinding.IndexableDataSetCD;
 import org.netbeans.modules.vmd.midp.java.MidpJavaSupport;
+import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 import org.openide.util.NbBundle;
 
 /**
@@ -84,7 +85,7 @@ public abstract class DataSetAbstractProducer extends ComponentProducer {
             super("javax.microedition.lcdui.Canvas", //NOI18N
                     DataSetCD.TYPEID.toString(),
                     DataSetCD.TYPEID,
-                    new PaletteDescriptor(DatabindingPaletteProvider.CATEGORY_DATABINDING,
+                    new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DATABINDING,
                                           NbBundle.getMessage(DataSetAbstractProducer.class, "DISP_DataSet"),//NOI18N
                                           NbBundle.getMessage(DataSetAbstractProducer.class, "TTIP_DataSet"), //NOI18N
                                           DataSetAbstractCD.ICON_PATH,
@@ -105,7 +106,7 @@ public abstract class DataSetAbstractProducer extends ComponentProducer {
             super("javax.microedition.lcdui.Canvas", //NOI18N
                     ContactsDataSetCD.TYPEID.toString(),
                     ContactsDataSetCD.TYPEID,
-                    new PaletteDescriptor(DatabindingPaletteProvider.CATEGORY_DATABINDING,
+                    new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DATABINDING,
                                           NbBundle.getMessage(DataSetAbstractProducer.class, "DISP_ContactsDataSet"), //NOI18N
                                           NbBundle.getMessage(DataSetAbstractProducer.class, "TTIP_ContactsDataSet"), //NOI18N
                                           DataSetAbstractCD.ICON_PATH,
@@ -126,7 +127,7 @@ public abstract class DataSetAbstractProducer extends ComponentProducer {
             super("javax.microedition.lcdui.Canvas", //NOI18N
                   IndexableDataSetCD.TYPEID.toString(),
                   IndexableDataSetCD.TYPEID,
-                  new PaletteDescriptor(DatabindingPaletteProvider.CATEGORY_DATABINDING,
+                  new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DATABINDING,
                                         NbBundle.getMessage(DataSetAbstractProducer.class, "DISP_IndexableDataSet"), //NOI18N
                                         NbBundle.getMessage(DataSetAbstractProducer.class, "TTIP_IndexableDataSet"), //NOI18N,
                                         DataSetAbstractCD.ICON_PATH,

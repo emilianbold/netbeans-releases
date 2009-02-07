@@ -238,9 +238,8 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         return _getParentNamespace();
     }
     
-    @SuppressWarnings("unchecked")
     public Collection<CsmNamespace> getNestedNamespaces() {
-        Collection<CsmNamespace> out = UIDCsmConverter.UIDsToNamespaces(new ArrayList(nestedNamespaces.values()));
+        Collection<CsmNamespace> out = UIDCsmConverter.UIDsToNamespaces(new ArrayList<CsmUID<CsmNamespace>>(nestedNamespaces.values()));
         return out;
     }
 
@@ -308,28 +307,8 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         return qualifiedName;
     }
     
-    /** creates or gets (if already exists) namespace with the given name and current parent */
-    public NamespaceImpl getNamespace(String name) {
-        assert name != null && name.length() != 0 : "non empty namespace should be asked";
-        String fqn = Utils.getNestedNamespaceQualifiedName(name,  this, true);
-        NamespaceImpl impl = _getNestedNamespace(fqn);
-        if( impl == null ) {
-            impl = new NamespaceImpl(_getProject(), this, name, fqn);
-            // it would register automatically
-        }
-        return impl;
-    }
-    
     public CharSequence getName() {
         return name;
-    }
-    
-    private NamespaceImpl _getNestedNamespace(CharSequence fqn) {
-        fqn = CharSequenceKey.create(fqn);
-        CsmUID<CsmNamespace> nestedNsUid = nestedNamespaces.get(fqn);
-        NamespaceImpl out = (NamespaceImpl)UIDCsmConverter.UIDtoNamespace(nestedNsUid);
-        assert out != null || nestedNsUid == null;
-        return out;
     }
     
     private void addNestedNamespace(NamespaceImpl nsp) {
@@ -469,7 +448,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         boolean add = false;
         try {
             nsDefinitionsLock.writeLock().lock();
-            add = nsDefinitions.size() == 0;
+            add = nsDefinitions.isEmpty();
             nsDefinitions.put(getSortKey(def), definitionUid);
         } finally {
             nsDefinitionsLock.writeLock().unlock();
@@ -491,6 +470,16 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             _getProject().registerNamespace(this);
         } else {
             // remove this namespace from the parent namespace
+            try {
+                nsDefinitionsLock.readLock().lock();
+                if (!nsDefinitions.isEmpty()) {
+                    // someone already registered in definitions
+                    // do not unregister
+                    return;
+                }
+            } finally {
+                nsDefinitionsLock.readLock().unlock();
+            }
             NamespaceImpl parent = (NamespaceImpl) _getParentNamespace();
             if (parent != null) {
                 parent.removeNestedNamespace(this);
@@ -508,7 +497,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         try {
             nsDefinitionsLock.writeLock().lock();
             definitionUid = nsDefinitions.remove(getSortKey(def));
-            remove =  (nsDefinitions.size() == 0);
+            remove =  nsDefinitions.isEmpty();
         } finally {
             nsDefinitionsLock.writeLock().unlock();
         }

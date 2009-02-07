@@ -53,28 +53,32 @@ import org.openide.util.Lookup;
  */
 public class ConfigActionRemote extends ConfigActionLocal {
 
-    @Override
-    public void runProject(PhpProject project) {
-        eventuallyUploadFiles(project);
-        super.runProject(project);
+    protected ConfigActionRemote(PhpProject project) {
+        super(project);
     }
 
     @Override
-    public void debugProject(PhpProject project) {
-        eventuallyUploadFiles(project);
-        super.debugProject(project);
+    public void runProject() {
+        eventuallyUploadFiles();
+        super.runProject();
     }
 
     @Override
-    protected void preShowUrl(PhpProject project, Lookup context) {
-        eventuallyUploadFiles(project, CommandUtils.filesForSelectedNodes());
+    public void debugProject() {
+        eventuallyUploadFiles();
+        super.debugProject();
     }
 
-    private void eventuallyUploadFiles(PhpProject project) {
-        eventuallyUploadFiles(project, (FileObject[]) null);
+    @Override
+    protected void preShowUrl(Lookup context) {
+        eventuallyUploadFiles(CommandUtils.filesForSelectedNodes());
     }
 
-    private void eventuallyUploadFiles(PhpProject project, FileObject... preselectedFiles) {
+    private void eventuallyUploadFiles() {
+        eventuallyUploadFiles((FileObject[]) null);
+    }
+
+    private void eventuallyUploadFiles(FileObject... preselectedFiles) {
         UploadCommand uploadCommand = (UploadCommand) CommandUtils.getCommand(project, UploadCommand.ID);
         if (!uploadCommand.isActionEnabled(null)) {
             return;

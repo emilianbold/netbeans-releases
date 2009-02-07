@@ -162,11 +162,13 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         return execEnv;
     }
 
-    private void start() {
+    private void start(ExecutionEnvVariablesProvider executionEnvProvider) {
         NativeProcessBuilder pb = new NativeProcessBuilder(execEnv, cmd);
         pb = pb.setArguments(args);
         pb = pb.addNativeProcessListener(NativeExecutableTarget.this);
-
+        if (executionEnvProvider != null && executionEnvProvider.getExecutionEnv() != null){
+            pb.addEnvironmentVariables(executionEnvProvider.getExecutionEnv());
+        }
         ExecutionDescriptor descr = new ExecutionDescriptor();
         descr = descr.controllable(true).frontWindow(true);
 
@@ -209,8 +211,8 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     private static final class NativeExecutableTargetExecutionService
             implements DLightTargetExecutionService<NativeExecutableTarget> {
 
-        public void start(NativeExecutableTarget target) {
-            target.start();
+        public void start(NativeExecutableTarget target, ExecutionEnvVariablesProvider executionEnvProvider) {
+            target.start(executionEnvProvider);
         }
 
         public void terminate(NativeExecutableTarget target) {

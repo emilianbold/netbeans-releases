@@ -41,8 +41,8 @@ package org.netbeans.modules.nativeexecution.api;
 import org.netbeans.modules.nativeexecution.util.HostInfoUtils;
 
 /**
- * Configuration of environment for
- * {@link org.netbeans.modules.nativeexecution.api.NativeTask} execution.
+ * The configuration of the environment for a {@link NativeProcess} execution.
+ * ExecutionEnvirenment is about "<b>where</b>" to start a native proccess.
  */
 final public class ExecutionEnvironment {
 
@@ -60,7 +60,12 @@ final public class ExecutionEnvironment {
     }
 
     /**
-     * Creates a new instance of <tt>ExecutionEnvironment</tt>.
+     * Creates a new instance of <tt>ExecutionEnvironment</tt>. If <tt>host</tt>
+     * refers to the localhost or is <tt>null</tt> then task, started in this
+     * environment will be executed locally. Otherwise it will be executed
+     * remotely using ssh connection to the specified host using default ssh
+     * port (22).
+     *
      * @param user user name to be used in this environment
      * @param host host identification string (either hostname or IP address)
      */
@@ -72,13 +77,13 @@ final public class ExecutionEnvironment {
      * Creates a new instance of <tt>ExecutionEnvironment</tt>.
      * It is allowable to pass <tt>null</tt> values for <tt>user</tt> and/or
      * <tt>host</tt> params. In this case
-     * <tt>System.getProperty("user.name")</tt> will be used as username and
+     * <tt>System.getProperty("user.name")</tt> will be used as a username and
      * <tt>HostInfo.LOCALHOST</tt> will be used for <tt>host</tt>.
      * If sshPort == 0 and host identification string represents remote host,
      * port 22 will be used.
      *
-     * @param user user name for ssh connection
-     * @param host host identification string. Either hostname or IP address
+     * @param user user name for ssh connection.
+     * @param host host identification string. Either hostname or IP address.
      * @param sshPort port to be used to establish ssh connection.
      */
     public ExecutionEnvironment(
@@ -117,7 +122,8 @@ final public class ExecutionEnvironment {
     }
 
     /**
-     * Returns string representation of this <tt>ExecutionEnvironment</tt>.
+     * Returns string representation of this <tt>ExecutionEnvironment</tt> in
+     * form <tt>user@host[:port]</tt>.
      * @return string representation of this <tt>ExecutionEnvironment</tt> in
      *         form user@host[:port]
      */
@@ -136,8 +142,8 @@ final public class ExecutionEnvironment {
 
     /**
      * Returns port number that is used for ssh connection.
-     * @return port that is used for ssh connection in this environment. 0 means
-     *         that no ssh connection is required for this environment.
+     * @return port that is used for ssh connection in this environment. 
+     * <tt>0</tt> means that no ssh connection is required for this environment.
      */
     public int getSSHPort() {
         return sshPort;
@@ -146,11 +152,11 @@ final public class ExecutionEnvironment {
     /**
      * Returns true if ssh connection is required for this environment.
      *
-     * So, generally, this means that host itself could be a localhost, but if
+     * Generally, this means that host itself could be a localhost, but if
      * sshPort is set, it will be treated as a remote one.
      *
      * @return true if ssh connection is required for this environment.
-     * @see #isLocal()
+     * @see #isLocal() 
      *
      */
     public boolean isRemote() {
@@ -158,9 +164,11 @@ final public class ExecutionEnvironment {
     }
 
     /**
-     * Returns true if no ssh connection required for this environment.
-     * @return true if no ssh connection required for this environment.
-     * @see #isRemote()
+     * Returns true if no ssh connection is required to start execution in this
+     * environment. I.e. it returns <tt>true</tt> if host is the localhost and
+     * no sshPort is specified for this environment.
+     * @return true if no ssh connection is required for this environment.
+     * @see #isRemote() 
      */
     public boolean isLocal() {
         return sshPort == 0;
@@ -170,7 +178,10 @@ final public class ExecutionEnvironment {
      * Returns true if <tt>obj</tt> represents the same
      * <tt>ExecutionEnvironment</tt>. Two execution environments are equal if
      * and only if <tt>host</tt>, <tt>user</tt> and <tt>sshPort</tt> are all
-     * equal.
+     * equal. If <tt>host</tt> refers to the localhost in both environments but
+     * different host identification strings were used while creation
+     * (i.e. <tt>localhost</tt>; <tt>127.0.0.1</tt>; hostname or it's real IP 
+     * address) <tt>host</tt>s are still treated as to be equal.
      *
      * @param obj object to compare with
      * @return <tt>true</tt> if this <tt>ExecutionEnvironment</tt> equals to

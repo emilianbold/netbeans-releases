@@ -379,12 +379,16 @@ public final class DeepReparsingUtils {
     }
 
     private static void addToReparse(final ProjectBase project, final NativeFileItem nativeFile, final FileImpl file) {
-        file.markReparseNeeded(true);
-        APTPreprocHandler.State state = project.setChangedFileState(nativeFile);
-        if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
-            System.out.println("Add file to reparse " + file.getAbsolutePath()); // NOI18N
+        if (nativeFile.getFile() != null) {
+            file.markReparseNeeded(true);
+            APTPreprocHandler.State state = project.setChangedFileState(nativeFile);
+            if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
+                System.out.println("Add file to reparse " + file.getAbsolutePath()); // NOI18N
+            }
+            ParserQueue.instance().add(file, state, ParserQueue.Position.HEAD);
+        } else {
+            assert false;
         }
-        ParserQueue.instance().add(file, state, ParserQueue.Position.HEAD);
     }
 
     private static void invalidateFileAndPreprocState(final ProjectBase project, final CsmFile parent) {

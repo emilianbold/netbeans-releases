@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.refactoring.plugins;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -276,9 +277,14 @@ public final class EncapsulateFieldsPlugin extends CsmModificationRefactoringPlu
     }
 
     @Override
-    protected Collection<? extends CsmObject> getRefactoredObjects() {
-        return referencedFields;
+    protected Collection<CsmFile> getRefactoredFiles() {
+        return Collections.emptySet();
     }
+
+//    @Override
+//    protected Collection<? extends CsmObject> getRefactoredObjects() {
+//        return referencedFields;
+//    }
 
     private void initReferencedObjects(CsmObject referencedObject, Collection<EncapsulateFieldInfo> fieldsInfo) {
         referencedFields = new ArrayList<CsmField>(fieldsInfo.size());

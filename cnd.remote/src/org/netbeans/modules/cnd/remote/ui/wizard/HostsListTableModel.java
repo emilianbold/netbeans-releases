@@ -127,7 +127,7 @@ class HostsListTableModel extends AbstractTableModel {
 
     //private final List<HostRecord> queueForCheck = Collections.synchronizedList(new ArrayList<HostRecord>());
 
-    private class HostRecord {
+    private static class HostRecord {
 
         public String name;
         public String ip;
@@ -165,10 +165,11 @@ class HostsListTableModel extends AbstractTableModel {
                     try {
                         if (host.isReachable(1000)) {
                             count++;
-                            HostsListTableModel.this.addHost(host.getHostAddress(), host.getHostName(), new Boolean(doPing(host, 22)));
+                            HostsListTableModel.this.addHost(host.getHostAddress(), host.getHostName(), Boolean.valueOf(doPing(host, 22)));
                         }
                     } catch (IOException ex) {
-                        LOG.log(Level.WARNING, null, ex);
+                        // it's quite normal if host denies to respond (firewall, etc)
+                        LOG.log(Level.INFO, null, ex);
                     }
                 }
                 LOG.info("Finding " + count + " host(s) took " + ((System.currentTimeMillis() - n) / 1000) + "s");

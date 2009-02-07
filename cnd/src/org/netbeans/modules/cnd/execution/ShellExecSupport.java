@@ -177,8 +177,8 @@ public class ShellExecSupport extends ExecutionSupport {
         try {
             fo.setAttribute(PROP_RUN_DIRECTORY, dir);
         } catch (IOException ex) {
-            String msg = MessageFormat.format("INTERNAL ERROR: Cannot set run directory", // NOI18N
-                    new Object[]{FileUtil.toFile(fo).getPath()});
+            //String msg = MessageFormat.format("INTERNAL ERROR: Cannot set run directory", // NOI18N
+            //        new Object[]{FileUtil.toFile(fo).getPath()});
 
             if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
                 ex.printStackTrace();
@@ -267,8 +267,8 @@ public class ShellExecSupport extends ExecutionSupport {
         try {
             fo.setAttribute(PROP_SHELL_COMMAND, command);
         } catch (IOException ex) {
-            String msg = MessageFormat.format("INTERNAL ERROR: Cannot set shell command", // NOI18N
-                    new Object[]{FileUtil.toFile(fo).getPath()});
+            //String msg = MessageFormat.format("INTERNAL ERROR: Cannot set shell command", // NOI18N
+            //        new Object[]{FileUtil.toFile(fo).getPath()});
 
             if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
                 ex.printStackTrace();

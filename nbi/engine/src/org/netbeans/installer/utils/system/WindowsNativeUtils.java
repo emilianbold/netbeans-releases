@@ -39,6 +39,7 @@ package org.netbeans.installer.utils.system;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -176,6 +177,8 @@ public class WindowsNativeUtils extends NativeUtils {
     
     private boolean isUserAdminSet;
     private boolean isUserAdmin;
+
+    private String browserCommand;
     
     
     //////////////////////////////////////////////////////////////////////////
@@ -1248,6 +1251,76 @@ public class WindowsNativeUtils extends NativeUtils {
     private boolean isEmpty(String str) {
         return (str==null || str.equals(EMPTY_STRING));
     }
+
+    private void initBrowser() {
+        if (browserCommand != null) {
+            return;
+        }
+
+        try {
+            String type = null;
+            if (registry.keyExists(WindowsRegistry.HKEY_CURRENT_USER, "Software\\Classes\\.html")) {
+                type = registry.getStringValue(WindowsRegistry.HKEY_CURRENT_USER, "Software\\Classes\\.html", "");
+            } else if (registry.keyExists(WindowsRegistry.HKEY_CLASSES_ROOT, ".html")) {
+                type = registry.getStringValue(WindowsRegistry.HKEY_CLASSES_ROOT, ".html", "");
+            }
+
+            LogManager.log("... html type : " + type);
+            if (type != null && !type.equals("")) {
+                browserCommand = null;
+                String userCmdKey = "Software\\Classes\\" + type + "\\shell\\open\\command";
+                String systemCmdKey = type + "\\shell\\open\\command";
+                if (registry.keyExists(WindowsRegistry.HKEY_CURRENT_USER, userCmdKey)) {
+                    browserCommand = registry.getStringValue(WindowsRegistry.HKEY_CURRENT_USER, userCmdKey, "");
+                    LogManager.log("... using user browser");
+                } else if (registry.keyExists(WindowsRegistry.HKEY_CLASSES_ROOT, systemCmdKey)) {
+                    browserCommand = registry.getStringValue(WindowsRegistry.HKEY_CLASSES_ROOT, systemCmdKey, "");
+                    LogManager.log("... using system browser");
+                }
+                if (browserCommand != null && !browserCommand.contains("%1")) {
+                    userCmdKey = "Software\\Classes\\" + type + "\\shell\\opennew\\command";
+                    systemCmdKey = type + "\\shell\\opennew\\command";
+                    if (registry.keyExists(WindowsRegistry.HKEY_CURRENT_USER, userCmdKey)) {
+                        browserCommand = registry.getStringValue(WindowsRegistry.HKEY_CURRENT_USER, userCmdKey, "");
+                        LogManager.log("... using user browser");
+                    } else if (registry.keyExists(WindowsRegistry.HKEY_CLASSES_ROOT, systemCmdKey)) {
+                        browserCommand = registry.getStringValue(WindowsRegistry.HKEY_CLASSES_ROOT, systemCmdKey, "");
+                        LogManager.log("... using system browser");
+                    }
+                }
+                LogManager.log("... command : " + browserCommand);
+                if (browserCommand != null && !browserCommand.equals("")) {
+                    if (browserCommand.contains("%1") && !browserCommand.contains("\"%1\"")) {
+                        browserCommand = browserCommand.replace("%1", "\"%1\"");
+                    }
+                }
+            }
+        } catch (NativeException e) {
+            LogManager.log(e);
+        }
+    }
+    
+    public boolean openBrowser(URI uri) {
+        if (isBrowseSupported()) {
+            String command = browserCommand.replace("%1", uri.toString());
+            try {
+                LogManager.log("... running : " + command);
+                Runtime.getRuntime().exec(command);
+                return true;
+            } catch (IOException e) {
+                LogManager.log(e);
+
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isBrowseSupported() {
+        initBrowser();
+        return browserCommand!=null;
+    }
+
     
     private void notifyAssociationChanged() throws NativeException {
         notifyAssociationChanged0();
