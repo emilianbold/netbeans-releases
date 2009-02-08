@@ -201,6 +201,7 @@ public class Terminal extends JComponent {
 
     private void applyTermOptions(boolean initial) {
         Font font = term.getFont();
+        /* OLD
         if (font != null) {
             Font newFont = new Font(font.getName(),
                                     font.getStyle(),
@@ -212,6 +213,9 @@ public class Terminal extends JComponent {
                                     termOptions.getFontSize());
             term.setFont(newFont);
         }
+        */
+        term.setFixedFont(true);
+        term.setFont(termOptions.getFont());
 
         term.setBackground(termOptions.getBackground());
         term.setForeground(termOptions.getForeground());
