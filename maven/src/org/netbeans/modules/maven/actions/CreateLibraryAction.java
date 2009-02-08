@@ -57,11 +57,13 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.project.libraries.LibrariesCustomizer;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -102,7 +104,10 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
         if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    createLibrary(pnl.getLibraryManager(), pnl.getLibraryName(), pnl.getIncludeArtifacts(), pnl.isAllSourceAndJavadoc(), project);
+                    Library lib = createLibrary(pnl.getLibraryManager(), pnl.getLibraryName(), pnl.getIncludeArtifacts(), pnl.isAllSourceAndJavadoc(), project);
+                    if (lib != null) {
+                        LibrariesCustomizer.showCustomizer(lib, pnl.getLibraryManager());
+                    }
                 }
             });
         }
@@ -116,7 +121,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
         });
     }
 
-    private void createLibrary(LibraryManager libraryManager, String libraryName, List<Artifact> includeArtifacts, boolean allSourceAndJavadoc, MavenProject project) {
+    private Library createLibrary(LibraryManager libraryManager, String libraryName, List<Artifact> includeArtifacts, boolean allSourceAndJavadoc, MavenProject project) {
         ProgressHandle handle = ProgressHandleFactory.createHandle("Create Library");
         int count = includeArtifacts.size() * (allSourceAndJavadoc ? 3 : 1) + 5;
         handle.start(count);
@@ -137,7 +142,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                 handle.progress("Downloading " + a.getId(), index);
                 try {
                     online.resolve(a, project.getRemoteArtifactRepositories(), online.getLocalRepository());
-                    classpathVolume.add(FileUtil.getArchiveRoot(a.getFile().toURI().toURL()).toURI());
+                    classpathVolume.add(LibrariesSupport.getArchiveRoot(a.getFile().toURI()));
                     try {
                         if (allSourceAndJavadoc) {
                             handle.progress("Downloading javadoc " + a.getId(), index + 1);
@@ -149,7 +154,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                                     "javadoc"); //NOI18N
                             online.resolve(javadoc, project.getRemoteArtifactRepositories(), online.getLocalRepository());
                             if (javadoc.getFile().exists()) {
-                                javadocVolume.add(FileUtil.getArchiveRoot(javadoc.getFile().toURI().toURL()).toURI());
+                                javadocVolume.add(LibrariesSupport.getArchiveRoot(javadoc.getFile().toURI()));
                             }
 
                             handle.progress("Downloading sources " + a.getId(), index + 2);
@@ -161,7 +166,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                                     "sources"); //NOI18N
                             online.resolve(sources, project.getRemoteArtifactRepositories(), online.getLocalRepository());
                             if (sources.getFile().exists()) {
-                                sourceVolume.add(FileUtil.getArchiveRoot(sources.getFile().toURI().toURL()).toURI());
+                                sourceVolume.add(LibrariesSupport.getArchiveRoot(sources.getFile().toURI()));
                             }
                         }
                     } catch (Exception ex) {
@@ -175,13 +180,14 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                 index = index + (allSourceAndJavadoc ? 3 : 1);
             }
             try {
-                libraryManager.createURILibrary("j2se", libraryName, volumes); //NOI18N
+                return  libraryManager.createURILibrary("j2se", libraryName, volumes); //NOI18N
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
         } finally {
             handle.finish();
         }
+        return null;
     }
 
 }
