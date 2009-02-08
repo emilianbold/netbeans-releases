@@ -54,12 +54,14 @@ import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.embedder.MavenEmbedder;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -74,7 +76,7 @@ import org.openide.util.RequestProcessor;
  */
 public class CreateLibraryAction extends AbstractAction implements LookupListener {
     private Lookup lookup;
-    private Lookup.Result<MavenProject> result;
+    private Lookup.Result<DependencyNode> result;
 
     public CreateLibraryAction(Lookup lkp) {
         this.lookup = lkp;
@@ -82,19 +84,20 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
         //TODO proper icon
         putValue(SMALL_ICON, ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/actions/libraries.gif", true))); //NOI18N
         putValue("iconBase", "org/netbeans/modules/maven/actions/libraries.gif"); //NOI18N
-        result = lookup.lookupResult(MavenProject.class);
+        result = lookup.lookupResult(DependencyNode.class);
         setEnabled(result.allInstances().size() > 0);
         result.addLookupListener(this);
 
     }
 
     public void actionPerformed(ActionEvent e) {
-        Iterator<? extends MavenProject> prj = result.allInstances().iterator();
-        if (!prj.hasNext()) {
+        Iterator<? extends DependencyNode> roots = result.allInstances().iterator();
+        if (!roots.hasNext()) {
             return;
         }
-        final MavenProject project = prj.next();
-        final CreateLibraryPanel pnl = new CreateLibraryPanel(project);
+        final DependencyNode root = roots.next();
+        final MavenProject project = lookup.lookup(MavenProject.class);
+        final CreateLibraryPanel pnl = new CreateLibraryPanel(root);
         DialogDescriptor dd = new DialogDescriptor(pnl,  NbBundle.getMessage(CreateLibraryPanel.class, "LBL_CreateLibrary"));
         if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
             RequestProcessor.getDefault().post(new Runnable() {
@@ -134,7 +137,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                 handle.progress("Downloading " + a.getId(), index);
                 try {
                     online.resolve(a, project.getRemoteArtifactRepositories(), online.getLocalRepository());
-                    classpathVolume.add(a.getFile().toURI());
+                    classpathVolume.add(FileUtil.getArchiveRoot(a.getFile().toURI().toURL()).toURI());
                     try {
                         if (allSourceAndJavadoc) {
                             handle.progress("Downloading javadoc " + a.getId(), index + 1);
@@ -145,7 +148,9 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                                     a.getType(),
                                     "javadoc"); //NOI18N
                             online.resolve(javadoc, project.getRemoteArtifactRepositories(), online.getLocalRepository());
-                            javadocVolume.add(javadoc.getFile().toURI());
+                            if (javadoc.getFile().exists()) {
+                                javadocVolume.add(FileUtil.getArchiveRoot(javadoc.getFile().toURI().toURL()).toURI());
+                            }
 
                             handle.progress("Downloading sources " + a.getId(), index + 2);
                             Artifact sources = online.createArtifactWithClassifier(
@@ -155,7 +160,9 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                                     a.getType(),
                                     "sources"); //NOI18N
                             online.resolve(sources, project.getRemoteArtifactRepositories(), online.getLocalRepository());
-                            sourceVolume.add(sources.getFile().toURI());
+                            if (sources.getFile().exists()) {
+                                sourceVolume.add(FileUtil.getArchiveRoot(sources.getFile().toURI().toURL()).toURI());
+                            }
                         }
                     } catch (Exception ex) {
                         Logger.getLogger(CreateLibraryAction.class.getName()).log(Level.FINE, "Failed to download artifact", ex);

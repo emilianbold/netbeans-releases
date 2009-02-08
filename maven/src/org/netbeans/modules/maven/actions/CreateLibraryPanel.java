@@ -47,8 +47,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.Stack;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
@@ -57,30 +56,24 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
+import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.dependencies.CheckNode;
 import org.netbeans.modules.maven.dependencies.CheckNodeListener;
 import org.netbeans.modules.maven.dependencies.CheckRenderer;
-import org.netbeans.modules.maven.embedder.DependencyTreeFactory;
-import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.util.ImageUtilities;
-import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author mkleint
  */
 public class CreateLibraryPanel extends javax.swing.JPanel {
-    private MavenProject project;
     private DependencyNode rootnode;
 
     /** Creates new form CreateLibraryPanel */
-    public CreateLibraryPanel(MavenProject prj) {
+    CreateLibraryPanel(DependencyNode root) {
         initComponents();
-        project = prj;
         DefaultComboBoxModel mdl = new DefaultComboBoxModel();
 
         for (LibraryManager manager : LibraryManager.getOpenManagers()) {
@@ -108,37 +101,16 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
         trDeps.setToggleClickCount(0);
         trDeps.setRootVisible(false);
         trDeps.setModel(new DefaultTreeModel(new DefaultMutableTreeNode()));
-
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                rootnode = DependencyTreeFactory.createDependencyTree(project, EmbedderFactory.getOnlineEmbedder(), Artifact.SCOPE_TEST);
-                trDeps.setModel(new DefaultTreeModel(createDependenciesList()));
-            }
-        });
+        rootnode = root;
+        trDeps.setModel(new DefaultTreeModel(createDependenciesList()));
         checkLibraryName();
     }
 
+
     private TreeNode createDependenciesList() {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(null, true);
-        @SuppressWarnings("unchecked")
-        Set<Artifact> artifacts = project.getArtifacts();
-        Icon icn = ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/TransitiveDependencyIcon.png", true));
-        Icon icn2 = ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/DependencyIcon.png", true));
-        Artifact rootA = project.getArtifact();
-        String label = rootA.getGroupId() + ":" + rootA.getArtifactId();
-        CheckNode nd = new CheckNode(rootA, label, icn2);
-        nd.setSelected(true);
-        root.add(nd);
-
-        Set<Artifact> artifacts2 = new TreeSet<Artifact>(new Comp());
-        artifacts2.addAll(artifacts);
-
-        for (Artifact a : artifacts2) {
-            label = a.getGroupId() + ":" + a.getArtifactId() + " [" + a.getScope() + "]";
-            nd = new CheckNode(a, label, a.getDependencyTrail().size() > 2 ? icn : icn2);
-            nd.setSelected(getScopeOrder(a.getScope()) > 3); //don't include tests and provided/system items
-            root.add(nd);
-        }
+        Visitor vis = new Visitor(root);
+        rootnode.accept(vis);
         return root;
     }
 
@@ -147,7 +119,7 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
         String currentName = txtName.getText();
         int index = 0;
         while (currentName.trim().length() == 0 || manager.getLibrary(currentName.trim()) != null) {
-            currentName = project.getArtifactId();
+            currentName = rootnode.getArtifact().getArtifactId();
             if (index > 0) {
                 currentName = currentName + index;
             }
@@ -343,4 +315,49 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
 
     }
 
+    private class Visitor implements DependencyNodeVisitor {
+
+        private DefaultMutableTreeNode rootNode;
+        private DependencyNode root;
+        private Stack<DependencyNode> path;
+        private Icon icn = ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/TransitiveDependencyIcon.png", true));
+        private Icon icn2 = ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/DependencyIcon.png", true));
+
+        Visitor(DefaultMutableTreeNode root) {
+            this.rootNode = root;
+        }
+
+        public boolean visit(DependencyNode node) {
+            if (root == null) {
+                root = node;
+                path = new Stack<DependencyNode>();
+                Artifact rootA = node.getArtifact();
+                String label = rootA.getGroupId() + ":" + rootA.getArtifactId();
+                CheckNode nd = new CheckNode(rootA, label, icn2);
+                nd.setSelected(true);
+                rootNode.add(nd);
+                return true;
+            }
+            if (node.getState() == DependencyNode.INCLUDED) {
+                Artifact a = node.getArtifact();
+                String label = a.getGroupId() + ":" + a.getArtifactId() + " [" + a.getScope() + "]";
+                CheckNode nd = new CheckNode(a, label, path.size() > 0 ? icn : icn2);
+                nd.setSelected(getScopeOrder(a.getScope()) > 3); //don't include tests and provided/system items
+                rootNode.add(nd);
+
+            }
+            path.push(node);
+            return true;
+        }
+
+        public boolean endVisit(DependencyNode node) {
+            if (root == node) {
+                root = null;
+                path = null;
+                return true;
+            }
+            path.pop();
+            return true;
+        }
+    }
 }
