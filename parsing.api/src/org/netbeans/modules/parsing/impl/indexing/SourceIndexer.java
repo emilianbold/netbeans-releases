@@ -53,6 +53,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.impl.indexing.lucene.LMListener;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
@@ -83,7 +84,9 @@ public class SourceIndexer {
 
     protected void index(Iterable<? extends Indexable> files, Collection<? extends Indexable> deleted) throws IOException {
         //todo: Replace with multi source when done
+        final LMListener listener = new LMListener();
         deleted (deleted);
+        storeIfNeeded (listener);
         for (final Indexable dirty : files) {
             try {
                 final FileObject fileObject = URLMapper.findFileObject(dirty.getURL());
@@ -107,6 +110,7 @@ public class SourceIndexer {
                                 final EmbeddingIndexer indexer = currentIndexerFactory.createIndexer(dirty,resultIterator.getSnapshot());
                                 if (indexer != null) {
                                     SPIAccessor.getInstance().index(indexer, dirty, resultIterator.getParserResult(), context);
+                                    storeIfNeeded(listener);
                                 }
                             }
                             Iterable<? extends Embedding> embeddings = resultIterator.getEmbeddings();
@@ -134,6 +138,12 @@ public class SourceIndexer {
                 final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, factory.getIndexerName(), factory.getIndexVersion(), null);
                 factory.filesDeleted(deleted, context);
             }
+        }
+    }
+
+    private void storeIfNeeded (final LMListener listener) throws IOException {
+        if (listener.isLowMemory()) {
+            SupportAccessor.getInstance().flush();
         }
     }
     

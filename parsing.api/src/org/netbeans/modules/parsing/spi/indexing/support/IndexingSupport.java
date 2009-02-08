@@ -87,6 +87,14 @@ public final class IndexingSupport {
         assert instances.isEmpty();
     }
 
+    static void flush () throws IOException {
+        for (Iterator<IndexingSupport> it = instances.values().iterator(); it.hasNext(); ) {
+            final IndexingSupport is = it.next();
+            it.remove();
+            is.spiIndex.store();
+        }
+    }
+
     static void endTrans () throws IOException {
         try {
             for (Iterator<IndexingSupport> it = instances.values().iterator(); it.hasNext(); ) {
@@ -163,6 +171,11 @@ public final class IndexingSupport {
         @Override
         public Collection<? extends IndexingSupport> getDirtySupports() {
             return IndexingSupport.getDirtySupports();
+        }
+
+        @Override
+        public void flush() throws IOException {
+            IndexingSupport.flush();
         }
 
     }

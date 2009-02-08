@@ -73,6 +73,8 @@ public abstract class SupportAccessor {
 
     public abstract void endTrans () throws IOException;
 
+    public abstract void flush () throws IOException;
+
     public abstract Collection<? extends IndexingSupport> getDirtySupports ();
 
 }
