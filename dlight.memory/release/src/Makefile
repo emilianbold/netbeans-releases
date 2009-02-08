@@ -55,6 +55,9 @@ CFLAGS-Mac_OS_X := -c -g -fPIC
 ifdef 64BITS
     FLAG64 := -m64
 endif
+ifdef DEBUG
+	DBGFLAG := -DDEBUG=${DEBUG}
+endif
 
 # The following sets UNAME_S to a platform dependent string. Since
 # this gets evaluated each use, its assigned to "OSNAME" and that
@@ -82,7 +85,7 @@ LDFLAGS_LIB-SunOS = -g -shared -fPIC
 LDFLAGS_LIB-Mac_OS_X = -dynamiclib -g -fPIC -install_name ${LIB_NAME}-${OSNAME}-${PLATFORM}.${SOEXT}
 
 SOEXT := ${SOEXT-${OSNAME}}
-CFLAGS := ${CFLAGS-${OSNAME}} ${FLAG64}
+CFLAGS := ${CFLAGS-${OSNAME}} ${FLAG64} ${DBGFLAG}
 LDFLAGS_LIB = ${LDFLAGS_LIB-${OSNAME}} ${FLAG64}
 LDFLAGS_APP = ${LDFLAGS_APP-${OSNAME}} ${FLAG64}
 
