@@ -122,7 +122,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
     }
 
     private Library createLibrary(LibraryManager libraryManager, String libraryName, List<Artifact> includeArtifacts, boolean allSourceAndJavadoc, MavenProject project) {
-        ProgressHandle handle = ProgressHandleFactory.createHandle("Create Library");
+        ProgressHandle handle = ProgressHandleFactory.createHandle(org.openide.util.NbBundle.getMessage(CreateLibraryAction.class, "MSG_Create_Library"));
         int count = includeArtifacts.size() * (allSourceAndJavadoc ? 3 : 1) + 5;
         handle.start(count);
         try {
@@ -139,13 +139,13 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                 volumes.put("src", sourceVolume); //NOI18N
             }
             for (Artifact a : includeArtifacts) {
-                handle.progress("Downloading " + a.getId(), index);
+                handle.progress(org.openide.util.NbBundle.getMessage(CreateLibraryAction.class, "MSG_Downloading", a.getId()), index);
                 try {
                     online.resolve(a, project.getRemoteArtifactRepositories(), online.getLocalRepository());
                     classpathVolume.add(LibrariesSupport.getArchiveRoot(a.getFile().toURI()));
                     try {
                         if (allSourceAndJavadoc) {
-                            handle.progress("Downloading javadoc " + a.getId(), index + 1);
+                            handle.progress(org.openide.util.NbBundle.getMessage(CreateLibraryAction.class, "MSG_Downloading_javadoc", a.getId()), index + 1);
                             Artifact javadoc = online.createArtifactWithClassifier(
                                     a.getGroupId(),
                                     a.getArtifactId(),
@@ -157,7 +157,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                                 javadocVolume.add(LibrariesSupport.getArchiveRoot(javadoc.getFile().toURI()));
                             }
 
-                            handle.progress("Downloading sources " + a.getId(), index + 2);
+                            handle.progress(org.openide.util.NbBundle.getMessage(CreateLibraryAction.class, "MSG_Downloading_sources", a.getId()), index + 2);
                             Artifact sources = online.createArtifactWithClassifier(
                                     a.getGroupId(),
                                     a.getArtifactId(),
