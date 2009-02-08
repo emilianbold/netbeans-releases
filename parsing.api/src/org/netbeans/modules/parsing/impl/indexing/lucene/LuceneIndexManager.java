@@ -43,6 +43,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  *
@@ -52,10 +54,38 @@ public class LuceneIndexManager {
 
     private static LuceneIndexManager instance;
     private volatile boolean invalid;
+    private final ReadWriteLock lock  = new ReentrantReadWriteLock();
 
     private final Map<URL, LuceneIndex> indexes = new HashMap<URL, LuceneIndex> ();
 
     private LuceneIndexManager() {}
+
+
+    public static interface Action<R> {
+        public R run () throws IOException;
+    }
+
+
+    public <R> R writeAccess (final Action<R> action) throws IOException {
+        assert action != null;
+        lock.writeLock().lock();
+        try {
+            return action.run();
+        }
+        finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    public <R> R readAccess (final Action<R> action) throws IOException {
+        assert action != null;
+        lock.readLock().lock();
+        try {
+            return action.run();
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
 
 
     public static synchronized LuceneIndexManager getDefault () {

@@ -111,11 +111,21 @@ public class LuceneIndex implements IndexImpl {
         }
     }
 
+    /**
+     * Adds document
+     * No need to guard it as it run always in single thread (TaskProcessor)
+     * @param document
+     */
     public void addDocument(final IndexDocumentImpl document) {
         assert document instanceof LuceneDocument;       
         toAdd.add((LuceneDocument)document);
     }
 
+    /**
+     * Removes all documents for given path
+     * No need to guard it as it run always in single thread (TaskProcessor)
+     * @param relativePath
+     */
     public void removeDocument(final String relativePath) {
         toRemove.add(relativePath);
     }
@@ -123,63 +133,67 @@ public class LuceneIndex implements IndexImpl {
     public void store() throws IOException {
         try {
             checkPreconditions();
-            //assert ClassIndexManager.getDefault().holdsWriteLock();
-            //1) delete all documents from to delete and toAdd
-            final boolean create = !isValid (false);
-            if (!create) {
-                IndexReader in = getReader();
-                final Searcher searcher = new IndexSearcher (in);
-                try {
-                    for (Iterator<String> it = toRemove.iterator(); it.hasNext();) {
-                        String toRemoveItem = it.next();
-                        it.remove();
-                        deleteFile (in, searcher, toRemoveItem);
-                    }
-                    for (LuceneDocument toRemoveItem : toAdd) {
-                        deleteFile(in, searcher, toRemoveItem.getSourceName());
-                    }
-                } finally {
-                    searcher.close();
-                }
-            }
-            //2) add all documents form to add
-            final IndexWriter out = getWriter(create);
-            try {
-                if (debugIndexMerging) {
-                    out.setInfoStream (System.err);
-                }
+            LuceneIndexManager.getDefault().writeAccess(new LuceneIndexManager.Action<Void>() {
 
-                LMListener lmListener = new LMListener ();
-                Directory memDir = null;
-                IndexWriter activeOut = null;
-                if (lmListener.isLowMemory()) {
-                    activeOut = out;
-                }
-                else {
-                    memDir = new RAMDirectory ();
-                    activeOut = new IndexWriter (memDir, new KeywordAnalyzer(), true);
-                }                
-                for (Iterator<LuceneDocument> it = toAdd.iterator(); it.hasNext();) {
-                    final LuceneDocument doc = it.next();
-                    it.remove();
-                    activeOut.addDocument(doc.doc);
-                    if (memDir != null && lmListener.isLowMemory()) {
-                        activeOut.close();
-                        out.addIndexes(new Directory[] {memDir});
-                        memDir = new RAMDirectory ();
-                        activeOut = new IndexWriter (memDir, new KeywordAnalyzer(), true);
+                public Void run() throws IOException {
+                    final boolean create = !isValid (false);
+                    if (!create) {
+                        IndexReader in = getReader();
+                        final Searcher searcher = new IndexSearcher (in);
+                        try {
+                            for (Iterator<String> it = toRemove.iterator(); it.hasNext();) {
+                                String toRemoveItem = it.next();
+                                it.remove();
+                                deleteFile (in, searcher, toRemoveItem);
+                            }
+                            for (LuceneDocument toRemoveItem : toAdd) {
+                                deleteFile(in, searcher, toRemoveItem.getSourceName());
+                            }
+                        } finally {
+                            searcher.close();
+                        }
                     }
+                    //2) add all documents form to add
+                    final IndexWriter out = getWriter(create);
+                    try {
+                        if (debugIndexMerging) {
+                            out.setInfoStream (System.err);
+                        }
+
+                        LMListener lmListener = new LMListener ();
+                        Directory memDir = null;
+                        IndexWriter activeOut = null;
+                        if (lmListener.isLowMemory()) {
+                            activeOut = out;
+                        }
+                        else {
+                            memDir = new RAMDirectory ();
+                            activeOut = new IndexWriter (memDir, new KeywordAnalyzer(), true);
+                        }
+                        for (Iterator<LuceneDocument> it = toAdd.iterator(); it.hasNext();) {
+                            final LuceneDocument doc = it.next();
+                            it.remove();
+                            activeOut.addDocument(doc.doc);
+                            if (memDir != null && lmListener.isLowMemory()) {
+                                activeOut.close();
+                                out.addIndexes(new Directory[] {memDir});
+                                memDir = new RAMDirectory ();
+                                activeOut = new IndexWriter (memDir, new KeywordAnalyzer(), true);
+                            }
+                        }
+                        if (memDir != null) {
+                            activeOut.close();
+                            out.addIndexes(new Directory[] {memDir});
+                            activeOut = null;
+                            memDir = null;
+                        }
+
+                    } finally {
+                        out.close();
+                    }
+                    return null;
                 }
-                if (memDir != null) {
-                    activeOut.close();
-                    out.addIndexes(new Directory[] {memDir});
-                    activeOut = null;
-                    memDir = null;
-                }
-                
-            } finally {
-                out.close();
-            }
+            });
         } finally {
             toRemove.clear();
             toAdd.clear();
@@ -203,16 +217,24 @@ public class LuceneIndex implements IndexImpl {
     }
 
 
-    public synchronized void close () throws IOException {
-        try {
-            if (this.reader != null) {
-                this.reader.close();
-                this.reader = null;
+    public void close () throws IOException {
+        LuceneIndexManager.getDefault().writeAccess(new LuceneIndexManager.Action<Void>() {
+
+            public Void run() throws IOException {
+                synchronized (LuceneIndex.this) {
+                    try {
+                        if (reader != null) {
+                            reader.close();
+                            reader = null;
+                        }
+                    } finally {
+                        directory.close();
+                        closed = true;
+                    }
+                }
+                return null;
             }
-        } finally {
-           this.directory.close();
-           this.closed = true;
-        }
+        });
     }
     
     private void checkPreconditions () {
@@ -242,52 +264,58 @@ public class LuceneIndex implements IndexImpl {
 
     public synchronized void clear () throws IOException {
         checkPreconditions();
-        this.close ();
-        try {
-            final String[] content = this.directory.list();
-            boolean dirty = false;
-            for (String file : content) {
-                try {
-                    directory.deleteFile(file);
-                } catch (IOException e) {
-                    //Some temporary files
-                    if (directory.fileExists(file)) {
-                        dirty = true;
-                    }
-                }
-            }
-            if (dirty) {
-                //Try to delete dirty files and log what's wrong
-                final File cacheDir = ((FSDirectory)this.directory).getFile();
-                final File[] children = cacheDir.listFiles();
-                if (children != null) {
-                    for (final File child : children) {
-                        if (!child.delete()) {
-                            final Class c = this.directory.getClass();
-                            int refCount = -1;
-                            try {
-                                final Field field = c.getDeclaredField("refCount");
-                                field.setAccessible(true);
-                                refCount = field.getInt(this.directory);
-                            } catch (NoSuchFieldException e) {/*Not important*/}
-                              catch (IllegalAccessException e) {/*Not important*/}
+        LuceneIndexManager.getDefault().writeAccess(new LuceneIndexManager.Action<Void>() {
 
-                            throw new IOException("Cannot delete: " + child.getAbsolutePath() + "(" +   //NOI18N
-                                    child.exists()  +","+                                               //NOI18N
-                                    child.canRead() +","+                                               //NOI18N
-                                    child.canWrite() +","+                                              //NOI18N
-                                    cacheDir.canRead() +","+                                            //NOI18N
-                                    cacheDir.canWrite() +","+                                           //NOI18N
-                                    refCount+")");                                                      //NOI18N
+            public Void run() throws IOException {
+                close ();
+                try {
+                    final String[] content = directory.list();
+                    boolean dirty = false;
+                    for (String file : content) {
+                        try {
+                            directory.deleteFile(file);
+                        } catch (IOException e) {
+                            //Some temporary files
+                            if (directory.fileExists(file)) {
+                                dirty = true;
+                            }
                         }
                     }
+                    if (dirty) {
+                        //Try to delete dirty files and log what's wrong
+                        final File cacheDir = ((FSDirectory)directory).getFile();
+                        final File[] children = cacheDir.listFiles();
+                        if (children != null) {
+                            for (final File child : children) {
+                                if (!child.delete()) {
+                                    final Class c = directory.getClass();
+                                    int refCount = -1;
+                                    try {
+                                        final Field field = c.getDeclaredField("refCount");
+                                        field.setAccessible(true);
+                                        refCount = field.getInt(directory);
+                                    } catch (NoSuchFieldException e) {/*Not important*/}
+                                      catch (IllegalAccessException e) {/*Not important*/}
+
+                                    throw new IOException("Cannot delete: " + child.getAbsolutePath() + "(" +   //NOI18N
+                                            child.exists()  +","+                                               //NOI18N
+                                            child.canRead() +","+                                               //NOI18N
+                                            child.canWrite() +","+                                              //NOI18N
+                                            cacheDir.canRead() +","+                                            //NOI18N
+                                            cacheDir.canWrite() +","+                                           //NOI18N
+                                            refCount+")");                                                      //NOI18N
+                                }
+                            }
+                        }
+                    }
+                } finally {
+                    //Need to recreate directory, see issue: #148374
+                    directory = FSDirectory.getDirectory(indexFolder, NoLockFactory.getNoLockFactory());      //Locking controlled by rwlock
+                    closed = false;
                 }
+                return null;
             }
-        } finally {
-            //Need to recreate directory, see issue: #148374
-            this.directory = FSDirectory.getDirectory(indexFolder, NoLockFactory.getNoLockFactory());      //Locking controlled by rwlock
-            closed = false;
-        }
+        });
     }
 
     private synchronized IndexReader getReader () throws IOException {
@@ -350,143 +378,148 @@ public class LuceneIndex implements IndexImpl {
         assert fieldName != null;
         assert value != null;
         assert kind != null;
-        final List<IndexDocumentImpl> result = new LinkedList<IndexDocumentImpl>();
-        final Set<Term> toSearch = new TreeSet<Term> (new TermComparator());
-        final IndexReader in = getReader();
-        switch (kind) {
-            case EXACT:
-                {
-                    toSearch.add(new Term (fieldName,value));
-                    break;
-                }
-            case PREFIX:
-                if (value.length() == 0) {
-                    //Special case (all) handle in different way
-                    emptyPrefixSearch(in, fieldsToLoad, result);
-                    return result;
-                }
-                else {
-                    final Term nameTerm = new Term (fieldName, value);
-                    prefixSearch(nameTerm, in, toSearch);
-                    break;
-                }
-            case CASE_INSENSITIVE_PREFIX:
-                if (value.length() == 0) {
-                    //Special case (all) handle in different way
-                    emptyPrefixSearch(in, fieldsToLoad, result);
-                    return result;
-                }
-                else {
-                    final Term nameTerm = new Term (fieldName,value.toLowerCase());     //XXX: I18N, Locale
-                    prefixSearch(nameTerm, in, toSearch);
-                    break;
-                }
-            case CAMEL_CASE:
-                if (value.length() == 0) {
-                    throw new IllegalArgumentException ();
-                }
-                {
-                    StringBuilder sb = new StringBuilder();
-                    String prefix = null;
-                    int lastIndex = 0;
-                    int index;
-                    do {
-                        index = findNextUpper(value, lastIndex + 1);
-                        String token = value.substring(lastIndex, index == -1 ? value.length(): index);
-                        if ( lastIndex == 0 ) {
-                            prefix = token;
-                        }
-                        sb.append(token);
-                        sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
-                        lastIndex = index;
-                    }
-                    while(index != -1);
+        return LuceneIndexManager.getDefault().readAccess(new LuceneIndexManager.Action<List<IndexDocumentImpl>>() {
 
-                    final Pattern pattern = Pattern.compile(sb.toString());
-                    regExpSearch(pattern, new Term (fieldName,prefix),in,toSearch);
-                }
-                break;
-            case CASE_INSENSITIVE_REGEXP:
-                if (value.length() == 0) {
-                    throw new IllegalArgumentException ();
-                }
-                else {
-                    final Pattern pattern = Pattern.compile(value,Pattern.CASE_INSENSITIVE);
-                    if (Character.isJavaIdentifierStart(value.charAt(0))) {
-                        regExpSearch(pattern, new Term (fieldName, value.toLowerCase()), in, toSearch);      //XXX: Locale
-                    }
-                    else {
-                        regExpSearch(pattern, new Term (fieldName,""), in, toSearch);      //NOI18N
-                    }
-                    break;
-                }
-            case REGEXP:
-                if (value.length() == 0) {
-                    throw new IllegalArgumentException ();
-                } else {
-                    final Pattern pattern = Pattern.compile(value);
-                    if (Character.isJavaIdentifierStart(value.charAt(0))) {
-                        regExpSearch(pattern, new Term (fieldName, value), in, toSearch);
-                    }
-                    else {
-                        regExpSearch(pattern, new Term(fieldName,""), in, toSearch);             //NOI18N
-                    }
-                    break;
-                }
-            case CASE_INSENSITIVE_CAMEL_CASE:
-                if (value.length() == 0) {
-                    //Special case (all) handle in different way
-                    emptyPrefixSearch(in, fieldsToLoad, result);
-                    return result;
-                }
-                else {
-                    final Term nameTerm = new Term(fieldName,value.toLowerCase());     //XXX: I18N, Locale
-                    prefixSearch(nameTerm, in, toSearch);
-                    StringBuilder sb = new StringBuilder();
-                    String prefix = null;
-                    int lastIndex = 0;
-                    int index;
-                    do {
-                        index = findNextUpper(value, lastIndex + 1);
-                        String token = value.substring(lastIndex, index == -1 ? value.length(): index);
-                        if ( lastIndex == 0 ) {
-                            prefix = token;
+            public List<IndexDocumentImpl> run() throws IOException {
+                final List<IndexDocumentImpl> result = new LinkedList<IndexDocumentImpl>();
+                final Set<Term> toSearch = new TreeSet<Term> (new TermComparator());
+                final IndexReader in = getReader();
+                switch (kind) {
+                    case EXACT:
+                        {
+                            toSearch.add(new Term (fieldName,value));
+                            break;
                         }
-                        sb.append(token);
-                        sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
-                        lastIndex = index;
+                    case PREFIX:
+                        if (value.length() == 0) {
+                            //Special case (all) handle in different way
+                            emptyPrefixSearch(in, fieldsToLoad, result);
+                            return result;
+                        }
+                        else {
+                            final Term nameTerm = new Term (fieldName, value);
+                            prefixSearch(nameTerm, in, toSearch);
+                            break;
+                        }
+                    case CASE_INSENSITIVE_PREFIX:
+                        if (value.length() == 0) {
+                            //Special case (all) handle in different way
+                            emptyPrefixSearch(in, fieldsToLoad, result);
+                            return result;
+                        }
+                        else {
+                            final Term nameTerm = new Term (fieldName,value.toLowerCase());     //XXX: I18N, Locale
+                            prefixSearch(nameTerm, in, toSearch);
+                            break;
+                        }
+                    case CAMEL_CASE:
+                        if (value.length() == 0) {
+                            throw new IllegalArgumentException ();
+                        }
+                        {
+                            StringBuilder sb = new StringBuilder();
+                            String prefix = null;
+                            int lastIndex = 0;
+                            int index;
+                            do {
+                                index = findNextUpper(value, lastIndex + 1);
+                                String token = value.substring(lastIndex, index == -1 ? value.length(): index);
+                                if ( lastIndex == 0 ) {
+                                    prefix = token;
+                                }
+                                sb.append(token);
+                                sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
+                                lastIndex = index;
+                            }
+                            while(index != -1);
+
+                            final Pattern pattern = Pattern.compile(sb.toString());
+                            regExpSearch(pattern, new Term (fieldName,prefix),in,toSearch);
+                        }
+                        break;
+                    case CASE_INSENSITIVE_REGEXP:
+                        if (value.length() == 0) {
+                            throw new IllegalArgumentException ();
+                        }
+                        else {
+                            final Pattern pattern = Pattern.compile(value,Pattern.CASE_INSENSITIVE);
+                            if (Character.isJavaIdentifierStart(value.charAt(0))) {
+                                regExpSearch(pattern, new Term (fieldName, value.toLowerCase()), in, toSearch);      //XXX: Locale
+                            }
+                            else {
+                                regExpSearch(pattern, new Term (fieldName,""), in, toSearch);      //NOI18N
+                            }
+                            break;
+                        }
+                    case REGEXP:
+                        if (value.length() == 0) {
+                            throw new IllegalArgumentException ();
+                        } else {
+                            final Pattern pattern = Pattern.compile(value);
+                            if (Character.isJavaIdentifierStart(value.charAt(0))) {
+                                regExpSearch(pattern, new Term (fieldName, value), in, toSearch);
+                            }
+                            else {
+                                regExpSearch(pattern, new Term(fieldName,""), in, toSearch);             //NOI18N
+                            }
+                            break;
+                        }
+                    case CASE_INSENSITIVE_CAMEL_CASE:
+                        if (value.length() == 0) {
+                            //Special case (all) handle in different way
+                            emptyPrefixSearch(in, fieldsToLoad, result);
+                            return result;
+                        }
+                        else {
+                            final Term nameTerm = new Term(fieldName,value.toLowerCase());     //XXX: I18N, Locale
+                            prefixSearch(nameTerm, in, toSearch);
+                            StringBuilder sb = new StringBuilder();
+                            String prefix = null;
+                            int lastIndex = 0;
+                            int index;
+                            do {
+                                index = findNextUpper(value, lastIndex + 1);
+                                String token = value.substring(lastIndex, index == -1 ? value.length(): index);
+                                if ( lastIndex == 0 ) {
+                                    prefix = token;
+                                }
+                                sb.append(token);
+                                sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
+                                lastIndex = index;
+                            }
+                            while(index != -1);
+                            final Pattern pattern = Pattern.compile(sb.toString());
+                            regExpSearch(pattern,new Term (fieldName, prefix),in,toSearch);
+                            break;
+                        }
+                    default:
+                        throw new UnsupportedOperationException (kind.toString());
+                }
+                TermDocs tds = in.termDocs();
+                final Iterator<Term> it = toSearch.iterator();
+                Set<Integer> docNums = new TreeSet<Integer>();
+                int[] docs = new int[25];
+                int[] freq = new int [25];
+                int len;
+                while (it.hasNext()) {
+                    tds.seek(it.next());
+                    while ((len = tds.read(docs, freq))>0) {
+                        for (int i = 0; i < len; i++) {
+                            docNums.add (docs[i]);
+                        }
+                        if (len < docs.length) {
+                            break;
+                        }
                     }
-                    while(index != -1);
-                    final Pattern pattern = Pattern.compile(sb.toString());
-                    regExpSearch(pattern,new Term (fieldName, prefix),in,toSearch);
-                    break;
                 }
-            default:
-                throw new UnsupportedOperationException (kind.toString());
-        }
-        TermDocs tds = in.termDocs();
-        final Iterator<Term> it = toSearch.iterator();
-        Set<Integer> docNums = new TreeSet<Integer>();
-        int[] docs = new int[25];
-        int[] freq = new int [25];
-        int len;
-        while (it.hasNext()) {
-            tds.seek(it.next());
-            while ((len = tds.read(docs, freq))>0) {
-                for (int i = 0; i < len; i++) {
-                    docNums.add (docs[i]);
+                final FieldSelector selector = DocumentUtil.selector(fieldsToLoad);
+                for (Integer docNum : docNums) {
+                    final Document doc = in.document(docNum, selector);
+                    result.add (new LuceneDocument(doc));
                 }
-                if (len < docs.length) {
-                    break;
-                }
+                return result;
             }
-        }
-        final FieldSelector selector = DocumentUtil.selector(fieldsToLoad);
-        for (Integer docNum : docNums) {
-            final Document doc = in.document(docNum, selector);
-            result.add (new LuceneDocument(doc));
-        }
-        return result;
+        });        
     }
 
     private void emptyPrefixSearch (final IndexReader in, final String[] fieldsToLoad, final List<? super IndexDocumentImpl> result) throws IOException {
