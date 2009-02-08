@@ -273,6 +273,7 @@ public class Term extends JComponent implements Accessible {
     private int n_repaint;
     private int n_paint;
     
+    private boolean fixedFont = false;
     MyFontMetrics metrics = null;
     
     Buffer buf = new Buffer(80);
@@ -4863,6 +4864,25 @@ public class Term extends JComponent implements Accessible {
         return metrics.wcwidth(c);
     }
     
+
+    /**
+     * If set to true then it is expected that setFont() will receive a fixed
+     * width font.
+     * @param fixedFont Controls whether setFont() expects a fixed-width font.
+     */
+    public void setFixedFont(boolean fixedFont) {
+        this.fixedFont = fixedFont;
+    }
+
+    /**
+     * Returns whether setFont() expects a fixed-width font.
+     * @return whether setFont() expects a fixed-width font.
+     */
+    public boolean isFixedFont() {
+        return fixedFont;
+    }
+
+
     /*
      * The following are overrides of JComponent/Component
      */
@@ -4876,9 +4896,14 @@ public class Term extends JComponent implements Accessible {
     
     public void setFont(Font new_font) {
         
-        Font font = new Font("Monospaced",	// NOI18N
-                new_font.getStyle(),
-                new_font.getSize());
+        Font font;
+        if (isFixedFont()) {
+            font = new_font;
+        } else {
+            font = new Font("Monospaced",	// NOI18N
+                            new_font.getStyle(),
+                            new_font.getSize());
+        }
         
         super.setFont(font);	// This should invalidate us, which
         // ultimately will cause a repaint
