@@ -45,6 +45,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.netbeans.modules.maven.actions.CreateLibraryAction;
 import org.netbeans.modules.maven.actions.ViewBugTrackerAction;
 import org.netbeans.modules.maven.actions.ViewJavadocAction;
 import org.netbeans.modules.maven.actions.ViewProjectHomeAction;
@@ -136,6 +137,20 @@ public class CommonArtifactActions {
      */
     public static Action createScmCheckoutAction(Lookup lkp) {
         return new CheckoutAction(lkp);
+    }
+
+    /**
+     * create an action instance that create a NetBeans library based on the MavenProject
+     * instance provided in the lookup parameter. If no MavenProject is provided
+     * up front it will listen on addition later. Without a MavenProject instance, it's disabled.
+     *
+     * NOT to be used with global Lookup instances.
+     * @param lkp
+     * @return action
+     *
+     */
+    public static Action createLibraryAction(Lookup lkp) {
+        return new CreateLibraryAction(lkp);
     }
 
     private static class ShowArtifactAction extends AbstractAction {

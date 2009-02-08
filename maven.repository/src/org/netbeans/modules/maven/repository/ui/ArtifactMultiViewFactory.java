@@ -147,7 +147,8 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
 
         Action[] toolbarActions = new Action[] {
             new AddAsDependencyAction(fArt),
-            CommonArtifactActions.createScmCheckoutAction(lookup)
+            CommonArtifactActions.createScmCheckoutAction(lookup),
+            CommonArtifactActions.createLibraryAction(lookup)
         };
         ic.add(toolbarActions);
 

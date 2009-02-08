@@ -64,7 +64,7 @@ import javax.swing.tree.TreePath;
  *
  * @author  Pavel Flaska
  */
-class CheckNodeListener implements MouseListener, KeyListener {
+public class CheckNodeListener implements MouseListener, KeyListener {
 
     private final boolean isQuery;
 
