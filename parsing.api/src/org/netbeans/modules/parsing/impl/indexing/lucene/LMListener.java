@@ -49,7 +49,7 @@ import java.util.List;
  *
  * @author Tomas Zezula
  */
-class LMListener {
+public class LMListener {
 
     //@GuardedBy(LMListener.class)
     private static MemoryPoolMXBean cachedPool;
