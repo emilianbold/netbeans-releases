@@ -142,9 +142,9 @@ public class SourceIndexer {
     }
 
     private void storeIfNeeded (final LMListener listener) throws IOException {
-        if (listener.isLowMemory()) {
-            SupportAccessor.getInstance().flush();
-        }
+//        if (listener.isLowMemory()) {
+//            SupportAccessor.getInstance().flush();
+//        }
     }
     
     private EmbeddingIndexerFactory findIndexer (final String mimeType) {
