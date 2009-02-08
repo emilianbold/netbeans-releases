@@ -251,6 +251,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                     allSourceRoots.add(fo);
                 }
             }
+            // TODO: Add first main project's BOOT path, if not exist, then default platform and then the rest.
             JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
             for (int i = 0; i < platforms.length; i++) {
                 FileObject[] roots = platforms[i].getSourceFolders().getRoots ();
@@ -260,6 +261,10 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                         allSourceRoots.add(roots [j]);
                     }
                 }
+            }
+            List<FileObject> additional = getAdditionalRemoteClassPath();
+            if (additional != null) {
+                allSourceRoots.addAll(additional);
             }
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("SourcePathProviderImpl: GlobalPathRegistry roots = "+GlobalPathRegistry.getDefault().getSourceRoots()+")");
@@ -277,19 +282,21 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             projectSourceRoots = getSourceRoots(originalSourcePath);
 
             srcRootsToListenForArtifactsUpdates = new HashSet(allSourceRoots);
-            
-            int i, k = platforms.length;
-            for (i = 0; i < k; i++) {
-                FileObject[] roots = platforms [i].getSourceFolders ().
-                    getRoots ();
-                int j, jj = roots.length;
-                for (j = 0; j < jj; j++)
-                    allSourceRoots.remove (roots [j]);
+
+            Set<String> disabledRoots = getRemoteDisabledSourceRoots();
+            if (disabledRoots != null && !disabledRoots.isEmpty()) {
+                List<FileObject> enabledSourcePath = new ArrayList<FileObject>(
+                        Arrays.asList(smartSteppingSourcePath.getRoots()));
+                for (FileObject fo : new HashSet<FileObject>(enabledSourcePath)) {
+                    if (disabledRoots.contains(getRoot(fo))) {
+                        enabledSourcePath.remove(fo);
+                    }
+                }
+                smartSteppingSourcePath = ClassPathSupport.createClassPath(
+                        enabledSourcePath.toArray(new FileObject[0]));
+            } else {
+                smartSteppingSourcePath = originalSourcePath;
             }
-            smartSteppingSourcePath = ClassPathSupport.createClassPath (
-                allSourceRoots.toArray 
-                    (new FileObject [allSourceRoots.size()])
-            );
         }
         
         if (verbose) 
@@ -347,6 +354,26 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         }
     }
 
+    private List<FileObject> getAdditionalRemoteClassPath() {
+        Properties sourcesProperties = Properties.getDefault ().getProperties ("debugger").getProperties ("sources");
+        List<String> additionalSourceRoots = (List<String>) sourcesProperties.
+                getProperties("additional_source_roots").
+                getCollection("src_roots", Collections.emptyList());
+        if (additionalSourceRoots.isEmpty()) {
+            return null;
+        }
+        List<FileObject> additionalSourcePath = new ArrayList<FileObject>(additionalSourceRoots.size());
+        for (String ar : additionalSourceRoots) {
+            FileObject fo = getFileObject(ar);
+            if (fo != null) {
+                additionalSourcePath.add(fo);
+            }
+        }
+        return additionalSourcePath;
+        //return ClassPathSupport.createClassPath(
+        //        additionalSourcePath.toArray(new FileObject[0]));
+    }
+
     private Set<String> getDisabledSourceRoots(File baseDir) {
         try {
             String root = baseDir.toURI().toURL().toExternalForm();
@@ -358,6 +385,12 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             Exceptions.printStackTrace(ex);
             return null;
         }
+    }
+
+    private Set<String> getRemoteDisabledSourceRoots() {
+        Properties sourcesProperties = Properties.getDefault ().getProperties ("debugger").getProperties ("sources");
+        return (Set<String>) sourcesProperties.getProperties("source_roots").
+            getCollection("remote_disabled", Collections.emptySet());
     }
 
     /**

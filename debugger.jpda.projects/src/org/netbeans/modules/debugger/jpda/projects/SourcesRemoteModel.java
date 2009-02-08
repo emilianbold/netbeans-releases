@@ -90,17 +90,15 @@ NodeActionsProvider {
 
     private Vector<ModelListener>   listeners = new Vector<ModelListener>();
     // set of filters
-    private Set<String>             enabledSourceRoots = new HashSet<String>();
     private Set<String>             disabledSourceRoots = new HashSet<String>();
     private List<String>            additionalSourceRoots = new ArrayList<String>();
-    private Properties              filterProperties = Properties.
+    private Properties              sourcesProperties = Properties.
         getDefault ().getProperties ("debugger").getProperties ("sources");
-    private final Set<String>       sourceRootsSet = new HashSet<String>();
     private GlobalPathRegistryListener globalRegistryListener;
 
 
     public SourcesRemoteModel () {
-        loadFilters ();
+        loadSourceRoots();
         updateCachedRoots();
         DELETE_ACTION.putValue (
             Action.ACCELERATOR_KEY,
@@ -144,36 +142,34 @@ NodeActionsProvider {
             }
             Set<FileObject> globalRoots = new TreeSet<FileObject>(new FileObjectComparator());
             globalRoots.addAll(GlobalPathRegistry.getDefault().getSourceRoots());
-            String[] sourceRoots = new String[globalRoots.size()];
+            int n = globalRoots.size();
+            List<String> sourceRoots = new ArrayList<String>(n);
             Iterator<FileObject> it = globalRoots.iterator();
-            for (int i = 0; i < sourceRoots.length; i++) {
-                try {
-                    sourceRoots[i] = it.next().getURL().toExternalForm();
-                } catch (FileStateInvalidException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+            for (int i = 0; i < n; i++) {
+                sourceRoots.add(
+                        SourcePathProviderImpl.getRoot(it.next()));
             }
             //String[] sourceRoots = sourcePath.getOriginalSourceRoots ();
 
             // 3) find additional disabled source roots (enabled are in sourceRoots)
-            List<String> addSrcRoots;
+            //List<String> addSrcRoots;
             synchronized (this) {
                 if (additionalSourceRoots.size() > 0) {
-                    addSrcRoots = new ArrayList<String>(additionalSourceRoots.size());
+                    //addSrcRoots = new ArrayList<String>(additionalSourceRoots.size());
                     for (String addSrcRoot : additionalSourceRoots) {
-                        if (!enabledSourceRoots.contains(addSrcRoot)) {
-                            addSrcRoots.add(addSrcRoot);
+                        if (!sourceRoots.contains(addSrcRoot)) {
+                            sourceRoots.add(addSrcRoot);
                         }
                     }
                 } else {
-                    addSrcRoots = Collections.emptyList();
+                    //addSrcRoots = Collections.emptyList();
                 }
             }
 
             // 3) join them
-            Object[] os = new Object [sourceRoots.length + addSrcRoots.size()];
-            System.arraycopy (sourceRoots, 0, os, 0, sourceRoots.length);
-            System.arraycopy (addSrcRoots.toArray(), 0, os, sourceRoots.length, addSrcRoots.size());
+            Object[] os = sourceRoots.toArray();
+            //System.arraycopy (sourceRoots, 0, os, 0, sourceRoots.length);
+            //System.arraycopy (addSrcRoots.toArray(), 0, os, sourceRoots.length, addSrcRoots.size());
             to = Math.min(os.length, to);
             from = Math.min(os.length, from);
             Object[] fos = new Object [to - from];
@@ -287,29 +283,22 @@ NodeActionsProvider {
 
     private boolean isEnabled (String root) {
         synchronized(this) {
-            return sourceRootsSet.contains(root);
+            return !disabledSourceRoots.contains(root);
         }
     }
 
     private void setEnabled (String root, boolean enabled) {
-            List<String> sourceRoots = new ArrayList<String>(sourceRootsSet);
-            synchronized (this) {
-                if (enabled) {
-                    enabledSourceRoots.add (root);
-                    disabledSourceRoots.remove (root);
-                    sourceRoots.add (root);
-                } else {
-                    disabledSourceRoots.add (root);
-                    enabledSourceRoots.remove (root);
-                    sourceRoots.remove (root);
-                }
+        synchronized (this) {
+            if (enabled) {
+                disabledSourceRoots.remove (root);
+            } else {
+                disabledSourceRoots.add (root);
             }
-            String[] ss = new String [sourceRoots.size ()];
-            //sourcePath.setSourceRoots (sourceRoots.toArray (ss));
-
-        saveFilters ();
+            saveDisabledSourceRoots ();
+        }
     }
 
+    /*
     private void loadFilters () {
         enabledSourceRoots = new HashSet (
             filterProperties.getProperties ("source_roots").getCollection (
@@ -337,6 +326,31 @@ NodeActionsProvider {
             ("disabled", disabledSourceRoots);
         filterProperties.getProperties("additional_source_roots").
             setCollection("src_roots", additionalSourceRoots);
+    }
+     */
+
+    private void loadSourceRoots() {
+        disabledSourceRoots = new HashSet (
+            sourcesProperties.getProperties ("source_roots").getCollection (
+                "remote_disabled",
+                Collections.EMPTY_SET
+            )
+        );
+        additionalSourceRoots = new ArrayList(
+            sourcesProperties.getProperties("additional_source_roots").getCollection(
+                "src_roots",
+                Collections.EMPTY_LIST)
+        );
+    }
+
+    private synchronized void saveDisabledSourceRoots () {
+        sourcesProperties.getProperties("source_roots").
+                setCollection("remote_disabled", disabledSourceRoots);
+    }
+
+    private synchronized void saveAdditionalSourceRoots () {
+        sourcesProperties.getProperties("additional_source_roots").
+                setCollection("src_roots", additionalSourceRoots);
     }
 
     private synchronized void updateCachedRoots() {
@@ -388,7 +402,7 @@ NodeActionsProvider {
                     String d = zipOrDir.getCanonicalPath();
                     synchronized (SourcesRemoteModel.this) {
                         additionalSourceRoots.add(d);
-                        enabledSourceRoots.add(d);
+                        //enabledSourceRoots.add(d);
                     }
                     // Set the new source roots:
                     /*
@@ -399,7 +413,7 @@ NodeActionsProvider {
                     newSourceRoots[l] = d;
                     sourcePath.setSourceRoots(newSourceRoots);
                     */
-                    saveFilters();
+                    saveAdditionalSourceRoots();
                     fireTreeChanged ();
                 } catch (java.io.IOException ioex) {
                     ErrorManager.getDefault().notify(ioex);
@@ -421,7 +435,7 @@ NodeActionsProvider {
                     String node = (String) nodes [i];
                     synchronized (SourcesRemoteModel.this) {
                         additionalSourceRoots.remove(node);
-                        enabledSourceRoots.remove(node);
+                        //enabledSourceRoots.remove(node);
                         disabledSourceRoots.remove(node);
                     }
                     // Set the new source roots:
@@ -443,7 +457,7 @@ NodeActionsProvider {
                     }
                      */
                 }
-                saveFilters ();
+                saveAdditionalSourceRoots();
                 fireTreeChanged ();
             }
         },
