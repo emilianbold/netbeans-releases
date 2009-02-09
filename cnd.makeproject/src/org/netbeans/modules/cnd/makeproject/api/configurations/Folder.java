@@ -85,7 +85,6 @@ public class Folder implements FileChangeListener {
     private final boolean projectFiles;
     private String id = null;
     private String root;
-//    private FileObject folderFileObject;
     private final Logger log = Logger.getLogger("makeproject.folder"); // NOI18N
 
     public Folder(ConfigurationDescriptor configurationDescriptor, Folder parent, String name, String displayName, boolean projectFiles) {
@@ -97,7 +96,7 @@ public class Folder implements FileChangeListener {
         this.items = new Vector<Object>();
         this.sortName = displayName.toLowerCase();
 
-        log.setLevel(Level.OFF);
+        log.setLevel(Level.FINEST);
     }
 
     public void setRoot(String root) {
@@ -152,13 +151,7 @@ public class Folder implements FileChangeListener {
             if (file.isDirectory()) {
                 if (findFolderByName(file.getName()) == null) {
                     log.fine("------------adding folder " + file.getPath() + " in " + getPath()); // NOI18N
-                    AllSourceFileFilter filter = AllSourceFileFilter.getInstance();
-                    Vector<SourceFolderInfo> data = new Vector<SourceFolderInfo>();
-                    FolderEntry folderEntry = new FolderEntry(file, file.getName());
-                    folderEntry.setAddSubfoldersSelected(true);
-                    folderEntry.setFileFilter(filter);
-                    data.add(folderEntry);
-                    ((MakeConfigurationDescriptor)getConfigurationDescriptor()).addSourceFilesFromFolders(this, data.iterator(), false, false, false);
+                    ((MakeConfigurationDescriptor)getConfigurationDescriptor()).addSourceFilesFromFolder(this, file, false);
                 }
             }
             else {
@@ -172,11 +165,6 @@ public class Folder implements FileChangeListener {
                 }
             }
         }
-
-//        folderFileObject = FileUtil.toFileObject(folderFile);
-//        if (folderFileObject == null) {
-//            return; // FIXUP: error ?
-//        }
 
         FileUtil.addFileChangeListener(this, folderFile);
         log.finer("-----------attachListener " + getPath()); // NOI18N
@@ -924,23 +912,8 @@ public class Folder implements FileChangeListener {
                 assert false;
                 return;
             }
-            AllSourceFileFilter filter = AllSourceFileFilter.getInstance();
-            Vector<SourceFolderInfo> data = new Vector<SourceFolderInfo>();
-            FolderEntry folderEntry = new FolderEntry(file, file.getName());
-            folderEntry.setAddSubfoldersSelected(true);
-            folderEntry.setFileFilter(filter);
-            data.add(folderEntry);
-            ((MakeConfigurationDescriptor)getConfigurationDescriptor()).addSourceFilesFromFolders(getThis(), data.iterator(), false, false, false);
+            Folder top = ((MakeConfigurationDescriptor)getConfigurationDescriptor()).addSourceFilesFromFolder(getThis(), file, true);
             getConfigurationDescriptor().setModified();
-
-            Folder folder = findFolderByName(file.getName());
-            if (folder != null) {
-                folder.setRoot(null);
-                folder.attachListenersAndRefresh();
-            }
-            else {
-                log.fine("------------fileFolderCreated - cannot find folder " + file.getName() + " in " + getThis().getPath()); // NOI18N
-            }
         }
 
         public void fileDeleted(FileEvent fe) {
@@ -976,28 +949,12 @@ public class Folder implements FileChangeListener {
             Folder folder = findFolderByName(fe.getName());
             if (folder != null && folder.isDiskFolder()) {
                 // Add new Folder
-                AllSourceFileFilter filter = AllSourceFileFilter.getInstance();
-                Vector<SourceFolderInfo> data = new Vector<SourceFolderInfo>();
-                FolderEntry folderEntry = new FolderEntry(file, file.getName());
-                folderEntry.setAddSubfoldersSelected(true);
-                folderEntry.setFileFilter(filter);
-                data.add(folderEntry);
-                ((MakeConfigurationDescriptor)getConfigurationDescriptor()).addSourceFilesFromFolders(this, data.iterator(), false, false, false);
+                Folder top = ((MakeConfigurationDescriptor)getConfigurationDescriptor()).addSourceFilesFromFolder(getThis(), file, true);
                 getConfigurationDescriptor().setModified();
                 // Copy all configurations
                 // ????????????
                 // Remove old folder
                 removeFolderAction(folder);
-
-                Folder renamedFolder = findFolderByName(file.getName());
-                if (renamedFolder != null) {
-                    renamedFolder.setRoot(null);
-                    renamedFolder.attachListenersAndRefresh();
-                }
-                else {
-                    log.fine("------------fileFolderCreated - cannot find folder " + file.getName() + " in " + getThis().getPath()); // NOI18N
-                }
-
                 return;
             }
         }

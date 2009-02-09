@@ -55,11 +55,11 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -208,7 +208,12 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 externalFileItems.addItem(new Item(importantItems.next()));
             }
         }
-        addSourceFilesFromFolders(sourceFileFolders, false, false, true);
+//        addSourceFilesFromFolders(sourceFileFolders, false, false, true);
+        
+        while (sourceFileFolders.hasNext()) {
+            SourceFolderInfo sourceFolderInfo = sourceFileFolders.next();
+            addSourceFilesFromRoot(getLogicalFolders(), sourceFolderInfo.getFile(), false, true);
+        }
         setModified(true);
     }
 
@@ -842,26 +847,11 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             }
 
             if (toBeAdded.size() > 0) {
-                AllSourceFileFilter filter = AllSourceFileFilter.getInstance();
-                Vector<SourceFolderInfo> data = new Vector<SourceFolderInfo>();
                 for (String root : toBeAdded) {
                     String absSourceRoot = IpeUtils.toAbsolutePath(getBaseDir(), root);
                     File absSourceRootFile = new File(absSourceRoot);
-                    FolderEntry folderEntry = new FolderEntry(absSourceRootFile, absSourceRootFile.getName());
-                    folderEntry.setAddSubfoldersSelected(true);
-                    folderEntry.setFileFilter(filter);
-                    data.add(folderEntry);
+                    addSourceFilesFromRoot(getLogicalFolders(), absSourceRootFile, true, true);
                 }
-                addSourceFilesFromFolders(data.iterator(), true, true, true);
-//                if (asDiskFolders) {
-//                    for (String root : toBeAdded) {
-//                        Folder folder = getLogicalFolders().findFolderByName(IpeUtils.getBaseName(root));
-//                        if (folder != null) {
-//                            folder.setRoot(null);
-//                            folder.attachListenersAndRefresh();
-//                        }
-//                    }
-//                }
                 setModified();
             }
 
@@ -962,136 +952,58 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
     }
 
-    public void addSourceFilesFromFolders(Iterator<SourceFolderInfo> sourceFileFolders, boolean acrynchron, boolean notify, boolean asDiskFolders) {
-        addSourceFilesFromFolders(rootFolder, sourceFileFolders, acrynchron, notify, asDiskFolders);
+    public Folder addSourceFilesFromRoot(Folder folder, File dir, boolean attachListeners, boolean asDiskFolder) {
+        ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
+        Folder top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getName(), dir.getName(), true);
+        if (asDiskFolder) {
+            String relativeRoot = FilePathAdaptor.normalize(IpeUtils.toRelativePath(getBaseDir(), dir.getPath()));
+            top.setRoot(relativeRoot);
+        }
+        folder.addFolder(top);
+        addFiles(top, dir, null, filesAdded, true);
+        getNativeProject().fireFilesAdded(filesAdded);
+        if (attachListeners) {
+            top.attachListenersAndRefresh();
+        }
+
+        addSourceRoot(dir.getPath());
+        MakeSources makeSources = getProject().getLookup().lookup(MakeSources.class);
+        if (makeSources != null) {
+            makeSources.sourceRootsChanged();
+        }
+
+        return top;
     }
 
-    public void addSourceFilesFromFolders(Folder folder, Iterator<? extends SourceFolderInfo> sourceFileFoldersIterator, boolean acrynchron, boolean notify, boolean asDiskFolders) {
-        if (sourceFileFoldersIterator == null) {
-            return;
+    public Folder addSourceFilesFromFolder(Folder folder, File dir, boolean attachListeners) {
+        ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
+        Folder top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getName(), dir.getName(), true);
+        folder.addFolder(top);
+        addFiles(top, dir, null, filesAdded, true);
+        getNativeProject().fireFilesAdded(filesAdded);
+        if (attachListeners) {
+            top.attachListenersAndRefresh();
         }
-        if (acrynchron) {
-            new AddFilesThread(sourceFileFoldersIterator, folder, notify, asDiskFolders).start();
-        } else {
-            while (sourceFileFoldersIterator.hasNext()) {
-                ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
-                SourceFolderInfo folderEntry = sourceFileFoldersIterator.next();
-                Folder top = folder.findFolderByName(folderEntry.getFile().getName());
-                if (top == null) {
-                    top = new Folder(folder.getConfigurationDescriptor(), folder, folderEntry.getFile().getName(), folderEntry.getFile().getName(), true);
-                    String relativeRoot = FilePathAdaptor.normalize(IpeUtils.toRelativePath(getBaseDir(), folderEntry.getFile().getPath()));
-                    if (asDiskFolders) {
-                        top.setRoot(relativeRoot);
-                    }
-                    folder.addFolder(top);
-                }
-                addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), folderEntry.getFileFilter(), null, filesAdded, notify);
-                getNativeProject().fireFilesAdded(filesAdded);
-
-                addSourceRoot(folderEntry.getFile().getPath());
-            }
-            if (notify) {
-                // Notify that list has changed
-                MakeSources makeSources = getProject().getLookup().lookup(MakeSources.class);
-                if (makeSources != null) {
-                    makeSources.sourceRootsChanged();
-                }
-            }
-        }
+        return top;
     }
 
-    class AddFilesThread extends Thread {
-
-        Iterator iterator;
-        Folder folder;
-        private ProgressHandle handle;
-        private boolean notify;
-        private boolean asDiskFolders;
-
-        AddFilesThread(Iterator iterator, Folder folder, boolean notify, boolean asDiskFolders) {
-            this.iterator = iterator;
-            this.folder = folder;
-            this.notify = notify;
-            this.asDiskFolders = asDiskFolders;
-            handle = ProgressHandleFactory.createHandle(getString("AddingFilesTxt"));
-        }
-
-        @Override
-        public void run() {
-            ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
-            try {
-                handle.setInitialDelay(500);
-                handle.start();
-                while (iterator.hasNext()) {
-                    FolderEntry folderEntry = (FolderEntry) iterator.next();
-                    Folder top = null;//folder.findFolderByName(folderEntry.getFile().getName());
-                    if (top == null) {
-                        top = new Folder(folder.getConfigurationDescriptor(), folder, folderEntry.getFile().getName(), folderEntry.getFile().getName(), true);
-                        if (asDiskFolders) {
-                            String relativeRoot = FilePathAdaptor.normalize(IpeUtils.toRelativePath(getBaseDir(), folderEntry.getFile().getPath()));
-                            top.setRoot(relativeRoot);
-                        }
-                        folder.addFolder(top);
-                    }
-                    addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), folderEntry.getFileFilter(), handle, filesAdded, true);
-                    addSourceRoot(folderEntry.getFile().getPath());
-                }
-            } finally {
-                handle.finish();
-            }
-            getNativeProject().fireFilesAdded(filesAdded);
-            if (notify) {
-                // Notify that list has changed
-                MakeSources makeSources = getProject().getLookup().lookup(MakeSources.class);
-                if (makeSources != null) {
-                    makeSources.sourceRootsChanged();
-                }
-            }
-        }
-    }
-
-    private void addFiles(Folder folder, File dir, boolean addSubFolders, FileFilter filter, ProgressHandle handle, ArrayList<NativeFileItem> filesAdded, boolean notify) {
+    private void addFiles(Folder folder, File dir, ProgressHandle handle, ArrayList<NativeFileItem> filesAdded, boolean notify) {
         File[] files = dir.listFiles();
         if (files == null) {
             return;
         }
         for (int i = 0; i < files.length; i++) {
-            if (!filter.accept(files[i])) {
+            if (!VisibilityQuery.getDefault().isVisible(files[i]) ||
+                    files[i].getName().equals("nbproject")) {
                 continue;
             }
             if (files[i].isDirectory()) {
-                // FIXUP: is this the best way to deal with files under version control?
-                // Unfortunately the SCCS directory contains data files with the same
-                // suffixes as the the source files, and a simple file filter based on
-                // a file's suffix cannot see the difference between the source file and
-                // the data file. Only the source file should be added.
-                if (files[i].getName().equals("SCCS")) // NOI18N
-                {
-                    continue;
-                }
-                if (files[i].getName().startsWith(".")) // NOI18N
-                {
-                    continue;
-                }
-                if (files[i].getName().equals("CVS")) // NOI18N
-                {
-                    continue;
-                }
-                if (files[i].getName().equals("nbproject")) // NOI18N
-                {
-                    continue;
-                }
                 Folder dirfolder = folder;
-                if (addSubFolders) {
-                    dirfolder = folder.findFolderByName(files[i].getName());
-                    if (dirfolder == null) {
-                        dirfolder = folder.addNewFolder(files[i].getName(), files[i].getName(), true);
-                    }
+                dirfolder = folder.findFolderByName(files[i].getName());
+                if (dirfolder == null) {
+                    dirfolder = folder.addNewFolder(files[i].getName(), files[i].getName(), true);
                 }
-                addFiles(dirfolder, files[i], addSubFolders, filter, handle, filesAdded, notify);
-//                if (dirfolder.size() == 0) {
-//                    folder.removeFolder(dirfolder);
-//                }
+                addFiles(dirfolder, files[i], handle, filesAdded, notify);
             } else {
                 String filePath;
                 if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
