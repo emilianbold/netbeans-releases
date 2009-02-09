@@ -36,89 +36,122 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.api.support;
 
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.util.ExternalTerminal;
 
 /**
  * This class is configuration class used as constructor 
  * parameter when creating {@link org.netbeans.modules.dlight.api.support.NativeExecutableTarget}
  */
 public final class NativeExecutableTargetConfiguration {
-  private String cmd;
-  private String[] args;
-  private String[] env;
-  private String host = null;
-  private String user = null;
-  private int port = 0;
-  private boolean isSubstitutable;
 
-  /**
-   * Creates new configuration for {@link org.netbeans.modules.dlight.api.support.NativeExecutableTarget}
-   * @param cmd command line
-   * @param args arguments to run
-   * @param env enviroment variables
-   */
-  public NativeExecutableTargetConfiguration(String cmd, String[] args, String[] env){
-    this.cmd = cmd;
-    this.args = args;
-    this.env = env;
-  }
+    private final String cmd;
+    private final String[] args;
+    private final Map<String, String> env;
+    private String host = null;
+    private String workingDirectory;
+    private String user = null;
+    private int port = 0;
+    private boolean isSubstitutable;
+    private ExternalTerminal externalTerminal = null;
 
-  /**
-   * Sets host to run executable target at,
-   * if host is not set up, localhost is used
-   * @param host host to run target at
-   */
-  public void setHost(String host){
-    this.host = host;
-  }
+    /**
+     * Creates new configuration for {@link org.netbeans.modules.dlight.api.support.NativeExecutableTarget}
+     * @param cmd command line
+     * @param args arguments to run
+     * @param env enviroment variables as a map &lt;name, value&gt;
+     */
+    public NativeExecutableTargetConfiguration(String cmd, String[] args, Map<String, String> env) {
+        this.cmd = cmd;
+        this.args = args;
+        this.env = new HashMap<String, String>();
+        this.env.putAll(env);
+        
+    }
 
-  /**
-   * Sets user to run executable target for,
-   * if not set <code>System.getProperty("user.name")</code> is used as user name
-   * @param user user name
-   */
-  public void setUser(String user){
-    this.user = user;
-  }
+    /**
+     * Sets wotking directory
+     * @param workingDirectory working directory to start target
+     */
+    public void setWorkingDirectory(String workingDirectory) {
+        this.workingDirectory = workingDirectory;
+    }
 
-  /**
-   * Sets port which will be used to set up SSH connection,
-   * in case it is set to <code>0</code> and host is remote
-   * default <code>22</code> port will be used to set up SSH connection.
-   * @param port port to set up SSH connection
-   */
-  public void setSSHPort(int port){
-    this.port = port;
-  }
+    /**
+     * Sets host to run executable target at,
+     * if host is not set up, localhost is used
+     * @param host host to run target at
+     */
+    public void setHost(String host) {
+        this.host = host;
+    }
 
-  /**
-   * 
-   * @param isSubstitutable
-   */
-  public void setSubstitutable(boolean isSubstitutable){
-    this.isSubstitutable= isSubstitutable;
-  }
-  ExecutionEnvironment getExecutionEvnitoment(){
-    return new ExecutionEnvironment(user, host, port);
-  }
+    /**
+     * Sets user to run executable target for,
+     * if not set <code>System.getProperty("user.name")</code> is used as user name
+     * @param user user name
+     */
+    public void setUser(String user) {
+        this.user = user;
+    }
 
-  String getCmd(){
-    return cmd;
-  }
+    /**
+     * Sets port which will be used to set up SSH connection,
+     * in case it is set to <code>0</code> and host is remote
+     * default <code>22</code> port will be used to set up SSH connection.
+     * @param port port to set up SSH connection
+     */
+    public void setSSHPort(int port) {
+        this.port = port;
+    }
 
-  String[] getArgs(){
-    return args;
-  }
+    /**
+     * use it to specify if you would like to run Target in external terminal
+     * <p>
+     * @param terminal terminal specification
+     */
+    public void useExternalTerminal(@NullAllowed ExternalTerminal terminal) {
+        this.externalTerminal = terminal;
+    }
 
-  String[] getEnv(){
-    return env;
-  }
+    /**
+     *
+     * @param isSubstitutable
+     */
+    public void setSubstitutable(boolean isSubstitutable) {
+        this.isSubstitutable = isSubstitutable;
+    }
 
-  boolean getSubstitutable(){
-    return isSubstitutable;
-  }
+    ExecutionEnvironment getExecutionEvnitoment() {
+        return new ExecutionEnvironment(user, host, port);
+    }
 
+    ExternalTerminal getExternalTerminal(){
+        return externalTerminal;
+    }
+
+    String getCmd() {
+        return cmd;
+    }
+
+    String[] getArgs() {
+        return args;
+    }
+
+    Map<String, String> getEnv() {
+        return env;
+    }
+
+    String getWorkingDirectory() {
+        return workingDirectory;
+    }
+
+    boolean getSubstitutable() {
+        return isSubstitutable;
+    }
 }
