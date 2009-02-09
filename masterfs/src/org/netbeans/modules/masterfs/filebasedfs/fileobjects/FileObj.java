@@ -85,6 +85,10 @@ public class FileObj extends BaseFileObj {
     }
     
     public OutputStream getOutputStream(final FileLock lock, ProvidedExtensions extensions, FileObject mfo) throws IOException {
+        if (!isValid()) {
+            throw new FileNotFoundException("FileObject " + this + " is not valid."); //NOI18N
+        }
+
         final File f = getFileName().getFile();
 
         if (!Utilities.isWindows() && !f.isFile()) {
@@ -129,15 +133,24 @@ public class FileObj extends BaseFileObj {
     }
 
     public InputStream getInputStream() throws FileNotFoundException {
+        if (!isValid()) {
+            throw new FileNotFoundException("FileObject " + this + " is not valid.");  //NOI18N
+        }
+
         final File f = getFileName().getFile();
                         
         InputStream inputStream;
         MutualExclusionSupport.Closeable closeableReference = null;
         
         try {
-            if (!Utilities.isWindows() && !f.isFile()) { 
-                return new ByteArrayInputStream(new byte[] {});  
-            }             
+            if (Utilities.isWindows()) {
+                // #157056 - don't try to open locked windows files
+                if (getName().toLowerCase().contains("ntuser")) {  //NOI18N
+                    return new ByteArrayInputStream(new byte[] {});
+                }
+            } else if (!f.isFile()) {
+                return new ByteArrayInputStream(new byte[] {});
+            }
             final MutualExclusionSupport.Closeable closable = MutualExclusionSupport.getDefault().addResource(this, true);
             closeableReference = closable;            
             inputStream = new FileInputStream(f) {

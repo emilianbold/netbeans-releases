@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.api.model.CsmFriendClass;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
-import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmInitializerListContainer;
@@ -261,7 +260,7 @@ public class CsmKindUtilities {
         }
     }
     
-    public static boolean isEnumerator(CsmObject obj) {
+    public static boolean isEnumerator(Object obj) {
         if (obj instanceof CsmEnumerator) {
             return true;
         } else {
@@ -401,7 +400,7 @@ public class CsmKindUtilities {
         }
     } 
 
-    public static boolean isNamespace(CsmObject obj) {
+    public static boolean isNamespace(Object obj) {
         if (obj instanceof CsmNamespace) {
             return true;
         } else {
@@ -485,7 +484,15 @@ public class CsmKindUtilities {
             return false;
         }
     }      
-    
+
+    public static boolean isFileLocalFunction(CsmObject obj) {
+        if (isFunction(obj)) {
+            return isFile(((CsmFunction)obj).getScope());
+        } else {
+            return false;
+        }
+    }
+
     public static boolean isGlobalVariable(CsmObject obj) {
         if (isVariable(obj)) {
             // global variable has scope - namespace
@@ -624,13 +631,5 @@ public class CsmKindUtilities {
             return ((CsmVariable)decl).isExtern();
         }
         return false;
-    }
-    
-    public static <T extends CsmObject> boolean isIdentifiable(T obj) {
-        if (obj instanceof CsmIdentifiable) {
-            return true;
-        } else {
-            return false;
-        }
     }
 }

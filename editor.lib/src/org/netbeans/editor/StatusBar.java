@@ -661,7 +661,9 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
          * @return Default background color 
          */
         public Color getDefaultBackground () {
-            Color color = (Color) UIManager.get("Label.background"); //NOI18N
+            Color color = UIManager.getColor("NbEditorStatusBar.background"); //NOI18N
+            if( null == color )
+                color = (Color) UIManager.get("Label.background"); //NOI18N
             return color != null ? color : defaultBackground;
         }
 

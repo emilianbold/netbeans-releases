@@ -196,7 +196,6 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
         UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
     }
     
-    @SuppressWarnings("unchecked")
     public NamespaceAliasImpl(DataInput input) throws IOException {
         super(input);
         this.alias = QualifiedNameCache.getManager().getString(input.readUTF());

@@ -49,19 +49,21 @@ import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeImplementation;
 import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeProvider;
 import org.netbeans.modules.j2ee.persistence.spi.support.EntityMappingsMetadataModelHelper;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author mkleint
  */
+@ProjectServiceProvider(service=EntityClassScopeProvider.class, projectType="org-netbeans-modules-maven")
 public class EntityClassScopeProviderImpl implements EntityClassScopeProvider {
     
     Project project;
     EntityMappingsMetadataModelHelper helper;
     EntityClassScope scope;
     
-    EntityClassScopeProviderImpl(Project prj) {
+    public EntityClassScopeProviderImpl(Project prj) {
         project = prj;
     }
     

@@ -702,12 +702,10 @@ public final class SearchBar extends JPanel {
             }
             if (pattern != null) {
                 // valid regexp
-                incrementalSearchTextField.setBackground(null);
                 incrementalSearchTextField.setForeground(Color.BLACK);
                 org.netbeans.editor.Utilities.setStatusText(component, null);
             } else {
                 // invalid regexp
-                incrementalSearchTextField.setBackground(null);
                 incrementalSearchTextField.setForeground(INVALID_REGEXP);
                 org.netbeans.editor.Utilities.setStatusBoldText(component, NbBundle.getMessage(
                     SearchBar.class, "incremental-search-invalid-regexp", patternErrorMsg)); //NOI18N
@@ -715,14 +713,12 @@ public final class SearchBar extends JPanel {
         } else {
             if (findSupport.incSearch(findProps, caretPosition) || empty) {
                 // text found - reset incremental search text field's foreground
-                incrementalSearchTextField.setBackground(null);
                 incrementalSearchTextField.setForeground(Color.BLACK);
                 navigateOnFocusLost = !empty;
                 org.netbeans.editor.Utilities.setStatusText(component, null);
             } else {
                 // text not found - indicate error in incremental search
                 // text field with red foreground
-                incrementalSearchTextField.setBackground(null);
                 incrementalSearchTextField.setForeground(NOT_FOUND);
                 navigateOnFocusLost = false;
                 org.netbeans.editor.Utilities.setStatusText(component, NbBundle.getMessage(
@@ -771,11 +767,9 @@ public final class SearchBar extends JPanel {
         
         if (findSupport.find(findProps, !next) || empty) {
             // text found - reset incremental search text field's foreground
-            incrementalSearchTextField.setBackground(null);
             incrementalSearchTextField.setForeground(Color.BLACK);
         } else {
             // text not found - indicate error in incremental search text field with red foreground
-            incrementalSearchTextField.setBackground(null);
             incrementalSearchTextField.setForeground(NOT_FOUND);
             Toolkit.getDefaultToolkit().beep();
         }

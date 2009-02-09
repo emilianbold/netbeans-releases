@@ -53,6 +53,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.Utils;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
@@ -127,9 +128,6 @@ public class SourcesNodeFactory implements NodeFactory {
         }
 
         public List<SourceGroup> keys() {
-            // update Sources listeners
-            Sources sources = getSources();
-
             // parse SG
             // update SG listeners
             // XXX check if this is necessary
@@ -167,14 +165,11 @@ public class SourcesNodeFactory implements NodeFactory {
         public Node node(SourceGroup key) {
             Node node = null;
             if (key != null) {
-                DataFolder folder = getFolder(key.getRootFolder());
+                FileObject rootFolder = key.getRootFolder();
+                DataFolder folder = getFolder(rootFolder);
                 if (folder != null) {
-                    /* no need to use sourceGroup.getDisplayName() while we have only one sourceRoot.
-                     * Now it contains not good-looking label.
-                     * We put label there in PhpSources.configureSources()
-                     */
-                    //node = new SrcNode(folder, sourceGroup.getDisplayName());
-                    node = new SrcNode(project, folder,new PhpSourcesFilter(project), key.getDisplayName());
+                    boolean isTest = !folder.getPrimaryFile().equals(ProjectPropertiesSupport.getSourcesDirectory(project));
+                    node = new SrcNode(project, folder, new PhpSourcesFilter(project, rootFolder), key.getDisplayName(), isTest);
                 }
             }
             return node;

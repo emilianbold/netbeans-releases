@@ -38,20 +38,20 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.model.FieldElement;
-import org.netbeans.modules.php.editor.model.ModelScope;
-import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
+import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
@@ -60,25 +60,25 @@ import org.openide.util.Union2;
  *
  * @author Radek Matous
  */
-class FieldElementImpl extends ModelElementImpl implements FieldElement {
+class FieldElementImpl extends ScopeImpl implements FieldElement {
     private String returnType;
     private String className;
 
-    FieldElementImpl(ScopeImpl inScope, String returnType, SingleFieldDeclarationInfo nodeInfo) {
-        super(inScope, nodeInfo, nodeInfo.getAccessModifiers());
+    FieldElementImpl(Scope inScope, String returnType, SingleFieldDeclarationInfo nodeInfo) {
+        super(inScope, nodeInfo, nodeInfo.getAccessModifiers(), null);
         this.returnType = returnType;
         assert inScope instanceof TypeScope;
         className = inScope.getName();
     }
 
-    FieldElementImpl(ScopeImpl inScope, String returnType, PhpDocTypeTagInfo nodeInfo) {
-        super(inScope, nodeInfo, nodeInfo.getAccessModifiers());
+    FieldElementImpl(Scope inScope, String returnType, PhpDocTypeTagInfo nodeInfo) {
+        super(inScope, nodeInfo, nodeInfo.getAccessModifiers(), null);
         this.returnType = returnType;
         assert inScope instanceof TypeScope;
         className = inScope.getName();
     }
 
-    FieldElementImpl(ScopeImpl inScope, IndexedConstant indexedConstant) {
+    FieldElementImpl(Scope inScope, IndexedConstant indexedConstant) {
         super(inScope, indexedConstant, PhpKind.FIELD);
         String in = indexedConstant.getIn();
         if (in != null) {
@@ -86,15 +86,9 @@ class FieldElementImpl extends ModelElementImpl implements FieldElement {
         } else {
             className = inScope.getName();
         }
-
     }
 
-    FieldElementImpl(ClassScopeImpl inScope, Program program, FieldsDeclaration fieldsDeclaration, SingleFieldDeclaration node) {
-        this(inScope, toName(node), inScope.getFile(), toOffsetRange(node),
-                toAccessModifiers(fieldsDeclaration), VariousUtils.getFieldTypeFromPHPDoc(program, node));
-    }
-
-    private FieldElementImpl(ScopeImpl inScope, String name,
+    private FieldElementImpl(Scope inScope, String name,
             Union2<String/*url*/, FileObject> file, OffsetRange offsetRange,
             PhpModifiers modifiers, String returnType) {
         super(inScope, name, file, offsetRange, PhpKind.FIELD, modifiers);
@@ -113,27 +107,47 @@ class FieldElementImpl extends ModelElementImpl implements FieldElement {
         return new PhpModifiers(node.getModifier());
     }
 
-    @Override
-    StringBuilder golden(int indent) {
-        String prefix = "";//NOI18N
-        for (int i = 0; i <
-                indent; i++) {
-            prefix += "  ";
-        }//NOI18N
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(prefix).append(toString()).append("\n");//NOI18N
-
-        return sb;
-    }
-
-    public List<? extends TypeScope> getReturnTypes() {
-        ModelScope topLevelScope = ModelUtils.getModelScope(this);
-        return (returnType != null) ? topLevelScope.getTypes(returnType.split("\\|")) :
+    public Collection<? extends TypeScope> getReturnTypes() {
+        return (returnType != null && returnType.length() > 0) ?
+            CachingSupport.getTypes(returnType.split("\\|")[0], this) :
             Collections.<TypeScopeImpl>emptyList();
+
     }
     @Override
     public String getNormalizedName() {
         return className+super.getNormalizedName();
     }
+
+    public Collection<? extends TypeScope> getTypes(int offset) {
+        AssignmentImpl assignment = findAssignment(offset);
+        return (assignment != null) ? assignment.getTypes() : getReturnTypes();
+    }
+
+    public Collection<? extends FieldAssignmentImpl> getAssignments() {
+        return filter(getElements(), new ElementFilter() {
+            public boolean isAccepted(ModelElement element) {
+                return true;
+            }
+        });
+    }
+
+    public AssignmentImpl findAssignment(int offset) {
+        FieldAssignmentImpl retval = null;
+        Collection<? extends FieldAssignmentImpl> assignments = getAssignments();
+        if (assignments.size() == 1) {
+            retval = assignments.iterator().next();
+        } else {
+            for (FieldAssignmentImpl assignmentImpl : assignments) {
+                if (assignmentImpl.getBlockRange().containsInclusive(offset)) {
+                    if (retval == null || retval.getOffset() <= assignmentImpl.getOffset()) {
+                         if (assignmentImpl.getOffset() < offset) {
+                            retval = assignmentImpl;
+                         }
+                    }
+                }
+            }
+        }
+        return retval;
+    }
+
 }

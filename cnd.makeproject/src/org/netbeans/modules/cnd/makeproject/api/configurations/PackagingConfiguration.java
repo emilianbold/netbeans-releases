@@ -99,7 +99,7 @@ public class PackagingConfiguration {
         if (makeConfiguration.isMakefileConfiguration()) {
             perm = MakeOptions.getInstance().getDefExePerm();
             packageDir = "${PACKAGE_TOP_DIR}bin"; // NOI18N
-        } else if (makeConfiguration.isApplicationConfiguration() || makeConfiguration.isQmakeConfiguration()) {
+        } else if (makeConfiguration.isApplicationConfiguration()) {
             perm = MakeOptions.getInstance().getDefExePerm();
             packageDir = "${PACKAGE_TOP_DIR}bin"; // NOI18N
             if (makeConfiguration.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
@@ -263,8 +263,8 @@ public class PackagingConfiguration {
         PackagingConfiguration clone = new PackagingConfiguration(getMakeConfiguration());
         clone.setType(getType().clone());
         clone.setVerbose(getVerbose().clone());
-        clone.setInfo(getInfo().cloneConf());
-        clone.setFiles(getFiles().cloneConf());
+        clone.setInfo(getInfo().clone());
+        clone.setFiles(getFiles().clone());
         clone.setOutput(getOutput().clone());
         clone.setTool(getTool().clone());
         clone.setOptions(getOptions().clone());

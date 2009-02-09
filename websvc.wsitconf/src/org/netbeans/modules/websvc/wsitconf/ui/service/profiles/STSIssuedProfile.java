@@ -50,6 +50,8 @@ import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeatu
 import org.netbeans.modules.websvc.wsitconf.spi.features.ServiceDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.KeystorePanel;
+import org.netbeans.modules.websvc.wsitconf.util.DefaultSettings;
+import org.netbeans.modules.websvc.wsitconf.util.ServerUtils;
 import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
@@ -121,7 +123,7 @@ public class STSIssuedProfile extends ProfileBase
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, false);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
 //        if (Util.isTomcat(p)) {
-            String kstoreLoc = Util.getStoreLocation(p, false, false);
+            String kstoreLoc = ServerUtils.getStoreLocation(p, false, false);
             ProprietarySecurityPolicyModelHelper.setStoreLocation(component, kstoreLoc, false, false);
             ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, false, false);
             ProprietarySecurityPolicyModelHelper.setStorePassword(component, KeystorePanel.DEFAULT_PASSWORD, false, false);
@@ -140,8 +142,8 @@ public class STSIssuedProfile extends ProfileBase
         String keyAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false);
         String keyLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
         String keyPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
-        if ((Util.isEqual(Util.getDefaultPassword(p), keyPasswd)) &&
-            (Util.isEqual(Util.getStoreLocation(p, false, false), keyLoc)) &&
+        if ((Util.isEqual(DefaultSettings.getDefaultPassword(p), keyPasswd)) &&
+            (Util.isEqual(ServerUtils.getStoreLocation(p, false, false), keyLoc)) &&
             (Util.isEqual(ProfilesModelHelper.XWS_SECURITY_SERVER, keyAlias))) { 
             return true;
         }

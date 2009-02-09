@@ -22,9 +22,9 @@ Document 2
 Searchable Keys:
   class : Hello1
   class-ig : hello1
-  field : field1;int
-  field : greeting;java.lang.Object
-  field : name;java.lang.Object
+  field : field1;int;00;true
+  field : greeting;java.lang.Object;00;true
+  field : name;java.lang.Object;00;true
   field : privateField;java.lang.Object
   field : protectedField;java.lang.Object;04
   field : publicField;java.lang.Object;01

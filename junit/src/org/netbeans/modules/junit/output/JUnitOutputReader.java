@@ -319,7 +319,7 @@ final class JUnitOutputReader {
                     }
                     progressLogger.finest("test finished");             //NOI18N
                     updateProgress();
-                    manager.displayReport(session, sessionType, report, true, statistics);
+                    manager.displayReport(session, sessionType, report, false);
                 }
                 return;
             }
@@ -795,7 +795,7 @@ final class JUnitOutputReader {
     /**
      */
     void testTaskFinished() {
-        closePreviousReport();
+        closePreviousReport(false, true);
 
         progressLogger.finer("ACTUAL # OF SUITES: " + executedSuitesCount);
 
@@ -851,35 +851,6 @@ final class JUnitOutputReader {
         } else if (message != null) {
             progressHandle.progress(message);
         }
-
-        if (report != oldReport) {
-            savedTotalTests = totalTests;
-            savedFailures = failures;
-            savedErrors = errors;
-            savedDetectedPassedTests = detectedPassedTests;
-            savedInterruptedTests = interruptedTests;
-            savedElapsedTimeMillis = elapsedTimeMillis;
-
-            statistics = new int[] {
-                totalTests + report.totalTests,
-                failures + report.failures,
-                errors + report.errors,
-                detectedPassedTests + report.detectedPassedTests,
-                interruptedTests + report.interruptedTests,
-                elapsedTimeMillis + report.elapsedTimeMillis
-            };
-            oldReport = report;
-        } else {
-            statistics = new int[] {
-                totalTests = savedTotalTests + report.totalTests,
-                failures = savedFailures + report.failures,
-                errors = savedErrors + report.errors,
-                detectedPassedTests = savedDetectedPassedTests  + report.detectedPassedTests,
-                interruptedTests = savedInterruptedTests + report.interruptedTests,
-                elapsedTimeMillis = savedElapsedTimeMillis + report.elapsedTimeMillis
-            };
-        }
-
     }
     
     /**
@@ -951,7 +922,7 @@ final class JUnitOutputReader {
             buildFinished(event.getException());
 
             if (report != null) {
-                closePreviousReport(true);  //true ... interrupted
+                closePreviousReport(true, false );  //true ... interrupted
             }
 
             manager.sessionFinished(session, sessionType);
@@ -995,14 +966,14 @@ final class JUnitOutputReader {
     
     /**
      */
-    private void suiteFinished(final Report report, boolean interrupted) {
+    private void suiteFinished(final Report report, boolean interrupted, boolean taskFinished) {
         if (progressLogger.isLoggable(FINER)) {
             progressLogger.finer("actual # of tests in a suite: " + executedOneSuiteTests);
         }
         executedSuitesCount++;
 
-        updateProgress();
-        manager.displayReport(session, sessionType, report, true, statistics);
+//        updateProgress();
+        manager.displayReport(session, sessionType, report, taskFinished);
     }
     
     private void buildFinished(final Throwable exception) {
@@ -1093,10 +1064,10 @@ final class JUnitOutputReader {
     }
     
     private void closePreviousReport() {
-        closePreviousReport(false);
+        closePreviousReport(false, false);
     }
 
-    private void closePreviousReport(boolean interrupted) {
+    private void closePreviousReport(boolean interrupted, boolean taskFinished) {
         if (xmlOutputBuffer != null) {
             try {
                 String xmlOutput = xmlOutputBuffer.toString();
@@ -1131,7 +1102,7 @@ final class JUnitOutputReader {
                     }
                 }
             }
-            suiteFinished(report, interrupted);
+            suiteFinished(report, interrupted, taskFinished);
         }
         
         xmlOutputBuffer = null;
@@ -1276,19 +1247,4 @@ final class JUnitOutputReader {
         
         return result;
     }
-
-    private volatile int totalTests = 0;
-    private volatile int failures = 0;
-    private volatile int errors = 0;
-    private volatile int interruptedTests = 0;
-    private volatile int elapsedTimeMillis = 0;
-    private volatile int detectedPassedTests = 0;
-    private volatile int savedTotalTests = 0;
-    private volatile int savedFailures = 0;
-    private volatile int savedErrors = 0;
-    private volatile int savedInterruptedTests = 0;
-    private volatile int savedElapsedTimeMillis = 0;
-    private volatile int savedDetectedPassedTests = 0;
-    private volatile Report oldReport;
-    private volatile int[] statistics;
 }

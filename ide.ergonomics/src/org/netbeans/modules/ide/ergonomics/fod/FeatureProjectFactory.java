@@ -42,10 +42,18 @@ package org.netbeans.modules.ide.ergonomics.fod;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.xml.parsers.DocumentBuilder;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -67,6 +75,11 @@ import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.util.lookup.ServiceProvider;
+import org.w3c.dom.Document;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import org.openide.filesystems.FileUtil;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -74,10 +87,113 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=ProjectFactory.class, position=30000)
 public class FeatureProjectFactory implements ProjectFactory {
+    final static class Data {
+        private final boolean deepCheck;
+        private final FileObject dir;
+        private Map<String,String> data;
+        private Map<String,Document> doms;
+
+        public Data(FileObject dir, boolean deepCheck) {
+            this.deepCheck = deepCheck;
+            this.dir = dir;
+        }
+
+        Document dom(String relative) {
+            Document doc = doms == null ? null : doms.get(relative);
+            if (doc != null) {
+                return doc;
+            }
+            FileObject fo = dir.getFileObject(relative);
+            if (fo == null) {
+                return null;
+            }
+            File f = FileUtil.toFile(fo);
+            try {
+                DocumentBuilder b = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+                if (f != null) {
+                    doc = b.parse(f);
+                } else {
+                    InputStream is = fo.getInputStream();
+                    doc = b.parse(is);
+                }
+                if (doms == null) {
+                    doms = new HashMap<String,Document>();
+                }
+                doms.put(relative, doc);
+                return doc;
+            } catch (ParserConfigurationException parserConfigurationException) {
+                Exceptions.printStackTrace(parserConfigurationException);
+            } catch (SAXException sAXException) {
+                Exceptions.printStackTrace(sAXException);
+            } catch (IOException iOException) {
+                Exceptions.printStackTrace(iOException);
+            }
+            return null;
+        }
+
+        final boolean hasFile(String relative) {
+            return dir.getFileObject(relative) != null;
+        }
+
+        final boolean isDeepCheck() {
+            return deepCheck;
+        }
+
+        @Override
+        public String toString() {
+            return dir.getPath();
+        }
+
+        final synchronized String is(String relative) {
+            FileObject prj = dir.getFileObject(relative);
+            if (prj == null) {
+                return null;
+            }
+
+            String content = data == null ? null : data.get(relative);
+            if (content != null) {
+                return content;
+            }
+
+            byte[] arr = new byte[4000];
+            int len;
+            InputStream is = null;
+            try {
+                is = prj.getInputStream();
+                len = is.read(arr);
+                content = new String(arr, 0, len, "UTF-8");
+            } catch (IOException ex) {
+                FoDFileSystem.LOG.log(Level.FINEST, "exception while reading " + prj, ex); // NOI18N
+                len = -1;
+            } finally {
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+            FoDFileSystem.LOG.log(Level.FINEST, "    read {0} bytes", len); // NOI18N
+            if (len == -1) {
+                return null;
+            }
+
+            if (data == null) {
+                data = new HashMap<String,String>();
+            }
+
+            data.put(relative, content);
+            return content;
+        }
+    }
+
 
     public boolean isProject(FileObject projectDirectory) {
+        Data d = new Data(projectDirectory, false);
+
         for (FeatureInfo info : FeatureManager.features()) {
-            if (!info.isEnabled() && info.isProject(projectDirectory, false)) {
+            if (!info.isEnabled() && (info.isProject(d) == 1)) {
                 return true;
             }
         }
@@ -85,12 +201,34 @@ public class FeatureProjectFactory implements ProjectFactory {
     }
 
     public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
+        Data d = new Data(projectDirectory, true);
+        
+        FeatureInfo lead = null;
+        List<FeatureInfo> additional = new ArrayList<FeatureInfo>();
+        int notEnabled = 0;
         for (FeatureInfo info : FeatureManager.features()) {
-            if (!info.isEnabled() && info.isProject(projectDirectory, true)) {
-                return new FeatureNonProject(projectDirectory, info, state);
+            switch (info.isProject(d)) {
+                case 0: break;
+                case 1:
+                    lead = info;
+                    if (!info.isEnabled()) {
+                        notEnabled++;
+                    }
+                break;
+                case 2:
+                    additional.add(info);
+                    if (!info.isEnabled()) {
+                        notEnabled++;
+                    }
+                    break;
+                default: assert false;
             }
         }
-        return null;
+        if (lead == null || notEnabled == 0) {
+            return null;
+        }
+
+        return new FeatureNonProject(projectDirectory, lead, state, additional);
     }
 
     public void saveProject(Project project) throws IOException, ClassCastException {
@@ -101,14 +239,19 @@ public class FeatureProjectFactory implements ProjectFactory {
     implements Project, ChangeListener {
         private final FeatureDelegate delegate;
         private final FeatureInfo info;
+        private final FeatureInfo[] additional;
         private final Lookup lookup;
         private ProjectState state;
         private boolean success = false;
         private final ChangeListener weakL;
 
-        public FeatureNonProject(FileObject dir, FeatureInfo info, ProjectState state) {
+        public FeatureNonProject(
+            FileObject dir, FeatureInfo info,
+            ProjectState state, List<FeatureInfo> additional
+        ) {
             this.delegate = new FeatureDelegate(dir, this);
             this.info = info;
+            this.additional = additional.toArray(new FeatureInfo[0]);
             this.lookup = Lookups.proxy(delegate);
             this.state = state;
             this.weakL = WeakListeners.change(this, FeatureManager.getInstance());
@@ -189,7 +332,7 @@ public class FeatureProjectFactory implements ProjectFactory {
 
             public void run() {
                 FeatureManager.logUI("ERGO_PROJECT_OPEN", info.clusterName);
-                FindComponentModules findModules = new FindComponentModules(info);
+                FindComponentModules findModules = new FindComponentModules(info, additional);
                 Collection<UpdateElement> toInstall = findModules.getModulesForInstall ();
                 Collection<UpdateElement> toEnable = findModules.getModulesForEnable ();
                 if (toInstall != null && ! toInstall.isEmpty ()) {

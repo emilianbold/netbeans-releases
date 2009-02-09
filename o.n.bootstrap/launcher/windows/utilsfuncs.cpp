@@ -119,8 +119,10 @@ bool dirExists(const char *path) {
     HANDLE hFind = 0;
     hFind = FindFirstFile(path, &fd);
     if (hFind == INVALID_HANDLE_VALUE) {
+        logMsg("Dir \"%s\" does not exist", path);
         return false;
     }
+    logMsg("Dir \"%s\" exists", path);
     FindClose(hFind);
     return (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
 }
@@ -139,7 +141,7 @@ bool fileExists(const char *path) {
     return true;
 }
 
-bool normalizePath(char *path) {
+bool normalizePath(char *path, int len) {
     char tmp[MAX_PATH] = "";
     int i = 0;
     while (path[i] && i < MAX_PATH - 1) {
@@ -147,7 +149,7 @@ bool normalizePath(char *path) {
         i++;
     }
     tmp[i] = '\0';
-    return _fullpath(path, tmp, MAX_PATH) != NULL;
+    return _fullpath(path, tmp, len) != NULL;
 }
 
 bool createPath(const char *path) {
@@ -279,7 +281,7 @@ bool checkLoggingArg(int argc, char *argv[], bool delFile) {
     return true;
 }
 
-bool setUpProcess(int &argc, char *argv[]) {
+bool setUpProcess(int &argc, char *argv[], const char *attachMsg) {
     for (int i = 0; i < argc; i++) {
         if (strcmp(ARG_NAME_CONSOLE, argv[i]) == 0) {
             if (i + 1 == argc) {
@@ -312,10 +314,22 @@ bool setUpProcess(int &argc, char *argv[]) {
         if (attachConsole) {
             if (!attachConsole((DWORD)-1)) {
                 logErr(true, false, "AttachConsole failed.");
+            } else if (attachMsg) {
+                printToConsole(attachMsg);
             }
         } else {
             logErr(true, false, "GetProcAddress() for AttachConsole failed.");
         }
     }
     return true;
+}
+
+bool printToConsole(const char *msg) {
+    FILE *console = fopen("CON", "a");
+    if (!console) {
+        return false;
+    }
+    fprintf(console, "%s", msg);
+    fclose(console);
+    return false;
 }

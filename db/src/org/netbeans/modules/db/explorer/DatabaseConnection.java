@@ -49,10 +49,12 @@ import java.io.ObjectStreamException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -73,6 +75,7 @@ import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.ExceptionListener;
 import org.netbeans.modules.db.explorer.action.ConnectAction;
 import org.netbeans.modules.db.explorer.node.ConnectionNode;
+import org.netbeans.modules.db.explorer.node.DDLHelper;
 import org.netbeans.modules.db.explorer.node.RootNode;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
@@ -114,6 +117,12 @@ public class DatabaseConnection implements DBConnection {
     /** User login name */
     private String usr;
 
+    /** The default catalog */
+    private String defaultCatalog = null;
+
+    /** The default schema */
+    private String defaultSchema = null;
+
     /** Schema name */
     private String schema;
 
@@ -152,6 +161,8 @@ public class DatabaseConnection implements DBConnection {
     public static final String PROP_PASSWORD = "password"; //NOI18N
     public static final String PROP_REMEMBER_PASSWORD = "rememberpwd";
     public static final String PROP_SCHEMA = "schema"; //NOI18N
+    public static final String PROP_DEFSCHEMA = "defaultSchema"; //NOI18N
+    public static final String PROP_DEFCATALOG = "defaultCatalog"; //NOI18N
     public static final String PROP_DRIVERNAME = "drivername"; //NOI18N
     public static final String PROP_NAME = "name"; //NOI18N
     public static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N
@@ -429,6 +440,34 @@ public class DatabaseConnection implements DBConnection {
             propertySupport.firePropertyChange(PROP_SCHEMA, oldschema, schema);
     }
 
+    public void setDefaultCatalog(String val) throws Exception {
+        DDLHelper.setDefaultDatabase(getConnector().getDatabaseSpecification(), val);
+        String oldVal = defaultCatalog;
+        defaultCatalog = val;
+
+        if (propertySupport != null) {
+            propertySupport.firePropertyChange(PROP_DEFCATALOG, oldVal, defaultCatalog);
+        }
+    }
+
+    public String getDefaultCatalog() {
+        return defaultCatalog;
+    }
+
+    public void setDefaultSchema(String val) throws Exception {
+        DDLHelper.setDefaultSchema(getConnector().getDatabaseSpecification(), val);
+        String oldVal = defaultSchema;
+        defaultSchema = val;
+
+        if (propertySupport != null) {
+            propertySupport.firePropertyChange(PROP_DEFSCHEMA, oldVal, defaultSchema);
+        }
+    }
+
+    public String getDefaultSchema() {
+        return defaultSchema;
+    }
+
     /** Returns if password should be remembered */
     public boolean rememberPassword() {
         return rpwd.booleanValue();
@@ -440,9 +479,9 @@ public class DatabaseConnection implements DBConnection {
     public void setRememberPassword(boolean flag) {
         Boolean oldrpwd = rpwd;
         rpwd = Boolean.valueOf(flag);
-        if(propertySupport!=null)
-            propertySupport.firePropertyChange(
-                    PROP_REMEMBER_PASSWORD, oldrpwd, rpwd);
+        if (propertySupport != null) {
+            propertySupport.firePropertyChange(PROP_REMEMBER_PASSWORD, oldrpwd, rpwd);
+        }
     }
 
     /** Returns password */
@@ -650,6 +689,7 @@ public class DatabaseConnection implements DBConnection {
                     doConnect();
                 } catch (Exception e) {
                     sendException(e);
+
                 }
             }
         };
@@ -700,12 +740,17 @@ public class DatabaseConnection implements DBConnection {
     }
 
     private void sendException(Exception exc) {
+        List<ExceptionListener> listeners = new ArrayList<ExceptionListener>();
         synchronized (exceptionListeners) {
             Iterator it = exceptionListeners.iterator();
             while (it.hasNext()) {
                 ExceptionListener l = (ExceptionListener) it.next();
-                l.exceptionOccurred(exc);
+                listeners.add(l);
             }
+        }
+
+        for (ExceptionListener listener : listeners) {
+            listener.exceptionOccurred(exc);
         }
     }
 
@@ -887,7 +932,10 @@ public class DatabaseConnection implements DBConnection {
         Collection<? extends Node> children = root.getChildNodes();
         for (Node node : children) {
             if (node instanceof ConnectionNode) {
-                return (ConnectionNode)node;
+                ConnectionNode cnode = (ConnectionNode)node;
+                if (cnode.getName().equals(connection)) {
+                    return cnode;
+                }
             }
         }
 

@@ -76,7 +76,6 @@ import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.w3c.dom.svg.SVGSVGElement;
 

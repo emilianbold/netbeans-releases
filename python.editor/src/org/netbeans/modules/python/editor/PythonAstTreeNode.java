@@ -38,6 +38,7 @@ import org.openide.util.Exceptions;
 import org.openide.xml.XMLUtil;
 import org.python.antlr.PythonTree;
 import org.python.antlr.Visitor;
+import org.python.antlr.ast.Name;
 
 class PythonAstTreeNode implements AstTreeNode {
     private List<PythonAstTreeNode> children;
@@ -128,6 +129,13 @@ class PythonAstTreeNode implements AstTreeNode {
         sb.append(getEndOffset());
         sb.append(") ");
         //sb.append("</i>"); // NOI18N
+
+        if (node instanceof Name) {
+            sb.append('"');
+            sb.append(((Name)node).getInternalId());
+            sb.append('"');
+        }
+
         return sb.toString();
     }
 

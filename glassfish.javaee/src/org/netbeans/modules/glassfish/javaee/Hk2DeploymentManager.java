@@ -39,13 +39,18 @@
  * made subject to such option by the copyright holder.
  */
 
-
 package org.netbeans.modules.glassfish.javaee;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.model.DeployableObject;
@@ -59,8 +64,11 @@ import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedException;
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
+import javax.enterprise.deploy.spi.status.ProgressEvent;
+import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.glassfish.eecommon.api.HttpMonitorHelper;
 import org.netbeans.modules.glassfish.javaee.ide.MonitorProgressObject;
 import org.netbeans.modules.glassfish.javaee.ide.DummyProgressObject;
 import org.netbeans.modules.glassfish.javaee.ide.Hk2PluginProperties;
@@ -69,8 +77,13 @@ import org.netbeans.modules.glassfish.javaee.ide.Hk2TargetModuleID;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.glassfish.spi.AppDesc;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
+import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.xml.sax.SAXException;
 
 
 /**
@@ -83,10 +96,8 @@ public class Hk2DeploymentManager implements DeploymentManager {
     private volatile ServerInstance serverInstance;
     private volatile InstanceProperties instanceProperties;
     private Hk2PluginProperties pluginProperties;
-    private String uname;
-    private String passwd;
     private String uri;
-
+    private ServerUtilities su;
     
     /**
      * 
@@ -94,10 +105,9 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @param uname 
      * @param passwd 
      */
-    public Hk2DeploymentManager(String uri, String uname, String passwd) {
+    public Hk2DeploymentManager(String uri, String uname, String passwd, ServerUtilities su) {
         this.uri = uri;
-        this.uname = uname;
-        this.passwd = passwd;
+        this.su = su;
         pluginProperties = new Hk2PluginProperties(this);
     }
         
@@ -123,8 +133,34 @@ public class Hk2DeploymentManager implements DeploymentManager {
      */
     public ProgressObject distribute(Target [] targetList, File moduleArchive, File deploymentPlan) 
             throws IllegalStateException {
-        throw new UnsupportedOperationException(
-                "Hk2DeploymentManager.distribute(target, file, file) not supported yet.");
+        // compute the ModuleID
+        String t =  moduleArchive.getName();
+        final String moduleName = t.substring(0, t.length() - 4);
+        String contextRoot = null; // "/bogusCR";
+        Hk2TargetModuleID moduleId = new Hk2TargetModuleID((Hk2Target) targetList[0], moduleName,
+                contextRoot, moduleArchive.getAbsolutePath());
+        MonitorProgressObject deployProgress = new MonitorProgressObject(this, moduleId);
+        MonitorProgressObject returnProgress = new MonitorProgressObject(this, moduleId);
+        deployProgress.addProgressListener(new UpdateContextRoot(returnProgress,moduleId));
+
+        GlassfishModule commonSupport = this.getCommonServerSupport();
+        try {
+            boolean restart = HttpMonitorHelper.synchronizeMonitor(
+                    commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR),
+                    commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR),
+                    Boolean.parseBoolean(commonSupport.getInstanceProperties().get(GlassfishModule.HTTP_MONITOR_FLAG)),
+                    "modules/org-netbeans-modules-schema2beans.jar");
+            if (restart) {
+                commonSupport.restartServer(deployProgress);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger("glassfish.javaee").log(Level.WARNING, "http monitor state", ex);
+        } catch (SAXException ex) {
+            Logger.getLogger("glassfish.javaee").log(Level.WARNING, "http monitor state", ex);
+        }
+        commonSupport.deploy(deployProgress, moduleArchive, moduleName);
+
+        return returnProgress;
     }
 
     /**
@@ -167,8 +203,29 @@ public class Hk2DeploymentManager implements DeploymentManager {
      */
     public ProgressObject redeploy(TargetModuleID [] moduleIDList, File moduleArchive, File deploymentPlan) 
             throws UnsupportedOperationException, IllegalStateException {
-        throw new UnsupportedOperationException(
-                "Hk2DeploymentManager.redeploy(target_module [], file, file) not supported yet.");
+        final Hk2TargetModuleID moduleId = (Hk2TargetModuleID) moduleIDList[0];
+        final String moduleName = moduleId.getModuleID();
+        MonitorProgressObject deployProgress = new MonitorProgressObject(this, moduleId);
+        MonitorProgressObject returnProgress = new MonitorProgressObject(this, moduleId);
+        deployProgress.addProgressListener(new UpdateContextRoot(returnProgress,moduleId));
+        GlassfishModule commonSupport = this.getCommonServerSupport();
+        try {
+            boolean restart = HttpMonitorHelper.synchronizeMonitor(
+                    commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR),
+                    commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR),
+                    Boolean.parseBoolean(commonSupport.getInstanceProperties().get(GlassfishModule.HTTP_MONITOR_FLAG)),
+                    "modules/org-netbeans-modules-schema2beans.jar");
+            if (restart) {
+                commonSupport.restartServer(deployProgress);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger("glassfish.javaee").log(Level.WARNING, "http monitor state", ex);
+        } catch (SAXException ex) {
+            Logger.getLogger("glassfish.javaee").log(Level.WARNING, "http monitor state", ex);
+        }
+        commonSupport.deploy(deployProgress, moduleArchive, moduleName);
+
+        return returnProgress;
     }
 
     /**
@@ -305,7 +362,8 @@ public class Hk2DeploymentManager implements DeploymentManager {
                 }
             }
         }
-        return moduleList.size() > 0 ? moduleList.toArray(new TargetModuleID[moduleList.size()]) : null;
+        return moduleList.size() > 0 ? moduleList.toArray(new TargetModuleID[moduleList.size()]) :
+            new TargetModuleID[0];
     }
 
     /**
@@ -421,7 +479,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
     public ServerInstance getServerInstance() {
         // !PW FIXME synchronization - using volatile for now, could do a little better
         if(serverInstance == null) {
-            serverInstance = ServerUtilities.getServerInstance(uri);
+            serverInstance = su.getServerInstance(uri);
             if(serverInstance == null) {
                 String warning = "Common server instance not found for " + uri;
                 Logger.getLogger("glassfish-javaee").log(Level.WARNING, warning);
@@ -476,4 +534,54 @@ public class Hk2DeploymentManager implements DeploymentManager {
         return builder.toString();
     }
 
+    class UpdateContextRoot implements ProgressListener {
+        private MonitorProgressObject returnProgress;
+        private Hk2TargetModuleID moduleId;
+
+        UpdateContextRoot(MonitorProgressObject returnProgress,Hk2TargetModuleID moduleId) {
+            this.returnProgress = returnProgress;
+            this.moduleId = moduleId;
+        }
+
+            public void handleProgressEvent(ProgressEvent arg0) {
+                if (arg0.getDeploymentStatus().isCompleted()) {
+                    returnProgress.operationStateChanged(OperationState.RUNNING, arg0.getDeploymentStatus().getMessage());
+                    // let's update the context-root
+                    //
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            GetPropertyCommand gpc = new GetPropertyCommand("*." + moduleId.getModuleID() + ".context-root");
+                            Future<OperationState> result = getCommonServerSupport().execute(gpc);
+                            try {
+                                //result.get()
+                                if (result.get(60, TimeUnit.SECONDS) == OperationState.COMPLETED) {
+                                    long end = System.nanoTime();
+                                    //String installRoot = getGlassfishRoot();
+                                    //String targetInstallRoot = gpc.propertyValue();
+                                    Map<String, String> retVal = gpc.getData();
+                                    if (retVal.size() == 1) {
+                                        returnProgress.operationStateChanged(OperationState.COMPLETED, "updated the moduleid");
+                                        moduleId.setPath(retVal.entrySet().iterator().next().getValue());
+                                    }
+                                }
+                            } catch (InterruptedException ex) {
+                                returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid");
+                                Exceptions.printStackTrace(ex);
+                            } catch (ExecutionException ex) {
+                                returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid");
+                                Exceptions.printStackTrace(ex);
+                            } catch (TimeoutException ex) {
+                                returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid");
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    });
+                } else if (arg0.getDeploymentStatus().isFailed()) {
+                    returnProgress.operationStateChanged(OperationState.FAILED, "failed to update the moduleid");
+                } else {
+                    returnProgress.operationStateChanged(OperationState.RUNNING, arg0.getDeploymentStatus().getMessage());
+                }
+            }
+
+    }
 }

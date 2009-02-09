@@ -122,6 +122,7 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
      */
     @Override
     protected void setUp() throws Exception {
+        SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]); //to initialize the correct lookup instance
         FileUtil.setMIMEType("java", "text/x-java");
         MockMimeLookup.setInstances(
                 MimePath.parse("text/x-java"),

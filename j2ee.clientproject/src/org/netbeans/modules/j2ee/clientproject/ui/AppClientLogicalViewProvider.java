@@ -802,6 +802,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider2 {
             result.add(KEY_CONF_DIR);
             result.add(KEY_SETUP_DIR);
             for( int i = 0; i < groups.length; i++ ) {
+                // XXX rewrite to use NodeFactorySupport and JavaSourceNodeFactory
                 result.add(new SourceGroupKey(groups[i]));
             }
             result.add(LIBRARIES);

@@ -206,17 +206,17 @@ public class Wrapper {
                         }
                     }
                 } else {
-                    Properties props = model.getProject().getProperties();
-                    if (props == null) {
-                        props = model.getFactory().createProperties();
-                        model.getProject().setProperties(props);
-                    }
 
-                    //check if someone moved the property to netbeans-private profile, remove from there then.
+                    //check if someone moved the property to netbeans-private profile, set there.
                     if (privateProf != null && privateProf.getProperties() != null &&
                             privateProf.getProperties().getProperty(Constants.HINT_DEPLOY_J2EE_SERVER) != null) {
                         privateProf.getProperties().setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, sID);
                     } else {
+                        Properties props = model.getProject().getProperties();
+                        if (props == null) {
+                            props = model.getFactory().createProperties();
+                            model.getProject().setProperties(props);
+                        }
                         props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, sID);
                         handle.markAsModified(handle.getPOMModel());
                     }

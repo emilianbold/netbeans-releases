@@ -48,6 +48,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.nio.charset.Charset;
+import org.openide.filesystems.FileObject;
 
 /**
  * Applies contextual patches to files. The patch file can contain patches for multiple files. 
@@ -191,15 +192,26 @@ public final class ContextualPatch {
 
     private void writeFile(SinglePatch patch, List<String> lines) throws IOException {
         patch.targetFile.getParentFile().mkdirs();
+        /**
+         * Writes the patched using a FileObject object, not directly through a File object,
+         * so the FileSystem could be notified of any file changes being made.
+         */
+        FileObject fo = FileUtil.toFileObject(patch.targetFile);
+        if (fo == null) {
+            fo = FileUtil.createData(patch.targetFile);
+        }
+        if (fo == null) {
+            return;
+        }
         if (patch.binary) {
             if (patch.hunks.length == 0) {
-                patch.targetFile.delete();
+                fo.delete();
             } else {
                 byte [] content = Base64.decode(patch.hunks[0].lines);
-                copyStreamsCloseAll(new FileOutputStream(patch.targetFile), new ByteArrayInputStream(content));
+                copyStreamsCloseAll(fo.getOutputStream(), new ByteArrayInputStream(content));
             }
         } else {
-            PrintWriter w = new PrintWriter(new OutputStreamWriter(new FileOutputStream(patch.targetFile), getEncoding(patch.targetFile))); 
+            PrintWriter w = new PrintWriter(new OutputStreamWriter(fo.getOutputStream(), getEncoding(patch.targetFile)));
             try {
                 if (lines.size() == 0) return;
                 for (String line : lines.subList(0, lines.size() - 1)) {

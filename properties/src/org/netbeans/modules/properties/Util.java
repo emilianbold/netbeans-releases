@@ -45,6 +45,8 @@ package org.netbeans.modules.properties;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Locale;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -52,8 +54,10 @@ import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.FileEntry;
 
 import org.openide.loaders.MultiDataObject;
@@ -147,14 +151,69 @@ public final class Util extends Object {
      * @see  #getVariant
      */
     public static String getLocaleSuffix(MultiDataObject.Entry fe) {
-        MultiDataObject.Entry pe = fe.getDataObject().getPrimaryEntry();
-        if (fe == pe) {
-            return "";                                                  //NOI18N
+        FileObject fo = fe.getFile();
+        String fName = fo.getName();
+        int index = fName.indexOf(PRB_SEPARATOR_CHAR);
+        FileObject po = fo;
+        while (index != -1) {
+            FileObject candidate = fo.getParent().getFileObject(
+                    fName.substring(0, index), fo.getExt());
+            if (candidate != null && isValidLocaleSuffix(fName.substring(index))) {
+                po = candidate;
+            }
+            index = fName.indexOf(PRB_SEPARATOR_CHAR, index + 1);
         }
-        String myName   = fe.getFile().getName();
-        String baseName = pe.getFile().getName();
+        if (fo == po) {
+            return "";
+        }
+        String myName   = fo.getName();
+        String baseName = po.getName();
         assert myName.startsWith(baseName);
         return myName.substring(baseName.length());
+//        MultiDataObject.Entry pe = fe.getDataObject().getPrimaryEntry();
+//        if (fe == pe) {
+//            return "";                                                  //NOI18N
+//        }
+//        String myName   = fe.getFile().getName();
+//        String baseName = pe.getFile().getName();
+//        assert myName.startsWith(baseName);
+//        return myName.substring(baseName.length());
+    }
+
+    private static boolean isValidLocaleSuffix(String s) {
+        // first char is _
+        int n = s.length();
+        String s1;
+        // check first suffix - language (two chars)
+        if (n == 3 || (n > 3 && s.charAt(3) == PropertiesDataLoader.PRB_SEPARATOR_CHAR)) {
+            s1 = s.substring(1, 3).toLowerCase();
+            // language must be followed by a valid country suffix or no suffix
+        } else {
+            return false;
+        }
+        // check second suffix - country (two chars)
+        String s2;
+        if (n == 3) {
+            s2 = null;
+        } else if (n == 6 || (n > 6 && s.charAt(6) == PropertiesDataLoader.PRB_SEPARATOR_CHAR)) {
+            s2 = s.substring(4, 6).toUpperCase();
+            // country may be followed by whatever additional suffix
+        } else {
+            return false;
+        }
+
+        HashSet<String> knownLanguages = new HashSet<String>(Arrays.asList(Locale.getISOLanguages()));
+        if (!knownLanguages.contains(s1)) {
+            return false;
+        }
+
+        if (s2 != null) {
+            HashSet<String> knownCountries = new HashSet<String>(Arrays.asList(Locale.getISOCountries()));
+            if (!knownCountries.contains(s2)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -384,12 +443,19 @@ public final class Util extends Object {
             folder = FileUtil.createFolder(folder, folderPath);
             fileName = fileName.substring(idx + 1);
         }
-        FileObject templateFO = FileUtil.getConfigFile("Templates/Other/properties.properties"); // NOI18N
+        FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
+        FileObject templateFO = defaultFS.findResource("Templates/Other/properties.properties"); // NOI18N
         DataObject template = DataObject.find(templateFO);
         return (PropertiesDataObject)
                template.createFromTemplate(DataFolder.findFolder(folder), fileName);
     }
 
+    /**
+     * Create new DataObject with requested locale and notify that new locale was added
+     * @param propertiesDataObject DataObject to add locale
+     * @param locale
+     * @param copyInitialContent
+     */
     public static void createLocaleFile(PropertiesDataObject propertiesDataObject,
                                         String locale,
                                         boolean copyInitialContent)
@@ -402,8 +468,10 @@ public final class Util extends Object {
             }
 
             if(propertiesDataObject != null) {
-                FileObject file = propertiesDataObject.getPrimaryFile();
-                final String newName = file.getName() + PropertiesDataLoader.PRB_SEPARATOR_CHAR + locale;
+//                FileObject file = propertiesDataObject.getPrimaryFile();
+                FileObject file = propertiesDataObject.getBundleStructure().getNthEntry(0).getFile();
+                //Default locale may be deleted
+                final String newName = getBaseName(file.getName()) + PropertiesDataLoader.PRB_SEPARATOR_CHAR + locale;
                 final FileObject folder = file.getParent();
 //                                    final PropertiesEditorSupport editor = (PropertiesEditorSupport)propertiesDataObject.getCookie(PropertiesEditorSupport.class);
                 java.util.Iterator it = propertiesDataObject.secondaryEntries().iterator();
@@ -428,6 +496,15 @@ public final class Util extends Object {
                                 templateFile.copy(folder, newName, PropertiesDataLoader.PROPERTIES_EXTENSION);
                             }
                         });
+                        //find just created DataObject
+                        PropertiesDataObject dataObject = (PropertiesDataObject) DataObject.find(folder.getFileObject(newName, PropertiesDataLoader.PROPERTIES_EXTENSION));
+                        dataObject.setBundleStructure(propertiesDataObject.getBundleStructure());
+                        //update entries in BundleStructure
+                        propertiesDataObject.getBundleStructure().updateEntries();
+                        //Add it to OpenSupport
+                        propertiesDataObject.getOpenSupport().addDataObject(dataObject);
+                        //Notify BundleStructure that one file changed
+                        propertiesDataObject.getBundleStructure().notifyOneFileChanged(folder.getFileObject(newName, PropertiesDataLoader.PROPERTIES_EXTENSION));
                     }
                 } else {
                     // Create an empty file - creating from template via DataObject
@@ -443,4 +520,106 @@ public final class Util extends Object {
             notifyError(locale);
         }
     }
+
+    /**
+     *
+     * @param obj DataObject
+     * @return DataObject which represent default locale
+     *          In case when default locale is absent it will return first found locale as primary,
+     *          which has the same base name
+     * @throws org.openide.loaders.DataObjectNotFoundException
+     */
+    static PropertiesDataObject findPrimaryDataObject(PropertiesDataObject obj) throws DataObjectNotFoundException {
+        FileObject primary = obj.getPrimaryFile();
+        assert primary != null : "Object " + obj + " cannot have null primary file"; // NOI18N
+        String fName;
+        fName = primary.getName();
+        String baseName = getBaseName(fName);
+        FileObject parent = primary.getParent();
+        int index = fName.indexOf(PropertiesDataLoader.PRB_SEPARATOR_CHAR);
+        while (index != -1) {
+            FileObject candidate = parent.getFileObject(
+                    fName.substring(0, index), primary.getExt());
+            if (candidate != null && isValidLocaleSuffix(fName.substring(index))) {
+                return (PropertiesDataObject) DataObject.find(candidate);
+            } else if (candidate == null){
+                for (FileObject file : parent.getChildren()) {
+                    if (!file.hasExt(PropertiesDataLoader.PROPERTIES_EXTENSION)) {
+                        continue;
+                    }
+                    if (file.getName().indexOf(baseName) != -1) {
+                        if (isValidLocaleSuffix(file.getName().substring(index))) {
+                            return (PropertiesDataObject) DataObject.find(file);
+                        }
+                    }
+                }
+            }
+            index = fName.indexOf(PropertiesDataLoader.PRB_SEPARATOR_CHAR, index + 1);
+        }
+        return obj;
+    }
+
+    /**
+     *
+     * @param f
+     * @param parent Directory where to search
+     * @param baseName of the locale (name without locale suffix)
+     * @return BundleStructure or null 
+     * @throws org.openide.loaders.DataObjectNotFoundException
+     */
+    static BundleStructure findBundleStructure (FileObject f, FileObject parent, String baseName) throws DataObjectNotFoundException{
+            String fName;
+            PropertiesDataObject dataObject;
+            BundleStructure structure;
+            for (FileObject file : parent.getChildren()) {
+                if (!file.hasExt(PropertiesDataLoader.PROPERTIES_EXTENSION) || file.equals(f)) {
+                    continue;
+                }
+                fName = file.getName();
+                if (fName.equals(baseName) && file.isValid()) {
+                        dataObject = (PropertiesDataObject) DataObject.find(file);
+                        if (dataObject == null) continue;
+                        structure = dataObject.getBundleStructureOrNull();
+                        if (structure != null)
+                             return structure;
+                        else
+                             continue;
+                }
+                if (fName.indexOf(baseName) != -1) {
+                    int index = fName.indexOf(PropertiesDataLoader.PRB_SEPARATOR_CHAR);
+                    if (baseName.length()!=index)
+                        continue;
+                    while (index != -1) {
+                        FileObject candidate = file;
+                        if (candidate != null && isValidLocaleSuffix(fName.substring(index)) && file.isValid()) {
+                            dataObject = (PropertiesDataObject) DataObject.find(candidate);
+                            if (dataObject == null) continue;
+                            structure = dataObject.getBundleStructureOrNull();
+                            if (structure != null) 
+                                return structure;
+                        }
+                        index = fName.indexOf(PropertiesDataLoader.PRB_SEPARATOR_CHAR, index + 1);
+                    }
+                }
+            }
+            return null;
+    }
+
+    /**
+     * @param name file name
+     * @return Base name for this locale
+     */
+    static String getBaseName(String name) {
+        String baseName = null;
+        int index = name.indexOf(PropertiesDataLoader.PRB_SEPARATOR_CHAR);
+        while (index != -1) {
+            baseName = name.substring(0, index);
+            if (baseName != null && isValidLocaleSuffix(name.substring(index))) {
+                return baseName;
+            }
+            index = name.indexOf(PropertiesDataLoader.PRB_SEPARATOR_CHAR, index + 1);
+        }
+        return name;
+    }
+
 }

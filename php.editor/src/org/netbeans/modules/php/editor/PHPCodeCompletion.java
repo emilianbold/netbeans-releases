@@ -381,17 +381,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     }
 
-    private static final Collection<PHPTokenId> CTX_DELIMITERS = Arrays.asList(
-            PHPTokenId.PHP_SEMICOLON, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.PHP_CURLY_CLOSE,
-            PHPTokenId.PHP_RETURN, PHPTokenId.PHP_OPERATOR, PHPTokenId.PHP_ECHO,
-            PHPTokenId.PHP_EVAL, PHPTokenId.PHP_NEW, PHPTokenId.PHP_NOT,PHPTokenId.PHP_CASE,
-            PHPTokenId.PHP_IF,PHPTokenId.PHP_ELSE,PHPTokenId.PHP_ELSEIF, PHPTokenId.PHP_PRINT,
-            PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH,PHPTokenId.PHP_WHILE,
-            PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_LINE_COMMENT,
-            PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING, PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE,
-            PHPTokenId.T_OPEN_TAG_WITH_ECHO, PHPTokenId.PHP_OPENTAG
-            );
-
     private String findLHSExpressionType(TokenSequence<PHPTokenId> tokenSequence,
             PHPCompletionItem.CompletionRequest request){
 
@@ -406,7 +395,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         int rightExpressionBoundary = tokenSequence.offset();
 
         while (findLHSExpressionType_skipArgs(tokenSequence, true)
-                && !CTX_DELIMITERS.contains(tokenSequence.token().id())
+                && !CompletionContextFinder.CTX_DELIMITERS.contains(tokenSequence.token().id())
                 && tokenSequence.token().id() != PHPTokenId.PHP_TOKEN){
             if (!tokenSequence.movePrevious()) {
                 break;

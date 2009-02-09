@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassForwardDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl;
@@ -198,6 +199,9 @@ public class Resolver3 implements Resolver {
                     // have to stop with current 'orig' value
                     break;
                 }
+            } else if (ForwardClass.isForwardClass(orig)) {
+                // try to find another class
+                resovedClassifier = this.findClassifier(orig.getQualifiedName());
             } else {
                 break;
             }
@@ -219,13 +223,13 @@ public class Resolver3 implements Resolver {
         CsmNamespace ns = CsmBaseUtilities.getClassNamespace(out);
         CsmClassifier cls = null;
         if (ns != null) {
-            CsmUID uid = out.getUID();
+            CsmUID uid = UIDs.get(out);
             CharSequence fqn = out.getQualifiedName();
             for (CsmDeclaration decl : ns.getDeclarations()) {
                 if (CsmKindUtilities.isClassifier(decl) && decl.getQualifiedName().equals(fqn)) {
-                    if (!decl.getUID().equals(uid)) {
+                    if (!UIDs.get(decl).equals(uid)) {
                         cls = (CsmClassifier)decl;
-                        if (!isForwardClass(cls)) {
+                        if (!ForwardClass.isForwardClass(cls)) {
                             break;
                         }
                     }
@@ -283,13 +287,13 @@ public class Resolver3 implements Resolver {
         int count = 0;
         while(parent != null) {
             if (parent.origOffset == origOffset && parent.file.equals(file)) {
-                if (TRACE_RECURSION) traceRecursion();
+                if (TRACE_RECURSION) { traceRecursion(); }
                 return true;
             }
             parent = (Resolver3) parent.parentResolver;
             count++;
             if (count > maxRecursion) {
-                if (TRACE_RECURSION) traceRecursion();
+                if (TRACE_RECURSION) { traceRecursion(); }
                 return true;
             }
         }
@@ -853,9 +857,5 @@ public class Resolver3 implements Resolver {
 
     private boolean needClasses() {
         return (interestedKind & CLASS) == CLASS;
-    }
-    
-    private static boolean isForwardClass(CsmClassifier first) {
-        return first instanceof ForwardClass;
-    }    
+    }   
 }

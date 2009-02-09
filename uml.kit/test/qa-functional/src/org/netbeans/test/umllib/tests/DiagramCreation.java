@@ -297,7 +297,7 @@ public abstract class DiagramCreation extends UMLTestCase {
         //
         org.netbeans.test.umllib.Utils.RetAll rt=org.netbeans.test.umllib.Utils.createDiagram(project,workPkg,diagramName,diagramType);
         lastDiagramNode=rt.lastDiagramNode;
-// nb6.5 not close/reopen diagram. Workaround for bug
+// nb7.0 not close/reopen diagram. Workaround for bug
 //        rt.dOp.close();
 //        rt.dOp.waitClosed();
 //        try{Thread.sleep(100);}catch(Exception ex){}

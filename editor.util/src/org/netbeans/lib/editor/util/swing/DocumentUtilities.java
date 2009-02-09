@@ -43,6 +43,7 @@ package org.netbeans.lib.editor.util.swing;
 
 import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
@@ -58,6 +59,7 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 import org.netbeans.lib.editor.util.AbstractCharSequence;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.CompactMap;
 
 /**
@@ -69,6 +71,9 @@ import org.netbeans.lib.editor.util.CompactMap;
 
 public final class DocumentUtilities {
     
+    /** BaseDocument's version. */
+    private static final String VERSION_PROP = "version"; //NOI18N
+
     private static final Object TYPING_MODIFICATION_DOCUMENT_PROPERTY = new Object();
     
     private static final Object TYPING_MODIFICATION_KEY = new Object();
@@ -555,22 +560,80 @@ public final class DocumentUtilities {
      * like in the editor's status bar. Tabs are expanded when counting the column.
      *
      * @param doc non-null document in which the offset is located.
-     * @param offset offset of the document.
+     * @param offset offset in the document.
      * @return string representation of the offset.
-     * @since 
+     * @since 1.25
      */
     public static String debugOffset(Document doc, int offset) {
-        Element paragraphRoot = getParagraphRootElement(doc);
-        int lineIndex = paragraphRoot.getElementIndex(offset);
-        Element lineElem = paragraphRoot.getElement(lineIndex);
-        return String.valueOf(offset) + '[' + (lineIndex+1) + ':' +
-                (debugColumn(doc, lineElem.getStartOffset(), offset)+1) + ']';
+        return appendOffset(null, doc, offset).toString();
     }
-    
-    private static int debugColumn(Document doc, int lineStartOffset, int offset) {
+
+    /**
+     * Get string representation of an offset for debugging purposes
+     * in form "offset[line:column]". Both lines and columns start counting from 1
+     * like in the editor's status bar. Tabs are expanded when counting the column.
+     *
+     * @param sb valid string builder to which text will be appended or null in which case
+     *  the method itself will create a string builder and it will return it.
+     * @param doc non-null document in which the offset is located.
+     * @param offset offset in the document.
+     * @return non-null string builder to which the description was added.
+     * @since 1.27
+     */
+    public static StringBuilder appendOffset(StringBuilder sb, Document doc, int offset) {
+        if (sb == null) {
+            sb = new StringBuilder(50);
+        }
+        sb.append(offset).append('[');
+        if (offset < 0) { // Offset too low
+            sb.append("<0");
+        } else if (offset > doc.getLength() + 1) { // +1 for AbstractDocument-based docs
+            sb.append(">").append(doc.getLength());
+        } else { // Valid offset
+            Element paragraphRoot = getParagraphRootElement(doc);
+            int lineIndex = paragraphRoot.getElementIndex(offset);
+            Element lineElem = paragraphRoot.getElement(lineIndex);
+            sb.append(lineIndex + 1).append(':'); // Line
+            sb.append(visualColumn(doc, lineElem.getStartOffset(), offset) + 1); // Column
+        }
+        sb.append(']');
+        return sb;
+    }
+
+    /**
+     * Get string representation of an offset for debugging purposes
+     * in form "offset[line:column]". Both lines and columns start counting from 1
+     * like in the editor's status bar. Tabs are expanded when counting the column.
+     *
+     * @param sb valid string builder to which text will be appended or null in which case
+     *  the method itself will create a string builder and it will return it.
+     * @param evt non-null document event.
+     * @return non-null string builder to which the description was added.
+     * @since 1.27
+     */
+    public static StringBuilder appendEvent(StringBuilder sb, DocumentEvent evt) {
+        if (sb == null) {
+            sb = new StringBuilder(100);
+        }
+        DocumentEvent.EventType type = evt.getType();
+        sb.append(type).append(", ");
+        appendOffset(sb, evt.getDocument(), evt.getOffset());
+        sb.append(", l=").append(evt.getLength());
+        // Possibly append the modification text
+        String modText;
+        if ((modText = getModificationText(evt)) != null) {
+            sb.append(", modText=\"");
+            CharSequenceUtilities.debugText(sb, modText);
+            sb.append('"');
+        }
+        return sb;
+    }
+
+    private static int visualColumn(Document doc, int lineStartOffset, int offset) {
         Integer tabSizeInteger = (Integer) doc.getProperty(PlainDocument.tabSizeAttribute);
         int tabSize = (tabSizeInteger != null) ? tabSizeInteger : 8;
         CharSequence docText = getText(doc);
+        // Expected that offset <= docText.length()
         int column = 0;
         for (int i = lineStartOffset; i < offset; i++) {
             char c = docText.charAt(i);
@@ -663,11 +726,11 @@ public final class DocumentUtilities {
             return null;
         }
         
-        public String toString() {
+        public @Override String toString() {
             return getName();
         }
 
-    }
+    } // End of EventPropertiesElement class
     
     private static final class EventPropertiesElementChange
     implements DocumentEvent.ElementChange, UndoableEdit  {
@@ -788,5 +851,23 @@ public final class DocumentUtilities {
             }
         }
         return mimeType;
+    }
+
+    /**
+     * Attempts to get the version of a <code>Document</code>. Netbeans editor
+     * documents are versioned, which means that every time a document is modified
+     * its version is incremented. This method can be used to read the latest version
+     * of a netbeans document.
+     * 
+     * @param doc The document to get a version for.
+     *
+     * @return The document's version or <code>0</code> if the document does not
+     *   support versioning (ie. is not a netbeans editor document).
+     *
+     * @since 1.27
+     */
+    public static long getDocumentVersion(Document doc) {
+        Object version = doc.getProperty(VERSION_PROP);
+        return version instanceof AtomicLong ? ((AtomicLong) version).get() : 0;
     }
 }

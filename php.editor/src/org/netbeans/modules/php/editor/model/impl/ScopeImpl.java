@@ -41,10 +41,13 @@ package org.netbeans.modules.php.editor.model.impl;
 import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.php.editor.index.IndexedElement;
-import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
@@ -59,29 +62,28 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
 
     private OffsetRange blockRange = null;
     private List<ModelElementImpl> elements = new ArrayList<ModelElementImpl>();
-    private ModelScopeImpl mScope;
 
     //new contructors
-    ScopeImpl(ScopeImpl inScope, ASTNodeInfo info, PhpModifiers modifiers, Block block) {
+    ScopeImpl(Scope inScope, ASTNodeInfo info, PhpModifiers modifiers, Block block) {
         super(inScope, info, modifiers);
         setBlockRange(block);
     }
 
-    ScopeImpl(ScopeImpl inScope, IndexedElement element, PhpKind kind) {
+    ScopeImpl(Scope inScope, IndexedElement element, PhpKind kind) {
         super(inScope, element, kind);
     }
     //old contructors
-    ScopeImpl(ScopeImpl inScope, String name, Union2<String/*url*/, FileObject> file,
+    ScopeImpl(Scope inScope, String name, Union2<String/*url*/, FileObject> file,
             OffsetRange offsetRange, PhpKind kind) {
         super(inScope, name, file, offsetRange, kind);
         assert isScopeKind(kind);
     }
 
-    ScopeImpl(ScopeImpl inScope, String name, Union2<String/*url*/, FileObject> file,
+    ScopeImpl(Scope inScope, String name, Union2<String/*url*/, FileObject> file,
             OffsetRange offsetRange, PhpKind kind,
             PhpModifiers modifier) {
         super(inScope, name, file, offsetRange, kind, modifier);
-        assert isScopeKind(kind);
+        assert isScopeKind(kind) : kind.toString();
     }
 
     private static boolean isScopeKind(PhpKind kind) {
@@ -93,6 +95,7 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
             case IFACE:
             case METHOD:
             case VARIABLE:
+            case FIELD:
                 return true;
         }
         return false;
@@ -107,10 +110,10 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
     }
 
     @SuppressWarnings("unchecked")
-    static <T extends ModelElementImpl> List<? extends T> filter(final List<? extends ModelElementImpl> original,
-            final ElementFilter filter) {
-        List<T> retval = new ArrayList<T>();
-        for (ModelElementImpl baseElement : original) {
+    static <T extends ModelElement> Collection<? extends T> filter(final Collection<? extends ModelElement> original,
+            final ElementFilter<ModelElement> filter) {
+        Set<T> retval = new HashSet<T>();
+        for (ModelElement baseElement : original) {
             boolean accepted = filter.isAccepted(baseElement);
             if (accepted) {
                 retval.add((T) baseElement);
@@ -119,25 +122,10 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
         return retval;
     }
 
-    static interface ElementFilter {
-
-        boolean isAccepted(ModelElementImpl element);
+    static interface ElementFilter<T extends ModelElement> {
+        boolean isAccepted(T element);
     }
 
-    @Override
-    final StringBuilder golden(int indent) {
-        String prefix = "";//NOI18N
-        for (int i = 0; i < indent; i++) {
-            prefix += "  ";
-        }//NOI18N
-        StringBuilder sb = new StringBuilder();
-        sb.append(prefix).append(toString()).append("\n");//NOI18N
-        List<? extends ModelElementImpl> allElems = getElements();
-        for (ModelElementImpl modelElement : allElems) {
-            sb.append(modelElement.golden(indent + 1));
-        }
-        return sb;
-    }
 
     void setBlockRange(Block block) {
         if (block != null) {
@@ -151,12 +139,5 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
     public OffsetRange getBlockRange() {
         //assert blockRange != null;
         return blockRange;
-    }
-
-    protected final IndexScopeImpl getTopIndexScopeImpl() {
-        if (mScope == null) {
-            mScope = (ModelScopeImpl) ModelUtils.getModelScope(this);
-        }
-        return (IndexScopeImpl) ((mScope instanceof IndexScopeImpl) ? mScope : null);
     }
 }

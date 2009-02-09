@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.ide.ergonomics.fod;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -67,16 +69,26 @@ public final class FindComponentModules {
     private static final RequestProcessor RP = new RequestProcessor("Find Modules");
     
     private final Collection<String> codeNames;
-    private final FeatureInfo info;
+    private final FeatureInfo[] infos;
     public final String DO_CHECK = "do-check";
     private final String ENABLE_LATER = "enable-later";
     private RequestProcessor.Task findingTask;
     private Collection<UpdateElement> forInstall = null;
     private Collection<UpdateElement> forEnable = null;
     
-    public FindComponentModules(FeatureInfo info) {
-        this.info = info;
-        codeNames = info.getCodeNames();
+    public FindComponentModules(FeatureInfo info, FeatureInfo... additional) {
+        ArrayList<FeatureInfo> l = new ArrayList<FeatureInfo>();
+        l.add(info);
+        l.addAll(Arrays.asList(additional));
+        this.infos = l.toArray(new FeatureInfo[0]);
+        if (infos.length == 1) {
+            codeNames = info.getCodeNames();
+        } else {
+            codeNames = new HashSet<String>(info.getCodeNames());
+            for (FeatureInfo fi : additional) {
+                codeNames.addAll(fi.getCodeNames());
+            }
+        }
         findingTask = RP.post(doFind);
     }
     
@@ -138,7 +150,7 @@ public final class FindComponentModules {
     }
     
     public Collection<UpdateElement> getVisibleUpdateElements (Collection<UpdateElement> elems) {
-        String prefCNB = info.getPreferredCodeNameBase();
+        String prefCNB = infos[0].getPreferredCodeNameBase();
 
         Collection<UpdateElement> res = new HashSet<UpdateElement> ();
         for (UpdateElement el : new LinkedList<UpdateElement> (elems)) {

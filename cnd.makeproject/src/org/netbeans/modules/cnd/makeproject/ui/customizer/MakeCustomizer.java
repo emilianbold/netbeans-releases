@@ -580,28 +580,19 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     }
 
     private Node createRootNodeProject(Project project, ConfigurationDescriptor projectDescriptor) {
-        boolean includeMakefileDescription = true;
         int compilerSet = -1;
         boolean isCompileConfiguration = ((MakeConfiguration) selectedConfigurations[0]).isCompileConfiguration();
+        boolean includeMakefileDescription = true;
         boolean includeRunDebugDescriptions = true;
 
+        // calculate the greatest common subset of project properties
         for (int i = 0; i < selectedConfigurations.length; i++) {
             MakeConfiguration makeConfiguration = (MakeConfiguration) selectedConfigurations[i];
 
             compilerSet = makeConfiguration.getCompilerSet().getValue();
 
-            if (makeConfiguration.isLinkerConfiguration()) {
-                includeMakefileDescription = false;
-            }
-            if (makeConfiguration.isArchiverConfiguration()) {
-                includeMakefileDescription = false;
-            }
-            if (makeConfiguration.isLibraryConfiguration()) {
-                includeRunDebugDescriptions = false;
-            }
-            if (makeConfiguration.isQmakeConfiguration()) {
-                includeMakefileDescription = false;
-            }
+            includeMakefileDescription &= makeConfiguration.isMakefileConfiguration();
+            includeRunDebugDescriptions &= !makeConfiguration.isLibraryConfiguration();
         }
 
         ArrayList<CustomizerNode> descriptions = new ArrayList<CustomizerNode>();
@@ -814,63 +805,49 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     private CustomizerNode createBuildDescription(Project project) {
 
         boolean includeMakefileDescription = true;
+        boolean includeQtDescription = true;
         boolean includeCompilerDescription = true;
+        boolean includeLinkerDescription = true;
+        boolean includeArchiverDescription = true;
         int compilerSet = -1;
         boolean isCompileConfiguration = ((MakeConfiguration) selectedConfigurations[0]).isCompileConfiguration();
-        boolean includeLinkerDescription = true;
-        boolean includeArchiveDescription = true;
-        boolean includeQtDescription = true;
+        boolean isQtMode = false;
 
         for (int i = 0; i < selectedConfigurations.length; i++) {
             MakeConfiguration makeConfiguration = (MakeConfiguration) selectedConfigurations[i];
 
             if (compilerSet >= 0 && makeConfiguration.getCompilerSet().getValue() != compilerSet) {
                 includeCompilerDescription = false;
-                includeQtDescription = false;
             }
             compilerSet = makeConfiguration.getCompilerSet().getValue();
 
             if ((isCompileConfiguration && !makeConfiguration.isCompileConfiguration()) || (!isCompileConfiguration && makeConfiguration.isCompileConfiguration())) {
                 includeCompilerDescription = false;
-                includeQtDescription = false;
             }
 
-            if (makeConfiguration.isMakefileConfiguration()) {
-                includeCompilerDescription = false;
-                includeLinkerDescription = false;
-                includeArchiveDescription = false;
-                includeQtDescription = false;
-            }
-            if (makeConfiguration.isLinkerConfiguration()) {
-                includeMakefileDescription = false;
-                includeArchiveDescription = false;
-                includeQtDescription = false;
-            }
-            if (makeConfiguration.isArchiverConfiguration()) {
-                includeMakefileDescription = false;
-                includeLinkerDescription = false;
-            }
-            if (makeConfiguration.isQmakeConfiguration()) {
-                includeMakefileDescription = false;
-                includeArchiveDescription = false;
-            }
+            includeMakefileDescription &= makeConfiguration.isMakefileConfiguration();
+            includeQtDescription &= makeConfiguration.isQmakeConfiguration();
+            includeCompilerDescription &= !makeConfiguration.isMakefileConfiguration();
+            includeLinkerDescription &= makeConfiguration.isApplicationConfiguration() || makeConfiguration.isDynamicLibraryConfiguration();
+            includeArchiverDescription &= makeConfiguration.isLibraryConfiguration() && !makeConfiguration.isDynamicLibraryConfiguration() && !makeConfiguration.isQmakeConfiguration();
+            isQtMode |= makeConfiguration.isQmakeConfiguration();
         }
 
         ArrayList<CustomizerNode> descriptions = new ArrayList<CustomizerNode>();
         if (includeMakefileDescription) {
             descriptions.add(createMakefileDescription(project));
         }
-        if (includeCompilerDescription) {
-            descriptions.addAll(createCompilerNodes(project, compilerSet, -1, null, null, isCompileConfiguration, null));
-        }
-        if (includeLinkerDescription) {
-            descriptions.add(createLinkerDescription());
-        }
-        if (includeArchiveDescription) {
-            descriptions.add(createArchiverDescription());
-        }
         if (includeQtDescription) {
             descriptions.add(createQtDescription());
+        }
+        if (includeCompilerDescription) {
+            descriptions.addAll(createCompilerNodes(project, compilerSet, isCompileConfiguration, isQtMode));
+        }
+        if (includeLinkerDescription) {
+            descriptions.add(createLinkerDescription(isQtMode));
+        }
+        if (includeArchiverDescription) {
+            descriptions.add(createArchiverDescription());
         }
 
         descriptions.add(createPackagingDescription());
@@ -881,7 +858,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 descriptions.toArray(new CustomizerNode[descriptions.size()]));
     }
 
-    class BuildCustomizerNode extends CustomizerNode {
+    static class BuildCustomizerNode extends CustomizerNode {
 
         public BuildCustomizerNode(String name, String displayName, CustomizerNode[] children) {
             super(name, displayName, children);
@@ -906,7 +883,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 null);
     }
 
-    class GeneralItemCustomizerNode extends CustomizerNode {
+    static class GeneralItemCustomizerNode extends CustomizerNode {
 
         private Item item;
 
@@ -930,7 +907,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 null);
     }
 
-    class GeneralFolderCustomizerNode extends CustomizerNode {
+    static class GeneralFolderCustomizerNode extends CustomizerNode {
 
         private Folder folder;
 
@@ -953,7 +930,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 null);
     }
 
-    class CustomBuildItemCustomizerNode extends CustomizerNode {
+    static class CustomBuildItemCustomizerNode extends CustomizerNode {
 
         private Item item;
 
@@ -998,7 +975,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 null);
     }
 
-    class MakefileCustomizerNode extends CustomizerNode {
+    static class MakefileCustomizerNode extends CustomizerNode {
 
         public MakefileCustomizerNode(String name, String displayName, CustomizerNode[] children) {
             super(name, displayName, children);
@@ -1023,7 +1000,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 null);
     }
 
-    class RequiredProjectsCustomizerNode extends CustomizerNode {
+    static class RequiredProjectsCustomizerNode extends CustomizerNode {
 
         public RequiredProjectsCustomizerNode(String name, String displayName, CustomizerNode[] children) {
             super(name, displayName, children);
@@ -1041,43 +1018,37 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     }
 
     // C/C++/Fortran Node
-    private ArrayList<CustomizerNode> createCompilerNodes(Project project, int compilerSetIdx, int tool, Item item, Folder folder, boolean isCompilerConfiguration, CustomizerNode linkerNode) {
+    private ArrayList<CustomizerNode> createCompilerNodes(Project project, int compilerSetIdx, boolean isCompilerConfiguration, boolean isQtMode) {
         ArrayList<CustomizerNode> descriptions = new ArrayList<CustomizerNode>();
-        if (tool < 0 || tool == Tool.CCompiler) {
-            descriptions.add(createCCompilerDescription(project, compilerSetIdx, item, folder, isCompilerConfiguration));
+        if (!isQtMode) {
+            descriptions.add(createCCompilerDescription(project, compilerSetIdx, null, null, isCompilerConfiguration));
         }
-        if (tool < 0 || tool == Tool.CCCompiler) {
-            descriptions.add(createCCCompilerDescription(project, compilerSetIdx, item, folder, isCompilerConfiguration));
+        descriptions.add(createCCCompilerDescription(project, compilerSetIdx, null, null, isCompilerConfiguration));
+        if (!isQtMode) {
+            descriptions.add(createFortranCompilerDescription(project, compilerSetIdx, null, isCompilerConfiguration));
+            descriptions.add(createAssemblerDescription(project, compilerSetIdx, null, isCompilerConfiguration));
         }
-        if (tool < 0 || tool == Tool.FortranCompiler) {
-            descriptions.add(createFortranCompilerDescription(project, compilerSetIdx, item, isCompilerConfiguration));
-        }
-        if (tool < 0 || tool == Tool.Assembler) {
-            descriptions.add(createAssemblerDescription(project, compilerSetIdx, item, isCompilerConfiguration));
-        }
-
-        if (linkerNode != null) {
-            descriptions.add(linkerNode);
-        }
-
         return descriptions;
     }
 
     // Linker
-    private CustomizerNode createLinkerDescription() {
-        CustomizerNode generalLinkerNode = new LinkerGeneralCustomizerNode("Linker", getString("LBL_LINKER_NODE"), null); // NOI18N
+    private CustomizerNode createLinkerDescription(boolean isQtMode) {
+        CustomizerNode generalLinkerNode = new LinkerGeneralCustomizerNode("Linker", getString("LBL_LINKER_NODE"), null, isQtMode); // NOI18N
         return generalLinkerNode;
     }
 
-    class LinkerGeneralCustomizerNode extends CustomizerNode {
+    static class LinkerGeneralCustomizerNode extends CustomizerNode {
 
-        public LinkerGeneralCustomizerNode(String name, String displayName, CustomizerNode[] children) {
+        private boolean isQtMode;
+
+        public LinkerGeneralCustomizerNode(String name, String displayName, CustomizerNode[] children, boolean isQtMode) {
             super(name, displayName, children);
+            this.isQtMode = isQtMode;
         }
 
         @Override
         public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
-            return ((MakeConfiguration) configuration).getLinkerConfiguration().getGeneralSheet(project, (MakeConfigurationDescriptor) configurationDescriptor, (MakeConfiguration) configuration);
+            return ((MakeConfiguration) configuration).getLinkerConfiguration().getGeneralSheet(project, (MakeConfigurationDescriptor) configurationDescriptor, (MakeConfiguration) configuration, isQtMode);
         }
 
         @Override
@@ -1092,7 +1063,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         return generalNode;
     }
 
-    class ArchiverGeneralCustomizerNode extends CustomizerNode {
+    static class ArchiverGeneralCustomizerNode extends CustomizerNode {
 
         public ArchiverGeneralCustomizerNode(String name, String displayName, CustomizerNode[] children) {
             super(name, displayName, children);
@@ -1110,7 +1081,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     }
 
     private CustomizerNode createQtDescription() {
-        CustomizerNode node = new QtCustomizerNode("Qmake", getString("LBL_QMAKE_NODE"), null); // NOI18N
+        CustomizerNode node = new QtCustomizerNode("Qt", getString("LBL_QT_NODE"), null); // NOI18N
         return node;
     }
 
@@ -1192,7 +1163,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         return host;
     }
 
-    class CCompilerCustomizerNode extends CustomizerNode {
+    static class CCompilerCustomizerNode extends CustomizerNode {
 
         private Item item;
         private Folder folder;
@@ -1238,12 +1209,12 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         return ccCompilerCustomizerNode;
     }
 
-    class CCCompilerCustomizerNode extends CustomizerNode {
+    static class CCCompilerCustomizerNode extends CustomizerNode {
 
         private Item item;
         private Folder folder;
         private boolean isCompilerConfiguration;
-
+    
         public CCCompilerCustomizerNode(String name, String displayName, CustomizerNode[] children, Item item, Folder folder, boolean isCompilerConfiguration) {
             super(name, displayName, children);
             this.item = item;
@@ -1282,7 +1253,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         return fortranCompilerCustomizerNode;
     }
 
-    class FortranCompilerCustomizerNode extends CustomizerNode {
+    static class FortranCompilerCustomizerNode extends CustomizerNode {
 
         private Item item;
 
@@ -1320,7 +1291,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         return assemblerCustomizerNode;
     }
 
-    class AssemblerCustomizerNode extends CustomizerNode {
+    static class AssemblerCustomizerNode extends CustomizerNode {
 
         private Item item;
 
@@ -1366,7 +1337,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         return label;
     }
 
-    private class DummyNode extends AbstractNode {
+    private static class DummyNode extends AbstractNode {
 
         public DummyNode(Sheet sheet, String name) {
             super(Children.LEAF);

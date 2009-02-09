@@ -48,6 +48,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.extexecution.print.FindFileListener;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
@@ -84,7 +87,8 @@ public final class LineConvertors {
      *            invocation
      * @return the convertor proxying passed convertors
      */
-    public static LineConvertor proxy(LineConvertor... convertors) {
+    @NonNull
+    public static LineConvertor proxy(@NonNull LineConvertor... convertors) {
         return new ProxyLineConvertor(convertors);
     }
 
@@ -129,8 +133,9 @@ public final class LineConvertors {
      * @return the convertor searching for lines matching the patterns,
      *             considering matched lines as being files (names or paths)
      */
-    public static LineConvertor filePattern(FileLocator fileLocator, Pattern linePattern,
-            Pattern filePattern, int fileGroup, int lineGroup) {
+    @NonNull
+    public static LineConvertor filePattern(@NullAllowed FileLocator fileLocator, @NonNull Pattern linePattern,
+            @NullAllowed Pattern filePattern, int fileGroup, int lineGroup) {
 
         Parameters.notNull("linePattern", linePattern);
         if (fileGroup < 0) {
@@ -155,6 +160,7 @@ public final class LineConvertors {
      * @return the convertor parsing the line and searching for
      *             <code>http</code> or <code>https</code> URL
      */
+    @NonNull
     public static LineConvertor httpUrl() {
         return new HttpUrlConvertor();
     }
@@ -174,7 +180,8 @@ public final class LineConvertors {
          * @return the file corresponding to the filename (or path) or
          *             <code>null</code> if locator can't find the file
          */
-        FileObject find(String filename);
+        @CheckForNull
+        FileObject find(@NonNull String filename);
 
     }
 

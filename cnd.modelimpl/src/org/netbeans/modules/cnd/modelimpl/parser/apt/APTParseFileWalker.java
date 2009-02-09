@@ -106,11 +106,17 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
 
     @Override
     public TokenStream getTokenStream() {
+        return getTokenStream(true);
+    }
+
+    public TokenStream getTokenStream(boolean filtered) {
         setMode(ProjectBase.GATHERING_TOKENS);
         // get original
         TokenStream ts = super.getTokenStream();
-        // remove comments
-        ts = new APTCommentsFilter(ts);
+        if (filtered) {
+            // remove comments
+            ts = new APTCommentsFilter(ts);
+        }
         // expand macros
         ts = new APTMacroExpandedStream(ts, getMacroMap());
         return ts;
@@ -183,7 +189,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             last = define.getName();
         } else {
             last = (APTToken) bodyTokens.get(bodyTokens.size() - 1);
-            APTToken start = (APTToken) bodyTokens.get(0);
+            //APTToken start = (APTToken) bodyTokens.get(0);
             // FIXUP (performance/memory). For now:
             // 1) nobody uses macros.getText
             // 2) its realization is ineffective

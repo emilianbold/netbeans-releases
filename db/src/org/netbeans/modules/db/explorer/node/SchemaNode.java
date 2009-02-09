@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.db.explorer.node;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
@@ -49,6 +51,7 @@ import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 
 /**
@@ -84,6 +87,20 @@ public class SchemaNode extends BaseNode {
     }
 
     protected void initialize() {
+        setupNames();
+
+        connection.addPropertyChangeListener(
+            new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (evt.getPropertyName().equals(DatabaseConnection.PROP_DEFSCHEMA)) {
+                        updateProperties();
+                    }
+                }
+            }
+        );
+    }
+
+    private void setupNames() {
         boolean connected = !connection.getConnector().isDisconnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {
@@ -97,9 +114,15 @@ public class SchemaNode extends BaseNode {
                     }
                 );
             } catch (MetadataModelException e) {
-                // TODO report exception
+                Exceptions.printStackTrace(e);
             }
         }
+    }
+
+    @Override
+    protected void updateProperties() {
+        setupNames();
+        super.updateProperties();
     }
 
     @Override
@@ -123,8 +146,18 @@ public class SchemaNode extends BaseNode {
         }
 
         if (schema != null) {
-            if (schema.isDefault()) {
+            boolean isDefault = false;
+            String def = connection.getDefaultSchema();
+            if (def != null) {
+                isDefault = def.equals(name);
+            } else {
+                isDefault = schema.isDefault();
+            }
+
+            if (isDefault) {
                 htmlName = "<b>" + name + "</b>"; // NOI18N
+            } else {
+                htmlName = null;
             }
         }
     }

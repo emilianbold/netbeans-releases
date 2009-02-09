@@ -55,6 +55,7 @@ public class DiscountCodesConverter {
             items = new ArrayList<DiscountCodeConverter>();
         }
         if (entities != null) {
+            items.clear();
             for (DiscountCode entity : entities) {
                 items.add(new DiscountCodeConverter(entity, uri, expandLevel, true));
             }

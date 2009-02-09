@@ -51,6 +51,7 @@ import org.netbeans.modules.spring.spi.beans.SpringConfigFileLocationProvider;
 import org.netbeans.modules.spring.spi.beans.SpringConfigFileProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbCollections;
@@ -59,6 +60,8 @@ import org.openide.util.NbCollections;
  *
  * @author Andrei Badea
  */
+@ProjectServiceProvider(service={SpringConfigFileProvider.class, SpringConfigFileLocationProvider.class},
+projectType="org-netbeans-modules-web-project")
 public class WebProjectSpringConfigFileProvider implements SpringConfigFileProvider, SpringConfigFileLocationProvider {
 
     private final Project project;

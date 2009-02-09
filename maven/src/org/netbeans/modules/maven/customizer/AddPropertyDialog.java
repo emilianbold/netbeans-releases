@@ -54,6 +54,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JButton;
 import javax.swing.ListSelectionModel;
+import javax.swing.text.EditorKit;
+import javax.swing.text.html.HTMLEditorKit;
 import org.apache.maven.model.Plugin;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.indexer.api.PluginIndexManager;
@@ -87,17 +89,20 @@ public class AddPropertyDialog extends javax.swing.JPanel implements ExplorerMan
         project = prj;
         okbutton = new JButton("OK");
         manager.setRootContext(Node.EMPTY);
+        tpDesc.setEditorKit(new HTMLEditorKit());
         manager.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 Node[] nds = getExplorerManager().getSelectedNodes();
                 if (nds.length != 1) {
                     okbutton.setEnabled(false);
                 } else {
-                    String str = nds[0].getLookup().lookup(String.class);
-                    if (str != null) {
+                    PluginIndexManager.ParameterDetail plg = nds[0].getLookup().lookup(PluginIndexManager.ParameterDetail.class);
+                    if (plg != null) {
                         okbutton.setEnabled(true);
+                        tpDesc.setText(plg.getHtmlDetails(false));
                     } else {
                         okbutton.setEnabled(false);
+                        tpDesc.setText("");
                     }
                 }
             }
@@ -115,7 +120,10 @@ public class AddPropertyDialog extends javax.swing.JPanel implements ExplorerMan
     String getSelectedExpression() {
         Node[] nds = getExplorerManager().getSelectedNodes();
         if (nds.length == 1) {
-            return nds[0].getLookup().lookup(String.class);
+            PluginIndexManager.ParameterDetail hld =  nds[0].getLookup().lookup(PluginIndexManager.ParameterDetail.class);
+            if (hld != null) {
+                return hld.getExpression();
+            }
         }
         return null;
     }
@@ -131,18 +139,24 @@ public class AddPropertyDialog extends javax.swing.JPanel implements ExplorerMan
 
         tvExpressions = new BeanTreeView();
         lblPropertyExpressions = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        tpDesc = new javax.swing.JTextPane();
 
         lblPropertyExpressions.setText(org.openide.util.NbBundle.getMessage(AddPropertyDialog.class, "AddPropertyDialog.lblPropertyExpressions.text")); // NOI18N
+
+        tpDesc.setEditable(false);
+        jScrollPane2.setViewportView(tpDesc);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(tvExpressions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
-                    .add(lblPropertyExpressions))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, tvExpressions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 433, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, lblPropertyExpressions)
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 433, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -151,14 +165,18 @@ public class AddPropertyDialog extends javax.swing.JPanel implements ExplorerMan
                 .addContainerGap()
                 .add(lblPropertyExpressions)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(tvExpressions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 255, Short.MAX_VALUE)
+                .add(tvExpressions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel lblPropertyExpressions;
+    private javax.swing.JTextPane tpDesc;
     private javax.swing.JScrollPane tvExpressions;
     // End of variables declaration//GEN-END:variables
 
@@ -251,11 +269,14 @@ public class AddPropertyDialog extends javax.swing.JPanel implements ExplorerMan
         assert rootChilds != null;
         Children.Array pluginChilds = new Children.Array();
         try {
-            Set<String[]> exprs = PluginIndexManager.getPluginParameterExpressions(groupId, artifactId, version, mojo);
+            Set<PluginIndexManager.ParameterDetail> exprs = PluginIndexManager.getPluginParameters(groupId, artifactId, version, mojo);
             if (exprs != null) {
-                for (String[] el : exprs) {
-                    AbstractNode param = new AbstractNode(Children.LEAF, Lookups.singleton(el[1]));
-                    param.setDisplayName(el[1] + " (" + el[0] + ")"); //NOI18N
+                for (PluginIndexManager.ParameterDetail el : exprs) {
+                    if (el.getExpression() == null) {
+                        continue;
+                    }
+                    AbstractNode param = new AbstractNode(Children.LEAF, Lookups.singleton(el));
+                    param.setDisplayName(el.getExpression() + " (" + el.getName() + ")"); //NOI18N
                     pluginChilds.add(new Node[]{param});
                 }
             }

@@ -191,6 +191,9 @@ public class EditList {
     }
     
     public OffsetRange getRange() {
+        if (edits.size() == 0) {
+            return OffsetRange.NONE;
+        }
         int minOffset = edits.get(0).offset;
         int maxOffset = minOffset;
         for (Edit edit : edits) {
@@ -207,8 +210,12 @@ public class EditList {
     
     public int firstLine(BaseDocument doc) {
         OffsetRange range = getRange();
-        
-        return NbDocument.findLineNumber((StyledDocument)doc, range.getStart());
+
+        if (range == OffsetRange.NONE) {
+            return -1;
+        } else {
+            return NbDocument.findLineNumber((StyledDocument)doc, range.getStart());
+        }
     }
     
     /**

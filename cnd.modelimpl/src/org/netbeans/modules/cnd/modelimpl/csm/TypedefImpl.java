@@ -47,7 +47,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
@@ -80,12 +80,11 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
     private /*final*/ CsmObject containerRef;// can be set in onDispose or contstructor only
     private /*final*/ CsmUID<CsmIdentifiable> containerUID;
 
-    @SuppressWarnings("unchecked")
     public TypedefImpl(AST ast, CsmFile file, CsmObject container, CsmType type, String name) {
 
         super(ast, file);
 
-        if (CsmKindUtilities.isIdentifiable(container)) {
+        if (UIDCsmConverter.isIdentifiable(container)) {
             this.containerUID = UIDCsmConverter.identifiableToUID((CsmIdentifiable) container);
             assert (containerUID != null || container == null);
             this.containerRef = null;
@@ -258,7 +257,6 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
         }
     }
 
-    @SuppressWarnings("unchecked")
     public TypedefImpl(DataInput input) throws IOException {
         super(input);
         this.name = QualifiedNameCache.getManager().getString(input.readUTF());

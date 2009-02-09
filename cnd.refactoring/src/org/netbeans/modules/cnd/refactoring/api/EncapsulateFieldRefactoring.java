@@ -61,6 +61,7 @@ public final class EncapsulateFieldRefactoring extends AbstractRefactoring {
     private Set<CsmVisibility> methodModifiers;
     private Set<CsmVisibility> fieldModifiers;
     private boolean alwaysUseAccessors;
+    private boolean methodInline;
     
     /**
      * Creates a new instance of EncapsulateFieldRefactoring
@@ -70,7 +71,7 @@ public final class EncapsulateFieldRefactoring extends AbstractRefactoring {
         super(Lookups.fixed(field));
     }
     
-    public CsmObject getSourceType() {
+    public CsmField getSourceType() {
         return getRefactoringSource().lookup(CsmField.class);
     }
     
@@ -113,7 +114,15 @@ public final class EncapsulateFieldRefactoring extends AbstractRefactoring {
     public boolean isAlwaysUseAccessors() {
         return alwaysUseAccessors;
     }
-    
+
+    /**
+     * Getter for boolean property methodInline
+     * @return Value of property methodInline
+     */
+    public boolean isMethodInline() {
+        return methodInline;
+    }
+
     /**
      * Setter for getterName property
      * @param getterName New value of getterName
@@ -154,5 +163,13 @@ public final class EncapsulateFieldRefactoring extends AbstractRefactoring {
      */
     public void setAlwaysUseAccessors(boolean alwaysUseAccessors) {
         this.alwaysUseAccessors = alwaysUseAccessors;
+    }
+
+    /**
+     * Setter for methodInline property
+     * @param methodInline New value of methodInline
+     */
+    public void setMethodInline(boolean methodInline) {
+        this.methodInline = methodInline;
     }
 }

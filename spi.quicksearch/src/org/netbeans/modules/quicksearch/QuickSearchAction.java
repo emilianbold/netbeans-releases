@@ -40,6 +40,7 @@ package org.netbeans.modules.quicksearch;
 
 import javax.swing.Action;
 import javax.swing.KeyStroke;
+import javax.swing.UIManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -50,11 +51,14 @@ import org.openide.util.actions.CallableSystemAction;
  */
 public final class QuickSearchAction extends CallableSystemAction {
 
-   QuickSearchComboBar comboBar;
+    private static final boolean isAqua = "Aqua".equals(UIManager.getLookAndFeel().getID());
+    AbstractQuickSearchComboBar comboBar;
    
     public void performAction() {
         if (comboBar == null) {
-            comboBar = new QuickSearchComboBar((KeyStroke) this.getValue(Action.ACCELERATOR_KEY));
+            comboBar = isAqua
+                        ? new AquaQuickSearchComboBar((KeyStroke) this.getValue(Action.ACCELERATOR_KEY))
+                        : new QuickSearchComboBar((KeyStroke) this.getValue(Action.ACCELERATOR_KEY));
         }
         if (comboBar.getCommand().isFocusOwner()) {
             // repetitive action invocation, reset search to all categories
@@ -85,7 +89,9 @@ public final class QuickSearchAction extends CallableSystemAction {
     @Override
     public java.awt.Component getToolbarPresenter() {
         if (comboBar == null) {
-            comboBar = new QuickSearchComboBar((KeyStroke) this.getValue(Action.ACCELERATOR_KEY));
+            comboBar = isAqua
+                        ? new AquaQuickSearchComboBar((KeyStroke) this.getValue(Action.ACCELERATOR_KEY))
+                        : new QuickSearchComboBar((KeyStroke) this.getValue(Action.ACCELERATOR_KEY));
         }
         return comboBar;
     }

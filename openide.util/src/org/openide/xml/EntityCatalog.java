@@ -41,6 +41,7 @@
 
 package org.openide.xml;
 
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -116,7 +117,10 @@ public abstract class EntityCatalog implements EntityResolver {
             }
 
             if (systemID != null && systemID.startsWith("http")) { // NOI18N
-                Logger.getLogger(EntityCatalog.class.getName()).log(Level.FINE, "No resolver found for {0}", systemID);
+                Logger.getLogger(EntityCatalog.class.getName()).log(
+                        /* More of a problem when blocking EQ; cf. #157850: */
+                        EventQueue.isDispatchThread() ? Level.WARNING : Level.FINE,
+                        "No resolver found for {0}", systemID);
             }
             return null;
         }

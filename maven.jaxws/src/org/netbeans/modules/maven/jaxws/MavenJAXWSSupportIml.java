@@ -45,21 +45,22 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import org.apache.maven.model.Plugin;
-import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.maven.api.FileUtilities;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportImpl;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -71,6 +72,11 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
     /** Path for catalog file. */
     public static final String CATALOG_PATH = "src/jax-ws-catalog.xml"; //NOI18N
 
+    private final static String SERVLET_CLASS_NAME =
+            "com.sun.xml.ws.transport.http.servlet.WSServlet"; //NOI18N
+    private final static String SERVLET_LISTENER =
+            "com.sun.xml.ws.transport.http.servlet.WSServletContextListener"; //NOI18N
+    private  Boolean generateNonJsr109Stuff;
     /** Constructor.
      *
      * @param prj project
@@ -81,6 +87,48 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
 
     public void addService(JaxWsService service) {
         services.add(service);
+
+        if (!WSUtils.isJsr109Supported(prj)) {
+
+            if (generateNonJsr109Stuff == null) {
+                FileObject ddFolder = getDeploymentDescriptorFolder();
+                if (ddFolder == null || ddFolder.getFileObject("sun-jaxws.xml") == null) {
+                    // ask user if non jsr109 stuff should be generated
+                    generateNonJsr109Stuff = Boolean.valueOf(WSUtils.generateNonJsr109Artifacts(prj));
+                } else {
+                    generateNonJsr109Stuff = Boolean.TRUE;
+                }
+            }
+            if (generateNonJsr109Stuff) {
+                // modify web.xml file
+                try {
+                    WSUtils.addServiceEntriesToDD(prj, service);
+                } catch (IOException ex) {
+                    Logger.getLogger(MavenJAXWSSupportIml.class.getName()).log(Level.WARNING,
+                            "Cannot add service elements to web.xml file", ex); //NOI18N
+                }
+                // modify sun-jaxws.xml file
+                try {
+                    addSunJaxWsEntries(service);
+                } catch (IOException ex) {
+                    Logger.getLogger(MavenJAXWSSupportIml.class.getName()).log(Level.WARNING,
+                            "Cannot modify sun-jaxws.xml file", ex); //NOI18N
+                }
+            }
+        }
+    }
+
+    private void addSunJaxWsEntries(JaxWsService service)
+        throws IOException {
+
+        FileObject ddFolder = getDeploymentDescriptorFolder();
+        if (ddFolder != null) {
+            WSUtils.addSunJaxWsEntries(ddFolder, service);
+        } else{
+            String mes = NbBundle.getMessage(MavenJAXWSSupportIml.class, "MSG_CannotFindWEB-INF"); // NOI18N
+            NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(desc);
+        }
     }
 
     public List<JaxWsService> getServices() {
@@ -88,11 +136,10 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
     }
 
     public void removeService(JaxWsService service) {
-        services.remove(service);
         String localWsdl = service.getLocalWsdl();
         if (localWsdl != null) {
             // remove auxiliary wsdl url property
-            FileObject wsdlFolder = getLocalWsdlFolder(false);
+            FileObject wsdlFolder = getWsdlFolder(false);
             if (wsdlFolder != null) {
                 FileObject wsdlFo = wsdlFolder.getFileObject(localWsdl);
                 if (wsdlFo != null) {
@@ -104,15 +151,50 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
                 }
             }
         }
+        if (!WSUtils.isJsr109Supported(prj)) {
+
+            // modify web.xml file
+            try {
+                WSUtils.removeServiceEntriesFromDD(prj, service);
+            } catch (IOException ex) {
+                Logger.getLogger(MavenJAXWSSupportIml.class.getName()).log(Level.WARNING,
+                        "Cannot remove services from web.xml", ex); //NOI18N
+            }
+
+            // modify sun-jaxws.xml file
+            try {
+                removeSunJaxWsEntries(service);
+            } catch (IOException ex) {
+                Logger.getLogger(MavenJAXWSSupportIml.class.getName()).log(Level.WARNING,
+                        "Cannot modify sun-jaxws.xml file", ex); //NOI18N
+                }
+        }
+        services.remove(service);
     }
 
-    public FileObject getWsdlFolder(boolean create) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    private void removeSunJaxWsEntries(JaxWsService service) throws IOException {
+        FileObject ddFolder = getDeploymentDescriptorFolder();
+        if (ddFolder != null) {
+            WSUtils.removeSunJaxWsEntries(ddFolder, service);
+        } else{
+            String mes = NbBundle.getMessage(MavenJAXWSSupportIml.class, "MSG_CannotFindWEB-INF"); // NOI18N
+            NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(desc);
+        }
     }
 
-    public FileObject getLocalWsdlFolder(boolean createFolder) {
-        String wsdlFolderPath = getWsdlDir();
-        File wsdlDir = FileUtilities.resolveFilePath(FileUtil.toFile(prj.getProjectDirectory()), wsdlFolderPath);
+    public FileObject getDeploymentDescriptorFolder() {
+        File wsdlDir = FileUtilities.resolveFilePath(
+            FileUtil.toFile(prj.getProjectDirectory()), "src/main/webapp/WEB-INF"); //NOI18N
+        if (wsdlDir.exists()) {
+            return FileUtil.toFileObject(wsdlDir);
+        }
+        return null;
+    }
+
+    public FileObject getWsdlFolder(boolean createFolder) {
+        File wsdlDir = FileUtilities.resolveFilePath(
+                FileUtil.toFile(prj.getProjectDirectory()), "src/wsdl"); //NOI18N
         if (wsdlDir.exists()) {
             return FileUtil.toFileObject(wsdlDir);
         } else if (createFolder) {
@@ -125,7 +207,17 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
     }
 
     public FileObject getBindingsFolder(boolean createFolder) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        File bindingsDir = FileUtilities.resolveFilePath(
+                FileUtil.toFile(prj.getProjectDirectory()), "src/jaxws-bindings"); //NOI18N
+        if (bindingsDir .exists()) {
+            return FileUtil.toFileObject(bindingsDir);
+        } else if (createFolder) {
+            boolean created = bindingsDir.mkdirs();
+            if (created) {
+                return FileUtil.toFileObject(bindingsDir);
+            }
+        }
+        return null;
     }
 
     public URL getCatalog() {
@@ -149,26 +241,4 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
     }
 
     private MetadataModel < WebservicesMetadata > webservicesMetadataModel;
-
-    private String getWsdlDir() {
-        MavenProject mavproj = prj.getLookup().lookup(NbMavenProject.class).getMavenProject();
-        Plugin jaxWsPlugin = MavenModelUtils.getJaxWSPlugin(mavproj);
-        if (jaxWsPlugin != null) {
-            String dirPath = PluginPropertyUtils.getPluginProperty(prj,
-                    "org.codehaus.mojo", //NOI18N
-                    "jaxws-maven-plugin", //NOI18N
-                    "wsdlDirectory", //NOI18N
-                    "wsimport"); //NOI18N
-            if (dirPath != null) {
-                return dirPath;
-            } else {
-                return "src/wsdl"; //NOI18N
-            }
-        } else {
-            //TODO  is null or src/wsdl correct?
-            return "src/wsdl"; //NOI18N
-        }
-    }
-
-
 }

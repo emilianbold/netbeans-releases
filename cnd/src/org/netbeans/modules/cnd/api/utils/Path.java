@@ -111,7 +111,7 @@ public final class Path {
      * @return Path as a string (with OS specific directory separators)
      */
     public static String getPathAsString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         
         for (String dir : list) {
             buf.append(dir);

@@ -54,7 +54,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
-import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.repository.GraphContainerKey;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -234,7 +233,6 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
      * If set empty then return set with the referenced file.
      */
     public Set<CsmFile> getCoherenceFiles(CsmFile referencedFile){
-        CsmProject project = referencedFile.getProject();
         Set<CsmUID<CsmFile>> res = new HashSet<CsmUID<CsmFile>>();
         CsmUID<CsmFile> keyTo = UIDCsmConverter.fileToUID(referencedFile);
         if (keyTo != null) {

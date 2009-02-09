@@ -55,7 +55,10 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import junit.framework.Test;
+import org.junit.runners.Suite;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.junit.NbModuleSuite;
 /**
  *
  * @author Jiri Prox Jiri.Prox@Sun.COM
@@ -232,7 +235,19 @@ public class RenameClassTest extends RefactoringTestCase {
             }
         });
     }
-    
+
+    public static Test suite() {
+        return NbModuleSuite.create(RenameClassTest.class, ".*", ".*", 
+                "testRenameClass",
+                "testRenameEnum",
+                "testRenameField",
+                "testRenameLocalVar",
+                "testRenamePackage",
+                "testRenamePackage2",
+                "testRenameParam",
+                "testRenameAnnotation");
+        
+    }
     
     
     

@@ -247,7 +247,20 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
                         <attr name="position" intvalue="840"/>
                     </file>
+                    <folder name="goto">
+                        <file name="org-netbeans-modules-gototest-GotoOppositeAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/UnitTests/org-netbeans-modules-gototest-GotoOppositeAction.instance"/>
+                            <attr name="position" intvalue="200"/>
+                        </file>
+                    </folder>
                 </folder>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="GsfPlugins">
+        <folder name="text">
+            <folder name="x-php5">
+                <file name="codecoverage"/>
             </folder>
         </folder>
     </folder>

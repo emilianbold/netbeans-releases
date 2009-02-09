@@ -173,23 +173,14 @@ public class WebServicesNodeFactory implements NodeFactory {
                     String newValue = (String)evt.getNewValue();
                     if (oldValue != null && newValue != null) {
                         try {
-                        if (propName.startsWith("/JaxWs/Clients")) { //NOI18N
-                            FileObject artifactsFolder = project.getProjectDirectory().getFileObject("build/generated/wsimport/client"); //NOI18N
+                        if (propName.startsWith("/JaxWs/Clients") || propName.startsWith("/JaxWs/Services")) { //NOI18N
+                            FileObject artifactsFolder = project.getProjectDirectory().getFileObject("build/generated-sources/jax-ws"); //NOI18N
                             if (artifactsFolder == null || !artifactsFolder.isValid() ) {
-                                artifactsFolder = createArtifactsFolder(project.getProjectDirectory(),true);
+                                artifactsFolder = createArtifactsFolder(project.getProjectDirectory());
                             }
                             if (artifactsFolder != null) {
                                     refactorPackage(artifactsFolder, oldValue, newValue);
                             }
-                        } else if (propName.startsWith("/JaxWs/Services")) { //NOI18N
-                            FileObject artifactsFolder = project.getProjectDirectory().getFileObject("build/generated/wsimport/services"); // NOI18N
-                            if (artifactsFolder == null  || !artifactsFolder.isValid()) {
-                                artifactsFolder = createArtifactsFolder(project.getProjectDirectory(),false);
-                            }
-                            if (artifactsFolder != null) {
-                                    refactorPackage(artifactsFolder, oldValue, newValue);
-
-                            }           
                         }
                         } catch (java.io.IOException ex) {
                             Logger.getLogger(this.getClass().getName()).log(Level.FINE,"cannot create artifacts folder",ex); // NOI18N
@@ -244,13 +235,9 @@ public class WebServicesNodeFactory implements NodeFactory {
             }
         }
         
-        private FileObject createArtifactsFolder (FileObject projectDir, boolean forClient) 
+        private FileObject createArtifactsFolder (FileObject projectDir) 
             throws java.io.IOException {
-            if (forClient) {
-                return FileUtil.createFolder(projectDir, "build/generated/wsimport/client"); //NOI18N
-            } else {
-                return FileUtil.createFolder(projectDir, "build/generated/wsimport/service"); //NOI18N
-            }
+                return FileUtil.createFolder(projectDir, "build/generated-sources/jax-ws"); //NOI18N
         }
     }
     
