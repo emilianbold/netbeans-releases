@@ -1006,6 +1006,21 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
 
         @Override
+        public void destroy() throws IOException {
+            if (!getFolder().isDiskFolder()) {
+                return;
+            }
+            String absPath = IpeUtils.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), getFolder().getRootPath());
+            File folderFile = new File(absPath);
+            if (!folderFile.isDirectory() || !folderFile.exists()) {
+                return;
+            }
+            FileObject folderFileObject = FileUtil.toFileObject(folderFile);
+            folderFileObject.delete();
+            super.destroy();
+        }
+
+        @Override
         public PasteType getDropType(Transferable transferable, int action, int index) {
             DataFlavor[] flavors = transferable.getTransferDataFlavors();
             for (int i = 0; i < flavors.length; i++) {
@@ -1046,8 +1061,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                         SystemAction.get(CopyAction.class),
                         SystemAction.get(PasteAction.class),
                         null,
-                        new RefreshItemAction((LogicalViewChildren) getChildren(), folder, null),
-                        null,
+//                        new RefreshItemAction((LogicalViewChildren) getChildren(), folder, null),
+//                        null,
                         SystemAction.get(DeleteAction.class),
                         createRenameAction(),
                         null,
@@ -1056,20 +1071,20 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             else {
             return new Action[]{
                         CommonProjectActions.newFileAction(),
+                        SystemAction.get(NewFolderAction.class),
                         SystemAction.get(AddExistingItemAction.class),
                         SystemAction.get(AddExistingFolderItemsAction.class),
-                        SystemAction.get(NewFolderAction.class),
+                        SystemAction.get(org.openide.actions.FindAction.class),
                         null,
-                        new RefreshItemAction((LogicalViewChildren) getChildren(), folder, null),
-                        null,
+//                        new RefreshItemAction((LogicalViewChildren) getChildren(), folder, null),
+//                        null,
                         SystemAction.get(CutAction.class),
                         SystemAction.get(CopyAction.class),
                         SystemAction.get(PasteAction.class),
+                        null,
                         SystemAction.get(RemoveFolderAction.class),
                         //                SystemAction.get(RenameAction.class),
                         createRenameAction(),
-                        null,
-                        SystemAction.get(org.openide.actions.FindAction.class),
                         null,
                         SystemAction.get(PropertiesFolderAction.class),};
             }
@@ -1462,8 +1477,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                     if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.OpenAction) {
                         newActions.add(oldActions[i]);
                         newActions.add(null);
-                        newActions.add(new RefreshItemAction(childrenKeys, null, getItem()));
-                        newActions.add(null);
+//                        newActions.add(new RefreshItemAction(childrenKeys, null, getItem()));
+//                        newActions.add(null);
                     } else if (oldActions[i] != null && oldActions[i] instanceof RenameAction) {
                         newActions.add(createRenameAction());
                     } else if (oldActions[i] != null && oldActions[i] instanceof DeleteAction) {
@@ -1481,10 +1496,11 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                     if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.OpenAction) {
                         newActions.add(oldActions[i]);
                         newActions.add(null);
-                        newActions.add(new RefreshItemAction(childrenKeys, null, getItem()));
-                        newActions.add(null);
+//                        newActions.add(new RefreshItemAction(childrenKeys, null, getItem()));
+//                        newActions.add(null);
+                    } else if (oldActions[i] != null && oldActions[i] instanceof PasteAction) {
+                        newActions.add(oldActions[i]);
                         newActions.add(SystemAction.get(CompileSingleAction.class));
-                        newActions.add(null);
                     } else if (oldActions[i] != null && oldActions[i] instanceof RenameAction) {
                         newActions.add(createRenameAction());
                     } else if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.PropertiesAction && getFolder().isProjectFiles()) {
