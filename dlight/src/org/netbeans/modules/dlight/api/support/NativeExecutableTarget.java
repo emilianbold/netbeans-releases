@@ -167,7 +167,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         pb = pb.setArguments(args);
         pb = pb.addNativeProcessListener(NativeExecutableTarget.this);
         if (executionEnvProvider != null && executionEnvProvider.getExecutionEnv() != null){
-            pb.addEnvironmentVariables(executionEnvProvider.getExecutionEnv());
+            pb = pb.addEnvironmentVariables(executionEnvProvider.getExecutionEnv());
         }
         ExecutionDescriptor descr = new ExecutionDescriptor();
         descr = descr.controllable(true).frontWindow(true);
