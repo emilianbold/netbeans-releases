@@ -43,10 +43,9 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestCaseVO;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestSuiteVO;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
@@ -60,8 +59,8 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Tomas Mysik
  */
 public final class PhpUnitLogParser extends DefaultHandler {
-    private static final Logger LOGGER = Logger.getLogger(PhpUnitLogParser.class.getName());
     enum Content { NONE, ERROR, FAILURE };
+    private static final Logger LOGGER = Logger.getLogger(PhpUnitLogParser.class.getName());
 
     private final XMLReader xmlReader;
     private final TestSessionVO testSession;
@@ -71,8 +70,9 @@ public final class PhpUnitLogParser extends DefaultHandler {
     private StringBuilder buffer = new StringBuilder(200); // for error/failure: buffer for the whole message
 
     private PhpUnitLogParser(TestSessionVO testSession) throws SAXException {
+        assert testSession != null;
         this.testSession = testSession;
-        xmlReader = createXmlReader();
+        xmlReader = PhpProjectUtils.createXmlReader();
         xmlReader.setContentHandler(this);
     }
 
@@ -96,25 +96,26 @@ public final class PhpUnitLogParser extends DefaultHandler {
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        if ("testsuite".equals(qName)) {
+        if ("testsuite".equals(qName)) { // NOI18N
             processTestSuite(attributes);
-        } else if ("testcase".equals(qName)) {
+        } else if ("testcase".equals(qName)) { // NOI18N
             processTestCase(attributes);
-        } else if ("failure".equals(qName)) {
+        } else if ("failure".equals(qName)) { // NOI18N
             startTestFailure(attributes);
-        } else if ("error".equals(qName)) {
+        } else if ("error".equals(qName)) { // NOI18N
             startTestError(attributes);
         }
     }
 
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
-        if ("testsuite".equals(qName)) {
+        if ("testsuite".equals(qName)) { // NOI18N
             testSuite = null;
-        } else if ("testcase".equals(qName)) {
+        } else if ("testcase".equals(qName)) { // NOI18N
+            assert testCase != null;
             testCase = null;
-        } else if ("failure".equals(qName)
-                || "error".equals(qName)) {
+        } else if ("failure".equals(qName) // NOI18N
+                || "error".equals(qName)) { // NOI18N
             endTestContent();
         }
     }
@@ -126,18 +127,6 @@ public final class PhpUnitLogParser extends DefaultHandler {
             case ERROR:
                 buffer.append(new String(ch, start, length));
                 break;
-        }
-    }
-
-    private XMLReader createXmlReader() throws SAXException {
-        SAXParserFactory factory = SAXParserFactory.newInstance();
-        factory.setValidating(false);
-        factory.setNamespaceAware(false);
-
-        try {
-            return factory.newSAXParser().getXMLReader();
-        } catch (ParserConfigurationException ex) {
-            throw new SAXException("Cannot create parser satisfying configuration parameters", ex);
         }
     }
 

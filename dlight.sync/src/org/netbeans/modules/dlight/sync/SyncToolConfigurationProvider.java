@@ -118,7 +118,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     String sql = "SELECT func.func_name as func_name, SUM(sync.time/1000000) as time, COUNT(*) as count" +
             " FROM sync, node AS node, func" +
             " WHERE  sync.stackid = node.node_id and node.func_id = func.func_id" +
-            " GROUP BY node.func_id";
+            " GROUP BY node.func_id, func.func_name";
 
     final DataTableMetadata viewTableMetadata = new DataTableMetadata("sync", viewColumns, sql, Arrays.asList(rawTableMetadata));
     return new TableVisualizerConfiguration(viewTableMetadata);

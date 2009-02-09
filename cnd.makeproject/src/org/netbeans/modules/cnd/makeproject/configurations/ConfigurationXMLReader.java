@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.makeproject.configurations;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Vector;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -52,6 +53,7 @@ import org.netbeans.modules.cnd.makeproject.MakeProjectConfigurationProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.openide.DialogDisplayer;
@@ -164,6 +166,25 @@ public class ConfigurationXMLReader extends XMLDocReader {
                 return null;
             }
         }
+
+        // Ensure all item configurations have been created (default are not stored in V >= 57)
+        Item[] projectItems = configurationDescriptor.getProjectItems();
+        for (Configuration configuration : configurationDescriptor.getConfs().getConfigurtions()) {
+            for (Item item : projectItems) {
+                if (item.getItemConfiguration(configuration) == null) {
+                    configuration.addAuxObject(new ItemConfiguration(configuration, item));
+                }
+            }
+        }
+
+        // Attach listeners to all disk folders
+        Vector<Folder> firstLevelFolders = configurationDescriptor.getLogicalFolders().getFolders();
+        for (Folder f : firstLevelFolders) {
+            if (f.isDiskFolder()) {
+                f.attachListenersAndRefresh();
+            }
+        }
+
         configurationDescriptor.setState(State.READY);
 
         // Some samples are generated without generated makefile. Don't mark these 'not modified'. Then
@@ -194,16 +215,6 @@ public class ConfigurationXMLReader extends XMLDocReader {
         if (configurationDescriptor.getModified()) {
             // Project is modified and will be saved with current version. This includes samples.
             configurationDescriptor.setVersion(CommonConfigurationXMLCodec.CURRENT_VERSION);
-        }
-
-        // Ensure all item configurations have been created
-        Item[] projectItems = configurationDescriptor.getProjectItems();
-        for (Configuration configuration : configurationDescriptor.getConfs().getConfigurtions()) {
-            for (Item item : projectItems) {
-                if (item.getItemConfiguration(configuration) == null) {
-                    configuration.addAuxObject(new ItemConfiguration(configuration, item));
-                }
-            }
         }
 
         ConfigurationDescriptorProvider.recordMetrics(ConfigurationDescriptorProvider.USG_PROJECT_OPEN_CND, configurationDescriptor);

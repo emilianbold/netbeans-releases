@@ -79,6 +79,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
     private static final boolean TRACE = Boolean.getBoolean("cnd.toolchain.personality.trace"); // NOI18N
     private static final boolean CREATE_SHADOW = Boolean.getBoolean("cnd.toolchain.personality.create_shadow"); // NOI18N
+    /*package-local*/ static final String CONFIG_FOLDER = "CND/ToolChain"; // NOI18N
     private List<ToolchainDescriptor> descriptors = new ArrayList<ToolchainDescriptor>();
     private Logger log = Logger.getLogger("cnd.toolchain.logger"); // NOI18N
 
@@ -90,7 +91,7 @@ import org.xml.sax.helpers.DefaultHandler;
         try {
             Map<Integer, CompilerVendor> vendors = new TreeMap<Integer, CompilerVendor>();
             Map<String, String> cache = new HashMap<String, String>();
-            FileObject folder = FileUtil.getConfigFile("Services/CndToolChain"); //NOI18N
+            FileObject folder = FileUtil.getConfigFile(CONFIG_FOLDER); 
             int indefinedID = Integer.MAX_VALUE / 2;
             if (folder != null && folder.isFolder()) {
                 FileObject[] files = folder.getChildren();
@@ -535,7 +536,7 @@ import org.xml.sax.helpers.DefaultHandler;
      * available in package for testing only
      */
     /*package-local for testing*/ void writeToolchains() {
-        FileObject folder = FileUtil.getConfigFile("Services/CndToolChain"); //NOI18N
+        FileObject folder = FileUtil.getConfigFile(CONFIG_FOLDER);
         if (folder != null && folder.isFolder()) {
             FileObject[] files = folder.getChildren();
             for (FileObject file : files) {
@@ -550,6 +551,9 @@ import org.xml.sax.helpers.DefaultHandler;
                         element.setAttribute("name", descriptor.getName()); // NOI18N
                         element.setAttribute("display", descriptor.getDisplayName()); // NOI18N
                         element.setAttribute("family", unsplit(descriptor.getFamily())); // NOI18N
+                        if (descriptor.getQmakeSpec() != null) {
+                            element.setAttribute("qmakespec", descriptor.getQmakeSpec()); // NOI18N
+                        }
                         root.appendChild(element);
 
                         element = doc.createElement("platforms"); // NOI18N
@@ -1162,6 +1166,7 @@ import org.xml.sax.helpers.DefaultHandler;
         String commandFolderPattern;
         String commandFolderSuffix;
         String commandFolderPathPattern;
+        String qmakespec;
         Compiler c = new Compiler();
         Compiler cpp = new Compiler();
         Compiler fortran = new Compiler();
@@ -1667,6 +1672,7 @@ import org.xml.sax.helpers.DefaultHandler;
                 v.toolChainName = getValue(attributes, "name"); // NOI18N
                 v.toolChainDisplay = getValue(attributes, "display"); // NOI18N
                 v.family = getValue(attributes, "family"); // NOI18N
+                v.qmakespec = getValue(attributes, "qmakespec"); // NOI18N
                 return;
             } else if (path.endsWith(".platforms")) { // NOI18N
                 v.platforms = getValue(attributes, "stringvalue"); // NOI18N
@@ -2148,6 +2154,10 @@ import org.xml.sax.helpers.DefaultHandler;
 
         public String getCommandFolderPathPattern() {
             return v.commandFolderPathPattern;
+        }
+
+        public String getQmakeSpec() {
+            return v.qmakespec;
         }
 
         public CompilerDescriptor getCpp() {

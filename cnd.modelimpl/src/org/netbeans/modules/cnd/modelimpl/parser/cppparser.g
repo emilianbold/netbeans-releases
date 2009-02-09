@@ -2671,6 +2671,13 @@ statement_list
 		//{#statement_list = #(#[CSM_STATEMENT_LIST, "CSM_STATEMENT_LIST"], #statement_list);}
 	;
 
+single_statement
+    :
+        (ID COLON) => compound_labeled_statement
+    |
+        statement
+    ;
+
 statement
 	:
 	(	
@@ -2771,8 +2778,15 @@ statement
 	;
 
 labeled_statement
-	:	label COLON (options {greedy = true;} : attribute_specification!)? statement
-	;
+    :
+    label COLON (options {greedy = true;} : attribute_specification!)? single_statement
+    ;
+
+compound_labeled_statement
+    :
+        labeled_statement
+        {#compound_labeled_statement = #([CSM_COMPOUND_STATEMENT, "CSM_COMPOUND_STATEMENT"], #compound_labeled_statement);}
+    ;
 
 protected
 label
@@ -2783,11 +2797,11 @@ label
 
 case_statement
 	:	LITERAL_case
-		case_expression COLON statement
+		case_expression COLON single_statement
 	;
 
 default_statement
-	:	default_label COLON statement
+	:	default_label COLON single_statement
 	;
 
 protected
@@ -2845,12 +2859,12 @@ selection_statement
 	:	
 		LITERAL_if LPAREN 
 		condition RPAREN
-		statement
+		single_statement
 		(options {warnWhenFollowAmbig = false;}:
-		 LITERAL_else statement)?
+		 LITERAL_else single_statement)?
 		{#selection_statement = #(#[CSM_IF_STATEMENT, "CSM_IF_STATEMENT"], #selection_statement);}
 	|	
-		LITERAL_switch LPAREN  condition RPAREN statement
+		LITERAL_switch LPAREN  condition RPAREN single_statement
 		{#selection_statement = #(#[CSM_SWITCH_STATEMENT, "CSM_SWITCH_STATEMENT"], #selection_statement);}
 	;
 
@@ -2864,7 +2878,7 @@ while_statement
 	:
 		LITERAL_while	
 		LPAREN! condition RPAREN! 
-		statement  
+		single_statement
 		{#while_statement = #(#[CSM_WHILE_STATEMENT, "CSM_WHILE_STATEMENT"], #while_statement);}
 	;
 
@@ -2872,7 +2886,7 @@ protected
 do_while_statement
 	:
 		LITERAL_do 
-		statement LITERAL_while
+		single_statement LITERAL_while
 		LPAREN! expression RPAREN! 
 		(EOF!|SEMICOLON) //{end_of_stmt();} 
 		{#do_while_statement = #(#[CSM_DO_WHILE_STATEMENT, "CSM_DO_WHILE_STATEMENT"], #do_while_statement);}
@@ -2887,7 +2901,7 @@ for_statement
 		(condition)? (EOF!|SEMICOLON) //{end_of_stmt();}
 		(expression)?
 		)?
-		RPAREN! statement	 
+		RPAREN! single_statement
 		{#for_statement = #(#[CSM_FOR_STATEMENT, "CSM_FOR_STATEMENT"], #for_statement);}
 	;
 

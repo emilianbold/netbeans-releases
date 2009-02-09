@@ -42,24 +42,18 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import javax.swing.event.HyperlinkListener;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.BrowserUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.StringUtils;
-import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.helper.UiMode;
 import org.netbeans.installer.utils.exceptions.InitializationException;
-import org.netbeans.installer.utils.exceptions.NativeException;
-import org.netbeans.installer.utils.system.WindowsNativeUtils;
-import org.netbeans.installer.utils.system.windows.WindowsRegistry;
 import org.netbeans.installer.wizard.components.WizardAction;
 import org.netbeans.installer.wizard.components.panels.netbeans.NbPostInstallSummaryPanel;
-import org.netbeans.modules.reglib.BrowserSupport;
 import org.netbeans.modules.reglib.NbConnectionSupport;
 import org.netbeans.modules.reglib.NbServiceTagSupport;
 import static org.netbeans.installer.utils.helper.DetailedStatus.INSTALLED_SUCCESSFULLY;
@@ -139,7 +133,7 @@ public class NbRegistrationAction extends WizardAction {
         if (succeed) {
             LogManager.log("... POST request succeded, opening browser : " + url);
             try {
-                result = openBrowser(url.toURI());
+                result = BrowserUtils.openBrowser(url.toURI());
             } catch (URISyntaxException e) {
                 LogManager.log(e);
             }
@@ -156,101 +150,30 @@ public class NbRegistrationAction extends WizardAction {
             }
             File registerPage = NbServiceTagSupport.getRegistrationHtmlPage(productId,productNames);
             URI registerPageUri = registerPage.toURI();
-            result = openBrowser(registerPageUri);
+            result = BrowserUtils.openBrowser(registerPageUri);
         }
         LogManager.logExit("... registration page shown");
         return result;
     }
-
+    @Deprecated
+    public static boolean openBrowser(URI uri) {
+        return BrowserUtils.openBrowser(uri);
+    }
+    @Deprecated
+    public static HyperlinkListener createHyperlinkListener() {
+        return BrowserUtils.createHyperlinkListener();
+    }
     private void registerNetBeans() {
         NbServiceTagCreateAction.setNetBeansStatus(true);
     }
 
-    /**
-     * Opens a browser for JDK product registration.
-     * @param url Registration Webapp URL
-     */
-    public static boolean openBrowser(URI uri) throws IOException {
-        LogManager.log("... opening in the browser: " + uri);
-        boolean result = false;
-        try {
-            if (BrowserSupport.isSupported()) {
-                LogManager.log("... browse (bs): " + uri);
-                BrowserSupport.browse(uri);
-                result = true;
-            } else {
-                LogManager.log("... browse (fb): " + uri);
-                result = openBrowserFallback(uri);
-            }
-        } catch (IllegalArgumentException ex) {
-            LogManager.log("Cannot open browser", ex);
-        } catch (UnsupportedOperationException ex) {
-            // ignore if not supported
-            LogManager.log("Cannot open browser:", ex);
-        }
-        return result;
-    }
-
+    
+    
     public static void main(String[] args) {
         new NbRegistrationAction();
     }
 
-    private static boolean openBrowserFallback(URI uri) {
-        try {
-            if (SystemUtils.isWindows()) {
-                WindowsNativeUtils wnu = (WindowsNativeUtils) SystemUtils.getNativeUtils();
-                WindowsRegistry registry = wnu.getWindowsRegistry();
-                String type = null;
-                if (registry.keyExists(registry.HKEY_CURRENT_USER, "Software\\Classes\\.html")) {
-                    type = registry.getStringValue(registry.HKEY_CURRENT_USER, "Software\\Classes\\.html", "");
-                } else if (registry.keyExists(registry.HKEY_CLASSES_ROOT, ".html")) {
-                    type = registry.getStringValue(registry.HKEY_CLASSES_ROOT, ".html", "");
-                }
-
-                LogManager.log("... html type : " + type);
-                if (type != null && !type.equals("")) {
-                    String command = null;
-                    String userCmdKey = "Software\\Classes\\" + type + "\\shell\\open\\command";
-                    String systemCmdKey = type + "\\shell\\open\\command";
-                    if (registry.keyExists(registry.HKEY_CURRENT_USER, userCmdKey)) {
-                        command = registry.getStringValue(registry.HKEY_CURRENT_USER, userCmdKey, "");
-                        LogManager.log("... using user browser");
-                    } else if (registry.keyExists(registry.HKEY_CLASSES_ROOT, systemCmdKey)) {
-                        command = registry.getStringValue(registry.HKEY_CLASSES_ROOT, systemCmdKey, "");
-                        LogManager.log("... using system browser");
-                    }
-                    if (command != null && !command.contains("%1")) {
-                        userCmdKey = "Software\\Classes\\" + type + "\\shell\\opennew\\command";
-                        systemCmdKey = type + "\\shell\\opennew\\command";
-                        if (registry.keyExists(registry.HKEY_CURRENT_USER, userCmdKey)) {
-                            command = registry.getStringValue(registry.HKEY_CURRENT_USER, userCmdKey, "");
-                            LogManager.log("... using user browser");
-                        } else if (registry.keyExists(registry.HKEY_CLASSES_ROOT, systemCmdKey)) {
-                            command = registry.getStringValue(registry.HKEY_CLASSES_ROOT, systemCmdKey, "");
-                            LogManager.log("... using system browser");
-                        }
-                    }
-                    LogManager.log("... command : " + command);
-                    if (command != null && !command.equals("")) {
-                        if (command.contains("%1") && !command.contains("\"%1\"")) {
-                            command.replace("%1", "\"%1\"");
-                        }
-                        command = command.replace("%1", uri.toString());
-                        LogManager.log("... running : " + command);
-                        Runtime.getRuntime().exec(command);
-                        return true;
-                    }
-                }
-            } else if (SystemUtils.isUnix()) {
-                return browseUnix(uri);
-            }
-        } catch (NativeException e) {
-            LogManager.log(e);
-        } catch (IOException e) {
-            LogManager.log(e);
-        }
-        return false;
-    }
+   
 
     @Override
     public boolean canExecuteForward() {
@@ -261,51 +184,4 @@ public class NbRegistrationAction extends WizardAction {
     public WizardActionUi getWizardUi() {
         return null;
     }
-
-    public static File getUnixBrowser() {
-        final String[] possibleBrowsers = (SystemUtils.isLinux() ? POSSIBLE_BROWSER_LOCATIONS_LINUX : (SystemUtils.isSolaris() ? POSSIBLE_BROWSER_LOCATIONS_SOLARIS : (SystemUtils.isMacOS() ? POSSIBLE_BROWSER_LOCATIONS_MACOSX : new String[]{})));
-        for (String s : possibleBrowsers) {
-            File f = new File(s);
-            if (f.exists()) {
-                return f;
-            }
-        }
-        return null;
-    }
-
-    private static boolean browseUnix(URI uri) throws IOException {
-        File browser = getUnixBrowser();
-        if (browser != null) {
-            LogManager.log("... using browser: " + browser);
-            Runtime.getRuntime().exec(new String[]{browser.getAbsolutePath(), uri.toString()});
-            return true;
-        }
-        return false;
-    }
-    public static final String[] POSSIBLE_BROWSER_LOCATIONS_LINUX = new String[]{
-        "/usr/bin/firefox",
-        "/usr/bin/mozilla-firefox",
-        "/usr/local/firefox/firefox",
-        "/opt/bin/firefox",
-        "/usr/bin/mozilla",
-        "/usr/local/mozilla/mozilla",
-        "/opt/bin/mozilla"
-    };
-    public static final String[] POSSIBLE_BROWSER_LOCATIONS_SOLARIS = new String[]{
-        "/usr/sfw/lib/firefox/firefox",
-        "/opt/csw/bin/firefox",
-        "/usr/sfw/lib/mozilla/mozilla",
-        "/opt/csw/bin/mozilla",
-        "/usr/dt/bin/sun_netscape",
-        "/usr/bin/firefox",
-        "/usr/bin/mozilla-firefox",
-        "/usr/local/firefox/firefox",
-        "/opt/bin/firefox",
-        "/usr/bin/mozilla",
-        "/usr/local/mozilla/mozilla",
-        "/opt/bin/mozilla"
-    };
-    public static final String[] POSSIBLE_BROWSER_LOCATIONS_MACOSX = new String[]{
-        "/usr/bin/open"
-    };
 }

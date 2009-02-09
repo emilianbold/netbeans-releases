@@ -48,7 +48,7 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.modules.ruby.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
@@ -63,7 +63,7 @@ import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.ide.ProjectSupport;
+//import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  * Basic ruby debugger test.
@@ -127,7 +127,7 @@ public class BasicTest extends JellyTestCase {
         JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 30000); // NOI18N
         new ProjectsTabOperator().getProjectRootNode(SAMPLE_RUBY_PROJECT_NAME);
         // wait classpath scanning finished
-        ProjectSupport.waitScanFinished();
+//        ProjectSupport.waitScanFinished();
         // wait for main.rb opened in editor
         EditorOperator eo = new EditorOperator("main.rb");  // NOI18N
         eo.replace("puts \"Hello World\"", "require 'date'\ndate1 = Date.today\ndate2 = Date.today\nputs date2");
@@ -179,7 +179,8 @@ public class BasicTest extends JellyTestCase {
         assertTrue("Debugger not at \"puts in main.rb\"", eo.getText(lineNumber).indexOf("puts") > -1);
         new StepOverAction().perform();
 
-        String debugToolbarLabel = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.Bundle", "Toolbars/Debug");
+        //String debugToolbarLabel = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.Bundle", "Toolbars/Debug"); // debugger.jpda.ui is a part of java, so it is not good to use it here
+        String debugToolbarLabel = Bundle.getStringTrimmed("org.netbeans.modules.debugger.resources.Bundle", "Toolbars/Debug");
         ContainerOperator debugToolbarOper = MainWindowOperator.getDefault().getToolbar(debugToolbarLabel);
         // wait until Finish Debugger Session button in Debug toolbar dismiss
         JButtonOperator finishDebugSessionButton = new JButtonOperator(debugToolbarOper, new ComponentChooser() {

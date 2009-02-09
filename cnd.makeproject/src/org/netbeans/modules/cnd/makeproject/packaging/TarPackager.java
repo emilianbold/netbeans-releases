@@ -115,7 +115,7 @@ public class TarPackager implements PackagerDescriptor {
         return new ScriptWriter();
     }
 
-    public class ScriptWriter implements ShellSciptWriter {
+    public static class ScriptWriter implements ShellSciptWriter {
 
         public void writeShellScript(BufferedWriter bw, MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) throws IOException {
             writePackagingScriptBodyTarZip(bw, makeConfiguration);

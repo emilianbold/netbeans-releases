@@ -240,15 +240,15 @@ public class GeneratedFilesHelperTest extends NbTestCase {
         GeneratedFilesHelper.STYLESHEET_VERSIONS.put(xslt2, new SpecificationVersion("1.1"));
         assertTrue(gfh.refreshBuildScript("build.xml", xslt, true));
         FileObject buildXml = projdir.getFileObject("build.xml");
-        assertTrue(TestFileUtils.readFile(buildXml).contains("Build everything."));
+        assertTrue(buildXml.asText("UTF-8").contains("Build everything."));
         assertFalse(gfh.refreshBuildScript("build.xml", xslt, true));
-        assertTrue(TestFileUtils.readFile(buildXml).contains("Build everything."));
+        assertTrue(buildXml.asText("UTF-8").contains("Build everything."));
         assertTrue(gfh.refreshBuildScript("build.xml", xslt2, true));
-        assertTrue(TestFileUtils.readFile(buildXml).contains("Build everything at once."));
+        assertTrue(buildXml.asText("UTF-8").contains("Build everything at once."));
         assertFalse(gfh.refreshBuildScript("build.xml", xslt2, true));
-        assertTrue(TestFileUtils.readFile(buildXml).contains("Build everything at once."));
+        assertTrue(buildXml.asText("UTF-8").contains("Build everything at once."));
         assertFalse(gfh.refreshBuildScript("build.xml", xslt, true));
-        assertTrue(TestFileUtils.readFile(buildXml).contains("Build everything at once."));
+        assertTrue(buildXml.asText("UTF-8").contains("Build everything at once."));
     }
     
     private class ExtImpl implements AntBuildExtenderImplementation {

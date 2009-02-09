@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.collector.stdout.impl;
 
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration;
 import org.netbeans.modules.dlight.collector.stdout.CLIOParser;
@@ -87,6 +88,8 @@ public abstract class CLIODCConfigurationAccessor {
     public abstract CLIOParser getParser(CLIODCConfiguration configuration);
 
     public abstract String getCLIODCConfigurationID();
+
+    public abstract Map<String, String> getDLightTargetExecutionEnv(CLIODCConfiguration configuration);
 
     public abstract boolean registerAsIndicatorDataProvider(CLIODCConfiguration configuration);
 }

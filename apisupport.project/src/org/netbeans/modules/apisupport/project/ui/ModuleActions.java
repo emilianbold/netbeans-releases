@@ -55,12 +55,16 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
+import javax.lang.model.element.TypeElement;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.apache.tools.ant.module.api.support.ActionUtils;
-import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.runner.JavaRunner;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
@@ -200,15 +204,17 @@ public final class ModuleActions implements ActionProvider {
         } else if (command.equals(COMMAND_COMPILE_SINGLE)) {
             return findSources(context) != null || findTestSources(context, false) != null;
         } else if (command.equals(COMMAND_TEST_SINGLE)) {
-            return findTestSourcesForSources(context) != null;
+            return findTestSourcesForSources(context) != null || findTestSources(context, false) != null;
         } else if (command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
             TestSources testSources = findTestSourcesForSources(context);
+            if (testSources == null)
+                    testSources = findTestSources(context, false);
             return testSources != null && testSources.sources.length == 1;
         } else if (command.equals(COMMAND_RUN_SINGLE)) {
-            return findTestSources(context, false) != null;
+            return findTestSources(context, false) != null && getMainClass(context) != null;
         } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
             TestSources testSources = findTestSources(context, false);
-            return testSources != null && testSources.sources.length == 1;
+            return testSources != null && testSources.sources.length == 1 && getMainClass(context) != null;
         } else if (command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX)) {
             FileObject[] files = findSources(context);
             if (files != null && files.length == 1) {
@@ -276,6 +282,21 @@ public final class ModuleActions implements ActionProvider {
         }
         return null;
     }
+
+    private String getMainClass(Lookup context) {
+        FileObject[] files = ActionUtils.findSelectedFiles(context, null, ".java", true); // NOI18N
+        if (files.length == 1) {
+            FileObject f = files[0];
+            Collection<ElementHandle<TypeElement>> mcs = SourceUtils.getMainClasses(f);
+            if (mcs.size() > 0) {
+                ElementHandle<TypeElement> h = mcs.iterator().next();
+                String qname = h.getQualifiedName();
+                return qname;
+            }
+        }
+        return null;
+    }
+
     
     /** Find tests corresponding to selected sources.
      */
@@ -338,24 +359,28 @@ public final class ModuleActions implements ActionProvider {
             }
         } else if (command.equals(COMMAND_TEST_SINGLE)) {
             TestSources testSources = findTestSourcesForSources(context);
+            if (testSources == null)
+                testSources = findTestSources(context, false);
             targetNames = setupTestSingle(p, testSources);
         } else if (command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
             TestSources testSources = findTestSourcesForSources(context);
+            if (testSources == null)
+                testSources = findTestSources(context, false);
             targetNames = setupDebugTestSingle(p, testSources);
         } else if (command.equals(COMMAND_RUN_SINGLE)) {
             TestSources testSources = findTestSources(context, false);
-            String enableQuickTest = project.evaluator().getProperty("quick.test.single"); // NOI18N
-            if (    Boolean.parseBoolean(enableQuickTest)
-                 && "unit".equals(testSources.testType) // NOI18N
-                 && !hasTestUnitDataDir()) { // NOI18N
-                if (bypassAntBuildScript(command, testSources.sources)) {
-                    return ;
-                }
-            }
-            targetNames = setupTestSingle(p, testSources);
+//       TODO CoS     String enableQuickTest = project.evaluator().getProperty("quick.test.single"); // NOI18N
+//            if (    Boolean.parseBoolean(enableQuickTest)
+//                 && "unit".equals(testSources.testType) // NOI18N
+//                 && !hasTestUnitDataDir()) { // NOI18N
+//                if (bypassAntBuildScript(command, testSources.sources)) {
+//                    return ;
+//                }
+//            }
+            targetNames = setupRunMain(p, testSources, context);
         } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
             TestSources testSources = findTestSources(context, false);
-            targetNames = setupDebugTestSingle(p, testSources);
+            targetNames = setupDebugMain(p, testSources, context);
         } else if (command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX)) {
             FileObject[] files = findSources(context);
             String path = null;
@@ -395,7 +420,7 @@ public final class ModuleActions implements ActionProvider {
             Util.err.notify(e);
         }
     }
-    
+
     private void promptForPublicPackagesToDocument() {
         // #61372: warn the user, rather than disabling the action.
         if (UIUtil.showAcceptCancelDialog(
@@ -458,7 +483,19 @@ public final class ModuleActions implements ActionProvider {
         p.setProperty("test.type", testSources.testType); // NOI18N
         return new String[] {"test-single"}; // NOI18N
     }
-    
+
+    private String[] setupRunMain(Properties p, TestSources testSources, Lookup context) {
+        String qname = getMainClass(context);
+        p.setProperty("main.class", qname);    // NOI18N
+        return  new String[] {"run-test-main"};    // NOI18N
+    }
+
+    private String[] setupDebugMain(Properties p, TestSources testSources, Lookup context) {
+        String qname = getMainClass(context);
+        p.setProperty("main.class", qname);    // NOI18N
+        return  new String[] {"debug-test-main-nb"};    // NOI18N
+    }
+
     private String[] setupDebugTestSingle(Properties p, TestSources testSources) {
         String path = FileUtil.getRelativePath(testSources.sourceDirectory, testSources.sources[0]);
         // Convert foo/FooTest.java -> foo.FooTest

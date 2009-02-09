@@ -181,6 +181,10 @@ public class OutputWindow extends AbstractOutputWindow {
         return getDisplayName();
     }
 
+    void changeFontSizeBy(int amt, OutputTab tab) {
+        controller.changeFontSizes(tab, this, amt);
+    }
+
     Controller getController() {
         return controller;
     }

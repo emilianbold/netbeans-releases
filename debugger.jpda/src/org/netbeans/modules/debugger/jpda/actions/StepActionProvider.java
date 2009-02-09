@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -209,15 +210,19 @@ implements Executor {
                 // Or suspend count > 1 !
                 //itsex.printStackTrace();
                 //System.err.println("Thread: "+tr.name()+", suspended = "+tr.isSuspended()+", suspend count = "+tr.suspendCount()+", status = "+tr.status());
-                try {
-                    logger.warning(itsex.getLocalizedMessage()+"\nThread: "+ThreadReferenceWrapper.name(tr)+", suspended = "+ThreadReferenceWrapper.isSuspended(tr)+", status = "+ThreadReferenceWrapper.status(tr));
-                } catch (Exception e) {
-                    logger.warning(e.getLocalizedMessage());
+                if (logger.isLoggable(Level.WARNING)) {
+                    try {
+                        logger.warning(itsex.getLocalizedMessage()+"\nThread: "+ThreadReferenceWrapper.name(tr)+", suspended = "+ThreadReferenceWrapper.isSuspended(tr)+", status = "+ThreadReferenceWrapper.status(tr));
+                    } catch (Exception e) {
+                        logger.warning(e.getLocalizedMessage());
+                    }
                 }
                 getDebuggerImpl ().getOperator ().unregister(stepRequest);
                 return ;
             }
-            logger.fine("JDI Request (action "+action+"): " + stepRequest);
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("JDI Request (action "+action+"): " + stepRequest);
+            }
             if (action == ActionsManager.ACTION_STEP_OUT) {
                 addMethodExitBP(tr, resumeThread);
             }

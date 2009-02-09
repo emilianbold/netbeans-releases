@@ -56,8 +56,12 @@ public final class Model {
         this.offset = -1;
     }
 
-    public ModelScope getModelScope() {
+    public FileScope getFileScope() {
         return getModelVisitor(-1).getModelScope();
+    }
+
+    public IndexScope getIndexScope() {
+        return ModelVisitor.getIndexScope(info);
     }
 
     public OccurencesSupport getOccurencesSupport(final int offset) {

@@ -17,11 +17,10 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="jCheckAccess" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="jInlineMethods" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="jLblTitle" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" max="-2" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="jLblAccessVis" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -30,25 +29,28 @@
                           <Component id="jLblSort" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="jLblJavadoc" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="jComboInsertPoint" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="jComboSort" min="-2" max="-2" attributes="0"/>
-                          <Component id="jComboJavadoc" min="-2" max="-2" attributes="0"/>
-                          <Component id="jComboField" min="-2" max="-2" attributes="0"/>
-                          <Component id="jComboAccess" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
-                  <Group type="102" alignment="1" attributes="0">
-                      <Component id="jScrollField" pref="575" max="32767" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jButtonSelectSetters" linkSize="1" min="-2" max="-2" attributes="1"/>
-                          <Component id="jButtonSelectNone" linkSize="1" alignment="0" min="-2" max="-2" attributes="1"/>
-                          <Component id="jButtonSelectAll" linkSize="1" alignment="0" min="-2" max="-2" attributes="1"/>
-                          <Component id="jButtonSelectGetters" linkSize="1" alignment="0" min="-2" max="-2" attributes="1"/>
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="jComboInsertPoint" linkSize="2" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="jComboSort" linkSize="2" min="-2" max="-2" attributes="0"/>
+                          <Component id="jComboJavadoc" linkSize="2" min="-2" max="-2" attributes="0"/>
+                          <Component id="jComboField" linkSize="2" min="-2" max="-2" attributes="0"/>
+                          <Component id="jComboAccess" linkSize="2" min="-2" max="-2" attributes="0"/>
                       </Group>
+                      <EmptySpace min="-2" pref="125" max="-2" attributes="0"/>
                   </Group>
+                  <Group type="102" alignment="1" attributes="1">
+                      <Component id="jScrollField" pref="575" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jButtonSelectAll" linkSize="1" min="-2" max="-2" attributes="1"/>
+                          <Component id="jButtonSelectNone" linkSize="1" min="-2" max="-2" attributes="1"/>
+                          <Component id="jButtonSelectGetters" linkSize="1" min="-2" max="-2" attributes="1"/>
+                          <Component id="jButtonSelectSetters" linkSize="1" min="-2" max="-2" attributes="1"/>
+                      </Group>
+                      <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+                  </Group>
+                  <Component id="jLblTitle" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -57,51 +59,50 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="jLblTitle" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" max="-2" attributes="0">
                   <Group type="102" attributes="0">
-                      <Component id="jButtonSelectAll" min="-2" max="-2" attributes="0"/>
+                      <Component id="jButtonSelectAll" linkSize="4" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jButtonSelectNone" min="-2" max="-2" attributes="0"/>
+                      <Component id="jButtonSelectNone" linkSize="4" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jButtonSelectGetters" min="-2" max="-2" attributes="0"/>
+                      <Component id="jButtonSelectGetters" linkSize="4" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jButtonSelectSetters" min="-2" max="-2" attributes="0"/>
+                      <Component id="jButtonSelectSetters" linkSize="4" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jScrollField" pref="134" max="32767" attributes="0"/>
+                  <Component id="jScrollField" min="0" pref="0" max="32767" attributes="1"/>
               </Group>
-              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLblInsertPoint" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jComboInsertPoint" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jComboInsertPoint" linkSize="3" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLblSort" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jComboSort" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jComboSort" linkSize="3" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLblJavadoc" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jComboJavadoc" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jComboJavadoc" linkSize="3" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLblFieldVis" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jComboField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jComboField" linkSize="3" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLblAccessVis" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jComboAccess" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jComboAccess" linkSize="3" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jInlineMethods" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jCheckAccess" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

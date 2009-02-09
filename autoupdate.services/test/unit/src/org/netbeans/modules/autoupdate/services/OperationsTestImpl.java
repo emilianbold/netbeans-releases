@@ -68,9 +68,9 @@ import org.openide.modules.ModuleInfo;
  */
 public abstract class OperationsTestImpl extends DefaultTestCase {
     //{fileDataCreated, fileDeleted}
-    private Boolean[] fileChanges = {false,false};
-    private Thread[] fileChangeThreads = {null,null};
-    private Exception[] exceptions = {null,null};
+    private Boolean[] fileChanges = {false, false, false};
+    private Thread[] fileChangeThreads = {null,null,null};
+    private Exception[] exceptions = {null,null,null};
     
     private FileChangeListener fca;
     private FileObject modulesRoot;
@@ -92,6 +92,14 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
                 fileChangeThreads[0] = Thread.currentThread ();
                 exceptions[0] = new Exception ();
             }
+
+            @Override
+            public void fileChanged(FileEvent fe) {
+                fileChanges[2] = true;
+                fileChangeThreads[2] = Thread.currentThread ();
+                exceptions[2] = new Exception ();
+            }
+
             
             @Override
             public void fileDeleted (FileEvent fe) {
@@ -101,6 +109,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
             }
         };
         modulesRoot.addFileChangeListener (fca);
+        modulesRoot.getChildren();
     }
     
     @Override
@@ -150,6 +159,10 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         
         return installElement;
     }
+
+    boolean incrementNumberOfModuleConfigFiles() {
+        return true;
+    }
     
     /*public void installModuleDirect(UpdateUnit toInstall) throws Exception {
         installModuleImpl(toInstall, false);
@@ -157,7 +170,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
     
     
     private UpdateElement installModuleImpl (UpdateUnit toInstall, UpdateElement installElement, final boolean installSupport) throws Exception {
-        fileChanges = new Boolean[]{false,false};
+        fileChanges = new Boolean[]{false, false, false};
         installElement = (installElement != null) ? installElement : toInstall.getAvailableUpdates ().get (0);
         File f = InstallManager.findTargetDirectory(installElement.getUpdateUnit ().getInstalled (), Trampoline.API.impl(installElement),false);
         File configModules = new File (f, "config/Modules");
@@ -242,10 +255,16 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         if (r == null) {
             assertTrue ("Config module files are more than before Install test, " + Arrays.asList (configModules.listFiles ()), configModules.listFiles ().length > configModulesSize);
             assertTrue ("Installed modules are more than before Install test, " + Arrays.asList (modules.listFiles ()), modules.listFiles ().length > modulesSize);
-            assertTrue (foConfigModules.getPath (), foConfigModules.getChildren ().length > foConfigModulesSize);
-            assertEquals (configModules.listFiles ()[0], FileUtil.toFile (foConfigModules.getChildren ()[0]));
-            
-            assertTrue (fileChanges[0]);
+            if (incrementNumberOfModuleConfigFiles()) {
+                assertTrue (foConfigModules.getPath (), foConfigModules.getChildren ().length > foConfigModulesSize);
+                assertEquals (configModules.listFiles ()[0], FileUtil.toFile (foConfigModules.getChildren ()[0]));
+            }
+
+            if (incrementNumberOfModuleConfigFiles()) {
+                assertTrue (fileChanges[0]);
+            } else {
+                assertTrue(fileChanges[2]);
+            }
             fileChanges[0]=false;
         }
         

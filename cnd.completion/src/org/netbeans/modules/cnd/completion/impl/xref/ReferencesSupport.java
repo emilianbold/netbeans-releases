@@ -322,9 +322,6 @@ public final class ReferencesSupport {
         }
         // then full check if needed
         csmItem = csmItem != null ? csmItem : findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.GLOBAL_QUERY, fileReferencesContext);
-        // if still null try macro info from file (IZ# 130897)
-        if (csmItem == null) {
-        }
         return csmItem;
     }
 
@@ -367,6 +364,20 @@ public final class ReferencesSupport {
             csmObject = CompletionUtilities.findItemAtCaretPos(null, doc, CsmCompletionProvider.getCompletionQuery(csmFile, queryScope, fileReferencesContext), offset);
         }
         return csmObject;
+    }
+
+    /**
+     * Searches for macro.
+     *
+     * @param csmFile - file
+     * @param offset - macro offset
+     * @return macro
+     */
+    public static CsmObject findMacro(final CsmFile csmFile, final int offset) {
+        CsmObject csmItem = null;
+        List<CsmReference> macroUsages = CsmFileInfoQuery.getDefault().getMacroUsages(csmFile);
+        csmItem = findMacro(macroUsages, offset);
+        return csmItem;
     }
 
     /*package*/ static ReferenceImpl createReferenceImpl(final CsmFile file, final BaseDocument doc, final int offset) {
@@ -645,7 +656,14 @@ public final class ReferencesSupport {
         }
     }
 
-    private static CsmObject findMacro(List<CsmReference> macroUsages, final int offset) {
+    /**
+     * Searches for macro.
+     *
+     * @param macroUsages - list of macros
+     * @param offset - macro offset
+     * @return macro
+     */
+    public static CsmObject findMacro(List<CsmReference> macroUsages, final int offset) {
         int index = Collections.binarySearch(macroUsages, new RefOffsetKey(offset), new Comparator<CsmReference>() {
             public int compare(CsmReference o1, CsmReference o2) {
                 if (o1 instanceof RefOffsetKey) {

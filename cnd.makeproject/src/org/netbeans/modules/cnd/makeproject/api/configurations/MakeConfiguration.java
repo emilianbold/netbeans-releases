@@ -53,6 +53,8 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
@@ -780,7 +782,7 @@ public class MakeConfiguration extends Configuration {
     }
 
     public boolean hasDebugger() {
-        return DefaultProjectActionHandler.getInstance().getCustomDebugActionHandlerProvider(this) != null;
+        return ProjectActionSupport.getInstance().canHandle(this, ProjectActionEvent.Type.DEBUG);
     }
 
     public String expandMacros(String val) {

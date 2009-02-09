@@ -48,6 +48,8 @@ package org.netbeans.modules.mobility.svgcore.export;
 
 import java.awt.Dimension;
 import java.io.IOException;
+import java.util.logging.Level;
+import javax.microedition.m2g.SVGImage;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -60,6 +62,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
+import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.modules.mobility.svgcore.export.AnimationRasterizer.ColorReductionMethod;
 import org.netbeans.modules.mobility.svgcore.export.AnimationRasterizer.ImageType;
 import org.openide.DialogDisplayer;
@@ -83,6 +86,7 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
     public SVGAnimationRasterizerPanel(SVGDataObject dObj) throws IOException, BadLocationException {
         super(dObj, null);
         initComponents();
+
         createCompressionGroup( compressionLevelCombo, compressionQualitySpinner);
         
         final float duration = m_dObj.getSceneManager().getAnimationDuration();
@@ -932,15 +936,19 @@ private void formatComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GE
                     @Override
                     public void run() {
                         try {
-                            AnimationRasterizer.calculateAnimationSize(getSVGImage(), 
-                                    SVGAnimationRasterizerPanel.this, new AnimationRasterizer.ProgressUpdater() {
-                                public void updateProgress(final String text) {
-                                    if ( !blockUpdate[0]) {
-                                        updatePreviewText(text);
+                            SVGImage svgImage = getSVGImage();
+                            if (svgImage != null) {
+                                AnimationRasterizer.calculateAnimationSize(svgImage,
+                                        SVGAnimationRasterizerPanel.this, new AnimationRasterizer.ProgressUpdater() {
+
+                                    public void updateProgress(final String text) {
+                                        if (!blockUpdate[0]) {
+                                            updatePreviewText(text);
+                                        }
                                     }
-                                }
-                            });
-                            updateSafeValues();
+                                });
+                                updateSafeValues();
+                            }
                         } catch( InterruptedException e) {
                         } catch( javax.imageio.IIOException e) {
                             blockUpdate[0] = true;
@@ -953,7 +961,7 @@ private void formatComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GE
                                 restoreSafeValues();
                             }
                         } catch (Exception ex) {
-                            Exceptions.printStackTrace(ex);
+                            SceneManager.log(Level.INFO, ex.getMessage(), ex);
                             restoreSafeValues();
                         }
                     }
@@ -967,25 +975,35 @@ private void formatComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GE
             RequestProcessor.getDefault().post( new Runnable() {
                 public void run() {
                     try {
-                        final AnimationRasterizer.PreviewInfo preview = AnimationRasterizer.previewFrame( getSVGImage(), SVGAnimationRasterizerPanel.this, currentFrame, frameTime);
-                        SwingUtilities.invokeLater( new Runnable() {
-                            public void run() {
-                                previewFrameSizeText.setText( AnimationRasterizer.getSizeText(preview.m_imageSize));
-                                previewFormatText.setText(preview.m_imageFormat);
-                                previewFileText.setText(fileName);
-                                previewMaxFrameText.setText( String.valueOf(totalFrameNum));
-                                previewCurrentTimeText.setText( String.valueOf(roundTime(frameTime)));
-                                previewEndTimeText.setText(  String.valueOf(roundTime(duration)));
-                                //TODO Handle images not saved yet
-                                label.setText(null);
-                                label.setIcon(new ImageIcon(preview.m_image));
-                                label.invalidate();
-                                imageHolder.validate();
-                                imageHolder.repaint();
-                            }
-                        });
+                        SVGImage svgImage = getSVGImage();
+                        if (svgImage != null) {
+                            final AnimationRasterizer.PreviewInfo preview = AnimationRasterizer.previewFrame(getSVGImage(), SVGAnimationRasterizerPanel.this, currentFrame, frameTime);
+                            SwingUtilities.invokeLater(new Runnable() {
+
+                                public void run() {
+                                    previewFrameSizeText.setText(AnimationRasterizer.getSizeText(preview.m_imageSize));
+                                    previewFormatText.setText(preview.m_imageFormat);
+                                    previewFileText.setText(fileName);
+                                    previewMaxFrameText.setText(String.valueOf(totalFrameNum));
+                                    previewCurrentTimeText.setText(String.valueOf(roundTime(frameTime)));
+                                    previewEndTimeText.setText(String.valueOf(roundTime(duration)));
+                                    //TODO Handle images not saved yet
+                                    label.setText(null);
+                                    label.setIcon(new ImageIcon(preview.m_image));
+                                    label.invalidate();
+                                    imageHolder.validate();
+                                    imageHolder.repaint();
+                                }
+                            });
+                        } else {
+                            label.setText("Load of SVG image failed");  //NOI18N
+                            label.setIcon(null);
+                            label.invalidate();
+                            imageHolder.validate();
+                            imageHolder.repaint();
+                        }
                     } catch (Exception ex) {
-                        Exceptions.printStackTrace(ex);
+                        SceneManager.log(Level.INFO, ex.getMessage(), ex);
                     } finally {
                         m_updateInProgress = false;
                     }

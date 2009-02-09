@@ -48,7 +48,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.IllegalCharsetNameException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Logger;
@@ -65,7 +64,7 @@ import org.netbeans.modules.cnd.makeproject.ui.utils.DirectoryChooserInnerPanel;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-public class ProjectPropPanel extends javax.swing.JPanel implements ActionListener {
+public class ProjectPropPanel extends javax.swing.JPanel {
 
     private SourceRootChooser sourceRootChooser;
     private Project project;
@@ -81,7 +80,7 @@ public class ProjectPropPanel extends javax.swing.JPanel implements ActionListen
         sourceRootPanel.add(sourceRootChooser = new SourceRootChooser(configurationDescriptor.getBaseDir(), makeConfigurationDescriptor.getSourceRoots()));
 
         MakeCustomizerProvider makeCustomizerProvider = project.getLookup().lookup(MakeCustomizerProvider.class);
-        makeCustomizerProvider.addActionListener(this);
+//        makeCustomizerProvider.addActionListener(this);
 
         originalEncoding = ((MakeProject) project).getSourceEncoding();
 //        if (originalEncoding != null) {
@@ -200,14 +199,14 @@ public class ProjectPropPanel extends javax.swing.JPanel implements ActionListen
         }
     }
 
-    public void actionPerformed(ActionEvent e) {
-        if (sourceRootChooser.isChanged()) {
-            Vector<String> list = sourceRootChooser.getListData();
-            makeConfigurationDescriptor.setSourceRootsList(new ArrayList<String>(list));
-        }
-        MakeCustomizerProvider makeCustomizerProvider = project.getLookup().lookup(MakeCustomizerProvider.class);
-        makeCustomizerProvider.removeActionListener(this);
-    }
+//    public void actionPerformed(ActionEvent e) {
+////        if (sourceRootChooser.isChanged()) {
+////            Vector<String> list = sourceRootChooser.getListData();
+////            makeConfigurationDescriptor.setSourceRootsList(new ArrayList<String>(list));
+////        }
+////        MakeCustomizerProvider makeCustomizerProvider = project.getLookup().lookup(MakeCustomizerProvider.class);
+////        makeCustomizerProvider.removeActionListener(this);
+//    }
 
     class SourceRootChooser extends DirectoryChooserInnerPanel {
 

@@ -85,6 +85,10 @@ public class FileObj extends BaseFileObj {
     }
     
     public OutputStream getOutputStream(final FileLock lock, ProvidedExtensions extensions, FileObject mfo) throws IOException {
+        if (!isValid()) {
+            throw new FileNotFoundException("FileObject " + this + " is not valid."); //NOI18N
+        }
+
         final File f = getFileName().getFile();
 
         if (!Utilities.isWindows() && !f.isFile()) {
@@ -129,6 +133,10 @@ public class FileObj extends BaseFileObj {
     }
 
     public InputStream getInputStream() throws FileNotFoundException {
+        if (!isValid()) {
+            throw new FileNotFoundException("FileObject " + this + " is not valid.");  //NOI18N
+        }
+
         final File f = getFileName().getFile();
                         
         InputStream inputStream;

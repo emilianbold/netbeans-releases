@@ -76,7 +76,6 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
@@ -344,6 +343,31 @@ public class GeneratorUtils {
                 position = decl.getEndOffset();
                 if (CsmKindUtilities.isClassMember(decl)) {
                     enclClass = ((CsmMember)decl).getContainingClass();
+                    if (CsmKindUtilities.isField(decl)) {
+                        // we are on field, so let's try to find better place for insert point
+                        CsmMember lastPublicMethod = null;
+                        CsmMember firstPublicMethod = null;
+                        CsmMember lastPublicConstructor = null;
+                        CsmMember firstPublicConstructor = null;
+                        for (CsmMember member : enclClass.getMembers()) {
+                            if ((member.getVisibility() == CsmVisibility.PUBLIC) && CsmKindUtilities.isMethod(member)) {
+                                lastPublicMethod = member;
+                                if (firstPublicMethod == null) {
+                                    firstPublicMethod = member;
+                                }
+                                if (CsmKindUtilities.isConstructor(member)) {
+                                    lastPublicConstructor = member;
+                                    if (firstPublicConstructor == null) {
+                                        firstPublicConstructor = member;
+                                    }
+                                }
+                            }
+                        }
+                        // let's try to put after last public method
+                        if (lastPublicMethod != null) {
+                            position = lastPublicMethod.getEndOffset();
+                        }
+                    }
                 } else if (enclClass == null) {
                     enclClass = path.getEnclosingClass();
                 }
@@ -552,13 +576,13 @@ public class GeneratorUtils {
         return pref.toString();
     }
 
-    private static enum TypeKind {
+    public static enum TypeKind {
         VOID,
         BOOLEAN,
         UNKNOWN
     };
     
-    private static TypeKind getTypeKind(CsmType type) {
+    public static TypeKind getTypeKind(CsmType type) {
         CharSequence text = type.getClassifierText();
         if (CharSequenceKey.Comparator.compare("void", text) == 0) { // NOI18N
             return TypeKind.VOID;
@@ -569,7 +593,7 @@ public class GeneratorUtils {
         return TypeKind.UNKNOWN;
     }
 
-    private static boolean isSameType(CsmType type1, CsmType type2) {
+    public static boolean isSameType(CsmType type1, CsmType type2) {
         if (type1.equals(type2)) {
             return true;
         } else if (type2 != null) {
@@ -585,7 +609,6 @@ public class GeneratorUtils {
         if (candidates != null) {
             CsmType type = field.getType();
             for (CsmMethod candidate : candidates) {
-                @SuppressWarnings("unchecked")
                 Collection<CsmParameter> parameters = candidate.getParameters();
                 if (getTypeKind(candidate.getReturnType()) == TypeKind.VOID && parameters.size() == 1 && isSameType(parameters.iterator().next().getType(), type)) {
                     return true;

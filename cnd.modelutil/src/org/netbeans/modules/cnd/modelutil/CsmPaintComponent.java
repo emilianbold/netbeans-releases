@@ -665,7 +665,7 @@ public abstract class CsmPaintComponent extends JPanel {
             // IMPORTANT:
             // when updated => have to update toString!
             boolean strike = false;
-            int level = CsmUtilities.getLevel(modifiers);
+            //int level = CsmUtilities.getLevel(modifiers);
             drawIcon(g, getIcon());
             
             if (drawTypeAsPrefix) {
@@ -1013,7 +1013,7 @@ public abstract class CsmPaintComponent extends JPanel {
             // IMPORTANT:
             // when updated => have to update toString!
             boolean strike = false;
-            int level = CsmUtilities.getLevel(getModifiers());
+            //int level = CsmUtilities.getLevel(getModifiers());
             drawIcon(g, getIcon());
             drawString(g, getName(), CONSTRUCTOR_COLOR, null, strike);
             drawParameterList(g, getParamList(), strike);
@@ -1119,7 +1119,7 @@ public abstract class CsmPaintComponent extends JPanel {
             // IMPORTANT:
             // when updated => have to update toString!
             boolean strike = false;
-            int level = CsmUtilities.getLevel(getModifiers());
+            //int level = CsmUtilities.getLevel(getModifiers());
             drawIcon(g, getIcon());
             
             if (drawTypeAsPrefix) {

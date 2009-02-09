@@ -142,6 +142,7 @@ public class IDEInitializer extends ProxyLookup {
     }
     
     private static class MyFileSystem extends MultiFileSystem {
+        @SuppressWarnings("deprecation")
         public MyFileSystem (FileSystem[] fileSystems) {
             super (fileSystems);
             try {

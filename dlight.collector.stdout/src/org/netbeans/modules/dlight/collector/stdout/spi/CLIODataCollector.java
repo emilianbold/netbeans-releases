@@ -38,22 +38,22 @@
  */
 package org.netbeans.modules.dlight.collector.stdout.spi;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InterruptedIOException;
-import java.io.Reader;
-import java.nio.channels.Channels;
-import java.nio.channels.ClosedByInterruptException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
@@ -73,13 +73,14 @@ import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.nativeexecution.api.NativeTask;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.ObservableAction;
 import org.netbeans.modules.nativeexecution.api.ObservableActionListener;
-import org.netbeans.modules.nativeexecution.api.support.ConnectionManager;
-import org.netbeans.modules.nativeexecution.util.HostInfo;
+import org.netbeans.modules.nativeexecution.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 import org.openide.util.NbBundle;
+import org.openide.windows.InputOutput;
 
 /**
  * Command Line output data collector.
@@ -89,15 +90,15 @@ import org.openide.util.NbBundle;
  */
 public final class CLIODataCollector
         extends IndicatorDataProvider<CLIODCConfiguration>
-        implements DataCollector<CLIODCConfiguration> {
+        implements DataCollector<CLIODCConfiguration>, DLightTarget.ExecutionEnvVariablesProvider {
 
     private static final Logger log =
             DLightLogger.getLogger(CLIODataCollector.class);
     private String command;
+    private final Map<String, String> envs;
     private String argsTemplate;
-    private Thread outProcessingThread;
     private DataStorage storage;
-    private NativeTask collectorTask;
+    private Future<Integer> collectorTask;
     private CLIOParser parser;
     private List<DataTableMetadata> dataTablesMetadata;
     private ValidationStatus validationStatus = ValidationStatus.initialStatus();
@@ -113,13 +114,14 @@ public final class CLIODataCollector
      * @param dataTablesMetadata describes the tables to store parsed data in
      */
     CLIODataCollector(CLIODCConfiguration configuration) {
-        CLIODCConfigurationAccessor access =
+        CLIODCConfigurationAccessor accessor =
                 CLIODCConfigurationAccessor.getDefault();
 
-        this.command = access.getCommand(configuration);
-        this.argsTemplate = access.getArguments(configuration);
-        this.parser = access.getParser(configuration);
-        this.dataTablesMetadata = access.getDataTablesMetadata(configuration);
+        this.command = accessor.getCommand(configuration);
+        this.argsTemplate = accessor.getArguments(configuration);
+        this.parser = accessor.getParser(configuration);
+        this.dataTablesMetadata = accessor.getDataTablesMetadata(configuration);
+        this.envs = accessor.getDLightTargetExecutionEnv(configuration);
     }
 
     /**
@@ -155,7 +157,9 @@ public final class CLIODataCollector
         }
     }
 
-    protected NativeTask getCollectorTaskFor(DLightTarget target) {
+    private void targetStarted(DLightTarget target) {
+        resetIndicators();
+
         String cmd = command + " "; // NOI18N
 
         if (target instanceof AttachableTarget) {
@@ -165,60 +169,29 @@ public final class CLIODataCollector
             cmd += argsTemplate;
         }
 
-        return new NativeTask(target.getExecEnv(), cmd, null);
-    }
+        NativeProcessBuilder npb =
+                new NativeProcessBuilder(target.getExecEnv(), cmd);
 
-    private void targetStarted(DLightTarget target) {
-        resetIndicators();
-        collectorTask = getCollectorTaskFor(target);
+        ExecutionDescriptor descriptor =
+                new ExecutionDescriptor().inputOutput(
+                InputOutput.NULL).outProcessorFactory(
+                new CLIOInputProcessorFactory());
 
-        outProcessingThread = new Thread(new Runnable() {
+        ExecutionService execService = ExecutionService.newService(
+                npb, descriptor, "CLIODataCollector " + cmd); // NOI18N
 
-            public void run() {
-                try {
-                    String line;
-                    InputStream is = collectorTask.getInputStream();
-
-                    if (is == null) {
-                        return;
-                    }
-                    Reader r = Channels.newReader(
-                            Channels.newChannel(is), "UTF-8"); // NOI18N
-
-                    BufferedReader reader = new BufferedReader(r);
-
-                    while ((line = reader.readLine()) != null) {
-                        processLine(line);
-                    }
-
-                    Thread.sleep(10);
-
-                } catch (InterruptedException ex) {
-                    log.fine(Thread.currentThread().getName() +
-                            " interrupted. Stop it."); // NOI18N
-                } catch (InterruptedIOException ex) {
-                    log.fine(Thread.currentThread().getName() +
-                            " interrupted. Stop it."); // NOI18N
-                } catch (ClosedByInterruptException ex) {
-                    log.fine(Thread.currentThread().getName() +
-                            " interrupted. Stop it."); // NOI18N
-                } catch (IOException ex) {
-                    log.fine(Thread.currentThread().getName() +
-                            " io. Stop it."); // NOI18N
-                }
-            }
-        }, "CLI Data Collector Output Redirector"); // NOI18N
-
-        collectorTask.submit(true, false);
-        outProcessingThread.start();
+        collectorTask = execService.run();
     }
 
     private void targetFinished(DLightTarget target) {
-        log.fine("Stopping CLIODataCollector: " + // NOI18N
-                collectorTask.getCommand());
-
-        collectorTask.cancel(true);
-        outProcessingThread.interrupt();
+        if (collectorTask != null && !collectorTask.isDone()) {
+            // It could be already done here, because tracked process is
+            // finished and, depending on command-line utility, it may exit as
+            // well... But, if not - terminate it.
+            log.fine("Stopping CLIODataCollector: " + collectorTask.toString()); // NOI18N
+            collectorTask.cancel(true);
+            collectorTask = null;
+        }
     }
 
     /** {@inheritDoc */
@@ -310,7 +283,7 @@ public final class CLIODataCollector
         boolean connected = true;
 
         try {
-            fileExists = HostInfo.fileExists(target.getExecEnv(), command);
+            fileExists = HostInfoUtils.fileExists(target.getExecEnv(), command);
         } catch (HostNotConnectedException ex) {
             connected = false;
         }
@@ -369,6 +342,29 @@ public final class CLIODataCollector
             case STOPPED:
                 targetFinished(source);
                 return;
+        }
+    }
+
+    public Map<String, String> getExecutionEnv() {
+        return envs;
+    }
+
+    private class CLIOInputProcessorFactory implements InputProcessorFactory {
+
+        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+            return InputProcessors.bridge(new LineProcessor() {
+
+                @Override
+                public void processLine(String line) {
+                    CLIODataCollector.this.processLine(line);
+                }
+
+                public void reset() {
+                }
+
+                public void close() {
+                }
+            });
         }
     }
 }

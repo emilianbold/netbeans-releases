@@ -73,7 +73,11 @@ public final class ClonePathsPanel extends JPanel implements ActionListener {
         return message;
     }
 
-    public boolean isValid() {
+    /**
+     * Validates user's input
+     * @return <code>true</code> if fields are filled, <code>false</code> otherwise
+     */
+    public boolean isInputValid() {
         String pullPath = defaultPullPathField.getText();
         String pushPath = defaultPushPathField.getText();
         if ((pullPath == null || pullPath.equals("")) && (pushPath == null || pushPath.equals(""))) {
