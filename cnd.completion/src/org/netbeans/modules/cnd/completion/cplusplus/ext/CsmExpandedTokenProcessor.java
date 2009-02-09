@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
  *
  * @author Nick Krasilnikov
  */
-/* package */ class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<CppTokenId>> {
+/* package */ final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<CppTokenId>> {
 
     private final CndTokenProcessor<Token<CppTokenId>> tp;
     private final Document doc;
@@ -104,7 +104,7 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
     public boolean token(Token<CppTokenId> token, int tokenOffset) {
         // Additional logic only for macros
-        if (isMacro(tokenOffset) || afterMacro) {
+        if (isMacro(token, tokenOffset) || afterMacro) {
             TokenSequence<CppTokenId> expTS = null;
             String expansion = CsmMacroExpansion.expand(doc, tokenOffset, tokenOffset + token.length());
             if (expansion != null) {
@@ -171,7 +171,7 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
         }
     }
 
-    private boolean isMacro(int tokenOffset) {
-        return ReferencesSupport.findMacro(macros, tokenOffset) != null;
+    private boolean isMacro(Token token, int tokenOffset) {
+        return  Character.isJavaIdentifierStart(token.text().charAt(0)) && ReferencesSupport.findMacro(macros, tokenOffset) != null;
     }
 }
