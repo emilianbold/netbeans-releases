@@ -234,6 +234,34 @@ public class AuxiliaryConfigBasedPreferencesProviderTest extends NbTestCase {
         assertEquals("somevalue2", origNode.get("somekey", null));
     }
 
+    public void testTooLong() throws IOException, BackingStoreException {
+        lookup.setDelegates(Lookups.fixed(new TestAuxiliaryConfigurationImpl()));
+
+        AuxiliaryConfiguration ac = p.getLookup().lookup(AuxiliaryConfiguration.class);
+
+        assertNotNull(ac);
+
+        AuxiliaryConfigBasedPreferencesProvider toSync = new AuxiliaryConfigBasedPreferencesProvider(p, ac, null, true);
+        Preferences pref = toSync.findModule("test");
+        //test length of key
+        char[] keyChars = new char[100];
+        Arrays.fill(keyChars, 'X');
+        String key = new String(keyChars);
+        pref.put(key, "test");
+
+        //test length of value
+        char[] valChars = new char[10 * 1024];
+        Arrays.fill(valChars, 'X');
+        String value = new String(valChars);
+        pref.put("test", value);
+
+        pref.flush();
+
+        assertEquals(pref.get("test", null), value);
+        assertEquals(pref.get(key, null), "test");
+
+    }
+
     @RandomlyFails
     public void testReclaimable() throws IOException, BackingStoreException, InterruptedException {
         lookup.setDelegates(Lookups.fixed(new TestAuxiliaryConfigurationImpl()));
