@@ -47,13 +47,12 @@
  */
 package org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.expression;
 
-import org.dom4j.Document;
+import java.util.logging.Level;
 import org.dom4j.Element;
 import org.dom4j.Node;
 
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.IREClassLoader;
-import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.IUMLParser;
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.IUMLParserEventDispatcher;
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.InstanceInformation;
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.ObjectInstanceInformation;
@@ -62,10 +61,9 @@ import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.transl
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.statehandlers.StateHandler;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.IREClass;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.IREUnaryOperator;
-import org.netbeans.modules.uml.core.reverseengineering.reframework.IReferenceEvent;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.REUnaryOperator;
-import org.netbeans.modules.uml.core.reverseengineering.reframework.ReferenceEvent;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ITokenDescriptor;
+import org.netbeans.modules.uml.core.support.UMLLogger;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 
 public class PostUnaryExpression extends ExpressionStateHandler
@@ -78,6 +76,7 @@ public class PostUnaryExpression extends ExpressionStateHandler
     }
     
     
+    @Override
     public void processToken(ITokenDescriptor  pToken, String language)
     {
         if(pToken != null)
@@ -94,6 +93,7 @@ public class PostUnaryExpression extends ExpressionStateHandler
         }
     }
     
+    @Override
     public StateHandler createSubStateHandler(String stateName, String language)
     {
         StateHandler retVal = null;
@@ -101,6 +101,7 @@ public class PostUnaryExpression extends ExpressionStateHandler
         return retVal;
     }
     
+    @Override
     public ETPairT<InstanceInformation,Node> writeAsXMI(InstanceInformation pInfo,
             Node    pParentNode,
             SymbolTable  symbolTable,
@@ -143,6 +144,7 @@ public class PostUnaryExpression extends ExpressionStateHandler
         return new ETPairT<InstanceInformation, Node>(retVal, null);
     }
     
+    @Override
     public InstanceInformation  sendOperationEvents(InstanceInformation   pInfo,
             IREClass              pThisPtr,
             SymbolTable           symbolTable,
@@ -185,6 +187,7 @@ public class PostUnaryExpression extends ExpressionStateHandler
         return retVal;
     }
     
+    @Override
     public String toString()
     {
         String retVal = "";
@@ -210,11 +213,13 @@ public class PostUnaryExpression extends ExpressionStateHandler
     }
     
     
+    @Override
     public long getStartPosition()
     {
         return super.getStartPosition();
     }
     
+    @Override
     public long getEndPosition()
     {
         long retVal = -1;
@@ -225,6 +230,7 @@ public class PostUnaryExpression extends ExpressionStateHandler
         return retVal;
     }
     
+    @Override
     public long getStartLine()
     {
         long retVal = -1;
@@ -249,19 +255,21 @@ public class PostUnaryExpression extends ExpressionStateHandler
     {
         try
         {
-            XMLManip manip= null;
             Node pTopNode = XMLManip.createElement((Element)pParentNode, "UML:BinaryOperatorAction");
-//   			 	TODO aztec
-////		 _VH( CreateNode(pParentNode, _T("UML:BinaryOperatorAction"), &pTopNode));
             
             if(pTopNode != null)
             {
                 if(m_pOperator != null)
                 {
                     String op = m_pOperator.getValue();
-                    manip.setAttributeValue(pTopNode,"operator", op);
+                    XMLManip.setAttributeValue(pTopNode,"operator", op);
                     String value = this.toString();
-                    manip.setAttributeValue(pTopNode, "representation", value);
+                    XMLManip.setAttributeValue(pTopNode, "representation", value);
+                }
+                if(leftIns==null)
+                {
+                    UMLLogger.logMessage("Null leftIns (Problem with post unary expression/operation)", Level.INFO);//log for debug purpose, as null may not be good here but still better then stop on npe
+                    return null;
                 }
                 leftIns.getInputPinInformation(pTopNode);
                 leftIns.getOutputPinInformation(pTopNode);
