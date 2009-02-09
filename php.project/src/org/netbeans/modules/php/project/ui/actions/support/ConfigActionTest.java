@@ -107,6 +107,11 @@ public class ConfigActionTest extends ConfigAction {
 
     @Override
     public void runProject() {
+        // first, let user select test directory
+        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, true);
+        if (testDirectory == null) {
+            return;
+        }
         PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
         if (!phpUnit.supportedVersionFound()) {
             int[] version = phpUnit.getVersion();
