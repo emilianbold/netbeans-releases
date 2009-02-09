@@ -141,24 +141,26 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
             List<URI> sourceVolume = new ArrayList<URI>();
             Map<String, List<URI>> volumes = new HashMap<String, List<URI>>();
             File baseFolder = null;
+            File nonDefaultLibBase = null;
             if (copyTo != null) {
                 //resolve there to copy files
-                File libBase = null;
                 URL libRoot = libraryManager.getLocation();
+                File base = null;
                 if (libRoot != null) {
                     try {
-                        libBase = new File(libRoot.toURI());
+                        base = new File(libRoot.toURI());
                         //getLocation() points to a file
-                        libBase = libBase.getParentFile();
+                        base = base.getParentFile();
+                        nonDefaultLibBase = base;
                     } catch (URISyntaxException ex) {
                         Exceptions.printStackTrace(ex);
-                        libBase = new File(System.getProperty("netbeans.user"), "libraries");
+                        base = new File(System.getProperty("netbeans.user"), "libraries");
                     }
                 }  else {
-                    libBase = new File(System.getProperty("netbeans.user"), "libraries");
+                    base = new File(System.getProperty("netbeans.user"), "libraries");
                 }
-                libBase = FileUtil.normalizeFile(libBase);
-                baseFolder = FileUtilities.resolveFilePath(libBase, copyTo);
+                base = FileUtil.normalizeFile(base);
+                baseFolder = FileUtilities.resolveFilePath(base, copyTo);
                 baseFolder.mkdirs();
             }
             volumes.put("classpath", classpathVolume); //NOI18N
@@ -170,7 +172,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                 handle.progress(org.openide.util.NbBundle.getMessage(CreateLibraryAction.class, "MSG_Downloading", a.getId()), index);
                 try {
                     online.resolve(a, project.getRemoteArtifactRepositories(), online.getLocalRepository());
-                    classpathVolume.add(getJarUri(a, baseFolder));
+                    classpathVolume.add(getJarUri(a, baseFolder, nonDefaultLibBase));
                     try {
                         if (allSourceAndJavadoc) {
                             handle.progress(org.openide.util.NbBundle.getMessage(CreateLibraryAction.class, "MSG_Downloading_javadoc", a.getId()), index + 1);
@@ -182,7 +184,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                                     "javadoc"); //NOI18N
                             online.resolve(javadoc, project.getRemoteArtifactRepositories(), online.getLocalRepository());
                             if (javadoc.getFile().exists()) {
-                                javadocVolume.add(getJarUri(javadoc, baseFolder));
+                                javadocVolume.add(getJarUri(javadoc, baseFolder, nonDefaultLibBase));
                             }
 
                             handle.progress(org.openide.util.NbBundle.getMessage(CreateLibraryAction.class, "MSG_Downloading_sources", a.getId()), index + 2);
@@ -194,7 +196,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                                     "sources"); //NOI18N
                             online.resolve(sources, project.getRemoteArtifactRepositories(), online.getLocalRepository());
                             if (sources.getFile().exists()) {
-                                sourceVolume.add(getJarUri(sources, baseFolder));
+                                sourceVolume.add(getJarUri(sources, baseFolder, nonDefaultLibBase));
                             }
                         }
                     } catch (Exception ex) {
@@ -219,13 +221,34 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
         return null;
     }
 
-    URI getJarUri(Artifact a, File copyTo) throws IOException {
+    /** append path to given jar root uri */
+    private static URI appendJarFolder(URI u, String jarFolder) {
+        try {
+            if (u.isAbsolute()) {
+                return new URI("jar:" + u.toString() + "!/" + (jarFolder == null ? "" : jarFolder.replace('\\', '/'))); // NOI18N
+            } else {
+                return new URI(u.toString() + "!/" + (jarFolder == null ? "" : jarFolder.replace('\\', '/'))); // NOI18N
+            }
+        } catch (URISyntaxException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+
+    URI getJarUri(Artifact a, File copyTo, File nonDefaultLibBase) throws IOException {
         File res = a.getFile();
+        URI uri = res.toURI();
         if (copyTo != null) {
             res = new File(copyTo, a.getFile().getName());
             FileUtils.copyFile(a.getFile(), res);
+            if (nonDefaultLibBase != null) {
+                String path = FileUtilities.getRelativePath(nonDefaultLibBase, res);
+                if (path != null) {
+                    uri = LibrariesSupport.convertFilePathToURI(path);
+                }
+            }
         }
-        return LibrariesSupport.getArchiveRoot(res.toURI());
+        return appendJarFolder(uri, null);
     }
 
 }
