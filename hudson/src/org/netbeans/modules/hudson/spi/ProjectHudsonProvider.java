@@ -41,36 +41,146 @@
 
 package org.netbeans.modules.hudson.spi;
 
-import javax.swing.event.ChangeListener;
+import java.net.URI;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.hudson.api.HudsonInstance;
+import org.netbeans.modules.hudson.api.HudsonJob;
+import org.openide.util.Lookup;
 
 /**
  * Documents existence of a Hudson job associated with the project.
+ * Should be registered to global lookup.
  */
-public interface ProjectHudsonProvider {
+public abstract class ProjectHudsonProvider {
 
     /**
-     * @return true if the project is currently associated with a job, false otherwise
+     * Produces a singleton which delegates to all registered providers.
+     * @return a proxy
      */
-    boolean isAssociated();
+    public static ProjectHudsonProvider getDefault() {
+        return new ProjectHudsonProvider() {
+            public Association findAssociation(Project p) {
+                for (ProjectHudsonProvider php : Lookup.getDefault().lookupAll(ProjectHudsonProvider.class)) {
+                    Association a = php.findAssociation(p);
+                    if (a != null) {
+                        return a;
+                    }
+                }
+                return null;
+            }
+            public boolean recordAssociation(Project p, Association a) {
+                for (ProjectHudsonProvider php : Lookup.getDefault().lookupAll(ProjectHudsonProvider.class)) {
+                    if (php.recordAssociation(p, a)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
+    }
 
     /**
-     * @return the root URL of the server, e.g. {@code http://deadlock.netbeans.org/hudson/}
+     * Determines whether a given project is associated with any Hudson instance.
+     * @param project a source project
+     * @return an association with Hudson, or null if none is known
      */
-    String getServerUrl();
+    public abstract Association findAssociation(Project project);
 
     /**
-     * @return the code name of the job on that server
+     * Tries to find a source project matching a given association.
+     * The default implementation just checks open projects.
+     * @param assoc a possible association
+     * @return a matching project, or null
      */
-    String getJobName();
+    public Project findAssociatedProject(Association assoc) {
+        for (Project p : OpenProjects.getDefault().getOpenProjects()) {
+            if (assoc.equals(findAssociation(p))) {
+                return p;
+            }
+        }
+        return null;
+    }
 
     /**
-     * Adds a listener to changes in validity or status.
+     * Attempts to record an association between a project and a job.
+     * @param project a source project
+     * @param assoc a Hudson job, perhaps newly created; or null to clear any association
+     * @return true if the association was in fact recorded, false if not
      */
-    void addChangeListener(ChangeListener listener);
+    public abstract boolean recordAssociation(Project project, Association assoc);
 
     /**
-     * Removes a listener to changes in validity or status.
+     * An association with a Hudson job.
      */
-    void removeChangeListener(ChangeListener listener);
+    public static final class Association {
+
+        private final String serverURL;
+        private final String jobName;
+
+        /**
+         * Creates an association.
+         * @param serverURL as {@link #getServerUrl}
+         * @param jobName as {@link #getJobName}
+         * @throws IllegalArgumentException if parameters have invalid syntax
+         */
+        public Association(String serverURL, String jobName) throws IllegalArgumentException {
+            URI.create(serverURL); // check syntax
+            if (!serverURL.endsWith("/")) {
+                throw new IllegalArgumentException(serverURL + " must end in a slash");
+            }
+            if (jobName != null && !jobName.matches("\\S+")) {
+                throw new IllegalArgumentException("Must provide a nonempty or null job name: " + jobName);
+            }
+            this.serverURL = serverURL;
+            this.jobName = jobName;
+        }
+
+        /**
+         * Creates an association based on a known job.
+         * @param job a Hudson job
+         * @return an association with the same server URL and job name
+         */
+        public static Association forJob(HudsonJob job) {
+            return new Association(job.getLookup().lookup(HudsonInstance.class).getUrl(), job.getName());
+        }
+
+        /**
+         * @return the root URL of the server ending in slash, e.g. {@code http://deadlock.netbeans.org/hudson/}
+         */
+        public String getServerUrl() {
+            return serverURL;
+        }
+
+        /**
+         * @return the code name of the job on that server; may be null
+         */
+        public String getJobName() {
+            return jobName;
+        }
+
+        public @Override boolean equals(Object obj) {
+            if (obj == null || !(obj instanceof Association)) {
+                return false;
+            }
+            Association other = (Association) obj;
+            if (!serverURL.equals(other.serverURL)) {
+                return false;
+            }
+            if (jobName == null ? other.jobName != null : !jobName.equals(other.jobName)) {
+                return false;
+            }
+            return true;
+        }
+
+        public @Override int hashCode() {
+            int hash = serverURL.hashCode();
+            if (jobName != null) {
+                hash = hash ^ jobName.hashCode();
+            }
+            return hash;
+        }
+
+    }
 
 }

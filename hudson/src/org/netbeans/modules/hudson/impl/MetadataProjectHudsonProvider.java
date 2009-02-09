@@ -37,47 +37,48 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.hudson.spi;
+package org.netbeans.modules.hudson.impl;
 
-import java.io.File;
-import org.netbeans.modules.hudson.api.HudsonJob;
-import org.w3c.dom.Document;
+import java.util.prefs.Preferences;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Represents one kind of SCM (version control) supported by the Hudson integration.
- * Registered to global lookup.
+ * Tracks job to project association based on NetBeans-specific metadata.
  */
-public interface HudsonSCM {
+@ServiceProvider(service=ProjectHudsonProvider.class, position=1000)
+public class MetadataProjectHudsonProvider extends ProjectHudsonProvider {
 
-    /**
-     * Possibly recognizes a disk folder as being under version control.
-     * @param folder a disk folder which may or may not be versioned
-     * @return information about its versioning, or null if unrecognized
-     */
-    Configuration forFolder(File folder);
+    private static final String SERVER = "server"; // NOI18N
+    private static final String JOB = "job"; // NOI18N
 
-    /**
-     * Information about how a folder (such as the basedir of a project) is versioned.
-     */
-    interface Configuration {
-
-        /**
-         * Creates configuration for Hudson.
-         * Would typically append a {@code <scm>} element.
-         * @param configXml Hudson's {@code config.xml}
-         */
-        void configure(Document configXml);
-
+    public Association findAssociation(Project project) {
+        // XXX is using shared metadata appropriate? server may or may not be public...
+        Preferences prefs = ProjectUtils.getPreferences(project, MetadataProjectHudsonProvider.class, true);
+        String server = prefs.get(SERVER, null);
+        if (server != null) {
+            return new Association(server, prefs.get(JOB, null));
+        } else {
+            return null;
+        }
     }
 
-    /**
-     * Attempts to convert a path in a remote Hudson workspace to a local file path.
-     * May use SCM information to guess at how these paths should be aligned.
-     * @param job a Hudson job
-     * @param workspacePath a relative path within the job's remote workspace, e.g. {@code src/p/C.java}
-     * @param localRoot a local disk root to consider as a starting point
-     * @return a file within {@code localRoot} corresponding to {@code workspacePath}, or null if unknown
-     */
-    String translateWorkspacePath(HudsonJob job, String workspacePath, File localRoot);
+    public boolean recordAssociation(Project project, Association assoc) {
+        Preferences prefs = ProjectUtils.getPreferences(project, MetadataProjectHudsonProvider.class, true);
+        if (assoc != null) {
+            prefs.put(SERVER, assoc.getServerUrl());
+            if (assoc.getJobName() != null) {
+                prefs.put(JOB, assoc.getJobName());
+            } else {
+                prefs.remove(JOB);
+            }
+        } else {
+            prefs.remove(SERVER);
+            prefs.remove(JOB);
+        }
+        return true;
+    }
 
 }
