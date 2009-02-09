@@ -843,7 +843,17 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                     data.add(folderEntry);
                 }
                 MakeConfiguration active = (MakeConfiguration) getConfs().getActive(); // FIXUP: need better check
-                addSourceFilesFromFolders(data.iterator(), true, false, active.isMakefileConfiguration());
+                boolean asDiskFolders = active.isMakefileConfiguration();
+                addSourceFilesFromFolders(data.iterator(), true, true, asDiskFolders);
+//                if (asDiskFolders) {
+//                    for (String root : toBeAdded) {
+//                        Folder folder = getLogicalFolders().findFolderByName(IpeUtils.getBaseName(root));
+//                        if (folder != null) {
+//                            folder.setRoot(null);
+//                            folder.attachListenersAndRefresh();
+//                        }
+//                    }
+//                }
                 setModified();
             }
 

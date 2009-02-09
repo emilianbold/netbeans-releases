@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.loaders.CndDataObject;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
+import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.FolderEntry;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -96,7 +97,7 @@ public class Folder implements FileChangeListener {
         this.items = new Vector<Object>();
         this.sortName = displayName.toLowerCase();
 
-        log.setLevel(Level.FINER);
+        log.setLevel(Level.OFF);
     }
 
     public void setRoot(String root) {
@@ -906,7 +907,10 @@ public class Folder implements FileChangeListener {
             if (!AllSourceFileFilter.getInstance().accept(file)) {
                 return;
             }
-            Item item = new Item(IpeUtils.toRelativePath(getConfigurationDescriptor().getBaseDir(), file.getPath()));
+            String itemPath = file.getPath();
+            itemPath = FilePathAdaptor.mapToRemote(itemPath);
+            itemPath = FilePathAdaptor.normalize(itemPath);
+            Item item = new Item(IpeUtils.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath));
             getConfigurationDescriptor().setModified();
             addItemAction(item);
         }
