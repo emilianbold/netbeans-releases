@@ -62,10 +62,14 @@ public interface ContainerClassPathModifier {
 
     public final String API_SERVLET = "servlet-api"; //NOI18N
     public final String API_JSP = "jsp-api"; //NOI18N
+    /**
+     * a fallback solution, adds the complete j2ee stack on classpath
+     */
     public final String API_J2EE = "j2ee-api"; //NOI18N
     public final String API_PERSISTENCE = "persistence"; //NOI18N
     public final String API_ANNOTATION = "annotation"; //NOI18N
     public final String API_TRANSACTION = "transaction"; //NOI18N
+    public final String API_EJB = "ejb"; //NOI18N
 
 
     /**
