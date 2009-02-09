@@ -49,7 +49,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-//import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.xml.api.model.GrammarEnvironment;
 import org.netbeans.modules.xml.api.model.GrammarQuery;
 import org.openide.util.ImageUtilities;
@@ -58,6 +57,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.netbeans.modules.xml.api.model.DTDUtil;
 import org.netbeans.api.xml.services.UserCatalog;
+import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.xml.api.model.GrammarQueryManager;
 import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
@@ -157,11 +157,11 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     File platformRootDir=null;
     
     /** Creates a new instance of RunTimeDDCatalog */
-    public RunTimeDDCatalog(File rootDir) {
+    public RunTimeDDCatalog() {
         // lazy call to possible registration. This is called only when needed (i.e runtime tab DTD exploration
         InstanceProperties.getInstanceList();
         PluginProperties.configureDefaultServerInstance();        
-        platformRootDir = rootDir; // ServerLocationManager.getLatestPlatformLocation();
+        platformRootDir = ServerLocationManager.getLatestPlatformLocation();
     }
     private static RunTimeDDCatalog ddCatalog;
     
