@@ -134,6 +134,18 @@ public final class CsmMacroExpansion {
     }
 
     /**
+     * Macro expands content of the document.
+     *
+     * @param doc - document for macro expansion
+     * @param startOffset - start offset for expansion
+     * @param endOffset - end offset for expansion
+     * @return - expansion
+     */
+    public static String expand(Document doc, int startOffset, int endOffset) {
+        return getMacroExpansionDocProvider().expand(doc, startOffset, endOffset);
+    }
+
+    /**
      * Transforms original offset to offset in expanded text.
      *
      * @param expandedDoc - document
@@ -197,6 +209,10 @@ public final class CsmMacroExpansion {
 
         public int expand(Document inDoc, int startOffset, int endOffset, Document outDoc) {
             return 0;
+        }
+
+        public String expand(Document doc, int startOffset, int endOffset) {
+            return null;
         }
 
         public int getOffsetInExpandedText(Document expandedDoc, int originalOffset) {
