@@ -366,20 +366,6 @@ public final class ReferencesSupport {
         return csmObject;
     }
 
-    /**
-     * Searches for macro.
-     *
-     * @param csmFile - file
-     * @param offset - macro offset
-     * @return macro
-     */
-    public static CsmObject findMacro(final CsmFile csmFile, final int offset) {
-        CsmObject csmItem = null;
-        List<CsmReference> macroUsages = CsmFileInfoQuery.getDefault().getMacroUsages(csmFile);
-        csmItem = findMacro(macroUsages, offset);
-        return csmItem;
-    }
-
     /*package*/ static ReferenceImpl createReferenceImpl(final CsmFile file, final BaseDocument doc, final int offset) {
         ReferenceImpl ref = null;
         doc.readLock();

@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.cnd.completion.cplusplus.ext;
 
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
@@ -60,22 +59,35 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
  *
  * @author Nick Krasilnikov
  */
-public class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<CppTokenId>> {
+/* package */ class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<CppTokenId>> {
 
-    private final CsmCompletionTokenProcessor tp;
+    private final CndTokenProcessor<Token<CppTokenId>> tp;
     private final Document doc;
     private final int offset;
     private boolean afterMacro;
     private final CsmFile file;
-    List<CsmReference> macroUsages;
+    private List<CsmReference> macros;
 
-    CsmExpandedTokenProcessor(Document doc, CsmCompletionTokenProcessor tp, int offset) {
+    private CsmExpandedTokenProcessor(Document doc, CsmFile file, CndTokenProcessor<Token<CppTokenId>> tp, int offset, List<CsmReference> macros) {
         this.tp = tp;
         this.doc = doc;
         this.offset = offset;
-        this.file = CsmUtilities.getCsmFile(doc, true);
-        this.macroUsages = CsmFileInfoQuery.getDefault().getMacroUsages(file);
-        CsmMacroExpansion.expand(doc, 0, doc.getLength());
+        this.file = file;
+        this.macros = macros;
+    }
+
+    public static CndTokenProcessor<Token<CppTokenId>> create(Document doc, CndTokenProcessor<Token<CppTokenId>> tp, int offset) {
+        if (doc != null) {
+            CsmFile file = CsmUtilities.getCsmFile(doc, true);
+            if (file != null) {
+                List<CsmReference> macros = CsmFileInfoQuery.getDefault().getMacroUsages(file);
+                if (macros != null) {
+                    CsmMacroExpansion.expand(doc, 0, doc.getLength());
+                    return new CsmExpandedTokenProcessor(doc, file, tp, offset, macros);
+                }
+            }
+        }
+        return tp;
     }
 
     public void start(int startOffset, int firstTokenOffset) {
@@ -92,7 +104,7 @@ public class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<CppTok
 
     public boolean token(Token<CppTokenId> token, int tokenOffset) {
         // Additional logic only for macros
-        if (doc != null && (isMacro(token, tokenOffset) || afterMacro)) {
+        if (isMacro(tokenOffset) || afterMacro) {
             TokenSequence<CppTokenId> expTS = null;
             String expansion = CsmMacroExpansion.expand(doc, tokenOffset, tokenOffset + token.length());
             if (expansion != null) {
@@ -159,16 +171,7 @@ public class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<CppTok
         }
     }
 
-    private boolean isMacro(Token<CppTokenId> token, int tokenOffset) {
-        return isID(token) && ReferencesSupport.findMacro(macroUsages, tokenOffset) != null;
-    }
-
-    private boolean isID(Token<CppTokenId> docToken) {
-        switch (docToken.id()) {
-            case IDENTIFIER:
-                return true;
-            default:
-                return false;
-        }
+    private boolean isMacro(int tokenOffset) {
+        return ReferencesSupport.findMacro(macros, tokenOffset) != null;
     }
 }
