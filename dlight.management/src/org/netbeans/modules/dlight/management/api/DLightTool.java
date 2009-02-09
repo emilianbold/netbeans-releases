@@ -248,6 +248,10 @@ public final class DLightTool implements Validateable<DLightTarget> {
   }
 
   final synchronized ValidationStatus doValidation(DLightTarget target) {
+    // VK: in the case there are collectors, consider the tool valid
+    if (dataCollectors.isEmpty()) {
+        return ValidationStatus.validStatus();
+    }
     ValidationStatus result = ValidationStatus.initialStatus();
 
     for (DataCollector dc : dataCollectors) {
