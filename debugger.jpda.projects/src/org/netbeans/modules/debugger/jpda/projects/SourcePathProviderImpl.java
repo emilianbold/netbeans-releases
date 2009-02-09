@@ -336,7 +336,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                     getProperties("additional_source_roots").
                     getMap("project", Collections.emptyMap()).
                     get(root);
-            if (additionalSourceRoots.isEmpty()) {
+            if (additionalSourceRoots == null || additionalSourceRoots.isEmpty()) {
                 return null;
             }
             List<FileObject> additionalSourcePath = new ArrayList<FileObject>(additionalSourceRoots.size());
@@ -359,7 +359,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         List<String> additionalSourceRoots = (List<String>) sourcesProperties.
                 getProperties("additional_source_roots").
                 getCollection("src_roots", Collections.emptyList());
-        if (additionalSourceRoots.isEmpty()) {
+        if (additionalSourceRoots == null || additionalSourceRoots.isEmpty()) {
             return null;
         }
         List<FileObject> additionalSourcePath = new ArrayList<FileObject>(additionalSourceRoots.size());
