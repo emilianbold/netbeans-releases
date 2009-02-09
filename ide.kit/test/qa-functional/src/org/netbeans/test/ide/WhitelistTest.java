@@ -45,7 +45,7 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.lang.reflect.Method;
 import junit.framework.Test;
-import org.netbeans.api.java.source.ui.ScanDialog;
+//import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.jellytools.JellyTestCase;
@@ -174,7 +174,7 @@ public class WhitelistTest extends JellyTestCase {
                 }
                 if (EventQueue.isDispatchThread()) {
                     done = true;
-                    ScanDialog.runWhenScanFinished(this, "Test waits scanning finished");
+                 //   ScanDialog.runWhenScanFinished(this, "Test waits scanning finished");
                 } else {
                     try {
                         EventQueue.invokeAndWait(this);

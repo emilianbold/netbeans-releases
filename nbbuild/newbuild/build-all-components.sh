@@ -63,7 +63,7 @@ if [ $ERROR_CODE != 0 ]; then
     TEST_CODE=1;
 fi
 
-for TEST_SUITE in soa.kit xml.schema mobility.project ide.kit php.editor; do
+for TEST_SUITE in mobility.project j2ee.kit; do
     ant -f ${TEST_SUITE}/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.results.dir=$NB_ALL/nbbuild/build/test/results -Dcontinue.after.failing.tests=true -Dtest-qa-functional-sys-prop.com.sun.aas.installRoot=/space/glassfish -Dtest-qa-functional-sys-prop.http.port=8090 -Dtest-qa-functional-sys-prop.wtk.dir=/space test
     ERROR_CODE=$?
     if [ $ERROR_CODE != 0 ]; then
