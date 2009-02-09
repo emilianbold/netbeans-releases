@@ -812,10 +812,20 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     }
 
     public void checkForChangedSourceRoots(List<String> oldList, List<String> newList) {
+
         synchronized (sourceRoots) {
             sourceRoots.clear();
             for (String l : newList) {
                 addSourceRoot(l);
+            }
+
+            MakeConfiguration active = (MakeConfiguration) getConfs().getActive(); // FIXUP: need better check
+            if (!active.isMakefileConfiguration()) {
+                MakeSources makeSources = getProject().getLookup().lookup(MakeSources.class);
+                if (makeSources != null) {
+                    makeSources.sourceRootsChanged();
+                }
+                return;
             }
 
             List<String> toBeAdded = new ArrayList<String>();
@@ -842,8 +852,16 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                     folderEntry.setFileFilter(filter);
                     data.add(folderEntry);
                 }
-                MakeConfiguration active = (MakeConfiguration) getConfs().getActive(); // FIXUP: need better check
-                addSourceFilesFromFolders(data.iterator(), true, false, active.isMakefileConfiguration());
+                addSourceFilesFromFolders(data.iterator(), true, true, true);
+//                if (asDiskFolders) {
+//                    for (String root : toBeAdded) {
+//                        Folder folder = getLogicalFolders().findFolderByName(IpeUtils.getBaseName(root));
+//                        if (folder != null) {
+//                            folder.setRoot(null);
+//                            folder.attachListenersAndRefresh();
+//                        }
+//                    }
+//                }
                 setModified();
             }
 

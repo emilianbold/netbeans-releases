@@ -70,6 +70,8 @@ public class ClonePathsWizardPanel implements WizardDescriptor.Panel, DocumentLi
     public Component getComponent() {
         if (component == null) {
             component = new ClonePathsPanel();
+            component.defaultPullPathField.getDocument().addDocumentListener(this);
+            component.defaultPushPathField.getDocument().addDocumentListener(this);
             valid();
         }
         return component;
@@ -109,7 +111,7 @@ public class ClonePathsWizardPanel implements WizardDescriptor.Panel, DocumentLi
             public void run() {
                 if (e.getDocument() == component.defaultPullPathField.getDocument () || 
                         e.getDocument() == component.defaultPushPathField.getDocument()) {
-                    if (component.isValid()) {
+                    if (component.isInputValid()) {
                         valid(component.getMessage());
                     } else {
                         invalid(component.getMessage());

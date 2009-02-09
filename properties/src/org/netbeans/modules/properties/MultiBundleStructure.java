@@ -57,6 +57,7 @@ import org.openide.util.Exceptions;
 class MultiBundleStructure extends BundleStructure implements Serializable {
 
     private transient FileObject[] files;
+    private transient FileObject parent;
     private transient PropertiesFileEntry primaryEntry;
     private String baseName;
 
@@ -85,22 +86,30 @@ class MultiBundleStructure extends BundleStructure implements Serializable {
      * Find entries according to PropertiesDataObject
      *
      */
-    private void findEntries() {
-        try {
-            if (obj == null) return;
-            if (!obj.isValid()) {
-                if (files!=null && files.length == 1) {
+    private synchronized void findEntries() {
+//        try {
+            if (obj != null) {
+                if (!obj.isValid()) {
                     primaryEntry = null;
-                    obj = null;
-                    files = null;
-                    return;
+                    if (files!=null && files.length == 1) {
+                        obj = null;
+                        files = null;
+                        return;
+                    }
+                } else {
+//                    obj = Util.findPrimaryDataObject(obj);
+                    primaryEntry = (PropertiesFileEntry) obj.getPrimaryEntry();
                 }
             } else {
-                obj = Util.findPrimaryDataObject(obj);
-                primaryEntry = (PropertiesFileEntry) obj.getPrimaryEntry();
             }
-            FileObject primary = primaryEntry.getFile();
-            FileObject parent = primary.getParent();
+            if (primaryEntry != null) {
+                FileObject primary = primaryEntry.getFile();
+                parent = primary.getParent();
+            } else {
+                if (parent == null) {
+                    return;
+                }
+            }
             List<FileObject> listFileObjects = new ArrayList<FileObject>();
             String fName;
             FileObject oldCandidate;
@@ -128,11 +137,19 @@ class MultiBundleStructure extends BundleStructure implements Serializable {
                 }
             }
             files = listFileObjects.toArray(new FileObject[listFileObjects.size()]);
-            primaryEntry = getNthEntry(0);
-            obj = (PropertiesDataObject) primaryEntry.getDataObject();
-        } catch (DataObjectNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+            if (primaryEntry != getNthEntry(0)) {
+                //TODO XXX This means that primaryEntry has changed, so need to notify openSupport
+                primaryEntry = getNthEntry(0);
+                if (primaryEntry != null) {
+                    notifyOneFileChanged(primaryEntry.getFile());
+                    parent = primaryEntry.getFile().getParent();
+                    obj = (PropertiesDataObject) primaryEntry.getDataObject();
+                    baseName = Util.getBaseName(obj.getName());
+                }
+            }
+//        } catch (DataObjectNotFoundException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
     }
 
     void updateEntries() {
@@ -270,6 +287,7 @@ class MultiBundleStructure extends BundleStructure implements Serializable {
         }
         return true;
     }
+
     @Override
     public PropertiesOpen getOpenSupport() {
         synchronized (OPEN_SUPPORT_LOCK) {

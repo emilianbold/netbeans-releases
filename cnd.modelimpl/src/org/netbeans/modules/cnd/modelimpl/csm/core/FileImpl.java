@@ -1102,10 +1102,16 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return out;
     }
 
+    /**
+     * Returns number of declarations.
+     * Does not fixFakeRegistrations, so this size could be inaccurate
+     *
+     * @return number of declarations
+     */
     public int getDeclarationsSize(){
-        if (!SKIP_UNNECESSARY_FAKE_FIXES) {
-            fixFakeRegistrations(false);
-        }
+//        if (!SKIP_UNNECESSARY_FAKE_FIXES) {
+//            fixFakeRegistrations(false);
+//        }
         try {
             declarationsLock.readLock().lock();
             return declarations.size();
@@ -1479,6 +1485,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
+    private volatile boolean alreadyInFixFakeRegistrations = false;
+
     /**
      * Fixes ambiguities.
      *
@@ -1486,32 +1494,33 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      */
     public void fixFakeRegistrations(boolean clearFakes) {
         synchronized (fakeRegistrationUIDs) {
-            if (fakeRegistrationUIDs.size() == 0 || !isValid()) {
-                return;
-            }
-            if (fakeRegistrationUIDs.size() > 0) {
-                List<CsmUID<FunctionImplEx>> fakes = new ArrayList<CsmUID<FunctionImplEx>>(fakeRegistrationUIDs);
-                // We should clear list any way, becouse of recursion posibulity
-                // Several lines after we'll fill fakeRegistrationUIDs again (if !clearFakes)
-                fakeRegistrationUIDs.clear();
-                for (CsmUID<? extends CsmDeclaration> fakeUid : fakes) {
-                    CsmDeclaration curElem = fakeUid.getObject();
-                    if (curElem != null) {
-                        if (curElem instanceof FunctionImplEx) {
-                            ((FunctionImplEx) curElem).fixFakeRegistration();
-                            parseCount++;
-                        } else {
-                            DiagnosticExceptoins.register(new Exception("Incorrect fake registration class: " + curElem.getClass())); // NOI18N
+            if (!alreadyInFixFakeRegistrations) {
+                alreadyInFixFakeRegistrations = true;
+                if (fakeRegistrationUIDs.size() == 0 || !isValid()) {
+                    alreadyInFixFakeRegistrations = false;
+                    return;
+                }
+                if (fakeRegistrationUIDs.size() > 0) {
+                    for (CsmUID<? extends CsmDeclaration> fakeUid : fakeRegistrationUIDs) {
+                        CsmDeclaration curElem = fakeUid.getObject();
+                        if (curElem != null) {
+                            if (curElem instanceof FunctionImplEx) {
+                                ((FunctionImplEx) curElem).fixFakeRegistration();
+                                parseCount++;
+                            } else {
+                                DiagnosticExceptoins.register(new Exception("Incorrect fake registration class: " + curElem.getClass())); // NOI18N
+                            }
                         }
                     }
+                    if (clearFakes) {
+                        fakeRegistrationUIDs.clear();
+                    }
                 }
-                if (!clearFakes) {
-                    fakeRegistrationUIDs.addAll(fakes);
-                }
+                alreadyInFixFakeRegistrations = false;
             }
         }
     }
-
+    
     public 
     @Override
     String toString() {

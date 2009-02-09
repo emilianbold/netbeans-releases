@@ -559,7 +559,17 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("kr.c", 15, 6, "kr.c", 17, 1); // int boo(); -> int boo(int i)
         performTest("kr.c", 17, 6, "kr.c", 15, 1); // int boo(int i) -> int boo();
     }
+
+    public void testIZ151705() throws Exception {
+        // IZ#151705 : Unresolved ids in function call in case of empty macro
+        performTest("IZ151705.cc", 9, 15, "IZ151705.cc", 6, 1);
+    }
     
+    public void testIZ151045() throws Exception {
+        // IZ#151045 : Unresolved cast to macro type
+        performTest("IZ151045.cc", 11, 21, "IZ151045.cc", 3, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

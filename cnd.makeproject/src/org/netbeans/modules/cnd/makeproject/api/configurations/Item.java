@@ -140,9 +140,12 @@ public class Item implements NativeFileItem, PropertyChangeListener {
 
     public void moveTo(String newPath) {
         Folder f = getFolder();
+        if (f.isDiskFolder()) {
+            return;
+        }
         String oldPath = getAbsPath();
         Item item = new Item(newPath);
-        f.addItem(item);
+            f.addItem(item);
         if (item.getFolder().isProjectFiles()) {
             copyItemConfigurations(this, item);
         }
