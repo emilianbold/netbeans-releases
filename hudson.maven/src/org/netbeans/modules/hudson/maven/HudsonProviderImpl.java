@@ -41,94 +41,35 @@
 
 package org.netbeans.modules.hudson.maven;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import javax.swing.event.ChangeListener;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.maven.model.CiManagement;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.util.ChangeSupport;
+import org.openide.util.lookup.ServiceProvider;
 
-/**
- *
- * @author mkleint
- */
-@ProjectServiceProvider(service=ProjectHudsonProvider.class, projectType="org-netbeans-modules-maven")
-public class HudsonProviderImpl implements ProjectHudsonProvider, PropertyChangeListener {
+@ServiceProvider(service=ProjectHudsonProvider.class, position=100)
+public class HudsonProviderImpl extends ProjectHudsonProvider {
 
-    private final Project project;
-    private boolean associated;
-    private final ChangeSupport cs = new ChangeSupport(this);
-
-    public HudsonProviderImpl(Project project) {
-        this.project = project;
-        checkHudson();
-        NbMavenProject.addPropertyChangeListener(project, this);
-    }
-
-    private CiManagement getCIManag() {
-        NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
-        CiManagement cim = prj.getMavenProject().getCiManagement();
-        return cim;
-
-    }
-
-    public boolean isAssociated() {
-        return associated;
-    }
-
-    public String getServerUrl() {
-        CiManagement mag = getCIManag();
-        if (mag != null) {
-            String url = mag.getUrl();
-            int index = url.indexOf("/job/");
-            if (index > 0) {
-                url = url.substring(0, index + 1);
+    public Association findAssociation(Project p) {
+        NbMavenProject prj = p.getLookup().lookup(NbMavenProject.class);
+        if (prj != null) {
+            CiManagement cim = prj.getMavenProject().getCiManagement();
+            if (cim != null && cim.getSystem() != null && "hudson".equalsIgnoreCase(cim.getSystem())) {
+                Matcher m = Pattern.compile("(http://.+?/)(?:job/([^/]+)/?)?").matcher(cim.getUrl());
+                if (m.matches()) {
+                    return new Association(m.group(1), m.group(2));
+                }
             }
-            return url;
+            // could listen to NbMavenProject.PROP_PROJECT if change firing is supported
         }
-        return "http://localhost/";
+        return null;
     }
 
-    public String getJobName() {
-        CiManagement mag = getCIManag();
-        if (mag != null) {
-            String url = mag.getUrl();
-            int index = url.indexOf("/job/");
-            if (index > 0) {
-                url = url.substring(index + "/job/".length());
-            }
-            if (url.endsWith("/")) {
-                url = url.substring(0, url.length() - 1);
-            }
-            return url;
-        }
-        return "";
-    }
-
-    public void addChangeListener(ChangeListener l) {
-        cs.addChangeListener(l);
-    }
-
-    public void removeChangeListener(ChangeListener l) {
-        cs.removeChangeListener(l);
-    }
-
-    public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
-        if (NbMavenProject.PROP_PROJECT.equals(propertyChangeEvent.getPropertyName())) {
-            boolean old = associated;
-            checkHudson();
-            if (old != associated) {
-                cs.fireChange();
-            }
-        }
-    }
-
-    private void checkHudson() {
-        CiManagement cim = getCIManag();
-        associated = cim != null && cim.getSystem() != null && "hudson".equalsIgnoreCase(cim.getSystem());
+    public boolean recordAssociation(Project p, Association a) {
+        // XXX #158037: record in CiManagement
+        return false;
     }
 
 }

@@ -40,6 +40,7 @@
 package org.netbeans.modules.hudson.ui.actions;
 
 import java.awt.Toolkit;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,11 +48,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.spi.HudsonLogger;
 import org.netbeans.modules.hudson.spi.HudsonLogger.HudsonLogSession;
+import org.netbeans.modules.hudson.spi.HudsonSCM;
+import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
@@ -142,7 +147,32 @@ class Hyperlinker {
         private void acted(final boolean force) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    FileObject f = job.getRemoteWorkspace().findResource(path);
+                    FileObject f = null;
+                    Project p = ProjectHudsonProvider.getDefault().findAssociatedProject(ProjectHudsonProvider.Association.forJob(job));
+                    if (p != null) {
+                        String localPath = null;
+                        File localRoot = FileUtil.toFile(p.getProjectDirectory());
+                        if (localRoot != null) {
+                            for (HudsonSCM scm : Lookup.getDefault().lookupAll(HudsonSCM.class)) {
+                                localPath = scm.translateWorkspacePath(job, path, localRoot);
+                                if (localPath != null) {
+                                    LOG.log(Level.FINE, "Translating remote path {0} to {1} using {2}", new Object[] {path, localPath, scm});
+                                    break;
+                                }
+                            }
+                        }
+                        if (localPath == null) {
+                            LOG.fine("Falling back to guess that remote workspace is a project root");
+                            localPath = path;
+                        }
+                        f = p.getProjectDirectory().getFileObject(localPath);
+                        LOG.log(Level.FINE, "Tried to find local file in {0} at {1} using {2}", new Object[] {p, f, localPath});
+                        // XXX consider aligning local line number with remote line number somehow
+                    }
+                    if (f == null) {
+                        f = job.getRemoteWorkspace().findResource(path);
+                        LOG.log(Level.FINE, "Tried to find remote file at {0} using {1}", new Object[] {f, path});
+                    }
                     if (f == null) {
                         if (force) {
                             StatusDisplayer.getDefault().setStatusText("No file " + path + " found in remote workspace."); // XXX I18N

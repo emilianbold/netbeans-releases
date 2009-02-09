@@ -39,7 +39,14 @@
 
 package org.netbeans.modules.hudson.subversion;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.netbeans.modules.subversion.client.parser.LocalSubversionException;
 import org.netbeans.modules.subversion.client.parser.SvnWcParser;
@@ -55,6 +62,8 @@ import org.w3c.dom.Element;
  */
 @ServiceProvider(service=HudsonSCM.class, position=100)
 public class HudsonSubversionSCM implements HudsonSCM {
+
+    private static final Logger LOG = Logger.getLogger(HudsonSubversionSCM.class.getName());
 
     public Configuration forFolder(File folder) {
         try {
@@ -82,7 +91,63 @@ public class HudsonSubversionSCM implements HudsonSCM {
                 }
             };
         } catch (LocalSubversionException ex) {
+            LOG.log(Level.WARNING, "inspecting configuration for " + folder, ex);
             Exceptions.printStackTrace(ex);
+            return null;
+        }
+    }
+
+    public String translateWorkspacePath(HudsonJob job, String workspacePath, File localRoot) {
+        try {
+            ISVNInfo info = new SvnWcParser().getInfoFromWorkingCopy(localRoot);
+            if (info.getUrl() == null) {
+                return null;
+            }
+            int slash = workspacePath.lastIndexOf('/');
+            String workspaceDir = workspacePath.substring(0, slash + 1);
+            String workspaceFile = workspacePath.substring(slash + 1);
+            // XXX using SvnWcParser is impossible on a remote URL, so need to hardcode format here
+            URL svnEntries = new URL(job.getUrl() + "ws/" + workspaceDir + ".svn/entries");
+            InputStream is = svnEntries.openStream();
+            String checkout, repository;
+            try {
+                BufferedReader r = new BufferedReader(new InputStreamReader(is));
+                r.readLine(); // "8" or similar
+                r.readLine(); // blank
+                r.readLine(); // "dir"
+                r.readLine(); // rev #
+                checkout = r.readLine();
+                repository = r.readLine();
+            } finally {
+                is.close();
+            }
+            // Example:
+            // workspacePath   = trunk/myprj/nbproject/build-impl.xml
+            // workspaceDir    = trunk/myprj/nbproject/
+            // workspaceFile   = build-impl.xml
+            // svnEntries      = http://my.build.server/hudson/job/myprj/ws/trunk/myprj/nbproject/.svn/entries
+            // repository      = https://myprj.dev.java.net/svnroot/myprj
+            // checkout        = https://myprj.dev.java.net/svnroot/myprj/trunk/myprj/nbproject
+            // info.repository = https://myprj.dev.java.net/svnroot/myprj
+            // info.url        = https://myprj.dev.java.net/svnroot/myprj/trunk/myprj
+            // checkoutPath    = /svnroot/myprj/trunk/myprj/nbproject/build-impl.xml
+            // infoURLPath     = /svnroot/myprj/trunk/myprj/
+            // translatedPath  = nbproject/build-impl.xml
+            if (!new URL(repository).getPath().equals(new URL(info.getRepository().toString()).getPath())) {
+                LOG.log(Level.FINE, "repository mismatch between {0} and {1}", new Object[] {repository, info.getRepository()});
+                return null;
+            }
+            String checkoutPath = new URL(checkout + "/" + workspaceFile).getPath();
+            String infoURLPath = new URL(info.getUrl() + "/").getPath();
+            if (!checkoutPath.startsWith(infoURLPath)) {
+                LOG.log(Level.FINE, "checkout mismatch between {0} and {1}", new Object[] {infoURLPath, checkoutPath});
+                return null;
+            }
+            String translatedPath = checkoutPath.substring(infoURLPath.length());
+            LOG.log(Level.FINE, "translated path as {0}", translatedPath);
+            return translatedPath;
+        } catch (Exception x) {
+            LOG.log(Level.FINE, "cannot translate path", x);
             return null;
         }
     }

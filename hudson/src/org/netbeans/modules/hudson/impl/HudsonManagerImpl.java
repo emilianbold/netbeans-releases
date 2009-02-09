@@ -304,12 +304,9 @@ public class HudsonManagerImpl extends HudsonManager {
                 if (projectInstances.containsKey(project)) {
                     exists = true;
                 }
-                ProjectHudsonProvider prov = project.getLookup().lookup(ProjectHudsonProvider.class);
-                if (prov != null && !prov.isAssociated()) {
-                    prov = null;
-                }
-                if (prov != null && !exists) {
-                    String url = prov.getServerUrl();
+                ProjectHudsonProvider.Association assoc = ProjectHudsonProvider.getDefault().findAssociation(project);
+                if (assoc != null && !exists) {
+                    String url = assoc.getServerUrl();
                     HudsonInstance in = getInstance(url);
                     if (in != null && !in.isPersisted()) {
                         ProjectHIP props = (ProjectHIP)((HudsonInstanceImpl)in).getProperties();
@@ -322,7 +319,7 @@ public class HudsonManagerImpl extends HudsonManager {
                         HudsonInstanceImpl impl = (HudsonInstanceImpl) getInstance(props.get(HudsonInstanceConstants.INSTANCE_URL));
                         projectInstances.put(project, impl);
                     }
-                } else if (prov == null && exists) {
+                } else if (assoc == null && exists) {
                     HudsonInstanceImpl remove = projectInstances.remove(project);
                     if (remove != null && !remove.isPersisted()) {
                         ProjectHIP props = (ProjectHIP)remove.getProperties();

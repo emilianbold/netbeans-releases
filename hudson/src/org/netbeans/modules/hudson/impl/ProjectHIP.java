@@ -65,9 +65,9 @@ class ProjectHIP extends HudsonInstanceProperties {
         synchronized (providers) {
             providers.add(prov);
         }
-        ProjectHudsonProvider p = prov.getLookup().lookup(ProjectHudsonProvider.class);
-        if (p != null && p.isAssociated()) {
-            String u = p.getServerUrl();
+        ProjectHudsonProvider.Association assoc = ProjectHudsonProvider.getDefault().findAssociation(prov);
+        if (assoc != null) {
+            String u = assoc.getServerUrl();
             put(INSTANCE_URL, u);
             put(INSTANCE_NAME, u.replaceFirst("https?://", "").replaceFirst("/$", "")); // NOI18N
             setPreferredJobs();
@@ -99,11 +99,11 @@ class ProjectHIP extends HudsonInstanceProperties {
     private void setPreferredJobs() {
         String list = "";
         for (Project prj : getProviders()) {
-            ProjectHudsonProvider p = prj.getLookup().lookup(ProjectHudsonProvider.class);
-            if (p != null && p.isAssociated()) {
-                String name = p.getJobName();
-                if (name != null && name.trim().length() > 0) {
-                    list = list + "|" + name.trim(); //NOI18N
+            ProjectHudsonProvider.Association assoc = ProjectHudsonProvider.getDefault().findAssociation(prj);
+            if (assoc != null) {
+                String name = assoc.getJobName();
+                if (name != null) {
+                    list = list + "|" + name; //NOI18N
                 }
             }
         }

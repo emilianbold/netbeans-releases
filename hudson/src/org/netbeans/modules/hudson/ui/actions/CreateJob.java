@@ -48,9 +48,11 @@ import java.net.URLEncoder;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.AbstractAction;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ProjectHudsonJobCreator;
+import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -84,13 +86,13 @@ public class CreateJob extends AbstractAction {
         if (result == NotifyDescriptor.OK_OPTION) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    finalizeJob(panel.creator, panel.name());
+                    finalizeJob(panel.creator, panel.name(), panel.selectedProject());
                 }
             });
         }
     }
 
-    private void finalizeJob(ProjectHudsonJobCreator creator, String name) {
+    private void finalizeJob(ProjectHudsonJobCreator creator, String name, Project project) {
         try {
             Document doc = creator.configure();
             String createItemURL = instance.getUrl() + "createItem?name=" + URLEncoder.encode(name, "UTF-8"); // NOI18N
@@ -98,7 +100,6 @@ public class CreateJob extends AbstractAction {
             conn.setDoOutput(true);
             conn.setRequestProperty("Content-Type", "text/xml");
             conn.connect();
-            // XXX how do we pass authentication info? Where do we get it from?
             OutputStream os = conn.getOutputStream();
             try {
                 XMLUtil.write(doc, os, "UTF-8"); // NOI18N
@@ -111,7 +112,8 @@ public class CreateJob extends AbstractAction {
             }
             URLDisplayer.getDefault().showURL(new URL(instance.getUrl() + "job/" + URLEncoder.encode(name, "UTF-8") + "/")); // NOI18N
             instance.synchronize();
-            // XXX remember that the new job corresponds to this project (see ProjectHudsonProvider)
+            ProjectHudsonProvider.getDefault().recordAssociation(project,
+                    new ProjectHudsonProvider.Association(instance.getUrl(), name));
         } catch (IOException x) {
             Exceptions.printStackTrace(x);
         }

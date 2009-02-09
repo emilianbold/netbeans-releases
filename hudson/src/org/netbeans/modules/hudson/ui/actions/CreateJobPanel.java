@@ -129,6 +129,10 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
         return name.getText();
     }
 
+    Project selectedProject() {
+        return (Project) project.getSelectedItem();
+    }
+
     private void updateProjectModel() {
         SortedSet<Project> projects = new TreeSet<Project>(new Comparator<Project>() {
             Collator COLL = Collator.getInstance();
@@ -239,7 +243,7 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
         }
         creator = null;
         ok();
-        Project p = (Project) project.getSelectedItem();
+        Project p = selectedProject();
         if (p == null) {
             error("You must pick a project."); // XXX I18N
             return;
@@ -250,8 +254,8 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
             project.setSelectedItem(null);
             return;
         }
-        ProjectHudsonProvider php = p.getLookup().lookup(ProjectHudsonProvider.class);
-        if (php != null && php.isAssociated()) {
+        if (ProjectHudsonProvider.getDefault().findAssociation(p) != null) {
+            // XXX check whether the association is still valid; job might have been deleted since then
             error("This project already seems to be associated with a Hudson job."); // XXX I18N
             return;
         }
