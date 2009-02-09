@@ -77,7 +77,7 @@ public class ValidateRegistryTestCase extends NbTestCase {
     }
 
     public void testSchema() throws Exception {
-        FileObject folder = FileUtil.getConfigFile("Services/CndToolChain"); //NOI18N
+        FileObject folder = FileUtil.getConfigFile(ToolchainManagerImpl.CONFIG_FOLDER);
         if (folder != null && folder.isFolder()) {
             FileObject[] files = folder.getChildren();
             for (FileObject file : files) {
