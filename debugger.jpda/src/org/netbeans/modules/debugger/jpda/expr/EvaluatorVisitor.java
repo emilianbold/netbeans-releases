@@ -2728,7 +2728,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
             evaluationContext.methodToBeInvoked();
             Value value;
-            autoboxArguments(method.argumentTypes(), argVals, evaluationThread);
+            autoboxArguments(method.argumentTypes(), argVals, evaluationThread, evaluationContext);
             if (Boolean.TRUE.equals(isStatic)) {
                 value = type.invokeMethod(evaluationThread, method, argVals,
                                           ObjectReference.INVOKE_SINGLE_THREADED);
@@ -2794,10 +2794,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
      * Auto-boxes or un-boxes arguments of a method.
      */
     private static void autoboxArguments(List<Type> types, List<Value> argVals,
-                                         ThreadReference evaluationThread) throws InvalidTypeException,
-                                                                                  ClassNotLoadedException,
-                                                                                  IncompatibleThreadStateException,
-                                                                                  InvocationException {
+                                         ThreadReference evaluationThread,
+                                         EvaluationContext evaluationContext) throws InvalidTypeException,
+                                                                                     ClassNotLoadedException,
+                                                                                     IncompatibleThreadStateException,
+                                                                                     InvocationException {
         if (types.size() != argVals.size()) {
             return ;
         }
@@ -2806,10 +2807,10 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             Type t = types.get(i);
             Value v = argVals.get(i);
             if (v instanceof ObjectReference && t instanceof PrimitiveType) {
-                argVals.set(i, unbox((ObjectReference) v, (PrimitiveType) t, evaluationThread));
+                argVals.set(i, unbox((ObjectReference) v, (PrimitiveType) t, evaluationThread, evaluationContext));
             }
             if (v instanceof PrimitiveValue && t instanceof ReferenceType) {
-                argVals.set(i, box((PrimitiveValue) v, (ReferenceType) t, evaluationThread));
+                argVals.set(i, box((PrimitiveValue) v, (ReferenceType) t, evaluationThread, evaluationContext));
             }
         }
     }
@@ -2837,7 +2838,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                             evaluationContext.methodToBeInvoked();
                             methodCalled = true;
                         }
-                        elements.set(i, unbox((ObjectReference) v, (PrimitiveType) type, evaluationThread));
+                        elements.set(i, unbox((ObjectReference) v, (PrimitiveType) type, evaluationThread, evaluationContext));
                     }
                 }
             } else if (type instanceof ReferenceType) {
@@ -2855,7 +2856,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                             evaluationContext.methodToBeInvoked();
                             methodCalled = true;
                         }
-                        elements.set(i, box((PrimitiveValue) v, (ReferenceType) type, evaluationThread));
+                        elements.set(i, box((PrimitiveValue) v, (ReferenceType) type, evaluationThread, evaluationContext));
                     }
                 }
             }
@@ -2909,42 +2910,42 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             if (name.equals(Boolean.class.getName())) {
                 unboxMethodToBeCalled(arg0, r, evaluationContext);
                 methodCalled = true;
-                return invokeUnboxingMethod(r, "booleanValue", evaluationContext.getFrame().thread());
+                return invokeUnboxingMethod(r, "booleanValue", evaluationContext.getFrame().thread(), evaluationContext);
             }
             if (name.equals(Byte.class.getName())) {
                 unboxMethodToBeCalled(arg0, r, evaluationContext);
                 methodCalled = true;
-                return invokeUnboxingMethod(r, "byteValue", evaluationContext.getFrame().thread());
+                return invokeUnboxingMethod(r, "byteValue", evaluationContext.getFrame().thread(), evaluationContext);
             }
             if (name.equals(Character.class.getName())) {
                 unboxMethodToBeCalled(arg0, r, evaluationContext);
                 methodCalled = true;
-                return invokeUnboxingMethod(r, "charValue", evaluationContext.getFrame().thread());
+                return invokeUnboxingMethod(r, "charValue", evaluationContext.getFrame().thread(), evaluationContext);
             }
             if (name.equals(Short.class.getName())) {
                 unboxMethodToBeCalled(arg0, r, evaluationContext);
                 methodCalled = true;
-                return invokeUnboxingMethod(r, "shortValue", evaluationContext.getFrame().thread());
+                return invokeUnboxingMethod(r, "shortValue", evaluationContext.getFrame().thread(), evaluationContext);
             }
             if (name.equals(Integer.class.getName())) {
                 unboxMethodToBeCalled(arg0, r, evaluationContext);
                 methodCalled = true;
-                return invokeUnboxingMethod(r, "intValue", evaluationContext.getFrame().thread());
+                return invokeUnboxingMethod(r, "intValue", evaluationContext.getFrame().thread(), evaluationContext);
             }
             if (name.equals(Long.class.getName())) {
                 unboxMethodToBeCalled(arg0, r, evaluationContext);
                 methodCalled = true;
-                return invokeUnboxingMethod(r, "longValue", evaluationContext.getFrame().thread());
+                return invokeUnboxingMethod(r, "longValue", evaluationContext.getFrame().thread(), evaluationContext);
             }
             if (name.equals(Float.class.getName())) {
                 unboxMethodToBeCalled(arg0, r, evaluationContext);
                 methodCalled = true;
-                return invokeUnboxingMethod(r, "floatValue", evaluationContext.getFrame().thread());
+                return invokeUnboxingMethod(r, "floatValue", evaluationContext.getFrame().thread(), evaluationContext);
             }
             if (name.equals(Double.class.getName())) {
                 unboxMethodToBeCalled(arg0, r, evaluationContext);
                 methodCalled = true;
-                return invokeUnboxingMethod(r, "doubleValue", evaluationContext.getFrame().thread());
+                return invokeUnboxingMethod(r, "doubleValue", evaluationContext.getFrame().thread(), evaluationContext);
             }
             return r;
         } catch (InvalidTypeException itex) {
@@ -2981,18 +2982,19 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     }
 
     public static PrimitiveValue unbox(ObjectReference val, PrimitiveType type,
-                                        ThreadReference thread) throws InvalidTypeException,
-                                                                       ClassNotLoadedException,
-                                                                       IncompatibleThreadStateException,
-                                                                       InvocationException {
-        if (type instanceof BooleanType) return invokeUnboxingMethod(val, "booleanValue", thread);
-        if (type instanceof ByteType) return invokeUnboxingMethod(val, "byteValue", thread);
-        if (type instanceof CharType) return invokeUnboxingMethod(val, "charValue", thread);
-        if (type instanceof ShortType) return invokeUnboxingMethod(val, "shortValue", thread);
-        if (type instanceof IntegerType) return invokeUnboxingMethod(val, "intValue", thread);
-        if (type instanceof LongType) return invokeUnboxingMethod(val, "longValue", thread);
-        if (type instanceof FloatType) return invokeUnboxingMethod(val, "floatValue", thread);
-        if (type instanceof DoubleType) return invokeUnboxingMethod(val, "doubleValue", thread);
+                                       ThreadReference thread,
+                                       EvaluationContext context) throws InvalidTypeException,
+                                                                         ClassNotLoadedException,
+                                                                         IncompatibleThreadStateException,
+                                                                         InvocationException {
+        if (type instanceof BooleanType) return invokeUnboxingMethod(val, "booleanValue", thread, context);
+        if (type instanceof ByteType) return invokeUnboxingMethod(val, "byteValue", thread, context);
+        if (type instanceof CharType) return invokeUnboxingMethod(val, "charValue", thread, context);
+        if (type instanceof ShortType) return invokeUnboxingMethod(val, "shortValue", thread, context);
+        if (type instanceof IntegerType) return invokeUnboxingMethod(val, "intValue", thread, context);
+        if (type instanceof LongType) return invokeUnboxingMethod(val, "longValue", thread, context);
+        if (type instanceof FloatType) return invokeUnboxingMethod(val, "floatValue", thread, context);
+        if (type instanceof DoubleType) return invokeUnboxingMethod(val, "doubleValue", thread, context);
         throw new RuntimeException("Invalid type while unboxing: " + type.signature());    // never happens
     }
 
@@ -3025,10 +3027,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     }
 
     public static ObjectReference box(PrimitiveValue v, ReferenceType type,
-                                       ThreadReference thread) throws InvalidTypeException,
-                                                                      ClassNotLoadedException,
-                                                                      IncompatibleThreadStateException,
-                                                                      InvocationException {
+                                      ThreadReference thread,
+                                      EvaluationContext evaluationContext) throws InvalidTypeException,
+                                                                                  ClassNotLoadedException,
+                                                                                  IncompatibleThreadStateException,
+                                                                                  InvocationException {
         try {
             Method constructor = null;
             type = adjustBoxingType(type, (PrimitiveType) v.type());
@@ -3042,6 +3045,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             if (constructor == null) {
                 throw new RuntimeException("No constructor "+type+" "+signature);
             }
+            if (evaluationContext != null) {
+                evaluationContext.methodToBeInvoked();
+            }
             return ((ClassType) type).newInstance(thread, constructor, Arrays.asList(new Value[] { v }), ObjectReference.INVOKE_SINGLE_THREADED);
         } catch (InvalidTypeException itex) {
             throw itex;
@@ -3054,15 +3060,29 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         } catch (Exception e) {
             // this should never happen, indicates an internal error
             throw new RuntimeException("Unexpected exception while invoking boxing method", e);
+        } finally {
+            if (evaluationContext != null) {
+                try {
+                    evaluationContext.methodInvokeDone();
+                } catch (IncompatibleThreadStateException itsex) {
+                    InvalidExpressionException ieex = new InvalidExpressionException (itsex);
+                    ieex.initCause(itsex);
+                    throw new IllegalStateException(ieex);
+                }
+            }
         }
     }
 
     private static PrimitiveValue invokeUnboxingMethod(ObjectReference reference, String methodName,
-                                                       ThreadReference thread) throws InvalidTypeException,
-                                                                                      ClassNotLoadedException,
-                                                                                      IncompatibleThreadStateException,
-                                                                                      InvocationException {
+                                                       ThreadReference thread,
+                                                       EvaluationContext evaluationContext) throws InvalidTypeException,
+                                                                                                   ClassNotLoadedException,
+                                                                                                   IncompatibleThreadStateException,
+                                                                                                   InvocationException {
         Method toCall = (Method) reference.referenceType().methodsByName(methodName).get(0);
+        if (evaluationContext != null) {
+            evaluationContext.methodToBeInvoked();
+        }
         try {
             return (PrimitiveValue) reference.invokeMethod(thread, toCall, new ArrayList<Value>(0), ObjectReference.INVOKE_SINGLE_THREADED);
         } catch (InvalidTypeException itex) {
@@ -3076,6 +3096,16 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         } catch (Exception e) {
             // this should never happen, indicates an internal error
             throw new RuntimeException("Unexpected exception while invoking unboxing method", e);
+        } finally {
+            if (evaluationContext != null) {
+                try {
+                    evaluationContext.methodInvokeDone();
+                } catch (IncompatibleThreadStateException itsex) {
+                    InvalidExpressionException ieex = new InvalidExpressionException (itsex);
+                    ieex.initCause(itsex);
+                    throw new IllegalStateException(ieex);
+                }
+            }
         }
     }
 
