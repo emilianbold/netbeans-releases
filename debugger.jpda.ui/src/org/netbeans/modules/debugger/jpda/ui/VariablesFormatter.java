@@ -137,7 +137,7 @@ public class VariablesFormatter {
      * @param classTypes new value of classTypes
      */
     public void setClassTypes(String classTypesCommaSeparated) {
-        this.classTypes = classTypesCommaSeparated.split(",");
+        this.classTypes = classTypesCommaSeparated.split("[, ]+");
     }
 
     /**
