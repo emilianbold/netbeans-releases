@@ -37,11 +37,20 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.ui.models;
+package org.netbeans.modules.debugger.jpda.projects;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.JLabel;
 import javax.swing.JTabbedPane;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.DebuggerManagerListener;
+import org.netbeans.api.debugger.Session;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -49,8 +58,34 @@ import org.openide.util.NbBundle;
  */
 public class SourcesTabs extends JTabbedPane {
 
+    private PropertyChangeListener  mainProjectListener;
+    private DebuggerManagerListener debuggerListener;
+
     public SourcesTabs() {
         initComponent();
+        mainProjectListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                Project p = MainProjectManager.getDefault().getMainProject();
+                setProjectTitle(p);
+            }
+        };
+        MainProjectManager.getDefault().addPropertyChangeListener(
+                WeakListeners.propertyChange(mainProjectListener, MainProjectManager.getDefault()));
+
+        debuggerListener = new DebuggerManagerAdapter() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                String propertyName = evt.getPropertyName();
+                if (DebuggerManager.PROP_CURRENT_SESSION.equals(propertyName)) {
+                    Session s = DebuggerManager.getDebuggerManager().getCurrentSession();
+                    setSessionTitle(s);
+                }
+            }
+        };
+        DebuggerManager.getDebuggerManager().addDebuggerListener(
+                WeakListeners.create(DebuggerManagerListener.class, debuggerListener,
+                                             DebuggerManager.getDebuggerManager()));
+        setSessionTitle(DebuggerManager.getDebuggerManager().getCurrentSession());
     }
 
     private void initComponent() {
@@ -58,6 +93,27 @@ public class SourcesTabs extends JTabbedPane {
         addTab(NbBundle.getMessage(SourcesTabs.class, "LBL_SourcesTabbs.Current"), new JLabel("Current"));
         addTab(NbBundle.getMessage(SourcesTabs.class, "LBL_SourcesTabbs.Remote"), new JLabel("Remote"));
 
+    }
+
+    private void setProjectTitle(Project p) {
+        if (p == null) {
+            setTitleAt(0, NbBundle.getMessage(SourcesTabs.class, "LBL_SourcesTabbs.Current"));
+        } else {
+            ProjectInformation pi = (ProjectInformation) p.getLookup ().
+                lookup (ProjectInformation.class);
+            setTitleAt(0, pi.getDisplayName());
+        }
+    }
+
+    private void setSessionTitle(Session s) {
+        if (s != null) {
+            //getTabComponentAt(1).setVisible(false);
+            setTitleAt(0, s.getName());
+            setEnabledAt(1, false);
+        } else {
+            setProjectTitle(MainProjectManager.getDefault().getMainProject());
+            setEnabledAt(1, true);
+        }
     }
 
 }

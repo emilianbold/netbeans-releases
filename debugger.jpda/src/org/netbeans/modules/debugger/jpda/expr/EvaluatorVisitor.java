@@ -335,8 +335,12 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     type = (ReferenceType) objectReference.type();
                 }
             } else {
-                objectReference = evaluationContext.getFrame().thisObject();
-                type = (ReferenceType) evaluationContext.getFrame().location().declaringType();
+                objectReference = evaluationContext.getContextObject();
+                if (objectReference != null) {
+                    type = objectReference.referenceType();
+                } else {
+                    type = (ReferenceType) evaluationContext.getFrame().location().declaringType();
+                }
             }
         } else if (isStatic) {
             objectReference = null;
@@ -365,7 +369,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     }
                 }
             } else {
-                objectReference = evaluationContext.getFrame().thisObject();
+                objectReference = evaluationContext.getContextObject();
                 if (objectReference != null) {
                     type = objectReference.referenceType();
                     if (enclosingClass != null) {
@@ -1379,13 +1383,13 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         // Class not found. If the source is not fully resolved, we may
         // get a field or local variable here:
         if (name.equals("this")) {
-            return evaluationContext.getFrame().thisObject();
+            return evaluationContext.getContextObject();
         }
         if (name.equals("super")) {
             ReferenceType thisType = evaluationContext.getFrame().location().declaringType();
             if (thisType instanceof ClassType) {
                 ClassType superClass = ((ClassType) thisType).superclass();
-                ObjectReference thisObject = evaluationContext.getFrame().thisObject();
+                ObjectReference thisObject = evaluationContext.getContextObject();
                 if (thisObject == null) {
                     return superClass;
                 } else {
@@ -1406,19 +1410,24 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 return evaluationContext.getFrame().getValue(lv);
             }
         } catch (AbsentInformationException aiex) {}
-        Field field = evaluationContext.getFrame().location().declaringType().fieldByName(name);
+        Field field;
+        if (evaluationContext.getContextObject() != null) {
+            field = evaluationContext.getContextObject().referenceType().fieldByName(name);
+        } else {
+            field = evaluationContext.getFrame().location().declaringType().fieldByName(name);
+        }
         if (field != null) {
             if (field.isStatic()) {
                 evaluationContext.putField(arg0, field, null);
                 return field.declaringType().getValue(field);
             }
-            ObjectReference thisObject = evaluationContext.getFrame().thisObject();
+            ObjectReference thisObject = evaluationContext.getContextObject();
             if (thisObject != null) {
                 evaluationContext.putField(arg0, field, thisObject);
                 return thisObject.getValue(field);
             }
         }
-        ObjectReference thiz = evaluationContext.getFrame().thisObject();
+        ObjectReference thiz = evaluationContext.getContextObject();
         if (thiz != null) {
             Field outer = thiz.referenceType().fieldByName("val$"+name);
             if (outer != null) {
@@ -1485,13 +1494,13 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 VariableElement ve = (VariableElement) elm;
                 String fieldName = ve.getSimpleName().toString();
                 if (fieldName.equals("this")) {
-                    return evaluationContext.getFrame().thisObject();
+                    return evaluationContext.getContextObject();
                 }
                 if (fieldName.equals("super")) {
                     ReferenceType thisType = evaluationContext.getFrame().location().declaringType();
                     if (thisType instanceof ClassType) {
                         ClassType superClass = ((ClassType) thisType).superclass();
-                        ObjectReference thisObject = evaluationContext.getFrame().thisObject();
+                        ObjectReference thisObject = evaluationContext.getContextObject();
                         if (thisObject == null) {
                             return superClass;
                         } else {
@@ -1519,7 +1528,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     evaluationContext.putField(arg0, field, null);
                     return declaringType.getValue(field);
                 }
-                ObjectReference thisObject = evaluationContext.getFrame().thisObject();
+                ObjectReference thisObject = evaluationContext.getContextObject();
                 if (thisObject != null) {
                     if (field.isPrivate()) {
                         ObjectReference to = findEnclosingObject(arg0, thisObject, declaringType, field.name(), null);
@@ -2085,7 +2094,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             if (expr instanceof ClassType) {
                 ClassType clazz = (ClassType) expr;
                 if (name.equals("this")) {
-                    ObjectReference thisObject = evaluationContext.getFrame().thisObject();
+                    ObjectReference thisObject = evaluationContext.getContextObject();
                     while (thisObject != null && !((ReferenceType) thisObject.type()).equals(clazz)) {
                         ReferenceType thisClass = (ReferenceType) thisObject.type();
                         Field outerThisField = thisClass.fieldByName("this$0");
@@ -2150,7 +2159,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 if (expr instanceof ClassType) {
                     ClassType clazz = (ClassType) expr;
                     if (fieldName.equals("this")) {
-                        ObjectReference thisObject = evaluationContext.getFrame().thisObject();
+                        ObjectReference thisObject = evaluationContext.getContextObject();
                         while (thisObject != null && !((ReferenceType) thisObject.type()).equals(clazz)) {
                             ReferenceType thisClass = (ReferenceType) thisObject.type();
                             Field outerThisField = thisClass.fieldByName("this$0");
