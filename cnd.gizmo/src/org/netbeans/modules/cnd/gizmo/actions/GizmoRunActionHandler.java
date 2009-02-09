@@ -39,7 +39,9 @@
 package org.netbeans.modules.cnd.gizmo.actions;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
@@ -78,7 +80,9 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         String exe = IpeUtils.quoteIfNecessary(pae.getExecutable());
         exe = IpeUtils.toAbsolutePath(FileUtil.toFile(pae.getProject().getProjectDirectory()).getAbsolutePath(), exe);
         String[] args = pae.getProfile().getArgsArray();
-        String[] env = pae.getProfile().getEnvironment().getenv();
+        String[][] envs = pae.getProfile().getEnvironment().getenvAsPairs();
+        Map<String, String> env = new HashMap<String, String>();
+        //TODO:create a map     
         // TODO: set terminal, InputOutput, execution environment, remote...
         NativeExecutableTargetConfiguration conf = new NativeExecutableTargetConfiguration(exe, args, env);
         NativeExecutableTarget target = new NativeExecutableTarget(conf);

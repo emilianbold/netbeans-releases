@@ -1,2 +1,2 @@
-org.netbeans.modules.debugger.jpda.ui.models.JavaVariablesFilter
 org.netbeans.modules.debugger.jpda.ui.models.EnumConstantsFilter
+org.netbeans.modules.debugger.jpda.ui.models.VariablesFormatterFilter

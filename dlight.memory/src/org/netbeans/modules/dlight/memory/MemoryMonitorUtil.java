@@ -52,7 +52,20 @@ import org.openide.util.Utilities;
 class MemoryMonitorUtil {
 
     private static String getExecutableSuffix() {
-        return Utilities.isWindows() ? ".exe" : "";
+        return Utilities.isWindows() ? ".exe" : ""; //NOI18N
+    }
+
+    private static String getSharedLibrarySuffix() {
+        if (Utilities.isWindows()) {
+            return ".dll";  //NOI18N
+        } else if(Utilities.isMac()) {
+            return ".dylib";    //NOI18N
+        } else if (Utilities.isUnix()) {
+            return ".so";   //NOI18N
+        } else {
+            DLightLogger.instance.warning("unknown platform"); //NOI18N
+            return "";
+        }
     }
 
     private static String getPlatformPath(boolean is64bits) {
@@ -86,10 +99,21 @@ class MemoryMonitorUtil {
     }
 
     public static String getMonitorCmd() {
+        return getPlatformBinary("mmonitor" + getExecutableSuffix()); //NOI18N
+    }
+
+    public static String getAgentLib() {
+        return getPlatformBinary("magent" + getSharedLibrarySuffix()); //NOI18N
+    }
+
+    public static String getEnvVar() {
+        return Utilities.isMac() ? "o" : "LD_PRELOAD"; //NOI18N
+    }
+
+    private static String getPlatformBinary(String nameWithSuffix) {
         String platformPath = getPlatformPath(false); //TODO: process 64 bits!
         if (platformPath != null) {
-            String cmd = "mmonitor" + getExecutableSuffix(); //NOI18N
-            String relativePath = "bin" + File.separator + platformPath + File.separator + cmd; //NOI18N
+            String relativePath = "bin" + File.separator + platformPath + File.separator + nameWithSuffix; //NOI18N
             File file = InstalledFileLocator.getDefault().locate(relativePath, null, false);
             if (file != null && file.exists()) {
                 return file.getAbsolutePath();

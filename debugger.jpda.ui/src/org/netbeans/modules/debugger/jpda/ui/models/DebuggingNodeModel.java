@@ -51,7 +51,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -133,17 +132,17 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     
     public static final String SHOW_PACKAGE_NAMES = "show.packageNames";
 
-    private JPDADebugger debugger;
+    private final JPDADebugger debugger;
     
-    private List<ModelListener> listeners = new ArrayList<ModelListener>();
+    private final List<ModelListener> listeners = new ArrayList<ModelListener>();
     
-    private Map<JPDAThread, ThreadStateUpdater> threadStateUpdaters = new WeakHashMap<JPDAThread, ThreadStateUpdater>();
-    private CurrentThreadListener currentThreadListener;
-    private DeadlockDetector deadlockDetector;
-    private Set nodesInDeadlock = new HashSet();
+    private final Map<JPDAThread, ThreadStateUpdater> threadStateUpdaters = new WeakHashMap<JPDAThread, ThreadStateUpdater>();
+    private final CurrentThreadListener currentThreadListener;
+    private final DeadlockDetector deadlockDetector;
+    private final Set nodesInDeadlock = new HashSet();
     private static final Map<JPDADebugger, Set> nodesInDeadlockByDebugger = new WeakHashMap<JPDADebugger, Set>();
-    private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
-    private RequestProcessor rp;
+    private final Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
+    private final RequestProcessor rp;
     
     public DebuggingNodeModel(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
