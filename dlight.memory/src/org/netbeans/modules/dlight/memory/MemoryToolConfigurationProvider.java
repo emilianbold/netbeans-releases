@@ -64,37 +64,42 @@ import org.netbeans.modules.dlight.util.Util;
  */
 public final class MemoryToolConfigurationProvider implements DLightToolConfigurationProvider {
 
+    private static final boolean useCollector = Util.getBoolean("dlight.memory.collector", true);
+    private static final boolean redirectStdErr = Util.getBoolean("dlight.memory.log.stderr", false);
+
     public MemoryToolConfigurationProvider() {
     }
 
     public DLightToolConfiguration create() {
         final String toolName = "Memory Tool";
         final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(toolName);
-        Column timestampColumn = new Column("timestamp", Long.class, "Timestamp", null);
-        Column timeColumn = new Column("kind", Integer.class, "Kind", null);
-        Column sizeColumn = new Column("size", Integer.class, "Size", null);
-        Column addressColumn = new Column("address", Integer.class, "Address", null);
         Column totalColumn = new Column("total", Integer.class, "Heap size", null);
-        Column stackColumn = new Column("stackid", Integer.class, "Stack ID", null);
+        DataTableMetadata rawTableMetadata = null;
+        if (useCollector) {
+            Column timestampColumn = new Column("timestamp", Long.class, "Timestamp", null);
+            Column timeColumn = new Column("kind", Integer.class, "Kind", null);
+            Column sizeColumn = new Column("size", Integer.class, "Size", null);
+            Column addressColumn = new Column("address", Integer.class, "Address", null);
+            Column stackColumn = new Column("stackid", Integer.class, "Stack ID", null);
 
-        List<Column> columns = Arrays.asList(
-                timestampColumn,
-                timeColumn,
-                sizeColumn,
-                addressColumn,
-                totalColumn,
-                stackColumn);
+            List<Column> columns = Arrays.asList(
+                    timestampColumn,
+                    timeColumn,
+                    sizeColumn,
+                    addressColumn,
+                    totalColumn,
+                    stackColumn);
 
-        String scriptFile = Util.copyResource(getClass(), Util.getBasePath(getClass()) + "/resources/mem.d");
+            String scriptFile = Util.copyResource(getClass(), Util.getBasePath(getClass()) + "/resources/mem.d");
 
-        final DataTableMetadata rawTableMetadata = new DataTableMetadata("mem", columns);
-        DTDCConfiguration dataCollectorConfiguration = new DTDCConfiguration(scriptFile, Arrays.asList(rawTableMetadata));
-        dataCollectorConfiguration.setStackSupportEnabled(true);
-        //dataCollectorConfiguration.setIndicatorFiringFactor(1);
-        // DTDCConfiguration collectorConfiguration = new DtraceDataAndStackCollector(dataCollectorConfiguration);
-        MultipleDTDCConfiguration multipleDTDCConfiguration = new MultipleDTDCConfiguration(dataCollectorConfiguration, "mem:");
-        toolConfiguration.addDataCollectorConfiguration(multipleDTDCConfiguration);
-
+            rawTableMetadata = new DataTableMetadata("mem", columns);
+            DTDCConfiguration dataCollectorConfiguration = new DTDCConfiguration(scriptFile, Arrays.asList(rawTableMetadata));
+            dataCollectorConfiguration.setStackSupportEnabled(true);
+            //dataCollectorConfiguration.setIndicatorFiringFactor(1);
+            // DTDCConfiguration collectorConfiguration = new DtraceDataAndStackCollector(dataCollectorConfiguration);
+            MultipleDTDCConfiguration multipleDTDCConfiguration = new MultipleDTDCConfiguration(dataCollectorConfiguration, "mem:");
+            toolConfiguration.addDataCollectorConfiguration(multipleDTDCConfiguration);
+        }
         List<Column> indicatorColumns = Arrays.asList(
                 totalColumn);
         IndicatorMetadata indicatorMetadata = new IndicatorMetadata(indicatorColumns);
@@ -103,9 +108,10 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         String monitor = MemoryMonitorUtil.getMonitorCmd();
         String envVar = MemoryMonitorUtil.getEnvVar();
         String agent = MemoryMonitorUtil.getAgentLib();
-        DLightLogger.instance.fine("Memory Indicator:\nmonitor:\n" + monitor + "\nagent:\n" + agent);
+        DLightLogger.instance.fine("Memory Indicator:\nmonitor:\n" + monitor + "\nagent:\n" + agent + "\n\n");
         if (monitor != null && agent != null) {
-            CLIODCConfiguration clioCollectorConfiguration = new CLIODCConfiguration(monitor, "-p @PID",
+            CLIODCConfiguration clioCollectorConfiguration = new CLIODCConfiguration(monitor,
+                    " @PID " + (redirectStdErr ? " 2>/tmp/mmonitor.err" : ""),
                     new MAgentClioParser(totalColumn), Arrays.asList(indicatorTableMetadata));
             Map<String, String> env = new LinkedHashMap<String, String>();
             env.put(envVar, agent);
@@ -113,7 +119,9 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
             clioCollectorConfiguration.setDLightTargetExecutionEnv(env);
             toolConfiguration.addIndicatorDataProviderConfiguration(clioCollectorConfiguration);
             MemoryIndicatorConfiguration indicator = new MemoryIndicatorConfiguration(indicatorMetadata, "total");
-            indicator.setVisualizerConfiguration(getDetails(rawTableMetadata));
+            if (useCollector) {
+                indicator.setVisualizerConfiguration(getDetails(rawTableMetadata));
+            }
             toolConfiguration.addIndicatorConfiguration(indicator);
         }
 
@@ -150,6 +158,13 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 
         public DataRow process(String line) {
             DLightLogger.instance.fine("MAgentClioParser: " + line); //NOI18N
+            if (line == null) {
+                return null;
+            }
+            line = line.trim();
+            if (!Character.isDigit(line.charAt(0))) {
+                return null;
+            }
             try {
                 long value = Integer.parseInt(line);
                 return new DataRow(colNames, Arrays.asList(new Long[] { value }));
