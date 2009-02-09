@@ -101,6 +101,7 @@ import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.RenameAction;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -956,6 +957,21 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         @Override
         public void setName(String newName) {
             String oldName = folder.getDisplayName();
+            if (folder.isDiskFolder()) {
+                String rootPath = folder.getRootPath();
+                String AbsRootPath = IpeUtils.toAbsolutePath(folder.getConfigurationDescriptor().getBaseDir(), rootPath);
+                File file = new File(AbsRootPath);
+                if (!file.isDirectory() || !file.exists()) {
+                    return;
+                }
+                FileObject fo = FileUtil.toFileObject(file);
+                try {
+                    fo.rename(fo.lock(), newName, null);
+                }
+                catch (IOException ioe) {
+                }
+                return;
+            }
             if (folder.getParent() != null && folder.getParent().findFolderByDisplayName(newName) != null) {
                 String msg = NbBundle.getMessage(MakeLogicalViewProvider.class, "CANNOT_RENAME", oldName, newName); // NOI18N
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));

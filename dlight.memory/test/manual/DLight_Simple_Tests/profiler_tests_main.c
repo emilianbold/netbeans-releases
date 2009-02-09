@@ -182,7 +182,15 @@ static void usage(char* progname) {
     );
 }
 
+static void test_env(char* var) {
+    char* value = getenv(var);
+    printf("%s=%s\n", var ? var : "<null>", value ? value : "");
+}
+
 int main(int argc, char** argv) {
+
+    test_env("LD_PRELOAD");
+    test_env("DYLD_INSERT_LIBRARIES");
 
     if (!process_flags(argc, argv)) {
         usage(argv[0]);
