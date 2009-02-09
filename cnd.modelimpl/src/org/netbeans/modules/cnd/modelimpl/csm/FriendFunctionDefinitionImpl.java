@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
@@ -63,7 +64,7 @@ public class FriendFunctionDefinitionImpl extends FunctionDefinitionImpl<CsmFrie
     
     public FriendFunctionDefinitionImpl(AST ast, CsmClass cls, CsmScope scope) throws AstRendererException {
         super(ast, cls.getContainingFile(), scope);
-        friendClassUID = cls.getUID();
+        friendClassUID = UIDs.get(cls);
     }
     
     public CsmFunction getReferencedFunction() {
@@ -90,7 +91,6 @@ public class FriendFunctionDefinitionImpl extends FunctionDefinitionImpl<CsmFrie
         UIDObjectFactory.getDefaultFactory().writeUID(friendClassUID, output);
     }
     
-    @SuppressWarnings("unchecked")
     public FriendFunctionDefinitionImpl(DataInput input) throws IOException {
         super(input);
         friendClassUID = UIDObjectFactory.getDefaultFactory().readUID(input);

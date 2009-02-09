@@ -46,6 +46,8 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import java.io.DataInput;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -66,7 +68,7 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
     
     public FriendClassImpl(AST ast, FileImpl file, CsmClass parent) {
         super(ast, file);
-        this.parentUID = parent.getUID();
+        this.parentUID = UIDs.get(parent);
         AST qid = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
         name = (qid == null) ? CharSequenceKey.empty() : QualifiedNameCache.getManager().getString(AstRenderer.getQualifiedName(qid));
         nameParts = initNameParts(qid);
@@ -114,9 +116,10 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
             return friendUID.getObject();
         }
         CsmObject o = resolve(resolver);
-        if (o instanceof CsmClass) {
-            friendUID = ((CsmClass)o).getUID();
-            return (CsmClass) o;
+        if (CsmKindUtilities.isClass(o)) {
+            CsmClass cls = (CsmClass) o;
+            friendUID = UIDs.get(cls);
+            return cls;
         }
         return null;
     }
@@ -161,7 +164,6 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
     }
 
 
-    @SuppressWarnings("unchecked")
     public FriendClassImpl(DataInput input) throws IOException {
         super(input);
         this.name = QualifiedNameCache.getManager().getString(input.readUTF());

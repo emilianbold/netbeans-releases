@@ -42,6 +42,7 @@
 package org.netbeans.modules.xml.text.dom;
 
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.w3c.dom.Node;
 
 /**
@@ -55,8 +56,8 @@ import org.w3c.dom.Node;
  */
 public final class EntityReference extends SyntaxNode implements org.w3c.dom.EntityReference  {
 
-    EntityReference(XMLSyntaxSupport syntax, Token token, int to) {
-        super(syntax, token, to);
+    EntityReference(XMLSyntaxSupport syntax, Token<XMLTokenId> token, int start, int end) {
+        super(syntax, token, start, end);
     }
 
     public String getNodeName() {

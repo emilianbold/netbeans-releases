@@ -52,7 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.JButton;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ruby.platform.Util;

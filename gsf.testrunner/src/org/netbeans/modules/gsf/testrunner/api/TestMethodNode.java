@@ -52,6 +52,7 @@ import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 
@@ -76,16 +77,18 @@ public class TestMethodNode extends AbstractNode {
      * Creates a new instance of TestcaseNode
      */
     public TestMethodNode(final Testcase testcase, Project project) {
+        this(testcase, project, null);
+    }
+
+    protected TestMethodNode(final Testcase testcase, Project project, Lookup lookup) {
         super(testcase.getTrouble() != null
               ? new TestMethodNodeChildren(testcase)
-              : Children.LEAF);
+              : Children.LEAF, lookup);
 
         this.testcase = testcase;
         this.project = project;
 
         setDisplayName();
-        setIconBaseWithExtension(
-                "org/netbeans/modules/gsf/testrunner/resources/method.gif");    //NOI18N
         setShortDescription(TestsuiteNode.toTooltipText(testcase.getOutput()));
     }
 
@@ -168,17 +171,18 @@ public class TestMethodNode extends AbstractNode {
     
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[0];
+        return new Action[] {new DiffViewAction(testcase)};
     }
     
     @Override
     public Image getIcon(int type) {
-        Image methodIcon = ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/method.gif"); //NOI18N
-        if (failed()) {
-            Image errorBadgeIcon = ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/error-badge.gif"); //NOI18N
-            return ImageUtilities.mergeImages(methodIcon, errorBadgeIcon, 0, 8);
+        if (Status.PENDING == testcase.getStatus()) {
+            return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/warning2_16.png"); //NOI18N
         }
-        return methodIcon;
+        if (failed()) {
+            return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/warning_16.png"); //NOI18N
+        }
+        return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/ok_16.png"); //NOI18N
     }
 
     @Override
@@ -187,9 +191,10 @@ public class TestMethodNode extends AbstractNode {
     }
 
     public boolean failed() {
-        return testcase.getTrouble() != null;
+        return testcase.getStatus().equals(Status.FAILED)
+                || testcase.getStatus().equals(Status.ERROR);
     }
-    
+
     
     private static final class DisplayNameMapper {
 

@@ -96,7 +96,7 @@ public class WizardErrorPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     
-    public static WizardErrorWizardPanel getWizardErrorWizardPanel() {
+    static WizardErrorWizardPanel getWizardErrorWizardPanel() {
         return new WizardErrorWizardPanel();
     }
     

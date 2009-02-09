@@ -59,6 +59,8 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
@@ -475,14 +477,14 @@ public class UIDUtilities {
         private CsmUID<CsmProject> projectUID;
 
         public UnresolvedUIDBase(CsmProject project) {
-            projectUID = project.getUID();
+            assert project != null : "how to create UID without project?";
+            projectUID = UIDs.get(project);
         }
 
         protected ProjectBase getProject() {
             return (ProjectBase) projectUID.getObject();
         }
 
-        @SuppressWarnings("unchecked")
         /* package */ UnresolvedUIDBase(DataInput aStream) throws IOException {
             projectUID = UIDObjectFactory.getDefaultFactory().readUID(aStream);
         }
@@ -538,10 +540,11 @@ public class UIDUtilities {
         }
     }
 
-    /* package */ static final class UnresolvedFileUID extends UnresolvedUIDBase<CsmFile> {
-
+    /* package */ static final class UnresolvedFileUID extends UnresolvedUIDBase<CsmFile> implements Disposable {
+        private ProjectBase prjRef = null;
         public UnresolvedFileUID(CsmProject project) {
             super(project);
+            prjRef = (ProjectBase)project;
         }
 
         public UnresolvedFileUID(DataInput input) throws IOException {
@@ -551,5 +554,26 @@ public class UIDUtilities {
         public CsmFile getObject() {
             return getProject().getUnresolvedFile();
         }
+
+        @Override
+        protected ProjectBase getProject() {
+            ProjectBase prj = prjRef;
+            if (prj == null) {
+                prj = super.getProject();
+            }
+            return prj;
+        }
+
+        public void dispose() {
+            prjRef = getProject();
+        }
     }
+
+    public static void disposeUnresolved(CsmUID<?> uid) {
+        if (uid instanceof UnresolvedFileUID) {
+            UnresolvedFileUID fileUID = (UnresolvedFileUID) uid;
+            fileUID.dispose();
+        }
+    }
+
 }

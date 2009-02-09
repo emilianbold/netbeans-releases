@@ -100,7 +100,8 @@ public class ConfigurationDescriptorProvider {
 
                         if (trackedFiles == null) {
                             FileChangeListener fcl = new ConfigurationXMLChangeListener();
-                            trackedFiles = new ArrayList<FileObject>();
+                             List<FileObject> files = new ArrayList<FileObject>(2);
+                            boolean first = true;
                             for (String path : new String[] {
                                     "nbproject/configurations.xml", //NOI18N
                                     "nbproject/private/configurations.xml"}) { //NOI18N
@@ -109,10 +110,19 @@ public class ConfigurationDescriptorProvider {
                                     fo.addFileChangeListener(fcl);
                                     // We have to store tracked files somewhere.
                                     // Otherwise they will be GCed, and we won't get notifications.
-                                    trackedFiles.add(fo);
+                                    files.add(fo);
+                                } else {
+                                    if (first) {
+                                        // prevent reading configurations before project cration
+                                        new Exception("Attempt to read project before creation. Not found file "+projectDirectory.getPath()+"/"+path).printStackTrace(); // NOI18N
+                                        return null;
+                                    }
                                 }
+                                first = false;
                             }
+                            trackedFiles = files;
                         }
+
                         ConfigurationXMLReader reader = new ConfigurationXMLReader(projectDirectory);
 
                         if (waitReading && SwingUtilities.isEventDispatchThread()) {
@@ -126,6 +136,7 @@ public class ConfigurationDescriptorProvider {
                         try {
                             projectDescriptor = reader.read(relativeOffset);
                         } catch (java.io.IOException x) {
+                            x.printStackTrace();
                             // most likely open failed
                         }
                         
@@ -167,6 +178,11 @@ public class ConfigurationDescriptorProvider {
                 if (descr.getConfs() == null || descr.getConfs().getActive() == null){
                     return;
                 }
+                Item[] projectItems = ((MakeConfigurationDescriptor) descr).getProjectItems();
+                if (projectItems == null || projectItems.length == 0) {
+                    // do not track empty applications
+                    return;
+                }
                 MakeConfiguration makeConfiguration = (MakeConfiguration) descr.getConfs().getActive();
                 String type;
                 switch (makeConfiguration.getConfigurationType().getValue()) {
@@ -181,6 +197,15 @@ public class ConfigurationDescriptorProvider {
                         break;
                     case MakeConfiguration.TYPE_STATIC_LIB:
                         type = "STATIC_LIB"; // NOI18N
+                        break;
+                    case MakeConfiguration.TYPE_QT_APPLICATION:
+                        type = "QT_APPLICATION"; // NOI18N
+                        break;
+                    case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
+                        type = "QT_DYNAMIC_LIB"; // NOI18N
+                        break;
+                    case MakeConfiguration.TYPE_QT_STATIC_LIB:
+                        type = "QT_STATIC_LIB"; // NOI18N
                         break;
                     default:
                         type = "UNKNOWN"; // NOI18N
@@ -224,12 +249,12 @@ public class ConfigurationDescriptorProvider {
                     platform = "UNKNOWN_PLATFORM"; // NOI18N
                 }
                 makeConfiguration.reCountLanguages((MakeConfigurationDescriptor) descr);
-                Item[] projectItems = ((MakeConfigurationDescriptor) descr).getProjectItems();
                 int size = 0;
                 int allItems = projectItems.length;
                 boolean cLang = false;
                 boolean ccLang = false;
                 boolean fLang = false;
+                boolean aLang = false;
                 for (Item item : projectItems) {
                     ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration);
                     if (!itemConfiguration.getExcluded().getValue()) {
@@ -244,12 +269,16 @@ public class ConfigurationDescriptorProvider {
                             case Tool.FortranCompiler:
                                 fLang = true;
                                 break;
+                            case Tool.Assembler:
+                                aLang = true;
+                                break;
                         }
                     }
                 }
                 String ccUsage = ccLang ? "USE_CPP" : "NO_CPP"; // NOI18N
                 String cUsage = cLang ? "USE_C" : "NO_C"; // NOI18N
                 String fUsage = fLang ? "USE_FORTRAN" : "NO_FORTRAN"; // NOI18N
+                String aUsage = aLang ? "USE_ASM" : "NO_ASM"; // NOI18N
                 rec.setParameters(new Object[] { type, flavor, family, host, platform, toSizeString(allItems), toSizeString(size), ccUsage, cUsage, fUsage});
                 rec.setLoggerName(logger.getName());
                 logger.log(rec);

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.groovy.editor.completion;
 
+import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import java.io.IOException;
 import java.util.Collections;
@@ -92,7 +93,7 @@ public final class JavaElementHandler {
     // FIXME ideally there should be something like nice CompletionRequest once public and stable
     // then this class could implement some common interface
     public Map<MethodSignature, ? extends CompletionItem> getMethods(String className,
-            String prefix, int anchor, String[] typeParameters, boolean emphasise, Set<AccessLevel> levels) {
+            String prefix, int anchor, String[] typeParameters, boolean emphasise, Set<AccessLevel> levels, boolean nameOnly) {
         JavaSource javaSource = createJavaSource();
 
         if (javaSource == null) {
@@ -104,7 +105,7 @@ public final class JavaElementHandler {
         Map<MethodSignature, CompletionItem> result = Collections.synchronizedMap(new HashMap<MethodSignature, CompletionItem>());
         try {
             javaSource.runUserActionTask(new MethodCompletionHelper(cnt, javaSource, className, typeParameters,
-                    levels, prefix, anchor, result, emphasise), true);
+                    levels, prefix, anchor, result, emphasise, nameOnly), true);
         } catch (IOException ex) {
             LOG.log(Level.FINEST, "Problem in runUserActionTask :  {0}", ex.getMessage());
             return Collections.emptyMap();
@@ -184,9 +185,11 @@ public final class JavaElementHandler {
 
         private final Map<MethodSignature, CompletionItem> proposals;
 
+        private final boolean nameOnly;
+
         public MethodCompletionHelper(CountDownLatch cnt, JavaSource javaSource, String className,
                 String[] typeParameters, Set<AccessLevel> levels, String prefix, int anchor,
-                Map<MethodSignature, CompletionItem> proposals, boolean emphasise) {
+                Map<MethodSignature, CompletionItem> proposals, boolean emphasise, boolean nameOnly) {
 
             this.cnt = cnt;
             this.javaSource = javaSource;
@@ -197,6 +200,7 @@ public final class JavaElementHandler {
             this.anchor = anchor;
             this.proposals = proposals;
             this.emphasise = emphasise;
+            this.nameOnly = nameOnly;
         }
 
         public void run(CompilationController info) throws Exception {
@@ -235,8 +239,8 @@ public final class JavaElementHandler {
                                 LOG.log(Level.FINEST, simpleName + " " + parameterString + " " + returnType.toString());
                             }
 
-                            proposals.put(getSignature(te, element, typeParameters, info.getTypes()), new CompletionItem.JavaMethodItem(
-                                    className, simpleName, parameterString, returnType, element.getModifiers(), anchor, emphasise));
+                            proposals.put(getSignature(te, element, typeParameters, info.getTypes()), CompletionItem.forJavaMethod(
+                                    className, simpleName, parameterString, returnType, element.getModifiers(), anchor, emphasise, nameOnly));
                         }
                     }
                 }

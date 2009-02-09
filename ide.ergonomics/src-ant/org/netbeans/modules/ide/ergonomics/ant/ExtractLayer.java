@@ -269,6 +269,7 @@ public final class ExtractLayer extends Task {
                     prefix += n + "/";
                 } else if (qName.equals("file")) {
                     String n = attributes.getValue("name");
+                    addResource(attributes.getValue("url"), true);
                     prefix += n;
                 } else if (qName.equals("attr")) {
                     String name = attributes.getValue("name");
@@ -279,26 +280,7 @@ public final class ExtractLayer extends Task {
                     } else if (attributes.getValue("bundlevalue") != null) {
                         throw new BuildException("bundlevalue in " + file);
                     } else {
-                        String urlresource = attributes.getValue("urlvalue");
-                        if (urlresource == null) {
-                            return;
-                        }
-                        if (urlresource.startsWith("nbres:")) {
-                            urlresource = "nbresloc:" + urlresource.substring(6);
-                        }
-
-                        final String prfx = "nbresloc:";
-                        if (!urlresource.startsWith(prfx)) {
-                            throw new BuildException("Unknown urlvalue in " + file + " was: " + urlresource);
-                        } else {
-                            urlresource = urlresource.substring(prfx.length());
-                            if (urlresource.startsWith("/")) {
-                                urlresource = urlresource.substring(1);
-                            }
-                        }
-                        urlresource = urlresource.replaceFirst("(\\.[^\\.])+$*", ".*$1");
-
-                        copy.add(urlresource);
+                        addResource(attributes.getValue("urlvalue"), false);
                     }
                 }
             }
@@ -313,6 +295,31 @@ public final class ExtractLayer extends Task {
             @Override
             public InputSource resolveEntity(String pub, String sys) throws IOException, SAXException {
                 return new InputSource(new StringReader(""));
+            }
+
+            private void addResource(String url, boolean localAllowed) throws BuildException {
+                if (url == null) {
+                    return;
+                }
+                if (url.startsWith("nbres:")) {
+                    url = "nbresloc:" + url.substring(6);
+                }
+                final String prfx = "nbresloc:";
+                if (!url.startsWith(prfx)) {
+                    if (localAllowed) {
+                        copy.add(".*/" + url);
+                        return;
+                    } else {
+                        throw new BuildException("Unknown urlvalue in " + file + " was: " + url);
+                    }
+                } else {
+                    url = url.substring(prfx.length());
+                    if (url.startsWith("/")) {
+                        url = url.substring(1);
+                    }
+                }
+                url = url.replaceFirst("(\\.[^\\.])+$*", ".*$1");
+                copy.add(url);
             }
         });
     }

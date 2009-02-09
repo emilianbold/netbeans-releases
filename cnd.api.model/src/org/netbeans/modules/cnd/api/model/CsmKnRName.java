@@ -44,6 +44,6 @@ package org.netbeans.modules.cnd.api.model;
  * declaration
  * @author Vladimir Voskresensky
  */
-public interface CsmKnRName extends CsmOffsetableName, CsmIdentifiable<CsmKnRName> {
+public interface CsmKnRName extends CsmOffsetableName {
     CsmParameter getReferencedParameter();
 }

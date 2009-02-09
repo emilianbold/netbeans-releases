@@ -199,7 +199,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
                 new String[] {"javac.classpath", AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH }, // NOI18N
                 new String[] {"javac.test.classpath", AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH }, // NOI18N
                 new String[] {"debug.classpath", AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH }, // NOI18N
-                new String[] {"run.test.classpath", AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH }, true); // NOI18N
+                new String[] {"run.test.classpath", AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH }); // NOI18N
         appClient = new AppClientProvider(this, helper, cpProvider);
         apiJar = CarFactory.createCar(appClient);
         enterpriseResourceSupport = new JarContainerImpl(this, refHelper, helper);
@@ -812,6 +812,9 @@ public final class AppClientProject implements Project, AntProjectListener, File
             }
             if (!props.containsKey(ProjectProperties.EXCLUDES)) {
                 props.setProperty(ProjectProperties.EXCLUDES, ""); // NOI18N
+            }
+            if (!props.containsKey("build.generated.sources.dir")) { // NOI18N
+                props.setProperty("build.generated.sources.dir", "${build.dir}/generated-sources"); // NOI18N
             }
             updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
             

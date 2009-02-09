@@ -41,6 +41,7 @@ package org.netbeans.api.java.source;
 
 import java.io.File;
 import java.net.URL;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
 
@@ -62,7 +63,7 @@ public class BuildArtifactMapper {
      * @param listener listener to add
      * @since 0.37
      */
-    public static void addArtifactsUpdatedListener(URL sourceRoot, ArtifactsUpdated listener) {
+    public static void addArtifactsUpdatedListener(@NonNull URL sourceRoot, @NonNull ArtifactsUpdated listener) {
         BuildArtifactMapperImpl.addArtifactsUpdatedListener(sourceRoot, listener);
     }
     
@@ -73,7 +74,7 @@ public class BuildArtifactMapper {
      * @param listener listener to add
      * @since 0.37
      */
-    public static void removeArtifactsUpdatedListener(URL sourceRoot, ArtifactsUpdated listener) {
+    public static void removeArtifactsUpdatedListener(@NonNull URL sourceRoot, @NonNull ArtifactsUpdated listener) {
         BuildArtifactMapperImpl.removeArtifactsUpdatedListener(sourceRoot, listener);
     }
 
@@ -88,7 +89,7 @@ public class BuildArtifactMapper {
          * @param artifacts the updated files
          * @since 0.37
          */
-        public void artifactsUpdated(Iterable<File> artifacts);
+        public void artifactsUpdated(@NonNull Iterable<File> artifacts);
     }
     
 }

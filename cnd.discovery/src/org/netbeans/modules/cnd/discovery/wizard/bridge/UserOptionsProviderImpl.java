@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.discovery.wizard.bridge;
 
+import org.netbeans.modules.cnd.discovery.api.QtInfoProvider;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager;
@@ -65,6 +66,9 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
             for(PackageConfiguration pc : getPackages(compilerOptions.getAllOptions(compiler))) {
                 res.addAll(pc.getIncludePaths());
             }
+        }
+        if (makeConfiguration.isQmakeConfiguration()) {
+            res.addAll(QtInfoProvider.getDefault().getQtIncludeDirectories(makeConfiguration));
         }
         return res;
     }

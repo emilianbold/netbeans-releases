@@ -43,11 +43,11 @@ package org.netbeans.modules.ruby;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.RootNode;
 import org.jruby.nb.parser.RubyParserResult;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 /**
  * @author Tor Norbye

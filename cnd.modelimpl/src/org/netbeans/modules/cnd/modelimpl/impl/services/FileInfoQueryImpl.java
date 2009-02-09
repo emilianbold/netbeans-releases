@@ -31,6 +31,7 @@ import antlr.Token;
 import antlr.TokenStream;
 import antlr.TokenStreamException;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -232,6 +233,8 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
                 if (lastParsedTime == fileImpl.getLastParsedTime()) {
                     fileImpl.setLastMacroUsages(out);
                 }
+            } catch (FileNotFoundException ex) {
+                // file could be removed
             } catch (IOException ex) {
                 System.err.println("skip marking macros\nreason:" + ex.getMessage()); //NOI18N
 		DiagnosticExceptoins.register(ex);
@@ -268,6 +271,8 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
                         return new OffsetableBase(file, aptGuard.getOffset(), aptGuard.getEndOffset());
                     }
                 }
+            } catch (FileNotFoundException ex) {
+                // file could be removed
             } catch (IOException ex) {
                 System.err.println("IOExeption in getGuardOffset:" + ex.getMessage()); //NOI18N
             }
@@ -334,5 +339,13 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
                 return diff;
             }
         }
+    }
+
+    @Override
+    public long getFileVersion(CsmFile file) {
+        if (file instanceof FileImpl) {
+            return FileImpl.getParseCount();
+        }
+        return 0;
     }
 }

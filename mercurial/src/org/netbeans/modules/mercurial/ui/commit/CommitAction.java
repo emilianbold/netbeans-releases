@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.mercurial.ui.commit;
 
+import java.io.IOException;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.versioning.util.DialogBoundsPreserver;
@@ -71,24 +72,29 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.HashSet;
+import org.netbeans.modules.mercurial.hooks.spi.HgHookContext;
+import org.netbeans.modules.mercurial.hooks.spi.HgHook;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
 
 /**
- * Commit action for mercurial: 
+ * Commit action for mercurial:
  * hg commit -  commit the specified files or all outstanding changes
- * 
+ *
  * @author John Rice
  */
 public class CommitAction extends ContextAction {
-    
+
     static final String RECENT_COMMIT_MESSAGES = "recentCommitMessage"; // NOI18N
 
     private final VCSContext context;
@@ -129,23 +135,20 @@ public class CommitAction extends ContextAction {
     public static void commit(String contentTitle, final VCSContext ctx) {
         final File repository = HgUtils.getRootFile(ctx);
         if (repository == null) return;
-        String projName = HgProjectUtils.getProjectName(repository);
-        if (projName == null) {
-            File projFile = HgUtils.getProjectFile(ctx);
-            projName = HgProjectUtils.getProjectName(projFile);
-        } 
-        final String prjName = projName;
 
         // show commit dialog
         final CommitPanel panel = new CommitPanel();
+        final List<HgHook> hooks = Mercurial.getInstance().getHooks();
+
+        panel.initHooks(hooks, new HgHookContext(ctx.getRootFiles().toArray( new File[ctx.getRootFiles().size()]), null, new HgHookContext.LogEntry[] {}));
         final CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] {CommitTableModel.COLUMN_NAME_PATH });
-        
+
         panel.setCommitTable(data);
-        
+
         JComponent component = data.getComponent();
         panel.filesPanel.setLayout(new BorderLayout());
         panel.filesPanel.add(component, BorderLayout.CENTER);
-                
+
         final JButton commitButton = new JButton();
         org.openide.awt.Mnemonics.setLocalizedText(commitButton, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Commit"));
         commitButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSN_Commit_Action_Commit"));
@@ -161,7 +164,7 @@ public class CommitAction extends ContextAction {
               new Object[] {commitButton, cancelButton},
               commitButton,
               DialogDescriptor.DEFAULT_ALIGN,
-              new HelpCtx(CommitAction.class), 
+              new HelpCtx(CommitAction.class),
               null);
         computeNodes(data, panel, ctx, repository, cancelButton);
         commitButton.setEnabled(false);
@@ -176,17 +179,17 @@ public class CommitAction extends ContextAction {
             }
         });
         commitButton.setEnabled(containsCommitable(data));
-        
+
         panel.putClientProperty("contentTitle", contentTitle);  // NOI18N
         panel.putClientProperty("DialogDescriptor", dd); // NOI18N
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        
+
         dialog.addWindowListener(new DialogBoundsPreserver(HgModuleConfig.getDefault().getPreferences(), "hg.commit.dialog")); // NOI18N
         dialog.pack();
         dialog.setVisible(true);
-        
+
         if (dd.getValue() == commitButton) {
-            
+
             final Map<HgFileNode, CommitOptions> commitFiles = data.getCommitFiles();
             final String message = panel.messageTextArea.getText();
             org.netbeans.modules.versioning.util.Utils.insert(HgModuleConfig.getDefault().getPreferences(), RECENT_COMMIT_MESSAGES, message, 20);
@@ -194,7 +197,7 @@ public class CommitAction extends ContextAction {
             HgProgressSupport support = new HgProgressSupport() {
                 public void perform() {
                     OutputLogger logger = getLogger();
-                    performCommit(message, commitFiles, ctx, this, prjName, logger);
+                    performCommit(message, commitFiles, ctx, this, logger, hooks);
                 }
             };
             support.start(rp, repository.getAbsolutePath(), org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
@@ -241,10 +244,10 @@ public class CommitAction extends ContextAction {
                     if(fileList.size()==0) {
                         return;
                     }
-                
+
                     HgFileNode[] nodes;
                     ArrayList<HgFileNode> nodesList = new ArrayList<HgFileNode>(fileList.size());
-        
+
                     for (Iterator<File> it = fileList.iterator(); it.hasNext();) {
                         File file = it.next();
                         HgFileNode node = new HgFileNode(file);
@@ -337,9 +340,9 @@ public class CommitAction extends ContextAction {
         }
         commit.setEnabled(enabled && containsCommitable(table));
     }
-    
-    private static void performCommit(String message, Map<HgFileNode, CommitOptions> commitFiles, 
-            VCSContext ctx, HgProgressSupport support, String prjName, OutputLogger logger) {
+
+    private static void performCommit(String message, Map<HgFileNode, CommitOptions> commitFiles,
+            VCSContext ctx, HgProgressSupport support, OutputLogger logger, List<HgHook> hooks) {
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
         final File repository = HgUtils.getRootFile(ctx);
         List<File> addCandidates = new ArrayList<File>();
@@ -358,27 +361,27 @@ public class CommitAction extends ContextAction {
              if (option != CommitOptions.EXCLUDE) {
                  int  status = cache.getStatus(node.getFile()).getStatus();
                  if ((status & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) != 0) {
-                     addCandidates.add(node.getFile()); 
+                     addCandidates.add(node.getFile());
                  } else  if ((status & FileInformation.STATUS_VERSIONED_DELETEDLOCALLY) != 0) {
-                     deleteCandidates.add(node.getFile()); 
+                     deleteCandidates.add(node.getFile());
                  }
-                 commitCandidates.add(node.getFile()); 
+                 commitCandidates.add(node.getFile());
                  incPaths.add(node.getFile().getAbsolutePath());
              }else{
-                 excPaths.add(node.getFile().getAbsolutePath());                
+                 excPaths.add(node.getFile().getAbsolutePath());
              }
         }
         if (support.isCanceled()) {
             return;
         }
-            
+
         if (!excPaths.isEmpty()) {
             HgModuleConfig.getDefault().addExclusionPaths(excPaths);
         }
         if (!incPaths.isEmpty()) {
             HgModuleConfig.getDefault().removeExclusionPaths(incPaths);
         }
-        
+
         try {
             logger.outputInRed(
                     NbBundle.getMessage(CommitAction.class,
@@ -399,23 +402,43 @@ public class CommitAction extends ContextAction {
                     logger.output("hg delete " + f.getName()); //NOI18N
                 }
             }
+
+            File[] hookFiles = null;
+            if(hooks.size() > 0) {
+                hookFiles = commitCandidates.toArray(new File[commitCandidates.size()]);
+            }
+            HgHookContext context = new HgHookContext(hookFiles, message, new HgHookContext.LogEntry[] {});
+            for (HgHook hook : hooks) {
+                try {
+                    // XXX handle returned context
+                    hook.beforeCommit(context);
+                } catch (IOException ex) {
+                    // XXX handle veto
+                }
+            }
             HgCommand.doCommit(repository, commitCandidates, message, logger);
+
             HgRepositoryContextCache.setHasHistory(ctx);
             HgLogMessage tip = HgCommand.doTip(repository, logger);
+
+            context = new HgHookContext(hookFiles, message, new HgHookContext.LogEntry(tip));
+            for (HgHook hook : hooks) {
+                hook.afterCommit(context);
+            }
 
             if (commitCandidates.size() == 1) {
                 logger.output(
                         NbBundle.getMessage(CommitAction.class,
-                        "MSG_COMMIT_INIT_SEP_ONE", commitCandidates.size(), prjName)); // NOI18N
+                        "MSG_COMMIT_INIT_SEP_ONE", commitCandidates.size())); // NOI18N
             } else {
                 logger.output(
                         NbBundle.getMessage(CommitAction.class,
-                        "MSG_COMMIT_INIT_SEP", commitCandidates.size(), prjName)); // NOI18N
+                        "MSG_COMMIT_INIT_SEP", commitCandidates.size())); // NOI18N
             }
             for (File f : commitCandidates) {
                 logger.output("\t" + f.getAbsolutePath()); // NOI18N
             }
-            logTip(tip, logger);
+            HgUtils.logHgLog(tip, logger);
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
@@ -424,34 +447,6 @@ public class CommitAction extends ContextAction {
             logger.outputInRed(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_DONE")); // NOI18N
             logger.output(""); // NOI18N
         }
-    }
-
-    private static void logTip(HgLogMessage tip, OutputLogger logger) {
-        String lbChangeset = NbBundle.getMessage(CommitAction.class, "LB_CHANGESET");   // NOI18N
-        String lbUser =      NbBundle.getMessage(CommitAction.class, "LB_AUTHOR");      // NOI18N
-        String lbDate =      NbBundle.getMessage(CommitAction.class, "LB_DATE");        // NOI18N
-        String lbSummary =   NbBundle.getMessage(CommitAction.class, "LB_SUMMARY");     // NOI18N
-        int l = 0;
-        for (String s : new String[] {lbChangeset, lbUser, lbDate, lbSummary}) {
-            if(l < s.length()) l = s.length();
-}
-        logger.output(formatlabel(lbChangeset, l) + tip.getRevision() + ":" + tip.getCSetShortID()); // NOI18N
-        logger.output(formatlabel(lbUser,      l) + tip.getAuthor());
-        logger.output(formatlabel(lbDate,      l) + tip.getDate());
-        logger.output(formatlabel(lbSummary,   l) + tip.getMessage());
-    }
-
-    private static String formatlabel(String label, int l) {
-        label = label + spaces(l - label.length()) + ": ";
-        return label;
-    }
-
-    private static String spaces(int l) {
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < l + 3; i++) {
-            sb.append(" ");
-        }
-        return sb.toString();
     }
 
 }

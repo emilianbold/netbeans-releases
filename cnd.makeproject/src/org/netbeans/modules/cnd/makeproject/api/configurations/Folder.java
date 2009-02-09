@@ -38,9 +38,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -49,20 +49,32 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
+import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.loaders.CndDataObject;
+import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
+import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
+import org.netbeans.modules.cnd.makeproject.ui.wizards.FolderEntry;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
-public class Folder {
+public class Folder implements FileChangeListener {
+
     public static final String DEFAULT_FOLDER_NAME = "f"; // NOI18N
     public static final String DEFAULT_FOLDER_DISPLAY_NAME = getString("NewFolderName");
-    
     private ConfigurationDescriptor configurationDescriptor;
     private final String name;
     private String displayName;
@@ -72,7 +84,10 @@ public class Folder {
     private Set<ChangeListener> changeListenerList = new HashSet<ChangeListener>();
     private final boolean projectFiles;
     private String id = null;
-    
+    private String root;
+//    private FileObject folderFileObject;
+    private final Logger log = Logger.getLogger("makeproject.folder"); // NOI18N
+
     public Folder(ConfigurationDescriptor configurationDescriptor, Folder parent, String name, String displayName, boolean projectFiles) {
         this.configurationDescriptor = configurationDescriptor;
         this.parent = parent;
@@ -81,94 +96,207 @@ public class Folder {
         this.projectFiles = projectFiles;
         this.items = new Vector<Object>();
         this.sortName = displayName.toLowerCase();
+
+        log.setLevel(Level.OFF);
+    }
+
+    public void setRoot(String root) {
+        this.root = root;
+    }
+
+    public String getRoot() {
+        return root;
+    }
+
+    public Folder getThis() {
+        return this;
     }
     
+    public void attachListenersAndRefresh() {
+        log.finer("----------attachListenersAndRefresh " + getPath()); // NOI18N
+        String rootPath = getRootPath();
+        String AbsRootPath = IpeUtils.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
+
+        File folderFile = new File(AbsRootPath);
+
+        // Folders to be removed
+        if (!folderFile.exists() || !folderFile.isDirectory()) {
+            // Remove it plus all subfolders and items from project
+            log.fine("------------removing folder " + getPath() + " in " + getParent().getPath()); // NOI18N
+            getParent().removeFolder(this);
+            return;
+        }
+        // Items to be removed
+        for (Item item : getItemsAsArray()) {
+            if (!item.getFile().exists()) {
+                log.fine("------------removing item " + item.getPath() + " in " + getPath()); // NOI18N
+                removeItem(item);
+            }
+        }
+        // files/folders to be added
+        File files[] = folderFile.listFiles();
+        if (files == null) {
+            return;
+        }
+        List<File> fileList = new ArrayList<File>();
+        for (int i = 0; i < files.length; i++) {
+            if (AllSourceFileFilter.getInstance().accept(files[i]) && // NOI18N
+                    !files[i].getName().equals("nbproject") && // NOI18N
+                    !files[i].getName().equals("CVS") && // NOI18N
+                    !files[i].getName().equals("SCCS") && // NOI18N
+                    !files[i].getName().startsWith(".")) { // NOI18N
+                fileList.add(files[i]);
+            }
+        }
+        for (File file : fileList) {
+            if (file.isDirectory()) {
+                if (findFolderByName(file.getName()) == null) {
+                    log.fine("------------adding folder " + file.getPath() + " in " + getPath()); // NOI18N
+                    AllSourceFileFilter filter = AllSourceFileFilter.getInstance();
+                    Vector<SourceFolderInfo> data = new Vector<SourceFolderInfo>();
+                    FolderEntry folderEntry = new FolderEntry(file, file.getName());
+                    folderEntry.setAddSubfoldersSelected(true);
+                    folderEntry.setFileFilter(filter);
+                    data.add(folderEntry);
+                    ((MakeConfigurationDescriptor)getConfigurationDescriptor()).addSourceFilesFromFolders(this, data.iterator(), false, false, false);
+                }
+            }
+            else {
+                String path = getRootPath() + '/' + file.getName();
+                if (path.startsWith("./")) { // NOI18N
+                    path = path.substring(2);
+                }
+                if (findItemByPath(path) == null) {
+                    log.fine("------------adding item " + file.getPath() + " in " + getPath()); // NOI18N
+                    addItem(new Item(path));
+                }
+            }
+        }
+
+//        folderFileObject = FileUtil.toFileObject(folderFile);
+//        if (folderFileObject == null) {
+//            return; // FIXUP: error ?
+//        }
+
+        FileUtil.addFileChangeListener(this, folderFile);
+        log.finer("-----------attachListener " + getPath()); // NOI18N
+
+        // Repeast for all sub folders
+        Vector<Folder> subFolders = getFolders();
+        for (Folder f : subFolders) {
+            f.attachListenersAndRefresh();
+        }
+    }
+
+    public void detachListener() {
+        log.finer("-----------detachListener " + getPath()); // NOI18N
+        FileUtil.removeFileChangeListener(this);
+//        folderFileObject = null;
+    }
+
     public int size() {
         return items.size();
     }
-    
+
     public Folder getParent() {
         return parent;
     }
-    
+
     public Project getProject() {
-        return ((MakeConfigurationDescriptor)getConfigurationDescriptor()).getProject();
+        return ((MakeConfigurationDescriptor) getConfigurationDescriptor()).getProject();
     }
-    
+
     public String getName() {
         return name;
     }
-    
+
     public String getSortName() {
         return sortName;
     }
-    
+
     public String getPath() {
-//        StringBuilder builder = new StringBuilder(getName());
-//        Folder parent = getParent();
-//        while (parent != null) {
-//            if (parent.getParent() != null) {
-//                builder.insert(0, '/'); // NOI18N
-//                builder.insert(0, parent.getName());
-//            }
-//            parent = parent.getParent();
-//        };
-//        return builder.toString();
         StringBuilder builder2 = new StringBuilder(32);
-        reversePath(this, builder2);
+        reversePath(this, builder2, false);
         return builder2.toString();
     }
-    
-    private void reversePath(Folder folder, StringBuilder builder){
+
+    public String getRootPath() {
+        StringBuilder builder2 = new StringBuilder(32);
+        reversePath(this, builder2, true);
+        String path = builder2.toString();
+        return path;
+    }
+
+    private void reversePath(Folder folder, StringBuilder builder, boolean fromRoot) {
         Folder parent = folder.getParent();
         if (parent != null && parent.getParent() != null) {
-            reversePath(parent, builder);
+            reversePath(parent, builder, fromRoot);
             builder.append('/'); // NOI18N
         }
-        builder.append(folder.getName());
+        if (fromRoot && folder.getRoot() != null) {
+            builder.append(folder.getRoot());
+        } else {
+                builder.append(folder.getName());
+        }
     }
-    
+
     public String getDisplayName() {
         return displayName;
     }
-    
+
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
         configurationDescriptor.setModified();
         sortName = displayName.toLowerCase();
         getParent().reInsertElement(this);
     }
-    
+
     public ConfigurationDescriptor getConfigurationDescriptor() {
         return configurationDescriptor;
     }
-    
+
     public void setConfigurationDescriptor(ConfigurationDescriptor configurationDescriptor) {
         this.configurationDescriptor = configurationDescriptor;
     }
-    
+
     public boolean isProjectFiles() {
         return projectFiles;
     }
-    
+
+    public boolean isDiskFolder() {
+        Folder f = this;
+        while (true) {
+            if (f.getRoot() != null) {
+                return true;
+            }
+            f = f.getParent();
+            if (f == null) {
+                break;
+            }
+        }
+        return false;
+    }
+
     public Collection<Object> getElements() {
         return items;
     }
-    
+
     public void reInsertElement(Object element) {
         int index = items.indexOf(element);
-        if (index < 0)
+        if (index < 0) {
             return;
+        }
         items.remove(element);
-        if (element instanceof Folder)
-            insertFolderElement((Folder)element);
-        else if (element instanceof Item)
-            insertItemElement((Item)element);
-        else
+        if (element instanceof Folder) {
+            insertFolderElement((Folder) element);
+        } else if (element instanceof Item) {
+            insertItemElement((Item) element);
+        } else {
             assert false;
+        }
         fireChangeEvent();
     }
-    
+
     private void insertFolderElement(Folder element) {
         if (!element.isProjectFiles()) {
             // Insert last
@@ -183,11 +311,11 @@ public class Folder {
                 indexAt--;
                 continue;
             }
-            if (!((Folder)o).isProjectFiles()) {
+            if (!((Folder) o).isProjectFiles()) {
                 indexAt--;
                 continue;
             }
-            String name2 = ((Folder)o).getSortName();
+            String name2 = ((Folder) o).getSortName();
             int compareRes = name1.compareTo(name2);
             if (compareRes < 0) {
                 indexAt--;
@@ -195,9 +323,9 @@ public class Folder {
             }
             break;
         }
-        items.add(indexAt+1, element);
+        items.add(indexAt + 1, element);
     }
-    
+
     private void insertItemElement(Item element) {
         String name1 = (element).getSortName();
         int indexAt = items.size() - 1;
@@ -207,7 +335,7 @@ public class Folder {
                 //indexAt--;
                 break;
             }
-            String name2 = ((Item)o).getSortName();
+            String name2 = ((Item) o).getSortName();
             int compareRes = name1.compareTo(name2);
             if (compareRes < 0) {
                 indexAt--;
@@ -215,41 +343,43 @@ public class Folder {
             }
             break;
         }
-        items.add(indexAt+1, element);
+        items.add(indexAt + 1, element);
     }
-    
+
     public void addElement(Object element) { // FIXUP: shopuld be private
         // Always keep the vector sorted
         int indexAt = -1;
         if (element instanceof Item) {
-            insertItemElement((Item)element);
+            insertItemElement((Item) element);
         } else if (element instanceof Folder) {
-            insertFolderElement((Folder)element);
+            insertFolderElement((Folder) element);
         } else {
             assert false;
         }
         fireChangeEvent();
     }
-    
+
     public Item addItemAction(Item item) {
         if (addItem(item) == null) {
             return null; // Nothing added
         }
         ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>(1);
         list.add(item);
-        ((MakeConfigurationDescriptor)configurationDescriptor).fireFilesAdded(list);
+        ((MakeConfigurationDescriptor) configurationDescriptor).fireFilesAdded(list);
         return item;
     }
+
     public Item addItem(Item item) {
         return addItem(item, true);
     }
-    
+
     public Item addItem(Item item, boolean notify) {
-        if (item == null)
+        if (item == null) {
             return null;
+        }
         // Check if already in project. Refresh if it's there.
         Item existingItem;
-        if (isProjectFiles() && (existingItem = ((MakeConfigurationDescriptor)configurationDescriptor).findProjectItemByPath(item.getPath())) != null) {
+        if (isProjectFiles() && (existingItem = ((MakeConfigurationDescriptor) configurationDescriptor).findProjectItemByPath(item.getPath())) != null) {
             //System.err.println("Folder - addItem - item ignored, already added: " + item); // NOI18N  // FIXUP: correct?
             refresh(existingItem);
             return null; // Nothing added
@@ -257,7 +387,7 @@ public class Folder {
         // Add it to the folder
         item.setFolder(this);
         addElement(item);
-        
+
         // Add item to the dataObject's lookup
         if (isProjectFiles() && notify) {
             DataObject dao = item.getDataObject();
@@ -271,36 +401,38 @@ public class Folder {
                 myNativeFileItemSet.add(item);
             }
         }
-        
+
         // Add it to project Items
         if (isProjectFiles()) {
-            ((MakeConfigurationDescriptor)configurationDescriptor).addProjectItem(item);
+            ((MakeConfigurationDescriptor) configurationDescriptor).addProjectItem(item);
             // Add configuration to all configurations
-            if (configurationDescriptor.getConfs() == null)
+            if (configurationDescriptor.getConfs() == null) {
                 return item;
+            }
             Configuration[] configurations = configurationDescriptor.getConfs().getConfs();
             for (int i = 0; i < configurations.length; i++) {
                 FolderConfiguration folderConfiguration = getFolderConfiguration(configurations[i]);
                 configurations[i].addAuxObject(new ItemConfiguration(configurations[i], item));
             }
         }
-        
+
         return item;
     }
-    
+
     public void addFolder(Folder folder) {
         addElement(folder);
         if (isProjectFiles()) {
             // Add configuration to all configurations
-            if (configurationDescriptor.getConfs() == null)
+            if (configurationDescriptor.getConfs() == null) {
                 return;
+            }
             Configuration[] configurations = configurationDescriptor.getConfs().getConfs();
             for (int i = 0; i < configurations.length; i++) {
                 folder.getFolderConfiguration(configurations[i]);
             }
         }
     }
-    
+
     /**
      * Returns an unique id (String) used to retrive this object from the
      * pool of aux objects
@@ -311,23 +443,24 @@ public class Folder {
         }
         return id;
     }
-    
+
     public FolderConfiguration getFolderConfiguration(Configuration configuration) {
         FolderConfiguration folderConfiguration = null;
         if (isProjectFiles()) {
-            folderConfiguration = (FolderConfiguration)configuration.getAuxObject(getId());
+            folderConfiguration = (FolderConfiguration) configuration.getAuxObject(getId());
             if (folderConfiguration == null) {
                 CCompilerConfiguration parentCCompilerConfiguration;
                 CCCompilerConfiguration parentCCCompilerConfiguration;
                 FolderConfiguration parentFolderConfiguration = null;
-                if (getParent() != null)
+                if (getParent() != null) {
                     parentFolderConfiguration = getParent().getFolderConfiguration(configuration);
+                }
                 if (parentFolderConfiguration != null) {
                     parentCCompilerConfiguration = parentFolderConfiguration.getCCompilerConfiguration();
                     parentCCCompilerConfiguration = parentFolderConfiguration.getCCCompilerConfiguration();
                 } else {
-                    parentCCompilerConfiguration = ((MakeConfiguration)configuration).getCCompilerConfiguration();
-                    parentCCCompilerConfiguration = ((MakeConfiguration)configuration).getCCCompilerConfiguration();
+                    parentCCompilerConfiguration = ((MakeConfiguration) configuration).getCCompilerConfiguration();
+                    parentCCCompilerConfiguration = ((MakeConfiguration) configuration).getCCCompilerConfiguration();
                 }
                 folderConfiguration = new FolderConfiguration(configuration, parentCCompilerConfiguration, parentCCCompilerConfiguration, this);
                 configuration.addAuxObject(folderConfiguration);
@@ -335,200 +468,222 @@ public class Folder {
         }
         return folderConfiguration;
     }
-    
+
     public Folder addNewFolder(boolean projectFiles) {
         String name;
         String displayName;
         for (int i = 1;; i++) {
             name = DEFAULT_FOLDER_NAME + i;
             displayName = DEFAULT_FOLDER_DISPLAY_NAME + " " + i; // NOI18N
-            if (findFolderByName(name) == null)
+            if (findFolderByName(name) == null) {
                 break;
+            }
         }
         return addNewFolder(name, displayName, projectFiles); // NOI18N
     }
-    
+
     public Folder addNewFolder(String name, String displayName, boolean projectFiles) {
         Folder newFolder = new Folder(getConfigurationDescriptor(), this, name, displayName, projectFiles);
         addFolder(newFolder);
         return newFolder;
     }
-    
+
     public boolean removeItemAction(Item item) {
         ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>(1);
         list.add(item);
-        if (isProjectFiles())
-            ((MakeConfigurationDescriptor)configurationDescriptor).fireFilesRemoved(list);
+        if (isProjectFiles()) {
+            ((MakeConfigurationDescriptor) configurationDescriptor).fireFilesRemoved(list);
+        }
         return removeItem(item);
     }
-    
+
     public void renameItemAction(String oldPath, Item newItem) {
-        ((MakeConfigurationDescriptor)configurationDescriptor).fireFileRenamed(oldPath, newItem);
+        ((MakeConfigurationDescriptor) configurationDescriptor).fireFileRenamed(oldPath, newItem);
     }
-    
+
     public boolean removeItem(Item item) {
         boolean ret = false;
-        if (item == null)
+        if (item == null) {
             return false;
+        }
         // Remove it from folder
         ret = items.removeElement(item);
-        if (!ret)
+        if (!ret) {
             return ret;
-        
+        }
+
         // Remove item from the dataObject's lookup
         if (isProjectFiles()) {
             DataObject dataObject = item.getDataObject();
-            if (dataObject == null){
+            if (dataObject == null) {
                 // try to use last Data Object (getDataObject() cannot find renamed data object)
                 dataObject = item.getLastDataObject();
             }
             if (dataObject instanceof CndDataObject) {
-                CndDataObject cndDataObject = (CndDataObject)dataObject;
+                CndDataObject cndDataObject = (CndDataObject) dataObject;
                 MyNativeFileItemSet myNativeFileItemSet = cndDataObject.getCookie(MyNativeFileItemSet.class);
                 if (myNativeFileItemSet != null) {
                     myNativeFileItemSet.remove(item);
-                    if (myNativeFileItemSet.isEmpty())
+                    if (myNativeFileItemSet.isEmpty()) {
                         cndDataObject.removeCookie(myNativeFileItemSet);
+                    }
                 }
             }
         }
-        
+
 //	item.setFolder(null);
         if (isProjectFiles()) {
             // Remove it from project Items
-            ((MakeConfigurationDescriptor)configurationDescriptor).removeProjectItem(item);
+            ((MakeConfigurationDescriptor) configurationDescriptor).removeProjectItem(item);
             // Remove it form all configurations
             Configuration[] configurations = configurationDescriptor.getConfs().getConfs();
-            for (int i = 0; i < configurations.length; i++)
+            for (int i = 0; i < configurations.length; i++) {
                 configurations[i].removeAuxObject(item.getId()/*ItemConfiguration.getId(item.getPath())*/);
+            }
         }
         item.setFolder(null);
         fireChangeEvent();
         return ret;
     }
-    
+
     public boolean removeItemByPath(String path) {
         boolean ret = false;
         Item item = findItemByPath(path);
         return removeItem(item);
     }
-    
+
     public boolean removeFolderAction(Folder folder) {
-        ((MakeConfigurationDescriptor)configurationDescriptor).fireFilesRemoved(folder.getAllItemsAsList());
+        ((MakeConfigurationDescriptor) configurationDescriptor).fireFilesRemoved(folder.getAllItemsAsList());
         return removeFolder(folder);
     }
-    
+
     public boolean removeFolder(Folder folder) {
         boolean ret = false;
         if (folder != null) {
+            if (folder.isDiskFolder()) {
+                folder.detachListener();
+            }
             folder.removeAll();
             ret = items.removeElement(folder);
             if (isProjectFiles()) {
                 // Remove it form all configurations
                 Configuration[] configurations = configurationDescriptor.getConfs().getConfs();
-                for (int i = 0; i < configurations.length; i++)
+                for (int i = 0; i < configurations.length; i++) {
                     configurations[i].removeAuxObject(folder.getId());
+                }
             }
         }
-        if (ret)
+        if (ret) {
             fireChangeEvent();
+        }
         return ret;
     }
-    
+
     /**
      * Remove all items and folders recursively
      */
     public void removeAll() {
         Item[] itemsToRemove = getItemsAsArray();
         Folder[] foldersToRemove = getFoldersAsArray();
-        for (int i = 0; i < itemsToRemove.length; i++)
+        for (int i = 0; i < itemsToRemove.length; i++) {
             removeItem(itemsToRemove[i]);
-        for (int i = 0; i < foldersToRemove.length; i++)
+        }
+        for (int i = 0; i < foldersToRemove.length; i++) {
             removeFolder(foldersToRemove[i]);
+        }
     }
-    
+
     public void reset() {
         items = new Vector<Object>();
         fireChangeEvent();
     }
-    
+
     public Item findItemByPath(String path) {
-        if (path == null)
+        if (path == null) {
             return null;
+        }
         Item[] items = getItemsAsArray();
         for (int i = 0; i < items.length; i++) {
-            if (path.equals(items[i].getPath()))
+            if (path.equals(items[i].getPath())) {
                 return items[i];
+            }
         }
         return null;
     }
-    
+
     public Folder findFolderByName(String name) {
-        if (name == null)
+        if (name == null) {
             return null;
+        }
         Folder[] folders = getFoldersAsArray();
         for (int i = 0; i < folders.length; i++) {
-            if (name.equals(folders[i].getName()))
+            if (name.equals(folders[i].getName())) {
                 return folders[i];
+            }
         }
         return null;
     }
-    
+
     public Folder findFolderByDisplayName(String name) {
-        if (name == null)
+        if (name == null) {
             return null;
+        }
         Folder[] folders = getFoldersAsArray();
         for (int i = 0; i < folders.length; i++) {
-            if (name.equals(folders[i].getDisplayName()))
+            if (name.equals(folders[i].getDisplayName())) {
                 return folders[i];
+            }
         }
         return null;
     }
-    
+
     public Folder findFolderByPath(String path) {
         int i = path.indexOf('/');
         if (i >= 0) {
             String name = path.substring(0, i);
             Folder folder = findFolderByName(name);
-            if (folder == null)
+            if (folder == null) {
                 return null;
-            return folder.findFolderByPath(path.substring(i+1));
-        } else
+            }
+            return folder.findFolderByPath(path.substring(i + 1));
+        } else {
             return findFolderByName(path);
+        }
     }
-    
+
     public Item[] getItemsAsArray() {
         Vector<Item> found = new Vector<Item>();
         Iterator iter = new ArrayList<Object>(getElements()).iterator();
         while (iter.hasNext()) {
             Object o = iter.next();
-            if (o instanceof Item)
-                found.add((Item)o);
+            if (o instanceof Item) {
+                found.add((Item) o);
+            }
         }
         return found.toArray(new Item[found.size()]);
     }
-    
+
     public List<NativeFileItem> getAllItemsAsList() {
         ArrayList<NativeFileItem> found = new ArrayList<NativeFileItem>();
         Iterator iter = new ArrayList<Object>(getElements()).iterator();
         while (iter.hasNext()) {
             Object o = iter.next();
-            if (o instanceof Item)
-                found.add((Item)o);
+            if (o instanceof Item) {
+                found.add((Item) o);
+            }
             if (o instanceof Folder) {
-                List<NativeFileItem> items = ((Folder)o).getAllItemsAsList();
+                List<NativeFileItem> items = ((Folder) o).getAllItemsAsList();
                 found.addAll(items);
             }
         }
         return found;
     }
-    
-    
+
     public Item[] getAllItemsAsArray() {
         List<NativeFileItem> list = getAllItemsAsList();
         return list.toArray(new Item[list.size()]);
     }
-    
+
     /*
      * Returns a set of all files in this logical folder as FileObjetc's
      */
@@ -536,40 +691,40 @@ public class Folder {
         ArrayList<FileObject> files = new ArrayList<FileObject>();
         Iterator iter = new ArrayList<Object>(getElements()).iterator();
         while (iter.hasNext()) {
-            Item item = (Item)iter.next();
-            FileObject fo  = item.getFileObject();
+            Item item = (Item) iter.next();
+            FileObject fo = item.getFileObject();
             if (fo != null) {
                 files.add(fo);
             }
         }
         return new LinkedHashSet<FileObject>(files);
     }
-    
+
     /*
      * Returns a set of all files in this logical folder and subfolders as FileObjetc's
      */
     public Set<FileObject> getAllItemsAsFileObjectSet(boolean projectFilesOnly) {
         ArrayList<FileObject> files = new ArrayList<FileObject>();
-        
+
         if (!projectFilesOnly || isProjectFiles()) {
             Iterator iter = new ArrayList<Object>(getElements()).iterator();
             while (iter.hasNext()) {
                 Object item = iter.next();
                 if (item instanceof Item) {
-                    FileObject fo  = ((Item)item).getFileObject();
+                    FileObject fo = ((Item) item).getFileObject();
                     if (fo != null) {
                         files.add(fo);
                     }
                 }
                 if (item instanceof Folder) {
-                    files.addAll(((Folder)item).getAllItemsAsFileObjectSet(projectFilesOnly));
+                    files.addAll(((Folder) item).getAllItemsAsFileObjectSet(projectFilesOnly));
                 }
             }
         }
-        
+
         return new LinkedHashSet<FileObject>(files);
     }
-    
+
     /*
      * Returns a set of all files in this logical folder as FileObjetc's
      */
@@ -577,47 +732,49 @@ public class Folder {
         ArrayList<DataObject> files = new ArrayList<DataObject>();
         Iterator iter = new ArrayList<Object>(getElements()).iterator();
         while (iter.hasNext()) {
-            Item item = (Item)iter.next();
-            DataObject da  = item.getDataObject();
+            Item item = (Item) iter.next();
+            DataObject da = item.getDataObject();
             if (da != null && (MIMETypeFilter == null || da.getPrimaryFile().getMIMEType().contains(MIMETypeFilter))) {
                 files.add(da);
             }
         }
         return new LinkedHashSet<DataObject>(files);
     }
-    
+
     /*
      * Returns a set of all files in this logical folder and subfolders as FileObjetc's
      */
     public Set<DataObject> getAllItemsAsDataObjectSet(boolean projectFilesOnly, String MIMETypeFilter) {
         ArrayList<DataObject> files = new ArrayList<DataObject>();
-        
+
         if (!projectFilesOnly || isProjectFiles()) {
             Iterator iter = new ArrayList<Object>(getElements()).iterator();
             while (iter.hasNext()) {
                 Object item = iter.next();
                 if (item instanceof Item) {
-                    DataObject da  = ((Item)item).getDataObject();
-                    if (da != null && (MIMETypeFilter == null || da.getPrimaryFile().getMIMEType().contains(MIMETypeFilter)))
+                    DataObject da = ((Item) item).getDataObject();
+                    if (da != null && (MIMETypeFilter == null || da.getPrimaryFile().getMIMEType().contains(MIMETypeFilter))) {
                         files.add(da);
+                    }
                 }
                 if (item instanceof Folder) {
-                    files.addAll(((Folder)item).getAllItemsAsDataObjectSet(projectFilesOnly, MIMETypeFilter));
+                    files.addAll(((Folder) item).getAllItemsAsDataObjectSet(projectFilesOnly, MIMETypeFilter));
                 }
             }
         }
-        
+
         return new LinkedHashSet<DataObject>(files);
     }
-    
+
     public String[] getItemNamesAsArray() {
         Item[] items = getItemsAsArray();
         String[] names = new String[items.length];
-        for (int i = 0; i < items.length; i++)
+        for (int i = 0; i < items.length; i++) {
             names[i] = items[i].getPath();
+        }
         return names;
     }
-    
+
     /*
      * Returns a set of all logical folder in this folder as an array
      */
@@ -625,7 +782,7 @@ public class Folder {
         Vector<Folder> folders = getFolders();
         return folders.toArray(new Folder[folders.size()]);
     }
-    
+
     /*
      * Returns a set of all logical folder in this folder
      */
@@ -635,101 +792,224 @@ public class Folder {
         while (iter.hasNext()) {
             Object item = iter.next();
             if (item instanceof Folder) {
-                folders.add((Folder)item);
+                folders.add((Folder) item);
             }
         }
         return folders;
     }
-    
+
     /*
      * Returns a set of all logical folder and subfolders in this folder
      */
     public Vector<Folder> getAllFolders(boolean projectFilesOnly) {
         Vector<Folder> folders = new Vector<Folder>();
-        
+
         if (!projectFilesOnly || isProjectFiles()) {
             Iterator iter = new ArrayList<Object>(getElements()).iterator();
             while (iter.hasNext()) {
                 Object item = iter.next();
                 if (item instanceof Folder) {
-                    if (!projectFilesOnly || ((Folder)item).isProjectFiles()) {
-                        folders.add((Folder)item);
-                        folders.addAll(((Folder)item).getAllFolders(projectFilesOnly));
+                    if (!projectFilesOnly || ((Folder) item).isProjectFiles()) {
+                        folders.add((Folder) item);
+                        folders.addAll(((Folder) item).getAllFolders(projectFilesOnly));
                     }
                 }
             }
         }
-        
+
         return folders;
     }
-    
+
     public String[] getFolderNamesAsArray() {
         Folder[] items = getFoldersAsArray();
         String[] names = new String[items.length];
-        for (int i = 0; i < items.length; i++)
+        for (int i = 0; i < items.length; i++) {
             names[i] = items[i].getName();
+        }
         return names;
     }
-    
-    
+
     public void addChangeListener(ChangeListener cl) {
         synchronized (changeListenerList) {
             changeListenerList.add(cl);
         }
     }
-    
+
     public void removeChangeListener(ChangeListener cl) {
         synchronized (changeListenerList) {
             changeListenerList.remove(cl);
         }
     }
-    
+
     public void refresh() {
         fireChangeEvent(this);
     }
-    
+
     public void refresh(Object source) {
         fireChangeEvent(source);
     }
-    
+
     public void fireChangeEvent() {
         fireChangeEvent(this);
     }
-    
+
     public void fireChangeEvent(Object source) {
         Iterator it;
-        
+
         synchronized (changeListenerList) {
             it = new HashSet<ChangeListener>(changeListenerList).iterator();
         }
         ChangeEvent ev = new ChangeEvent(source);
         while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+            ((ChangeListener) it.next()).stateChanged(ev);
         }
         configurationDescriptor.setModified();
     }
-    
+
     static private class MyNativeFileItemSet implements NativeFileItemSet {
+
         private List<NativeFileItem> items = new ArrayList<NativeFileItem>(1);
-        
+
         public synchronized Collection<NativeFileItem> getItems() {
             return new ArrayList<NativeFileItem>(items);
         }
-        public synchronized void add(NativeFileItem item){
+
+        public synchronized void add(NativeFileItem item) {
             if (!items.contains(item)) {
                 items.add(item);
             }
         }
-        public synchronized void remove(NativeFileItem item){
+
+        public synchronized void remove(NativeFileItem item) {
             items.remove(item);
         }
+
         public boolean isEmpty() {
             return items.isEmpty();
         }
     }
-    
+
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+        }
+
+        public void fileChanged(FileEvent fe) {
+        }
+
+        public void fileDataCreated(FileEvent fe) {
+            FileObject fileObject = fe.getFile();
+            File file = FileUtil.toFile(fileObject);
+            log.fine("------------fileDataCreated " + file + " in " + getThis().getPath()); // NOI18N
+            //if (true) return;
+            if (!file.exists() || file.isDirectory()) {
+                return; // FIXUP: error
+            }
+            if (!AllSourceFileFilter.getInstance().accept(file)) {
+                return;
+            }
+            String itemPath = file.getPath();
+            itemPath = FilePathAdaptor.mapToRemote(itemPath);
+            itemPath = FilePathAdaptor.normalize(itemPath);
+            Item item = new Item(IpeUtils.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath));
+            getConfigurationDescriptor().setModified();
+            addItemAction(item);
+        }
+
+        public void fileFolderCreated(FileEvent fe) {
+            FileObject fileObject = fe.getFile();
+            File file = FileUtil.toFile(fileObject);
+            log.fine("------------fileFolderCreated " + file.getPath() + " in " + getThis().getPath()); // NOI18N
+            //if (true) return;
+            if (!file.exists() || !file.isDirectory()) {
+                assert false;
+                return;
+            }
+            AllSourceFileFilter filter = AllSourceFileFilter.getInstance();
+            Vector<SourceFolderInfo> data = new Vector<SourceFolderInfo>();
+            FolderEntry folderEntry = new FolderEntry(file, file.getName());
+            folderEntry.setAddSubfoldersSelected(true);
+            folderEntry.setFileFilter(filter);
+            data.add(folderEntry);
+            ((MakeConfigurationDescriptor)getConfigurationDescriptor()).addSourceFilesFromFolders(getThis(), data.iterator(), false, false, false);
+            getConfigurationDescriptor().setModified();
+
+            Folder folder = findFolderByName(file.getName());
+            if (folder != null) {
+                folder.setRoot(null);
+                folder.attachListenersAndRefresh();
+            }
+            else {
+                log.fine("------------fileFolderCreated - cannot find folder " + file.getName() + " in " + getThis().getPath()); // NOI18N
+            }
+        }
+
+        public void fileDeleted(FileEvent fe) {
+            FileObject fileObject = fe.getFile();
+            File file = FileUtil.toFile(fileObject);
+            log.fine("------------fileDeleted " + file.getPath() + " in " + getThis().getPath()); // NOI18N
+            //if (true) return;
+            String path = getRootPath() + '/' + file.getName();
+            if (path.startsWith("./")) { // NOI18N
+                path = path.substring(2);
+            }
+            // Try item first
+            Item item = findItemByPath(path);
+            if (item != null) {
+                removeItemAction(item);
+                getConfigurationDescriptor().setModified();
+                return;
+            }
+            // then folder
+            Folder folder = findFolderByName(file.getName());
+            if (folder != null) {
+                removeFolderAction(folder);
+                getConfigurationDescriptor().setModified();
+                return;
+            }
+        }
+
+        public void fileRenamed(FileRenameEvent fe) {
+            FileObject fileObject = fe.getFile();
+            File file = FileUtil.toFile(fileObject);
+            log.fine("------------fileRenamed " + file.getPath() + " in " + getThis().getPath()); // NOI18N
+            // Try only folders. Items are taken care of in Item.propertyChange takes care of it....
+            Folder folder = findFolderByName(fe.getName());
+            if (folder != null && folder.isDiskFolder()) {
+                // Add new Folder
+                AllSourceFileFilter filter = AllSourceFileFilter.getInstance();
+                Vector<SourceFolderInfo> data = new Vector<SourceFolderInfo>();
+                FolderEntry folderEntry = new FolderEntry(file, file.getName());
+                folderEntry.setAddSubfoldersSelected(true);
+                folderEntry.setFileFilter(filter);
+                data.add(folderEntry);
+                ((MakeConfigurationDescriptor)getConfigurationDescriptor()).addSourceFilesFromFolders(this, data.iterator(), false, false, false);
+                getConfigurationDescriptor().setModified();
+                // Copy all configurations
+                // ????????????
+                // Remove old folder
+                removeFolderAction(folder);
+
+                Folder renamedFolder = findFolderByName(file.getName());
+                if (renamedFolder != null) {
+                    renamedFolder.setRoot(null);
+                    renamedFolder.attachListenersAndRefresh();
+                }
+                else {
+                    log.fine("------------fileFolderCreated - cannot find folder " + file.getName() + " in " + getThis().getPath()); // NOI18N
+                }
+
+                return;
+            }
+        }
+
+
     /** Look up i18n strings here */
     private static String getString(String s) {
         return NbBundle.getMessage(Folder.class, s);
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

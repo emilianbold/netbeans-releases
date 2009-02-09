@@ -1,7 +1,16 @@
 defaultpkg.RenamePkgDep2.java
 --------------------
 Update reference to renamepkg
+Update reference to renamepkg
 --------------------
+  1   
+  2   package defaultpkg;
+  3   
+  4 - import renamepkg.RenamePkgDep1;
+    + import newpkgname.RenamePkgDep1;
+  5   
+  6   /** */
+  7   public class RenamePkgDep2{
   8      RenamePkgDep1 field;
   9   
  10      /** */

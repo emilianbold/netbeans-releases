@@ -206,6 +206,29 @@ public class TreePathHandleTest extends NbTestCase {
         }, true);
     }
     
+    public void testEquals() throws Exception {
+        FileObject file = FileUtil.createData(sourceRoot, "test/test.java");
+        final String code = "package test; public class test {}";
+
+        writeIntoFile(file, code);
+
+        JavaSource js = JavaSource.forFileObject(file);
+
+        js.runUserActionTask(new  Task<CompilationController>() {
+            public void run(CompilationController parameter) throws Exception {
+                parameter.toPhase(Phase.RESOLVED);
+                
+                TreePath tp = parameter.getTreeUtilities().pathFor(code.indexOf("{}") + 1);
+                TreePathHandle handle = TreePathHandle.create(tp, parameter);
+
+                assertFalse(handle.equals(null));
+                assertFalse(handle.equals((Object) ""));
+                assertTrue(handle.equals(handle));
+
+            }
+        }, true);
+    }
+
     private static final class SecMan extends SecurityManager {
 
         @Override

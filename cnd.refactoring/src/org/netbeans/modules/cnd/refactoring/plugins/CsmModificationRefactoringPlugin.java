@@ -40,13 +40,9 @@
 package org.netbeans.modules.cnd.refactoring.plugins;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
@@ -56,10 +52,8 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -67,7 +61,6 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -78,38 +71,36 @@ public abstract class CsmModificationRefactoringPlugin extends CsmRefactoringPlu
     // the context object where refactoring starts
 
     private final CsmObject startReferenceObject;
+    private final CsmContext editorContext;
     private final AbstractRefactoring refactoring;
 
     protected CsmModificationRefactoringPlugin(AbstractRefactoring refactoring) {
         this.refactoring = refactoring;
         this.startReferenceObject = refactoring.getRefactoringSource().lookup(CsmObject.class);
-        assert startReferenceObject != null : "no start reference";
+        this.editorContext = refactoring.getRefactoringSource().lookup(CsmContext.class);
+        assert startReferenceObject != null || editorContext != null: "no start reference or editor context";
     }
 
     protected final CsmObject getStartReferenceObject() {
         return startReferenceObject;
     }
-
-    protected abstract Collection<CsmObject> getRefactoredObjects();
+    
+    protected final CsmContext getEditorContext() {
+        return editorContext;
+    }
 
     public final Problem prepare(RefactoringElementsBag elements) {
-        Collection<CsmObject> referencedObjects = getRefactoredObjects();
-        if (referencedObjects == null || referencedObjects.size() == 0) {
-            return null;
+        try {
+            Collection<CsmFile> files = getRefactoredFiles();
+            fireProgressListenerStart(ProgressEvent.START, files.size());
+            createAndAddElements(files, elements, refactoring);
+        } finally {
+            fireProgressListenerStop();
         }
-        Collection<CsmFile> files = new HashSet<CsmFile>();
-        CsmFile startFile = getCsmFile(getStartReferenceObject());
-        for (CsmObject obj : referencedObjects) {
-            Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(obj, true);
-            CsmProject[] ar = prjs.toArray(new CsmProject[prjs.size()]);
-            refactoring.getContext().add(ar);
-            files.addAll(getRelevantFiles(startFile, obj, refactoring));
-        }
-        fireProgressListenerStart(ProgressEvent.START, files.size());
-        createAndAddElements(files, elements, refactoring);
-        fireProgressListenerStop();
         return null;
     }
+
+    protected abstract Collection<CsmFile> getRefactoredFiles();
 
     protected final Problem checkIfModificationPossible(Problem problem, CsmObject referencedObject,
             String fatalMessage, String warnMessage) {
@@ -185,28 +176,6 @@ public abstract class CsmModificationRefactoringPlugin extends CsmRefactoringPlu
         }
         return out;
     }
-    
-    protected final void processFile(CsmFile csmFile, ModificationResult mr) {
-        Collection<CsmObject> referencedObjects = getRefactoredObjects();
-        assert referencedObjects != null && referencedObjects.size() > 0 : "method must be called for resolved element";
-        FileObject fo = CsmUtilities.getFileObject(csmFile);
-        Collection<CsmReference> refs = new LinkedHashSet<CsmReference>();
-        for (CsmObject obj : referencedObjects) {
-            Collection<CsmReference> curRefs = CsmReferenceRepository.getDefault().getReferences(obj, csmFile, CsmReferenceKind.ALL, null);
-            refs.addAll(curRefs);
-        }
-        if (refs.size() > 0) {
-            List<CsmReference> sortedRefs = new ArrayList<CsmReference>(refs);
-            Collections.sort(sortedRefs, new Comparator<CsmReference>() {
-                public int compare(CsmReference o1, CsmReference o2) {
-                    return o1.getStartOffset() - o2.getStartOffset();
-                }
-            });
-            CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(csmFile);
-            processRefactoredReferences(sortedRefs, fo, ces, mr);
-        }
-    }
 
-    protected abstract void processRefactoredReferences(List<CsmReference> sortedRefs, FileObject fo, CloneableEditorSupport ces, ModificationResult mr);
-
+    protected abstract void processFile(CsmFile csmFile, ModificationResult mr);
 }

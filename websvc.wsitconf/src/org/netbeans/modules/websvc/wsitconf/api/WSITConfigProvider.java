@@ -54,7 +54,6 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.wsitconf.*;
 import org.netbeans.modules.websvc.wsitconf.ui.client.ClientTopComponent;
 import org.netbeans.modules.websvc.wsitconf.ui.service.ServiceTopComponent;
-import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
 import org.netbeans.modules.xml.wsdl.model.Binding;
@@ -119,33 +118,31 @@ public final class WSITConfigProvider extends Object {
         }
 
         if (p != null) {
-            if (Util.isWsitSupported(p)) {
-                try {
-                    WSDLModel wsdlModel = WSITModelSupport.getModel(node, jaxWsModel, null, false, null);
-                    if (wsdlModel != null) {
-                        if (client != null) { //it's a client
-                            JAXWSClientSupport wscs = JAXWSClientSupport.getJaxWsClientSupport(p.getProjectDirectory());
-                            if (wscs != null) {
-                                WSDLModel serviceWsdlModel = WSITModelSupport.getServiceModelForClient(wscs, client);
-                                Collection<Binding> bindings = serviceWsdlModel.getDefinitions().getBindings();
-                                for (Binding b : bindings) {
-                                    if (SecurityPolicyModelHelper.isSecurityEnabled(b)) {
-                                        return true;
-                                    }
-                                }
-                            }
-                        } else if (service != null) {
-                            Collection<Binding> bindings = wsdlModel.getDefinitions().getBindings();
+            try {
+                WSDLModel wsdlModel = WSITModelSupport.getModel(node, jaxWsModel, null, false, null);
+                if (wsdlModel != null) {
+                    if (client != null) { //it's a client
+                        JAXWSClientSupport wscs = JAXWSClientSupport.getJaxWsClientSupport(p.getProjectDirectory());
+                        if (wscs != null) {
+                            WSDLModel serviceWsdlModel = WSITModelSupport.getServiceModelForClient(wscs, client);
+                            Collection<Binding> bindings = serviceWsdlModel.getDefinitions().getBindings();
                             for (Binding b : bindings) {
                                 if (SecurityPolicyModelHelper.isSecurityEnabled(b)) {
                                     return true;
                                 }
                             }
                         }
+                    } else if (service != null) {
+                        Collection<Binding> bindings = wsdlModel.getDefinitions().getBindings();
+                        for (Binding b : bindings) {
+                            if (SecurityPolicyModelHelper.isSecurityEnabled(b)) {
+                                return true;
+                            }
+                        }
                     }
-                } catch(Exception e) {
-                    logger.log(Level.SEVERE, null, e);
                 }
+            } catch(Exception e) {
+                logger.log(Level.SEVERE, null, e);
             }
         }
         return false;        
@@ -168,15 +165,13 @@ public final class WSITConfigProvider extends Object {
         }
 
         if (p != null) {
-            if (Util.isWsitSupported(p)) {
-                try {
-                    WSDLModel wsdlModel = WSITModelSupport.getModel(node, jaxWsModel, null, false, null);
-                    if (wsdlModel != null) {
-                        return true;
-                    }
-                } catch(Exception e) {
-                    logger.log(Level.SEVERE, null, e);
+            try {
+                WSDLModel wsdlModel = WSITModelSupport.getModel(node, jaxWsModel, null, false, null);
+                if (wsdlModel != null) {
+                    return true;
                 }
+            } catch(Exception e) {
+                logger.log(Level.SEVERE, null, e);
             }
         }
         return false;        

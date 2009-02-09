@@ -50,6 +50,21 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ157837() throws Exception {
+        // IZ#157837: incorrect deref of function-type fields
+        performTest("iz157837.cc", 23, 35, "iz157837.cc", 7, 9); // me_value
+        performTest("iz157837.cc", 24, 35, "iz157837.cc", 7, 9); // me_value
+        performTest("iz157837.cc", 25, 35, "iz157837.cc", 8, 9); // me_lookup
+        performTest("iz157837.cc", 25, 55, "iz157837.cc", 12, 9);// mp_value
+        performTest("iz157837.cc", 24, 45, "iz157837.cc", 3, 9); // value
+    }
+
+    public void testClassNameCollision() throws Exception {
+        // IZ#156123: Resolve class from current namespace at first
+        performTest("iz156123.cc", 21, 20, "iz156123.cc", 12, 9); // Field in "Database::Field fld;"
+        performTest("iz156123.cc", 22, 15, "iz156123.cc", 14, 13); // name in "fld.name = 1;"
+    }
+
     public void testDerefArrayByArrow() throws Exception {
         //IZ#149783: IDE does not recognize array as pointer
         performTest("iz149783.c", 9, 10, "iz149783.c", 2, 5);

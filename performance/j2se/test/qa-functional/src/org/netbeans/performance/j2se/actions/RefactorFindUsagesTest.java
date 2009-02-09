@@ -132,4 +132,10 @@ public class RefactorFindUsagesTest extends PerformanceTestCase {
     public void close() {
         usagesWindow.close();
     }
+
+    public void shutdown() {
+        System.gc();
+        System.gc();
+        System.gc();
+    }
 }

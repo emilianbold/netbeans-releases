@@ -45,8 +45,17 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.URISyntaxException;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
 import javax.swing.text.BadLocationException;
@@ -59,6 +68,9 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.Exceptions;
 
 /**
  * XXX try to merge with hints.JavadocUtilities
@@ -72,6 +84,7 @@ final class JavadocCompletionUtils {
     static final Pattern JAVADOC_FIRST_WHITE_SPACE = Pattern.compile("[ \\t]*\\**[ \\t]*"); // NOI18N
     private static Set<JavaTokenId> IGNORE_TOKES = EnumSet.of(
             JavaTokenId.WHITESPACE, JavaTokenId.BLOCK_COMMENT, JavaTokenId.LINE_COMMENT);
+    private static final Logger LOGGER = Logger.getLogger(JavadocCompletionUtils.class.getName());
     
     /**
      * Checks if the offset is part of some javadoc block. The javadoc content
@@ -123,6 +136,8 @@ final class JavadocCompletionUtils {
         if (ts == null || !movedToJavadocToken(ts, offset)) {
             return null;
         }
+
+        TokenSequence<JavadocTokenId> jdts = ts.embedded(JavadocTokenId.language());
         
         int offsetBehindJavadoc = ts.offset() + ts.token().length();
 
@@ -165,7 +180,12 @@ final class JavadocCompletionUtils {
         }
         
         Element el = javac.getTrees().getElement(tp);
-        return el != null? javac.getElementUtilities().javaDocFor(el): null;
+        Doc jdoc = el != null? javac.getElementUtilities().javaDocFor(el): null;
+        if (isInvalidDocInstance(jdoc, jdts)) {
+            dumpOutOfSyncError(javac, offset, leaf, el, jdts, jdoc);
+            jdoc = null;
+        }
+        return jdoc;
     }
     
     static TokenSequence<JavadocTokenId> findJavadocTokenSequence(CompilationInfo javac, int offset) {
@@ -417,6 +437,115 @@ final class JavadocCompletionUtils {
             return offset == 3 && "/***/".contentEquals(text); //NOI18N
         }
         return false;
+    }
+
+    /**
+     * Checks whether Doc instance matches to its token sequence representation.
+     * @param javadoc Doc instance of javadoc
+     * @param ts javadoc token sequence
+     * @return true if it is valid javadoc
+     * 
+     * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=139147">139147</a>
+     */
+    private static boolean isInvalidDocInstance(Doc javadoc, TokenSequence<JavadocTokenId> ts) {
+        return javadoc != null && javadoc.getRawCommentText().length() == 0 && !ts.isEmpty();
+    }
+
+    private static final int MAX_DUMPS = 255;
+
+    /**
+     * Dumps the source code to the file. Used for parser debugging. Only a limited number
+     * of dump files is used. If the last file exists, this method doesn't dump anything.
+     *
+     * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=139147">139147</a>
+     */
+    private static void dumpOutOfSyncError(CompilationInfo javac, int offset,
+            Tree tree, Element elm, TokenSequence<JavadocTokenId> ts, Doc jdoc) {
+        Throwable throwable = new IllegalStateException();
+        String dumpDir = System.getProperty("netbeans.user") + "/var/log/"; //NOI18N
+        String dumpExt = ".jddump"; //NOI18N
+
+        FileObject source = javac.getFileObject();
+        Document doc = null;
+        try {
+            doc = javac.getDocument();
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "Error when writing javadoc dump file!", ex); // NOI18N
+        }
+
+        String uri = "<unknown>"; // NOI18N
+        try {
+            uri = source.getURL().toURI().toASCIIString();
+        } catch (URISyntaxException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        } catch (FileStateInvalidException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        String origName = source.getName();
+        File f = new File(dumpDir + origName + dumpExt); // NOI18N
+        boolean dumpSucceeded = false;
+        int i = 1;
+        while (i < MAX_DUMPS) {
+            if (!f.exists())
+                break;
+            f = new File(dumpDir + origName + '_' + i + dumpExt); // NOI18N
+            i++;
+        }
+        if (!f.exists()) {
+            try {
+                OutputStream os = new FileOutputStream(f);
+                PrintWriter writer = new PrintWriter(new OutputStreamWriter(os, "UTF-8")); // NOI18N
+                try {
+                    writer.printf("Out of sync error: source file %s\n", uri);
+                    writer.println("----- Element: -------------------------------------------------------"); // NOI18N
+                    writer.printf("kind: %s, %s\n", elm.getKind(), elm);
+                    writer.println("----- Tree: -------------------------------------------------------"); // NOI18N
+                    writer.printf("kind: %s\n %s\n", tree.getKind(), tree);
+                    writer.println("----- Offset: -------------------------------------------------------"); // NOI18N
+                    writer.printf("offset: %s\n", offset);
+                    writer.println("----- Token sequence: ----------------------------------------"); // NOI18N
+                    writer.println(ts);
+                    writer.println("----- Doc instance: -------------------------------------------------------"); // NOI18N
+                    writer.printf("class: %s, toString: %s,\nraw text:'%s'\n", jdoc.getClass(), jdoc, jdoc.getRawCommentText());
+                    writer.println("----- Stack trace: ---------------------------------------------"); // NOI18N
+                    throwable.printStackTrace(writer);
+                    writer.println("----- Source file content/snapshot: ----------------------------------------"); // NOI18N
+                    writer.println(javac.getText());
+                    writer.println("----- Document content: ----------------------------------------"); // NOI18N
+                    try {
+                        if (doc != null) {
+                            writer.println(doc.getText(0, doc.getLength()));
+                        } else {
+                            writer.println("doc: null"); // NOI18N
+                        }
+                    } catch (BadLocationException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
+                    }
+                } finally {
+                    writer.close();
+                    dumpSucceeded = true;
+                }
+            } catch (IOException ioe) {
+                LOGGER.log(Level.INFO, "Error when writing javadoc dump file!", ioe); // NOI18N
+            }
+        }
+        if (dumpSucceeded) {
+            String msg = String.format(
+                    "Javadoc out of sync error:\nDump file: %s.\n" + // NOI18N
+                    "Please attach dump file and your %s/var/log/messages.log\n" + // NOI18N
+                    "to issue http://www.netbeans.org/issues/show_bug.cgi?id=139147.\n", // NOI18N
+                    f.toURI().toASCIIString(),
+                    System.getProperty("netbeans.user")); // NOI18N
+            Exceptions.attachMessage(throwable, msg);
+            LOGGER.log(Level.SEVERE, null, throwable);
+        } else {
+            LOGGER.log(Level.WARNING,
+                    "Dump could not be written. Either dump file could not " + // NOI18N
+                    "be created or all dump files were already used. Please " + // NOI18N
+                    "check that you have write permission to ''{0}'' and " + // NOI18N
+                    "clean all *{1} files in that directory.",
+                    new Object[] {dumpDir, dumpExt}); // NOI18N
+        }
     }
     
 }

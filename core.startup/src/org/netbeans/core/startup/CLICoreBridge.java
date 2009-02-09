@@ -70,7 +70,7 @@ public class CLICoreBridge extends CLIHandler {
     
     protected int cli(Args arguments) {
         Lookup clis = Lookup.getDefault();
-        Collection handlers = clis.lookupAll(CLIHandler.class);
+        Collection<? extends CLIHandler> handlers = clis.lookupAll(CLIHandler.class);
         int h = notifyHandlers(arguments, handlers, WHEN_EXTRA, true, true);
         if (h == 0) {
             h = CoreBridge.getDefault().cli(
@@ -87,7 +87,7 @@ public class CLICoreBridge extends CLIHandler {
     protected void usage(PrintWriter w) {
         if (MainLookup.isStarted()) {
             Lookup clis = Lookup.getDefault();
-            Collection handlers = clis.lookupAll(CLIHandler.class);
+            Collection<? extends CLIHandler> handlers = clis.lookupAll(CLIHandler.class);
             showHelp(w, handlers, WHEN_EXTRA);
             w.flush();
             return;
@@ -120,7 +120,7 @@ public class CLICoreBridge extends CLIHandler {
         URLClassLoader loader = new URLClassLoader(urls.toArray(new URL[0]), getClass().getClassLoader());
         MainLookup.systemClassLoaderChanged(loader);
         Lookup clis = Lookup.getDefault();
-        Collection handlers = clis.lookupAll(CLIHandler.class);
+        Collection<? extends CLIHandler> handlers = clis.lookupAll(CLIHandler.class);
         showHelp(w, handlers, WHEN_EXTRA);
         w.flush();
     }

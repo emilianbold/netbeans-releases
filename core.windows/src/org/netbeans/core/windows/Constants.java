@@ -44,6 +44,7 @@ package org.netbeans.core.windows;
 import java.awt.Dimension;
 import javax.swing.JSplitPane;
 import org.netbeans.swing.tabcontrol.TabbedContainer;
+import org.openide.windows.TopComponent;
 
 /**
  * Constants in window system.
@@ -75,9 +76,11 @@ public abstract class Constants {
     public static final String BOTTOM = JSplitPane.BOTTOM;
     public static final String LEFT   = JSplitPane.LEFT;
     public static final String RIGHT  = JSplitPane.RIGHT;
-    
+
+    /** Default value when value is not provided by UIManager */
     public static final int DIVIDER_SIZE_VERTICAL   = 4;
-    public static final int DIVIDER_SIZE_HORIZONTAL = 5;
+    /** Default value when value is not provided by UIManager */
+    public static final int DIVIDER_SIZE_HORIZONTAL = 4;
 
     /** Sets size of drop area (when splitting mode and around area). */
     public static final int DROP_AREA_SIZE = 20;
@@ -119,7 +122,7 @@ public abstract class Constants {
      * 
      * @since 6.22
      */
-    public static final String KEEP_PREFERRED_SIZE_WHEN_SLIDED_IN = "netbeans.winsys.tc.keep_preferred_size_when_slided_in"; //NOI18N
+    public static final String KEEP_PREFERRED_SIZE_WHEN_SLIDED_IN = TopComponent.PROP_KEEP_PREFERRED_SIZE_WHEN_SLIDED_IN;
     
     /**
      * Name of TopComponent's Boolean client property which instructs the window system to activate

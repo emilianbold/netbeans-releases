@@ -51,6 +51,15 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ157907() throws Exception {
+        // IZ#157907: False positive recognition of macro
+        performTest("fun_macro_and_name.c", 6, 5, "fun_macro_and_name.c", 6, 3); // PREFIX as name of typedef
+        performTest("fun_macro_and_name.c", 10, 10, "fun_macro_and_name.c", 6, 3); // PREFIX as name of typedef
+
+        performTest("fun_macro_and_name.c", 1, 10, "fun_macro_and_name.c", 1, 1); // PREFIX as name of macro with params
+        performTest("fun_macro_and_name.c", 8, 15, "fun_macro_and_name.c", 1, 1); // PREFIX as name of macro with params
+    }
+
     public void testIZ151061() throws Exception {
         // IZ#151061: code model inaccuracy on VLC's is above boundary
         performTest("iz151061.c", 6, 10, "iz151061.c", 2, 5);
@@ -550,7 +559,17 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("kr.c", 15, 6, "kr.c", 17, 1); // int boo(); -> int boo(int i)
         performTest("kr.c", 17, 6, "kr.c", 15, 1); // int boo(int i) -> int boo();
     }
+
+    public void testIZ151705() throws Exception {
+        // IZ#151705 : Unresolved ids in function call in case of empty macro
+        performTest("IZ151705.cc", 9, 15, "IZ151705.cc", 6, 1);
+    }
     
+    public void testIZ151045() throws Exception {
+        // IZ#151045 : Unresolved cast to macro type
+        performTest("IZ151045.cc", 11, 21, "IZ151045.cc", 3, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

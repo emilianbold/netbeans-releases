@@ -42,7 +42,9 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringListNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.VectorNodeProp;
 import org.openide.nodes.Sheet;
@@ -264,7 +266,8 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
     // Sheet
     public Sheet.Set getSet() {
         CCCCompilerConfiguration master;
-        
+        OptionToString visitor = new OptionToString(null, null);
+
 	Sheet.Set set1 = new Sheet.Set();
 	set1.setName("General"); // NOI18N
 	set1.setDisplayName(getString("GeneralTxt"));
@@ -273,7 +276,7 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
 	StringBuilder inheritedValues = new StringBuilder();
         master = (CCCCompilerConfiguration)getMaster();
 	while (master != null) {
-	    inheritedValues.append(master.getIncludeDirectories().getOption(null, "")); // NOI18N
+	    inheritedValues.append(master.getIncludeDirectories().toString(visitor));
         if (master.getInheritIncludes().getValue()) {
             master = (CCCCompilerConfiguration) master.getMaster();
         } else {
@@ -285,14 +288,14 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
 	inheritedValues = new StringBuilder();
         master = (CCCCompilerConfiguration)getMaster();
 	while (master != null) {
-	    inheritedValues.append(master.getPreprocessorConfiguration().getOption(null, "")); // NOI18N
+	    inheritedValues.append(master.getPreprocessorConfiguration().toString(visitor));
 	    if (master.getInheritPreprocessor().getValue()) {
             master = (CCCCompilerConfiguration) master.getMaster();
         } else {
             master = null;
         }
 	}
-        set1.put(new StringListNodeProp(getPreprocessorConfiguration(), getInheritPreprocessor(), new String[] {"preprocessor-definitions", getString("PreprocessorDefinitionsTxt"), getString("PreprocessorDefinitionsHint"), inheritedValues.toString()}, true, new HelpCtx("AddtlIncludeDirectories"))); // NOI18N
+        set1.put(new StringListNodeProp(getPreprocessorConfiguration(), getInheritPreprocessor(), new String[] {"preprocessor-definitions", getString("PreprocessorDefinitionsTxt"), getString("PreprocessorDefinitionsHint"), getString("PreprocessorDefinitionsLbl"), inheritedValues.toString()}, true, new HelpCtx("AddtlIncludeDirectories"))); // NOI18N
         
         return set1;
     }
@@ -331,4 +334,29 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
     protected abstract String getUserIncludeFlag();
 
     protected abstract String getUserMacroFlag();
+
+    public static class OptionToString implements VectorConfiguration.ToString<String> {
+
+        private final CompilerSet compilerSet;
+        private final String prepend;
+
+        public OptionToString(CompilerSet compilerSet, String prepend) {
+            this.compilerSet = compilerSet;
+            this.prepend = prepend;
+        }
+
+        public String toString(String item) {
+            if (0 < item.length()) {
+                if (compilerSet != null) {
+                    item = compilerSet.normalizeDriveLetter(item);
+                }
+                item = IpeUtils.escapeOddCharacters(item);
+                return prepend == null? item : prepend + item;
+            } else {
+                return ""; // NOI18N
+            }
+        }
+
+    }
+
 }

@@ -42,6 +42,7 @@ package org.netbeans.modules.php.project.ui.actions;
 
 
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
 import org.netbeans.modules.php.project.ui.actions.support.Displayable;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Lookup;
@@ -59,16 +60,27 @@ public class DebugFileCommand extends Command implements Displayable {
 
     @Override
     public void invokeAction(final Lookup context) {
-        if (!isRunConfigurationValid(false)) {
-            // property not set yet
-            return;
+        if (isTestFile(context)) {
+            // test
+            ConfigAction.get(ConfigAction.Type.TEST, getProject()).debugFile(context);
+        } else {
+            // source
+            if (!isRunConfigurationValid(false)) {
+                // property not set yet
+                return;
+            }
+            getConfigAction().debugFile(context);
         }
-        getConfigAction().debugFile(getProject(), context);
     }
 
     @Override
     public boolean isActionEnabled(Lookup context) {
-        return getConfigAction().isDebugFileEnabled(getProject(), context);
+        if (isTestFile(context)) {
+            // test
+            return ConfigAction.get(ConfigAction.Type.TEST, getProject()).isDebugFileEnabled(context);
+        }
+        // source
+        return getConfigAction().isDebugFileEnabled(context);
     }
 
     @Override

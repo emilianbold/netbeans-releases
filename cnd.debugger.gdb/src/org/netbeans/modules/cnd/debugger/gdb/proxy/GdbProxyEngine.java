@@ -93,6 +93,9 @@ public class GdbProxyEngine {
     private boolean active;
     private InteractiveCommandProvider provider = null;
     private RequestProcessor.Task gdbReader = null;
+
+    // This queue was created due to the issue 156138
+    private final RequestProcessor sendQueue = new RequestProcessor("sendQueue"); // NOI18N
     private final boolean timerOn = Boolean.getBoolean("gdb.proxy.timer"); // NOI18N
     
     private static final Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
@@ -110,8 +113,7 @@ public class GdbProxyEngine {
                     String cspath) throws IOException {
         
         if (debugger.getPlatform() != PlatformTypes.PLATFORM_WINDOWS && termpath != null) {
-            ExternalTerminal eterm = new ExternalTerminal(debugger, termpath, debuggerEnvironment);
-            String tty = eterm.getTty();
+            String tty = ExternalTerminal.create(debugger, termpath, debuggerEnvironment);
             if (tty != null) {
                 debuggerCommand.add("-tty"); // NOI18N
                 debuggerCommand.add(tty);
@@ -261,17 +263,21 @@ public class GdbProxyEngine {
         return token;
     }
 
-    private synchronized void sendCommand(int token, String cmd) {
+    private synchronized void sendCommand(final int token, final String cmd) {
         if (active) {
-            String time = CommandBuffer.getTimePrefix(timerOn);
-            if (cmd.charAt(0) != '-') {
-                tokenList.add(new CommandInfo(token, cmd));
-            }
-            StringBuilder fullcmd = new StringBuilder(String.valueOf(token));
-            fullcmd.append(cmd);
-            fullcmd.append('\n');
-            gdbProxy.getLogger().logMessage(time + fullcmd.toString());
-            toGdb.print(fullcmd.toString());
+            sendQueue.post(new Runnable() {
+                public void run() {
+                    String time = CommandBuffer.getTimePrefix(timerOn);
+                    if (cmd.charAt(0) != '-') {
+                        tokenList.add(new CommandInfo(token, cmd));
+                    }
+                    StringBuilder fullcmd = new StringBuilder(String.valueOf(token));
+                    fullcmd.append(cmd);
+                    fullcmd.append('\n');
+                    gdbProxy.getLogger().logMessage(time + fullcmd.toString());
+                    toGdb.print(fullcmd.toString());
+                }
+            });
         }
     }
 

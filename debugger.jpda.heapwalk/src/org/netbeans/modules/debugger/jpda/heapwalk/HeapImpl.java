@@ -125,15 +125,15 @@ public class HeapImpl implements Heap {
             this.debugger = debugger;
         }
         
-        public int getTotalLiveBytes() {
+        public long getTotalLiveBytes() {
             return -1;
         }
 
-        public int getTotalLiveInstances() {
+        public long getTotalLiveInstances() {
             long[] counts = debugger.getInstanceCounts(debugger.getAllClasses());
-            int sum = 0;
+            long sum = 0;
             for (long c : counts) {
-                sum += (int) c;
+                sum += c;
             }
             return sum;
         }

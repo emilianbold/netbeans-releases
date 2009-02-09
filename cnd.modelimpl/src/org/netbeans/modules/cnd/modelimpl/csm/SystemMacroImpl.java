@@ -47,7 +47,6 @@ import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMacroParameter;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
-import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
@@ -61,15 +60,14 @@ public class SystemMacroImpl implements CsmMacro {
     
     private final CharSequence macroName;
     private final CharSequence macroBody;
-    private final boolean isUserDefined;
+    private final Kind macroKind;
     private final List<? extends CharSequence> params;
     private CsmFile containingFile;
-    private CsmUID<CsmMacro> uid;
 
-    public SystemMacroImpl(String macroName, String macroBody, List<String> macroParams, CsmFile containingFile, boolean isUserDefined) {
+    public SystemMacroImpl(String macroName, String macroBody, List<String> macroParams, CsmFile containingFile, Kind macroKind) {
         this.macroName = QualifiedNameCache.getManager().getString(macroName);
         this.macroBody = QualifiedNameCache.getManager().getString(macroBody);
-        this.isUserDefined = isUserDefined;
+        this.macroKind = macroKind;
         if (macroParams != null) {
             this.params = Collections.unmodifiableList(macroParams);
         } else {
@@ -77,7 +75,6 @@ public class SystemMacroImpl implements CsmMacro {
         }
         assert containingFile instanceof Unresolved.UnresolvedFile;
         this.containingFile = containingFile;
-        uid = new SelfUID<CsmMacro>(this);
     }
     
     public List<? extends CharSequence> getParameters() {
@@ -88,8 +85,8 @@ public class SystemMacroImpl implements CsmMacro {
         return macroBody;
     }
 
-    public boolean isSystem() {
-        return true;
+    public Kind getKind() {
+        return macroKind;
     }
 
     public CharSequence getName() {
@@ -118,10 +115,6 @@ public class SystemMacroImpl implements CsmMacro {
 
     public CharSequence getText() {
         return "#define " + macroName + " " + macroBody; // NOI18N
-    }
-
-    public CsmUID<CsmMacro> getUID() {
-        return uid;
     }
 
     @Override
@@ -163,22 +156,11 @@ public class SystemMacroImpl implements CsmMacro {
             retValue.append("'='"); // NOI18N
             retValue.append(getBody());
         }
-        retValue.append("' [" + (isUserDefined ? "user defined" : "system") + "]"); // NOI18N
+        retValue.append("' [" + (macroKind == Kind.USER_SPECIFIED ? "user defined" : "system") + "]"); // NOI18N
         return retValue.toString();
     }
 
     public CsmParameterList<CsmParameterList, CsmMacroParameter> getParameterList() {
         return null;
     }
-
-    private static final class SelfUID<T> implements CsmUID<T> {
-        private final T element;
-        SelfUID(T element) {
-            this.element = element;
-        }
-        public T getObject() {
-            return this.element;
-        }
-    }    
-    
 }

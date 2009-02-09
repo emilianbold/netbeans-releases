@@ -56,7 +56,6 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
-import javax.swing.undo.UndoableEdit;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
@@ -67,11 +66,11 @@ import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateParameter;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateProcessor;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateProcessorFactory;
 import org.netbeans.lib.editor.codetemplates.textsync.TextRegion;
-import org.netbeans.lib.editor.codetemplates.textsync.TextRegionEditing;
 import org.netbeans.lib.editor.codetemplates.textsync.TextRegionManager;
+import org.netbeans.lib.editor.codetemplates.textsync.TextRegionManagerEvent;
+import org.netbeans.lib.editor.codetemplates.textsync.TextRegionManagerListener;
 import org.netbeans.lib.editor.codetemplates.textsync.TextSync;
 import org.netbeans.lib.editor.codetemplates.textsync.TextSyncGroup;
-import org.netbeans.lib.editor.codetemplates.textsync.TextSyncGroupEditingNotify;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.CharacterConversions;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
@@ -82,7 +81,7 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
  *
  * @author Miloslav Metelka
  */
-public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNotify, Runnable {
+public final class CodeTemplateInsertHandler implements TextRegionManagerListener, Runnable {
 
     // -J-Dorg.netbeans.lib.editor.codetemplates.CodeTemplateInsertHandler.level=FINE
     private static final Logger LOG = Logger.getLogger(CodeTemplateInsertHandler.class.getName());
@@ -90,7 +89,8 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
     private static final Logger TIMERS = Logger.getLogger("TIMER"); // NOI18N
 
     /**
-     * Property used while nested template expanding.
+     * Property holding active code template processor during template expanding.
+     * Note: this property is checked for non-null value in java/source and gsf.api modules.
      */
     private static final Object CT_HANDLER_DOC_PROPERTY = "code-template-insert-handler"; // NOI18N
     
@@ -125,14 +125,6 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
     private Formatter formatter;
     
     private TextSyncGroup textSyncGroup;
-    
-    private CodeTemplateParameterImpl lastActiveMasterImpl;
-    
-    /**
-     * When expanding of a template was requested when still editing parameters
-     * of an outer template remember the outer template's handler
-     */
-    private CodeTemplateInsertHandler outerHandler;
     
     public CodeTemplateInsertHandler(
         CodeTemplate codeTemplate,
@@ -184,10 +176,6 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
         return released;
     }
     
-    public boolean isSuspended() {
-        return (textRegionEditing().activeTextSyncGroup() == textSyncGroup);
-    }
-    
     public String getParametrizedText() {
         return parametrizedText;
     }
@@ -235,9 +223,6 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
         // Insert the template into document
         insertTemplate();
 
-        // For nested template expanding or when without parameters
-        // just update the caret position and release
-        textRegionEditing().startGroupEditing(textSyncGroup, this);
         checkInvokeCompletion();
     }
 
@@ -251,17 +236,15 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
         insertText = null;
     }
     
-    CodeTemplateParameterImpl lastActiveMasterImpl() {
-        return lastActiveMasterImpl;
-    }
-
     public void insertTemplate() {
+        TextRegionManager trm = TextRegionManager.reserve(component);
+        if (trm == null) // Already occupied for another component over the same document
+            return;
+
         Document doc = component.getDocument();
-        outerHandler = (CodeTemplateInsertHandler)doc.getProperty(CT_HANDLER_DOC_PROPERTY);
         doc.putProperty(CT_HANDLER_DOC_PROPERTY, this);
         // Build insert string outside of the atomic lock
         completeInsertString = getInsertText();
-
 
         BaseDocument bdoc = (doc instanceof BaseDocument)
                 ? (BaseDocument)doc
@@ -292,6 +275,7 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
     }
 
     public void run() {
+        boolean success = false;
         try {
             Document doc = component.getDocument();
             BaseDocument bdoc = (doc instanceof BaseDocument)
@@ -336,35 +320,46 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
                 textSyncGroup.addTextSync(caretTextSync);
             }
             
-            textRegionManager().addTextSyncGroup(textSyncGroup, insertOffset);
+            // For nested template expanding or when without parameters
+            // just update the caret position and release
+            textSyncGroup.setClientInfo(this);
+            TextRegionManager trm = textRegionManager();
+            trm.addGroup(textSyncGroup, insertOffset);
+            // Add the listener before reformat() so that the possible releasing gets catched
+            trm.addTextRegionManagerListener(this);
+            // Mark inserted - before reformat (otherwise ISE - the parameters' text could not be changed)
+            this.inserted = true;
             
             if (bdoc != null) {
                 formatter.reformat(bdoc, insertOffset,
                         insertOffset + completeInsertString.length());
             }
+
+            if (!released) {
+                trm.activateGroup(textSyncGroup);
+            }
+            success = true;
             
         } catch (BadLocationException e) {
             LOG.log(Level.WARNING, "Invalid offset", e); // NOI18N
         } finally {
-            // Mark inserted
-            this.inserted = true;
             resetCachedInsertText();
+            if (!success) {
+                this.inserted = false;
+                release();
+            }
         }
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("CodeTemplateInsertHandler.insertTemplate()\n"); // NOI18N
-            LOG.fine(toString());
+            LOG.fine(toStringDetail());
             if (LOG.isLoggable(Level.FINER)) {
                 LOG.finer(textRegionManager().toString() + "\n");
             }
         }
     }
     
-    private TextRegionEditing textRegionEditing() {
-        return TextRegionEditing.get(component);
-    }
-    
     private TextRegionManager textRegionManager() {
-        return TextRegionManager.get(component.getDocument());
+        return TextRegionManager.get(component.getDocument(), true);
     }
     
     public String getDocParameterValue(CodeTemplateParameterImpl paramImpl) {
@@ -405,8 +400,8 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
     
     private void notifyParameterUpdate(CodeTemplateParameter parameter, boolean typingChange) {
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine(super.toString() + "notifyParameterUpdate() CALLED for " + parameter.getName() + "\n"); // NOI18N
-            LOG.fine(toString());
+            LOG.fine(super.toString() + ".notifyParameterUpdate() CALLED for " + parameter.getName() + "\n"); // NOI18N
+            LOG.fine(toStringDetail());
             if (LOG.isLoggable(Level.FINER)) {
                 LOG.finer(textRegionManager().toString() + "\n");
             }
@@ -444,6 +439,45 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
         if (CodeTemplateParameter.CURSOR_PARAMETER_NAME.equals(paramImpl.getName()))
             textSync.setCaretMarker(true);
     }
+
+    public void stateChanged(TextRegionManagerEvent evt) {
+        TextRegionManager trm = evt.textRegionManager();
+        if (evt.isFocusChange()) {
+            List<TextSyncGroup<CodeTemplateInsertHandler>> removedGroups = evt.<CodeTemplateInsertHandler>removedGroups();
+            for (int i = removedGroups.size() - 1; i >= 0; i--) {
+                CodeTemplateInsertHandler handler = removedGroups.get(i).clientInfo();
+                if (handler == this) {
+                    release();
+                    checkInvokeCompletion();
+                    break;
+                }
+            }
+
+            if (removedGroups.size() > 0) {
+                TextSync textSync = trm.activeTextSync();
+                if (textSync != null) {
+                    TextSyncGroup<CodeTemplateInsertHandler> activeGroup = textSync.<CodeTemplateInsertHandler>group();
+                    CodeTemplateInsertHandler activeHandler = activeGroup.clientInfo();
+                    if (activeHandler == this) {
+                        textSync.syncByMaster();
+                        CodeTemplateParameterImpl activeMasterImpl = textSync.<CodeTemplateParameterImpl>masterRegion().clientInfo();
+                        activeMasterImpl.markUserModified();
+                        component.getDocument().putProperty(CT_HANDLER_DOC_PROPERTY, this);
+                    }
+                } else { // No active text sync - all released
+                    component.getDocument().putProperty(CT_HANDLER_DOC_PROPERTY, null);
+                }
+            }
+
+        } else { // Modification change
+            TextSync activeTextSync = trm.activeTextSync();
+            CodeTemplateParameterImpl activeMasterImpl = activeTextSync.<CodeTemplateParameterImpl>masterRegion().clientInfo();
+            if (activeMasterImpl != null) {
+                activeMasterImpl.markUserModified();
+                notifyParameterUpdate(activeMasterImpl.getParameter(), true);
+            }
+        }
+    }
     
     void release() {
         synchronized (this) {
@@ -453,55 +487,29 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
             this.released = true;
         }
 
+        TextRegionManager trm = textRegionManager();
+        trm.removeTextRegionManagerListener(this);
+        if (textSyncGroup.textRegionManager() == trm) {
+            trm.stopGroupEditing(textSyncGroup);
+        }
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine(super.toString() + "release() CALLED\n");
-            LOG.fine(toString());
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.log(Level.INFO, "", new Exception());
+            }
+            LOG.fine(super.toString() + ".release() CALLED\n");
+            LOG.fine(toStringDetail());
         }
-        if (outerHandler != null) {
-            CodeTemplateParameterImpl activeMasterImpl = outerHandler.lastActiveMasterImpl();
-            TextSync textSync = activeMasterImpl.textRegion().textSync();
-            textSync.syncByMaster();
-            activeMasterImpl.markUserModified();
-            outerHandler.notifyParameterUpdate(activeMasterImpl.getParameter(), true);
-        }
-        Document doc = component.getDocument();
-        doc.putProperty(CT_HANDLER_DOC_PROPERTY, outerHandler);
 
         // Notify processors
         for (CodeTemplateProcessor processor : processors) {
             processor.release();
         }
-        textRegionEditing().stopGroupEditing(textSyncGroup);
-        textRegionManager().removeTextSyncGroup(textSyncGroup);
     }
 
     private String buildInsertText() {
         return parametrizedTextParser.buildInsertText(allParameters);
     }
 
-    public void deactivated(TextRegionEditing textRegionEditing, TextSync lastActiveTextSync) {
-        if (lastActiveTextSync != null) {
-            lastActiveMasterImpl = lastActiveTextSync.<CodeTemplateParameterImpl>masterRegion().clientInfo();
-        }
-    }
-
-    public void released(TextRegionEditing textRegionEditing) {
-        release();
-        checkInvokeCompletion();
-    }
-
-    public void textSyncActivated(TextRegionEditing textRegionEditing, int origTextSyncIndex) {
-    }
-
-    public void textSyncModified(TextRegionEditing textRegionEditing) {
-        TextSync activeTextSync = textRegionEditing.activeTextSync();
-        CodeTemplateParameterImpl activeMasterImpl = activeTextSync.<CodeTemplateParameterImpl>masterRegion().clientInfo();
-        if (activeMasterImpl != null) {
-            activeMasterImpl.markUserModified();
-            notifyParameterUpdate(activeMasterImpl.getParameter(), true);
-        }
-    }
-    
     private void checkInvokeCompletion() {
         if (completionInvoke) {
             completionInvoke = false;
@@ -515,6 +523,10 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
 
     @Override
     public String toString() {
+        return "Abbrev: \"" + codeTemplate.getAbbreviation() + "\"";
+    }
+
+    String toStringDetail() {
         StringBuilder sb = new StringBuilder();
         for (CodeTemplateParameter param : allParameters) {
             CodeTemplateParameterImpl paramImpl = CodeTemplateParameterImpl.get(param);
@@ -531,6 +543,8 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
     private static final class TemplateInsertUndoEdit extends AbstractUndoableEdit {
         
         private Document doc;
+
+        private boolean inactive;
         
         TemplateInsertUndoEdit(Document doc) {
             assert (doc != null);
@@ -540,9 +554,12 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
         @Override
         public void undo() throws CannotUndoException {
             super.undo();
-            CodeTemplateInsertHandler handler = (CodeTemplateInsertHandler) doc.getProperty(CT_HANDLER_DOC_PROPERTY);
-            if (handler != null) {
-                handler.release();
+            if (!inactive) {
+                inactive = true;
+                CodeTemplateInsertHandler handler = (CodeTemplateInsertHandler) doc.getProperty(CT_HANDLER_DOC_PROPERTY);
+                if (handler != null) {
+                    handler.release();
+                }
             }
         }
 

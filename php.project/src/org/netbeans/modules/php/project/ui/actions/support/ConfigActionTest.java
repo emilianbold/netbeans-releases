@@ -39,21 +39,33 @@
 
 package org.netbeans.modules.php.project.ui.actions.support;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Arrays;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
+import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO;
+import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
+import org.netbeans.modules.php.project.ui.codecoverage.PhpUnitCoverageLogParser;
 import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
+import org.netbeans.modules.php.project.ui.testrunner.UnitTestRunner;
 import org.netbeans.modules.php.project.util.Pair;
 import org.netbeans.modules.php.project.util.PhpUnit;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -64,96 +76,335 @@ import org.openide.util.NbBundle;
  */
 public class ConfigActionTest extends ConfigAction {
     private static final String CWD = "."; // NOI18N
+    final PhpCoverageProvider coverageProvider;
 
-    @Override
-    public boolean isRunProjectEnabled(PhpProject project) {
-        return isRunProjectEnabled();
+    protected ConfigActionTest(PhpProject project) {
+        super(project);
+        coverageProvider = project.getLookup().lookup(PhpCoverageProvider.class);
+        assert coverageProvider != null;
     }
 
     @Override
-    public boolean isDebugProjectEnabled(PhpProject project) {
+    public boolean isDebugProjectEnabled() {
         throw new IllegalStateException("Debug project tests action is not supported");
     }
 
     @Override
-    public boolean isRunFileEnabled(PhpProject project, Lookup context) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public boolean isRunFileEnabled(Lookup context) {
+        FileObject rootFolder = ProjectPropertiesSupport.getTestDirectory(project, false);
+        assert rootFolder != null : "Test directory not found but isRunFileEnabled() for a test file called?!";
+        FileObject file = CommandUtils.fileForContextOrSelectedNodes(context, rootFolder);
+        return file != null && CommandUtils.isPhpFile(file);
     }
 
     @Override
-    public boolean isDebugFileEnabled(PhpProject project, Lookup context) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public boolean isDebugFileEnabled(Lookup context) {
+        if (XDebugStarterFactory.getInstance() == null) {
+            return false;
+        }
+        return isRunFileEnabled(context);
     }
 
     @Override
-    public void runProject(PhpProject project) {
-        invokeAction(project, null);
-    }
-
-    @Override
-    public void debugProject(PhpProject project) {
-        throw new IllegalStateException("Debug project tests action is not supported");
-    }
-
-    @Override
-    public void runFile(PhpProject project, Lookup context) {
-        invokeAction(project, context);
-    }
-
-    @Override
-    public void debugFile(PhpProject project, Lookup context) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    private void invokeAction(PhpProject project, Lookup context) {
-        List<Pair<FileObject, String>> pairs = getPairs(project, context);
-        if (pairs == null) {
+    public void runProject() {
+        PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
+        if (!phpUnit.supportedVersionFound()) {
+            int[] version = phpUnit.getVersion();
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(ConfigActionTest.class, "MSG_OldPhpUnit", PhpUnit.getVersions(version)),
+                    NotifyDescriptor.WARNING_MESSAGE));
             return;
         }
 
-        final PhpUnit phpUnit = CommandUtils.getPhpUnit(true);
+        run();
+    }
+
+    @Override
+    public void debugProject() {
+        throw new IllegalStateException("Debug project tests action is not supported");
+    }
+
+    @Override
+    public void runFile(Lookup context) {
+        run(context);
+    }
+
+    @Override
+    public void debugFile(Lookup context) {
+        debug(context);
+    }
+
+    private void run() {
+        run(null);
+    }
+
+    private void run(Lookup context) {
+        Pair<FileObject, String> pair = getValidPair(context);
+        if (pair == null) {
+            return;
+        }
+
+        new RunScript(new RunScriptProvider(pair, context)).run();
+    }
+
+    private void debug(Lookup context) {
+        Pair<FileObject, String> pair = getValidPair(context);
+        if (pair == null) {
+            return;
+        }
+
+        new DebugScript(new DebugScriptProvider(pair, context)).run();
+    }
+
+    private Pair<FileObject, String> getValidPair(Lookup context) {
+        PhpUnit phpUnit = CommandUtils.getPhpUnit(true);
         if (phpUnit == null) {
-            return;
+            return null;
         }
-        final ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
-                .controllable(true)
-                .frontWindow(true)
-                .showProgress(true)
-                .optionsPath(PHPOptionsCategory.PATH_IN_LAYER);
-
-        try {
-            for (Pair<FileObject, String> pair : pairs) {
-                ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getPhpUnit())
-                        .workingDirectory(FileUtil.toFile(pair.first))
-                        .addArgument(pair.second);
-                ExecutionService service = ExecutionService.newService(
-                        externalProcessBuilder,
-                        executionDescriptor,
-                        NbBundle.getMessage(ConfigActionTest.class, "LBL_RunPhpUnitTests"));
-                Future<Integer> result = service.run();
-                result.get();
-            }
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ExecutionException ex) {
-            CommandUtils.processExecutionException(ex);
-        }
+        return getPair(context);
     }
 
-    // <working directory, script name>
-    private List<Pair<FileObject, String>> getPairs(PhpProject project, Lookup context) {
-        if (context == null) {
-            return getProjectPair(project);
-        }
-        // XXX individual tests
-        return null;
-    }
-
-    private List<Pair<FileObject, String>> getProjectPair(PhpProject project) {
+    // <working directory, unit test name (script name without extension)>
+    private Pair<FileObject, String> getPair(Lookup context) {
         FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, true);
         if (testDirectory == null) {
             return null;
         }
-        return Collections.singletonList(Pair.of(testDirectory, CWD));
+        if (context == null) {
+            return getProjectPair(testDirectory);
+        }
+        return getFilePair(testDirectory, context);
+    }
+
+    private Pair<FileObject, String> getProjectPair(FileObject testDirectory) {
+        assert testDirectory != null : "Test directory should be defined for running a test file";
+        return Pair.of(testDirectory, CWD);
+    }
+
+    private Pair<FileObject, String> getFilePair(FileObject testDirectory, Lookup context) {
+        assert testDirectory != null : "Test directory should be defined for running a test file";
+        FileObject fileObj = CommandUtils.fileForContextOrSelectedNodes(context, testDirectory);
+        assert fileObj != null : "Fileobject not found for context: " + context;
+        return Pair.of(fileObj.getParent(), fileObj.getName());
+    }
+
+    private class RunScriptProvider implements RunScript.Provider {
+        protected final Lookup context;
+        protected final Pair<FileObject, String> pair;
+        protected final PhpUnit phpUnit;
+        protected final UnitTestRunner testRunner;
+        protected final RerunUnitTestHandler rerunUnitTestHandler;
+
+        public RunScriptProvider(Pair<FileObject, String> pair, Lookup context) {
+            assert pair != null;
+
+            this.pair = pair;
+            this.context = context;
+            rerunUnitTestHandler = getRerunUnitTestHandler();
+            testRunner = getTestRunner();
+            phpUnit = CommandUtils.getPhpUnit(false);
+        }
+
+        public ExecutionDescriptor getDescriptor() throws IOException {
+            ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
+                    .optionsPath(PHPOptionsCategory.PATH_IN_LAYER)
+                    .frontWindow(!phpUnit.supportedVersionFound())
+                    .showProgress(true);
+            if (phpUnit.supportedVersionFound()) {
+                executionDescriptor = executionDescriptor
+                        .preExecution(new Runnable() {
+                            public void run() {
+                                testRunner.start();
+                            }
+                        })
+                        .postExecution(new Runnable() {
+                            public void run() {
+                                rerunUnitTestHandler.enable();
+                                testRunner.showResults();
+                                handleCodeCoverage();
+                            }
+                        });
+            } else {
+                executionDescriptor = executionDescriptor
+                        .outProcessorFactory(new OutputProcessorFactory(phpUnit));
+            }
+            return executionDescriptor;
+        }
+
+        public ExternalProcessBuilder getProcessBuilder() {
+            ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getProgram())
+                    .workingDirectory(FileUtil.toFile(pair.first));
+            for (String param : phpUnit.getParameters()) {
+                externalProcessBuilder = externalProcessBuilder.addArgument(param);
+            }
+            externalProcessBuilder = externalProcessBuilder
+                    .addArgument(PhpUnit.PARAM_XML_LOG)
+                    .addArgument(PhpUnit.XML_LOG.getAbsolutePath());
+            if (coverageProvider.isEnabled()) {
+                externalProcessBuilder = externalProcessBuilder
+                        .addArgument(PhpUnit.PARAM_COVERAGE_LOG)
+                        .addArgument(PhpUnit.COVERAGE_LOG.getAbsolutePath());
+            }
+            externalProcessBuilder = externalProcessBuilder
+                    .addArgument(pair.second);
+            return externalProcessBuilder;
+        }
+
+        public String getOutputTabTitle() {
+            String title = null;
+            if (pair.second == CWD) {
+                title = NbBundle.getMessage(ConfigActionTest.class, "LBL_UnitTestsForTestSourcesSuffix");
+            } else {
+                title = pair.second;
+            }
+            return String.format("%s - %s", phpUnit.getProgram(), title);
+        }
+
+        public boolean isValid() {
+            return phpUnit.isValid() && pair.first != null && pair.second != null;
+        }
+
+        protected RerunUnitTestHandler getRerunUnitTestHandler() {
+            return new RerunUnitTestHandler(context);
+        }
+
+        protected UnitTestRunner getTestRunner() {
+            return new UnitTestRunner(project, TestSession.SessionType.TEST, rerunUnitTestHandler);
+        }
+
+        void handleCodeCoverage() {
+            if (!coverageProvider.isEnabled()
+                    || pair.second != CWD) {
+                // XXX no provider or not enabled or just one test case (could be handled later)
+                return;
+            }
+
+            CoverageVO coverage = new CoverageVO();
+            try {
+                PhpUnitCoverageLogParser.parse(new BufferedReader(new FileReader(PhpUnit.COVERAGE_LOG)), coverage);
+            } catch (FileNotFoundException ex) {
+                LOGGER.warning(String.format("In order to show code coverage, file %s must exist."
+                        + "Report this issue please in http://www.netbeans.org/issues/.", PhpUnit.COVERAGE_LOG));
+                return;
+            }
+            coverageProvider.setCoverage(coverage);
+        }
+    }
+
+    private final class DebugScriptProvider extends RunScriptProvider implements DebugScript.Provider {
+        protected final File startFile;
+
+        public DebugScriptProvider(Pair<FileObject, String> pair, Lookup context) {
+            super(pair, context);
+            startFile = getStartFile(context);
+        }
+
+        public Project getProject() {
+            assert context != null : "Only particular test files can be debugged";
+            assert startFile != null;
+            return project;
+        }
+
+        public FileObject getStartFile() {
+            assert context != null : "Only particular test files can be debugged";
+            assert startFile != null;
+            return FileUtil.toFileObject(startFile);
+        }
+
+        @Override
+        protected RerunUnitTestHandler getRerunUnitTestHandler() {
+            return new RedebugUnitTestHandler(context);
+        }
+
+        @Override
+        protected UnitTestRunner getTestRunner() {
+            assert rerunUnitTestHandler instanceof RedebugUnitTestHandler;
+            return new UnitTestRunner(project, TestSession.SessionType.DEBUG, rerunUnitTestHandler);
+        }
+
+        private File getStartFile(Lookup context) {
+            if (context == null) {
+                return null;
+            }
+            FileObject testRoot = ProjectPropertiesSupport.getTestDirectory(project, false);
+            assert testRoot != null : "Test root must be known already";
+            FileObject file = CommandUtils.fileForContextOrSelectedNodes(context, testRoot);
+            assert file != null : "Start file must be found";
+            return FileUtil.toFile(file);
+        }
+    }
+
+    private class RerunUnitTestHandler implements RerunHandler {
+        protected final Lookup context;
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
+        private volatile boolean enabled = false;
+
+        public RerunUnitTestHandler(Lookup context) {
+            this.context = context;
+        }
+
+        public void rerun() {
+            run(context);
+        }
+
+        public boolean enabled() {
+            return enabled;
+        }
+
+        public void addChangeListener(ChangeListener listener) {
+            changeSupport.addChangeListener(listener);
+        }
+
+        public void removeChangeListener(ChangeListener listener) {
+            changeSupport.removeChangeListener(listener);
+        }
+
+        void enable() {
+            enabled = true;
+            changeSupport.fireChange();
+        }
+    }
+
+    private class RedebugUnitTestHandler extends RerunUnitTestHandler {
+        public RedebugUnitTestHandler(Lookup context) {
+            super(context);
+        }
+
+        @Override
+        public void rerun() {
+            debug(context);
+        }
+    }
+
+    static final class OutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
+        private final PhpUnit phpUnit;
+
+        public OutputProcessorFactory(PhpUnit phpUnit) {
+            this.phpUnit = phpUnit;
+        }
+
+        public InputProcessor newInputProcessor(final InputProcessor defaultProcessor) {
+            return new InputProcessor() {
+                public void processInput(char[] chars) throws IOException {
+                    defaultProcessor.processInput(chars);
+                }
+                public void reset() throws IOException {
+                    defaultProcessor.reset();
+                }
+                public void close() throws IOException {
+                    String msg = NbBundle.getMessage(ConfigActionTest.class, "MSG_OldPhpUnit", PhpUnit.getVersions(phpUnit.getVersion()));
+                    char[] separator = new char[msg.length()];
+                    Arrays.fill(separator, '='); // NOI18N
+                    defaultProcessor.processInput("\n".toCharArray()); // NOI18N
+                    defaultProcessor.processInput(separator);
+                    defaultProcessor.processInput("\n".toCharArray()); // NOI18N
+                    defaultProcessor.processInput(msg.toCharArray());
+                    defaultProcessor.processInput("\n".toCharArray()); // NOI18N
+                    defaultProcessor.processInput(separator);
+                    defaultProcessor.processInput("\n".toCharArray()); // NOI18N
+                    defaultProcessor.close();
+                }
+            };
+        }
     }
 }

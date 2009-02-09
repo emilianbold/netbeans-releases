@@ -388,7 +388,7 @@ class InstallPanelVisual extends javax.swing.JPanel {
         if (jCheckBoxShared.isEnabled() && jCheckBoxShared.isSelected()) {
             url += ":base=" + jTextFieldBaseDir.getText();  // NOI18N
         }
-        Logger.getLogger(InstallPanelVisual.class.getName()).log(Level.INFO, "TomcatInstall.getUrl: " + url);    // NOI18N
+        Logger.getLogger(InstallPanelVisual.class.getName()).log(Level.FINE, "TomcatInstall.getUrl: " + url);    // NOI18N
         return url;
     }
     
@@ -479,10 +479,23 @@ class InstallPanelVisual extends javax.swing.JPanel {
             return false;
         }
 
+        // check whether server.xml is in configured BASE_DIR if so, we
+        // don't want to checks its presence in HOME_DIR
+        boolean serverXmlInBaseDir = false;
+        if (jCheckBoxShared.isEnabled() && jCheckBoxShared.isSelected()) {
+            String base = jTextFieldBaseDir.getText();
+            if (base.length() != 0) {
+                File serverFile = new File(base, SERVER_XML);
+                if (serverFile.exists()) {
+                    serverXmlInBaseDir = true;
+                }
+            }
+        }
+
         File serverFile = new File(homeDir, SERVER_XML);
-        if (!serverFile.canRead()) {
+        if (!serverXmlInBaseDir && !serverFile.canRead()) {
             errorMessage = NbBundle.getMessage(InstallPanelVisual.class, "MSG_NonReadableHomeServerXml");
-            return false;            
+            return false;
         }
         if ((!jCheckBoxShared.isEnabled() || !jCheckBoxShared.isSelected()) && !isServerXmlValid(serverFile)) {
             errorMessage = NbBundle.getMessage(InstallPanelVisual.class, "MSG_CorruptedHomeServerXml");

@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
  *
  * @author gordon
  */
-public class AddRemoveListModel extends DefaultListModel {
+/*package-local*/ final class AddRemoveListModel extends DefaultListModel {
     
     private ArrayList<String> addList;
     private ArrayList<Object> removeList;

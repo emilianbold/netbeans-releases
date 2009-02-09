@@ -63,7 +63,7 @@ public class GapLineView extends GapBoxView {
         super(lineElement, View.X_AXIS);
     }
 
-    protected GapBoxViewChildren createChildren() {
+    GapBoxViewChildren createChildren() {
         return new GapLineViewChildren(this);
     }
 

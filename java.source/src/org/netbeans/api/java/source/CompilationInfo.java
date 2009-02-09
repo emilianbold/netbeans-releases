@@ -57,6 +57,10 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.swing.text.Document;
 import javax.tools.Diagnostic;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.CheckReturnValue;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.parsing.DocPositionRegion;
@@ -108,7 +112,7 @@ public class CompilationInfo {
      * is not a result of java parsing.
      * @since 0.42
      */
-    public static CompilationInfo get (final Parser.Result result) {
+    public static @NullUnknown CompilationInfo get (@NonNull final Parser.Result result) {
         Parameters.notNull("result", result);   //NOI18N
         CompilationInfo info = null;
         if (result instanceof JavacParserResult) {
@@ -124,7 +128,7 @@ public class CompilationInfo {
      * Returns the current phase of the {@link JavaSource}.
      * @return {@link JavaSource.Phase} the state which was reached by the {@link JavaSource}.
      */
-    public JavaSource.Phase getPhase() {
+    public @NonNull JavaSource.Phase getPhase() {
         checkConfinement();
         return this.impl.getPhase();
     }
@@ -142,7 +146,7 @@ public class CompilationInfo {
      * @return {@link TreePath} or null
      * @since 0.31
      */
-    public TreePath getChangedTree () {
+    public @CheckForNull @CheckReturnValue TreePath getChangedTree () {
         checkConfinement();
         if (JavaSource.Phase.PARSED.compareTo (impl.getPhase())>0) {
             return null;
@@ -164,7 +168,7 @@ public class CompilationInfo {
      * java source file. 
      * @throws java.lang.IllegalStateException  when the phase is less than {@link JavaSource.Phase#PARSED}
      */
-    public CompilationUnitTree getCompilationUnit() {        
+    public CompilationUnitTree getCompilationUnit() {
         checkConfinement();
         return this.impl.getCompilationUnit();
     }
@@ -173,7 +177,7 @@ public class CompilationInfo {
      * Returns the content of the file represented by the {@link JavaSource}.
      * @return String the java source
      */
-    public String getText() {
+    public @NonNull String getText() {
         checkConfinement();
         return this.impl.getText();
     }
@@ -183,7 +187,7 @@ public class CompilationInfo {
      * @return the snapshot
      * @since 0.42
      */
-    public Snapshot getSnapshot () {
+    public @NonNull Snapshot getSnapshot () {
         checkConfinement();
         return this.impl.getSnapshot();
     }
@@ -192,7 +196,7 @@ public class CompilationInfo {
      * Returns the {@link TokenHierarchy} for the file represented by the {@link JavaSource}.
      * @return lexer TokenHierarchy
      */
-    public TokenHierarchy<?> getTokenHierarchy() {
+    public @NonNull TokenHierarchy<?> getTokenHierarchy() {
         checkConfinement();
         return this.impl.getTokenHierarchy();
     }
@@ -201,7 +205,7 @@ public class CompilationInfo {
      * Returns the errors in the file represented by the {@link JavaSource}.
      * @return an list of {@link Diagnostic} 
      */
-    public List<Diagnostic> getDiagnostics() {
+    public @NonNull List<Diagnostic> getDiagnostics() {
         checkConfinement();
         return this.impl.getDiagnostics();
     }
@@ -214,7 +218,7 @@ public class CompilationInfo {
      * @throws IllegalStateException is thrown when the {@link JavaSource} was created with no files
      * @since 0.14
      */
-    public List<? extends TypeElement> getTopLevelElements () throws IllegalStateException {
+    public @NullUnknown List<? extends TypeElement> getTopLevelElements () throws IllegalStateException {
         checkConfinement();
         if (this.impl.getFileObject() == null) {
             throw new IllegalStateException ();
@@ -257,7 +261,7 @@ public class CompilationInfo {
      * Return the {@link Trees} service of the javac represented by this {@link CompilationInfo}.
      * @return javac Trees service
      */
-    public Trees getTrees() {
+    public @NonNull Trees getTrees() {
         checkConfinement();
         return Trees.instance(impl.getJavacTask());
     }
@@ -266,7 +270,7 @@ public class CompilationInfo {
      * Return the {@link Types} service of the javac represented by this {@link CompilationInfo}.
      * @return javac Types service
      */
-    public Types getTypes() {
+    public @NonNull Types getTypes() {
         checkConfinement();
         return impl.getJavacTask().getTypes();
     }
@@ -275,7 +279,7 @@ public class CompilationInfo {
      * Return the {@link Elements} service of the javac represented by this {@link CompilationInfo}.
      * @return javac Elements service
      */
-    public Elements getElements() {
+    public @NonNull Elements getElements() {
         checkConfinement();
 	return impl.getJavacTask().getElements();
     }
@@ -287,7 +291,7 @@ public class CompilationInfo {
      * the compatibility bridge, when the CompilationInfo was created by the parsing api
      * it returns null. Use {@link CompilationInfo#getSnapshot()} instead.
      */
-    public JavaSource getJavaSource() {
+    public @NullUnknown JavaSource getJavaSource() {
         checkConfinement();
         return javaSource;
     }
@@ -300,7 +304,7 @@ public class CompilationInfo {
      * Returns {@link ClasspathInfo} for which this {@link CompilationInfo} was created.
      * @return ClasspathInfo
      */
-    public ClasspathInfo getClasspathInfo() {
+    public @NonNull ClasspathInfo getClasspathInfo() {
         checkConfinement();
 	return this.impl.getClasspathInfo();
     }
@@ -309,7 +313,7 @@ public class CompilationInfo {
      * Returns the {@link FileObject} represented by this {@link CompilationInfo}.
      * @return FileObject
      */
-    public FileObject getFileObject() {
+    public @NullUnknown FileObject getFileObject() {
         checkConfinement();
         return impl.getFileObject();
     }
@@ -338,7 +342,7 @@ public class CompilationInfo {
      * exist or has no {@link EditorCookie}.
      * @throws java.io.IOException
      */
-    public Document getDocument() throws IOException { //XXX cleanup: IOException is no longer required? Used by PositionEstimator, DiffFacility
+    public @CheckForNull Document getDocument() throws IOException { //XXX cleanup: IOException is no longer required? Used by PositionEstimator, DiffFacility
         checkConfinement();
         return this.impl.getDocument();
     }
@@ -348,7 +352,7 @@ public class CompilationInfo {
      * Returns {@link TreeUtilities}.
      * @return TreeUtilities
      */
-    public synchronized TreeUtilities getTreeUtilities() {
+    public synchronized @NonNull TreeUtilities getTreeUtilities() {
         checkConfinement();
         if (treeUtilities == null) {
             treeUtilities = new TreeUtilities(this);
@@ -360,7 +364,7 @@ public class CompilationInfo {
      * Returns {@link ElementUtilities}.
      * @return ElementUtilities
      */
-    public synchronized ElementUtilities getElementUtilities() {
+    public synchronized @NonNull ElementUtilities getElementUtilities() {
         checkConfinement();
         if (elementUtilities == null) {
             elementUtilities = new ElementUtilities(this);
@@ -372,7 +376,7 @@ public class CompilationInfo {
     /**Get the TypeUtilities.
      * @return an instance of TypeUtilities
      */
-    public synchronized TypeUtilities getTypeUtilities() {
+    public synchronized @NonNull TypeUtilities getTypeUtilities() {
         checkConfinement();
         if (typeUtilities == null) {
             typeUtilities = new TypeUtilities(this);

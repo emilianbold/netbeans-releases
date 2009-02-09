@@ -57,8 +57,11 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import javax.swing.Action;
 import javax.swing.event.ChangeListener;
 import javax.swing.JPanel;
@@ -78,10 +81,12 @@ import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
@@ -91,7 +96,6 @@ import org.openide.util.WeakSet;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
-import org.openide.util.Utilities;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileUtil;
 
@@ -105,29 +109,94 @@ public class PropertiesOpen extends CloneableOpenSupport
                             implements OpenCookie, CloseCookie {
 
     /** Main properties dataobject */
+    @Deprecated
     PropertiesDataObject propDataObject;
-    
+
+
+    private List<PropertiesDataObject> dataObjectList;
+
+    private BundleStructure bundleStructure;
     /** Listener for modificationc on dataobject, adding and removing save cookie */
     PropertyChangeListener modifL;
+
+    HashMap<PropertiesDataObject,PropertyChangeListener> weakModifiedListeners;
 
     /** UndoRedo manager for this properties open support */
     protected transient UndoRedo.Manager undoRedoManager;
 
     /** This object is used for marking all undoable edits performed as one atomic undoable action. */
     transient Object atomicUndoRedoFlag;
+
+    private transient Object UPDATE_LOCK = new Object();
     
 
     /** Constructor */
+    @Deprecated
     public PropertiesOpen(PropertiesDataObject propDataObject) {
         super(new Environment(propDataObject));
         
         this.propDataObject = propDataObject;
-        
-        this.propDataObject.addPropertyChangeListener(WeakListeners.propertyChange(modifL = 
+
+        //PENDING Add Listeners for all DataObject from this OpenSupport
+        this.propDataObject.addPropertyChangeListener(WeakListeners.propertyChange(modifL =
             new ModifiedListener(), this.propDataObject));
     }
 
+    public PropertiesOpen(BundleStructure structure) {
+        super(new Environment(structure));
 
+        this.bundleStructure = structure;
+        //Listeners added later in addDataObject method
+//        addModifiedListeners();
+        dataObjectList = new ArrayList<PropertiesDataObject>();
+        weakModifiedListeners = new HashMap<PropertiesDataObject, PropertyChangeListener>();
+        modifL = new ModifiedListener();
+    }
+
+    private void addModifiedListeners() {
+        BundleStructure structure = bundleStructure;
+        dataObjectList = new ArrayList<PropertiesDataObject>();
+        PropertiesDataObject dataObject;
+        modifL = new ModifiedListener();
+        weakModifiedListeners = new HashMap<PropertiesDataObject, PropertyChangeListener>();
+        for (int i=0;i<structure.getEntryCount();i++) {
+            dataObject = (PropertiesDataObject) structure.getNthEntry(i).getDataObject();
+            weakModifiedListeners.put(dataObject, WeakListeners.propertyChange(modifL, dataObject));
+            dataObject.addPropertyChangeListener(weakModifiedListeners.get(dataObject));
+            dataObjectList.add(dataObject);
+        }
+    }
+
+    protected void removeModifiedListener(PropertiesDataObject dataObject) {
+        PropertyChangeListener l = weakModifiedListeners.remove(dataObject);
+        if (l!=null) {
+            dataObject.removePropertyChangeListener(l);
+        }
+        PropertiesCloneableTopComponent topComp = (PropertiesCloneableTopComponent) allEditors.getArbitraryComponent();
+        if (topComp != null) {
+            topComp.dataObjectRemoved(dataObject);
+        }
+        dataObjectList.remove(dataObject);
+    }
+
+    protected void addDataObject(PropertiesDataObject dataObject) {
+            PropertyChangeListener l = weakModifiedListeners.get(dataObject);
+            if (l != null) {
+                dataObject.removePropertyChangeListener(l);
+            } else {
+                l = WeakListeners.propertyChange(modifL, dataObject);
+                weakModifiedListeners.put(dataObject,l);
+            }
+            dataObject.addPropertyChangeListener(l);
+            ((Environment)env).addListener(dataObject);
+            PropertiesCloneableTopComponent topComp = (PropertiesCloneableTopComponent) allEditors.getArbitraryComponent();
+            if (topComp != null) {
+                topComp.dataObjectAdded(dataObject);
+            }
+        if (!dataObjectList.contains(dataObject)) {
+            dataObjectList.add(dataObject);
+        }
+    }
     /** 
      * Tests whether all data is saved, and if not, prompts the user to save.
      *
@@ -135,8 +204,16 @@ public class PropertiesOpen extends CloneableOpenSupport
      */
     @Override
     protected boolean canClose() {
-        SaveCookie saveCookie = propDataObject.getCookie(SaveCookie.class);
-        if (saveCookie == null) {
+        PropertiesDataObject dataObject;
+        SaveCookie saveCookie = null;
+        HashMap<SaveCookie,PropertiesDataObject> map = new HashMap<SaveCookie,PropertiesDataObject>();
+        for (int i=0;i<bundleStructure.getEntryCount();i++) {
+            dataObject = (PropertiesDataObject) bundleStructure.getNthEntry(i).getDataObject();
+            saveCookie = dataObject.getCookie(SaveCookie.class);
+            //Need to find all saveCookie
+            if (saveCookie != null) map.put(saveCookie, dataObject);
+        }
+        if (map.isEmpty()) {
             return true;
         }
         stopEditing();
@@ -149,7 +226,7 @@ public class PropertiesOpen extends CloneableOpenSupport
                                            "CTL_Question");         //NOI18N
         String question = NbBundle.getMessage(PropertiesOpen.class,
                                               "MSG_SaveFile",       //NOI18N
-                                              propDataObject.getName());
+                                              bundleStructure.getNthEntry(0).getName());
         String optionSave = NbBundle.getMessage(PropertiesOpen.class,
                                                 "CTL_Save");        //NOI18N
         String optionDiscard = NbBundle.getMessage(PropertiesOpen.class,
@@ -171,15 +248,21 @@ public class PropertiesOpen extends CloneableOpenSupport
         /* Save the file if the answer was "Save": */
         if (answer == optionSave) {
             try {
-                saveCookie.save();
-                propDataObject.updateModificationStatus();
+                for (SaveCookie save : map.keySet()) {
+                    save.save();
+                    map.get(save).updateModificationStatus();
+                }
             }
             catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
                 return false;
             }
         }
-        propDataObject.updateModificationStatus();
+        dataObject = null;
+        for (int i=0;i<bundleStructure.getEntryCount();i++) {
+            dataObject = (PropertiesDataObject) bundleStructure.getNthEntry(i).getDataObject();
+            dataObject.updateModificationStatus();
+        }
 
         return (answer == optionSave || answer == optionDiscard);
     }
@@ -196,6 +279,18 @@ public class PropertiesOpen extends CloneableOpenSupport
      */
     private void saveEditorValues(boolean stopEditing) {
         Enumeration en = allEditors.getComponents();
+        if (en.hasMoreElements() == false) {
+            PropertiesCloneableTopComponent topComp = (PropertiesCloneableTopComponent) allEditors.getArbitraryComponent();
+            if (topComp != null) {
+                BundleEditPanel bep = (BundleEditPanel) topComp.getComponent(0);
+                if (stopEditing) {
+                    bep.stopEditing();
+                } else {
+                    bep.saveEditorValue(false);
+                }
+            }
+            throw new UnsupportedOperationException("saveEditorValues wrong behaviour");
+        }
         while (en.hasMoreElements()) {
             Object o = en.nextElement();
             if (o instanceof PropertiesCloneableTopComponent) {
@@ -215,7 +310,8 @@ public class PropertiesOpen extends CloneableOpenSupport
      * @return the cloneable top component for this support
      */
     protected CloneableTopComponent createCloneableTopComponent() {
-        return new PropertiesCloneableTopComponent(propDataObject);
+//        return new PropertiesCloneableTopComponent(propDataObject);
+        return new PropertiesCloneableTopComponent(bundleStructure);
     }
 
     /**
@@ -224,9 +320,10 @@ public class PropertiesOpen extends CloneableOpenSupport
      * @return the message or null if nothing should be displayed
      */
     protected String messageOpening() {
+        bundleStructure.updateEntries();
         return NbBundle.getMessage(PropertiesOpen.class, "LBL_ObjectOpen", // NOI18N
-            propDataObject.getName(),
-            propDataObject.getPrimaryFile().toString()
+            bundleStructure.getNthEntry(0).getName(),
+            bundleStructure.getNthEntry(0).getFile().toString()
         );
     }
 
@@ -249,15 +346,15 @@ public class PropertiesOpen extends CloneableOpenSupport
         if (undoRedoManager != null) {
             return undoRedoManager;
         } else {
-            return new CompoundUndoRedoManager(propDataObject);
+            return new CompoundUndoRedoManager(bundleStructure);
         }
     }
 
     /** Helper method. Closes documents. */
     private synchronized void closeDocuments() {
-        closeEntry((PropertiesFileEntry)propDataObject.getPrimaryEntry());
-        for (Iterator it = propDataObject.secondaryEntries().iterator(); it.hasNext(); ) {
-            closeEntry((PropertiesFileEntry)it.next());
+        BundleStructure structure = bundleStructure;
+        for (int i = 0; i< structure.getEntryCount(); i++) {
+            closeEntry(structure.getNthEntry(i));
         }
     }
 
@@ -278,7 +375,7 @@ public class PropertiesOpen extends CloneableOpenSupport
         }
     }
 
-    /** 
+    /**
      * Helper method. Should be called only if the object has SaveCookie
      * @return true if closing this editor whithout saving would result in loss of data
      *  because al least one of the modified files is not open in the code editor
@@ -286,15 +383,11 @@ public class PropertiesOpen extends CloneableOpenSupport
     private boolean shouldAskSave() {
         // for each entry : if there is a SaveCookie and no open editor component, return true.
         // if passed for all entries, return false
-        PropertiesFileEntry entry = (PropertiesFileEntry)propDataObject.getPrimaryEntry();
-        SaveCookie savec = entry.getCookie(SaveCookie.class);
-        
-        if ((savec != null) && !entry.getPropertiesEditor().hasOpenedEditorComponent()) {
-            return true;
-        }
-
-        for (Iterator it = propDataObject.secondaryEntries().iterator(); it.hasNext(); ) {
-            entry = (PropertiesFileEntry)it.next();
+        BundleStructure structure = bundleStructure;
+        PropertiesFileEntry entry;
+        SaveCookie savec;
+        for (int i = 0; i < structure.getEntryCount(); i++) {
+            entry = structure.getNthEntry(i);
             savec = entry.getCookie(SaveCookie.class);
             if ((savec != null) && !entry.getPropertiesEditor().hasOpenedEditorComponent()) {
                 return true;
@@ -303,7 +396,7 @@ public class PropertiesOpen extends CloneableOpenSupport
         return false;
     }
 
-    
+
     /** Environment that connects the open support together with {@code DataObject}. */
     private static class Environment implements CloneableOpenSupport.Env, Serializable,
         PropertyChangeListener, VetoableChangeListener {
@@ -312,7 +405,10 @@ public class PropertiesOpen extends CloneableOpenSupport
         static final long serialVersionUID = -1934890789745432531L;
         
         /** Object to serialize and be connected to. */
+        @Deprecated
         private DataObject dataObject;
+
+        private BundleStructure bundleStructure;
         
         /** Support for firing of property changes. */
         private transient PropertyChangeSupport propSupp;
@@ -320,6 +416,8 @@ public class PropertiesOpen extends CloneableOpenSupport
         /** Support for firing of vetoable changes. */
         private transient VetoableChangeSupport vetoSupp;
 
+        private transient HashMap<PropertiesDataObject, PropertyChangeListener> weakEnvPropListeners;
+        private transient HashMap<PropertiesDataObject, VetoableChangeListener> weakEnvVetoListeners;
         
         /** 
          * Constructor. Attaches itself as listener to 
@@ -327,13 +425,79 @@ public class PropertiesOpen extends CloneableOpenSupport
          * are also rethrown to own listeners.
          * @param dataObject data object to be attached to
          */
+        @Deprecated
         public Environment(PropertiesDataObject dataObject) {
             this.dataObject = dataObject;
             dataObject.addPropertyChangeListener(WeakListeners.propertyChange(this, dataObject));
             dataObject.addVetoableChangeListener(WeakListeners.vetoableChange(this, dataObject));
         }
 
-        
+        public Environment(BundleStructure structure) {
+            this.bundleStructure = structure;
+            dataObject = bundleStructure.getNthEntry(0).getDataObject();
+            //Listeners added later by addListener method
+//            addListeners();
+            weakEnvPropListeners = new HashMap<PropertiesDataObject, PropertyChangeListener>();
+            weakEnvVetoListeners = new HashMap<PropertiesDataObject, VetoableChangeListener>();
+        }
+
+
+        private void addListener(PropertiesDataObject dataObj) {
+            PropertyChangeListener l =weakEnvPropListeners.get(dataObj);
+            VetoableChangeListener v = weakEnvVetoListeners.get(dataObj);
+            if (l != null) {
+                dataObj.removePropertyChangeListener(l);
+            } else {
+                l = WeakListeners.propertyChange(this, dataObj);
+                weakEnvPropListeners.put(dataObj, l);
+            }
+            if (v != null) {
+                dataObj.removeVetoableChangeListener(v);
+            } else {
+                v = WeakListeners.vetoableChange(this, dataObj);
+                weakEnvVetoListeners.put(dataObj, v);
+            }
+            dataObj.addPropertyChangeListener(l);
+            dataObj.addVetoableChangeListener(v);
+        }
+
+        private  void addListeners() {
+            BundleStructure structure = bundleStructure;
+            PropertiesDataObject dataObj;
+            weakEnvPropListeners = new HashMap<PropertiesDataObject, PropertyChangeListener>();
+            weakEnvVetoListeners = new HashMap<PropertiesDataObject, VetoableChangeListener>();
+            PropertyChangeListener l;
+            VetoableChangeListener v;
+            for(int i=0;i<structure.getEntryCount();i++) {
+                dataObj = (PropertiesDataObject) structure.getNthEntry(i).getDataObject();
+                l = WeakListeners.propertyChange(this, dataObj);
+                weakEnvPropListeners.put(dataObj, l);
+                dataObj.addPropertyChangeListener(l);
+                v = WeakListeners.vetoableChange(this, dataObj);
+                weakEnvVetoListeners.put(dataObj, v);
+                dataObj.addVetoableChangeListener(v);
+            }
+
+        }
+
+        private void removeListeners() {
+            BundleStructure structure = bundleStructure;
+            PropertiesDataObject dataObj;
+            PropertyChangeListener l;
+            VetoableChangeListener v;
+            for(int i=0;i<structure.getEntryCount();i++) {
+                dataObj = (PropertiesDataObject) structure.getNthEntry(i).getDataObject();
+                l = weakEnvPropListeners.remove(dataObj);
+                v = weakEnvVetoListeners.remove(dataObj);
+                if (l!=null) {
+                    dataObj.removePropertyChangeListener(l);
+                }
+                if (v!=null) {
+                    dataObj.removeVetoableChangeListener(v);
+                }
+            }
+        }
+
         /** Implements {@code CloneableOpenSupport.Env} interface. Adds property listener. */
         public void addPropertyChangeListener(PropertyChangeListener l) {
             prop().addPropertyChangeListener(l);
@@ -354,17 +518,23 @@ public class PropertiesOpen extends CloneableOpenSupport
             veto().removeVetoableChangeListener(l);
         }
 
-        /** 
+        /**
          * Implements {@code CloneableOpenSupport} interface.
          * Method that allows environment to find its cloneable open support.
          * @return the support or null if the environemnt is not in valid 
          * state and the CloneableOpenSupport cannot be found for associated
          * data object
          */
+        @Deprecated
+        //TODO PENDING Called from super class need to preserve
         public CloneableOpenSupport findCloneableOpenSupport() {
+            return (CloneableOpenSupport) dataObject.getCookie(OpenCookie.class);
+        }
+
+        public CloneableOpenSupport findCloneableOpenSupport(PropertiesDataObject dataObject) {
             return (CloneableOpenSupport)dataObject.getCookie(OpenCookie.class);
         }
-        
+
         /** 
          * Implements {@code CloneableOpenSupport.Env} interface.
          * Test whether the support is in valid state or not.
@@ -372,16 +542,33 @@ public class PropertiesOpen extends CloneableOpenSupport
          * referenced to does not exist anymore.
          * @return true or false depending on its state
          */
+        @Deprecated
         public boolean isValid() {
             return dataObject.isValid();
         }
-        
+
+        public boolean isValid(PropertiesDataObject dataObject) {
+            return dataObject.isValid();
+        }
+
         /**
          * Implements {@code CloneableOpenSupport.Env} interface. 
          * Test whether the object is modified or not.
          * @return true if the object is modified
          */
         public boolean isModified() {
+            //if one dataObject is modified assume that everything modified
+            PropertiesFileEntry entry;
+            for (int i=0; i < bundleStructure.getEntryCount();i++) {
+                entry = bundleStructure.getNthEntry(i);
+                if ((entry !=null) && (entry.getDataObject().isModified()) ) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public boolean isModified(PropertiesDataObject dataObject) {
             return dataObject.isModified();
         }
 
@@ -392,15 +579,24 @@ public class PropertiesOpen extends CloneableOpenSupport
          *   (for example when the file is readonly), when such exception
          *   is the support should discard all previous changes
          */
+        @Deprecated
         public void markModified() throws java.io.IOException {
             dataObject.setModified(true);
         }
-        
+
+        public void markModified(PropertiesDataObject dataObject) throws java.io.IOException {
+            dataObject.setModified(true);
+        }
         /** 
          * Implements {@code CloneableOpenSupport.Env} interface.
          * Reverse method that can be called to make the environment unmodified.
          */
+        @Deprecated
         public void unmarkModified() {
+            dataObject.setModified(false);
+        }
+
+        public void unmarkModified(PropertiesDataObject dataObject) {
             dataObject.setModified(false);
         }
         
@@ -410,10 +606,16 @@ public class PropertiesOpen extends CloneableOpenSupport
          */
         public void propertyChange(PropertyChangeEvent evt) {
             if(DataObject.PROP_MODIFIED.equals(evt.getPropertyName())) {
-                if(dataObject.isModified()) {
-                    dataObject.addVetoableChangeListener(this);
-                } else {
-                    dataObject.removeVetoableChangeListener(this);
+                PropertiesDataObject dataObj = null;
+                if (evt.getSource() instanceof PropertiesDataObject) {
+                    dataObj = (PropertiesDataObject) evt.getSource();
+                }
+                if (dataObj!=null) {
+                    if(dataObj.isModified()) {
+                        dataObj.addVetoableChangeListener(this);
+                    } else {
+                        dataObj.removeVetoableChangeListener(this);
+                    }
                 }
             } else if(DataObject.PROP_VALID.equals(evt.getPropertyName ())) { 
                 // We will handle the object invalidation here.
@@ -422,15 +624,83 @@ public class PropertiesOpen extends CloneableOpenSupport
                     return;
                 }
 
-                // Loosing validity.
-                PropertiesOpen support = (PropertiesOpen)findCloneableOpenSupport();
-                if(support != null) {
-                    
+                PropertiesDataObject dataObj = null;
+                if (evt.getSource() instanceof PropertiesDataObject) {
+                    dataObj = (PropertiesDataObject) evt.getSource();
+                }
+                if (dataObj != null) {
+                    PropertyChangeListener l = weakEnvPropListeners.remove(dataObj);
+                    VetoableChangeListener  v = weakEnvVetoListeners.remove(dataObj);
+                    if (l!=null) {
+                        dataObj.removePropertyChangeListener(l);
+                    }
+                    if (v!=null) {
+                        dataObj.removeVetoableChangeListener(v);
+                    }
                     // Mark the object as not being modified, so nobody
                     // will ask for save.
-                    unmarkModified();
-                    
-                    support.close(false);
+                    unmarkModified(dataObj);
+                    bundleStructure.updateEntries();
+                    if (bundleStructure.getEntryCount() == 0) {
+                        // Loosing validity.
+                        PropertiesOpen support = (PropertiesOpen)findCloneableOpenSupport();
+                        if(support != null ) {
+                            //bundleStructure.updateEntries();
+                            support.close(false);
+                        }
+                    } else {
+                        bundleStructure.notifyOneFileChanged(dataObj.getPrimaryFile());
+                    }
+                }
+            } else if (DataObject.PROP_NAME.equals(evt.getPropertyName())) {
+                PropertiesDataObject dataObj = null;
+                if (evt.getSource() instanceof PropertiesDataObject) {
+                    dataObj = (PropertiesDataObject) evt.getSource();
+                }
+                if (dataObj != null) {
+                    if (dataObj.getCookieSet0().getCookie(OpenCookie.class) != dataObj.getOpenSupport()) {
+                        PropertyChangeListener l = weakEnvPropListeners.remove(dataObj);
+                        VetoableChangeListener v = weakEnvVetoListeners.remove(dataObj);
+                        if (l!=null) {
+                            dataObj.removePropertyChangeListener(l);
+                        }
+                        if (v!=null) {
+                            dataObj.removeVetoableChangeListener(v);
+                        }
+                        //Adds new OpenCookie to this dataObj
+                        dataObj.getCookieSet0().add(dataObj.getOpenSupport());
+                        if (dataObj.getBundleStructure().getEntryCount()>1) {
+                            dataObj.getBundleStructure().updateEntries();
+                            dataObj.getBundleStructure().notifyOneFileChanged(dataObj.getPrimaryFile());
+                            dataObj.getOpenSupport().open();
+                        }
+                    }
+                }
+            } else if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
+                //Here DataObject is valid and with new path
+                PropertiesDataObject dataObj = null;
+                if (evt.getSource() instanceof PropertiesDataObject) {
+                    dataObj = (PropertiesDataObject) evt.getSource();
+                }
+                if (dataObj != null) {
+                    if (dataObj.getCookieSet0().getCookie(OpenCookie.class) != dataObj.getOpenSupport()) {
+                        PropertyChangeListener l = weakEnvPropListeners.remove(dataObj);
+                        VetoableChangeListener v = weakEnvVetoListeners.remove(dataObj);
+                        if (l!=null) {
+                            dataObj.removePropertyChangeListener(l);
+                        }
+                        if (v!=null) {
+                            dataObj.removeVetoableChangeListener(v);
+                        }
+                        //Adds new OpenCookie to this dataObj
+                        dataObj.getCookieSet0().add(dataObj.getOpenSupport());
+                        if (dataObj.getBundleStructure().getEntryCount()>1) {
+                            dataObj.getBundleStructure().updateEntries();
+                            dataObj.getBundleStructure().notifyOneFileChanged(dataObj.getPrimaryFile());
+                        }
+                    } else {
+                        //shouldn't get here
+                    }
                 }
             } else {
                 firePropertyChange (
@@ -496,20 +766,28 @@ public class PropertiesOpen extends CloneableOpenSupport
     /** Inner class. Listens to modifications and updates save cookie. */
     private final class ModifiedListener implements SaveCookie, PropertyChangeListener {
 
+
         /** Gives notification that the DataObject was changed.
         * @param ev PropertyChangeEvent
         */
         public void propertyChange(PropertyChangeEvent evt) {
             // Data object changed, reset the UndoRedo manager.
-            if (evt.getSource().equals(propDataObject)) {
-                ((CompoundUndoRedoManager) PropertiesOpen.this.getUndoRedo()).reset(propDataObject);
-            }
-
-            if ((evt.getSource() == propDataObject) && (DataObject.PROP_MODIFIED.equals(evt.getPropertyName()))) {
-                if (((Boolean)evt.getNewValue()).booleanValue()) {
-                    addSaveCookie();
-                } else {
-                    removeSaveCookie();
+            if (DataObject.PROP_MODIFIED.equals(evt.getPropertyName())) {
+                if (evt.getSource() instanceof  PropertiesDataObject) {
+                    PropertiesDataObject dataObject = (PropertiesDataObject) evt.getSource();
+                    if (!dataObject.isValid()) {
+                            if (!((Boolean)evt.getNewValue()).booleanValue()) {
+                                removeSaveCookie(dataObject);
+                            }
+                    } else
+                    if(bundleStructure.getEntryByFileName(dataObject.getName())!=null) {
+                        ((CompoundUndoRedoManager) PropertiesOpen.this.getUndoRedo()).reset(bundleStructure);
+                            if (((Boolean)evt.getNewValue()).booleanValue()) {
+                                addSaveCookie(dataObject);
+                            } else {
+                                removeSaveCookie(dataObject);
+                            }
+                     }
                 }
             }
         }
@@ -538,14 +816,10 @@ public class PropertiesOpen extends CloneableOpenSupport
         * @exception IOException on I/O error
         */
         public void saveDocument() throws IOException {
-            PropertiesFileEntry pfe = (PropertiesFileEntry)propDataObject.getPrimaryEntry();
-            SaveCookie save = pfe.getCookie(SaveCookie.class);
-            if (save != null) {
-                save.save();
-            }
-
-            for (Iterator it = propDataObject.secondaryEntries().iterator(); it.hasNext();) {
-                save = ((PropertiesFileEntry) it.next()).getCookie(SaveCookie.class);
+            BundleStructure structure = bundleStructure;
+            SaveCookie save;
+            for (int i=0; i<structure.getEntryCount();i++) {
+                save = structure.getNthEntry(i).getCookie(SaveCookie.class);
                 if (save != null) {
                     save.save();
                 }
@@ -553,14 +827,28 @@ public class PropertiesOpen extends CloneableOpenSupport
         }
 
         /** Adds save cookie to the dataobject. */
+        @Deprecated
         private void addSaveCookie() {
+            if(propDataObject.getCookie(SaveCookie.class) == null) {
+                propDataObject.getCookieSet0().add(this);
+            }
+        }
+
+        private void addSaveCookie(PropertiesDataObject propDataObject) {
             if(propDataObject.getCookie(SaveCookie.class) == null) {
                 propDataObject.getCookieSet0().add(this);
             }
         }
         
         /** Removes save cookie from the dataobject. */
+        @Deprecated
         private void removeSaveCookie() {
+            if(propDataObject.getCookie(SaveCookie.class) == this) {
+                propDataObject.getCookieSet0().remove(this);
+            }
+        }
+
+        private void removeSaveCookie(PropertiesDataObject propDataObject) {
             if(propDataObject.getCookie(SaveCookie.class) == this) {
                 propDataObject.getCookieSet0().remove(this);
             }
@@ -597,7 +885,8 @@ public class PropertiesOpen extends CloneableOpenSupport
             final PropertiesCloneableTopComponent editor = (PropertiesCloneableTopComponent)PropertiesOpen.super.openCloneableTopComponent();
             editor.requestActive();
             
-            BundleStructure bs = propDataObject.getBundleStructure();
+            BundleStructure bs = bundleStructure;
+            bs.updateEntries();
             // Find indexes.
             int entryIndex = bs.getEntryIndexByFileName(entry.getFile().getName());
             int rowIndex   = bs.getKeyIndexByName(key);
@@ -618,8 +907,9 @@ public class PropertiesOpen extends CloneableOpenSupport
                         }
 
                         // Update selection & edit.
-                        table.getColumnModel().getSelectionModel().setSelectionInterval(row, column);
-                        table.getSelectionModel().setSelectionInterval(row, column);
+//XXX This caused to open properties for editing with wrong values
+//                        table.getColumnModel().getSelectionModel().setSelectionInterval(row, column);
+//                        table.getSelectionModel().setSelectionInterval(row, column);
 
                         table.editCellAt(row, column);
                     }
@@ -628,33 +918,57 @@ public class PropertiesOpen extends CloneableOpenSupport
         }
     } // End of inner class PropertiesOpenAt.
 
-    
+
+
     /** Cloneable top component which represents table view of resource bundles. */
     public static class PropertiesCloneableTopComponent extends CloneableTopComponent {
 
         /** Reference to underlying {@code PropertiesDataObject}. */
+        @Deprecated
         private PropertiesDataObject propDataObject;
-        
+
+        private List<PropertiesDataObject> dataObjectsList;
         /** Listener for changes on {@code propDataObject} name and cookie properties.
          * Changes display name of components accordingly. */
-        private transient PropertyChangeListener dataObjectListener;
-        
+        private transient PropertyChangeListener nameUpdaterListener;
+
+        private transient static HashMap<PropertiesDataObject,PropertyChangeListener> weakNameUpdateListeners;
+
         /** Generated serial version UID. */
         static final long serialVersionUID =2836248291419024296L;
         
-        
+        private final static transient Object UPDATE_LOCK = new Object();
         /** Default constructor for deserialization. */
         public PropertiesCloneableTopComponent() {
         }
-        
+
+        @Override
+        protected void componentHidden() {
+            ((BundleEditPanel)getComponent(0)).getTable().firePropertyChange("componentHidden", 0, 1);  //NOI18N
+            super.componentHidden();
+        }
+
         /** Constructor.
         * @param propDataObject data object we belong to */
+        @Deprecated
         public PropertiesCloneableTopComponent (PropertiesDataObject propDataObject) {
             this.propDataObject  = propDataObject;
 
             initialize();
         }
 
+        private MultiBundleStructure bundleStructure;
+
+        public PropertiesCloneableTopComponent(BundleStructure structure) {
+            this.bundleStructure = (MultiBundleStructure) structure;
+            propDataObject = (PropertiesDataObject) bundleStructure.getNthEntry(0).getDataObject();
+            dataObjectsList = new ArrayList<PropertiesDataObject>();
+            for (int i=0; i<bundleStructure.getEntryCount();i++) {
+                dataObjectsList.add((PropertiesDataObject)bundleStructure.getNthEntry(i).getDataObject());
+            }
+            weakNameUpdateListeners = new HashMap<PropertiesDataObject, PropertyChangeListener>();
+            initialize();
+        }
         /**
          */
         @Override
@@ -681,16 +995,77 @@ public class PropertiesOpen extends CloneableOpenSupport
         private void initialize() {
             initComponents();
             setupActions();
-            setActivatedNodes(new Node[] {propDataObject.getNodeDelegate()});
+            BundleStructure structure = bundleStructure;
+            PropertiesDataObject dataObject;
 
-            dataObjectListener = new NameUpdater();
-            propDataObject.addPropertyChangeListener(
-                    WeakListeners.propertyChange(dataObjectListener,
-                                                 propDataObject));
+            Node[] node = new Node[structure.getEntryCount()];
+            nameUpdaterListener = new NameUpdater();
+
+            for( int i=0; i<structure.getEntryCount();i++) {
+                    dataObject = dataObjectsList.get(i);
+                    node[i] = dataObject.getNodeDelegate();
+                    weakNameUpdateListeners.put(dataObject,WeakListeners.propertyChange(nameUpdaterListener, dataObject));
+                    dataObject.addPropertyChangeListener(weakNameUpdateListeners.get(dataObject));
+            }
             
+            setActivatedNodes(node);
+
             updateName();
         }
-        
+
+        protected void dataObjectRemoved(PropertiesDataObject dataObject) {
+            PropertyChangeListener l = weakNameUpdateListeners.remove(dataObject);
+            if (l != null) {
+                dataObject.removePropertyChangeListener(l);
+            }
+        }
+
+        /**
+         * Called from PropertiesOpen when new DataObject added
+         * @param dataObject to add listener to
+         */
+        protected void dataObjectAdded(PropertiesDataObject dataObject) {
+            if (weakNameUpdateListeners.get(dataObject)!=null) {
+                dataObject.removePropertyChangeListener(weakNameUpdateListeners.get(dataObject));
+            } else {
+                weakNameUpdateListeners.put(dataObject, WeakListeners.propertyChange(nameUpdaterListener, dataObject));
+            }
+            dataObject.addPropertyChangeListener(weakNameUpdateListeners.get(dataObject));
+            updateDataObjects();
+            if (EventQueue.isDispatchThread()) {
+                updateName();
+            }
+        }
+
+        /**
+         * update dataObjectList with new data
+         */
+        private void updateDataObjects() {
+            if (bundleStructure==null) {
+                dataObjectsList = null;
+                return;
+            }
+            bundleStructure.updateEntries();
+            int entryCount = bundleStructure.getEntryCount();
+            if (entryCount == 0) {
+                dataObjectsList = null;
+                return;
+            }
+            synchronized(UPDATE_LOCK) {
+                for (PropertiesDataObject DO: dataObjectsList) {
+                    if (bundleStructure.getEntryIndexByFileName(DO.getName())==-1) {
+                        dataObjectsList.remove(DO);
+                    }
+                }
+                PropertiesDataObject DO = null;
+                for (int i=0;i<entryCount;i++) {
+                    DO = (PropertiesDataObject)bundleStructure.getNthEntry(i).getDataObject();
+                    if (!dataObjectsList.contains(DO)) {
+                        dataObjectsList.add(DO);
+                    }
+                }
+            }
+        }
         /* Based on class DataNode.PropL. */
         final class NameUpdater implements PropertyChangeListener,
                                            FileStatusListener,
@@ -710,7 +1085,7 @@ public class PropertiesOpen extends CloneableOpenSupport
             
             /** */
             private final int action;
-            
+
             /**
              */
             NameUpdater() {
@@ -730,7 +1105,16 @@ public class PropertiesOpen extends CloneableOpenSupport
                     previous.removeFileStatusListener(weakL);
                 }
                 try {
-                    previous = propDataObject.getPrimaryFile().getFileSystem();
+                    PropertiesFileEntry entry = bundleStructure.getNthEntry(0);
+                    if (entry == null) {
+                        bundleStructure.updateEntries();
+                        entry = bundleStructure.getNthEntry(0);
+                        if (entry == null) {
+                            previous = null;
+                            return;
+                        }
+                    }
+                    previous = entry.getFile().getFileSystem();
                     if (weakL == null) {
                         weakL = org.openide.filesystems.FileUtil
                                 .weakFileStatusListener(this, previous);
@@ -750,8 +1134,8 @@ public class PropertiesOpen extends CloneableOpenSupport
                 }
                 
                 boolean thisChanged = false;
-                for (FileObject fo : propDataObject.files()) {
-                    if (ev.hasChanged(fo)) {
+                for (int i=0;i<bundleStructure.getEntryCount();i++) {
+                    if(ev.hasChanged(bundleStructure.getNthEntry(i).getFile())) {
                         thisChanged = true;
                         break;
                     }
@@ -765,8 +1149,17 @@ public class PropertiesOpen extends CloneableOpenSupport
             /**
              */
             public void propertyChange(PropertyChangeEvent e) {
-                if (!propDataObject.isValid()) {
-                    return;
+                //PENDING Add correct propDataObject
+                if (bundleStructure.getEntryCount() == 0) {return;}
+                if (e.getSource() instanceof PropertiesDataObject) {
+                    PropertiesDataObject DO = (PropertiesDataObject) e.getSource();
+                    try {
+                        if ((DO == Util.findPrimaryDataObject(DO)) && (!DO.isValid())) {
+                            return;
+                        }
+                    } catch (DataObjectNotFoundException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
                 
                 final String property = e.getPropertyName();
@@ -818,8 +1211,9 @@ public class PropertiesOpen extends CloneableOpenSupport
          */
         private void updateName() {
             assert EventQueue.isDispatchThread();
-            
-            final String name = propDataObject.getName();
+            if (bundleStructure.getNthEntry(0)==null)
+                bundleStructure.updateEntries();
+            final String name = bundleStructure.getNthEntry(0).getName();
             final String displayName = displayName();
             final String htmlDisplayName = htmlDisplayName();
             final String toolTip = messageToolTip();
@@ -853,8 +1247,13 @@ public class PropertiesOpen extends CloneableOpenSupport
         /**
          */
         private String addModifiedInfo(String name) {
-            boolean modified
-                    = propDataObject.getCookie(SaveCookie.class) != null;
+            boolean modified = false;
+            for (int i=0;i<bundleStructure.getEntryCount();i++) {
+                if(bundleStructure.getNthEntry(i).getDataObject().getCookie(SaveCookie.class) != null) {
+                    modified = true;
+                    break;
+                }
+            }
             int version = modified ? 1 : 3;
             return NbBundle.getMessage(PropertiesCloneableTopComponent.class,
                                        "LBL_EditorName",                //NOI18N
@@ -869,7 +1268,11 @@ public class PropertiesOpen extends CloneableOpenSupport
          * @see  #htmlDisplayName
          */
         private String displayName() {
-            String nameBase = propDataObject.getNodeDelegate().getDisplayName();
+            //PENDING change to avoid call getNthEntry, in some cases it will throw an exception
+            if (bundleStructure.getNthEntry(0)==null) {
+                bundleStructure.updateEntries();
+            }
+            String nameBase = bundleStructure.getNthEntry(0).getDataObject().getNodeDelegate().getDisplayName();
             return addModifiedInfo(nameBase);
         }
         
@@ -880,7 +1283,10 @@ public class PropertiesOpen extends CloneableOpenSupport
          * @see  #displayName()
          */
         private String htmlDisplayName() {
-            final Node node = propDataObject.getNodeDelegate();
+            if (bundleStructure.getNthEntry(0)==null) {
+                bundleStructure.updateEntries();
+            }
+            final Node node = bundleStructure.getNthEntry(0).getDataObject().getNodeDelegate();
             String displayName = node.getHtmlDisplayName();
             if (displayName != null) {
                 if (!displayName.startsWith("<html>")) {                //NOI18N
@@ -894,22 +1300,30 @@ public class PropertiesOpen extends CloneableOpenSupport
         
         /** Gets string for tooltip. */
         private String messageToolTip() {
-            FileObject fo = propDataObject.getPrimaryFile();
+            FileObject fo = bundleStructure.getNthEntry(0).getFile();
             return FileUtil.getFileDisplayName(fo);
         }
         
-        /** 
+        /**
+         * 
          * Overrides superclass method. When closing last view, also close the document.
          * @return {@code true} if close succeeded
          */
         @Override
         protected boolean closeLast () {
-            if (!propDataObject.getOpenSupport().canClose ()) {
+            if (!bundleStructure.getOpenSupport().canClose ()) {
                 // if we cannot close the last window
                 return false;
             }
-            propDataObject.getOpenSupport().closeDocuments();
-
+            bundleStructure.getOpenSupport().closeDocuments();
+            PropertyChangeListener l;
+            for (PropertiesDataObject dataObject:dataObjectsList) {
+                l = weakNameUpdateListeners.get(dataObject);
+                if (l!=null) {
+                    dataObject.removePropertyChangeListener(l);
+                    weakNameUpdateListeners.remove(dataObject);
+                }
+            }
             return true;
         }
 
@@ -920,7 +1334,7 @@ public class PropertiesOpen extends CloneableOpenSupport
          */
         @Override
         protected CloneableTopComponent createClonedObject () {
-            return new PropertiesCloneableTopComponent(propDataObject);
+            return new PropertiesCloneableTopComponent(bundleStructure);
         }
 
         /** Gets {@code Icon}. */
@@ -950,7 +1364,7 @@ public class PropertiesOpen extends CloneableOpenSupport
          */
         @Override
         public UndoRedo getUndoRedo () {
-            return propDataObject.getOpenSupport().getUndoRedo();
+            return  bundleStructure.getOpenSupport().getUndoRedo();
         }
 
         /** Inits the subcomponents. Sets layout for this top component and adds {@code BundleEditPanel} to it. 
@@ -964,7 +1378,7 @@ public class PropertiesOpen extends CloneableOpenSupport
             c.weightx = 1.0;
             c.weighty = 1.0;
             c.gridwidth = GridBagConstraints.REMAINDER;
-            JPanel panel = new BundleEditPanel(propDataObject, new PropertiesTableModel(propDataObject.getBundleStructure()));
+            JPanel panel = new BundleEditPanel(bundleStructure, new PropertiesTableModel(bundleStructure));
             gridbag.setConstraints(panel, c);
             add(panel);
         }
@@ -973,7 +1387,7 @@ public class PropertiesOpen extends CloneableOpenSupport
          *  is not valid.
          */
         private boolean discard () {
-            return propDataObject == null;
+            return bundleStructure == null;
         }
         
 
@@ -985,7 +1399,7 @@ public class PropertiesOpen extends CloneableOpenSupport
         @Override
         public void writeExternal (ObjectOutput out) throws IOException {
             super.writeExternal(out);
-            out.writeObject(propDataObject);
+            out.writeObject(bundleStructure.getNthEntry(0).getDataObject());
         }
 
         /** 
@@ -998,16 +1412,20 @@ public class PropertiesOpen extends CloneableOpenSupport
             super.readExternal(in);
 
             propDataObject = (PropertiesDataObject)in.readObject();
-            
+            bundleStructure = (MultiBundleStructure) propDataObject.getBundleStructure();
+            dataObjectsList = new ArrayList<PropertiesDataObject>();
+            for (int i=0;i<bundleStructure.getEntryCount();i++) {
+                dataObjectsList.add((PropertiesDataObject) bundleStructure.getNthEntry(i).getDataObject());
+            }
+            weakNameUpdateListeners = new HashMap<PropertiesDataObject, PropertyChangeListener>();
             initialize();
         }
     } // End of nested class PropertiesCloneableTopComponent.
 
-
-    /** 
-     * {@code UndoRedo} manager for {@code PropertiesOpen} support. It contains weak references 
-     * to all UndoRedo managers from all PropertiesEditor supports (for each entry of dataobject one manager). 
-     * It uses it's "timeStamp" methods to find out which one of these managers comes to play. 
+    /**
+     * {@code UndoRedo} manager for {@code PropertiesOpen} support. It contains weak references
+     * to all UndoRedo managers from all PropertiesEditor supports (for each entry of dataobject one manager).
+     * It uses it's "timeStamp" methods to find out which one of these managers comes to play.
      */
     private static class CompoundUndoRedoManager implements UndoRedo {
         
@@ -1017,22 +1435,43 @@ public class PropertiesOpen extends CloneableOpenSupport
         // Constructor
         
         /** Collects all UndoRedo managers from all editor support of all entries. */
+        @Deprecated
         public CompoundUndoRedoManager(PropertiesDataObject obj) {
             init(obj);
         }
+        public CompoundUndoRedoManager(BundleStructure structure) {
+            init(structure);
+        }
 
         /** Initialize set of managers. */
+        @Deprecated
         private void init(PropertiesDataObject obj) {
-            managers.add( ((PropertiesFileEntry)obj.getPrimaryEntry()).getPropertiesEditor().getUndoRedoManager());
-            for (Iterator it = obj.secondaryEntries().iterator(); it.hasNext(); ) {
-                managers.add( ((PropertiesFileEntry)it.next()).getPropertiesEditor().getUndoRedoManager() );
-            } 
+            BundleStructure structure = obj.getBundleStructure();
+            PropertiesEditorSupport editorSupport = null;
+            for(int i=0; i< structure.getEntryCount(); i++) {
+                editorSupport = structure.getNthEntry(i).getPropertiesEditor();
+                if (editorSupport != null) {
+                    managers.add(editorSupport.getUndoRedoManager());
+                }
+            }
+        }
+
+        private void init(BundleStructure structure) {
+            for(int i=0; i< structure.getEntryCount(); i++) {
+                managers.add(structure.getNthEntry(i).getPropertiesEditor().getUndoRedoManager());
+            }
         }
 
         /** Resets the managers. Used when data object has changed. */
+        @Deprecated
         public synchronized void reset(PropertiesDataObject obj) {
             managers.clear();
             init(obj);
+        }
+
+        public synchronized void reset(BundleStructure structure) {
+            managers.clear();
+            init(structure);
         }
 
         /** Gets manager which undo edit comes to play.*/

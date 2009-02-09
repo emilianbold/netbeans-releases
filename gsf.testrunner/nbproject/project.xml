@@ -40,15 +40,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.gsf.api</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>2</release-version>
-                        <specification-version>1.8.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.project.libraries</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -170,8 +161,9 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.ruby.testrunner</friend>
+                <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.python.testrunner</friend>
+                <friend>org.netbeans.modules.ruby.testrunner</friend>
                 <package>org.netbeans.modules.gsf.testrunner.api</package>
             </friend-packages>
         </data>

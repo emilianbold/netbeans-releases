@@ -67,7 +67,7 @@ public final class CallGraphPopupAction extends CookieAction {
 
     @Override
     protected boolean enable(Node[] activatedNodes) {
-        return CallGraphModelFactory.getDefault().getModel(activatedNodes) != null;
+        return CallGraphModelFactory.getDefault().isCallGraphAvailiable(activatedNodes);
     }
 
     protected int mode() {

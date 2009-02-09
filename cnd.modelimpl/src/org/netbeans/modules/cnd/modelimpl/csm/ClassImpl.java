@@ -48,6 +48,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -62,7 +63,7 @@ import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
  * Implements CsmClass
  * @author Vladimir Kvashin
  */
-public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmMember<CsmClass>, CsmTemplate, SelectImpl.FilterableMembers {
+public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmTemplate, SelectImpl.FilterableMembers {
 
     private final CsmDeclaration.Kind kind;
     private final List<CsmUID<CsmMember>> members = new ArrayList<CsmUID<CsmMember>>();
@@ -190,7 +191,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                         break;
                     case CPPTokenTypes.CSM_FIELD:
                         child = token.getFirstChild();
-                        if (child != null && child.getType() == CPPTokenTypes.LITERAL_friend) {
+                        if (hasFriendPrefix(child)) {
                             addFriend(new FriendClassImpl(child, (FileImpl) getContainingFile(), ClassImpl.this));
                         } else {
                             if (renderVariable(token, null, null, false)) {
@@ -232,7 +233,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                     case CPPTokenTypes.CSM_USER_TYPE_CAST:
                         child = token.getFirstChild();
                         if (child != null) {
-                            if (child.getType() == CPPTokenTypes.LITERAL_friend) {
+                            if (hasFriendPrefix(child)) {
                                 try {
                                     CsmScope scope = ClassImpl.this.getScope();
                                     CsmFriendFunction friend;
@@ -270,7 +271,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                     case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DEFINITION:
                     case CPPTokenTypes.CSM_USER_TYPE_CAST_DEFINITION:
                         child = token.getFirstChild();
-                        if (child != null && child.getType() == CPPTokenTypes.LITERAL_friend) {
+                        if (hasFriendPrefix(child)) {
                             try {
                                 CsmScope scope = ClassImpl.this.getScope();
                                 CsmFriendFunction friend;
@@ -312,6 +313,22 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                         break;
                 }
             }
+        }
+
+        private boolean hasFriendPrefix(AST child) {
+            if (child == null) {
+                return false;
+            }
+            if (child.getType() == CPPTokenTypes.LITERAL_friend) {
+                return true;
+            } else if (child.getType() == CPPTokenTypes.LITERAL_template) {
+                final AST nextSibling = child.getNextSibling();
+                if (nextSibling != null && nextSibling.getType() == CPPTokenTypes.LITERAL_friend) {
+                    // friend template declaration
+                    return true;
+                }
+            }
+            return false;
         }
 
         private ClassMemberForwardDeclaration renderClassForwardDeclaration(AST token) {
@@ -400,7 +417,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         }
     }
 
-    public static class MemberTypedef extends TypedefImpl implements CsmMember<CsmTypedef> {
+    public static class MemberTypedef extends TypedefImpl implements CsmMember {
 
         private CsmVisibility visibility;
 
@@ -438,17 +455,16 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     }
 
     public static class ClassMemberForwardDeclaration extends ClassForwardDeclarationImpl
-            implements CsmMember<CsmClassForwardDeclaration>, CsmClassifier<CsmClassForwardDeclaration> {
+            implements CsmMember, CsmClassifier {
 
         private CsmVisibility visibility;
         private CsmUID<CsmClass> classDefinition;
-        private final CsmUID<CsmIdentifiable> containerUID;
+        private final CsmUID<CsmClass> containerUID;
 
-        @SuppressWarnings("unchecked")
         public ClassMemberForwardDeclaration(CsmClass containingClass, AST ast, CsmVisibility curentVisibility, boolean register) {
             super(ast, containingClass.getContainingFile());
             visibility = curentVisibility;
-            containerUID = UIDCsmConverter.identifiableToUID((CsmIdentifiable) containingClass);
+            containerUID = UIDs.get(containingClass);
             if (register) {
                 registerInProject();
             }
@@ -488,7 +504,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         }
 
         public CsmClass getContainingClass() {
-            return (CsmClass) UIDCsmConverter.UIDtoIdentifiable(containerUID);
+            return UIDCsmConverter.UIDtoIdentifiable(containerUID);
         }
 
         @Override
@@ -516,14 +532,14 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         protected CsmClass createForwardClassIfNeed(AST ast, CsmScope scope, boolean registerInProject) {
             CsmClass cls = super.createForwardClassIfNeed(ast, scope, registerInProject);
             if (cls != null) {
-                classDefinition = cls.getUID();
+                classDefinition = UIDs.get(cls);
                 RepositoryUtils.put(this);
             }
             return cls;
         }
 
         public void setCsmClass(CsmClass cls) {
-            classDefinition = cls == null ? null : cls.getUID();
+            classDefinition = cls == null ? null : UIDs.get(cls);
         }
 
         @Override
@@ -544,7 +560,6 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
             UIDObjectFactory.getDefaultFactory().writeUID(classDefinition, output);
         }
 
-        @SuppressWarnings("unchecked")
         public ClassMemberForwardDeclaration(DataInput input) throws IOException {
             super(input);
             visibility = PersistentUtils.readVisibility(input);
@@ -565,9 +580,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 //        this.kind = CsmDeclaration.Kind.CLASS;
 //        register();
 //    }
-    protected ClassImpl(AST ast, CsmFile file) {
+    protected ClassImpl(String name, AST ast, CsmFile file) {
         // we call findId(..., true) because there might be qualified name - in the case of nested class template specializations
-        super(AstUtil.findId(ast, CPPTokenTypes.RCURLY, true), file, ast);
+        super((name != null ? name : AstUtil.findId(ast, CPPTokenTypes.RCURLY, true)), file, ast);
         kind = findKind(ast);
     }
 
@@ -588,7 +603,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     }
 
     public static ClassImpl create(AST ast, CsmScope scope, CsmFile file, boolean register) {
-        ClassImpl impl = new ClassImpl(ast, file);
+        ClassImpl impl = new ClassImpl(null, ast, file);
         impl.init(scope, ast, register);
         return impl;
     }
@@ -630,7 +645,6 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     }
 
     private void addMember(CsmMember member) {
-        @SuppressWarnings("unchecked")
         CsmUID<CsmMember> uid = RepositoryUtils.put(member);
         assert uid != null;
         synchronized (members) {
@@ -639,7 +653,6 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     }
 
     private void addFriend(CsmFriend friend) {
-        @SuppressWarnings("unchecked")
         CsmUID<CsmFriend> uid = RepositoryUtils.put(friend);
         assert uid != null;
         synchronized (friends) {

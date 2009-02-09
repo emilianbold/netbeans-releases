@@ -73,7 +73,9 @@ import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.taskdefs.SignJar;
 import org.apache.tools.ant.taskdefs.Zip;
 import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.ant.types.ResourceCollection;
 import org.apache.tools.ant.types.ZipFileSet;
+import org.apache.tools.ant.types.resources.FileResource;
 import org.xml.sax.SAXException;
 
 /** Generates JNLP files for signed versions of the module JAR files.
@@ -82,16 +84,20 @@ import org.xml.sax.SAXException;
  */
 public class MakeJNLP extends Task {
     /** the files to work on */
-    private FileSet files;
+    private ResourceCollection files;
     private SignJar signTask;
-    
-    public FileSet createModules() 
+
+    public FileSet createModules()
     throws BuildException {
-        if (files != null) throw new BuildException("modules can be created just once");
-        files = new FileSet();
-        return files;
+        addConfigured(new FileSet());
+        return (FileSet) files;
     }
-    
+
+    public void addConfigured(ResourceCollection rc) throws BuildException {
+        if (files != null) throw new BuildException("modules can be specified just once");
+        files = rc;
+    }
+
     private SignJar getSignTask() {
         if (signTask == null) {
             signTask = (SignJar)getProject().createTask("signjar");
@@ -226,10 +232,10 @@ public class MakeJNLP extends Task {
             }
         }
 
-        DirectoryScanner scan = files.getDirectoryScanner(getProject());
-        for (String f : scan.getIncludedFiles()) {
-            File jar = new File (files.getDir(getProject()), f);
-            
+        for (Iterator fileIt = files.iterator(); fileIt.hasNext();) {
+            FileResource fr = (FileResource) fileIt.next();
+            File jar = fr.getFile();
+
             if (!jar.canRead()) {
                 throw new BuildException("Cannot read file: " + jar);
             }

@@ -80,8 +80,12 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
     
     
     /** Constructs a PropertiesTableCellEditor that uses a text field.
-    * @param x  a JTextField object ...
-    */
+     * @param tf  a JTextField object ...
+     * @param  commentComponent
+     * @param valueComponent
+     * @param valueLabel
+     * @param listener 
+     */
     public PropertiesTableCellEditor(JTextField tf, final JTextComponent commentComponent,
         final JTextComponent valueComponent, final JLabel valueLabel, DocumentListener listener) {
         super(tf);
@@ -160,7 +164,7 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
         public void setValue(Object x) {
             // PENDING - due to a compiler error explicitly do "super" code instead of calling super
             this.value = x;
-            //super.setValue(x);
+//            super.setValue(x);
             PropertiesTableModel.StringPair sp = (PropertiesTableModel.StringPair)x;
 
             // set values as they deserve

@@ -38,415 +38,151 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.api;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ImageIcon;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
-import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.cnd.makeproject.MakeOptions;
-import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.BuildAction;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.DebuggerChooserConfiguration;
+import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
-import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
-import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Cancellable;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
-public class DefaultProjectActionHandler implements ActionListener {
+public class DefaultProjectActionHandler implements ProjectActionHandler, ExecutionListener {
 
-    private final static List<CustomProjectActionHandlerProvider> ahplist = getActionHandlerProvidersList();
-    private CustomProjectActionHandlerProvider customActionHandlerProvider = null;
-    private CustomProjectActionHandlerProvider overrideActionHandlerProvider = null;
-    private CustomProjectActionHandler customActionHandler = null;
-    
-    private static DefaultProjectActionHandler instance = null;
-    
-    public static DefaultProjectActionHandler getInstance() {
-        if (instance == null)
-            instance = new DefaultProjectActionHandler();
-        return instance;
+    private ProjectActionEvent pae;
+    private ExecutorTask executorTask;
+    private List<ExecutionListener> listeners = new ArrayList<ExecutionListener>();
+
+    public void init(ProjectActionEvent pae) {
+        this.pae = pae;
     }
 
-    private static List<CustomProjectActionHandlerProvider> getActionHandlerProvidersList() {
-        Lookup.Template<CustomProjectActionHandlerProvider> template = new Lookup.Template<CustomProjectActionHandlerProvider>(CustomProjectActionHandlerProvider.class);
-        Lookup.Result<CustomProjectActionHandlerProvider> result = Lookup.getDefault().lookup(template);
-        List<CustomProjectActionHandlerProvider> list = new ArrayList<CustomProjectActionHandlerProvider>(result.allInstances());
-        return list;
-    }
-    
-    /*
-     * @deprecated. Register via services using org.netbeans.modules.cnd.makeproject.api.CustomProjectActionHandlerProvider
-     */ 
-    public void setCustomDebugActionHandlerProvider(CustomProjectActionHandlerProvider overrideActionHandlerProvider) {
-        this.overrideActionHandlerProvider = overrideActionHandlerProvider;
-    }
+    public void execute(InputOutput io) {
+        String rcfile = null;
+        if (pae.getType() == ProjectActionEvent.Type.RUN ||
+                pae.getType() == ProjectActionEvent.Type.BUILD ||
+                pae.getType() == ProjectActionEvent.Type.CLEAN) {
+            String exe = IpeUtils.quoteIfNecessary(pae.getExecutable());
+            String args = pae.getProfile().getArgsFlat();
+            String[] env = pae.getProfile().getEnvironment().getenv();
+            boolean showInput = pae.getType() == ProjectActionEvent.Type.RUN;
+            MakeConfiguration conf = (MakeConfiguration) pae.getConfiguration();
+            String key = conf.getDevelopmentHost().getName();
 
-    public CustomProjectActionHandlerProvider getCustomDebugActionHandlerProvider() {
-        return getCustomDebugActionHandlerProvider(null);
-    }
-    
-    public CustomProjectActionHandlerProvider getCustomDebugActionHandlerProvider(MakeConfiguration conf) {
-        if (conf != null) {
-            DebuggerChooserConfiguration chooser = conf.getDebuggerChooserConfiguration();
-            CustomizerNode node = chooser.getNode();
-            if (node instanceof CustomProjectActionHandlerProvider) {
-                return (CustomProjectActionHandlerProvider) node;
-            } else if (node.getClass().getName().toLowerCase().contains("dbx") && overrideActionHandlerProvider != null) { // NOI18N
-                return overrideActionHandlerProvider;
-            }
-        }
+            String runDirectory = pae.getProfile().getRunDirectory();
 
-        for (CustomProjectActionHandlerProvider caop : ahplist) {
-            customActionHandlerProvider = caop;
-        }
-        return customActionHandlerProvider;
-    }
-    
-    public void setCustomActionHandlerProvider(CustomProjectActionHandler customActionHandlerProvider) {
-        this.customActionHandler = customActionHandlerProvider;
-    }
-    
-    public void actionPerformed(ActionEvent actionEvent) {
-        ProjectActionEvent[] paes = (ProjectActionEvent[])actionEvent.getSource();
-        new HandleEvents(paes).go();
-    }
-    
-    private static InputOutput mainTab = null;
-    private static HandleEvents mainTabHandler = null;
-    private static ArrayList<String> tabNames = new ArrayList<String>();
-    
-    class HandleEvents implements ExecutionListener {
-        private InputOutput ioTab = null;
-        private ProjectActionEvent[] paes;
-        private String tabName;
-        private String tabNameSeq;
-        int currentAction = 0;
-        private ExecutorTask executorTask = null;
-        private NativeExecutor projectExecutor = null;
-        private StopAction sa = null;
-        private RerunAction ra = null;
-        List<BuildAction> additional;
-        private ProgressHandle progressHandle = null;
-        private final Object lock = new Object();
-        
-        private String getTabName(ProjectActionEvent[] paes) {
-            String projectName = ProjectUtils.getInformation(paes[0].getProject()).getDisplayName();
-            StringBuilder name = new StringBuilder(projectName);
-            name.append(" ("); // NOI18N
-            for (int i = 0; i < paes.length; i++) {
-                if (i >= 2) {
-                    name.append("..."); // NOI18N
-                    break;
-                }
-                name.append( paes[i].getActionName() );
-                if (i < paes.length-1)
-                    name.append( ", " ); // NOI18N
-            }
-            name.append( ")" ); // NOI18N
-            if (paes.length > 0) {
-                MakeConfiguration conf = (MakeConfiguration) paes[0].getConfiguration();
-                if (!conf.getDevelopmentHost().isLocalhost()) {
-                    String hkey = conf.getDevelopmentHost().getName();
-                    name.append(" - ").append(hkey); //NOI18N
-                }
-            }
-            return name.toString();
-        }
-        
-        private InputOutput getTab() {
-            return ioTab;
-        }
-        
-        private ProgressHandle createPogressHandle() {
-            ProgressHandle handle = ProgressHandleFactory.createHandle(tabNameSeq, new Cancellable() {
-                public boolean cancel() {
-                    sa.actionPerformed(null);
-                    return true;
-                }
-            }, new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    getTab().select();
-                }
-            });
-            handle.setInitialDelay(0);
-            return handle;
-        }
-        
-        private ProgressHandle createPogressHandleNoCancel() {
-            ProgressHandle handle = ProgressHandleFactory.createHandle(tabNameSeq,
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    getTab().select();
-                }
-            });
-            handle.setInitialDelay(0);
-            return handle;
-        }
-        
-        private InputOutput getIOTab(String name, boolean reuse) {
-            sa = new StopAction(this);
-            ra = new RerunAction(this);
-            List<Action> list = new ArrayList<Action>();
-            list.add(sa);
-            list.add(ra);
-            additional = BuildActionsProvider.getDefault().getActions(name, paes);
-            list.addAll(additional);
-            InputOutput tab;
-            if (reuse) {
-                tab = IOProvider.getDefault().getIO(name, false); // This will (sometimes!) find an existing one.
-                tab.closeInputOutput(); // Close it...
-            }
-            tab = IOProvider.getDefault().getIO(name, list.toArray(new Action[list.size()])); // Create a new ...
-            try {
-                tab.getOut().reset();
-            } catch (IOException ioe) {
-            }
-            
-            progressHandle = createPogressHandle();
-            progressHandle.start();
-        
-            return tab;
-        }
-        
-        public HandleEvents(ProjectActionEvent[] paes) {
-            this.paes = paes;
-            currentAction = 0;
-            
-            if (MakeOptions.getInstance().getReuse()) {
-                synchronized(lock) {
-                    if (mainTabHandler == null && mainTab != null /*&& !mainTab.isClosed()*/) {
-                        mainTab.closeInputOutput();
-                        mainTab = null;
-                    }
-                    tabName = getTabName(paes);
-                    tabNameSeq = tabName;
-                    if (tabNames.contains(tabName)) {
-                        int seq = 2;
-                        while (true) {
-                            tabNameSeq = tabName + " #" + seq; // NOI18N
-                            if (!tabNames.contains(tabNameSeq)) {
-                                break;
-                            }
-                            seq++;
-                        }
-                    }
-                    tabNames.add(tabNameSeq);
-                    ioTab = getIOTab(tabNameSeq, true);
-                    if (mainTabHandler == null) {
-                        mainTab = ioTab;
-                        mainTabHandler = this;
-                    }
-                }
-            }
-            else {
-                tabName = getTabName(paes);
-                tabNameSeq = tabName;
-                ioTab = getIOTab(tabName, false);
-            }
-        }
-        
-        public void reRun() {
-            currentAction = 0;
-            getTab().closeInputOutput();
-            synchronized(lock) {
-                tabNames.add(tabNameSeq);
-            }
-            try {
-                getTab().getOut().reset();
-            } catch (IOException ioe) {
-            }
-            progressHandle = createPogressHandle();
-            progressHandle.start();
-            go();
-        }
-        
-        public void go() {
-            executorTask = null;
-            sa.setEnabled(false);
-            ra.setEnabled(false);
-            if (currentAction >= paes.length)
-                return;
-            
-            final ProjectActionEvent pae = paes[currentAction];
-            String rcfile = null;
-            
-            // Validate executable
-            if (pae.getID() == ProjectActionEvent.RUN ||
-                    pae.getID() == ProjectActionEvent.DEBUG ||
-                    pae.getID() == ProjectActionEvent.DEBUG_LOAD_ONLY ||
-                    pae.getID() == ProjectActionEvent.DEBUG_STEPINTO ||
-                    pae.getID() == ProjectActionEvent.CHECK_EXECUTABLE ||
-                    pae.getID() == ProjectActionEvent.CUSTOM_ACTION) {
-                if (!checkExecutable(pae) || pae.getID() == ProjectActionEvent.CHECK_EXECUTABLE) {
-                    progressHandle.finish();
-                    return;
-                }
-            }
-            
-            if ((pae.getID() == ProjectActionEvent.DEBUG ||
-                    pae.getID() == ProjectActionEvent.DEBUG_LOAD_ONLY ||
-                    pae.getID() == ProjectActionEvent.DEBUG_STEPINTO) &&
-                    getCustomDebugActionHandlerProvider((MakeConfiguration) pae.getConfiguration()) != null) {
-                // See 130827
-                progressHandle.finish();
-                progressHandle = createPogressHandleNoCancel();
-                progressHandle.start();
-                CustomProjectActionHandler ah = getCustomDebugActionHandlerProvider((MakeConfiguration) pae.getConfiguration()).factoryCreate();
-                ah.addExecutionListener(this);
-                ah.execute(pae, getTab());
-            } else if (pae.getID() == ProjectActionEvent.RUN ||
-                    pae.getID() == ProjectActionEvent.BUILD ||
-                    pae.getID() == ProjectActionEvent.CLEAN) {
-                String exe = IpeUtils.quoteIfNecessary(pae.getExecutable());
-                String args = pae.getProfile().getArgsFlat();
-                String[] env = pae.getProfile().getEnvironment().getenv();
-                boolean showInput = pae.getID() == ProjectActionEvent.RUN;
-                MakeConfiguration conf = (MakeConfiguration) pae.getConfiguration();
-                String key = conf.getDevelopmentHost().getName();
-                
-                if (!conf.getDevelopmentHost().isLocalhost()) {
-                    // Make sure the project root is visible remotely
-                    String basedir = pae.getProfile().getBaseDir();
+            if (!conf.getDevelopmentHost().isLocalhost()) {
+                // Make sure the project root is visible remotely
+                String basedir = pae.getProfile().getBaseDir();
+                if (MakeActionProvider.useRsync) {
+//                        ProjectInformation info = pae.getProject().getLookup().lookup(ProjectInformation.class);
+//                        final String projectName = info.getDisplayName();
+//                        runDirectory = MakeActionProvider.REMOTE_BASE_PATH + "/" + projectName;
+
+
+                } else {
                     PathMap mapper = HostInfoProvider.getDefault().getMapper(key);
                     if (!mapper.isRemote(basedir, true)) {
 //                        mapper.showUI();
 //                        if (!mapper.isRemote(basedir)) {
 //                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
 //                                    NbBundle.getMessage(DefaultProjectActionHandler.class, "Err_CannotRunLocalProjectRemotely")));
-                            progressHandle.finish();
-                            return;
+                        return;
 //                        }
                     }
-                    //CompilerSetManager rcsm = CompilerSetManager.getDefault(key);
                 }
-                
-                PlatformInfo pi = PlatformInfo.getDefault(conf.getDevelopmentHost().getName());
+            //CompilerSetManager rcsm = CompilerSetManager.getDefault(key);
+            }
 
-                boolean unbuffer = false;
-                if (pae.getID() == ProjectActionEvent.RUN) {
-                    int conType = pae.getProfile().getConsoleType().getValue();
-                    if (pae.getProfile().getTerminalType() == null || pae.getProfile().getTerminalPath() == null) { 
-                        String errmsg;
-                        if (Utilities.isMac())
-                            errmsg = getString("Err_NoTermFoundMacOSX");
-                        else
-                            errmsg = getString("Err_NoTermFound");
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errmsg));
-                        conType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
-                    }
-                    if (!conf.getDevelopmentHost().isLocalhost()) {
-                        //TODO: only output window for remote for now
-                        conType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
-                    }
-                    if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-                        if (HostInfoProvider.getDefault().getPlatform(key) == PlatformTypes.PLATFORM_WINDOWS) {
-                            // we need to run the application under cmd on windows
-                            exe = "cmd.exe"; // NOI18N
-                            // exe path naturalization is needed for cmd on windows, see issue 149404
-                            args = "/c " + IpeUtils.quoteIfNecessary(FilePathAdaptor.naturalize(pae.getExecutable())) // NOI18N
-                                   + " " + pae.getProfile().getArgsFlat(); // NOI18N
-                        } else if (conf.getDevelopmentHost().isLocalhost()) {
-                            exe = IpeUtils.toAbsolutePath(pae.getProfile().getBaseDir(), pae.getExecutable());
-                        }
-                        unbuffer = true;
+            PlatformInfo pi = PlatformInfo.getDefault(conf.getDevelopmentHost().getName());
+
+            boolean unbuffer = false;
+            if (pae.getType() == ProjectActionEvent.Type.RUN) {
+                int conType = pae.getProfile().getConsoleType().getValue();
+                if (pae.getProfile().getTerminalType() == null || pae.getProfile().getTerminalPath() == null) {
+                    String errmsg;
+                    if (Utilities.isMac()) {
+                        errmsg = getString("Err_NoTermFoundMacOSX");
                     } else {
-                        showInput = false;
-                        if (conType == RunProfile.CONSOLE_TYPE_DEFAULT) {
-                            conType = RunProfile.getDefaultConsoleType();
+                        errmsg = getString("Err_NoTermFound");
+                    }
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errmsg));
+                    conType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
+                }
+                if (!conf.getDevelopmentHost().isLocalhost()) {
+                    //TODO: only output window for remote for now
+                    conType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
+                }
+                if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
+                    if (HostInfoProvider.getDefault().getPlatform(key) == PlatformTypes.PLATFORM_WINDOWS) {
+                        // we need to run the application under cmd on windows
+                        exe = "cmd.exe"; // NOI18N
+                        // exe path naturalization is needed for cmd on windows, see issue 149404
+                        args = "/c " + IpeUtils.quoteIfNecessary(FilePathAdaptor.naturalize(pae.getExecutable())) // NOI18N
+                                + " " + pae.getProfile().getArgsFlat(); // NOI18N
+                    } else if (conf.getDevelopmentHost().isLocalhost()) {
+                        exe = IpeUtils.toAbsolutePath(pae.getProfile().getBaseDir(), pae.getExecutable());
+                    }
+                    unbuffer = true;
+                } else {
+                    showInput = false;
+                    if (conType == RunProfile.CONSOLE_TYPE_DEFAULT) {
+                        conType = RunProfile.getDefaultConsoleType();
+                    }
+                    if (conType == RunProfile.CONSOLE_TYPE_EXTERNAL) {
+                        try {
+                            rcfile = File.createTempFile("nbcnd_rc", "").getAbsolutePath(); // NOI18N
+                        } catch (IOException ex) {
                         }
-                        if (conType == RunProfile.CONSOLE_TYPE_EXTERNAL) {
-                            try {
-                                rcfile = File.createTempFile("nbcnd_rc", "").getAbsolutePath(); // NOI18N
-                            } catch (IOException ex) {
-                            }
-                            String args2;
-                            if (pae.getProfile().getTerminalPath().indexOf("gnome-terminal") != -1) { // NOI18N
+                        String args2;
+                        if (pae.getProfile().getTerminalPath().indexOf("gnome-terminal") != -1) { // NOI18N
                                 /* gnome-terminal has differnt quoting rules... */
-                                StringBuffer b = new StringBuffer();
-                                for (int i = 0; i < args.length(); i++) {
-                                    if (args.charAt(i) == '"') {
-                                        b.append("\\\""); // NOI18N
-                                    } else {
-                                        b.append(args.charAt(i));
-                                    }
+                            StringBuilder b = new StringBuilder();
+                            for (int i = 0; i < args.length(); i++) {
+                                if (args.charAt(i) == '"') {
+                                    b.append("\\\""); // NOI18N
+                                } else {
+                                    b.append(args.charAt(i));
                                 }
-                                args2 = b.toString();
-                            } else {
-                                args2 = "";
                             }
-                            args = MessageFormat.format(pae.getProfile().getTerminalOptions(), rcfile, exe, args, args2);
-                            exe = pae.getProfile().getTerminalPath();
+                            args2 = b.toString();
+                        } else {
+                            args2 = "";
                         }
-                        // See 130827
-                        progressHandle.finish();
-                        progressHandle = createPogressHandleNoCancel();
-                        progressHandle.start();
+                        if (pae.getType() == ProjectActionEvent.Type.RUN &&
+                                ((MakeConfiguration)pae.getConfiguration()).isApplicationConfiguration() &&
+                                HostInfoProvider.getDefault().getPlatform(key) == PlatformTypes.PLATFORM_WINDOWS &&
+                                !exe.endsWith(".exe")) { // NOI18N
+                            exe = exe + ".exe"; // NOI18N
+                        }
+                        args = MessageFormat.format(pae.getProfile().getTerminalOptions(), rcfile, exe, args, args2);
+                        exe = pae.getProfile().getTerminalPath();
                     }
-                    // Append compilerset base to run path. (IZ 120836)
-                    ArrayList<String> env1 = new ArrayList<String>();
-                    CompilerSet cs = conf.getCompilerSet().getCompilerSet();
-                    if (cs != null) {
-                        String csdirs = cs.getDirectory();
-                        String commands = cs.getCompilerFlavor().getCommandFolder(conf.getPlatform().getValue());
-                        if (commands != null && commands.length()>0) {
-                            // Also add msys to path. Thet's where sh, mkdir, ... are.
-                            csdirs = csdirs + pi.pathSeparator() + commands;
-                        }
-                        boolean gotpath = false;
-                        String pathname = pi.getPathName() + '=';
-                        int i;
-                        for (i = 0; i < env.length; i++) {
-                            if (env[i].startsWith(pathname)) {
-                                env1.add(env[i] + pi.pathSeparator() + csdirs); // NOI18N
-                                gotpath = true;
-                            } else {
-                                env1.add(env[i]);
-                            }
-                        }
-                        if (!gotpath) {
-                            env1.add(pathname + pi.getPathAsString() + pi.pathSeparator() + csdirs);
-                        }
-                        env = env1.toArray(new String[env1.size()]);
-                    }
-                } else { // Build or Clean
-                    String[] env1 = new String[env.length + 1];
-                    String csdirs = conf.getCompilerSet().getCompilerSet().getDirectory();
-                    String commands = conf.getCompilerSet().getCompilerSet().getCompilerFlavor().getCommandFolder(conf.getPlatform().getValue());
-                    if (commands != null && commands.length()>0) {
+                }
+                // Append compilerset base to run path. (IZ 120836)
+                ArrayList<String> env1 = new ArrayList<String>();
+                CompilerSet cs = conf.getCompilerSet().getCompilerSet();
+                if (cs != null) {
+                    String csdirs = cs.getDirectory();
+                    String commands = cs.getCompilerFlavor().getCommandFolder(conf.getPlatform().getValue());
+                    if (commands != null && commands.length() > 0) {
                         // Also add msys to path. Thet's where sh, mkdir, ... are.
                         csdirs = csdirs + pi.pathSeparator() + commands;
                     }
@@ -455,251 +191,105 @@ public class DefaultProjectActionHandler implements ActionListener {
                     int i;
                     for (i = 0; i < env.length; i++) {
                         if (env[i].startsWith(pathname)) {
-                            env1[i] = pathname + csdirs + pi.pathSeparator() + env[i].substring(5); // NOI18N
+                            env1.add(env[i] + pi.pathSeparator() + csdirs); // NOI18N
                             gotpath = true;
                         } else {
-                            env1[i] = env[i];
+                            env1.add(env[i]);
                         }
                     }
                     if (!gotpath) {
-                        String defaultPath = conf.getPlatformInfo().getPathAsString();
-                        env1[i] = pathname + csdirs + pi.pathSeparator() + defaultPath;
+                        env1.add(pathname + pi.getPathAsString() + pi.pathSeparator() + csdirs);
                     }
-                    env = env1;
+                    env = env1.toArray(new String[env1.size()]);
                 }
-                projectExecutor =  new NativeExecutor(
-                        key,
-                        pae.getProfile().getRunDirectory(),
-                        exe, args, env,
-                        pae.getTabName(),
-                        pae.getActionName(),
-                        pae.getID() == ProjectActionEvent.BUILD,
-                        showInput,
-                        unbuffer);
-                projectExecutor.addExecutionListener(this);
-                if (rcfile != null) {
-                    projectExecutor.setExitValueOverride(rcfile);
+            } else { // Build or Clean
+                String[] env1 = new String[env.length + 1];
+                String csdirs = conf.getCompilerSet().getCompilerSet().getDirectory();
+                String commands = conf.getCompilerSet().getCompilerSet().getCompilerFlavor().getCommandFolder(conf.getPlatform().getValue());
+                    if (commands != null && commands.length()>0) {
+                    // Also add msys to path. Thet's where sh, mkdir, ... are.
+                    csdirs = csdirs + pi.pathSeparator() + commands;
                 }
-                try {
-                    sa.setEnabled(pae.getID() != ProjectActionEvent.RUN || showInput);
-                    ra.setEnabled(false);
-                    executorTask = projectExecutor.execute(getTab());
-                } catch (java.io.IOException ioe) {
-                }
-            } else if (pae.getID() == ProjectActionEvent.CUSTOM_ACTION) {
-                progressHandle.finish();
-                progressHandle = createPogressHandleNoCancel();
-                progressHandle.start();
-                customActionHandler.addExecutionListener(this);
-                customActionHandler.execute(pae, getTab());
-            } else if (pae.getID() == ProjectActionEvent.DEBUG ||
-                    pae.getID() == ProjectActionEvent.DEBUG_STEPINTO ||
-                    pae.getID() == ProjectActionEvent.DEBUG_LOAD_ONLY) {
-                System.err.println("No built-in debugging"); // NOI18N
-            } else {
-                assert false;
-            }
-        }
-        
-        public ExecutorTask getExecutorTask() {
-            return executorTask;
-        }
-        
-        public NativeExecutor getNativeExecutor() {
-            return projectExecutor;
-        }
-        
-        public void executionStarted() {
-            if (additional != null) {
-                for(BuildAction action : additional){
-                    action.setStep(currentAction);
-                    action.executionStarted();
-                }
-            }
-        }
-        
-        public void executionFinished(int rc) {
-            if (additional != null) {
-                for(Action action : additional){
-                    ((ExecutionListener)action).executionFinished(rc);
-                }
-            }
-            if (paes[currentAction].getID() == ProjectActionEvent.BUILD || paes[currentAction].getID() == ProjectActionEvent.CLEAN) {
-                // Refresh all files
-                try {
-                    FileObject projectFileObject = paes[currentAction].getProject().getProjectDirectory();
-                    projectFileObject.getFileSystem().refresh(false);
-                    MakeLogicalViewProvider.refreshBrokenItems(paes[currentAction].getProject());
-                } catch (Exception e) {
-                }
-            }
-            if (currentAction >= paes.length-1 || rc != 0) {
-                synchronized(lock) {
-                    if (mainTabHandler == this)
-                        mainTabHandler = null;
-                    tabNames.remove(tabNameSeq);
-                }
-                sa.setEnabled(false);
-                ra.setEnabled(true);
-                progressHandle.finish();
-                return;
-            }
-            if (rc == 0) {
-                currentAction++;
-                go();
-            }
-        }
-        
-        private boolean checkExecutable(ProjectActionEvent pae) {
-            // Check if something is specified
-            String executable = pae.getExecutable();
-            if (executable.length() == 0) {
-                String errormsg;
-                if (((MakeConfiguration)pae.getConfiguration()).isMakefileConfiguration()) {
-                    SelectExecutablePanel panel = new SelectExecutablePanel((MakeConfiguration)pae.getConfiguration());
-                    DialogDescriptor descriptor = new DialogDescriptor(panel, getString("SELECT_EXECUTABLE"));
-                    panel.setDialogDescriptor(descriptor);
-                    DialogDisplayer.getDefault().notify(descriptor);
-                    if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
-                        // Set executable in configuration
-                        MakeConfiguration makeConfiguration = (MakeConfiguration)pae.getConfiguration();
-                        executable = panel.getExecutable();
-                        executable = FilePathAdaptor.naturalize(executable);
-                        executable = IpeUtils.toRelativePath(makeConfiguration.getBaseDir(), executable);
-                        executable = FilePathAdaptor.normalize(executable);
-                        makeConfiguration.getMakefileConfiguration().getOutput().setValue(executable);
-                        // Mark the project 'modified'
-                        ConfigurationDescriptorProvider pdp = pae.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
-                        if (pdp != null)
-                            pdp.getConfigurationDescriptor().setModified();
-                        // Set executable in pae
-                        if (pae.getID() == ProjectActionEvent.RUN) {
-                            // Next block is commented out due to IZ120794
-                            /*CompilerSet compilerSet = CompilerSetManager.getDefault(makeConfiguration.getDevelopmentHost().getName()).getCompilerSet(makeConfiguration.getCompilerSet().getValue());
-                            if (compilerSet != null && compilerSet.getCompilerFlavor() != CompilerFlavor.MinGW) {
-                                // IZ 120352
-                                executable = FilePathAdaptor.naturalize(executable);
-                            }*/
-                            pae.setExecutable(executable);
-                        }
-                        else {
-                            pae.setExecutable(makeConfiguration.getMakefileConfiguration().getAbsOutput());
-                        }
-                    }
-                    else
-                        return false;
-                } else {
-                    errormsg = getString("NO_BUILD_RESULT"); // NOI18N
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
-                return false;
-                }
-            }
-            if (IpeUtils.isPathAbsolute(executable)) {
-                Configuration conf = pae.getConfiguration();
-                boolean ok = true;
-                
-                if (conf instanceof MakeConfiguration && !((MakeConfiguration) conf).getDevelopmentHost().isLocalhost()) {
-                    ok = verifyRemoteExecutable(((MakeConfiguration) conf).getDevelopmentHost().getName(), executable);
-                } else {
-                    // FIXUP: getExecutable should really return fully qualified name to executable including .exe
-                    // but it is too late to change now. For now try both with and without.
-                    File file = new File(executable);
-                    if (!file.exists()) {
-                        file = new File(executable + ".exe"); // NOI18N
-                    }
-                    if (!file.exists() || file.isDirectory()) {
-                        ok = false;
+                boolean gotpath = false;
+                String pathname = pi.getPathName() + '=';
+                int i;
+                for (i = 0; i < env.length; i++) {
+                    if (env[i].startsWith(pathname)) {
+                        env1[i] = pathname + csdirs + pi.pathSeparator() + env[i].substring(5); // NOI18N
+                        gotpath = true;
+                    } else {
+                        env1[i] = env[i];
                     }
                 }
-                if (!ok) {
-                    String errormsg = getString("EXECUTABLE_DOESNT_EXISTS", pae.getExecutable()); // NOI18N
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
-                    return false;
+                if (!gotpath) {
+                    String defaultPath = conf.getPlatformInfo().getPathAsString();
+                    env1[i] = pathname + csdirs + pi.pathSeparator() + defaultPath;
                 }
+                env = env1;
             }
+            NativeExecutor projectExecutor = new NativeExecutor(
+                    key,
+                    runDirectory,
+                    exe, args, env,
+                    pae.getTabName(),
+                    pae.getActionName(),
+                    pae.getType() == ProjectActionEvent.Type.BUILD,
+                    showInput,
+                    unbuffer);
+            projectExecutor.addExecutionListener(this);
+            if (rcfile != null) {
+                projectExecutor.setExitValueOverride(rcfile);
+            }
+            try {
+                executorTask = projectExecutor.execute(io);
+            } catch (java.io.IOException ioe) {
+            }
+        } else {
+            assert false;
+        }
+    }
+
+    public void addExecutionListener(ExecutionListener l) {
+        if (!listeners.contains(l)) {
+            listeners.add(l);
+        }
+    }
+
+    public void removeExecutionListener(ExecutionListener l) {
+        listeners.remove(l);
+    }
+
+    public boolean canCancel() {
+        if (pae.getType() != ProjectActionEvent.Type.RUN) {
             return true;
-        }
-    }
-    
-    /**
-     * Verify a remote executable exists, is executable, and is not a directory.
-     * 
-     * @param hkey The remote host
-     * @param executable The file to remotely check
-     * @return true if executable exists and is an executable, otherwise false
-     */
-    private boolean verifyRemoteExecutable(String hkey, String executable) {
-        PathMap mapper = HostInfoProvider.getDefault().getMapper(hkey);
-        String remoteExecutable = mapper.getRemotePath(executable);
-        CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
-        if (cmd != null) {
-            return cmd.run(hkey, "test -x " + remoteExecutable + " -a -f " + remoteExecutable, null) == 0; // NOI18N
-        }
-        return false;
-    }
-
-    private static final class StopAction extends AbstractAction {
-        HandleEvents handleEvents;
-
-        public StopAction(HandleEvents handleEvents) {
-            this.handleEvents = handleEvents;
-            //System.out.println("handleEvents 1 " + handleEvents);
-            //setEnabled(false); // initially, until ready
-        }
-
-        @Override
-        public Object getValue(String key) {
-            if (key.equals(Action.SMALL_ICON)) {
-                return new ImageIcon(DefaultProjectActionHandler.class.getResource("/org/netbeans/modules/cnd/makeproject/ui/resources/stop.png"));
-            } else if (key.equals(Action.SHORT_DESCRIPTION)) {
-                return getString("TargetExecutor.StopAction.stop");
-            } else {
-                return super.getValue(key);
+        } else {
+            int consoleType = pae.getProfile().getConsoleType().getValue();
+            if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
+                consoleType = RunProfile.getDefaultConsoleType();
             }
+            return consoleType != RunProfile.CONSOLE_TYPE_EXTERNAL;
         }
-
-        public void actionPerformed(ActionEvent e) {
-            if (!isEnabled())
-                return;
-            setEnabled(false);
-            if (handleEvents.getExecutorTask() != null) {
-                handleEvents.getNativeExecutor().stop();
-                handleEvents.getExecutorTask().stop();
-            }
-        }
-
     }
 
-    private static final class RerunAction extends AbstractAction {
-        HandleEvents handleEvents;
-
-        public RerunAction(HandleEvents handleEvents) {
-            this.handleEvents = handleEvents;
-        }
-
-        @Override
-        public Object getValue(String key) {
-            if (key.equals(Action.SMALL_ICON)) {
-                return new ImageIcon(DefaultProjectActionHandler.class.getResource("/org/netbeans/modules/cnd/makeproject/ui/resources/rerun.png"));
-            } else if (key.equals(Action.SHORT_DESCRIPTION)) {
-                return getString("TargetExecutor.RerunAction.rerun");
-            } else {
-                return super.getValue(key);
-            }
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            setEnabled(false);
-            handleEvents.reRun();
-        }
-
+    public void cancel() {
+        executorTask.stop();
     }
-    
+
+    public void executionStarted() {
+        for (ExecutionListener l : listeners) {
+            l.executionStarted();
+        }
+    }
+
+    public void executionFinished(int rc) {
+        for (ExecutionListener l : listeners) {
+            l.executionFinished(rc);
+        }
+    }
+
     /** Look up i18n strings here */
     private static String getString(String s) {
         return NbBundle.getBundle(DefaultProjectActionHandler.class).getString(s);
     }
-    private static String getString(String s, String arg) {
-        return NbBundle.getMessage(DefaultProjectActionHandler.class, s, arg);
-    }
+
 }

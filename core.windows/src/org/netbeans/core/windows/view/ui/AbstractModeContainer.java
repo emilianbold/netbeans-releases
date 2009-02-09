@@ -160,8 +160,7 @@ public abstract class AbstractModeContainer implements ModeContainer {
         Window oldFocusedW = FocusManager.getCurrentManager().getFocusedWindow();
         Window newFocusedW = SwingUtilities.getWindowAncestor(selectedTopComponent);
         
-        if ((newFocusedW != null && newFocusedW.equals(oldFocusedW))
-            || oldFocusedW == null) {
+        if ((newFocusedW != null && newFocusedW.equals(oldFocusedW))) {
             // focus transfer inside one window or system is not active in OS at all
             // so requestFocusInWindow call is right and enough
             if (!Utilities.isMac()) {

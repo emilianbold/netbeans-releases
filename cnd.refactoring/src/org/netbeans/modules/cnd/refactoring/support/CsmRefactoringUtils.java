@@ -44,7 +44,6 @@ import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
-import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
@@ -57,13 +56,17 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
@@ -74,7 +77,12 @@ import org.openide.util.Lookup;
  *
  * @author Vladimir Voskresensky
  */
-public class CsmRefactoringUtils {
+public final class CsmRefactoringUtils {
+    public static final boolean REFACTORING_EXTRA = CndUtils.getBoolean("cnd.refactoring.extra", false); // NOI18N
+    
+    private CsmRefactoringUtils() {
+    }
+
     public static boolean isElementInOpenProject(FileObject f) {
         if (f == null) {
             return false;
@@ -108,8 +116,6 @@ public class CsmRefactoringUtils {
         return referencedObject;
     }
 
-    private CsmRefactoringUtils() {}
-    
     public static CsmProject getContextCsmProject(CsmObject contextObject) {
         CsmFile contextFile = null;
         if (CsmKindUtilities.isOffsetable(contextObject)) {
@@ -214,32 +220,8 @@ public class CsmRefactoringUtils {
         return out;
     }
     
-    @SuppressWarnings("unchecked")
     public static <T extends CsmObject> CsmUID<T> getHandler(T element) {
-        CsmUID<T> uid = null;
-        if (CsmKindUtilities.isIdentifiable(element)) {
-            uid = ((CsmIdentifiable<T>)element).getUID();
-            boolean checkAssert = true;
-            assert checkAssert = true;
-            if (checkAssert && (uid.getObject() == null)) {
-                System.err.println("UID " + uid + "can't return object " + element);
-                uid = null;
-            }
-        } 
-        if (uid == null) {
-            uid = new SelfUID(element);
-        }
-        return uid;
-    }
-    
-    private static final class SelfUID<T> implements CsmUID<T> {
-        private final T element;
-        SelfUID(T element) {
-            this.element = element;
-        }
-        public T getObject() {
-            return this.element;
-        }
+        return UIDs.get(element);
     }
     
     public static <T> T getObject(CsmUID<T> handler) {
@@ -277,7 +259,7 @@ public class CsmRefactoringUtils {
             } else if (CsmKindUtilities.isScopeElement(scope)) {
                 scopeElem = ((CsmScopeElement)scope);
             } else {
-                if (scope == null) System.err.println("scope element without scope " + scopeElem);
+                if (scope == null) { System.err.println("scope element without scope " + scopeElem); }
                 break;
             }
         }
@@ -359,7 +341,8 @@ public class CsmRefactoringUtils {
     public static CsmObject findInnerFileObject(CsmFile file, int offset) {
         assert (file != null) : "can't be null file in findInnerFileObject";
         // check file declarations
-        CsmObject lastObject = findInnerDeclaration(file.getDeclarations().iterator(), offset);
+        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createOffsetFilter(offset);
+        CsmObject lastObject = findInnerDeclaration(CsmSelect.getDefault().getDeclarations(file, filter), offset);
 //        // check macros if needed
 //        lastObject = lastObject != null ? lastObject : findObject(file.getMacros(), context, offset);
         return lastObject;

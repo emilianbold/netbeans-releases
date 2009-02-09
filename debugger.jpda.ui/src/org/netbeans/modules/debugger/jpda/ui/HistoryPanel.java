@@ -45,10 +45,15 @@
 
 package org.netbeans.modules.debugger.jpda.ui;
 
+import java.awt.GridBagConstraints;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Vector;
+import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableModel;
 import org.openide.util.NbBundle;
 
 /**
@@ -58,16 +63,36 @@ import org.openide.util.NbBundle;
 public class HistoryPanel extends javax.swing.JPanel {
 
     transient private HistoryTableModel historyModel = new HistoryTableModel();
+    private HistoryTable historyTable = new HistoryTable();
 
     HistoryPanel() {
         initComponents();
+
+        GridBagConstraints constr = new java.awt.GridBagConstraints();
+        constr.gridx = 0;
+        constr.gridy = 2;
+        constr.fill = GridBagConstraints.HORIZONTAL;
+        constr.insets = new java.awt.Insets(0, 3, 0, 0);
+        JTableHeader tableHeader = historyTable.getTableHeader();
+        tableHeader.setFocusable(false);
+        add(tableHeader, constr);
+
+        constr = new GridBagConstraints();
+        constr.gridx = 0;
+        constr.gridy = 3;
+        constr.fill = java.awt.GridBagConstraints.BOTH;
+        constr.weightx = 1.0;
+        constr.weighty = 1.0;
+        constr.insets = new java.awt.Insets(0, 3, 0, 0);
+        add(historyTable, constr);
+
         historyTable.setModel(historyModel);
     }
 
-    public void addItem(final String expr, final String type, final String value) {
+    public void addItem(final String expr, final String type, final String value, final String toString) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                historyModel.addItem(expr, type, value);
+                historyModel.addItem(expr, type, value, toString);
             }
         });
     }
@@ -80,6 +105,10 @@ public class HistoryPanel extends javax.swing.JPanel {
         });
     }
 
+    public ArrayList<Item> getHistoryItems() {
+        return historyModel.getHistory();
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -90,33 +119,10 @@ public class HistoryPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        historyTable = new javax.swing.JTable();
         historyLabel = new javax.swing.JLabel();
         separatorPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
-
-        historyTable.setBackground(javax.swing.UIManager.getDefaults().getColor("Button.background"));
-        historyTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
-        historyTable.setGridColor(javax.swing.UIManager.getDefaults().getColor("Button.light"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 3, 0, 3);
-        add(historyTable, gridBagConstraints);
 
         historyLabel.setText(org.openide.util.NbBundle.getMessage(HistoryPanel.class, "HistoryPanel.historyLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -132,28 +138,30 @@ public class HistoryPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(separatorPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel historyLabel;
-    private javax.swing.JTable historyTable;
     private javax.swing.JPanel separatorPanel;
     // End of variables declaration//GEN-END:variables
 
     // ..........................................................................
 
-    private class Item {
+    public class Item {
 
-        String expr;
-        String type;
-        String value;
+        public String expr;
+        public String type;
+        public String value;
+        public String toString;
 
-        Item(String expr, String type, String value) {
+        Item(String expr, String type, String value, String toString) {
             this.expr = expr;
             this.type = type;
             this.value = value;
+            this.toString = toString;
         }
 
         Vector toVector() {
@@ -161,24 +169,61 @@ public class HistoryPanel extends javax.swing.JPanel {
             result.add(expr);
             result.add(type);
             result.add(value);
+            result.add(toString);
             return result;
+        }
+
+        @Override
+        public String toString() {
+            return expr;
+        }
+
+    }
+
+    class HistoryTable extends JTable {
+
+        HistoryTable() {
+            setBackground(javax.swing.UIManager.getDefaults().getColor("Button.background"));
+            setGridColor(javax.swing.UIManager.getDefaults().getColor("Button.light"));
+        }
+
+        @Override
+        public String getToolTipText(MouseEvent e) {
+            java.awt.Point p = e.getPoint();
+            int rowIndex = rowAtPoint(p);
+            int colIndex = columnAtPoint(p);
+            if (rowIndex < 0 || colIndex < 0) {
+                return super.getToolTipText(e);
+            }
+            int realColumnIndex = convertColumnIndexToModel(colIndex);
+            if (realColumnIndex < 0) {
+                return super.getToolTipText(e);
+            }
+            TableModel model = getModel();
+            String value = (String)model.getValueAt(rowIndex, realColumnIndex);
+            value = value.replace("\n", "<br/>"); // NOI18N
+            return "<html>" + value + "</html>"; // NOI18N
         }
 
     }
 
     class HistoryTableModel extends DefaultTableModel {
 
-        private static final int MAX_ITEMS = 20;
+        private static final int MAX_ITEMS = 100;
 
         private ArrayList<Item> historyItems = new ArrayList<Item>();
 
-        private void addItem(String expr, String type, String value) {
-            Item item = new Item(expr, type, value);
+        private void addItem(String expr, String type, String value, String toString) {
+            Item item = new Item(expr, type, value, toString);
             historyItems.add(0, item);
             if (historyItems.size() > MAX_ITEMS) {
                 historyItems.remove(MAX_ITEMS);
             }
             fireTableDataChanged();
+        }
+
+        public ArrayList<Item> getHistory() {
+            return historyItems;
         }
 
         public void clearHistory() {

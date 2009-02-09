@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.completion.csm.CsmContextUtilities;
 
 /**
@@ -248,7 +249,7 @@ public final class FileReferencesContext {
                      if (list == null) {
                          list = new ArrayList<CsmUID<CsmVariable>>();
                      }
-                     list.add(var.getUID());
+                     list.add(UIDs.get(var));
                 }
             }
         }
@@ -329,7 +330,7 @@ public final class FileReferencesContext {
             String name = macro.getName().toString();
             CsmUID<CsmMacro> uid = projectMacros.get(name);
             if (uid == null) {
-                projectMacros.put(name, macro.getUID());
+                projectMacros.put(name, UIDs.get(macro));
             }
         }
     }

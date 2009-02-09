@@ -52,6 +52,7 @@ import javax.swing.text.Document;
 
 import org.netbeans.junit.NbTestCase;
 
+import org.netbeans.junit.RandomlyFails;
 import org.openide.text.InitializeInAWTTest.FindActionCheck;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
@@ -102,7 +103,7 @@ public class InitializeOnBackgroundTest extends NbTestCase implements CloneableE
     }
     
     
-
+    @RandomlyFails // NB-Core-Build #1981, #1984
     public void testInitializeOnBackground() throws Exception {
         support.open();
         

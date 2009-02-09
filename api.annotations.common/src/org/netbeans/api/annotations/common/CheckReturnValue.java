@@ -47,7 +47,8 @@ import java.lang.annotation.Target;
 
 /**
  * The return value of annotated element (method) should be checked. Consider
- * {@link java.io.File#delete()} as an example of such a method.
+ * {@link java.io.File#delete()} or {@link java.lang.String#substring(int)}
+ * as an example of such a method.
  *
  * @author Petr Hejl
  */

@@ -202,41 +202,14 @@ public final class SourceRoots {
             sourceRootNames.add(getNodeDescription("rspec")); // NOI18N
             sourceRootProperties.add("spec"); // NOI18N
         }
-        sourceRootNames.add(getNodeDescription("test_unit")); // NOI18N
-        sourceRootNames.add(getNodeDescription("test_functional")); // NOI18N
-        sourceRootNames.add(getNodeDescription("test_fixtures")); // NOI18N
-        sourceRootNames.add(getNodeDescription("test_mocks")); // NOI18N
-        sourceRootNames.add(getNodeDescription("test_integration")); // NOI18N
-        sourceRootProperties.add("test/unit"); // NOI18N
-        sourceRootProperties.add("test/functional"); // NOI18N
-        sourceRootProperties.add("test/fixtures"); // NOI18N
-        sourceRootProperties.add("test/mocks"); // NOI18N
-        sourceRootProperties.add("test/integration"); // NOI18N
 
+        sourceRootNames.add(getNodeDescription("test")); // NOI18N
+        sourceRootProperties.add("test"); // NOI18N
         sourceRootNames.add(getNodeDescription("script")); // NOI18N
         sourceRootProperties.add("script"); // NOI18N
         sourceRootNames.add(getNodeDescription("doc")); // NOI18N
         sourceRootProperties.add("doc"); // NOI18N
         
-        // Add in other test dirs we don't know about
-        FileObject test = fo.getFileObject("test"); // NOI18N
-        if (test != null) {
-            Set<String> knownTestDirs = new HashSet<String>();
-            knownTestDirs.add("unit"); // NOI18N
-            knownTestDirs.add("functional"); // NOI18N
-            knownTestDirs.add("fixtures"); // NOI18N
-            knownTestDirs.add("mocks"); // NOI18N
-            knownTestDirs.add("integration"); // NOI18N
-            List<String> missing = findUnknownFolders(test, knownTestDirs);
-            if (missing != null) {
-                for (String name : missing) {
-                    String combinedName = "test/" + name; // NOI18N
-                    sourceRootNames.add(combinedName);
-                    sourceRootProperties.add(combinedName);
-                }
-            }
-        }
-
         // Vendor is treated specially. 
         // It should be split up into multiple roots that are indexed
         // as platform (not as sources, thus not rescanned on subsequent startups,
@@ -286,11 +259,6 @@ public final class SourceRoots {
                 f = FileUtil.getArchiveRoot(f);
             }
             result.add(f);
-        }
-        // the 'test' folder needs to be included in the source roots as 
-        // it may contain test helpers, but we don't want to display it in the logical view
-        if (test != null) {
-            result.add(test);
         }
         sourceRoots = Collections.unmodifiableList(result);
         
