@@ -61,6 +61,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.apt.support.APTToken;
@@ -112,7 +113,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             return 0;
         }
 
-        TransformationTable tt = new TransformationTable();
+        TransformationTable tt = new TransformationTable(DocumentUtilities.getDocumentVersion(inDoc));
         StringBuffer expandedData = new StringBuffer();
 
         synchronized (inDoc) {
@@ -263,7 +264,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
 
     public String expand(Document doc, int startOffset, int endOffset) {
         TransformationTable tt = getMacroTable(doc);
-        if (tt == null || (startOffset == 0 && endOffset == doc.getLength())) {
+        if (tt == null || tt.version != DocumentUtilities.getDocumentVersion(doc)) {
             expand(doc);
             tt = getMacroTable(doc);
             if (tt == null) {
@@ -310,7 +311,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             return;
         }
 
-        TransformationTable tt = new TransformationTable();
+        TransformationTable tt = new TransformationTable(DocumentUtilities.getDocumentVersion(doc));
 
         synchronized (doc) {
             // Init token sequences
@@ -717,6 +718,12 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         private ArrayList<IntervalCorrespondence> intervals = new ArrayList<IntervalCorrespondence>();
         private Interval currentIn;
         private Interval currentOut;
+        private final long version;
+
+        public TransformationTable(long version) {
+            this.version = version;
+        }
+
 
         public void setInStart(int start) {
             currentIn = new Interval(start);
