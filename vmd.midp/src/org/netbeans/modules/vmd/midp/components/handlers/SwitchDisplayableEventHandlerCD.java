@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.vmd.midp.components.handlers;
 
+import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.codegen.CodeMultiGuardedLevelPresenter;
 import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
@@ -58,6 +59,8 @@ import org.netbeans.modules.vmd.midp.codegen.SwitchDisplayableParameterPresenter
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.netbeans.modules.vmd.midp.actions.GoToSourcePresenter;
 
 /**
  * @author David Kaspar
@@ -85,6 +88,14 @@ public final class SwitchDisplayableEventHandlerCD extends ComponentDescriptor {
         );
     }
 
+    @Override
+    protected void gatherPresenters(ArrayList<Presenter> presenters) {
+        DocumentSupport.removePresentersOfClass(presenters, GoToSourcePresenter.class);
+        super.gatherPresenters(presenters);
+    }
+
+
+
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // info
@@ -111,7 +122,9 @@ public final class SwitchDisplayableEventHandlerCD extends ComponentDescriptor {
             },
             // delete
             DeleteDependencyPresenter.createDependentOnPropertyPresenter (PROP_DISPLAYABLE),
-            DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_ALERT)
+            DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_ALERT),
+            //actions
+            GoToSourcePresenter.createParentForwarder(GoToSourcePresenter.Relationship.GrandParent)
         );
     }
 
