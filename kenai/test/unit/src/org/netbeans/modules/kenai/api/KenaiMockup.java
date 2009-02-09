@@ -41,6 +41,7 @@ package org.netbeans.modules.kenai.api;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.kenai.FeatureData;
@@ -95,14 +96,14 @@ public class KenaiMockup extends KenaiImpl {
     }
 
     @Override
-    public Iterator<ProjectData> searchProjects(String pattern) throws KenaiException {
+    public Collection<ProjectData> searchProjects(String pattern) throws KenaiException {
         List<ProjectData> result = new ArrayList<ProjectData>();
         for (ProjectData p : projects) {
             if (p.name.startsWith(pattern)) {
                 result.add(p);
             }
         }
-        return result.iterator();
+        return result;
     }
     
     @Override
@@ -198,12 +199,12 @@ public class KenaiMockup extends KenaiImpl {
     }
 
     @Override
-    public Iterator<LicensesListItem> getLicenses() throws KenaiException {
+    public Collection<LicensesListItem> getLicenses() throws KenaiException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Iterator<ServicesListItem> getServices() throws KenaiException {
+    public Collection<ServicesListItem> getServices() throws KenaiException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
