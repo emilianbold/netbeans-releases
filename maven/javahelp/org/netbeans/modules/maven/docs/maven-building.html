@@ -45,10 +45,17 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
     <body>
         <h2>Building a Maven Project</h2>
         <p> <small><a href="#seealso">See Also</a>&nbsp; </small></p>
-        <p></p>
+        <p>
+        The process for building and distributing an artifact has defined phases in the build lifecycle.
+        The IDE actions available in the popup menu when you right-click a Maven project are mapped to
+        Maven phases and goals.
+        For example, the Build action in the IDE is mapped to the <tt>install</tt> Maven goal.
+        When you build a Maven project in the IDE, the IDE executes the <tt>install</tt> goal to
+        package the project and executes all the goals in the preceding phases in the build lifecycle.
+        </p>
 
-        <p>What this means is that the process for building and distributing a particular artifact (project) is clearly defined.</p>
-<dl>
+        <p>You can choose the IDE actions and invoke the default goals or you can 
+        <a href="maven_settings.html">configure the Maven settings</a> to modify the mapped Maven goals.</p>
 
     <h3>Customizing the Build Process</h3>
         <p>To customize the build for a Maven project you modify the POM to add or reconfigure plugins.
@@ -63,11 +70,14 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
             <li>Select the goals that you want to be executed. Click OK.</li>
         </ol>
 <p>When you click OK, the IDE adds the plugin description to <tt>pom.xml</tt> and the goals to run as part of the build process.
+
 </p>
         If you add a plugin that is not in the local repository, This plugin will be automatically downloaded and used - including a specific version if you request it (the default is to use the latest available).
 
+<dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/maven/maven-about.html">About Working with Maven</a></dd>
+    <dd><a href="maven_settings.html">Configuring Maven Settings</a></dd>
 </dl>
 <hr>
 <small><a href="../credits.html">Legal Notices</a></small>

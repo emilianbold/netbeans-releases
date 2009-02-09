@@ -70,8 +70,9 @@ public final class NativeExecutableTargetConfiguration {
         this.cmd = cmd;
         this.args = args;
         this.env = new HashMap<String, String>();
-        this.env.putAll(env);
-        
+        if (env != null) {
+            this.env.putAll(env);
+        }
     }
 
     /**

@@ -45,9 +45,10 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
@@ -55,7 +56,7 @@ import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler;
 import org.netbeans.modules.dlight.api.support.NativeExecutableTarget;
 import org.netbeans.modules.dlight.api.support.NativeExecutableTargetConfiguration;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.nativeexecution.util.ExternalTerminalProvider;
 import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
 
@@ -77,15 +78,29 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
     }
 
     public void execute(InputOutput io) {
-        String exe = IpeUtils.quoteIfNecessary(pae.getExecutable());
-        exe = IpeUtils.toAbsolutePath(FileUtil.toFile(pae.getProject().getProjectDirectory()).getAbsolutePath(), exe);
-        String[] args = pae.getProfile().getArgsArray();
-        String[][] envs = pae.getProfile().getEnvironment().getenvAsPairs();
-        Map<String, String> env = new HashMap<String, String>();
-        //TODO:create a map     
-        // TODO: set terminal, InputOutput, execution environment, remote...
-        NativeExecutableTargetConfiguration conf = new NativeExecutableTargetConfiguration(exe, args, env);
-        NativeExecutableTarget target = new NativeExecutableTarget(conf);
+        // TODO: InputOutput, execution environment, remote...
+        NativeExecutableTargetConfiguration targetConf = new NativeExecutableTargetConfiguration(
+                pae.getExecutable(),
+                pae.getProfile().getArgsArray(),
+                createMap(pae.getProfile().getEnvironment().getenvAsPairs()));
+        MakeConfiguration conf = (MakeConfiguration) pae.getConfiguration();
+        targetConf.setHost(conf.getDevelopmentHost().getName());
+        targetConf.setWorkingDirectory(pae.getProfile().getRunDirectory());
+        int consoleType = pae.getProfile().getConsoleType().getValue();
+        if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
+            consoleType = RunProfile.getDefaultConsoleType();
+        }
+        if (consoleType == RunProfile.CONSOLE_TYPE_EXTERNAL) {
+            String termPath = pae.getProfile().getTerminalPath();
+            if (termPath == null) {
+                // do nothing
+            } else if (termPath.endsWith("gnome-terminal")) { // NOI18N
+                targetConf.useExternalTerminal(ExternalTerminalProvider.getTerminal("gnome-terminal")); // NOI18N
+            } else if (termPath.endsWith("xterm")) { // NOI18N
+                targetConf.useExternalTerminal(ExternalTerminalProvider.getTerminal("xterm")); // NOI18N
+            }
+        }
+        NativeExecutableTarget target = new NativeExecutableTarget(targetConf);
         target.addTargetListener(this);
         final Future<DLightSessionHandler> handle = DLightToolkitManagement.getInstance().createSession(target, "Gizmo"); // NOI18N
 
@@ -101,6 +116,14 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
             }
         }).start();
 
+    }
+
+    private Map<String, String> createMap(String[][] array) {
+        Map<String, String> result = new HashMap<String,String>();
+        for (int i = 0; i < array.length; ++i) {
+            result.put(array[i][0], array[i][1]);
+        }
+        return result;
     }
 
     public boolean canCancel() {
