@@ -64,6 +64,7 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -113,7 +114,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             return 0;
         }
 
-        TransformationTable tt = new TransformationTable(DocumentUtilities.getDocumentVersion(inDoc));
+        TransformationTable tt = new TransformationTable(DocumentUtilities.getDocumentVersion(inDoc), CsmFileInfoQuery.getDefault().getFileVersion(file));
         StringBuffer expandedData = new StringBuffer();
 
         synchronized (inDoc) {
@@ -263,8 +264,12 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
     }
 
     public String expand(Document doc, int startOffset, int endOffset) {
+        CsmFile file = CsmUtilities.getCsmFile(doc, true);
+        if (file == null) {
+            return null;
+        }
         TransformationTable tt = getMacroTable(doc);
-        if (tt == null || tt.version != DocumentUtilities.getDocumentVersion(doc)) {
+        if (tt == null || tt.documentVersion != DocumentUtilities.getDocumentVersion(doc) || tt.fileVersion != CsmFileInfoQuery.getDefault().getFileVersion(file)) {
             expand(doc);
             tt = getMacroTable(doc);
             if (tt == null) {
@@ -311,7 +316,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             return;
         }
 
-        TransformationTable tt = new TransformationTable(DocumentUtilities.getDocumentVersion(doc));
+        TransformationTable tt = new TransformationTable(DocumentUtilities.getDocumentVersion(doc), CsmFileInfoQuery.getDefault().getFileVersion(file));
 
         synchronized (doc) {
             // Init token sequences
@@ -718,10 +723,12 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         private ArrayList<IntervalCorrespondence> intervals = new ArrayList<IntervalCorrespondence>();
         private Interval currentIn;
         private Interval currentOut;
-        private final long version;
+        private final long documentVersion;
+        private final long fileVersion;
 
-        public TransformationTable(long version) {
-            this.version = version;
+        public TransformationTable(long documentVersion, long fileVersion) {
+            this.documentVersion = documentVersion;
+            this.fileVersion = fileVersion;
         }
 
 
