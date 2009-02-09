@@ -352,7 +352,7 @@ public class Commands {
         @Override
         public InputStream getInputStream() {
             try {
-                return new FileInputStream(path);
+                return null==path ? null : new FileInputStream(path);
             } catch (FileNotFoundException ex) {
                 return null;
             }
