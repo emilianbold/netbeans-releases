@@ -421,7 +421,6 @@ public class OutlineView extends JScrollPane {
                 while ((tp != null) && (tp.getPathCount() > 0)) {
                     tp = tp.getParentPath();
                     if (tp != null) {
-                        System.out.println( "expanding: " + tp );
                         outline.expandPath(tp);
                     }
                 }
