@@ -51,6 +51,7 @@ import java.util.List;
 import javax.security.auth.RefreshFailedException;
 import javax.security.auth.Refreshable;
 import javax.swing.Action;
+import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -67,6 +68,7 @@ import org.netbeans.spi.viewmodel.TableModelFilter;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.PasteType;
 
@@ -456,7 +458,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
             }
         }
         
-        if (typeToFilter.size() == 0) return null; // Optimization for corner case
+        if (typeToFilter.size() == 0 && ancestorToFilter.size() == 0) return null; // Optimization for corner case
         
         if (!(o instanceof Variable)) return null;
         
@@ -477,6 +479,23 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         
         if (!(o instanceof ObjectVariable)) return null;
         ObjectVariable ov = (ObjectVariable) o;
+        // TODO: List<JPDAClassType> ov.getAllInterfaces();
+        List<JPDAClassType> allInterfaces;
+        try {
+            java.lang.reflect.Method allInterfacesMethod = ov.getClass().getMethod("getAllInterfaces");
+            allInterfacesMethod.setAccessible(true);
+            allInterfaces = (List<JPDAClassType>) allInterfacesMethod.invoke(ov);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            allInterfaces = null;
+        }
+        if (allInterfaces != null) {
+            for (JPDAClassType ct : allInterfaces) {
+                type = ct.getName();
+                vf = (VariablesFilter) ancestorToFilter.get (type);
+                if (vf != null) return vf;
+            }
+        }
         ov = ov.getSuper ();
         while (ov != null) {
             type = ov.getType ();

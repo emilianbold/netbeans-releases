@@ -257,6 +257,41 @@ public class VariablesFormatter {
         this.childrenExpandTestCode = childrenExpandTestCode;
     }
 
+    public static VariablesFormatter[] loadFormatters() {
+        Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
+        VariablesFormatter[] formatters = (VariablesFormatter[]) p.getArray("VariableFormatters", createDefaultFormatters());
+        return formatters;
+    }
+
+
+    private static VariablesFormatter[] createDefaultFormatters() {
+        VariablesFormatter collection = new VariablesFormatter("Default Collection Formatter");
+        collection.setClassTypes("java.util.Collection");
+        collection.setIncludeSubTypes(true);
+        collection.setChildrenFormatCode("toArray()");
+        collection.setValueFormatCode("\"size = \"+size()");
+
+        VariablesFormatter map = new VariablesFormatter("Default Map Formatter");
+        map.setClassTypes("java.util.Map");
+        map.setIncludeSubTypes(true);
+        map.setChildrenFormatCode("entrySet()");
+        map.setValueFormatCode("\"size = \"+size()");
+
+        VariablesFormatter mapEntry = new VariablesFormatter("Default Map.Entry Formatter");
+        mapEntry.setClassTypes("java.util.Map$Entry");
+        mapEntry.setIncludeSubTypes(true);
+        mapEntry.setUseChildrenVariables(true);
+        Map childrenMap = new LinkedHashMap();
+        childrenMap.put("key", "key");
+        childrenMap.put("value", "value");
+        mapEntry.setChildrenVariables(childrenMap);
+        mapEntry.setValueFormatCode("key+\" => \"+value");
+
+        return new VariablesFormatter[] { collection, map, mapEntry };
+    }
+
+
+
     public static class ReaderWriter implements Properties.Reader {
 
         public String[] getSupportedClassNames() {
