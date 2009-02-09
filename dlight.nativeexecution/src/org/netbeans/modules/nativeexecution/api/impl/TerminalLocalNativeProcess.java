@@ -45,6 +45,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -172,7 +173,11 @@ public final class TerminalLocalNativeProcess extends NativeProcess {
     @Override
     protected void cancel() {
         try {
-            rt.exec("/bin/kill -9 " + pid);
+            ProcessBuilder pb =
+                    new ProcessBuilder("/bin/kill", "-9", "" + pid); // NOI18N
+            pb.start().waitFor();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
