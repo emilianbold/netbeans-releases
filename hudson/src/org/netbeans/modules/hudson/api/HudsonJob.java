@@ -141,11 +141,18 @@ public interface HudsonJob extends Lookup.Provider, Comparable<HudsonJob> {
     
     /**
      * Returns number of the last failed build
-     * 
+     *
      * @return last failed build number, or -1 for none
      */
     public int getLastFailedBuild();
-    
+
+    /**
+     * Returns number of the last completed build
+     *
+     * @return last completed build number, or -1 for none
+     */
+    public int getLastCompletedBuild();
+
     /**
      * Starts Hudson job
      */
