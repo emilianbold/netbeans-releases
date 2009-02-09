@@ -8,6 +8,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -20,39 +21,40 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="lblLocalFolderDescription" alignment="0" pref="639" max="32767" attributes="0"/>
+                  <Component id="lblLocalFolderDescription" alignment="0" pref="663" max="32767" attributes="0"/>
                   <Component id="chkPrintDebugInfo" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="lblDescription" alignment="0" pref="639" max="32767" attributes="0"/>
+                  <Component id="lblDescription" alignment="0" pref="663" max="32767" attributes="0"/>
                   <Component id="lblAuthenticationDescription" alignment="0" min="-2" pref="297" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="10" pref="10" max="10" attributes="0"/>
+                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="lblUser" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="lblPassword" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="134" max="32767" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="txtPassword" max="32767" attributes="1"/>
-                          <Component id="txtUser" alignment="0" min="-2" pref="172" max="-2" attributes="1"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="txtPassword" pref="172" max="32767" attributes="2"/>
+                          <Component id="txtUser" alignment="0" pref="172" max="32767" attributes="2"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="lblActhenticationHint" min="-2" pref="266" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="lblActhenticationHint" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="166" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="lblConnection" alignment="0" pref="639" max="32767" attributes="0"/>
+                  <Component id="lblConnection" alignment="0" pref="663" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                      <Component id="lblLocalFolder" min="-2" pref="99" max="-2" attributes="0"/>
+                      <Component id="lblLocalFolder" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                              <Component id="lblFolderError" pref="510" max="32767" attributes="1"/>
+                              <Component id="lblFolderError" pref="549" max="32767" attributes="1"/>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
-                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="txtFolder" pref="435" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="txtFolder" pref="450" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="btnFile" min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -68,9 +70,9 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                              <Component id="jLabel2" pref="512" max="32767" attributes="0"/>
+                              <Component id="jLabel2" pref="532" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="txtUrl" alignment="1" pref="522" max="32767" attributes="1"/>
+                          <Component id="txtUrl" alignment="1" pref="542" max="32767" attributes="1"/>
                           <Component id="developerConnection" alignment="0" min="-2" pref="122" max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -113,8 +115,8 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="lblUser" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="lblActhenticationHint" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="txtUser" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="lblActhenticationHint" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
