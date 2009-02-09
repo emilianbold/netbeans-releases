@@ -43,11 +43,8 @@ package org.netbeans.modules.kenai;
  *
  * @author Jan Becicka
  */
-public class ServicesListData {
+public class ServicesListData extends ListData {
 
-    public String prev;
-    public String next;
-    public int total;
     public ServicesListItem services[];
 
     public static class ServicesListItem {

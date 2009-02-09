@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,25 +34,17 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.kenai;
 
 /**
  *
- * @author Jan Becicka
+ * @author beci
  */
-public class ProjectsListData extends ListData {
-
-    public ProjectListItem projects[];
-
-    public static class ProjectListItem {
-
-        public String href;
-        public String name;
-        public String display_name;
-        public String image;
-        public String web_url;
-    }
+public class ListData {
+    public String prev;
+    public String next;
+    public int total;
 }

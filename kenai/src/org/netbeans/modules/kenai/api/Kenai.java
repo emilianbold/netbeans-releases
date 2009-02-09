@@ -43,13 +43,14 @@ import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
+import java.util.AbstractCollection;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EventListener;
-import java.util.EventObject;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import org.codeviation.commons.patterns.Factory;
+import org.codeviation.commons.utils.Iterators;
 import org.netbeans.modules.kenai.FeatureData;
 import org.netbeans.modules.kenai.KenaiREST;
 import org.netbeans.modules.kenai.KenaiImpl;
@@ -168,9 +169,9 @@ public final class Kenai {
      * @return an interator over kenai domains that match given search pattern
      * @throws KenaiException
      */
-    public Iterator<KenaiProject> searchProjects(String pattern) throws KenaiException {
-        Iterator<ProjectData> prjs = impl.searchProjects(pattern);
-        return new ProjectsIterator(prjs);
+    public Collection<KenaiProject> searchProjects(String pattern) throws KenaiException {
+        Collection<ProjectData> prjs = impl.searchProjects(pattern);
+        return new LazyCollection(prjs);
     }
 
     /**
@@ -178,9 +179,9 @@ public final class Kenai {
      * @return
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
-    public Iterator<KenaiLicense> getLicenses() throws KenaiException {
-        Iterator<LicensesListData.LicensesListItem> licenses = impl.getLicenses();
-        return new LicensesIterator(licenses);
+    public Collection<KenaiLicense> getLicenses() throws KenaiException {
+        Collection<LicensesListData.LicensesListItem> licenses = impl.getLicenses();
+        return new LazyCollection(licenses);
     }
 
     /**
@@ -188,9 +189,9 @@ public final class Kenai {
      * @return
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
-    public Iterator<KenaiService> getServices() throws KenaiException {
-        Iterator<ServicesListItem> services = impl.getServices();
-        return new ServicesIterator(services);
+    public Collection<KenaiService> getServices() throws KenaiException {
+        Collection<ServicesListItem> services = impl.getServices();
+        return new LazyCollection(services);
     }
 
 
@@ -313,71 +314,34 @@ public final class Kenai {
         Persistence.getInstance().storeProjects(openProjects);
     }
 
-    private class ProjectsIterator implements Iterator<KenaiProject> {
+    private class LazyCollection<I,O> extends AbstractCollection<O> {
 
-        private final Iterator<ProjectData> it;
+        private Collection<I> delegate;
 
-        public ProjectsIterator(Iterator<ProjectData> it) {
-            this.it = it;
+        private LazyCollection(Collection<I> delegate) {
+            this.delegate = delegate;
         }
 
-        public boolean hasNext() {
-            return it.hasNext();
+        @Override
+        public Iterator<O> iterator() {
+            return Iterators.translating(delegate.iterator(), new Factory<O,I>() {
+                public O create(I param) {
+                    if (param instanceof ProjectData) {
+                        return (O) KenaiProject.get((ProjectData) param);
+                    } else if (param instanceof LicensesListData.LicensesListItem) {
+                        return (O) new KenaiLicense((LicensesListData.LicensesListItem) param);
+                    } else if (param instanceof ServicesListItem) {
+                        return (O) new KenaiService((ServicesListItem) param);
+                    }
+                    throw new IllegalStateException();
+                }
+            });
         }
 
-        public KenaiProject next() {
-            ProjectData prj = it.next();
-            return KenaiProject.get(prj);
+        @Override
+        public int size() {
+            return delegate.size();
         }
-
-        public void remove() {
-            it.remove();
-        }
+        
     }
-
-    private class LicensesIterator implements Iterator<KenaiLicense> {
-
-        private final Iterator<LicensesListData.LicensesListItem> it;
-
-        public LicensesIterator(Iterator<LicensesListData.LicensesListItem> it) {
-            this.it = it;
-        }
-
-        public boolean hasNext() {
-            return it.hasNext();
-        }
-
-        public KenaiLicense next() {
-            LicensesListData.LicensesListItem lli = it.next();
-            return new KenaiLicense(lli);
-        }
-
-        public void remove() {
-            it.remove();
-        }
-    }
-
-    private class ServicesIterator implements Iterator<KenaiService> {
-
-        private final Iterator<ServicesListItem> it;
-
-        public ServicesIterator(Iterator<ServicesListItem> it) {
-            this.it = it;
-        }
-
-        public boolean hasNext() {
-            return it.hasNext();
-        }
-
-        public KenaiService next() {
-            ServicesListItem sli = it.next();
-            return new KenaiService(sli);
-        }
-
-        public void remove() {
-            it.remove();
-        }
-    }
-
-
 }

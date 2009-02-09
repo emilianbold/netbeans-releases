@@ -43,11 +43,8 @@ package org.netbeans.modules.kenai;
  *
  * @author Jan Becicka
  */
-public class LicensesListData {
+public class LicensesListData extends ListData {
 
-    public String prev;
-    public String next;
-    public int total;
     public LicensesListItem licenses[];
 
     public static class LicensesListItem {
