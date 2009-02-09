@@ -120,12 +120,10 @@ public abstract class QtInfoProvider {
                     list.add(baseDir + File.separator + "QtXml"); // NOI18N
                 }
                 String uiDir = qmakeConfiguration.getUiDir().getValue();
-                if (0 < uiDir.length()) {
-                    if (IpeUtils.isPathAbsolute(uiDir)) {
-                        list.add(uiDir);
-                    } else {
-                        list.add(conf.getBaseDir() + File.separator + uiDir);
-                    }
+                if (IpeUtils.isPathAbsolute(uiDir)) {
+                    list.add(uiDir);
+                } else {
+                    list.add(conf.getBaseDir() + File.separator + uiDir);
                 }
                 return list;
             } else {
