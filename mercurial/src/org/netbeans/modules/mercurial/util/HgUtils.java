@@ -50,7 +50,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -59,7 +58,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.HashMap;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.regex.Pattern;
@@ -75,7 +73,6 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
-import org.openide.windows.OutputEvent;
 import org.openide.windows.TopComponent;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import java.util.Calendar;
@@ -94,10 +91,10 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.mercurial.OutputLogger;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.openide.util.Utilities;
-import org.openide.windows.OutputListener;
 
 /**
  *
@@ -1136,6 +1133,48 @@ itor tabs #66700).
         return Utils.isFileContentText(file) ? "text/plain" : "application/octet-stream";
     }
 
+    public static void logHgLog(HgLogMessage log, OutputLogger logger) {
+        String lbChangeset = NbBundle.getMessage(HgUtils.class, "LB_CHANGESET");   // NOI18N
+        String lbUser =      NbBundle.getMessage(HgUtils.class, "LB_AUTHOR");      // NOI18N
+        String lbDate =      NbBundle.getMessage(HgUtils.class, "LB_DATE");        // NOI18N
+        String lbSummary =   NbBundle.getMessage(HgUtils.class, "LB_SUMMARY");     // NOI18N
+        int l = 0;
+        for (String s : new String[] {lbChangeset, lbUser, lbDate, lbSummary}) {
+            if(l < s.length()) l = s.length();
+        }
+        StringBuffer sb = new StringBuffer();
+        sb.append(formatlabel(lbChangeset, l));
+        sb.append(log.getRevision());
+        sb.append(":"); // NOI18N
+        sb.append(log.getCSetShortID());
+        sb.append('\n'); // NOI18N
+        sb.append(formatlabel(lbUser, l));
+        sb.append(log.getAuthor());
+        sb.append('\n'); // NOI18N
+        sb.append(formatlabel(lbDate, l));
+        sb.append(log.getDate());
+        sb.append('\n'); // NOI18N
+        sb.append(formatlabel(lbSummary, l));
+        sb.append(log.getMessage());
+        sb.append('\n'); // NOI18N
+
+        logger.output(sb.toString());
+    }
+
+
+    private static String formatlabel(String label, int l) {
+        label = label + spaces(l - label.length()) + ": ";
+        return label;
+    }
+
+    private static String spaces(int l) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < l + 3; i++) {
+            sb.append(" ");
+        }
+        return sb.toString();
+    }
+
     /**
      * This utility class should not be instantiated anywhere.
      */
@@ -1147,5 +1186,6 @@ itor tabs #66700).
         if(TY9_LOG == null) TY9_LOG = Logger.getLogger("org.netbeans.modules.mercurial.t9y");
         TY9_LOG.log(Level.FINEST, msg);
     }
-    
+
+
 }

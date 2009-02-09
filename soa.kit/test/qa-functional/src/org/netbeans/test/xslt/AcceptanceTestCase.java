@@ -92,7 +92,7 @@ public class AcceptanceTestCase  extends JellyTestCase {
     public void createNewXSLTModule() {
         startTest();
         
-        String strDirectory = System.getProperties().getProperty("nbjunit.workdir");
+        String strDirectory = System.getProperty("netbeans.user");
 
         MainWindowOperator.getDefault().maximize();
         

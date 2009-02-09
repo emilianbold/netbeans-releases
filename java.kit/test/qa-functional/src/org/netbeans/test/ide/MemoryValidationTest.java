@@ -41,18 +41,11 @@
 
 package org.netbeans.test.ide;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.HashSet;
-import java.util.Set;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.test.ide.CountingSecurityManager.Mode;
+import org.netbeans.junit.NbTestCase;
 
 /**
  * Overall sanity check suite for IDE before commit.<br>
@@ -60,11 +53,12 @@ import org.netbeans.test.ide.CountingSecurityManager.Mode;
  *
  * @author Jiri.Skrivanek@sun.com, mrkam@netbeans.org
  */
-public class IDECommitValidationTest extends JellyTestCase {
+public class MemoryValidationTest extends JellyTestCase {
 
     private static boolean initBlacklistedClassesHandler() {        
-        String configFN = new IDECommitValidationTest("Dummy").getDataDir()
+        String configFN = new MemoryValidationTest("Dummy").getDataDir()
                 + File.separator + "BlacklistedClassesHandlerConfig.xml";
+        configFN = configFN.replace("java.kit", "ide.kit"); //temporary hack
         BlacklistedClassesHandler bcHandler = BlacklistedClassesHandlerSingleton.getInstance();
         
         System.out.println("BlacklistedClassesHandler will be initialized with " + configFN);
@@ -79,79 +73,44 @@ public class IDECommitValidationTest extends JellyTestCase {
     
     
     /** Need to be defined because of JUnit */
-    public IDECommitValidationTest(String name) {
+    public MemoryValidationTest(String name) {
         super(name);
     }
     
-    public static Test suite() throws IOException {
+    public static Test suite() {
         
         boolean blacklistEnabled = initBlacklistedClassesHandler();
         
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
             IDEValidation.class
-        ).clusters(".*").enableModules(".*");
+        ).clusters("ide[0-9]*|java[0-9]*").enableModules(".*");
 
-        Set<String> allowedFiles = new HashSet<String>();
-        InputStream is = IDECommitValidationTest.class.getResourceAsStream("allowed-file-writes.txt");
-        BufferedReader r = new BufferedReader(new InputStreamReader(is));
-        for (;;) {
-            String line = r.readLine();
-            if (line == null) {
-                break;
-            }
-            if (line.startsWith("#")) {
-                continue;
-            }
-            allowedFiles.add(line);
-        }
-
-        CountingSecurityManager.initialize(null, Mode.CHECK_WRITE, allowedFiles);
         
         if (blacklistEnabled) {
             conf = conf.addTest("testBlacklistedClassesHandler");
         }
-        /* too easy to break:
-        conf = conf.addTest("testReflectionUsage");
-        conf = conf.addTest("testWriteAccess");
-         */
         conf = conf.addTest("testInitGC");
-        conf = conf.addTest("testMainMenu");
-        conf = conf.addTest("testHelp");
-        conf = conf.addTest("testOptions");
+//        conf = conf.addTest("testMainMenu");
+//        conf = conf.addTest("testHelp");
+//        conf = conf.addTest("testOptions");
         conf = conf.addTest("testNewProject");
         // sample project must exist before testShortcuts
-        conf = conf.addTest("testShortcuts");
+//        conf = conf.addTest("testShortcuts");
         conf = conf.addTest("testNewFile");
-        conf = conf.addTest("testCVSLite");
-        conf = conf.addTest("testProjectsView");
-        conf = conf.addTest("testFilesView");
+//        conf = conf.addTest("testCVSLite");
+//        conf = conf.addTest("testProjectsView");
+//        conf = conf.addTest("testFilesView");
         conf = conf.addTest("testEditor");
         conf = conf.addTest("testBuildAndRun");
         conf = conf.addTest("testDebugging");
-        conf = conf.addTest("testJUnit");
-        conf = conf.addTest("testXML");
-        conf = conf.addTest("testDb");
-        conf = conf.addTest("testWindowSystem");
-//        conf = conf.addTest("testGCDocuments");
+//        conf = conf.addTest("testJUnit");
+//        conf = conf.addTest("testXML");
+//        conf = conf.addTest("testDb");
+//        conf = conf.addTest("testWindowSystem");
+        conf = conf.addTest("testGCDocuments");
 //        conf = conf.addTest("testGCProjects");
         // not in commit suite because it needs net connectivity
         // suite.addTest(new IDEValidation("testPlugins"));
-//        conf = conf.addTest("testReflectionUsageAtTheEnd");
-        /* */
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(conf));
-        suite.addTest(new IDECommitValidationTest("testPostRunCheck"));
-        return suite;
-    }
-
-    public void testPostRunCheck() throws Exception {
-        String ud = System.getProperty("netbeans.user");
-        assertNotNull("User dir is provided", ud);
-
-        File loaders = new File(new File(new File(ud), "config"), "loaders.ser");
-        if (loaders.exists()) {
-            fail("loaders.ser file shall not be created, as loaders shall now be " +
-                "defined using layers:\n" + loaders);
-        }
+        return NbModuleSuite.create(conf);
     }
 }

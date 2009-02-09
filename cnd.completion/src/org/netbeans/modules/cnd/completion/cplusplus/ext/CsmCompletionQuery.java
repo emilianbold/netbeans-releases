@@ -222,10 +222,11 @@ abstract public class CsmCompletionQuery {
             // find last separator position
             final int lastSepOffset = sup.getLastCommandSeparator(offset);
             final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset, lastSepOffset);
+            final CsmExpandedTokenProcessor etp = new CsmExpandedTokenProcessor(doc, tp, offset);
             tp.enableTemplateSupport(true);
             doc.readLock();
             try {
-                CndTokenUtilities.processTokens(tp, doc, lastSepOffset, offset);
+                CndTokenUtilities.processTokens(etp, doc, lastSepOffset, offset);
             } finally {
                 doc.readUnlock();
             }
