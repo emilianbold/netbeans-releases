@@ -83,15 +83,22 @@ import org.w3c.dom.Element;
  */
 public final class GrailsProject implements Project {
 
+    private static final Logger LOG = Logger.getLogger(GrailsProject.class.getName());
+
     private final FileObject projectDir;
+
     private final ProjectState projectState;
+
     private final LogicalViewProvider logicalView;
+
     private final ClassPathProviderImpl cpProvider;
+
     private SourceRoots sourceRoots;
+
     private SourceRoots testRoots;
 
     private Lookup lookup;
-    private final Logger LOG = Logger.getLogger(GrailsProject.class.getName());
+
 
     public GrailsProject(FileObject projectDir, ProjectState projectState) {
         this.projectDir = projectDir;
@@ -103,7 +110,7 @@ public final class GrailsProject implements Project {
     public FileObject getProjectDirectory() {
         return projectDir;
     }
-    
+
     public ProjectState getProjectState() {
         return projectState;
     }
@@ -132,14 +139,14 @@ public final class GrailsProject implements Project {
         }
         return lookup;
     }
-    
-    public synchronized SourceRoots getSourceRoots() {        
+
+    public synchronized SourceRoots getSourceRoots() {
         if (this.sourceRoots == null) { //Local caching, no project metadata access
             this.sourceRoots = new SourceRoots(projectDir); //NOI18N
         }
         return this.sourceRoots;
     }
-    
+
     public synchronized SourceRoots getTestSourceRoots() {
         if (this.testRoots == null) { //Local caching, no project metadata access
             this.testRoots = new SourceRoots(projectDir); //NOI18N
@@ -178,15 +185,15 @@ public final class GrailsProject implements Project {
     private class OpenHook extends ProjectOpenedHook {
 
         private org.netbeans.modules.gsfpath.api.classpath.ClassPath cp;
-        
+
         @Override
         protected void projectOpened() {
             ClassPath[] sourceClasspaths = cpProvider.getProjectClassPaths(ClassPath.SOURCE);
-            
+
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, sourceClasspaths);
-            
+
             // GSF classpath
             List<FileObject> roots = new ArrayList<FileObject>();
             for (ClassPath classPath : sourceClasspaths) {
@@ -194,7 +201,7 @@ public final class GrailsProject implements Project {
             }
             cp = ClassPathSupport.createClassPath(roots.toArray(new FileObject[roots.size()]));
             org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().register(
-                    org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE, 
+                    org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE,
                     new org.netbeans.modules.gsfpath.api.classpath.ClassPath[] { cp });
         }
 
@@ -203,15 +210,15 @@ public final class GrailsProject implements Project {
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
             GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
-            
+
             // GSF classpath
             if (cp != null) {
                 org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().unregister(
-                        org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE, 
+                        org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE,
                         new org.netbeans.modules.gsfpath.api.classpath.ClassPath[] { cp });
             }
         }
-        
+
     }
 
     private static class AuxiliaryConfigurationImpl implements AuxiliaryConfiguration {
@@ -226,20 +233,20 @@ public final class GrailsProject implements Project {
         public boolean removeConfigurationFragment(String elementName, String namespace, boolean shared) throws IllegalArgumentException {
             return false;
         }
-        
+
     }
-            
+
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
-        
+
         // List of primarily supported templates
-        
+
         private static final String[] RECOMMENDED_TYPES = new String[] {
             "groovy",               // NOI18N
             "java-classes",         // NOI18N
             "XML",                  // NOI18N
-            "simple-files"          // NOI18N        
+            "simple-files"          // NOI18N
         };
-        
+
         private static final String[] PRIVILEGED_NAMES = new String[] {
             TemplatesImpl.DOMAIN_CLASS,
             TemplatesImpl.CONTROLLER,
@@ -252,15 +259,15 @@ public final class GrailsProject implements Project {
             "Templates/Other/properties.properties",
             "simple-files"
         };
-        
+
         public String[] getRecommendedTypes() {
             return RECOMMENDED_TYPES;
         }
-        
+
         public String[] getPrivilegedTemplates() {
             return PRIVILEGED_NAMES;
         }
-        
+
     }
 
     private static final class GroovyFeatureImpl implements GroovyFeature {
@@ -268,8 +275,7 @@ public final class GrailsProject implements Project {
         public boolean isGroovyEnabled() {
             return true;
         }
-        
-    }
 
+    }
 
 }
