@@ -52,6 +52,8 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.JList;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
@@ -62,6 +64,7 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.maven.dependencies.CheckNode;
 import org.netbeans.modules.maven.dependencies.CheckNodeListener;
 import org.netbeans.modules.maven.dependencies.CheckRenderer;
+import org.openide.NotificationLineSupport;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -70,6 +73,7 @@ import org.openide.util.ImageUtilities;
  */
 public class CreateLibraryPanel extends javax.swing.JPanel {
     private DependencyNode rootnode;
+    private NotificationLineSupport line;
 
     /** Creates new form CreateLibraryPanel */
     CreateLibraryPanel(DependencyNode root) {
@@ -103,7 +107,22 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
         trDeps.setModel(new DefaultTreeModel(new DefaultMutableTreeNode()));
         rootnode = root;
         trDeps.setModel(new DefaultTreeModel(createDependenciesList()));
-        checkLibraryName();
+        setLibraryName();
+        txtName.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                checkLibraryName();
+            }
+            public void removeUpdate(DocumentEvent e) {
+                checkLibraryName();
+            }
+            public void changedUpdate(DocumentEvent e) {
+                checkLibraryName();
+            }
+        });
+    }
+
+    void setLineSupport(NotificationLineSupport notificationLineSupport) {
+        line = notificationLineSupport;
     }
 
 
@@ -114,7 +133,7 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
         return root;
     }
 
-    private void checkLibraryName() {
+    private void setLibraryName() {
         LibraryManager manager = (LibraryManager) comManager.getSelectedItem();
         String currentName = txtName.getText();
         int index = 0;
@@ -130,6 +149,16 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
         }
     }
 
+    private void checkLibraryName() {
+
+        LibraryManager manager = (LibraryManager) comManager.getSelectedItem();
+        String currentName = txtName.getText();
+        if (manager.getLibrary(currentName) != null) {
+            line.setErrorMessage("Library with given name already exists.");
+        } else {
+            line.clearMessages();
+        }
+    }
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -144,8 +173,6 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
         lblName = new javax.swing.JLabel();
         txtName = new javax.swing.JTextField();
         cbCopy = new javax.swing.JCheckBox();
-        txtCopy = new javax.swing.JTextField();
-        btnCopy = new javax.swing.JButton();
         lblIncludes = new javax.swing.JLabel();
         cbJavadocSource = new javax.swing.JCheckBox();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -161,8 +188,6 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(cbCopy, org.openide.util.NbBundle.getMessage(CreateLibraryPanel.class, "CreateLibraryPanel.cbCopy.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(btnCopy, org.openide.util.NbBundle.getMessage(CreateLibraryPanel.class, "CreateLibraryPanel.btnCopy.text")); // NOI18N
-
         org.openide.awt.Mnemonics.setLocalizedText(lblIncludes, org.openide.util.NbBundle.getMessage(CreateLibraryPanel.class, "CreateLibraryPanel.lblIncludes.text")); // NOI18N
 
         cbJavadocSource.setSelected(true);
@@ -174,25 +199,21 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(cbJavadocSource)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, cbCopy, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, cbJavadocSource)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(lblManager)
-                            .add(lblName)
-                            .add(cbCopy))
+                            .add(lblName))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(txtCopy, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(btnCopy))
-                            .add(txtName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
-                            .add(comManager, 0, 258, Short.MAX_VALUE)))
-                    .add(lblIncludes))
+                            .add(txtName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 267, Short.MAX_VALUE)
+                            .add(comManager, 0, 267, Short.MAX_VALUE)))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, lblIncludes, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 177, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -207,23 +228,19 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
                     .add(lblName)
                     .add(txtName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(cbCopy)
-                    .add(txtCopy, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(btnCopy))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cbCopy)
+                .add(25, 25, 25)
                 .add(lblIncludes)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 175, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 154, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(cbJavadocSource)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(16, 16, 16))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnCopy;
     private javax.swing.JCheckBox cbCopy;
     private javax.swing.JCheckBox cbJavadocSource;
     private javax.swing.JComboBox comManager;
@@ -232,7 +249,6 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
     private javax.swing.JLabel lblManager;
     private javax.swing.JLabel lblName;
     private javax.swing.JTree trDeps;
-    private javax.swing.JTextField txtCopy;
     private javax.swing.JTextField txtName;
     // End of variables declaration//GEN-END:variables
 
@@ -248,13 +264,12 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
         return cbJavadocSource.isSelected();
     }
 
-    File getCopyDirectory() {
+    String getCopyDirectory() {
         if (!cbCopy.isSelected()) {
             return null;
         }
-        String dir = txtCopy.getText().trim();
-        //TODO resolve relatively to library manager..
-        return null;
+        String dir = txtName.getText().trim();
+        return dir;
     }
 
     List<Artifact> getIncludeArtifacts() {

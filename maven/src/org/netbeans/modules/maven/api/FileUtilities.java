@@ -149,7 +149,13 @@ public final class FileUtilities {
        return getDirURI(FileUtil.toFile(root), path);
    }
 
-//copied from o.o.f.FileUtil    
+//copied from o.o.f.FileUtil
+   /**
+    * get relative path between file and it's child. if not child, return null.
+    * @param dir
+    * @param file
+    * @return
+    */
     public static String getRelativePath(final File dir, final File file) {
         Stack<String> stack = new Stack<String>();
         File tempFile = file;

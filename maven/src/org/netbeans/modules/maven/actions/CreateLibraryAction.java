@@ -39,9 +39,13 @@
 
 package org.netbeans.modules.maven.actions;
 
+import hidden.org.codehaus.plexus.util.FileUtils;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -60,10 +64,12 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -101,10 +107,11 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
         final MavenProject project = lookup.lookup(MavenProject.class);
         final CreateLibraryPanel pnl = new CreateLibraryPanel(root);
         DialogDescriptor dd = new DialogDescriptor(pnl,  NbBundle.getMessage(CreateLibraryPanel.class, "LBL_CreateLibrary"));
+        pnl.setLineSupport(dd.createNotificationLineSupport());
         if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    Library lib = createLibrary(pnl.getLibraryManager(), pnl.getLibraryName(), pnl.getIncludeArtifacts(), pnl.isAllSourceAndJavadoc(), project);
+                    Library lib = createLibrary(pnl.getLibraryManager(), pnl.getLibraryName(), pnl.getIncludeArtifacts(), pnl.isAllSourceAndJavadoc(), project, pnl.getCopyDirectory());
                     if (lib != null) {
                         LibrariesCustomizer.showCustomizer(lib, pnl.getLibraryManager());
                     }
@@ -121,7 +128,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
         });
     }
 
-    private Library createLibrary(LibraryManager libraryManager, String libraryName, List<Artifact> includeArtifacts, boolean allSourceAndJavadoc, MavenProject project) {
+    private Library createLibrary(LibraryManager libraryManager, String libraryName, List<Artifact> includeArtifacts, boolean allSourceAndJavadoc, MavenProject project, String copyTo) {
         ProgressHandle handle = ProgressHandleFactory.createHandle(org.openide.util.NbBundle.getMessage(CreateLibraryAction.class, "MSG_Create_Library"));
         int count = includeArtifacts.size() * (allSourceAndJavadoc ? 3 : 1) + 5;
         handle.start(count);
@@ -133,6 +140,27 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
             List<URI> javadocVolume = new ArrayList<URI>();
             List<URI> sourceVolume = new ArrayList<URI>();
             Map<String, List<URI>> volumes = new HashMap<String, List<URI>>();
+            File baseFolder = null;
+            if (copyTo != null) {
+                //resolve there to copy files
+                File libBase = null;
+                URL libRoot = libraryManager.getLocation();
+                if (libRoot != null) {
+                    try {
+                        libBase = new File(libRoot.toURI());
+                        //getLocation() points to a file
+                        libBase = libBase.getParentFile();
+                    } catch (URISyntaxException ex) {
+                        Exceptions.printStackTrace(ex);
+                        libBase = new File(System.getProperty("netbeans.user"), "libraries");
+                    }
+                }  else {
+                    libBase = new File(System.getProperty("netbeans.user"), "libraries");
+                }
+                libBase = FileUtil.normalizeFile(libBase);
+                baseFolder = FileUtilities.resolveFilePath(libBase, copyTo);
+                baseFolder.mkdirs();
+            }
             volumes.put("classpath", classpathVolume); //NOI18N
             if (allSourceAndJavadoc) {
                 volumes.put("javadoc", javadocVolume); //NOI18N
@@ -142,7 +170,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                 handle.progress(org.openide.util.NbBundle.getMessage(CreateLibraryAction.class, "MSG_Downloading", a.getId()), index);
                 try {
                     online.resolve(a, project.getRemoteArtifactRepositories(), online.getLocalRepository());
-                    classpathVolume.add(LibrariesSupport.getArchiveRoot(a.getFile().toURI()));
+                    classpathVolume.add(getJarUri(a, baseFolder));
                     try {
                         if (allSourceAndJavadoc) {
                             handle.progress(org.openide.util.NbBundle.getMessage(CreateLibraryAction.class, "MSG_Downloading_javadoc", a.getId()), index + 1);
@@ -154,7 +182,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                                     "javadoc"); //NOI18N
                             online.resolve(javadoc, project.getRemoteArtifactRepositories(), online.getLocalRepository());
                             if (javadoc.getFile().exists()) {
-                                javadocVolume.add(LibrariesSupport.getArchiveRoot(javadoc.getFile().toURI()));
+                                javadocVolume.add(getJarUri(javadoc, baseFolder));
                             }
 
                             handle.progress(org.openide.util.NbBundle.getMessage(CreateLibraryAction.class, "MSG_Downloading_sources", a.getId()), index + 2);
@@ -166,7 +194,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                                     "sources"); //NOI18N
                             online.resolve(sources, project.getRemoteArtifactRepositories(), online.getLocalRepository());
                             if (sources.getFile().exists()) {
-                                sourceVolume.add(LibrariesSupport.getArchiveRoot(sources.getFile().toURI()));
+                                sourceVolume.add(getJarUri(sources, baseFolder));
                             }
                         }
                     } catch (Exception ex) {
@@ -180,6 +208,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                 index = index + (allSourceAndJavadoc ? 3 : 1);
             }
             try {
+                handle.progress("Adding library",  index + 4);
                 return  libraryManager.createURILibrary("j2se", libraryName, volumes); //NOI18N
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
@@ -188,6 +217,15 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
             handle.finish();
         }
         return null;
+    }
+
+    URI getJarUri(Artifact a, File copyTo) throws IOException {
+        File res = a.getFile();
+        if (copyTo != null) {
+            res = new File(copyTo, a.getFile().getName());
+            FileUtils.copyFile(a.getFile(), res);
+        }
+        return LibrariesSupport.getArchiveRoot(res.toURI());
     }
 
 }
