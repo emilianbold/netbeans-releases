@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.loaders.CndDataObject;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
+import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.FolderEntry;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -96,7 +97,7 @@ public class Folder implements FileChangeListener {
         this.items = new Vector<Object>();
         this.sortName = displayName.toLowerCase();
 
-        log.setLevel(Level.FINER);
+        log.setLevel(Level.OFF);
     }
 
     public void setRoot(String root) {
@@ -112,7 +113,6 @@ public class Folder implements FileChangeListener {
     }
     
     public void attachListenersAndRefresh() {
-        if (true) return;
         log.finer("----------attachListenersAndRefresh " + getPath()); // NOI18N
         String rootPath = getRootPath();
         String AbsRootPath = IpeUtils.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
@@ -236,7 +236,7 @@ public class Folder implements FileChangeListener {
         if (fromRoot && folder.getRoot() != null) {
             builder.append(folder.getRoot());
         } else {
-            builder.append(folder.getName());
+                builder.append(folder.getName());
         }
     }
 
@@ -907,7 +907,10 @@ public class Folder implements FileChangeListener {
             if (!AllSourceFileFilter.getInstance().accept(file)) {
                 return;
             }
-            Item item = new Item(IpeUtils.toRelativePath(getConfigurationDescriptor().getBaseDir(), file.getPath()));
+            String itemPath = file.getPath();
+            itemPath = FilePathAdaptor.mapToRemote(itemPath);
+            itemPath = FilePathAdaptor.normalize(itemPath);
+            Item item = new Item(IpeUtils.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath));
             getConfigurationDescriptor().setModified();
             addItemAction(item);
         }
@@ -968,8 +971,35 @@ public class Folder implements FileChangeListener {
         public void fileRenamed(FileRenameEvent fe) {
             FileObject fileObject = fe.getFile();
             File file = FileUtil.toFile(fileObject);
-            log.fine("------------fileRenamed " + file.getPath()); // NOI18N
-            if (true) return;
+            log.fine("------------fileRenamed " + file.getPath() + " in " + getThis().getPath()); // NOI18N
+            // Try only folders. Items are taken care of in Item.propertyChange takes care of it....
+            Folder folder = findFolderByName(fe.getName());
+            if (folder != null && folder.isDiskFolder()) {
+                // Add new Folder
+                AllSourceFileFilter filter = AllSourceFileFilter.getInstance();
+                Vector<SourceFolderInfo> data = new Vector<SourceFolderInfo>();
+                FolderEntry folderEntry = new FolderEntry(file, file.getName());
+                folderEntry.setAddSubfoldersSelected(true);
+                folderEntry.setFileFilter(filter);
+                data.add(folderEntry);
+                ((MakeConfigurationDescriptor)getConfigurationDescriptor()).addSourceFilesFromFolders(this, data.iterator(), false, false, false);
+                getConfigurationDescriptor().setModified();
+                // Copy all configurations
+                // ????????????
+                // Remove old folder
+                removeFolderAction(folder);
+
+                Folder renamedFolder = findFolderByName(file.getName());
+                if (renamedFolder != null) {
+                    renamedFolder.setRoot(null);
+                    renamedFolder.attachListenersAndRefresh();
+                }
+                else {
+                    log.fine("------------fileFolderCreated - cannot find folder " + file.getName() + " in " + getThis().getPath()); // NOI18N
+                }
+
+                return;
+            }
         }
 
 
