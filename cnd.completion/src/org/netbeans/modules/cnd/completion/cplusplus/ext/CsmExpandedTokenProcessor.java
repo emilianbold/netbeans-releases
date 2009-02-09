@@ -111,7 +111,7 @@ public class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<CppTok
                         TokenSequence<?> ts = tsList.get(i);
                         final Language<?> lang = ts.languagePath().innerLanguage();
                         if (CndLexerUtilities.isCppLanguage(lang, false)) {
-                            @SuppressWarnings("unchecked")
+                            @SuppressWarnings("unchecked") // NOI18N
                             TokenSequence<CppTokenId> uts = (TokenSequence<CppTokenId>) ts;
                             expTS = uts;
                         }
