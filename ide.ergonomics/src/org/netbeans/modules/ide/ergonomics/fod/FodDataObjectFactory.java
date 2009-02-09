@@ -39,13 +39,10 @@
 
 package org.netbeans.modules.ide.ergonomics.fod;
 
-import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Frame;
-import java.awt.Rectangle;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -59,7 +56,6 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataNode;
@@ -67,17 +63,13 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.MultiDataObject.Entry;
 import org.openide.loaders.MultiFileLoader;
-import org.openide.loaders.UniFileLoader;
 import org.openide.nodes.Children;
-import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
-import org.openide.util.TaskListener;
 import org.openide.util.Utilities;
 
 /** Support for special dataobjects that can dynamically FoD objects.
@@ -108,6 +100,9 @@ public class FodDataObjectFactory implements DataObject.Factory {
     }
 
     public DataObject findDataObject(FileObject fo, Set<? super FileObject> recognized) throws IOException {
+        if (fo.isFolder()) {
+            return null;
+        }
         if (delegate == null) {
             Enumeration<DataLoader> en = DataLoaderPool.getDefault().allLoaders();
             while (en.hasMoreElements()) {
