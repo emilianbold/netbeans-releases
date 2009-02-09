@@ -39,18 +39,16 @@
 package org.netbeans.modules.dlight.memory;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
-import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration;
 import org.netbeans.modules.dlight.collector.stdout.CLIOParser;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
@@ -102,10 +100,17 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         IndicatorMetadata indicatorMetadata = new IndicatorMetadata(indicatorColumns);
         DataTableMetadata indicatorTableMetadata = new DataTableMetadata("truss", indicatorColumns);
 
-        String cmd = MemoryMonitorUtil.getMonitorCmd();
-        if (cmd != null) {
-            CLIODCConfiguration clioCollectorConfiguration = new CLIODCConfiguration(cmd, "-p @PID",
+        String monitor = MemoryMonitorUtil.getMonitorCmd();
+        String envVar = MemoryMonitorUtil.getEnvVar();
+        String agent = MemoryMonitorUtil.getAgentLib();
+        DLightLogger.instance.fine("Memory Indicator:\nmonitor:\n" + monitor + "\nagent:\n" + agent);
+        if (monitor != null && agent != null) {
+            CLIODCConfiguration clioCollectorConfiguration = new CLIODCConfiguration(monitor, "-p @PID",
                     new MAgentClioParser(totalColumn), Arrays.asList(indicatorTableMetadata));
+            Map<String, String> env = new LinkedHashMap<String, String>();
+            env.put(envVar, agent);
+            DLightLogger.instance.fine("SET " + envVar + "=" + agent);//NOI18N
+            clioCollectorConfiguration.setDLightTargetExecutionEnv(env);
             toolConfiguration.addIndicatorDataProviderConfiguration(clioCollectorConfiguration);
             MemoryIndicatorConfiguration indicator = new MemoryIndicatorConfiguration(indicatorMetadata, "total");
             indicator.setVisualizerConfiguration(getDetails(rawTableMetadata));
@@ -144,6 +149,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         }
 
         public DataRow process(String line) {
+            DLightLogger.instance.fine("MAgentClioParser: " + line); //NOI18N
             try {
                 long value = Integer.parseInt(line);
                 return new DataRow(colNames, Arrays.asList(new Long[] { value }));
