@@ -1052,6 +1052,7 @@ org.netbeans.modules.languages.LanguagesManager
 org.netbeans.modules.languages.dataobject.Install
 org.netbeans.modules.languages.dataobject.LanguagesDataLoader
 org.netbeans.modules.languages.dataobject.LanguagesDataObject
+org.netbeans.modules.languages.dataobject.LanguagesEditorKit$EditorSettings
 org.netbeans.modules.languages.parser.First
 org.netbeans.modules.languages.parser.First$F
 org.netbeans.modules.languages.parser.LLSyntaxAnalyser
@@ -1149,6 +1150,7 @@ org.netbeans.modules.openide.util.AWTBridge
 org.netbeans.modules.openide.util.NamedServicesProvider
 org.netbeans.modules.openide.util.PreferencesProvider
 org.netbeans.modules.openide.windows.GlobalActionContextImpl
+org.netbeans.modules.options.indentation.FormattingSettingsFromNbPreferences
 org.netbeans.modules.php.dbgp.breakpoints.BreakpointActionProvider
 org.netbeans.modules.php.project.PhpMimeResolver
 org.netbeans.modules.php.project.PhpMimeResolver$MutableInteger

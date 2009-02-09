@@ -41,9 +41,17 @@
 
 package org.netbeans.modules.cnd.modelimpl.trace;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.Reader;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -236,6 +244,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         boolean errTheSame = true;
         File goldenErrFile = null;
         File goldenErrFileCopy = null;
+        File diffErrorFile = null;
         // first of all check err, because if not failed (often) => dat diff will be created
         if (goldenErrFileName != null) {
             goldenErrFile = getGoldenFile(goldenErrFileName);
@@ -245,6 +254,8 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
                     // copy golden
                     goldenErrFileCopy = new File(workDir, goldenErrFileName + ".golden");
                     CndCoreTestUtils.copyToWorkDir(goldenErrFile, goldenErrFileCopy); // NOI18N
+                    diffErrorFile = new File(workDir, goldenErrFileName + ".diff");
+                   CndCoreTestUtils.diff(error, goldenErrFile, diffErrorFile);
                 }
             } else {
                 // golden err.file doesn't exist => err.file should be empty
@@ -255,24 +266,57 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         boolean outTheSame = true;
         File goldenDataFile = getGoldenFile(goldenDataFileName);
         File goldenDataFileCopy = null;
+        File diffOutputFile = null;
         if (CndCoreTestUtils.diff(output, goldenDataFile, null)) {
             outTheSame = false;
             // copy golden
             goldenDataFileCopy = new File(workDir, goldenDataFileName + ".golden");
             CndCoreTestUtils.copyToWorkDir(goldenDataFile, goldenDataFileCopy); // NOI18N
+            diffOutputFile = new File(workDir, goldenDataFileName + ".diff");
+            CndCoreTestUtils.diff(output, goldenDataFile, diffOutputFile);
         }
         if (outTheSame) {
             if (!errTheSame) {
                 if (goldenErrFile.exists()) {
-                    assertTrue("ERR Difference - check: diff " + error + " " + goldenErrFileCopy, false); // NOI18N
+                    StringBuilder buf = new StringBuilder("ERR Difference - check: diff " + error + " " + goldenErrFileCopy);
+                    showDiff(diffErrorFile, buf);
+                    assertTrue(buf.toString(), false); // NOI18N
                 } else {
                     assertTrue("ERR Difference - error should be emty: " + error, false); // NOI18N
                 }
             }
         } else if (errTheSame) {
-            assertTrue("OUTPUT Difference - check: diff " + output + " " + goldenDataFileCopy, outTheSame); // NOI18N
+            StringBuilder buf = new StringBuilder("OUTPUT Difference - check: diff " + output + " " + goldenDataFileCopy);
+            showDiff(diffOutputFile, buf);
+            assertTrue(buf.toString(), outTheSame); // NOI18N
         } else {
             assertTrue("OUTPUT and ERR are different, see content of folder " + workDir, false); // NOI18N
+        }
+    }
+
+    private void showDiff(File diffOutputFile, StringBuilder buf) {
+        if (diffOutputFile != null && diffOutputFile.exists()) {
+            int i = 0;
+            try {
+                BufferedReader in = new BufferedReader(new FileReader(diffOutputFile));
+                while (true) {
+                    String line = in.readLine();
+                    if (line == null) {
+                        break;
+                    }
+                    if (i > 50) {
+                        break;
+                    }
+                    if (i == 0) {
+                        buf.append("\nBeginning of diff:");
+                    }
+                    buf.append("\n\t" + line);
+                    i++;
+                }
+                in.close();
+            } catch (IOException ex) {
+                //
+            }
         }
     }
 }

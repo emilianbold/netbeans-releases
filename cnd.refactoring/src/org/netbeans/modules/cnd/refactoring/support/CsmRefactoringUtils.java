@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
@@ -76,7 +77,12 @@ import org.openide.util.Lookup;
  *
  * @author Vladimir Voskresensky
  */
-public class CsmRefactoringUtils {
+public final class CsmRefactoringUtils {
+    public static final boolean REFACTORING_EXTRA = CndUtils.getBoolean("cnd.refactoring.extra", false); // NOI18N
+    
+    private CsmRefactoringUtils() {
+    }
+
     public static boolean isElementInOpenProject(FileObject f) {
         if (f == null) {
             return false;
@@ -110,8 +116,6 @@ public class CsmRefactoringUtils {
         return referencedObject;
     }
 
-    private CsmRefactoringUtils() {}
-    
     public static CsmProject getContextCsmProject(CsmObject contextObject) {
         CsmFile contextFile = null;
         if (CsmKindUtilities.isOffsetable(contextObject)) {
@@ -255,7 +259,7 @@ public class CsmRefactoringUtils {
             } else if (CsmKindUtilities.isScopeElement(scope)) {
                 scopeElem = ((CsmScopeElement)scope);
             } else {
-                if (scope == null) System.err.println("scope element without scope " + scopeElem);
+                if (scope == null) { System.err.println("scope element without scope " + scopeElem); }
                 break;
             }
         }

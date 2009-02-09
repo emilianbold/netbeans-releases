@@ -110,7 +110,7 @@ public class CloneDestinationDirectoryWizardPanel implements WizardDescriptor.Pa
         Runnable awt = new Runnable() {
             public void run() {
                 if (e.getDocument() == component.nameField.getDocument () || e.getDocument() == component.directoryField.getDocument()) {
-                    if (component.isValid()) {
+                    if (component.isInputValid()) {
                         valid(component.getMessage());
                     } else {
                         invalid(component.getMessage());

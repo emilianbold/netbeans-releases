@@ -102,17 +102,11 @@ public class TestFileUtils {
      * Read the contents of a file as a single string.
      * @param a data file
      * @return its contents (in UTF-8 encoding)
+     * @deprecated Use file.asText()
      */
+    @Deprecated
     public static String readFile(FileObject file) throws IOException {
-        InputStream is = file.getInputStream();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] buf = new byte[4096];
-        int read;
-        while ((read = is.read(buf)) != -1) {
-            baos.write(buf, 0, read);
-        }
-        is.close();
-        return baos.toString("UTF-8");
+        return file.asText("UTF-8");
     }
 
     /**
@@ -121,7 +115,7 @@ public class TestFileUtils {
      * @param contents a substring expected to be found in it
      */
     public static void assertContains(FileObject file, String contents) throws IOException {
-        String text = readFile(file);
+        String text = file.asText("UTF-8");
         assertTrue("Found '" + contents + "' in '" + text + "'", text.contains(contents));
     }
 

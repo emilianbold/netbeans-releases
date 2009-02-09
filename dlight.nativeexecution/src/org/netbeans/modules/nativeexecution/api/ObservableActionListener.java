@@ -36,14 +36,14 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.nativeexecution.api;
 
 import javax.swing.Action;
 
 /**
- * The listener interface for receiving ObservableAction's start/completion
- * events. The class that is interested in processing an action event implements
+ * The listener interface for receiving <tt>actionStarted</tt>/
+ * <tt>actionCompleted</tt> events from an {@link ObservableAction}. The class
+ * that is interested in processing an action event implements
  * this interface, and the object created with that class is registered with an
  * <tt>ObservableAction</tt>, using it's <tt>addObservableActionListener</tt>
  * method. When the action starts, that object's <tt>actionStarted</tt> method
@@ -51,7 +51,6 @@ import javax.swing.Action;
  * 
  * @param <T> type of action's result.
  */
-
 public interface ObservableActionListener<T> {
 
     /**
@@ -63,7 +62,7 @@ public interface ObservableActionListener<T> {
     /**
      * Notifies listeners that action completed.
      * @param source the Action that has been completed.
-     * @param result result of the action.
+     * @param result the result of the action.
      */
     public void actionCompleted(Action source, T result);
 }

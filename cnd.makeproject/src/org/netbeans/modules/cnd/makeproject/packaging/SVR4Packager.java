@@ -163,7 +163,7 @@ public class SVR4Packager implements PackagerDescriptor {
         return new ScriptWriter();
     }
 
-    public class ScriptWriter implements ShellSciptWriter {
+    public static class ScriptWriter implements ShellSciptWriter {
 
         public void writeShellScript(BufferedWriter bw, MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) throws IOException {
             writePackagingScriptBodySVR4(bw, makeConfiguration);

@@ -43,7 +43,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
-import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
+import org.netbeans.modules.php.editor.model.ClassScope;
+import org.netbeans.modules.php.editor.model.InterfaceScope;
+import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.IncludeInfo;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
@@ -61,19 +64,19 @@ import org.netbeans.modules.php.editor.parser.astnodes.Program;
  * @author Radek Matous
  */
 class ModelBuilder {
-    private final FileScope fileScope;
+    private final FileScopeImpl fileScope;
     private Stack<ScopeImpl> currentScope;
     private Program program;
     private final Map<VariableContainerImpl, Map<String, VariableNameImpl>> vars;
 
-    ModelBuilder(FileScope fileScope, int offset) {
+    ModelBuilder(FileScopeImpl fileScope, int offset) {
         this.fileScope = fileScope;
         this.currentScope = new Stack<ScopeImpl>();
         this.vars = new HashMap<VariableContainerImpl, Map<String, VariableNameImpl>>();
         setCurrentScope(fileScope);
     }
 
-    ClassScopeImpl build(ClassDeclaration node, OccurenceBuilder occurencesBuilder) {
+    ClassScope build(ClassDeclaration node, OccurenceBuilder occurencesBuilder) {
         ClassScopeImpl classScope = ModelElementFactory.create(ClassDeclarationInfo.create(node), this);
         setCurrentScope(classScope);
         occurencesBuilder.prepare(node,classScope);
@@ -95,14 +98,14 @@ class ModelBuilder {
         }
     }
 
-    InterfaceScopeImpl build(InterfaceDeclaration node, OccurenceBuilder occurencesBuilder) {
+    InterfaceScope build(InterfaceDeclaration node, OccurenceBuilder occurencesBuilder) {
         InterfaceScopeImpl classScope = ModelElementFactory.create(InterfaceDeclarationInfo.create(node), this);
         setCurrentScope(classScope);
         occurencesBuilder.prepare(node,classScope);
         return classScope;
     }
 
-     MethodScopeImpl build(MethodDeclaration node, OccurenceBuilder occurencesBuilder) {
+     MethodScope build(MethodDeclaration node, OccurenceBuilder occurencesBuilder) {
         MethodScopeImpl methodScope = ModelElementFactory.create(MethodDeclarationInfo.create(node), this);
         setCurrentScope(methodScope);
         occurencesBuilder.prepare(node, methodScope);
@@ -118,7 +121,7 @@ class ModelBuilder {
     /**
      * @return the fileScope
      */
-    FileScope getFileScope() {
+    FileScopeImpl getFileScope() {
         return fileScope;
     }
 

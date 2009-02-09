@@ -209,6 +209,9 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         refresh.setToolTipText(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "RefreshActionTooltip")); // NOI18N
         refresh.setFocusable(false);
         refresh.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        refresh.setMaximumSize(new java.awt.Dimension(24, 24));
+        refresh.setMinimumSize(new java.awt.Dimension(24, 24));
+        refresh.setPreferredSize(new java.awt.Dimension(24, 24));
         refresh.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         refresh.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -221,9 +224,9 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         focusOn.setToolTipText(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "FocusOnActionTooltip")); // NOI18N
         focusOn.setFocusable(false);
         focusOn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        focusOn.setMaximumSize(new java.awt.Dimension(28, 28));
-        focusOn.setMinimumSize(new java.awt.Dimension(28, 28));
-        focusOn.setPreferredSize(new java.awt.Dimension(28, 28));
+        focusOn.setMaximumSize(new java.awt.Dimension(24, 24));
+        focusOn.setMinimumSize(new java.awt.Dimension(24, 24));
+        focusOn.setPreferredSize(new java.awt.Dimension(24, 24));
         focusOn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         focusOn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -231,12 +234,17 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
             }
         });
         jToolBar1.add(focusOn);
+
+        jSeparator1.setSeparatorSize(new java.awt.Dimension(0, 4));
         jToolBar1.add(jSeparator1);
 
         calls.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/callgraph/resources/who_is_called.png"))); // NOI18N
         calls.setToolTipText(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CallsActionTooltip")); // NOI18N
         calls.setFocusable(false);
         calls.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        calls.setMaximumSize(new java.awt.Dimension(24, 24));
+        calls.setMinimumSize(new java.awt.Dimension(24, 24));
+        calls.setPreferredSize(new java.awt.Dimension(24, 24));
         calls.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         calls.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -249,6 +257,9 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         callers.setToolTipText(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CallersActionTooltip")); // NOI18N
         callers.setFocusable(false);
         callers.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        callers.setMaximumSize(new java.awt.Dimension(24, 24));
+        callers.setMinimumSize(new java.awt.Dimension(24, 24));
+        callers.setPreferredSize(new java.awt.Dimension(24, 24));
         callers.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         callers.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

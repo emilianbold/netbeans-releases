@@ -115,10 +115,8 @@ public final class MIMEExtensions {
     }
     /**
      * assign extensions and default one to specified mime type
-     * @param mimeType mime type to change
-     * @param values extensions associated with mimeType
-     * @param defaultValue default extension for mimeType
-     * @return true if mime type information is updated successfully
+     * @param newExts extensions associated with mimeType
+     * @param defaultExt default extension for mimeType
      * @throws IllegalArgumentException if input list doesn't contain default extension
      */
     public void setExtensions(List<String> newExts, String defaultExt) {
@@ -211,7 +209,7 @@ public final class MIMEExtensions {
         private final FileChangeListener listener;
 
         private Manager() {
-            configFolder = FileUtil.getConfigFile("Services/CndExtensions"); // NOI18N
+            configFolder = FileUtil.getConfigFile("CND/Extensions"); // NOI18N
             if (configFolder != null) {
                 listener = new L();
                 configFolder.addFileChangeListener(FileUtil.weakFileChangeListener(listener, configFolder));

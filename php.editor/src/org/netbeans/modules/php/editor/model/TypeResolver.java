@@ -61,15 +61,15 @@ public final class TypeResolver {
         VariableScope varScope = modelVisitor.getNearestVariableScope(offset);
         while (varScope != null && varName != null) {
             //TODO: impl. doesn't count with more types
-            VariableName var = ModelUtils.getFirst(varScope.getVariables(varName));
+            VariableName var = ModelUtils.getFirst(ModelUtils.filter(varScope.getDeclaredVariables(), varName));
             if (var != null) {
                 //TODO: impl. doesn't count with more types
                 type = ModelUtils.getFirst(var.getTypes(offset));
             }
-            if (varScope instanceof ModelScope) {
+            if (varScope instanceof FileScope) {
                 varScope = null;
             } else {
-                varScope = ModelUtils.getModelScope(varScope);
+                varScope = ModelUtils.getFileScope(varScope);
             }
         }
         //TODO: impl. doesn't count with more types

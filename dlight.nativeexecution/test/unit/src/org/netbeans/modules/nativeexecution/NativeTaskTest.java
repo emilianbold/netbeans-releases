@@ -51,10 +51,13 @@ import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
-import org.netbeans.modules.nativeexecution.api.ExecutionControl;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.util.ExternalTerminal;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
+import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.NativeTaskConfig;
+import org.netbeans.modules.nativeexecution.util.ExternalTerminalProvider;
 import org.openide.util.Exceptions;
 
 /**
@@ -68,6 +71,8 @@ public class NativeTaskTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        String dirs = System.getProperty("netbeans.dirs", "");
+        System.setProperty("netbeans.dirs", "/export/home/ak119685/netbeans-src/main/dlight.suite/build/cluster:" + dirs);
     }
 
     @AfterClass
@@ -76,6 +81,7 @@ public class NativeTaskTest {
 
     @Before
     public void setUp() {
+
     }
 
     @After
@@ -90,14 +96,24 @@ public class NativeTaskTest {
     public void testRun() {
         System.out.println("run");
 
-        NativeTaskConfig ntc = new NativeTaskConfig(
-                new ExecutionEnvironment("ak119685", "localhost"), "/export/home/ak119685/welcome.sh")
-        .addEnvironmentVariable("MY_ENV_VAR2", "IT_WORKS")
-                .setWorkingDirectory("/tmp");
+        final ExecutionEnvironment ee =
+                new ExecutionEnvironment("ak119685", "localhost");
 
+        final String cmd = "/export/home/ak119685/welcome.sh";
 
+        Listener l = new Listener() {
 
-        NativeProcessBuilder npb = new NativeProcessBuilder(ntc, ExecutionControl.getDefault().useExternalTerminal(true));
+            public void processStateChanged(NativeProcess process, State oldState, State newState) {
+                if (newState == State.STARTING) {
+                    return;
+                }
+                System.out.println("Process " + process.toString() + " [" + process.getPID() + "] -> " + newState);
+            }
+        };
+
+        ExternalTerminal term = ExternalTerminalProvider.getTerminal("gnome-terminal").setTitle("My favorite title");
+        NativeProcessBuilder npb = new NativeProcessBuilder(ee, cmd).setArguments("1", "2").addEnvironmentVariable("MY_VAR2", "IT_WORKS").setWorkingDirectory("/tmp").useExternalTerminal(term).addNativeProcessListener(l);
+
         ExecutionDescriptor descr = new ExecutionDescriptor().outLineBased(true).outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
 
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
@@ -118,7 +134,7 @@ public class NativeTaskTest {
         }
 
         System.out.println("RESULT == " + res);
-        
+
 //
 //        final NativeTaskListener l = new NativeTaskListener() {
 //

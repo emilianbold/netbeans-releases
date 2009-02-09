@@ -59,7 +59,7 @@ final class RootNodeChildren extends Children.Array {
     /** */
     private volatile boolean filtered;
     /** */
-    private Collection<Report> reports = new HashSet<Report>();
+    Collection<Report> reports = new HashSet<Report>();
     /** */
     private volatile int passedSuites;
     /** */

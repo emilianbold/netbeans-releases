@@ -85,7 +85,7 @@ public final class DeploymentPlatformTarget extends DLightTarget {
     private static final class DeploymentPlatformTargetExecutionService implements
         DLightTargetExecutionService<DeploymentPlatformTarget> {
 
-        public void start(DeploymentPlatformTarget target) {
+            public void start(DeploymentPlatformTarget target, DLightTarget.ExecutionEnvVariablesProvider t) {
             target.start();
         }
 

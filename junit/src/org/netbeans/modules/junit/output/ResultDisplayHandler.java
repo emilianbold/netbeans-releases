@@ -246,20 +246,19 @@ final class ResultDisplayHandler {
 
     /**
      */
-    void displayReport(final Report report, final int[] statistics) {
+    void displayReport(final Report report) {
         
         /* Called from the AntLogger's thread */
         
         synchronized (this) {
             if (treePanel == null) {
                 reports.add(report);
-                this.statistics = statistics;
                 runningSuite = null;
                 return;
             }
         }
-        displayInDispatchThread("displayReport", new Object[] {report, statistics});               //NOI18N
-        
+        displayInDispatchThread("displayReport", new Object[] {report});               //NOI18N
+
         assert runningSuite == null;
     }
     
@@ -342,7 +341,6 @@ final class ResultDisplayHandler {
             final Class[] paramType = new Class[2];
             if (methodName.equals("displayReport")) {                   //NOI18N
                 paramType[0] = Report.class;
-                paramType[1] = int[].class;
             } else {
                 assert methodName.equals("displayMsg")                  //NOI18N
                        || methodName.equals("displayMsgSessionFinished")//NOI18N
@@ -377,21 +375,21 @@ final class ResultDisplayHandler {
             }
 
             this.treePanel = treePanel;
-        }
         
-        if (message != null) {
-            treePanel.displayMsg(message);
-            message = null;
-        }
-        if (!reports.isEmpty()) {
-            treePanel.displayReports(new ArrayList<Report>(reports), statistics);
-            reports.clear();
-        }
-        if (runningSuite != null) {
-            treePanel.displaySuiteRunning(runningSuite.equals(ANONYMOUS_SUITE)
-                                          ? runningSuite
-                                          : null);
-            runningSuite = null;
+            if (message != null) {
+                treePanel.displayMsg(message);
+                message = null;
+            }
+            if (!reports.isEmpty()) {
+                treePanel.displayReports(new ArrayList<Report>(reports));
+                reports.clear();
+            }
+            if (runningSuite != null) {
+                treePanel.displaySuiteRunning(runningSuite.equals(ANONYMOUS_SUITE)
+                                              ? runningSuite
+                                              : null);
+                runningSuite = null;
+            }
         }
         if (sessionFinished) {
             treePanel.displayMsgSessionFinished(message);

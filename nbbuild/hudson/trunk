@@ -108,6 +108,8 @@ echo SigTest: Incompatible Changes
 ant check-sigtests-release -Dfail.on.error=false
 echo SigTest: Incompatible Changes Done
 
+# Try to build all tests in the system to make sure they at least compile.
+ant -Dtest.fail.on.error=false build-test-dist
 ###############  Commit validation tests  ##########################
 TESTS_STARTED=`date`
 TESTS_RESULT_DIR="`pwd`/nbbuild/build/test/results"
@@ -117,20 +119,11 @@ JDK_TESTS=/opt/jdk1.5.0_14
 ant commit-validation
 # Init application server for tests
 sh -x `dirname $0`/initAppserver.sh
-# SOA (BPEL, XSLT) and XML UI validation tests
-ant -f soa.kit/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.results.dir=$TESTS_RESULT_DIR -Dcontinue.after.failing.tests=true test
-ant -f xml.schema/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.results.dir=$TESTS_RESULT_DIR -Dcontinue.after.failing.tests=true test
-# CND UI validation tests
-# Profiler UI validation tests
-# J2EE UI validation tests
 # Mobility UI validation tests
 ant -f mobility.project/build.xml -Dtest.config=uicommit -Dtest-qa-functional-sys-prop.wtk.dir=/hudson -Dbuild.test.qa-functional.results.dir=$TESTS_RESULT_DIR -Dcontinue.after.failing.tests=true test
-# UML UI validation tests
-# Ruby UI validation tests
-# Ruby UI, Profiler UI and CND UI validation tests
-ant -f ide.kit/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.results.dir=$TESTS_RESULT_DIR -Dcontinue.after.failing.tests=true -Dtest-qa-functional-sys-prop.com.sun.aas.installRoot=/hudson/workdir/jobs/trunk/testappsrv/glassfish test
-# PHP UI validation tests
-ant -f php.editor/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.results.dir=$TESTS_RESULT_DIR -Dcontinue.after.failing.tests=true test
+# J2EE validation tests
+ant -f j2ee.kit/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.results.dir=$TESTS_RESULT_DIR -Dcontinue.after.failing.tests=true -Dtest-qa-functional-sys-prop.com.sun.aas.installRoot=/hudson/workdir/jobs/trunk/testappsrv/glassfish test
+
 echo TESTS STARTED: $TESTS_STARTED
 echo TESTS FINISHED: `date`
 

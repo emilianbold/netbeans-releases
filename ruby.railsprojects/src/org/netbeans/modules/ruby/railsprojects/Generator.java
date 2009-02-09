@@ -53,6 +53,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
 
@@ -62,7 +63,7 @@ import org.openide.util.Utilities;
  * @author Tor Norbye
  */
 public class Generator {
-    public static Generator NONE = new Generator(null, null, 0);
+    public static Generator NONE = new Generator("NONE", null, 0); //NO18N
     public static Generator CONTROLLER = new Generator("controller", null, null, "Views", null, 1); // NOI18N
     public static Generator INTEGRATION_TEST = new Generator("integration_test", null, 1); // NOI18N
     public static Generator MAILER = new Generator("mailer", null, null, "Views", null, 1); // NOI18N
@@ -77,24 +78,31 @@ public class Generator {
     public static Generator WEB_SERVICE =
         new Generator("web_service", null, null, "ApiMethods", null, 1); // NOI18N
 
-    private String name;
-    private FileObject location;
-    private String nameKey;
-    private String arg1Key;
-    private String arg2Key;
-    private int argsRequired;
+    private final String name;
+    private final FileObject location;
+    private final String nameKey;
+    private final String arg1Key;
+    private final String arg2Key;
+    private final int argsRequired;
 
+    /**
+     * Creates a new Generator.
+     *
+     * @param name the name of the generator; must not be <code>null</code>.
+     * @param location the location of the generator; may be <code>null</code>.
+     * @param argsRequired the number of arguments required by the generator.
+     */
     public Generator(String name, FileObject location, int argsRequired) {
-        this.name = name;
-        this.location = location;
         // Unknown meaning of the first argument
-        this.nameKey = "Arguments";  // NOI18N
-        this.argsRequired = argsRequired;
+        this(name, location, "Arguments", null, null, argsRequired); //NOI18N
     }
 
     private Generator(String name, FileObject location, String nameKey, String arg1Key,
         String arg2Key, int argsRequired) {
-        this(name, location, argsRequired);
+        Parameters.notNull("name", name);
+        this.argsRequired = argsRequired;
+        this.name = name;
+        this.location = location;
         this.nameKey = nameKey;
         this.arg1Key = arg1Key;
         this.arg2Key = arg2Key;

@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -76,14 +77,14 @@ import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.NativeTaskConfig;
 import org.netbeans.modules.nativeexecution.api.ObservableAction;
 import org.netbeans.modules.nativeexecution.api.ObservableActionListener;
-import org.netbeans.modules.nativeexecution.api.support.ConnectionManager;
+import org.netbeans.modules.nativeexecution.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.util.HostInfo;
+import org.netbeans.modules.nativeexecution.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 import org.netbeans.modules.nativeexecution.util.SolarisPrivilegesSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
@@ -235,8 +236,15 @@ public final class DtraceDataCollector
             File script = new File(localScriptPath);
             scriptPath = "/tmp/" + script.getName(); // NOI18N
 
-            CommonTasksSupport.copyLocalFile(
-                    execEnv, localScriptPath, scriptPath, 777, null);
+            Future<Integer> copyResult = CommonTasksSupport.copyLocalFile(
+                        execEnv, localScriptPath, scriptPath, 777, null);
+            try {
+                copyResult.get();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 
@@ -293,7 +301,7 @@ public final class DtraceDataCollector
         boolean connected = true;
 
         try {
-            fileExists = HostInfo.fileExists(target.getExecEnv(), command);
+            fileExists = HostInfoUtils.fileExists(target.getExecEnv(), command);
         } catch (HostNotConnectedException ex) {
             connected = false;
         }
@@ -415,14 +423,13 @@ public final class DtraceDataCollector
             taskCommand += " " + extraParams; // NOI18N
         }
 
-        NativeTaskConfig config = new NativeTaskConfig(taskCommand);
+        NativeProcessBuilder npb = new NativeProcessBuilder(target.getExecEnv(), taskCommand);
 
         ExecutionDescriptor descr = new ExecutionDescriptor();
         descr = descr.outProcessorFactory(new DtraceInputProcessorFactory());
         descr = descr.errProcessorFactory(new StdErrRedirectorFactory());
         descr = descr.inputOutput(InputOutput.NULL);
 
-        NativeProcessBuilder npb = new NativeProcessBuilder(config, null);
         ExecutionService execService = ExecutionService.newService(
                 npb, descr, "DTraceDataCollector " + taskCommand); // NOI18N
 

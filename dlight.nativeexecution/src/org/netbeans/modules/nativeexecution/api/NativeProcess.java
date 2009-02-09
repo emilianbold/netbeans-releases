@@ -39,65 +39,52 @@
 package org.netbeans.modules.nativeexecution.api;
 
 import java.util.Collection;
-import org.netbeans.modules.nativeexecution.access.ExecutionControlAccessor;
-import org.netbeans.modules.nativeexecution.access.NativeProcessAccessor;
+import org.netbeans.modules.nativeexecution.api.impl.NativeProcessAccessor;
 import org.netbeans.modules.nativeexecution.support.Logger;
 
 /**
- * The {@link NativeProcessBuilder} creates a native process and returns an
- * instance of <tt>NativeProcess</tt> which is subclass of <tt>java.io.Process</tt>.
+ * A {@link NativeProcessBuilder} starts a system process and returns an
+ * instance of the {@link NativeProcess} which is a subclass of the
+ * {@link Process java.lang.Process}.
  * The differentiator is that this implementation can represent as local as well
- * as remote process, has information about process' PID and state
- * ({@link NativeProcess.State})
+ * as remote process, has information about process' PID and about it's
+ * {@link NativeProcess.State state}.
  */
 public abstract class NativeProcess extends Process {
 
     private final static java.util.logging.Logger log = Logger.getInstance();
-    private final ExecutionControl executionControl;
     private final Object stateLock = new Object();
     private Collection<Listener> listeners = null;
     private State state = State.INITIAL;
     private Integer exitValue = null;
-    private String id = "";
+    private String id = null;
+
 
     static {
         NativeProcessAccessor.setDefault(new NativeProcessAccessorImpl());
     }
 
     /**
-     * Constructor.
-     * @param executionControl 
-     */
-    protected NativeProcess(ExecutionControl executionControl) {
-        this.executionControl = executionControl;
-        if (executionControl != null) {
-            ExecutionControlAccessor ctrlInfo =
-                    ExecutionControlAccessor.getDefault();
-            listeners = ctrlInfo.getListeners(executionControl);
-        }
-    }
-
-    /**
      * Returns PID of underlaying system process.<br>
-     * <tt>java.lang.IllegalStateException</tt> is thrown if no PID was
-     * obtained.
      * @return PID of underlaying system process.
+     * @throws IllegalStateException if no PID was obtained prior to method
+     *         invokation.
      */
-    public abstract int getPID();
+    public abstract int getPID() throws IllegalStateException;
 
     /**
-     * To be implemented in successor. It must terminate underlaying system
-     * process on this method call.
+     * To be implemented by a successor.
+     * It must terminate the underlaying system process on this method call.
      */
     protected abstract void cancel();
 
     /**
-     * To be implemented by an accessor. This method should cause the current
-     * thread to wait until underlaying system process is done and return
+     * To be implemented by a successor. This method must cause the current
+     * thread to wait until the underlaying system process is done and return
      * it's exit code.
      *
      * @return exit code of underlaying system process.
-     * @exception  InterruptedException  if the current thread is
+     * @exception  InterruptedException if the current thread is
      *             {@link Thread#interrupt() interrupted} by another thread
      *             while it is waiting, then the wait is ended and an
      *             {@link InterruptedException} is thrown.
@@ -105,8 +92,8 @@ public abstract class NativeProcess extends Process {
     protected abstract int waitResult() throws InterruptedException;
 
     /**
-     * Returns the current state ({@link NativeProcess.State}) of the process.
-     * @return current state if the process.
+     * Returns the current {@link NativeProcess.State state} of the process.
+     * @return current state of the process.
      */
     public final State getState() {
         return state;
@@ -118,7 +105,7 @@ public abstract class NativeProcess extends Process {
      */
     @Override
     public String toString() {
-        return id;
+        return (id == null) ? super.toString() : id.trim();
     }
 
     private final void setState(State state) {
@@ -135,8 +122,8 @@ public abstract class NativeProcess extends Process {
     }
 
     /**
-     * Kills the underlaying system process. The system process represented by
-     * this <code>NativeProcess</code> object is forcibly terminated.
+     * Terminates the underlaying system process. The system process represented
+     * by this <code>NativeProcess</code> object is forcibly terminated.
      */
     @Override
     public final void destroy() {
@@ -151,10 +138,9 @@ public abstract class NativeProcess extends Process {
     /**
      * Causes the current thread to wait, if necessary, until the
      * process represented by this <code>NativeProcess</code> object has
-     * terminated. This method returns
-     * immediately if the subprocess has already terminated. If the
-     * subprocess has not yet terminated, the calling thread will be
-     * blocked until the subprocess exits.
+     * terminated. This method returns immediately if the subprocess has already
+     * terminated. If the subprocess has not yet terminated, the calling thread
+     * will be blocked until the subprocess exits.
      *
      * @return     the exit value of the process. By convention,
      *             <code>0</code> indicates normal termination.
@@ -168,19 +154,20 @@ public abstract class NativeProcess extends Process {
         setExitValue(waitResult());
 
         if (exitValue == null) {
-            throw new InterruptedException("Process has been cancelled.");
+            throw new InterruptedException(
+                    "Process has been cancelled."); // NOI18N
         }
 
         return exitValue.intValue();
     }
 
     /**
-     * Returns the exit value for the underlaying system process.
+     * Returns the exit code for the underlaying system process.
      *
-     * @return  the exit value of the system process represented by this
+     * @return  the exit code of the system process represented by this
      *          <code>NativeProcess</code> object. By convention, the value
      *          <code>0</code> indicates normal termination.
-     * @exception  IllegalThreadStateException  if the system process
+     * @exception  IllegalThreadStateException if the system process
      *             represented by this <code>Process</code> object has not
      *             yet terminated.
      */
@@ -216,7 +203,7 @@ public abstract class NativeProcess extends Process {
 
     }
 
-    private final void setExitValue(int exitValue) {
+    private void setExitValue(int exitValue) {
         if (this.exitValue != null) {
             return;
         }
@@ -230,52 +217,63 @@ public abstract class NativeProcess extends Process {
     }
 
     /**
-     *
+     * Enumerates possible states of the {@link NativeProcess}.
      */
     public static enum State {
 
         /**
-         * Task is in Initial state
+         * Native process is in an Initial state. This means that it has not been
+         * started yet.
          */
         INITIAL,
         /**
-         * Task is starting. This means that it is submitted, but no PID is recieved
-         * yet
+         * Native process is starting. This means that it has been submitted,
+         * but no PID is recieved so far.
          */
         STARTING,
         /**
-         * Task runs
+         * Native process runs. This means that process successfully started and
+         * it's PID is already known.
          */
         RUNNING,
         /**
-         * Task finished
+         * Native process exited.
          */
         FINISHED,
         /**
-         * Task failed due to some exception
+         * Native process submission failed due to some exception.
          */
         ERROR,
         /**
-         * Task cancelled
+         * Native process forcibly terminated.
          */
         CANCELLED
     }
 
     /**
-     *
+     * The listener interface for recieving state change events from a
+     * {@link NativeProcess}.
+     * <p>
+     * One can implement <tt>NativeProcess.Listener</tt> and subscribe it to the
+     * {@link NativeProcess} to recieve <tt>processStateChanged</tt> events.
+     * <br>
+     * See {@link NativeProcessBuilder#addNativeProcessListener(org.netbeans.modules.nativeexecution.api.NativeProcess.Listener) NativeProcessBuilder.addNativeProcessListener()}
      */
     public static interface Listener {
 
         /**
-         *
-         * @param process
-         * @param oldState
-         * @param newState
+         * A notification about process' state change. The notification is send
+         * to every registered listener on every state change.
+         * @param process {@link NativeProcess} which state changed.
+         * @param oldState previous state of the process.
+         * @param newState new state of the process.
+         * @see State
          */
-        public void processStateChanged(NativeProcess process, State oldState, State newState);
+        public void processStateChanged(
+                NativeProcess process, State oldState, State newState);
     }
 
-    private static class NativeProcessAccessorImpl
+    private final static class NativeProcessAccessorImpl
             extends NativeProcessAccessor {
 
         @Override
@@ -287,6 +285,11 @@ public abstract class NativeProcess extends Process {
         public void setState(NativeProcess process, State state) {
             process.setState(state);
         }
-    }
 
+        @Override
+        public void setListeners(NativeProcess process,
+                Collection<Listener> listeners) {
+            process.listeners = listeners;
+        }
+    }
 }

@@ -40,18 +40,19 @@ package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.Map;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 
 /**
  * @author Radek Matous
  */
 class FieldAssignmentImpl extends AssignmentImpl<FieldElementImpl> {
-    FieldAssignmentImpl(FieldElementImpl field, ScopeImpl scope, OffsetRange scopeRange,OffsetRange nameRange, Assignment assignment,
+    FieldAssignmentImpl(FieldElementImpl field, Scope scope, OffsetRange scopeRange,OffsetRange nameRange, Assignment assignment,
             Map<String, AssignmentImpl> allAssignments) {
         super(field, scope, scopeRange, nameRange, assignment, allAssignments);
     }
 
-    FieldAssignmentImpl(FieldElementImpl field, ScopeImpl scope, OffsetRange scopeRange, OffsetRange nameRange, String typeName) {
+    FieldAssignmentImpl(FieldElementImpl field, Scope scope, OffsetRange scopeRange, OffsetRange nameRange, String typeName) {
         super(field, scope, scopeRange, nameRange, typeName);
     }
 }

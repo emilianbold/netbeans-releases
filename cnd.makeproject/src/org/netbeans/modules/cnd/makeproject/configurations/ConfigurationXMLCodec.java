@@ -760,9 +760,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (currentQmakeConfiguration != null) {
                 currentQmakeConfiguration.getTarget().setValue(getString(currentText));
             }
-        } else if (element.equals(QT_LIB_VERSION_ELEMENT)) {
+        } else if (element.equals(QT_VERSION_ELEMENT)) {
             if (currentQmakeConfiguration != null) {
-                currentQmakeConfiguration.getLibVersion().setValue(getString(currentText));
+                currentQmakeConfiguration.getVersion().setValue(getString(currentText));
             }
         } else if (element.equals(QT_MODULES_ELEMENT)) {
             if (currentQmakeConfiguration != null) {

@@ -43,7 +43,9 @@ import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -51,14 +53,14 @@ import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.dlight.api.execution.SubstitutableTarget;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.nativeexecution.api.ExecutionControl;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.NativeTaskConfig;
+import org.netbeans.modules.nativeexecution.util.ExternalTerminalProvider;
 import org.openide.util.RequestProcessor;
-
+import org.netbeans.modules.dlight.util.Util;
+import org.netbeans.modules.nativeexecution.util.ExternalTerminal;
 /**
  * Wrapper of {@link @org-netbeans-modules-nativexecution@org/netbeans/modules/nativexecution/api/NativeTask.html}
  *
@@ -72,6 +74,9 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     private String cmd;
     private String templateCMD;
     private String[] args;
+    private Map<String, String> envs;
+    private String workingDirectory;
+    private ExternalTerminal externalTerminal;
     private String[] templateArgs;
     private String extendedCMD;
     private String[] extendedCMDArgs;
@@ -82,6 +87,10 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         super(new NativeExecutableTargetExecutionService());
         this.execEnv = configuration.getExecutionEvnitoment();
         this.cmd = configuration.getCmd();
+        this.workingDirectory = configuration.getWorkingDirectory();
+        this.envs = new HashMap<String, String>();
+        this.envs.putAll(configuration.getEnv());
+        this.externalTerminal = configuration.getExternalTerminal();
         this.templateCMD = this.cmd;
         this.args = configuration.getArgs();
         if (this.args != null) {
@@ -107,7 +116,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
 
     public void processStateChanged(NativeProcess process, NativeProcess.State oldState, NativeProcess.State newState) {
         final DLightTarget.State prevState = state;
-        
+
         switch (newState) {
             case INITIAL:
                 state = State.INIT;
@@ -163,17 +172,34 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         return execEnv;
     }
 
-    private void start() {
-        NativeTaskConfig task = new NativeTaskConfig(execEnv, cmd).setArguments(args);
-        ExecutionDescriptor descr = new ExecutionDescriptor().controllable(true).frontWindow(true);
-        ExecutionControl ctrl = ExecutionControl.getDefault().addNativeProcessListener(NativeExecutableTarget.this);
-        NativeProcessBuilder processBuilder = new NativeProcessBuilder(task, ctrl);
+    private void start(ExecutionEnvVariablesProvider executionEnvProvider) {
+        NativeProcessBuilder pb = new NativeProcessBuilder(execEnv, cmd);
+        pb = pb.setArguments(args);
+        pb = pb.addNativeProcessListener(NativeExecutableTarget.this);
+        pb = pb.setWorkingDirectory(workingDirectory);
+        pb = pb.addEnvironmentVariables(envs);
+        pb = pb.useExternalTerminal(externalTerminal);
+        if (executionEnvProvider != null && executionEnvProvider.getExecutionEnv() != null){
+            pb = pb.addEnvironmentVariables(executionEnvProvider.getExecutionEnv());
+        }
+        ExecutionDescriptor descr = new ExecutionDescriptor();
+        descr = descr.controllable(true).frontWindow(true);
+
+        boolean useTerm = Util.getBoolean("dlight.use.terminal", true);
+
+        if (useTerm) {
+            pb = pb.useExternalTerminal(
+                    ExternalTerminalProvider.getTerminal("gnome-terminal"));
+            descr.inputVisible(false);
+        }
 
         final ExecutionService es = ExecutionService.newService(
-                processBuilder,
+                pb,
                 descr,
                 toString());
 
+        // Because of possible prompts for passwords we need to start
+        // this in non-AWT thread...
         Runnable r = new Runnable() {
 
             public void run() {
@@ -198,8 +224,8 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     private static final class NativeExecutableTargetExecutionService
             implements DLightTargetExecutionService<NativeExecutableTarget> {
 
-        public void start(NativeExecutableTarget target) {
-            target.start();
+        public void start(NativeExecutableTarget target, ExecutionEnvVariablesProvider executionEnvProvider) {
+            target.start(executionEnvProvider);
         }
 
         public void terminate(NativeExecutableTarget target) {

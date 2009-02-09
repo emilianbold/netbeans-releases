@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
@@ -73,11 +74,10 @@ import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.NativeTaskConfig;
 import org.netbeans.modules.nativeexecution.api.ObservableAction;
 import org.netbeans.modules.nativeexecution.api.ObservableActionListener;
-import org.netbeans.modules.nativeexecution.api.support.ConnectionManager;
-import org.netbeans.modules.nativeexecution.util.HostInfo;
+import org.netbeans.modules.nativeexecution.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
@@ -90,11 +90,12 @@ import org.openide.windows.InputOutput;
  */
 public final class CLIODataCollector
         extends IndicatorDataProvider<CLIODCConfiguration>
-        implements DataCollector<CLIODCConfiguration> {
+        implements DataCollector<CLIODCConfiguration>, DLightTarget.ExecutionEnvVariablesProvider {
 
     private static final Logger log =
             DLightLogger.getLogger(CLIODataCollector.class);
     private String command;
+    private final Map<String, String> envs;
     private String argsTemplate;
     private DataStorage storage;
     private Future<Integer> collectorTask;
@@ -113,13 +114,14 @@ public final class CLIODataCollector
      * @param dataTablesMetadata describes the tables to store parsed data in
      */
     CLIODataCollector(CLIODCConfiguration configuration) {
-        CLIODCConfigurationAccessor access =
+        CLIODCConfigurationAccessor accessor =
                 CLIODCConfigurationAccessor.getDefault();
 
-        this.command = access.getCommand(configuration);
-        this.argsTemplate = access.getArguments(configuration);
-        this.parser = access.getParser(configuration);
-        this.dataTablesMetadata = access.getDataTablesMetadata(configuration);
+        this.command = accessor.getCommand(configuration);
+        this.argsTemplate = accessor.getArguments(configuration);
+        this.parser = accessor.getParser(configuration);
+        this.dataTablesMetadata = accessor.getDataTablesMetadata(configuration);
+        this.envs = accessor.getDLightTargetExecutionEnv(configuration);
     }
 
     /**
@@ -167,15 +169,14 @@ public final class CLIODataCollector
             cmd += argsTemplate;
         }
 
-        NativeTaskConfig ntc = new NativeTaskConfig(target.getExecEnv(), cmd);
-        
+        NativeProcessBuilder npb =
+                new NativeProcessBuilder(target.getExecEnv(), cmd);
+
         ExecutionDescriptor descriptor =
                 new ExecutionDescriptor().inputOutput(
                 InputOutput.NULL).outProcessorFactory(
                 new CLIOInputProcessorFactory());
 
-        NativeProcessBuilder npb = new NativeProcessBuilder(ntc, null);
-        
         ExecutionService execService = ExecutionService.newService(
                 npb, descriptor, "CLIODataCollector " + cmd); // NOI18N
 
@@ -282,7 +283,7 @@ public final class CLIODataCollector
         boolean connected = true;
 
         try {
-            fileExists = HostInfo.fileExists(target.getExecEnv(), command);
+            fileExists = HostInfoUtils.fileExists(target.getExecEnv(), command);
         } catch (HostNotConnectedException ex) {
             connected = false;
         }
@@ -342,6 +343,10 @@ public final class CLIODataCollector
                 targetFinished(source);
                 return;
         }
+    }
+
+    public Map<String, String> getExecutionEnv() {
+        return envs;
     }
 
     private class CLIOInputProcessorFactory implements InputProcessorFactory {

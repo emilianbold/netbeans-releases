@@ -107,7 +107,7 @@ public class AntBasedProjectFactorySingletonTest extends NbTestCase {
     }
 
     public void testDoNotLoadInvalidProject() throws Exception {
-        String content = TestFileUtils.readFile(projdir.getFileObject("nbproject/project.xml"));
+        String content = projdir.getFileObject("nbproject/project.xml").asText("UTF-8");
         TestFileUtils.writeFile(projdir, "nbproject/project.xml", content.replace("</project>", "<bogus/>\n</project>"));
         try {
             ProjectManager.getDefault().findProject(projdir);

@@ -85,6 +85,7 @@ public class EvaluationContext {
     private StackFrame frame;
     private int frameDepth;
     private ThreadReference thread;
+    private ObjectReference contextVariable;
     private List<String> sourceImports;
     private List<String> staticImports;
     private boolean canInvokeMethods;
@@ -107,6 +108,7 @@ public class EvaluationContext {
      * @param staticImports list of static imports
      */
     public EvaluationContext(ThreadReference thread, StackFrame frame, int frameDepth,
+                             ObjectReference contextVariable,
                              List<String> imports, List<String> staticImports,
                              boolean canInvokeMethods, Runnable methodInvokePreproc,
                              JPDADebuggerImpl debugger) {
@@ -117,6 +119,7 @@ public class EvaluationContext {
         this.thread = thread;
         this.frame = frame;
         this.frameDepth = frameDepth;
+        this.contextVariable = contextVariable;
         this.sourceImports = imports;
         this.staticImports = staticImports;
         this.canInvokeMethods = canInvokeMethods;
@@ -136,6 +139,14 @@ public class EvaluationContext {
 
     public StackFrame getFrame() {
         return frame;
+    }
+
+    public ObjectReference getContextObject() {
+        if (contextVariable != null) {
+            return contextVariable;
+        } else {
+            return frame.thisObject();
+        }
     }
 
     public boolean canInvokeMethods() {

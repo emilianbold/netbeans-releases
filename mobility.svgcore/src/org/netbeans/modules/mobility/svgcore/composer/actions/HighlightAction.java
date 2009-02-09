@@ -66,6 +66,7 @@ public final class HighlightAction extends AbstractComposerAction {
         m_highlighted.repaint(SVGObjectOutline.SELECTOR_OVERLAP);
     }
 
+    @Override
     public boolean consumeEvent(AWTEvent evt, boolean isOutsideEvent) {
         SceneManager sceneMgr = m_factory.getSceneManager();
         assert sceneMgr.containsAction(HighlightAction.class);
@@ -86,6 +87,7 @@ public final class HighlightAction extends AbstractComposerAction {
         return false;
     }
 
+    @Override
     public void paint(Graphics g, int x, int y, boolean isReadOnly) {
         if (!m_highlighted.isDeleted()) {
             if ( !m_isCompleted && getScreenManager().getHighlightObject()) {
@@ -96,6 +98,7 @@ public final class HighlightAction extends AbstractComposerAction {
         }
     }
     
+    @Override
     public void actionCompleted() {
         super.actionCompleted();
         getScreenManager().getAnimatorView().setToolTipText("");
@@ -104,7 +107,6 @@ public final class HighlightAction extends AbstractComposerAction {
     
     private String getTooltipText() {
         String text       = "";  //NOI18N
-        String selectedId = m_highlighted.getElementId();
         
         if (getScreenManager().getShowTooltip()) {
             SVGLocatableElement elem = m_highlighted.getSVGElement();
@@ -123,9 +125,9 @@ public final class HighlightAction extends AbstractComposerAction {
             if (id != null){
                 sb.append(NbBundle.getMessage(SVGViewTopComponent.class, "LBL_Id", id)); //NOI18N
                 sb.append("<br>"); //NOI18N
+                sb.append(getDataObject().getModel().describeElement(id /*, false, true, "<br>"*/)); //NOI18N
             }
             
-            sb.append(getDataObject().getModel().describeElement(selectedId /*, false, true, "<br>"*/)); //NOI18N
             sb.append("</html>"); //NOI18N
             return sb.toString();
         }
