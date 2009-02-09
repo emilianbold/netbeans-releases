@@ -119,7 +119,7 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         try {
             return properties.getProperty(JOB_LAST_BUILD, Integer.class);
         } catch (NullPointerException e) {
-            return 0;
+            return -1;
         }
     }
     
@@ -127,7 +127,7 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         try {
             return properties.getProperty(JOB_LAST_STABLE_BUILD, Integer.class);
         } catch (NullPointerException e) {
-            return 0;
+            return -1;
         }
     }
     
@@ -135,7 +135,7 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         try {
             return properties.getProperty(JOB_LAST_SUCCESSFUL_BUILD, Integer.class);
         } catch (NullPointerException e) {
-            return 0;
+            return -1;
         }
     }
     
@@ -143,7 +143,7 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         try {
             return properties.getProperty(JOB_LAST_FAILED_BUILD, Integer.class);
         } catch (NullPointerException e) {
-            return 0;
+            return -1;
         }
     }
     
@@ -151,7 +151,7 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         try {
             return properties.getProperty(JOB_LAST_COMPLETED_BUILD, Integer.class);
         } catch (NullPointerException e) {
-            return 0;
+            return -1;
         }
     }
 

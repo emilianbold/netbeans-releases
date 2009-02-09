@@ -77,16 +77,16 @@ public class HudsonJobPermalinksPanel extends javax.swing.JPanel {
                 "LBL_LastStableBuild", job.getLastStableBuild()));
         
         // Set labels
-        lastBuildLabel.setEnabled(job.getLastBuild() > 0);
-        lastFailedBuildLabel.setEnabled(job.getLastFailedBuild() > 0);
-        lastSuccessfulBuildLabel.setEnabled(job.getLastSuccessfulBuild() > 0);
-        lastStableBuildLabel.setEnabled(job.getLastStableBuild() > 0);
+        lastBuildLabel.setEnabled(job.getLastBuild() >= 0);
+        lastFailedBuildLabel.setEnabled(job.getLastFailedBuild() >= 0);
+        lastSuccessfulBuildLabel.setEnabled(job.getLastSuccessfulBuild() >= 0);
+        lastStableBuildLabel.setEnabled(job.getLastStableBuild() >= 0);
         
         // Set buttons
-        lastBuildButton.setEnabled(job.getLastBuild() > 0);
-        lastFailedBuildButton.setEnabled(job.getLastFailedBuild() > 0);
-        lastSuccessfulBuildButton.setEnabled(job.getLastSuccessfulBuild() > 0);
-        lastStableBuildButton.setEnabled(job.getLastStableBuild() > 0);
+        lastBuildButton.setEnabled(job.getLastBuild() >= 0);
+        lastFailedBuildButton.setEnabled(job.getLastFailedBuild() >= 0);
+        lastSuccessfulBuildButton.setEnabled(job.getLastSuccessfulBuild() >= 0);
+        lastStableBuildButton.setEnabled(job.getLastStableBuild() >= 0);
         
         // Show last build
         actionProvider.showBuild(job, job.getLastBuild());
