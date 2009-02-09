@@ -89,8 +89,8 @@ public class FakeDropShadowBorder implements Border {
         
         b = getImage(downLeft);
         int hoff = b.getHeight();
-        int xoff = b.getWidth();
-//        gg.drawImage( b, x, y + h - b.getHeight(), null);
+        int xoff = b.getWidth()-LEFT;
+        gg.drawImage( b, x, y + h - b.getHeight(), null);
         
         b = getImage (leftEdge);
         gg.drawImage(b, x, y+TOP, b.getWidth(), h-TOP-BOTTOM, null);
@@ -99,7 +99,7 @@ public class FakeDropShadowBorder implements Border {
         gg.drawImage(b, x + w - (b.getWidth()), y+TOP, b.getWidth(), h-TOP-BOTTOM, null);
         
         b = getImage (bottom);
-        gg.drawImage(b, x+LEFT, y + h - b.getHeight(), x+w-LEFT-RIGHT, b.getHeight(), null);
+        gg.drawImage(b, x+LEFT+xoff, y + h - b.getHeight(), x+w-LEFT-RIGHT-xoff, b.getHeight(), null);
         
         b = getImage (top);
         gg.drawImage(b, x+LEFT, y, x+w, b.getHeight()-LEFT-RIGHT, null);
