@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,33 +34,28 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.dlight.perfan.util;
 
-import java.util.Arrays;
-import org.netbeans.modules.dlight.util.ExecUtil;
-import org.openide.modules.ModuleInstall;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
- * Manages a module's lifecycle. Remember that an installer is optional and
- * often not needed at all.
+ *
+ * @author ak119685
  */
-public class Installer extends ModuleInstall {
+public final class SunStudioLocator {
 
-  @Override
-  public void restored() {
-    ExecUtil.setExecutionPermissions(Arrays.asList(
-            getBinDir() + "idbe", // NOI18N
-            getBinDir() + "er_print", // NOI18N()
-            getBinDir() + "perftools_validate", // NOI18N
-            getBinDir() + "perftools_whichami", // NOI18N
-            getBinDir() + "dbx", // NOI18N
-            getBinDir() + "collect")); // NOI18N
-  }
-  
-  private String getBinDir() {
-    // TODO: result depends on platform
-    return "perfan/intel-S2/prod/bin/"; // NOI18N
-  }
+    private static final SunStudioLocator DEFAULT = new SunStudioLocator();
+
+    private SunStudioLocator() {
+    }
+    
+    public static SunStudioLocator getDefault() {
+        return DEFAULT;
+    }
+
+    public String getSproHome(ExecutionEnvironment execEnv) {
+        return "/shared/dp/sstrunk/intel-S2";
+    }
 }

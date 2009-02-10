@@ -49,6 +49,8 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.ValidationListener;
@@ -64,9 +66,11 @@ import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.ObservableAction;
 import org.netbeans.modules.nativeexecution.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.util.HostInfoUtils;
+import org.openide.windows.InputOutput;
 
 /**
  * This class will represent SunStudio Performance Analyzer collect
@@ -74,31 +78,27 @@ import org.netbeans.modules.nativeexecution.util.HostInfoUtils;
  */
 public class SunStudioDataCollector implements DataCollector<SunStudioDCConfiguration> {
 
-    private static final String ID = "PerfanDataStorage";
-    private List<ValidationListener> validationListeners = Collections.synchronizedList(new ArrayList<ValidationListener>());
-    private ValidationStatus validationStatus = ValidationStatus.initialStatus();
-    private static final List<DataStorageType> supportedStorageTypes = Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(ID));
     public static final Column TOP_FUNCTION_INFO = new Column("currentFunction", String.class);
-    private static DataTableMetadata dataTableMetadata = new DataTableMetadata("idbe", Arrays.asList(TOP_FUNCTION_INFO));
+    private static final String ID = "PerfanDataStorage";
+    private static final List<DataStorageType> supportedStorageTypes = Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(ID));
+    private static final DataTableMetadata dataTableMetadata = new DataTableMetadata("idbe", Arrays.asList(TOP_FUNCTION_INFO));
     private static final Logger log = DLightLogger.getLogger(SunStudioDataCollector.class);
-//    private NativeTask collectorTask;
-    private String experimentDir;
-    private String execFileName;
-    private PerfanDataStorage storage;
-//  private IndicatorsNotifyerTask indicatorsNotifyerTask;
-    private List<CollectedInfo> collectedInfoList;
-    private DLightTarget target = null;
-
-    public SunStudioDataCollector() {
-    }
+    private final List<ValidationListener> validationListeners;
+    private final List<CollectedInfo> collectedInfoList;
+    private ValidationStatus validationStatus = ValidationStatus.initialStatus();
+//    private IndicatorsNotifyerTask indicatorsNotifyerTask;
+    private PerfanDataStorage storage = null;
+    private String experimentDir = null;
+    private String collect = null;
+    private Future<Integer> collectTask = null;
+    private ExecutionEnvironment execEnv = null;
 
     SunStudioDataCollector(List<CollectedInfo> collectedInfoList) {
-        //TODO: Uncomment
-     //   File collectFile = InstalledFileLocator.getDefault().locate("perfan/intel-S2/prod/bin/collect", null, false);
-      // execFileName = collectFile.getAbsolutePath();
-        // experimentDir either local or remote! This will be known when target is known
-        experimentDir = "/tmp/perfanDataStorage.er"; // TODO:
-        this.collectedInfoList = collectedInfoList;
+        this.collectedInfoList = Collections.synchronizedList(
+                new ArrayList<CollectedInfo>(collectedInfoList));
+
+        this.validationListeners = Collections.synchronizedList(
+                new ArrayList<ValidationListener>());
 
     }
 
@@ -168,7 +168,7 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
         if (newStatus.equals(oldStatus)) {
             return;
         }
-        
+
         for (ValidationListener validationListener : validationListeners) {
             validationListener.validationStateChanged(this, oldStatus, newStatus);
         }
@@ -183,10 +183,6 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
     }
 
     void addCollectedInfo(List<CollectedInfo> collectedInfo) {
-        if (this.collectedInfoList == null) {
-            collectedInfoList = collectedInfo;
-            return;
-        }
         //should add if do not have yet
         for (CollectedInfo c : collectedInfo) {
             if (!collectedInfoList.contains(c)) {
@@ -222,32 +218,38 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
     }
 
     public ExecutionEnvironment getExecEnv() {
-        return null;
-//        return isAttachable() ? collectorTask.getExecutionEnvironment() : target.getExecEnv();
+        return execEnv;
     }
 
     private void targetStarted(DLightTarget target) {
-        if (!isAttachable()) {
-            this.target = target;
-            return;
-        }
 
-        AttachableTarget at = (AttachableTarget) target;
-        //resetIndicators();
-        // Only now we know the PID of the target.
-        // Start collector task
-        // TODO: collector failures handle
-//        collectorTask = new NativeTask(target.getExecEnv(), execFileName, new String[]{"-P", Integer.toString(at.getPID()), "-o", experimentDir});
-//        collectorTask.submit(true, false);
+        if (isAttachable()) {
+            // i.e. should start separate process
+            execEnv = target.getExecEnv();
+            AttachableTarget at = (AttachableTarget) target;
+            NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, collect);
+            npb = npb.setArguments("-P", "" + at.getPID(), "-o", experimentDir);
+            ExecutionDescriptor descr = new ExecutionDescriptor().inputOutput(InputOutput.NULL);
+            ExecutionService service = ExecutionService.newService(npb, descr, "collect");
+            collectTask = service.run();
+        } else {
+            execEnv = target.getExecEnv();
+        }
     }
 
     private void targetFinished(DLightTarget target) {
-        log.fine("Stopping PerfanDataCollector: " + execFileName);
-        if (!isAttachable()) {
-//      this.target = null;
+        log.fine("Stopping PerfanDataCollector: " + collect);
+
+        if (isAttachable()) {
+            // i.e. separate process
+            collectTask.cancel(true);
         } else {
-//            collectorTask.cancel(true);
+            // i.e. this means that exactly this collector finished
+            // do nothing
         }
+
+        collectTask = null;
+        execEnv = null;
 
 //    if (indicatorsNotifyerTask != null) {
 //      DLightGlobalTimer.getInstance().unregisterTimerTask(indicatorsNotifyerTask);
@@ -270,7 +272,7 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
     }
 
     public String getCmd() {
-        return execFileName;
+        return collect;
     }
 
     public String[] getArgs() {

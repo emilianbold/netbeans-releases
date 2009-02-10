@@ -54,8 +54,6 @@ import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.modules.dlight.perfan.ipc.IPCException;
 import org.netbeans.modules.dlight.util.ExecUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
-import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.openide.util.Exceptions;
 
@@ -626,10 +624,6 @@ public class DbeConnector implements ChangeListener {
 //    System.out.println("XXXXXXXXXX Idbe Error - Need restarting!");
 //    reconnect();
 //  }
-    public void processStateChanged(NativeProcess process, State oldState, State newState) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     public void stateChanged(ChangeEvent e) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
