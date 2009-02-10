@@ -947,7 +947,7 @@ public class Folder implements FileChangeListener {
             Folder top = ((MakeConfigurationDescriptor) getConfigurationDescriptor()).addSourceFilesFromFolder(getThis(), file, true);
             getConfigurationDescriptor().setModified();
             // Copy all configurations
-            // ????????????
+            // ???????????? // FIXUP
             // Remove old folder
             removeFolderAction(folder);
             return;

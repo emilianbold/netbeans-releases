@@ -101,7 +101,6 @@ import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.RenameAction;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -1125,9 +1124,28 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 // Drag&Drop, Cut&Paste
                 if (toFolder.getProject() == viewItemNode.getFolder().getProject()) {
                     // Move within same project
-                    viewItemNode.getFolder().removeItem(item);
-                    toFolder.addItem(item);
-                    copyItemConfigurations(item.getItemConfigurations(), oldConfigurations);
+                    if (toFolder.isDiskFolder()) {
+                        FileObject itemFO = item.getFileObject();
+                        String toFolderPath = IpeUtils.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
+                        FileObject toFolderFO = FileUtil.toFileObject(new File(toFolderPath));
+                        String newName = IpeUtils.createUniqueFileName(toFolderPath, itemFO.getName(), itemFO.getExt());
+                        FileObject movedFileFO = FileUtil.moveFile(itemFO, toFolderFO, newName);
+
+                        File movedFileFile = FileUtil.toFile(movedFileFO);
+                        String itemPath = movedFileFile.getPath();
+                        itemPath = FilePathAdaptor.mapToRemote(itemPath);
+                        itemPath = FilePathAdaptor.normalize(itemPath);
+                        itemPath = IpeUtils.toRelativePath(toFolder.getConfigurationDescriptor().getBaseDir(), itemPath);
+                        Item movedItem = toFolder.findItemByPath(itemPath);
+                        if (movedItem != null) {
+                            copyItemConfigurations(movedItem.getItemConfigurations(), oldConfigurations);
+                        }
+                    }
+                    else {
+                        viewItemNode.getFolder().removeItem(item);
+                        toFolder.addItem(item);
+                        copyItemConfigurations(item.getItemConfigurations(), oldConfigurations);
+                    }
                 } else {
                     if (IpeUtils.isPathAbsolute(item.getPath())) {
                         viewItemNode.getFolder().removeItem(item);
@@ -1154,22 +1172,40 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             } else if (type == DnDConstants.ACTION_COPY) {
                 // Copy&Paste
                 if (toFolder.getProject() == viewItemNode.getFolder().getProject()) {
-                    if (IpeUtils.isPathAbsolute(item.getPath()) || item.getPath().startsWith("..")) { // NOI18N
+                    if ((IpeUtils.isPathAbsolute(item.getPath()) || item.getPath().startsWith("..")) && !toFolder.isDiskFolder()) { // NOI18N
                         Toolkit.getDefaultToolkit().beep();
                     } else {
                         FileObject fo = FileUtil.toFileObject(item.getCanonicalFile());
-                        String parent = FileUtil.toFile(fo.getParent()).getPath();
                         String ext = fo.getExt();
-                        String newName = IpeUtils.createUniqueFileName(parent, fo.getName(), ext);
-                        fo.copy(fo.getParent(), newName, ext);
-                        String newPath = parent + "/" + newName; // NOI18N
-                        if (ext.length() > 0) {
-                            newPath = newPath + "." + ext; // NOI18N
+                        if (toFolder.isDiskFolder()) {
+                            String toFolderPath = IpeUtils.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
+                            FileObject toFolderFO = FileUtil.toFileObject(new File(toFolderPath));
+                            String newName = IpeUtils.createUniqueFileName(toFolderPath, fo.getName(), ext);
+                            FileObject copiedFileObject = fo.copy(toFolderFO, newName, ext);
+
+                            File copiedFileFile = FileUtil.toFile(copiedFileObject);
+                            String itemPath = copiedFileFile.getPath();
+                            itemPath = FilePathAdaptor.mapToRemote(itemPath);
+                            itemPath = FilePathAdaptor.normalize(itemPath);
+                            itemPath = IpeUtils.toRelativePath(toFolder.getConfigurationDescriptor().getBaseDir(), itemPath);
+                            Item copiedItemItem = toFolder.findItemByPath(itemPath);
+                            if (copiedItemItem != null) {
+                                copyItemConfigurations(copiedItemItem.getItemConfigurations(), oldConfigurations);
+                            }
                         }
-                        newPath = IpeUtils.toRelativePath(FileUtil.toFile(viewItemNode.getFolder().getProject().getProjectDirectory()).getPath(), newPath);
-                        Item newItem = new Item(FilePathAdaptor.normalize(newPath));
-                        toFolder.addItemAction(newItem);
-                        copyItemConfigurations(newItem.getItemConfigurations(), oldConfigurations);
+                        else {
+                            String parent = FileUtil.toFile(fo.getParent()).getPath();
+                            String newName = IpeUtils.createUniqueFileName(parent, fo.getName(), ext);
+                            fo.copy(fo.getParent(), newName, ext);
+                            String newPath = parent + "/" + newName; // NOI18N
+                            if (ext.length() > 0) {
+                                newPath = newPath + "." + ext; // NOI18N
+                            }
+                            newPath = IpeUtils.toRelativePath(FileUtil.toFile(viewItemNode.getFolder().getProject().getProjectDirectory()).getPath(), newPath);
+                            Item newItem = new Item(FilePathAdaptor.normalize(newPath));
+                            toFolder.addItemAction(newItem);
+                            copyItemConfigurations(newItem.getItemConfigurations(), oldConfigurations);
+                        }
                     }
                 } else {
                     if (IpeUtils.isPathAbsolute(item.getPath())) {

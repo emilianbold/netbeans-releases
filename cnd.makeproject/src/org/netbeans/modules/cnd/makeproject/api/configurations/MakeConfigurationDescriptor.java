@@ -1001,7 +1001,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
         for (int i = 0; i < files.length; i++) {
             if (!VisibilityQuery.getDefault().isVisible(files[i]) ||
-                    files[i].getName().equals("nbproject")) {
+                    files[i].getName().equals("nbproject")) { // NOI18N
                 continue;
             }
             if (files[i].isDirectory()) {
