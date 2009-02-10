@@ -252,7 +252,7 @@ public class HostInfoTest {
         String result = "";
 
         for (int i = 0; i < 3; i++) {
-            result = HostInfoUtils.getPlatformPath(new ExecutionEnvironment(null, null));
+//            result = HostInfoUtils.getPlatformPath(new ExecutionEnvironment(null, null));
             System.out.println("Platform PATH is " + result);
         }
         assertEquals(expResult, result);

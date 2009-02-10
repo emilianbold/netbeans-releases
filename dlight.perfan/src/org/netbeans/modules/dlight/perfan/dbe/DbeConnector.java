@@ -56,7 +56,6 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.util.HostInfoUtils;
 import org.openide.util.Exceptions;
 
 public class DbeConnector implements Listener {
@@ -95,7 +94,7 @@ public class DbeConnector implements Listener {
                 new DecimalFormatSymbols(Locale.getDefault()));
         this.execEnv = execEnv;
         this.experimentDirectory = experimentDirectory;
-        idbeCmd = ExecUtil.getFullPath("perfan/" + HostInfoUtils.getPlatformPath(execEnv) + "/prod/bin/idbe");
+        idbeCmd = ExecUtil.getFullPath("perfan/intel-S2/prod/bin/idbe");
         idbe = null;
     }
 

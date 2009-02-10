@@ -43,7 +43,7 @@ public final class RemoteNativeProcess extends NativeProcess {
         final ConnectionManager mgr = ConnectionManager.getInstance();
         ChannelExec echannel = null;
 
-        final String commandLine = info.getCommandLine();
+        final String commandLine = info.getCommandLine(true);
 
         synchronized (mgr) {
             final ExecutionEnvironment execEnv = info.getExecutionEnvironment();
@@ -55,8 +55,8 @@ public final class RemoteNativeProcess extends NativeProcess {
                 throw new IOException("Unable to create remote session!"); // NOI18N
             }
 
-            final String workingDirectory = info.getWorkingDirectory();
-            final Map<String, String> envVars = info.getEnvVariables();
+            final String workingDirectory = info.getWorkingDirectory(true);
+            final Map<String, String> envVars = info.getEnvVariables(true);
 
             String envSetup = "";
 
