@@ -66,6 +66,7 @@ public final class HighlightAction extends AbstractComposerAction {
         m_highlighted.repaint(SVGObjectOutline.SELECTOR_OVERLAP);
     }
 
+    @Override
     public boolean consumeEvent(AWTEvent evt, boolean isOutsideEvent) {
         SceneManager sceneMgr = m_factory.getSceneManager();
         assert sceneMgr.containsAction(HighlightAction.class);
@@ -86,6 +87,7 @@ public final class HighlightAction extends AbstractComposerAction {
         return false;
     }
 
+    @Override
     public void paint(Graphics g, int x, int y, boolean isReadOnly) {
         if (!m_highlighted.isDeleted()) {
             if ( !m_isCompleted && getScreenManager().getHighlightObject()) {
@@ -96,6 +98,7 @@ public final class HighlightAction extends AbstractComposerAction {
         }
     }
     
+    @Override
     public void actionCompleted() {
         super.actionCompleted();
         getScreenManager().getAnimatorView().setToolTipText("");
