@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,13 +34,28 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.util;
+package org.netbeans.modules.dlight.perfan.util;
+
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
- * This exception is thrown to indicate that no ssh connection with a host has
- * been established prior to an attempt to execute NativeTask on it.
+ *
+ * @author ak119685
  */
-public final class HostNotConnectedException extends Throwable {
+public final class SunStudioLocator {
+
+    private static final SunStudioLocator DEFAULT = new SunStudioLocator();
+
+    private SunStudioLocator() {
+    }
+    
+    public static SunStudioLocator getDefault() {
+        return DEFAULT;
+    }
+
+    public String getSproHome(ExecutionEnvironment execEnv) {
+        return "/shared/dp/sstrunk/intel-S2";
+    }
 }

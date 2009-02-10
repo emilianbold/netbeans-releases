@@ -43,10 +43,10 @@ import java.io.IOException;
 import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.impl.LocalNativeProcess;
 import java.util.concurrent.Callable;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.nativeexecution.api.impl.NativeProcessInfo;
-import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
 import org.netbeans.modules.nativeexecution.api.impl.RemoteNativeProcess;
 import org.netbeans.modules.nativeexecution.api.impl.TerminalLocalNativeProcess;
 
@@ -110,7 +110,7 @@ public final class NativeProcessBuilder implements Callable<Process> {
      * @return new instance of the <tt>NativeProcessBuilder</tt> with
      *        registered listener.
      */
-    public NativeProcessBuilder addNativeProcessListener(Listener listener) {
+    public NativeProcessBuilder addNativeProcessListener(ChangeListener listener) {
         NativeProcessBuilder result = new NativeProcessBuilder(this);
         result.info.addNativeProcessListener(listener);
         return result;
