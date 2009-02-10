@@ -85,6 +85,11 @@ public class ConfigActionTest extends ConfigAction {
     }
 
     @Override
+    public boolean isValid(boolean indexFileNeeded) {
+        throw new IllegalStateException("Validation is not needed for tests");
+    }
+
+    @Override
     public boolean isDebugProjectEnabled() {
         throw new IllegalStateException("Debug project tests action is not supported");
     }
