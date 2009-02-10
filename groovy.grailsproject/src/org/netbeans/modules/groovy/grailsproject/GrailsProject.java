@@ -66,6 +66,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.modules.groovy.grails.api.GrailsConstants;
+import org.netbeans.modules.groovy.grailsproject.commands.GrailsCommandSupport;
 import org.netbeans.modules.groovy.grailsproject.completion.ControllerCompletionProvider;
 import org.netbeans.modules.groovy.grailsproject.ui.TemplatesImpl;
 import org.netbeans.modules.groovy.support.spi.GroovyFeature;
@@ -93,6 +94,8 @@ public final class GrailsProject implements Project {
 
     private final ClassPathProviderImpl cpProvider;
 
+    private final GrailsCommandSupport commandSupport;
+
     private SourceRoots sourceRoots;
 
     private SourceRoots testRoots;
@@ -105,6 +108,7 @@ public final class GrailsProject implements Project {
         this.projectState = projectState;
         this.logicalView = new GrailsLogicalViewProvider(this);
         this.cpProvider = new ClassPathProviderImpl(getSourceRoots(), getTestSourceRoots(), FileUtil.toFile(projectDir), this);
+        this.commandSupport = new GrailsCommandSupport(this);
     }
 
     public FileObject getProjectDirectory() {
@@ -113,6 +117,10 @@ public final class GrailsProject implements Project {
 
     public ProjectState getProjectState() {
         return projectState;
+    }
+
+    public GrailsCommandSupport getCommandSupport() {
+        return commandSupport;
     }
 
     public Lookup getLookup() {
