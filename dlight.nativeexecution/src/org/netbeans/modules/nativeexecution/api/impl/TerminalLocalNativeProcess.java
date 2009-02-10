@@ -81,8 +81,15 @@ public final class TerminalLocalNativeProcess extends NativeProcess {
 
     static {
         InstalledFileLocator fl = InstalledFileLocator.getDefault();
-        File file = fl.locate("bin/dorun.sh", null, false); // NOI18N
+        File file = fl.locate("bin/nativeexecution/dorun.sh", null, false); // NOI18N
         dorunScript = file.toString();
+        try {
+            new ProcessBuilder("/bin/chmod", "+x", dorunScript).start().waitFor(); // NOI18N
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     public TerminalLocalNativeProcess(final ExternalTerminal t,
