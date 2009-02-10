@@ -146,7 +146,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
             }
 
             try {
-                float locks = Float.parseFloat(tokens[8]);
+                float locks = Float.parseFloat(tokens[7]);
                 return new DataRow(colnames, Arrays.asList(locks));
             } catch (NumberFormatException ex) {
                 return null;
