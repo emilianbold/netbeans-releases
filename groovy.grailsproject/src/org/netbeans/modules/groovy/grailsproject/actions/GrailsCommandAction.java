@@ -36,97 +36,79 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.groovy.grailsproject.actions;
 
+import org.netbeans.modules.groovy.grailsproject.commands.*;
+import java.awt.event.ActionEvent;
 import java.util.concurrent.Callable;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.actions.NodeAction;
-import java.util.logging.Logger;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.ProjectInformation;
+import javax.swing.AbstractAction;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
+import org.netbeans.modules.groovy.grailsproject.actions.ConfigurationSupport;
+import org.netbeans.modules.groovy.grailsproject.actions.RefreshProjectRunnable;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
+import org.openide.util.NbBundle;
 
-public abstract class GenerateAction extends NodeAction {
+/**
+ *
+ * @author Petr Hejl
+ */
+public class GrailsCommandAction extends AbstractAction {
 
-    private static final Logger LOG = Logger.getLogger(GenerateAction.class.getName());
+    private final GrailsProject project;
 
-    private static final String DOMAIN_DIR = "domain"; // NOI18N
-
-    private final String command;
-
-    private final String actionName;
-
-    public GenerateAction(String command, String actionName) {
-        this.command = command;
-        this.actionName = actionName;
+    public GrailsCommandAction(Project project) {
+        super(NbBundle.getMessage(GrailsCommandAction.class, "CTL_GrailsCommandAction"));
+        this.project = (GrailsProject) project;
     }
 
-    protected void performAction(Node[] activatedNodes) {
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
+    public void actionPerformed(ActionEvent arg0) {
         final GrailsRuntime runtime = GrailsRuntime.getInstance();
         if (!runtime.isConfigured()) {
             ConfigurationSupport.showConfigurationWarning(runtime);
             return;
         }
 
-        DataObject dataObject = activatedNodes[0].getLookup().lookup(DataObject.class);
+        GrailsCommandChooser.CommandDescriptor commandDescriptor = GrailsCommandChooser.select(project);
+        if (commandDescriptor == null) {
+            return;
+        }
 
-        GrailsProject prj = (GrailsProject) FileOwnerQuery.getOwner(dataObject.getFolder().getPrimaryFile());
+        ProjectInformation inf = project.getLookup().lookup(ProjectInformation.class);
+        String displayName = inf.getDisplayName() + " (" + commandDescriptor.getGrailsCommand().getCommand() + ")"; // NOI18N
 
-        ProjectInformation inf = prj.getLookup().lookup(ProjectInformation.class);
-        String displayName = inf.getDisplayName() + " (" + command + ")"; // NOI18N
+
+        String[] params;
+        // FIXME all parameters in one String should we split it ?
+        if (commandDescriptor.getCommandParams() != null && !"".equals(commandDescriptor.getCommandParams().trim())) {
+            params = new String[] {commandDescriptor.getCommandParams()};
+        } else {
+            params = new String[] {};
+        }
 
         Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
-                command, GrailsProjectConfig.forProject(prj), dataObject.getPrimaryFile().getName()); // NOI18N
+                commandDescriptor.getGrailsCommand().getCommand(), GrailsProjectConfig.forProject(project), params); // NOI18N
 
         ExecutionDescriptor descriptor = new ExecutionDescriptor()
-                .controllable(true).frontWindow(true).inputVisible(true).showProgress(true);
-        descriptor = descriptor.postExecution(new RefreshProjectRunnable(prj));
+                .controllable(true).inputVisible(true).showProgress(true).frontWindow(true);
+
+        descriptor = descriptor.postExecution(new RefreshProjectRunnable(project));
         descriptor = descriptor.optionsPath(GroovySettings.GROOVY_OPTIONS_CATEGORY);
 
         ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
         service.run();
     }
 
-    public String getName() {
-        return actionName;
-    }
-
-    @Override
-    protected void initialize() {
-        super.initialize();
-        putValue("noIconInMenu", Boolean.TRUE);
-    }
-
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes.length == 0) {
-            return false;
-        }
-        DataObject dataObject = activatedNodes[0].getLookup().lookup(DataObject.class);
-
-        if (dataObject == null) {
-            return false;
-        }
-        String name = dataObject.getFolder().getName();
-        return DOMAIN_DIR.equals(name);
-    }
-
 }
-

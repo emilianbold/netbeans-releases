@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,31 +34,68 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.grailsproject.actions;
-
-import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.groovy.grailsproject.commands;
 
 /**
  *
  * @author Petr Hejl
  */
-public final class ConfigSupport {
+public class GrailsCommand implements Comparable<GrailsCommand> {
 
-    private ConfigSupport() {
-        super();
+    private final String command;
+    private final String description;
+    private final String displayName;
+
+    public GrailsCommand(String command, String description, String displayName) {
+        this.command = command;
+        this.description = description;
+        this.displayName = displayName;
     }
 
-    public static void showConfigurationWarning(GrailsRuntime runtime) {
-        if (!runtime.isConfigured()) {
-            String msg = NbBundle.getMessage(ConfigSupport.class, "MSG_Runtime_Not_Configured");
-            DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
+    public String getCommand() {
+        return command;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
         }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final GrailsCommand other = (GrailsCommand) obj;
+        if ((this.command == null) ? (other.command != null) : !this.command.equals(other.command)) {
+            return false;
+        }
+        return true;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 67 * hash + (this.command != null ? this.command.hashCode() : 0);
+        return hash;
+    }
+
+    public int compareTo(GrailsCommand o) {
+        if (command == null || o.getCommand() == null) {
+            assert displayName != null : "displayName not null";
+            assert o.getDisplayName() != null : "other displayName not null";
+            return displayName.compareTo(o.getDisplayName());
+        }
+        return this.getCommand().compareTo(o.getCommand());
+    }
+
 }
