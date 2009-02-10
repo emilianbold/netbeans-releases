@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import java.net.ConnectException;
 import org.netbeans.modules.nativeexecution.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.junit.After;
@@ -45,7 +46,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 import org.openide.util.Exceptions;
 import static org.junit.Assert.*;
 
@@ -90,7 +90,7 @@ public class HostInfoTest {
             result = HostInfoUtils.getOS(new ExecutionEnvironment("ak119685", "127.0.0.1"));
             System.out.printf("Expected result is %s, actual result is %s\n", expResult, result);
             assertEquals(expResult, result);
-        } catch (HostNotConnectedException ex) {
+        } catch (ConnectException ex) {
             Exceptions.printStackTrace(ex);
             fail("Wrong exception");
         }
@@ -160,7 +160,7 @@ public class HostInfoTest {
             expResult = false;
             System.out.println(fname + (result == false ? " doesn't exist" : " exists"));
             assertEquals(expResult, result);
-        } catch (HostNotConnectedException ex) {
+        } catch (ConnectException ex) {
             Exceptions.printStackTrace(ex);
             fail("Wrong exception");
         }
@@ -171,7 +171,7 @@ public class HostInfoTest {
             expResult = true;
             System.out.println(fname + (result == false ? " doesn't exist" : " exists"));
             assertEquals(expResult, result);
-        } catch (HostNotConnectedException ex) {
+        } catch (ConnectException ex) {
             Exceptions.printStackTrace(ex);
             fail("Wrong exception");
         }

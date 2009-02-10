@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -65,25 +66,25 @@ public final class HostInfoUtils {
      * fileExists(execEnv, fname, true)
      * </pre>
      * If execEnv referes to remote host that is not connected yet, a
-     * <tt>HostNotConnectedException</tt> is thrown.
+     * <tt>ConnectException</tt> is thrown.
      *
      * @param execEnv <tt>ExecutionEnvironment</tt> to check for file existence
      *        in.
      * @param fname name of file to check for
      * @return <tt>true</tt> if file exists, <tt>false</tt> otherwise.
      *
-     * @throws HostNotConnectedException if host, identified by this execution
+     * @throws ConnectException if host, identified by this execution
      * environment is not connected.
      */
     public static boolean fileExists(final ExecutionEnvironment execEnv,
-            final String fname) throws HostNotConnectedException {
+            final String fname) throws ConnectException {
         return fileExists(execEnv, fname, true);
     }
 
     /**
      * Tests whether a file <tt>fname</tt> exists in <tt>execEnv</tt>.
      * If execEnv referes to remote host that is not connected yet, a
-     * <tt>HostNotConnectedException</tt> is thrown.
+     * <tt>ConnectException</tt> is thrown.
      *
      * @param execEnv <tt>ExecutionEnvironment</tt> to check for file existence
      *        in.
@@ -92,12 +93,12 @@ public final class HostInfoUtils {
      * in the same environment will not be actually performed, but result from
      * hash will be returned.
      * @return <tt>true</tt> if file exists, <tt>false</tt> otherwise.
-     * @throws HostNotConnectedException if host, identified by this execution
+     * @throws ConnectException if host, identified by this execution
      * environment is not connected.
      */
     public static boolean fileExists(final ExecutionEnvironment execEnv,
             final String fname, final boolean useCache)
-            throws HostNotConnectedException {
+            throws ConnectException {
         String key = execEnv.toString() + fname;
 
         if (useCache && filesExistenceHash.containsKey(key)) {
@@ -110,7 +111,7 @@ public final class HostInfoUtils {
             fileExists = new File(fname).exists();
         } else {
             if (ConnectionManager.getInstance().isConnectedTo(execEnv)) {
-                throw new HostNotConnectedException();
+                throw new ConnectException();
             }
 
             NativeProcessBuilder npb = new NativeProcessBuilder(
@@ -139,23 +140,23 @@ public final class HostInfoUtils {
      * @param execEnv <tt>ExecutionEnvironment</tt>
      * @return string that identifies OS installed on the host specified by the
      * <tt>execEnv</tt>
-     * @throws HostNotConnectedException if host, identified by this execution
+     * @throws ConnectException if host, identified by this execution
      * environment is not connected.
      */
     public static String getOS(final ExecutionEnvironment execEnv)
-            throws HostNotConnectedException {
+            throws ConnectException {
         HostInfo info = getHostInfo(execEnv);
         return info.os;
     }
 
     public static String getPlatform(final ExecutionEnvironment execEnv)
-            throws HostNotConnectedException {
+            throws ConnectException {
         HostInfo info = getHostInfo(execEnv);
         return info.platform;
     }
 
-    public static String getIsaInfo(ExecutionEnvironment execEnv)
-            throws HostNotConnectedException {
+    public static String getIsaInfo(ExecutionEnvironment execEnv) 
+            throws ConnectException {
         HostInfo info = getHostInfo(execEnv);
         return info.instructionSet;
     }
@@ -188,11 +189,11 @@ public final class HostInfoUtils {
         }
     }
 
-    private static HostInfo getHostInfo(ExecutionEnvironment execEnv) throws HostNotConnectedException {
+    private static HostInfo getHostInfo(ExecutionEnvironment execEnv) throws ConnectException {
         HostInfo info = hostInfo.get(execEnv);
         if (info == null) {
             if (execEnv.isRemote()) {
-                throw new HostNotConnectedException();
+                throw new ConnectException();
             }
 
             updateHostInfo(execEnv);
@@ -262,18 +263,6 @@ public final class HostInfoUtils {
         return info;
     }
 
-    /**
-     * Tests whether the OS, that is ran in this execution environment, is Unix
-     * or not.
-     * @param execEnv <tt>ExecutionEnvironment</tt> to test
-     * @return true if execEnv refers to a host that runs Solaris or Linux.
-     * @throws HostNotConnectedException if host is not connected yet.
-     */
-//    public static boolean isUnix(ExecutionEnvironment execEnv)
-//            throws HostNotConnectedException {
-//        String os = getOS(execEnv);
-//        return "SunOS".equals(os) || "Linux".equals(os); // NOI18N
-//    }
     private static class HostInfo {
 
         String os;

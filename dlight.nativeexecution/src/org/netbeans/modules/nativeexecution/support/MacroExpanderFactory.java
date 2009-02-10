@@ -38,12 +38,12 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
+import java.net.ConnectException;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 
 public final class MacroExpanderFactory {
 
@@ -109,7 +109,7 @@ public final class MacroExpanderFactory {
                 }
 
                 return super.getValueOf(str);
-            } catch (HostNotConnectedException ex) {
+            } catch (ConnectException ex) {
             }
             return null;
         }
@@ -203,7 +203,7 @@ public final class MacroExpanderFactory {
                     }
                     return "so"; // NOI18N
                 }
-            } catch (HostNotConnectedException ex) {
+            } catch (ConnectException ex) {
             }
             return null;
         }
@@ -215,7 +215,7 @@ public final class MacroExpanderFactory {
 
             res.setLength(0);
             buf.setLength(0);
-            
+
             int state = 0, pos = 0, mpos = -1;
             char[] chars = (string + (char) 0).toCharArray();
 
