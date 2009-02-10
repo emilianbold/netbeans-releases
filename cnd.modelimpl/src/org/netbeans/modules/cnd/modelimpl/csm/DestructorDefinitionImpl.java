@@ -53,8 +53,8 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  */
 public final class DestructorDefinitionImpl extends FunctionDefinitionImpl<CsmFunctionDefinition> {
 
-    public DestructorDefinitionImpl(AST ast, CsmFile file) throws AstRendererException {
-        super(ast, file, null, true);
+    public DestructorDefinitionImpl(AST ast, CsmFile file, boolean register) throws AstRendererException {
+        super(ast, file, null, register, register);
     }
 
     @Override

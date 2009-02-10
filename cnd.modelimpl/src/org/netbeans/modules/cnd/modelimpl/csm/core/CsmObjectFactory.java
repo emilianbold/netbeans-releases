@@ -78,6 +78,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterEllipsisImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterListImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TypedefImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDirectiveImpl;
@@ -249,6 +250,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = FRIEND_CLASS_IMPL;
         } else if (object instanceof DeclarationContainer) {
             aHandler = DECLARATION_CONTAINER;
+        } else if (object instanceof TemplateParameterImpl) {
+            aHandler = TEMPLATE_PARAMETER_IMPL;
         } else {
             throw new IllegalArgumentException("instance of unknown class " + object.getClass().getName());  //NOI18N
         }
@@ -455,6 +458,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 obj = new DeclarationContainer(stream);
                 break;
 
+            case TEMPLATE_PARAMETER_IMPL:
+                obj = new TemplateParameterImpl(stream);
+                break;
+
             default:
                 throw new IllegalArgumentException("unknown handler" + handler);  //NOI18N
         }
@@ -542,8 +549,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int FUNCTION_PARAM_LIST_IMPL       = PARAM_LIST_IMPL + 1;
     private static final int FUNCTION_KR_PARAM_LIST_IMPL    = FUNCTION_PARAM_LIST_IMPL + 1;
     private static final int MACRO_IMPL                     = FUNCTION_KR_PARAM_LIST_IMPL + 1;
+    private static final int TEMPLATE_PARAMETER_IMPL        = MACRO_IMPL + 1;
+
     
     // index to be used in another factory (but only in one) 
     // to start own indeces from the next after LAST_INDEX        
-    public static final int LAST_INDEX = MACRO_IMPL;
+    public static final int LAST_INDEX = TEMPLATE_PARAMETER_IMPL;
 }

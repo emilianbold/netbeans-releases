@@ -62,8 +62,8 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 public class FriendFunctionDefinitionImpl extends FunctionDefinitionImpl<CsmFriendFunction> implements CsmFriendFunction {
     private final CsmUID<CsmClass> friendClassUID;
     
-    public FriendFunctionDefinitionImpl(AST ast, CsmClass cls, CsmScope scope) throws AstRendererException {
-        super(ast, cls.getContainingFile(), scope);
+    public FriendFunctionDefinitionImpl(AST ast, CsmClass cls, CsmScope scope, boolean register) throws AstRendererException {
+        super(ast, cls.getContainingFile(), scope, register, register);
         friendClassUID = UIDs.get(cls);
     }
     

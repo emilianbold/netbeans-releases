@@ -54,8 +54,8 @@ import java.io.IOException;
  */
 public final class ParameterEllipsisImpl extends ParameterImpl {
 
-    public ParameterEllipsisImpl(AST ast, CsmFile file, CsmType type, CsmScope scope) {
-        super(ast, file, type, "...", scope); //NOI18N
+    public ParameterEllipsisImpl(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean global) {
+        super(ast, file, type, "...", scope, global); //NOI18N
     }
 
     @Override
