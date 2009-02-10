@@ -309,7 +309,7 @@ public class Utilities {
         }
         
         for (File f : files) {
-            content += f.getAbsolutePath () + UpdateTracking.PATH_SEPARATOR;
+            content += (f==null ? "" :  f.getAbsolutePath () + UpdateTracking.PATH_SEPARATOR);
         }
         
         if (content == null || content.length () == 0) {
