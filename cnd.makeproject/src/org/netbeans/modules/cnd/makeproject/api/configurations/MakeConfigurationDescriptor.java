@@ -954,12 +954,23 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
     public Folder addSourceFilesFromRoot(Folder folder, File dir, boolean attachListeners, boolean asDiskFolder) {
         ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
-        Folder top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getName(), dir.getName(), true);
-        if (asDiskFolder) {
-            String relativeRoot = FilePathAdaptor.normalize(IpeUtils.toRelativePath(getBaseDir(), dir.getPath()));
-            top.setRoot(relativeRoot);
+        Folder top;
+        top = folder.findFolderByName(dir.getName());
+        if (top == null) {
+            top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getName(), dir.getName(), true);
+            folder.addFolder(top);
         }
-        folder.addFolder(top);
+        if (asDiskFolder) {
+            String rootPath;
+            if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+                rootPath = IpeUtils.toAbsoluteOrRelativePath(baseDir, dir.getPath());
+            } else if (PathPanel.getMode() == PathPanel.REL) {
+                rootPath = IpeUtils.toRelativePath(baseDir, dir.getPath());
+            } else {
+                rootPath = IpeUtils.toAbsolutePath(baseDir, dir.getPath());
+            }
+            top.setRoot(rootPath);
+        }
         addFiles(top, dir, null, filesAdded, true);
         getNativeProject().fireFilesAdded(filesAdded);
         if (attachListeners) {
