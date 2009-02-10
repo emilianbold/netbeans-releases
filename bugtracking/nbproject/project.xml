@@ -3,7 +3,7 @@
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.modules.versioning.util</code-name-base>
+            <code-name-base>org.netbeans.modules.bugtracking</code-name-base>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.jdesktop.layout</code-name-base>
@@ -11,78 +11,24 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.4</specification-version>
+                        <specification-version>1.6</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.diff</code-name-base>
+                    <code-name-base>org.netbeans.api.progress</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <implementation-version/>
+                        <specification-version>1.13</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.editor.errorstripe</code-name-base>
+                    <code-name-base>org.netbeans.libs.bugtracking</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>2</release-version>
-                        <implementation-version/>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.editor.fold</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.27</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.10</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.editor.settings</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.20</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.editor.util</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.23</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.options.api</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.4</specification-version>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -91,15 +37,16 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
+                        <specification-version>1.5</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.queries</code-name-base>
+                    <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.8</specification-version>
+                        <specification-version>1.31</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -108,7 +55,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.4</specification-version>
+                        <specification-version>1.8</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -116,7 +63,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.10</specification-version>
+                        <specification-version>7.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -124,7 +71,15 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.0</specification-version>
+                        <specification-version>7.7</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.explorer</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.8</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -132,21 +87,23 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.0</specification-version>
+                        <specification-version>7.9</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.openide.loaders</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-                    <run-dependency/>
+                    <run-dependency>
+                        <specification-version>7.2</specification-version>
+                    </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.openide.nodes</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.0</specification-version>
+                        <specification-version>7.7</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -154,7 +111,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.16</specification-version>
+                        <specification-version>6.21</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -170,22 +127,31 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.6</specification-version>
+                        <specification-version>6.24</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.libs.bugzilla</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.libs.jira</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                </test-type>
+            </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.clearcase</friend>
-                <friend>org.netbeans.modules.mercurial</friend>
-                <friend>org.netbeans.modules.perforce</friend>
-                <friend>org.netbeans.modules.versioning.system.cvss</friend>
-                <friend>org.netbeans.modules.subversion</friend>
-                <friend>org.netbeans.modules.localhistory</friend>
                 <friend>org.netbeans.modules.bugtracking.bridge</friend>
-                <package>org.netbeans.modules.versioning.annotate</package>
-                <package>org.netbeans.modules.versioning.util</package>
-                <package>org.netbeans.modules.proxy</package>
-                <package>org.netbeans.modules.turbo</package>
+                <friend>org.netbeans.modules.bugtracking.util</friend>
+                <friend>org.netbeans.modules.bugzilla</friend>
+                <friend>org.netbeans.modules.jira</friend>
+                <package>org.netbeans.modules.bugtracking.ui.search</package>
+                <package>org.netbeans.modules.bugtracking.spi</package>
+                <package>org.netbeans.modules.bugtracking.util</package>
             </friend-packages>
         </data>
     </configuration>
