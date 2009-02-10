@@ -206,6 +206,9 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
 	CharSequence name = UniqueNameCache.getManager().getString(decl.getUniqueName());
 	CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
 	assert uid != null;
+    if (!(uid instanceof SelfPersistent)) {
+        new Exception("attempt to put local declaration "+decl).printStackTrace(); // NOI18N
+    }
 	try {
 	    declarationsLock.writeLock().lock();
 

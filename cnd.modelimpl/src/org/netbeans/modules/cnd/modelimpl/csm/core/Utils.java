@@ -134,7 +134,15 @@ public class Utils {
             }            
         }
     }
-    
+
+    public static void setSelfUID(CsmDeclaration decl) {
+        if (decl instanceof OffsetableIdentifiableBase) {
+            ((OffsetableIdentifiableBase)decl).setSelfUID();
+        } else {
+            throw new IllegalArgumentException("unexpected object:" + decl);
+        }
+    }
+
     public static String getCsmIncludeKindKey() {
         // Returned string should be differed from getCsmDeclarationKindkey()
         return "I"; // NOI18N
