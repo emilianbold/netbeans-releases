@@ -76,13 +76,6 @@ public class HudsonXmlApiConstants {
     public static final String XML_API_DURATION_ELEMENT = "duration";
     public static final String XML_API_TIMESTAMP_ELEMENT = "timestamp";
     public static final String XML_API_RESULT_ELEMENT = "result";
-    public static final String XML_API_ITEM_ELEMENT = "item";
-    public static final String XML_API_FILE_ELEMENT = "file";
-    public static final String XML_API_EDIT_TYPE_ELEMENT = "editType";
-    public static final String XML_API_REVISION_ELEMENT = "revision";
-    public static final String XML_API_PREV_REVISION_ELEMENT = "prevrevision";
-    public static final String XML_API_MSG_ELEMENT = "msg";
-    public static final String XML_API_USER_ELEMENT = "user";
     
     // Start Hudson Job Command
     public static final String XML_API_BUILD_URL = "build";

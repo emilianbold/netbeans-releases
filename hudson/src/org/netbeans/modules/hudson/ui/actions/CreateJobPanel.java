@@ -98,10 +98,10 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
         project.setRenderer(new ProjectRenderer());
         name.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
-                nameChange();
+                check();
             }
             public void removeUpdate(DocumentEvent e) {
-                nameChange();
+                check();
             }
             public void changedUpdate(DocumentEvent e) {}
         });
@@ -110,19 +110,34 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
     public @Override void addNotify() {
         super.addNotify();
         project.requestFocusInWindow();
-        descriptor.setValid(false);
-        // Doing this in init does not work (message is not displayed):
-        notifications.setInformationMessage("Pick a project to create a job for."); // XXX I18N
+        check();
     }
 
-    private void ok() {
-        descriptor.setValid(true);
+    private void check() {
+        descriptor.setValid(false);
         notifications.clearMessages();
-    }
-
-    private void error(String msg) {
-        descriptor.setValid(false);
-        notifications.setErrorMessage(msg);
+        Project p = selectedProject();
+        if (p == null) {
+            notifications.setInformationMessage("Pick a project to create a job for."); // XXX I18N
+            return;
+        }
+        if (creator == null) {
+            notifications.setErrorMessage("The IDE does not know how to set up a job for this project."); // XXX I18N
+            return;
+        }
+        if (takenNames.contains(name())) {
+            notifications.setErrorMessage("This name is taken. Pick another."); // XXX I18N
+            return;
+        }
+        String problem = creator.error();
+        if (problem != null) {
+            notifications.setErrorMessage(problem);
+            return;
+        }
+        if (ProjectHudsonProvider.getDefault().findAssociation(p) != null) {
+            notifications.setWarningMessage("This project already seems to be associated with a Hudson job."); // XXX I18N
+        }
+        descriptor.setValid(true);
     }
 
     String name() {
@@ -242,21 +257,15 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
             creator.removeChangeListener(this);
         }
         creator = null;
-        ok();
         Project p = selectedProject();
         if (p == null) {
-            error("You must pick a project."); // XXX I18N
+            check();
             return;
         }
         if (p.getClass().getName().equals("org.netbeans.modules.project.ui.LazyProject")) { // NOI18N
             // XXX ugly but not obvious how better to handle this...
             updateProjectModel();
             project.setSelectedItem(null);
-            return;
-        }
-        if (ProjectHudsonProvider.getDefault().findAssociation(p) != null) {
-            // XXX check whether the association is still valid; job might have been deleted since then
-            error("This project already seems to be associated with a Hudson job."); // XXX I18N
             return;
         }
         for (ProjectHudsonJobCreatorFactory factory : Lookup.getDefault().lookupAll(ProjectHudsonJobCreatorFactory.class)) {
@@ -266,40 +275,18 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
             }
         }
         if (creator == null) {
-            error("The IDE does not know how to set up a job for this project."); // XXX I18N
+            check();
             return;
         }
         name.setText(creator.jobName());
         custom.removeAll();
         custom.add(creator.customizer());
-        String problem = creator.error();
-        if (problem != null) {
-            error(problem);
-        }
         creator.addChangeListener(this);
+        check();
     }//GEN-LAST:event_projectActionPerformed
 
     public void stateChanged(ChangeEvent event) {
-        if (creator != null) {
-            String problem = creator.error();
-            if (problem != null) {
-                error(problem);
-            } else {
-                // Name might still be broken.
-                nameChange();
-            }
-        }
-    }
-
-    private void nameChange() {
-        if (creator == null) {
-            return;
-        }
-        if (takenNames.contains(name())) {
-            error("This name is taken. Pick another."); // XXX I18N
-        } else {
-            ok();
-        }
+        check();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

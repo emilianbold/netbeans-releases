@@ -43,8 +43,8 @@ package org.netbeans.modules.hudson.ui;
 
 import java.awt.GridLayout;
 import javax.swing.ImageIcon;
-import org.netbeans.modules.hudson.impl.HudsonJobBuild.HudsonJobChangeFile;
-import org.netbeans.modules.hudson.impl.HudsonJobBuild.HudsonJobChangeItem;
+import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
+import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile;
 import org.openide.util.NbBundle;
 
 /**
@@ -65,7 +65,7 @@ public class HudsonJobChangePanel extends javax.swing.JPanel {
         
         
         userLabel.setText(NbBundle.getMessage(HudsonJobChangePanel.class, "LBL_User", change.getUser()));
-        msgLabel.setText("<html>" + NbBundle.getMessage(HudsonJobChangePanel.class, "LBL_Msg", change.getMsg()));
+        msgLabel.setText("<html>" + NbBundle.getMessage(HudsonJobChangePanel.class, "LBL_Msg", change.getMessage()));
         
         filesPanel.setLayout(new GridLayout(change.getFiles().size(), 1));
         
@@ -87,7 +87,7 @@ public class HudsonJobChangePanel extends javax.swing.JPanel {
                 break;
             }
             
-            filesPanel.add(new HudsonFilePanel(icon, file.getRevision(), file.getName()));
+            filesPanel.add(new HudsonFilePanel(icon, file.getName()));
         }
         
         filesPanel.repaint();

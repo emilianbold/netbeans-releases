@@ -75,20 +75,27 @@ public class HudsonSubversionSCMTest extends NbTestCase {
         os.close();
         HudsonSCM.Configuration cfg = scm.forFolder(dir);
         assertNotNull(cfg);
-        Document doc = XMLUtil.createDocument("scm", null, null, null);
-        cfg.configure(doc.getDocumentElement());
+        Document doc = XMLUtil.createDocument("root", null, null, null);
+        cfg.configure(doc);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         XMLUtil.write(doc, baos, "UTF-8");
         assertEquals("<?xml version='1.0' encoding='UTF-8'?>" +
+                "<root>" +
                 "<scm class='hudson.scm.SubversionSCM'>" +
                 "<locations>" +
                 "<hudson.scm.SubversionSCM_-ModuleLocation>" +
                 "<remote>https://sezpoz.dev.java.net/svn/sezpoz/trunk</remote>" +
-                "<local>trunk</local>" +
+                "<local>.</local>" +
                 "</hudson.scm.SubversionSCM_-ModuleLocation>" +
                 "</locations>" +
                 "<useUpdate>true</useUpdate>" +
-                "</scm>",
+                "</scm>" +
+                "<triggers>" +
+                "<hudson.triggers.SCMTrigger>" +
+                "<spec>@hourly</spec>" +
+                "</hudson.triggers.SCMTrigger>" +
+                "</triggers>" +
+                "</root>",
                 baos.toString("UTF-8").replace('"', '\'').replaceAll("\n *", ""));
     }
 

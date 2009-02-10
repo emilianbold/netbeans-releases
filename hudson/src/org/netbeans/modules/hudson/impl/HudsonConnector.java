@@ -61,13 +61,8 @@ import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.HudsonView;
 import static org.netbeans.modules.hudson.constants.HudsonJobBuildConstants.*;
-import static org.netbeans.modules.hudson.constants.HudsonJobChangeFileConstants.*;
-import static org.netbeans.modules.hudson.constants.HudsonJobChangeItemConstants.*;
 import static org.netbeans.modules.hudson.constants.HudsonJobConstants.*;
 import static org.netbeans.modules.hudson.constants.HudsonXmlApiConstants.*;
-import org.netbeans.modules.hudson.impl.HudsonJobBuild.HudsonJobChangeFile;
-import org.netbeans.modules.hudson.impl.HudsonJobBuild.HudsonJobChangeFile.EditType;
-import org.netbeans.modules.hudson.impl.HudsonJobBuild.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.impl.HudsonJobBuild.Result;
 import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.ErrorManager;
@@ -110,7 +105,7 @@ public class HudsonConnector {
     }
     
     public synchronized Collection<HudsonJob> getAllJobs() {
-        Document docInstance = getDocument(instance.getUrl());
+        Document docInstance = getDocument(instance.getUrl() + XML_API_URL);
         
         if (null == docInstance)
             return new ArrayList<HudsonJob>();
@@ -174,8 +169,16 @@ public class HudsonConnector {
         return false;
     }
     
+    /**
+     * Gets general information about a build.
+     * The changelog ({@code <changeSet>}) can be interpreted separately by {@link HudsonJobBuild#getChanges}.
+     */
     public synchronized HudsonJobBuild getJobBuild(HudsonJob job, int build) {
-        Document docBuild = getDocument(job.getUrl() + build + "/");
+        Document docBuild = getDocument(job.getUrl() + build + "/" + XML_API_URL +
+                // Exclude <changeSet> because it can be pretty big and slow to download.
+                // To exclude also <culprit> etc., could make an includes list
+                // based on those root element names we actually expect to interpret.
+                "?xpath=*/*[name()!='changeSet']&wrapper=root");
         
         if (null == docBuild)
             return null;
@@ -183,7 +186,7 @@ public class HudsonConnector {
         // Get build details
         NodeList buildDetails = docBuild.getDocumentElement().getChildNodes();
         
-        HudsonJobBuild result = new HudsonJobBuild();
+        HudsonJobBuild result = new HudsonJobBuild(this, job, build);
         
         for (int i = 0 ; i < buildDetails.getLength() ; i++) {
             Node n = buildDetails.item(i);
@@ -201,59 +204,7 @@ public class HudsonConnector {
                 }
             }
         }
-        
-        try {
-            // Get changes
-            NodeList changes = docBuild.getElementsByTagName(XML_API_ITEM_ELEMENT);
-            
-            for (int i = 0 ; i < changes.getLength() ; i++) {
-                Node n = changes.item(i);
-                
-                // Create a new change item
-                HudsonJobChangeItem item = new HudsonJobChangeItem();
-                
-                for (int j = 0 ; j < n.getChildNodes().getLength() ; j++) {
-                    Node o = n.getChildNodes().item(j);
-                    
-                    if (o.getNodeType() == Node.ELEMENT_NODE) {
-                        if (o.getNodeName().equals(XML_API_FILE_ELEMENT)) {
-                            
-                            HudsonJobChangeFile file = new HudsonJobChangeFile();
-                            
-                            for (int k = 0 ; k < o.getChildNodes().getLength() ; k++) {
-                                Node d = o.getChildNodes().item(k);
-                                
-                                if (d.getNodeType() == Node.ELEMENT_NODE) {
-                                    if (d.getNodeName().equals(XML_API_EDIT_TYPE_ELEMENT)) {
-                                        file.putProperty(JOB_CHANGE_FILE_EDIT_TYPE,
-                                                EditType.valueOf(d.getFirstChild().getTextContent()));
-                                    } else if (d.getNodeName().equals(XML_API_NAME_ELEMENT)) {
-                                        file.putProperty(JOB_CHANGE_FILE_NAME, d.getFirstChild().getTextContent());
-                                    } else if (d.getNodeName().equals(XML_API_PREV_REVISION_ELEMENT)) {
-                                        file.putProperty(JOB_CHANGE_FILE_PREVIOUS_REVISION,
-                                                d.getFirstChild().getTextContent());
-                                    } else if (d.getNodeName().equals(XML_API_REVISION_ELEMENT)) {
-                                        file.putProperty(JOB_CHANGE_FILE_REVISION,
-                                                d.getFirstChild().getTextContent());
-                                    }
-                                }
-                            }
-                            
-                            item.addFile(file);
-                        } else if (o.getNodeName().equals(XML_API_MSG_ELEMENT)) {
-                            item.putProperty(JOB_CHANGE_ITEM_MESSAGE, o.getFirstChild().getTextContent());
-                        } else if (o.getNodeName().equals(XML_API_USER_ELEMENT)) {
-                            item.putProperty(JOB_CHANGE_ITEM_USER, o.getFirstChild().getTextContent());
-                        }
-                    }
-                }
-                
-                result.addChangeItem(item);
-            }
-        } catch (NullPointerException e) {
-            // There is no changes
-        }
-        
+
         return result;
     }
     
@@ -292,7 +243,7 @@ public class HudsonConnector {
             }
             
             if (null != name && null != url) {
-                Document docView = getDocument(url);
+                Document docView = getDocument(url + XML_API_URL);
                 
                 if (null == docView)
                     continue;
@@ -369,7 +320,7 @@ public class HudsonConnector {
             }
             
             if (null != job.getName() && null != job.getUrl() && null != job.getColor()) {
-                Document docJob = getDocument(job.getUrl());
+                Document docJob = getDocument(job.getUrl() + XML_API_URL);
                 
                 if (null == docJob)
                     continue;
@@ -441,11 +392,11 @@ public class HudsonConnector {
         return v;
     }
     
-    private Document getDocument(String url) {
+    Document getDocument(String url) {
         Document doc = null;
         
         try {
-            URL u = new java.net.URL(Utilities.getURLWithoutSpaces(url + XML_API_URL));
+            URL u = new URL(url);
             HttpURLConnection conn = (HttpURLConnection) u.openConnection();
             
             // Connected failed

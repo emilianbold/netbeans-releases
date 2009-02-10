@@ -39,55 +39,28 @@
 
 package org.netbeans.modules.hudson.spi;
 
-import java.io.File;
-import java.util.List;
-import org.netbeans.modules.hudson.api.HudsonJob;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import java.util.Collection;
 
-/**
- * Represents one kind of SCM (version control) supported by the Hudson integration.
- * Registered to global lookup.
- */
-public interface HudsonSCM {
+public interface HudsonJobChangeItem {
 
-    /**
-     * Possibly recognizes a disk folder as being under version control.
-     * @param folder a disk folder which may or may not be versioned
-     * @return information about its versioning, or null if unrecognized
-     */
-    Configuration forFolder(File folder);
+    String getUser();
 
-    /**
-     * Information about how a folder (such as the basedir of a project) is versioned.
-     */
-    interface Configuration {
+    String getMessage();
 
-        /**
-         * Creates configuration for Hudson.
-         * Would typically append a {@code <scm>} element.
-         * @param configXml Hudson's {@code config.xml}
-         */
-        void configure(Document configXml);
+    Collection<? extends HudsonJobChangeFile> getFiles();
+
+    interface HudsonJobChangeFile {
+
+        enum EditType {
+            add, edit, delete
+        }
+
+        String getName();
+
+        EditType getEditType();
+
+        // XXX may need to have a method to produce a diff component
 
     }
-
-    /**
-     * Attempts to convert a path in a remote Hudson workspace to a local file path.
-     * May use SCM information to guess at how these paths should be aligned.
-     * @param job a Hudson job
-     * @param workspacePath a relative path within the job's remote workspace, e.g. {@code src/p/C.java}
-     * @param localRoot a local disk root to consider as a starting point
-     * @return a file within {@code localRoot} corresponding to {@code workspacePath}, or null if unknown
-     */
-    String translateWorkspacePath(HudsonJob job, String workspacePath, File localRoot);
-
-    /**
-     * Attempts to parse a build's changelog.
-     * @param changeSet the {@code <changeSet>} element from a build,
-     *        corresponding to some {@code hudson.scm.ChangeLogSet}
-     * @return a list of parsed changelog items, or null if the SCM is unrecognized
-     */
-    List<? extends HudsonJobChangeItem> parseChangeSet(Element changeSet);
 
 }

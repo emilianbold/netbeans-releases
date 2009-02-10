@@ -44,9 +44,18 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
+import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile;
+import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile.EditType;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.netbeans.modules.subversion.client.parser.LocalSubversionException;
 import org.netbeans.modules.subversion.client.parser.SvnWcParser;
@@ -56,6 +65,7 @@ import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  * Lets Hudson understand things about Subversion.
@@ -150,6 +160,60 @@ public class HudsonSubversionSCM implements HudsonSCM {
             LOG.log(Level.FINE, "cannot translate path", x);
             return null;
         }
+    }
+
+    private static final XPath xpath = XPathFactory.newInstance().newXPath();
+    private static String xpath(String expr, Element xml) {
+        try {
+            return xpath.evaluate(expr, xml);
+        } catch (XPathExpressionException x) {
+            LOG.log(Level.FINE, "cannot evaluate '" + expr + "'", x);
+            return null;
+        }
+    }
+
+    public List<? extends HudsonJobChangeItem> parseChangeSet(Element changeSet) {
+        if (changeSet.getElementsByTagName("revision").getLength() == 0) {
+            return null;
+        }
+        class SubversionItem implements HudsonJobChangeItem {
+            final Element xml;
+            SubversionItem(Element xml) {
+                this.xml = xml;
+            }
+            public String getUser() {
+                return xpath("user", xml);
+            }
+            public String getMessage() {
+                return xpath("msg", xml);
+            }
+            public Collection<? extends HudsonJobChangeFile> getFiles() {
+                class SubversionFile implements HudsonJobChangeFile {
+                    final Element xml;
+                    SubversionFile(Element xml) {
+                        this.xml = xml;
+                    }
+                    public String getName() {
+                        return xpath("file", xml);
+                    }
+                    public EditType getEditType() {
+                        return EditType.valueOf(xpath("editType", xml));
+                    }
+                }
+                List<SubversionFile> files = new ArrayList<SubversionFile>();
+                NodeList nl = xml.getElementsByTagName("path");
+                for (int i = 0; i < nl.getLength(); i++) {
+                    files.add(new SubversionFile((Element) nl.item(i)));
+                }
+                return files;
+            }
+        }
+        List<SubversionItem> items = new ArrayList<SubversionItem>();
+        NodeList nl = changeSet.getElementsByTagName("item");
+        for (int i = 0; i < nl.getLength(); i++) {
+            items.add(new SubversionItem((Element) nl.item(i)));
+        }
+        return items;
     }
 
 }
