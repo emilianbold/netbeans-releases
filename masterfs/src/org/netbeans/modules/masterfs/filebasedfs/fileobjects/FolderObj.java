@@ -439,10 +439,12 @@ public final class FolderObj extends BaseFileObj {
         if (file.isDirectory()) {
             // first of all delete whole content
             final File[] arr = file.listFiles();
-            for (int i = 0; i < arr.length; i++) {
-                final File f2Delete = arr[i];
-                if (!deleteFile(f2Delete, all, factory, deleteHandler)) {
-                    return false;
+            if (arr != null) {  // check for null in case of I/O errors
+                for (int i = 0; i < arr.length; i++) {
+                    final File f2Delete = arr[i];
+                    if (!deleteFile(f2Delete, all, factory, deleteHandler)) {
+                        return false;
+                    }
                 }
             }
         } 
