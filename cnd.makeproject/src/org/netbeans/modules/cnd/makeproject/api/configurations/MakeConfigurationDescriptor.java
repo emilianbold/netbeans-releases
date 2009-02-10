@@ -56,14 +56,12 @@ import javax.swing.ImageIcon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWriter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -76,7 +74,6 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
-import org.netbeans.modules.cnd.makeproject.ui.wizards.FolderEntry;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -209,7 +206,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             }
         }
 //        addSourceFilesFromFolders(sourceFileFolders, false, false, true);
-        
+
         while (sourceFileFolders.hasNext()) {
             SourceFolderInfo sourceFolderInfo = sourceFileFolders.next();
             addSourceFilesFromRoot(getLogicalFolders(), sourceFolderInfo.getFile(), false, true);
@@ -806,7 +803,6 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 //            makeSources.sourceRootsChanged();
 //        }
 //    }
-
     private boolean inList(List<String> list, String s) {
         for (String l : list) {
             if (l.equals(s)) {
