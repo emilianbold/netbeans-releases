@@ -170,9 +170,6 @@
                 <include name="**/modules/*.jar"/>
             </entries>
             <bundlefilter>
-                <linecontains>
-                    <contains value="Templates"/>
-                </linecontains>
                 <concatfilter prepend="${proxyprop}"/>
             </bundlefilter>
          </extractlayer>

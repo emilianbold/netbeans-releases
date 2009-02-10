@@ -185,7 +185,7 @@ public abstract class AttachType {
          * @param attrs attributes loaded from layer.xml
          * @return new <code>ContextAwareService</code> instance
          */
-        static ContextAwareService createService(Map attrs) throws ClassNotFoundException {
+        static AttachType createService(Map attrs) throws ClassNotFoundException {
             String serviceName = (String) attrs.get(DebuggerProcessor.SERVICE_NAME);
             String displayName = (String) attrs.get("displayName");
             return new AttachType.ContextAware(serviceName, displayName);

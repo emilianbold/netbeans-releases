@@ -41,40 +41,42 @@ package org.netbeans.modules.ide.ergonomics.debugger;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.Iterator;
 import java.util.concurrent.Callable;
 import javax.swing.JComponent;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.ide.ergonomics.fod.ConfigurationPanel;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureManager;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
+import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
 import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.debugger.ui.Controller;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Pavel Flaska
  */
-public abstract class AttachTypeProxy extends AttachType implements Controller, Callable<JComponent> {
+public class AttachTypeProxy extends AttachType implements Controller, Callable<JComponent> {
     private AttachType delegate;
     private boolean isVisible;
-    private static Iterator<? extends FeatureInfo> it = FeatureManager.features().iterator();
     private String attachTypeName;
     PropertyChangeSupport propertyChangeSupport;
+    private FeatureInfo featureInfo;
 
-    public AttachTypeProxy() {
+    private AttachTypeProxy(String attachTypeName, FeatureInfo whichProvides) {
         this.delegate = null;
         this.isVisible = true;
-        for (; it.hasNext(); ) {
-            FeatureInfo info = it.next();
-            if (info.getAttachTypeName() != null) {
-                attachTypeName = info.getAttachTypeName();
-                break;
-            }
-        }
+        this.attachTypeName = attachTypeName;
+        this.featureInfo = whichProvides;
         propertyChangeSupport = new PropertyChangeSupport(this);
     }
 
+    public static AttachType create(FileObject fob) {
+        FeatureInfo whichProvides = FoDFileSystem.getInstance().whichProvides(fob);
+        String displayName = (String) fob.getAttribute("displayName");
+        return new AttachTypeProxy(displayName, whichProvides);
+    }
+    
     @Override
     public String getTypeDisplayName() {
         if (!isVisible) {
@@ -94,13 +96,6 @@ public abstract class AttachTypeProxy extends AttachType implements Controller, 
     @Override
     public JComponent getCustomizer() {
         if (delegate == null) {
-            FeatureInfo featureInfo = null;
-            for (FeatureInfo info : FeatureManager.features()) {
-                if (attachTypeName.equals(info.getAttachTypeName())) {
-                    featureInfo = info;
-                    break;
-                }
-            }
             return new ConfigurationPanel(attachTypeName, this, featureInfo);
         } else {
             return delegate.getCustomizer();
