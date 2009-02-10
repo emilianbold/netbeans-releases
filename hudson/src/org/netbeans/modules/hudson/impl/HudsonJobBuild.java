@@ -41,29 +41,38 @@
 
 package org.netbeans.modules.hudson.impl;
 
-import java.util.ArrayList;
+import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
-import java.util.List;
+import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.constants.HudsonXmlApiConstants;
+import org.netbeans.modules.hudson.spi.HudsonSCM;
 import static org.netbeans.modules.hudson.constants.HudsonJobBuildConstants.*;
-import static org.netbeans.modules.hudson.constants.HudsonJobChangeFileConstants.*;
-import static org.netbeans.modules.hudson.constants.HudsonJobChangeItemConstants.*;
 import org.netbeans.modules.hudson.util.HudsonPropertiesSupport;
+import org.openide.util.Lookup;
+import org.w3c.dom.Document;
 
 /**
- * Describes Hudson Job's Build
- *
- * @author Michal Mocnak
+ * Information about one build of a job.
  */
 public class HudsonJobBuild {
+
+    private final HudsonConnector connector;
+    private final HudsonJob job;
+    private final int build;
+
+    HudsonJobBuild(HudsonConnector connector, HudsonJob job, int build) {
+        this.connector = connector;
+        this.job = job;
+        this.build = build;
+    }
     
     public enum Result {
         SUCCESS, FAILURE
     }
     
     private final HudsonPropertiesSupport properties = new HudsonPropertiesSupport();
-    
-    private List<HudsonJobChangeItem> changes = new ArrayList<HudsonJobChangeItem>();
     
     public void putProperty(String name, Object o) {
         properties.putProperty(name, o);
@@ -75,7 +84,7 @@ public class HudsonJobBuild {
     }
     
     public int getDuration() {
-        return (int) (properties.getProperty(JOB_BUILD_DURATION, java.lang.Long.class) / 60000);
+        return (int) (properties.getProperty(JOB_BUILD_DURATION, Long.class) / 60000);
     }
     
     public Date getDate() {
@@ -85,68 +94,30 @@ public class HudsonJobBuild {
     public Result getResult() {
         return properties.getProperty(JOB_BUILD_RESULT, Result.class);
     }
-    
-    public Collection<HudsonJobChangeItem> getChanges() {
+
+    private Collection<? extends HudsonJobChangeItem> changes;
+    /**
+     * Gets a changelog for the build.
+     * This requires SCM-specific parsing using {@link HudsonSCM#parseChangeSet}.
+     * @return a list of changes, possibly empty (including if it could not be parsed)
+     */
+    public Collection<? extends HudsonJobChangeItem> getChanges() {
+        if (changes == null) {
+            Document changeSet = connector.getDocument(job.getUrl() + build + "/" +
+                    HudsonXmlApiConstants.XML_API_URL + "?xpath=/*/changeSet");
+            if (changeSet != null) {
+                for (HudsonSCM scm : Lookup.getDefault().lookupAll(HudsonSCM.class)) {
+                    changes = scm.parseChangeSet(changeSet.getDocumentElement());
+                    if (changes != null) {
+                        break;
+                    }
+                }
+            }
+            if (changes == null) {
+                changes = Collections.emptyList();
+            }
+        }
         return changes;
     }
     
-    public void addChangeItem(HudsonJobChangeItem item) {
-        changes.add(item);
-    }
-    
-    public static class HudsonJobChangeItem {
-        
-        private HudsonPropertiesSupport properties = new HudsonPropertiesSupport();
-        
-        private List<HudsonJobChangeFile> files = new ArrayList<HudsonJobChangeFile>();
-        
-        public void putProperty(String name, Object o) {
-            properties.putProperty(name, o);
-        }
-        
-        public String getUser() {
-            return properties.getProperty(JOB_CHANGE_ITEM_USER, String.class);
-        }
-        
-        public String getMsg() {
-            return properties.getProperty(JOB_CHANGE_ITEM_MESSAGE, String.class);
-        }
-        
-        public Collection<HudsonJobChangeFile> getFiles() {
-            return files;
-        }
-        
-        public void addFile(HudsonJobChangeFile file) {
-            files.add(file);
-        }
-    }
-    
-    public static class HudsonJobChangeFile {
-        
-        public enum EditType {
-            add, edit, delete
-        }
-        
-        private HudsonPropertiesSupport properties = new HudsonPropertiesSupport();
-        
-        public void putProperty(String name, Object o) {
-            properties.putProperty(name, o);
-        }
-        
-        public String getName() {
-            return properties.getProperty(JOB_CHANGE_FILE_NAME, String.class);
-        }
-        
-        public EditType getEditType() {
-            return properties.getProperty(JOB_CHANGE_FILE_EDIT_TYPE, EditType.class);
-        }
-        
-        public String getRevision() {
-            return properties.getProperty(JOB_CHANGE_FILE_REVISION, String.class);
-        }
-        
-        public String getPrevRevision() {
-            return properties.getProperty(JOB_CHANGE_FILE_PREVIOUS_REVISION, String.class);
-        }
-    }
 }
