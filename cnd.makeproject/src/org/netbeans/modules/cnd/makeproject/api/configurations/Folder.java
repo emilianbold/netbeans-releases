@@ -49,10 +49,12 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
@@ -68,7 +70,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
-public class Folder implements FileChangeListener {
+public class Folder implements FileChangeListener, ChangeListener {
 
     public static final String DEFAULT_FOLDER_NAME = "f"; // NOI18N
     public static final String DEFAULT_FOLDER_DISPLAY_NAME = getString("NewFolderName");
@@ -93,7 +95,7 @@ public class Folder implements FileChangeListener {
         this.items = new Vector<Object>();
         this.sortName = displayName.toLowerCase();
 
-    //log.setLevel(Level.FINEST);
+        //log.setLevel(Level.FINEST);
     }
 
     public void setRoot(String root) {
@@ -108,15 +110,15 @@ public class Folder implements FileChangeListener {
         return this;
     }
 
-    public void attachListenersAndRefresh() {
-        log.finer("----------attachListenersAndRefresh " + getPath()); // NOI18N
+    public void refreshDiskFolder() {
+        log.finer("----------refreshDiskFolder " + getPath()); // NOI18N
         String rootPath = getRootPath();
         String AbsRootPath = IpeUtils.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
 
         File folderFile = new File(AbsRootPath);
 
         // Folders to be removed
-        if (!folderFile.exists() || !folderFile.isDirectory()) {
+        if (!folderFile.exists() || !folderFile.isDirectory() || !VisibilityQuery.getDefault().isVisible(folderFile)) {
             // Remove it plus all subfolders and items from project
             log.fine("------------removing folder " + getPath() + " in " + getParent().getPath()); // NOI18N
             getParent().removeFolder(this);
@@ -124,7 +126,7 @@ public class Folder implements FileChangeListener {
         }
         // Items to be removed
         for (Item item : getItemsAsArray()) {
-            if (!item.getFile().exists()) {
+            if (!item.getFile().exists() || !VisibilityQuery.getDefault().isVisible(item.getFile())) {
                 log.fine("------------removing item " + item.getPath() + " in " + getPath()); // NOI18N
                 removeItem(item);
             }
@@ -136,11 +138,8 @@ public class Folder implements FileChangeListener {
         }
         List<File> fileList = new ArrayList<File>();
         for (int i = 0; i < files.length; i++) {
-            if (AllSourceFileFilter.getInstance().accept(files[i]) && // NOI18N
-                    !files[i].getName().equals("nbproject") && // NOI18N
-                    !files[i].getName().equals("CVS") && // NOI18N
-                    !files[i].getName().equals("SCCS") && // NOI18N
-                    !files[i].getName().startsWith(".")) { // NOI18N
+            if (VisibilityQuery.getDefault().isVisible(files[i]) &&
+                    !files[i].getName().equals("nbproject")) { // NOI18N
                 fileList.add(files[i]);
             }
         }
@@ -148,7 +147,8 @@ public class Folder implements FileChangeListener {
             if (file.isDirectory()) {
                 if (findFolderByName(file.getName()) == null) {
                     log.fine("------------adding folder " + file.getPath() + " in " + getPath()); // NOI18N
-                    ((MakeConfigurationDescriptor) getConfigurationDescriptor()).addSourceFilesFromFolder(this, file, false);
+                    ((MakeConfigurationDescriptor) getConfigurationDescriptor()).addSourceFilesFromFolder(this, file, true);
+
                 }
             } else {
                 String path = getRootPath() + '/' + file.getName();
@@ -162,20 +162,46 @@ public class Folder implements FileChangeListener {
             }
         }
 
+        // Repeast for all sub folders
+        Vector<Folder> subFolders = getFolders();
+        for (Folder f : subFolders) {
+            f.refreshDiskFolder();
+        }
+    }
+
+    public void attachListeners() {
+        String rootPath = getRootPath();
+        String AbsRootPath = IpeUtils.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
+        File folderFile = new File(AbsRootPath);
+
+        if (!folderFile.exists() || !folderFile.isDirectory()) {
+            return;
+        }
+
+        if (isDiskFolder() && getRoot() != null) {
+            VisibilityQuery.getDefault().addChangeListener(this);
+            log.finer("-----------attachFilterListener " + getPath()); // NOI18N
+        }
+
         FileUtil.addFileChangeListener(this, folderFile);
-        log.finer("-----------attachListener " + getPath()); // NOI18N
+        log.finer("-----------attachFileChangeListener " + getPath()); // NOI18N
 
         // Repeast for all sub folders
         Vector<Folder> subFolders = getFolders();
         for (Folder f : subFolders) {
-            f.attachListenersAndRefresh();
+            f.attachListeners();
         }
     }
 
+
     public void detachListener() {
-        log.finer("-----------detachListener " + getPath()); // NOI18N
+        log.finer("-----------detachFileChangeListener " + getPath()); // NOI18N
         FileUtil.removeFileChangeListener(this);
-//        folderFileObject = null;
+        if (isDiskFolder() && getRoot() != null) {
+            VisibilityQuery.getDefault().removeChangeListener(this);
+            log.finer("-----------detachFilterListener " + getPath()); // NOI18N
+        }
+
     }
 
     public int size() {
@@ -870,6 +896,14 @@ public class Folder implements FileChangeListener {
 
         public boolean isEmpty() {
             return items.isEmpty();
+        }
+    }
+
+    public void stateChanged(ChangeEvent e) {
+        log.fine("------------stateChanged " + getThis().getPath()); // NOI18N
+        // Happens when filter has changed
+        if (isDiskFolder()) {
+            refreshDiskFolder();
         }
     }
 

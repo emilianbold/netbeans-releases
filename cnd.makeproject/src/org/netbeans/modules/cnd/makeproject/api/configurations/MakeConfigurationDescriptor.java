@@ -972,7 +972,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         addFiles(top, dir, null, filesAdded, true);
         getNativeProject().fireFilesAdded(filesAdded);
         if (attachListeners) {
-            top.attachListenersAndRefresh();
+            top.attachListeners();
         }
 
         addSourceRoot(dir.getPath());
@@ -991,7 +991,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         addFiles(top, dir, null, filesAdded, true);
         getNativeProject().fireFilesAdded(filesAdded);
         if (attachListeners) {
-            top.attachListenersAndRefresh();
+            top.attachListeners();
         }
         return top;
     }
