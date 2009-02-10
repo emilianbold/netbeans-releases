@@ -56,9 +56,9 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.openide.windows.InputOutput;
 
 /**
@@ -97,8 +97,15 @@ public final class CommonTasksSupport {
 
         ChangeListener processListener = new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                NativeProcess process = (NativeProcess)e.getSource();
-                State newState = process.getState();
+                final Object src = e.getSource();
+                
+                if (!(src instanceof NativeProcess)) {
+                    return;
+                }
+                
+                final NativeProcess process = (NativeProcess)src;
+                final State newState = process.getState();
+                
                 if (newState == State.RUNNING) {
                     new CopyRoutine(
                             process.getOutputStream(),

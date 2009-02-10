@@ -38,51 +38,30 @@
  */
 package org.netbeans.modules.nativeexecution.api.impl;
 
-import org.netbeans.modules.nativeexecution.support.*;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.Arrays;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import org.openide.util.Exceptions;
 
 /**
  *
  */
-public final class LocalNativeProcess extends NativeProcess {
+public final class LocalNativeProcess extends AbstractNativeProcess {
 
+    private static final Runtime rt = Runtime.getRuntime();
     private final InputStream processOutput;
     private final InputStream processError;
     private final OutputStream processInput;
-    private static final Runtime rt = Runtime.getRuntime();
-    private final Integer TIMEOUT_TO_USE = Integer.valueOf(System.getProperty(
-            "dlight.localnativeexecutor.timeout", "3")); // NOI18N
-    private final Integer pid;
     private final Process process;
 
     public LocalNativeProcess(NativeProcessInfo info) throws IOException {
-        final NativeProcessAccessor processInfo =
-                NativeProcessAccessor.getDefault();
-
-        Integer ppid = null;
-
+        super(info);
+        
         final String commandLine = info.getCommandLine(true);
         final String workingDirectory = info.getWorkingDirectory(true);
         final File wdir =
                 workingDirectory == null ? null : new File(workingDirectory);
-
-        processInfo.setID(this, commandLine);
-
-        processInfo.setListeners(this, info.getListeners());
-        processInfo.setState(this, State.STARTING);
 
         synchronized (rt) {
             ProcessBuilder pb = new ProcessBuilder(Arrays.asList(
@@ -98,41 +77,9 @@ public final class LocalNativeProcess extends NativeProcess {
             processError = process.getErrorStream();
             processInput = process.getOutputStream();
 
-            /*
-             * For some reason sometimes I hang here... (on reading first
-             * output line...)
-             * That is why I'm doing this in a separate thread and wait for some
-             * timeout
-             */
 
-            Future<Integer> pidReaderTask =
-                    NativeTaskExecutorService.submit(new PIDReader());
-
-            try {
-                ppid = pidReaderTask.get(TIMEOUT_TO_USE, TimeUnit.SECONDS);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ExecutionException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (TimeoutException ex) {
-                // was not able to submit PID in time...
-                // Terminate pid reader ...
-                pidReaderTask.cancel(true);
-            }
+            readPID(processOutput);
         }
-
-        pid = ppid;
-
-        processInfo.setState(this, State.RUNNING);
-    }
-
-    @Override
-    public int getPID() {
-        if (pid == null) {
-            throw new IllegalStateException("Process was not started"); // NOI18N
-        }
-
-        return pid.intValue();
     }
 
     @Override
@@ -161,24 +108,5 @@ public final class LocalNativeProcess extends NativeProcess {
     @Override
     public void cancel() {
         process.destroy();
-    }
-
-    private class PIDReader implements Callable<Integer> {
-
-        public Integer call() throws Exception {
-            Integer pid = null;
-
-            try {
-                BufferedReader br = new BufferedReader(
-                        new InputStreamReader(processOutput));
-                String pidLine = br.readLine().trim();
-                pid = new Integer(pidLine);
-            } catch (NumberFormatException e) {
-            } catch (Exception e) {
-                // Not interested in these exceptions....
-            }
-
-            return pid;
-        }
     }
 }

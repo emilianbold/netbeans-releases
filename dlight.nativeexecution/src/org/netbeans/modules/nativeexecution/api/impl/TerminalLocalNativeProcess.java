@@ -38,43 +38,28 @@
  */
 package org.netbeans.modules.nativeexecution.api.impl;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import org.netbeans.modules.nativeexecution.util.ExternalTerminal;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
-import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /**
  *
  */
-public final class TerminalLocalNativeProcess extends NativeProcess {
+public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
+    private static final Runtime rt = Runtime.getRuntime();
     private final static String dorunScript;
-    private final static Integer TIMEOUT_TO_USE =
-            Integer.valueOf(System.getProperty(
-            "dlight.localnativeexecutor.timeout", "7")); // NOI18N
     private final InputStream processOutput;
     private final InputStream processError;
     private final OutputStream processInput;
-    private static final Runtime rt = Runtime.getRuntime();
-    private final Integer pid;
     private final File pidFile;
-    private final Process process;
 //    private final PipedInputStream pin = new PipedInputStream();
 //    private final PipedOutputStream pout = new PipedOutputStream(pin);
 
@@ -94,22 +79,19 @@ public final class TerminalLocalNativeProcess extends NativeProcess {
 
     public TerminalLocalNativeProcess(final ExternalTerminal t,
             final NativeProcessInfo info) throws IOException {
+        super(info);
+
         ExternalTerminal terminal = t;
-        Integer ppid = null;
-
-        final NativeProcessAccessor processInfo =
-                NativeProcessAccessor.getDefault();
-
-        processInfo.setListeners(this, info.getListeners());
 
         final String commandLine = info.getCommandLine(true);
+        final String workingDirectory = info.getWorkingDirectory(true);
+        final File wdir =
+                workingDirectory == null ? null : new File(workingDirectory);
 
         pidFile = File.createTempFile("termexec", "pid"); // NOI18N
         pidFile.deleteOnExit();
 
         String pidFileName = pidFile.toString();
-
-        processInfo.setID(this, commandLine);
 
         final ExternalTerminalAccessor terminalInfo =
                 ExternalTerminalAccessor.getDefault();
@@ -127,72 +109,23 @@ public final class TerminalLocalNativeProcess extends NativeProcess {
         synchronized (rt) {
             ProcessBuilder pb = new ProcessBuilder(command);
             pb.environment().putAll(info.getEnvVariables(true));
+            pb.directory(wdir);
 
-            final String wdir = info.getWorkingDirectory(true);
-
-            if (wdir != null) {
-                pb.directory(new File(wdir));
-            }
-
-            process = pb.start();
+            Process termProcess = pb.start();
 
             processOutput = new ByteArrayInputStream(new byte[0]);
             processError = new ByteArrayInputStream(new byte[0]);
             processInput = null;
 
-            /*
-             * For some reason sometimes I hang here... (on reading first
-             * output line...)
-             * That is why I'm doing this in a separate thread and wait for some
-             * timeout
-             */
-
-            Future<Integer> pidReaderTask =
-                    NativeTaskExecutorService.submit(new PIDReader());
-
-            try {
-                ppid = pidReaderTask.get(TIMEOUT_TO_USE, TimeUnit.SECONDS);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ExecutionException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (TimeoutException ex) {
-                // was not able to submit PID in time...
-                // Terminate pid reader ...
-                pidReaderTask.cancel(true);
-            }
-        }
-
-        pid = ppid;
-
-        if (pid == null) {
-            if (process != null) {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                String s = null;
-                while ((s = reader.readLine()) != null) {
-                    System.err.println(s);
-                }
-            }
-            processInfo.setState(this, State.ERROR);
-        } else {
-            //        pout.write(loc("TerminalLocalNativeProcess.JobStarted.text").getBytes()); // NOI18N
-            processInfo.setState(this, State.RUNNING);
+            readPID(new FileInputStream(pidFile));
         }
     }
 
     @Override
-    public int getPID() {
-        if (pid == null) {
-            throw new IllegalStateException();
-        }
-        return pid.intValue();
-    }
-
-    @Override
-    protected void cancel() {
+    public void cancel() {
         try {
             ProcessBuilder pb =
-                    new ProcessBuilder("/bin/kill", "-9", "" + pid); // NOI18N
+                    new ProcessBuilder("/bin/kill", "-9", "" + getPID()); // NOI18N
             pb.start().waitFor();
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
@@ -202,8 +135,8 @@ public final class TerminalLocalNativeProcess extends NativeProcess {
     }
 
     @Override
-    protected int waitResult() throws InterruptedException {
-        File f = new File("/proc/" + pid); // NOI18N
+    public int waitResult() throws InterruptedException {
+        File f = new File("/proc/" + getPID()); // NOI18N
 
         while (f.exists()) {
             Thread.sleep(300);
@@ -237,37 +170,5 @@ public final class TerminalLocalNativeProcess extends NativeProcess {
     @Override
     public InputStream getErrorStream() {
         return processError;
-    }
-
-    private static String loc(String key, String... params) {
-        return NbBundle.getMessage(TerminalLocalNativeProcess.class, key, params);
-    }
-
-    private class PIDReader implements Callable<Integer> {
-
-        public Integer call() throws Exception {
-
-            while (pidFile.length() == 0) {
-                try {
-                    // waiting for pid ...
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                }
-            }
-
-            BufferedReader in = new BufferedReader(new FileReader(pidFile));
-            String pidLine = "-1";
-            pidLine = in.readLine();
-
-            Integer result = null;
-
-            try {
-                result = Integer.parseInt(pidLine);
-            } catch (NumberFormatException e) {
-            }
-
-            return result;
-
-        }
     }
 }

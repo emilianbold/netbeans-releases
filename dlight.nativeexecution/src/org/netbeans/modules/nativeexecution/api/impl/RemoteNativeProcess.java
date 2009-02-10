@@ -8,13 +8,10 @@ import org.netbeans.modules.nativeexecution.util.ConnectionManager;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.Map;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.util.Exceptions;
@@ -23,28 +20,22 @@ import org.openide.util.NbBundle;
 /**
  *
  */
-public final class RemoteNativeProcess extends NativeProcess {
+public final class RemoteNativeProcess extends AbstractNativeProcess {
 
     private final static java.util.logging.Logger log = Logger.getInstance();
     private final ChannelExec channel;
-    private final Integer pid;
-    private InputStream out = null;
-    private InputStream err = null;
-    private OutputStream in = null;
+    private InputStream out;
+    private InputStream err;
+    private OutputStream in;
     private Integer exitValue = null;
 
     public RemoteNativeProcess(NativeProcessInfo info) throws IOException {
-        final NativeProcessAccessor processInfo =
-                NativeProcessAccessor.getDefault();
-
-        processInfo.setListeners(this, info.getListeners());
-        processInfo.setState(this, State.STARTING);
-
-        final ConnectionManager mgr = ConnectionManager.getInstance();
-        ChannelExec echannel = null;
+        super(info);
 
         final String commandLine = info.getCommandLine(true);
+        final ConnectionManager mgr = ConnectionManager.getInstance();
 
+        ChannelExec echannel = null;
         synchronized (mgr) {
             final ExecutionEnvironment execEnv = info.getExecutionEnvironment();
 
@@ -81,10 +72,8 @@ public final class RemoteNativeProcess extends NativeProcess {
 
             cmd.append("/bin/echo $$ " + envSetup + " && exec " + commandLine); // NOI18N
 
-            processInfo.setID(this, commandLine);
-
             try {
-                echannel = (ChannelExec) session.openChannel("exec"); // NOI18N                
+                echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
                 echannel.setCommand(cmd.toString());
                 echannel.connect();
             } catch (JSchException ex) {
@@ -103,33 +92,8 @@ public final class RemoteNativeProcess extends NativeProcess {
             e.printStackTrace();
         }
 
-        // Read-out pid from the first line of output (result of 'echo $$')
-        BufferedReader br = new BufferedReader(new InputStreamReader(out));
-        String pidLine = br.readLine();
-        Integer ppid = null;
+        readPID(out);
 
-        if (pidLine == null) {
-            log.severe("Cannot get PID for " + commandLine); // NOI18N
-        } else {
-            try {
-                ppid = new Integer(pidLine.trim());
-            } catch (NumberFormatException ex) {
-                log.severe("Cannot get PID for " + commandLine); // NOI18N
-            }
-        }
-
-        pid = ppid;
-
-        processInfo.setState(this, State.RUNNING);
-    }
-
-    @Override
-    public int getPID() {
-        if (pid == null) {
-            throw new IllegalStateException("Process was not started"); // NOI18N
-        }
-
-        return pid.intValue();
     }
 
     @Override
