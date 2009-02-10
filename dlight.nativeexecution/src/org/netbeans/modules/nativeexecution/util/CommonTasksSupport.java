@@ -48,6 +48,8 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.concurrent.Future;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
@@ -55,7 +57,6 @@ import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
-import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.openide.windows.InputOutput;
@@ -94,12 +95,14 @@ public final class CommonTasksSupport {
 
         final String cmd = "/bin/scp -p -t " + dstFileName; // NOI18N
 
-        Listener processListener = new Listener() {
-
-            public void processStateChanged(NativeProcess p,
-                    State oldState, State newState) {
+        ChangeListener processListener = new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                NativeProcess process = (NativeProcess)e.getSource();
+                State newState = process.getState();
                 if (newState == State.RUNNING) {
-                    new CopyRoutine(p.getOutputStream(), localFile, mask).start();
+                    new CopyRoutine(
+                            process.getOutputStream(),
+                            localFile, mask).start();
                 }
             }
         };

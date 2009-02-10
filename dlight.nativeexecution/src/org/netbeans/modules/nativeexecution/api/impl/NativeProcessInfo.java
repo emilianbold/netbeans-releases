@@ -45,8 +45,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
 import org.netbeans.modules.nativeexecution.support.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.support.MacroExpanderFactory.MacroExpander;
 
@@ -61,7 +61,7 @@ public class NativeProcessInfo {
     private final Map<String, String> envVariables =
             new HashMap<String, String>();
     private String workingDirectory;
-    private Collection<Listener> listeners = null;
+    private Collection<ChangeListener> listeners = null;
     protected final MacroExpander macroExpander;
 
     public NativeProcessInfo(NativeProcessInfo info) {
@@ -71,7 +71,7 @@ public class NativeProcessInfo {
         arguments.addAll(info.arguments);
 
         if (info.listeners != null) {
-            listeners = new ArrayList<Listener>(info.listeners);
+            listeners = new ArrayList<ChangeListener>(info.listeners);
         }
     }
 
@@ -81,9 +81,9 @@ public class NativeProcessInfo {
         macroExpander = MacroExpanderFactory.getExpander(execEnv);
     }
 
-    public void addNativeProcessListener(Listener listener) {
+    public void addNativeProcessListener(ChangeListener listener) {
         if (listeners == null) {
-            listeners = new ArrayList<Listener>();
+            listeners = new ArrayList<ChangeListener>();
         }
 
         listeners.add(listener);
@@ -133,7 +133,7 @@ public class NativeProcessInfo {
         return execEnv;
     }
 
-    public Collection<Listener> getListeners() {
+    public Collection<ChangeListener> getListeners() {
         return listeners;
     }
 

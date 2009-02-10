@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.collector.stdout.spi;
 
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -78,7 +79,6 @@ import org.netbeans.modules.nativeexecution.api.ObservableAction;
 import org.netbeans.modules.nativeexecution.api.ObservableActionListener;
 import org.netbeans.modules.nativeexecution.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
@@ -284,7 +284,7 @@ public final class CLIODataCollector
 
         try {
             fileExists = HostInfoUtils.fileExists(target.getExecEnv(), command);
-        } catch (HostNotConnectedException ex) {
+        } catch (ConnectException ex) {
             connected = false;
         }
 

@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.perfan.spi;
 
+import java.net.ConnectException;
 import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import java.util.ArrayList;
@@ -66,7 +67,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ObservableAction;
 import org.netbeans.modules.nativeexecution.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 
 /**
  * This class will represent SunStudio Performance Analyzer collect
@@ -134,7 +134,7 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
 
         try {
             os = HostInfoUtils.getOS(targetToValidate.getExecEnv());
-        } catch (HostNotConnectedException ex) {
+        } catch (ConnectException ex) {
             ObservableAction<Boolean> connectAction = ConnectionManager.getInstance().
                     getConnectToAction(targetToValidate.getExecEnv());
 

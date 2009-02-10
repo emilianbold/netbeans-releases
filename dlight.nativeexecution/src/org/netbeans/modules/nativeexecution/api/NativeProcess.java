@@ -39,6 +39,8 @@
 package org.netbeans.modules.nativeexecution.api;
 
 import java.util.Collection;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.api.impl.NativeProcessAccessor;
 import org.netbeans.modules.nativeexecution.support.Logger;
 
@@ -54,7 +56,7 @@ public abstract class NativeProcess extends Process {
 
     private final static java.util.logging.Logger log = Logger.getInstance();
     private final Object stateLock = new Object();
-    private Collection<Listener> listeners = null;
+    private Collection<ChangeListener> listeners = null;
     private State state = State.INITIAL;
     private Integer exitValue = null;
     private String id = null;
@@ -190,15 +192,17 @@ public abstract class NativeProcess extends Process {
     }
 
     private void notifyListeners(State oldState, State newState) {
+        log.fine(this.toString() + " State change: " + // NOI18N
+                oldState + " -> " + newState); // NOI18N
+
         if (listeners == null) {
             return;
         }
 
-        log.fine(this.toString() + " State change: " + // NOI18N
-                oldState + " -> " + newState); // NOI18N
+        final ChangeEvent event = new ChangeEvent(this);
 
-        for (Listener l : listeners) {
-            l.processStateChanged(this, oldState, newState);
+        for (ChangeListener l : listeners) {
+            l.stateChanged(event);
         }
 
     }
@@ -250,29 +254,6 @@ public abstract class NativeProcess extends Process {
         CANCELLED
     }
 
-    /**
-     * The listener interface for recieving state change events from a
-     * {@link NativeProcess}.
-     * <p>
-     * One can implement <tt>NativeProcess.Listener</tt> and subscribe it to the
-     * {@link NativeProcess} to recieve <tt>processStateChanged</tt> events.
-     * <br>
-     * See {@link NativeProcessBuilder#addNativeProcessListener(org.netbeans.modules.nativeexecution.api.NativeProcess.Listener) NativeProcessBuilder.addNativeProcessListener()}
-     */
-    public static interface Listener {
-
-        /**
-         * A notification about process' state change. The notification is send
-         * to every registered listener on every state change.
-         * @param process {@link NativeProcess} which state changed.
-         * @param oldState previous state of the process.
-         * @param newState new state of the process.
-         * @see State
-         */
-        public void processStateChanged(
-                NativeProcess process, State oldState, State newState);
-    }
-
     private final static class NativeProcessAccessorImpl
             extends NativeProcessAccessor {
 
@@ -288,7 +269,7 @@ public abstract class NativeProcess extends Process {
 
         @Override
         public void setListeners(NativeProcess process,
-                Collection<Listener> listeners) {
+                Collection<ChangeListener> listeners) {
             process.listeners = listeners;
         }
     }

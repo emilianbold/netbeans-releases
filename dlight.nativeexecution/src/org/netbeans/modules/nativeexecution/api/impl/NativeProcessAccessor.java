@@ -39,8 +39,8 @@
 package org.netbeans.modules.nativeexecution.api.impl;
 
 import java.util.Collection;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
-import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
 
 public abstract class NativeProcessAccessor {
 
@@ -71,7 +71,7 @@ public abstract class NativeProcessAccessor {
 
     public abstract void setID(NativeProcess process, String id);
 
-    public abstract void setListeners(NativeProcess process, Collection<Listener> listeners);
+    public abstract void setListeners(NativeProcess process, Collection<ChangeListener> listeners);
 
     public abstract void setState(NativeProcess process, NativeProcess.State state);
 }

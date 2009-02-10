@@ -42,6 +42,8 @@ import java.io.CharArrayWriter;
 import java.io.OutputStreamWriter;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -54,7 +56,6 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.util.ExternalTerminal;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
-import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.util.ExternalTerminalProvider;
@@ -108,16 +109,21 @@ public class NativeTaskTest {
 
         final String cmd = "/export/home/ak119685/welcome.sh";
 
-        Listener l = new Listener() {
+        ChangeListener l = new ChangeListener() {
 
-            public void processStateChanged(NativeProcess process, State oldState, State newState) {
+            public void stateChanged(ChangeEvent e) {
+                NativeProcess process = (NativeProcess) e.getSource();
+                State newState = process.getState();
+
                 if (newState == State.STARTING) {
                     return;
                 }
+
                 if (newState == State.ERROR) {
                     System.out.println("Unable to start process!");
                     return;
                 }
+
                 System.out.println("Process " + process.toString() + " [" + process.getPID() + "] -> " + newState);
             }
         };

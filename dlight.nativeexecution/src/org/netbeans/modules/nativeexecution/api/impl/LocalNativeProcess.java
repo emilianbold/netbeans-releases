@@ -72,9 +72,6 @@ public final class LocalNativeProcess extends NativeProcess {
         final NativeProcessAccessor processInfo =
                 NativeProcessAccessor.getDefault();
 
-        processInfo.setListeners(this, info.getListeners());
-        processInfo.setState(this, State.STARTING);
-
         Integer ppid = null;
 
         final String commandLine = info.getCommandLine(true);
@@ -83,6 +80,9 @@ public final class LocalNativeProcess extends NativeProcess {
                 workingDirectory == null ? null : new File(workingDirectory);
 
         processInfo.setID(this, commandLine);
+
+        processInfo.setListeners(this, info.getListeners());
+        processInfo.setState(this, State.STARTING);
 
         synchronized (rt) {
             ProcessBuilder pb = new ProcessBuilder(Arrays.asList(
