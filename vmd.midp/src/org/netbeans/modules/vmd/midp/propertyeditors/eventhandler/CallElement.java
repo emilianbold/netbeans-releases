@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
  *
  * @author Anton Chechel
  */
-public class CallElement extends JPanel implements PropertyEditorEventHandlerElement {
+public class CallElement extends JPanel implements PropertyEditorEventHandlerElement, CleanUp {
 
     private DefaultComboBoxModel pointsModel;
     private JRadioButton radioButton;
@@ -164,7 +164,14 @@ public class CallElement extends JPanel implements PropertyEditorEventHandlerEle
         return list;
     }
 
-    
+    public void clean(DesignComponent component) {
+        if (pointsModel != null) {
+            pointsModel.removeAllElements();
+        }
+        pointsModel = null;
+        radioButton = null;
+        cellRenderer = null;
+    }
 
     @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorElementFactory.class)
     public static class CallElementFactory implements PropertyEditorElementFactory {
