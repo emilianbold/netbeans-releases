@@ -85,6 +85,11 @@ public final class FunctionMetric {
         return metricValueClass;
     }
 
+    @Override
+    public String toString() {
+        return metricDisplayedName;
+    }
+
     public static final class FunctionMetricConfiguration {
 
         private final String metricID;

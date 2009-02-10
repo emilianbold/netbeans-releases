@@ -318,6 +318,11 @@ public class SQLStackStorage {
         public String getQuilifiedName() {
             return name;
         }
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 
     protected static class FunctionCallImpl extends FunctionCall {
@@ -343,6 +348,15 @@ public class SQLStackStorage {
             }
             return null;
         }
+
+        @Override
+        public String toString() {
+            StringBuilder buf = new StringBuilder();
+            buf.append("FunctionCall{ function=").append(getFunction());
+            buf.append(", metrics=").append(metrics).append(" }");
+            return buf.toString();
+        }
+
     }
 
     private static class AddFunction {

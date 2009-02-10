@@ -67,7 +67,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  */
 public class APTDriverImpl {
     /** map of active creators */
-    private static final Map<String, APTSyncCreator> file2creator = new ConcurrentHashMap<String, APTSyncCreator>();
+    private static final ConcurrentHashMap<String, APTSyncCreator> file2creator = new ConcurrentHashMap<String, APTSyncCreator>();
     /** static shared sync map */
     private static Map<String, Reference<APTFile>> file2ref2apt = new ConcurrentHashMap<String, Reference<APTFile>>();
     private static Map<String, APTFile> file2apt = new ConcurrentHashMap<String, APTFile>();
@@ -83,21 +83,20 @@ public class APTDriverImpl {
         String path = file.getAbsolutePath();
         APTFile apt = _getAPTFile(path, withTokens);
         if (apt == null) {
-            APTSyncCreator creator;
-            synchronized (file2creator) {
-                creator = file2creator.get(path);
-                if (creator == null) {
-                    creator = new APTSyncCreator();
-                    file2creator.put(path, creator);
+            APTSyncCreator creator = file2creator.get(path);
+            if (creator == null) {
+                // no need to sync on ConcurrentHashMap due to putIfAbsent method
+                creator = new APTSyncCreator();
+                APTSyncCreator old = file2creator.putIfAbsent(path, creator);
+                if (old != null) {
+                    creator = old;
                 }
             }
             assert (creator != null);
             // use instance synchronized method to prevent
             // multiple apt creating for the same file
             apt = creator.findAPT(buffer, withTokens);
-            synchronized (file2creator) {
-                file2creator.remove(path);
-            }
+            file2creator.remove(path);
         }
         return apt;        
     }
