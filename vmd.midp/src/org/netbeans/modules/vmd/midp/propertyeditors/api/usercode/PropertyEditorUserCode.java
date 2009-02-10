@@ -125,6 +125,7 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
         userCodeRadioButton = null;
         messageLabel = null;
         this.component = null;
+        super.cleanUp(component);
     }
 
     /**
