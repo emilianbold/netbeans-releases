@@ -67,6 +67,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -78,6 +79,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.SourceGroupModifier;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -1024,7 +1026,16 @@ public final class DefaultPlugin extends JUnitPlugin {
 
         boolean storeSettings;
         try {
-            storeSettings = readProjectSettingsJUnitVer(project);
+            try {
+                storeSettings = readProjectSettingsJUnitVer(project);
+            } catch (IllegalStateException ex) {
+                if (SourceGroupModifier.createSourceGroup(project, JavaProjectConstants.SOURCES_TYPE_JAVA, JavaProjectConstants.SOURCES_HINT_TEST) != null) {
+                    //repeat if the folder/Sourcegroup was created.
+                    storeSettings = readProjectSettingsJUnitVer(project);
+                } else {
+                    throw ex;
+                }
+            }
             if (!storeSettings) {
                 LOG_JUNIT_VER.finest(
                 " - will not be able to store JUnit version settings"); //NOI18N

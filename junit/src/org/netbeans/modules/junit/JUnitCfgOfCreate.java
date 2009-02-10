@@ -78,7 +78,11 @@ import javax.swing.event.ChangeListener;
 import javax.swing.plaf.UIResource;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.SourceGroupModifier;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -879,6 +883,15 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
      */
     private void setupLocationChooser(FileObject refFileObject) {
         Object[] targetFolders = TestUtil.getTestTargets(refFileObject);
+        if (targetFolders.length == 0) {
+            Project owner = FileOwnerQuery.getOwner(refFileObject);
+            if (owner != null) {
+                if (SourceGroupModifier.createSourceGroup(owner, JavaProjectConstants.SOURCES_TYPE_JAVA, JavaProjectConstants.SOURCES_HINT_TEST) != null) {
+                    targetFolders = TestUtil.getTestTargets(refFileObject);
+                }
+            }
+        }
+
         if (targetFolders.length != 0) {
             hasTargetFolders = true;
             cboxLocation.setModel(new DefaultComboBoxModel(targetFolders));
