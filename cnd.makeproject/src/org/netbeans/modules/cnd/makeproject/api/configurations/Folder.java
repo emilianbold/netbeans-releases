@@ -84,7 +84,8 @@ public class Folder implements FileChangeListener, ChangeListener {
     private final boolean projectFiles;
     private String id = null;
     private String root;
-    private final Logger log = Logger.getLogger("makeproject.folder"); // NOI18N
+    private final static Logger log = Logger.getLogger("makeproject.folder"); // NOI18N
+    private static boolean checkedLogging = checkLogging();
 
     public Folder(ConfigurationDescriptor configurationDescriptor, Folder parent, String name, String displayName, boolean projectFiles) {
         this.configurationDescriptor = configurationDescriptor;
@@ -95,7 +96,6 @@ public class Folder implements FileChangeListener, ChangeListener {
         this.items = new Vector<Object>();
         this.sortName = displayName.toLowerCase();
 
-        //log.setLevel(Level.FINEST);
     }
 
     public void setRoot(String root) {
@@ -987,6 +987,25 @@ public class Folder implements FileChangeListener, ChangeListener {
             removeFolderAction(folder);
             return;
         }
+    }
+
+    private static boolean checkLogging() {
+        if (checkedLogging) {
+            return true;
+        }
+        String logProp = System.getProperty("makeproject.folder"); // NOI18N
+        if (logProp != null) {
+            if (logProp.equals("FINE")) { // NOI18N
+                log.setLevel(Level.FINE);
+            }
+            else if (logProp.equals("FINER")) { // NOI18N
+                log.setLevel(Level.FINER);
+            }
+            else if (logProp.equals("FINEST")) { // NOI18N
+                log.setLevel(Level.FINEST);
+            }
+        }
+        return true;
     }
 
     /** Look up i18n strings here */
