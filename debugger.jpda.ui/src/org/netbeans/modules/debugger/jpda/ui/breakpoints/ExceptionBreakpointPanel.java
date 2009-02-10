@@ -293,17 +293,6 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller, org.
         return true;
     }
     
-    /**
-     * Return <code>true</code> whether value of this customizer 
-     * is valid (and OK button can be enabled).
-     *
-     * @return <code>true</code> whether value of this customizer 
-     * is valid
-     */
-    public boolean isValid () {
-        return true;
-    }
-    
     private String valiadateMsg () {
         if (tfExceptionClassName.getText().trim ().length() == 0) {
             return NbBundle.getMessage(ExceptionBreakpointPanel.class, "MSG_No_Exception_Class_Name_Spec");

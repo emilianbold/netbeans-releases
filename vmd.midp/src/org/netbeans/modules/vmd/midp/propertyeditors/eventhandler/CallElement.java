@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.midp.propertyeditors.eventhandler;
 
 import java.util.ArrayList;
@@ -48,13 +47,18 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.ListCellRenderer;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.handlers.CallPointEventHandlerCD;
 import org.netbeans.modules.vmd.midp.components.handlers.MethodPointEventHandlerCD;
+import org.netbeans.modules.vmd.midp.components.points.PointCD;
+import org.netbeans.modules.vmd.midp.propertyeditors.CleanUp;
 import org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorEventHandlerElement;
 import org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorElementFactory;
 import org.openide.awt.Mnemonics;
@@ -64,49 +68,50 @@ import org.openide.util.NbBundle;
  *
  * @author Anton Chechel
  */
-public class CallElement extends JPanel implements PropertyEditorEventHandlerElement {
+public class CallElement extends JPanel implements PropertyEditorEventHandlerElement, CleanUp {
+
     private DefaultComboBoxModel pointsModel;
     private JRadioButton radioButton;
     private ListCellRenderer cellRenderer;
-    
+
     private CallElement() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(CallElement.class, "LBL_CALL")); // NOI18N
-        
+
         radioButton.getAccessibleContext().setAccessibleName(
                 NbBundle.getMessage(CallElement.class, "ACSN_CALL")); // NOI18N
         radioButton.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(CallElement.class, "ACSD_CALL")); // NOI18N
-        
+
         pointsModel = new DefaultComboBoxModel();
         cellRenderer = new ListCellRenderer();
-        
+
         initComponents();
     }
-    
-    public void setTextForPropertyValue (String text) {
+
+    public void setTextForPropertyValue(String text) {
     }
-    
+
     public JComponent getCustomEditorComponent() {
         return this;
     }
-    
+
     public JRadioButton getRadioButton() {
         return radioButton;
     }
-    
+
     public boolean isInitiallySelected() {
         return false;
     }
-    
+
     public boolean isVerticallyResizable() {
         return false;
     }
 
-    public String getTextForPropertyValue () {
+    public String getTextForPropertyValue() {
         return ""; // NOI18N
     }
-    
+
     public void updateState(PropertyValue value) {
         if (value != null) {
             DesignComponent eventHandler = value.getComponent();
@@ -115,7 +120,7 @@ public class CallElement extends JPanel implements PropertyEditorEventHandlerEle
             }
         }
     }
-    
+
     public void createEventHandler(DesignComponent eventSource) {
         if (!radioButton.isSelected()) {
             return;
@@ -123,16 +128,32 @@ public class CallElement extends JPanel implements PropertyEditorEventHandlerEle
         DesignComponent callElement = (DesignComponent) pointsModel.getSelectedItem();
         MidpDocumentSupport.updateEventHandlerFromTarget(eventSource, callElement);
     }
-    
+
     public void updateModel(List<DesignComponent> components, int modelType) {
         if (modelType == MODEL_TYPE_POINTS) {
+            DesignComponent selectedComponent = ActiveDocumentSupport.getDefault().getActiveComponents().iterator().next();
+            DescriptorRegistry registry = selectedComponent.getDocument().getDescriptorRegistry();
             pointsModel.removeAllElements();
+            DesignComponent targetComponent = null;
             for (DesignComponent component : components) {
+
+                for (PropertyDescriptor descriptor : selectedComponent.getComponentDescriptor().getDeclaredPropertyDescriptors()) {
+                    if (registry.isInHierarchy(PointCD.TYPEID, descriptor.getType())) {
+                        DesignComponent targetComponent_ = selectedComponent.readProperty(descriptor.getName()).getComponent();
+                        if (targetComponent_ == component) {
+                            targetComponent = component;
+                        }
+                    }
+                }
                 pointsModel.addElement(component);
             }
+            if (targetComponent != null) {
+                pointsModel.setSelectedItem(targetComponent);
+            }
+
         }
     }
-    
+
     public void setElementEnabled(boolean enabled) {
     }
 
@@ -142,14 +163,24 @@ public class CallElement extends JPanel implements PropertyEditorEventHandlerEle
         list.add(MethodPointEventHandlerCD.TYPEID);
         return list;
     }
-    
-    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorElementFactory.class)
+
+    public void clean(DesignComponent component) {
+        if (pointsModel != null) {
+            pointsModel.removeAllElements();
+        }
+        pointsModel = null;
+        radioButton = null;
+        cellRenderer = null;
+    }
+
+    @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorElementFactory.class)
     public static class CallElementFactory implements PropertyEditorElementFactory {
+
         public PropertyEditorEventHandlerElement createElement() {
             return new CallElement();
         }
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -185,9 +216,7 @@ public class CallElement extends JPanel implements PropertyEditorEventHandlerEle
 
     private void comboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboBoxActionPerformed
         //radioButton.setSelected(true);//GEN-LAST:event_comboBoxActionPerformed
-    }                                        
-    
-    
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox comboBox;
     // End of variables declaration//GEN-END:variables

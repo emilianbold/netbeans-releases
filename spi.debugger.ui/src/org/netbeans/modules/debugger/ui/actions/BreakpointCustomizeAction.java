@@ -204,6 +204,7 @@ public class BreakpointCustomizeAction extends SystemAction implements ContextAw
             }
             final Controller[] cPtr = new Controller[] { null };
             if (c instanceof Controller) {
+                //Exceptions.printStackTrace(new IllegalStateException("FIXME: JComponent "+c+" must not implement Controller interface!"));
                 cPtr[0] = (Controller) c;
             }
             final DialogDescriptor[] descriptorPtr = new DialogDescriptor[1];

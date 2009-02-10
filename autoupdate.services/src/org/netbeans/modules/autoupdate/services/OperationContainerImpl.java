@@ -214,14 +214,12 @@ public final class OperationContainerImpl<Support> {
                         reqs.add (req);
                     }
                 }
-                if (reqs.isEmpty() || (all.containsAll (reqs) && ! all.contains (eagerEl))) {
-                  if(!Utilities.isKitModule(mi)) {
+                if (! reqs.isEmpty() && all.containsAll (reqs) && ! all.contains (eagerEl)) {
                     // adds affectedEager into list of elements for the operation
                     OperationInfo<Support> i = add (eagerEl.getUpdateUnit (), eagerEl);
                     if (i != null) {
-                        affectedEagers.add (i);
+                        affectedEagers.add (i);                    
                     }
-                  }
                 }
             }
         }

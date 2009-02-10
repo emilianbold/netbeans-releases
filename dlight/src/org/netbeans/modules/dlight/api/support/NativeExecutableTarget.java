@@ -43,7 +43,9 @@ import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -58,6 +60,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.util.ExternalTerminalProvider;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.dlight.util.Util;
+import org.netbeans.modules.nativeexecution.util.ExternalTerminal;
 /**
  * Wrapper of {@link @org-netbeans-modules-nativexecution@org/netbeans/modules/nativexecution/api/NativeTask.html}
  *
@@ -71,6 +74,9 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     private String cmd;
     private String templateCMD;
     private String[] args;
+    private Map<String, String> envs;
+    private String workingDirectory;
+    private ExternalTerminal externalTerminal;
     private String[] templateArgs;
     private String extendedCMD;
     private String[] extendedCMDArgs;
@@ -81,6 +87,10 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         super(new NativeExecutableTargetExecutionService());
         this.execEnv = configuration.getExecutionEvnitoment();
         this.cmd = configuration.getCmd();
+        this.workingDirectory = configuration.getWorkingDirectory();
+        this.envs = new HashMap<String, String>();
+        this.envs.putAll(configuration.getEnv());
+        this.externalTerminal = configuration.getExternalTerminal();
         this.templateCMD = this.cmd;
         this.args = configuration.getArgs();
         if (this.args != null) {
@@ -166,8 +176,11 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         NativeProcessBuilder pb = new NativeProcessBuilder(execEnv, cmd);
         pb = pb.setArguments(args);
         pb = pb.addNativeProcessListener(NativeExecutableTarget.this);
+        pb = pb.setWorkingDirectory(workingDirectory);
+        pb = pb.addEnvironmentVariables(envs);
+        pb = pb.useExternalTerminal(externalTerminal);
         if (executionEnvProvider != null && executionEnvProvider.getExecutionEnv() != null){
-            pb.addEnvironmentVariables(executionEnvProvider.getExecutionEnv());
+            pb = pb.addEnvironmentVariables(executionEnvProvider.getExecutionEnv());
         }
         ExecutionDescriptor descr = new ExecutionDescriptor();
         descr = descr.controllable(true).frontWindow(true);

@@ -79,6 +79,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
     private static final boolean TRACE = Boolean.getBoolean("cnd.toolchain.personality.trace"); // NOI18N
     private static final boolean CREATE_SHADOW = Boolean.getBoolean("cnd.toolchain.personality.create_shadow"); // NOI18N
+    /*package-local*/ static final String CONFIG_FOLDER = "CND/ToolChain"; // NOI18N
     private List<ToolchainDescriptor> descriptors = new ArrayList<ToolchainDescriptor>();
     private Logger log = Logger.getLogger("cnd.toolchain.logger"); // NOI18N
 
@@ -90,7 +91,7 @@ import org.xml.sax.helpers.DefaultHandler;
         try {
             Map<Integer, CompilerVendor> vendors = new TreeMap<Integer, CompilerVendor>();
             Map<String, String> cache = new HashMap<String, String>();
-            FileObject folder = FileUtil.getConfigFile("Services/CndToolChain"); //NOI18N
+            FileObject folder = FileUtil.getConfigFile(CONFIG_FOLDER); 
             int indefinedID = Integer.MAX_VALUE / 2;
             if (folder != null && folder.isFolder()) {
                 FileObject[] files = folder.getChildren();
@@ -535,7 +536,7 @@ import org.xml.sax.helpers.DefaultHandler;
      * available in package for testing only
      */
     /*package-local for testing*/ void writeToolchains() {
-        FileObject folder = FileUtil.getConfigFile("Services/CndToolChain"); //NOI18N
+        FileObject folder = FileUtil.getConfigFile(CONFIG_FOLDER);
         if (folder != null && folder.isFolder()) {
             FileObject[] files = folder.getChildren();
             for (FileObject file : files) {

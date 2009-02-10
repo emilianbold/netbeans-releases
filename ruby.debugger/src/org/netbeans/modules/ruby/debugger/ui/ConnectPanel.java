@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.ruby.debugger.ui;
 
+import java.beans.PropertyChangeListener;
 import javax.swing.JPanel;
 import org.netbeans.modules.ruby.debugger.Util;
 import org.netbeans.modules.ruby.platform.spi.RubyDebuggerImplementation;
@@ -45,7 +46,9 @@ import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-public final class ConnectPanel extends JPanel implements Controller {
+public final class ConnectPanel extends JPanel {
+
+    private ConnectController controller;
 
     public ConnectPanel() {
         initComponents();
@@ -53,28 +56,11 @@ public final class ConnectPanel extends JPanel implements Controller {
         hostField.setText("localhost"); // NOI18N
         portField.setText("7000"); // NOI18N
         timeoutField.setText("15"); // NOI18N
+        controller = new ConnectController();
     }
 
-    public boolean ok() {
-        final RubyDebuggerImplementation debugger = Lookup.getDefault().lookup(RubyDebuggerImplementation.class);
-        if (!check()) {
-            return false;
-        }
-        new Thread(new Runnable() {
-            public void run() {
-                debugger.attach(getHost(), getPort(), getTimeout());
-            }
-        }, "Ruby Debugger Attach").start();
-        return true;
-    }
-
-    @Override
-    public boolean isValid() {
-        return true;
-    }
-
-    public boolean cancel() {
-        return true;
+    ConnectController getController() {
+        return controller;
     }
 
     private boolean check() {
@@ -172,4 +158,36 @@ public final class ConnectPanel extends JPanel implements Controller {
     private javax.swing.JTextField timeoutField;
     private javax.swing.JLabel timeoutLabel;
     // End of variables declaration//GEN-END:variables
+
+    final class ConnectController implements Controller {
+
+        public boolean ok() {
+            final RubyDebuggerImplementation debugger = Lookup.getDefault().lookup(RubyDebuggerImplementation.class);
+            if (!check()) {
+                return false;
+            }
+            new Thread(new Runnable() {
+                public void run() {
+                    debugger.attach(getHost(), getPort(), getTimeout());
+                }
+            }, "Ruby Debugger Attach").start();
+            return true;
+        }
+
+        public boolean isValid() {
+            return true;
+        }
+
+        public boolean cancel() {
+            return true;
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener l) {
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener l) {
+        }
+
+        
+    }
 }

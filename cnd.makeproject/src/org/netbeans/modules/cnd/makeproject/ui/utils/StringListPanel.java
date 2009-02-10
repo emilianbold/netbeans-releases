@@ -49,6 +49,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -61,13 +62,13 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
     private PropertyEditorSupport editor;
     private HelpCtx helpCtx;
 
-    public StringListPanel(List<String> data, boolean addPathPanel, BooleanConfiguration inheritValues, String inheritText, PropertyEditorSupport editor, PropertyEnv env, HelpCtx helpCtx) {
+    public StringListPanel(String label, List<String> data, boolean addPathPanel, BooleanConfiguration inheritValues, String inheritText, PropertyEditorSupport editor, PropertyEnv env, HelpCtx helpCtx) {
         this.addPathPanel = addPathPanel;
         this.inheritValues = inheritValues;
         this.editor = editor;
         this.helpCtx = helpCtx;
         initComponents();
-        myListEditorPanel = new MyListEditorPanel(data);
+        myListEditorPanel = new MyListEditorPanel(label, data);
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -218,8 +219,11 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
 
     private static class MyListEditorPanel extends ListEditorPanel<String> {
 
-        public MyListEditorPanel(List<String> objects) {
+        public MyListEditorPanel(String listLabel, List<String> objects) {
             super(objects);
+            // there is no way to make super() constructor initialize
+            // list label with listLabel passed here, so
+            Mnemonics.setLocalizedText(getListLabel(), listLabel);
             getDefaultButton().setVisible(false);
         }
 
@@ -235,16 +239,6 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
                 return null;
             }
             return newS;
-        }
-
-        @Override
-        public String getListLabelText() {
-            return getString("MACROS_LABEL_TXT");
-        }
-
-        @Override
-        public char getListLabelMnemonic() {
-            return getString("MACROS_LABEL_MN").charAt(0);
         }
 
         @Override

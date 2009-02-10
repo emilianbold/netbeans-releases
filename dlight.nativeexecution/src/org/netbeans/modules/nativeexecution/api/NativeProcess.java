@@ -208,7 +208,7 @@ public abstract class NativeProcess extends Process {
             return;
         }
 
-        if (state == State.CANCELLED) {
+        if (state == State.CANCELLED || state == State.ERROR) {
             return;
         }
 

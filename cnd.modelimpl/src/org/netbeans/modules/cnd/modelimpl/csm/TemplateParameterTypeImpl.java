@@ -49,7 +49,10 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameterType;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
@@ -58,15 +61,15 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  */
 public class TemplateParameterTypeImpl implements CsmType, CsmTemplateParameterType, SelfPersistent {
     private final CsmType type;
-    private final CsmTemplateParameter parameter;
+    private final CsmUID<CsmTemplateParameter> parameter;
     
     public TemplateParameterTypeImpl(CsmType type, CsmTemplateParameter parameter) {
         this.type = type;
-        this.parameter = parameter;
+        this.parameter = UIDCsmConverter.objectToUID(parameter);
     }
 
     public CsmTemplateParameter getParameter() {
-        return parameter;
+        return UIDCsmConverter.UIDtoCsmObject(this.parameter);
     }
 
     public CsmType getTemplateType() {
@@ -110,7 +113,7 @@ public class TemplateParameterTypeImpl implements CsmType, CsmTemplateParameterT
     }
 
     public CsmClassifier getClassifier() {
-        return (CsmClassifier)parameter;
+        return (CsmClassifier) UIDCsmConverter.UIDtoCsmObject(parameter);
     }
 
     public int getPointerDepth() {
@@ -166,11 +169,11 @@ public class TemplateParameterTypeImpl implements CsmType, CsmTemplateParameterT
     
     public void write(DataOutput output) throws IOException {
         PersistentUtils.writeType(type, output);
-        PersistentUtils.writeTemplateParameter(parameter, output);
+        UIDObjectFactory.getDefaultFactory().writeUID(parameter, output);
     }  
     
     public TemplateParameterTypeImpl(DataInput input) throws IOException {
         type = PersistentUtils.readType(input);
-        parameter = PersistentUtils.readTemplateParameter(input);
+        parameter = UIDObjectFactory.getDefaultFactory().readUID(input);
     }
 }

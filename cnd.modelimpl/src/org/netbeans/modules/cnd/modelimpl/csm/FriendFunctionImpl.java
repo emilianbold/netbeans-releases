@@ -62,7 +62,7 @@ public class FriendFunctionImpl extends FunctionImpl<CsmFriendFunction> implemen
     private final CsmUID<CsmClass> friendClassUID;
     
     public FriendFunctionImpl(AST ast, ClassImpl cls, CsmScope scope, boolean register) throws AstRendererException {
-        super(ast, cls.getContainingFile(), scope, register);
+        super(ast, cls.getContainingFile(), scope, register, register);
         friendClassUID = cls.getUID();
     }
     

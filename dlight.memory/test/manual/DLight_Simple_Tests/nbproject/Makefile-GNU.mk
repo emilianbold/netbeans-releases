@@ -15,16 +15,17 @@ RANLIB=ranlib
 CC=gcc
 CCC=g++
 CXX=g++
-FC=
+FC=g77
+AS=gas
 
 # Macros
-PLATFORM=GNU-Solaris-x86
+CND_PLATFORM=GNU-Solaris-x86
 
 # Include project Makefile
 include Makefile
 
 # Object Directory
-OBJECTDIR=build/GNU/${PLATFORM}
+OBJECTDIR=build/GNU/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
@@ -47,16 +48,19 @@ CXXFLAGS=
 # Fortran Compiler Flags
 FFLAGS=
 
+# Assembler Flags
+ASFLAGS=
+
 # Link Libraries and Options
 LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	${MAKE}  -f nbproject/Makefile-GNU.mk dist/GNU/${PLATFORM}/profiler_simple_tests
+	${MAKE}  -f nbproject/Makefile-GNU.mk dist/GNU/GNU-Solaris-x86/dlight_simple_tests
 
-dist/GNU/${PLATFORM}/profiler_simple_tests: ${OBJECTFILES}
-	${MKDIR} -p dist/GNU/${PLATFORM}
-	${LINK.cc} -lmalloc -o dist/GNU/${PLATFORM}/profiler_simple_tests ${OBJECTFILES} ${LDLIBSOPTIONS} 
+dist/GNU/GNU-Solaris-x86/dlight_simple_tests: ${OBJECTFILES}
+	${MKDIR} -p dist/GNU/GNU-Solaris-x86
+	${LINK.cc} -lmalloc -o dist/GNU/${CND_PLATFORM}/dlight_simple_tests ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 ${OBJECTDIR}/deadlock.o: deadlock.cpp 
 	${MKDIR} -p ${OBJECTDIR}
@@ -104,7 +108,7 @@ ${OBJECTDIR}/test_sync.o: test_sync.cpp
 # Clean Targets
 .clean-conf:
 	${RM} -r build/GNU
-	${RM} dist/GNU/${PLATFORM}/profiler_simple_tests
+	${RM} dist/GNU/GNU-Solaris-x86/dlight_simple_tests
 
 # Subprojects
 .clean-subprojects:

@@ -298,7 +298,6 @@ public class Utilities {
     }
     
     private static void writeMarkedFilesToFile (Collection<File> files, File dest) {
-        
         // don't forget for content written before
         String content = "";
         if (dest.exists ()) {

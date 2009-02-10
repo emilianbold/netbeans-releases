@@ -506,17 +506,6 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
         return true;
     }
     
-    /**
-     * Return <code>true</code> whether value of this customizer 
-     * is valid (and OK button can be enabled).
-     *
-     * @return <code>true</code> whether value of this customizer 
-     * is valid
-     */
-    public boolean isValid () {
-        return true;
-    }
-    
     private String valiadateMsg () {
         if (tfClassName.getText().trim ().length() == 0 || (tfMethodName.getText().trim ().length() == 0 && !cbAllMethods.isSelected())) {
             return NbBundle.getMessage(MethodBreakpointPanel.class, "MSG_No_Class_or_Method_Name_Spec");

@@ -143,7 +143,7 @@ public class QmakeConfiguration implements Cloneable {
         expert.setName("QtExpert"); // NOI18N
         expert.setDisplayName(getString("QtExpertTxt")); // NOI18N
         expert.setShortDescription(getString("QtExpertHint")); // NOI18N
-        expert.put(new StringListNodeProp(customDefs, null, new String[] {"QtCustomDefs", getString("QtCustomDefsTxt"), getString("QtCustomDefsHint")}, false, HelpCtx.DEFAULT_HELP)); // NOI18N
+        expert.put(new StringListNodeProp(customDefs, null, new String[] {"QtCustomDefs", getString("QtCustomDefsTxt"), getString("QtCustomDefsHint"), getString("QtCustomDefsLbl")}, false, HelpCtx.DEFAULT_HELP)); // NOI18N
         sheet.put(expert);
 
         return sheet;

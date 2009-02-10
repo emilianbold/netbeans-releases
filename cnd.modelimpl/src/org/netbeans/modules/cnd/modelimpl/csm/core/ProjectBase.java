@@ -1707,7 +1707,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getUnresolved().getUnresolvedFile();
     }
 
-    private Unresolved getUnresolved() {
+    private synchronized Unresolved getUnresolved() {
 	// we don't sinc here since this isn't important enough:
 	// at worst a map with one or two dummies will be thrown away
         if( unresolved == null ) {

@@ -69,7 +69,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CndTokenProcessor;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
@@ -222,10 +224,11 @@ abstract public class CsmCompletionQuery {
             // find last separator position
             final int lastSepOffset = sup.getLastCommandSeparator(offset);
             final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset, lastSepOffset);
+            final CndTokenProcessor<Token<CppTokenId>> etp = CsmExpandedTokenProcessor.create(doc, tp, offset);
             tp.enableTemplateSupport(true);
             doc.readLock();
             try {
-                CndTokenUtilities.processTokens(tp, doc, lastSepOffset, offset);
+                CndTokenUtilities.processTokens(etp, doc, lastSepOffset, offset);
             } finally {
                 doc.readUnlock();
             }

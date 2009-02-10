@@ -503,7 +503,7 @@ NodeActionsProvider {
                             return true;
                         }
                         try {
-                            return FileUtil.isArchiveFile(file.toURL());
+                            return FileUtil.isArchiveFile(file.toURI().toURL());
                         } catch (MalformedURLException ex) {
                             Exceptions.printStackTrace(ex);
                             return false;
@@ -517,7 +517,7 @@ NodeActionsProvider {
             if (state == JFileChooser.APPROVE_OPTION) {
                 File zipOrDir = newSourceFileChooser.getSelectedFile();
                 try {
-                    if (!zipOrDir.isDirectory() && !FileUtil.isArchiveFile(zipOrDir.toURL())) {
+                    if (!zipOrDir.isDirectory() && !FileUtil.isArchiveFile(zipOrDir.toURI().toURL())) {
                         return ;
                     }
                     String d = zipOrDir.getCanonicalPath();
