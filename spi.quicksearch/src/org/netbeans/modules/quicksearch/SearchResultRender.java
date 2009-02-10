@@ -126,7 +126,8 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
             shortcutLabel.setBackground(QuickSearchComboBar.getResultBackground());
             shortcutLabel.setForeground(list.getForeground());
         }
-
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
+            rendererComponent.setOpaque(false);
         return rendererComponent;
     }
 
