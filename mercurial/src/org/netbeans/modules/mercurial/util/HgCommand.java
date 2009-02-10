@@ -666,9 +666,11 @@ public class HgCommand {
         command.add(getHgCommand());
         command.add(HG_OUTGOING_CMD);
         command.add(HG_VERBOSE_CMD);
+        command.add(HG_LOG_TEMPLATE_HISTORY_NO_FILEINFO_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         command.add(to);
+
 
         List<String> list;
         String defaultPush = new HgConfigFiles(repository).getDefaultPush(false);
@@ -829,7 +831,7 @@ public class HgCommand {
         return list;
     }
 
-    private static List<HgLogMessage> processLogMessages(String rootURL, List<File> files, List<String> list, final List<HgLogMessage> messages) {
+    public static List<HgLogMessage> processLogMessages(String rootURL, List<File> files, List<String> list, final List<HgLogMessage> messages) {
         String rev, author, desc, date, id, parents, fm, fa, fd, fc;
         List<String> filesShortPaths = new ArrayList<String>();
 

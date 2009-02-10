@@ -47,6 +47,7 @@ import com.sun.jdi.CharValue;
 import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.IntegerValue;
+import com.sun.jdi.InterfaceType;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ObjectReference;
@@ -303,6 +304,33 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
         }
     }
     
+    public List<JPDAClassType> getAllInterfaces() {
+        if (getInnerValue () == null)
+            return null;
+        try {
+            Type t = ValueWrapper.type(this.getInnerValue());
+            if (!(t instanceof ClassType))
+                return null;
+            List<InterfaceType> interfaces;
+            interfaces = ClassTypeWrapper.allInterfaces0((ClassType) t);
+            if (interfaces == null)
+                return null;
+            List<JPDAClassType> allInterfaces = new ArrayList<JPDAClassType>();
+            for (InterfaceType it : interfaces) {
+                allInterfaces.add(new JPDAClassTypeImpl(getDebugger(), it));
+            }
+            return allInterfaces;
+        } catch (ClassNotPreparedExceptionWrapper cnpex) {
+            return null;
+        } catch (ObjectCollectedExceptionWrapper ocex) {
+            return null;
+        } catch (InternalExceptionWrapper ex) {
+            return null;
+        } catch (VMDisconnectedExceptionWrapper e) {
+            return null;
+        }
+    }
+
     /**
      * Calls {@link java.lang.Object#toString} in debugged JVM and returns
      * its value.
@@ -479,6 +507,18 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
         } catch (ObjectCollectedExceptionWrapper ocex) {
             return null;
         }
+    }
+
+    /**
+     * Evaluates the expression in the context of this variable.
+     * All methods are invoked on this variable,
+     * <code>this</code> can be used to refer to this variable.
+     * 
+     * @param expression
+     * @return Variable containing the result
+     */
+    public Variable evaluate(String expression) throws InvalidExpressionException {
+        return getDebugger().evaluate(expression, this);
     }
     
     /**

@@ -52,6 +52,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.lang.ref.WeakReference;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -70,6 +71,9 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.support.ui.GrantPrivilegesDialog;
 import org.netbeans.modules.nativeexecution.support.Encrypter;
 import org.netbeans.modules.nativeexecution.support.InputRedirectorFactory;
+import org.netbeans.modules.nativeexecution.support.Logger;
+import org.netbeans.modules.nativeexecution.support.MacroExpanderFactory;
+import org.netbeans.modules.nativeexecution.support.MacroExpanderFactory.MacroExpander;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.modules.InstalledFileLocator;
@@ -96,6 +100,7 @@ import org.openide.windows.InputOutput;
  */
 public final class SolarisPrivilegesSupport {
 
+    private static final java.util.logging.Logger log = Logger.getInstance();
     private Map<String, List<String>> privilegesHash =
             Collections.synchronizedMap(new HashMap<String, List<String>>());
     private static SolarisPrivilegesSupport instance = new SolarisPrivilegesSupport();
@@ -169,13 +174,13 @@ public final class SolarisPrivilegesSupport {
         NativeProcessBuilder npb =
                 new NativeProcessBuilder(execEnv, "/bin/ppriv").setArguments("-v $$ | /bin/grep [IL]"); // NOI18N
 
-        ExecutionDescriptor descriptor =
-                new ExecutionDescriptor().inputOutput(
-                InputOutput.NULL).outProcessorFactory(
-                new InputRedirectorFactory(outWriter));
+        ExecutionDescriptor d = new ExecutionDescriptor();
+        d = d.inputOutput(InputOutput.NULL);
+        d = d.outLineBased(true);
+        d = d.outProcessorFactory(new InputRedirectorFactory(outWriter));
 
         ExecutionService execService = ExecutionService.newService(
-                npb, descriptor, "getExecutionPrivileges"); // NOI18N
+                npb, d, "getExecutionPrivileges"); // NOI18N
 
         Future<Integer> fresult = execService.run();
         int result = -1;
@@ -331,7 +336,7 @@ public final class SolarisPrivilegesSupport {
 
 
         static {
-            csums.put("intel-S2", 848751545L); // NOI18N
+            csums.put("SunOS-x86", 2381709310L); // NOI18N
         }
 
         private static void doRequest(
@@ -356,20 +361,29 @@ public final class SolarisPrivilegesSupport {
         private static void doRequestLocal(final ExecutionEnvironment execEnv,
                 final String requestedPrivs, String user, String passwd) {
 
-            String osPath = HostInfoUtils.getPlatformPath(execEnv);
-            String privp = String.format("bin/%s/privp", osPath); // NOI18N
+            MacroExpander macroExpander = MacroExpanderFactory.getExpander(execEnv);
+            String privp = null;
+            String path = "$osname-$platform";
+            try {
+                path = macroExpander.expandMacros(path); // NOI18N
+            } catch (ParseException ex) {
 
+            }
+
+            privp = "bin/" + path + "/privp"; // NOI18N
             InstalledFileLocator fl = InstalledFileLocator.getDefault();
             File file = fl.locate(privp, null, false);
 
             if (file == null || !file.exists()) {
+                log.severe("Cannot request privileges! privp not found!"); // NOI18N
                 return;
             }
 
             privp = file.getAbsolutePath();
 
             // Will not pass any password to unknown program...
-            if (!Encrypter.checkCRC32(privp, csums.get(osPath))) {
+            if (!Encrypter.checkCRC32(privp, csums.get(path))) {
+                log.severe("Wrong privp executable! CRC check failed!"); // NOI18N
                 return;
             }
 
@@ -414,7 +428,10 @@ public final class SolarisPrivilegesSupport {
             w.flush();
 
             try {
-                p.waitFor();
+                int result = p.waitFor();
+                if (result != 0) {
+                    log.severe("doRequestLocal failed! privp returned " + result); // NOI18N
+                }
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             }

@@ -71,6 +71,8 @@ public class NativeTaskTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        String dirs = System.getProperty("netbeans.dirs", "");
+        System.setProperty("netbeans.dirs", "/export/home/ak119685/netbeans-src/main/dlight.suite/build/cluster:" + dirs);
     }
 
     @AfterClass
@@ -94,7 +96,15 @@ public class NativeTaskTest {
         System.out.println("run");
 
         final ExecutionEnvironment ee =
-                new ExecutionEnvironment("ak119685", "localhost");
+                new ExecutionEnvironment("ak119685", "localhost", 22);
+
+//        MacroExpander macroExpander = MacroExpanderFactory.getExpander(ee);
+//        try {
+//            String path = macroExpander.expandMacros("$osname-$platform"); // NOI18N
+//            System.out.println("PATH IS " + path);
+//        } catch (ParseException ex) {
+//            System.out.println("Parse exception! Pos = " + ex.getErrorOffset());
+//        }
 
         final String cmd = "/export/home/ak119685/welcome.sh";
 
@@ -104,13 +114,16 @@ public class NativeTaskTest {
                 if (newState == State.STARTING) {
                     return;
                 }
+                if (newState == State.ERROR) {
+                    System.out.println("Unable to start process!");
+                    return;
+                }
                 System.out.println("Process " + process.toString() + " [" + process.getPID() + "] -> " + newState);
             }
         };
 
         ExternalTerminal term = ExternalTerminalProvider.getTerminal("gnome-terminal").setTitle("My favorite title");
-        NativeProcessBuilder npb = new NativeProcessBuilder(ee, cmd).setArguments("1", "2").addEnvironmentVariable("MY_ENV_VAR2", "IT_WORKS").setWorkingDirectory("/tmp").useExternalTerminal(term).addNativeProcessListener(l);
-
+        NativeProcessBuilder npb = new NativeProcessBuilder(ee, cmd).setArguments("1", "2").addEnvironmentVariable("MY_VAR", "/temp/xx/$platform").setWorkingDirectory("/tmp").addNativeProcessListener(l).useExternalTerminal(term);
         ExecutionDescriptor descr = new ExecutionDescriptor().outLineBased(true).outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
 
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {

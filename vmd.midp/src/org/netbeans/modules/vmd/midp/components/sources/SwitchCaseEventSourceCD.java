@@ -108,7 +108,7 @@ public final class SwitchCaseEventSourceCD extends ComponentDescriptor {
     
     @Override
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
-        MidpActionsSupport.addCommonActionsPresenters (presenters, true, true, true, true, true);
+        //MidpActionsSupport.addCommonActionsPresenters (presenters, true, true, true, true, true);
         MidpActionsSupport.addMoveActionPresenter(presenters, SwitchPointCD.PROP_CASES);
         super.gatherPresenters(presenters);
     }

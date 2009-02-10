@@ -642,7 +642,14 @@ public final class ReferencesSupport {
         }
     }
 
-    private static CsmObject findMacro(List<CsmReference> macroUsages, final int offset) {
+    /**
+     * Searches for macro.
+     *
+     * @param macroUsages - list of macros
+     * @param offset - macro offset
+     * @return macro
+     */
+    public static CsmObject findMacro(List<CsmReference> macroUsages, final int offset) {
         int index = Collections.binarySearch(macroUsages, new RefOffsetKey(offset), new Comparator<CsmReference>() {
             public int compare(CsmReference o1, CsmReference o2) {
                 if (o1 instanceof RefOffsetKey) {

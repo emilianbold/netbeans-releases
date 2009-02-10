@@ -71,6 +71,16 @@ public interface CsmMacroExpansionDocProvider {
     public int expand(Document inDoc, int startOffset, int endOffset, Document outDoc);
 
     /**
+     * Macro expands content of the document.
+     *
+     * @param doc - document for macro expansion
+     * @param startOffset - start offset for expansion
+     * @param endOffset - end offset for expansion
+     * @return - expansion
+     */
+    public String expand(Document doc, int startOffset, int endOffset);
+
+    /**
      * Transforms original offset to offset in expanded text.
      *
      * @param expandedDoc - document
