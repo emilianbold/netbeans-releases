@@ -43,26 +43,19 @@ package org.netbeans.modules.css.editor.test;
 
 import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.junit.MockServices;
 import org.netbeans.modules.css.editor.Css;
+import org.netbeans.modules.css.gsf.CSSFormatter2;
 import org.netbeans.modules.css.lexer.api.CSSTokenId;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.css.gsf.CSSFormatter;
 import org.netbeans.modules.css.gsf.CSSLanguage;
 import org.netbeans.modules.gsf.GsfTestBase;
 import org.netbeans.modules.gsf.api.Formatter;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Common ancestor for all test classes.
  */
 public class TestBase extends GsfTestBase {
-
-//    static {
-//        MockServices.setServices(new Class[] {RepositoryImpl.class});
-//    }
 
     private static final String PROP_MIME_TYPE = "mimeType"; //NOI18N
 
@@ -89,16 +82,6 @@ public class TestBase extends GsfTestBase {
 
     @Override
     public Formatter getFormatter(IndentPrefs preferences) {
-        if (preferences == null) {
-            preferences = new IndentPrefs(4,4);
-        }
-
-//        Preferences prefs = MimeLookup.getLookup(MimePath.get(Css.CSS_MIME_TYPE)).lookup(Preferences.class);
-//        prefs.putInt(SimpleValueNames.SPACES_PER_TAB, preferences.getIndentation());
-        // TODO: XXXX
-
-        CSSFormatter formatter = new CSSFormatter();
-
-        return formatter;
+        return new CSSFormatter2();
     }
 }

@@ -38,90 +38,85 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.css.gsf;
 
-import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.css.lexer.api.CSSTokenId;
-import org.netbeans.modules.gsf.api.CodeCompletionHandler;
+package org.netbeans.test.web.core.syntax;
+
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
+import org.netbeans.editor.BaseKit;
+import org.netbeans.modules.gsf.GsfTestBase;
 import org.netbeans.modules.gsf.api.Formatter;
-import org.netbeans.modules.gsf.api.KeystrokeHandler;
-import org.netbeans.modules.gsf.api.Parser;
-import org.netbeans.modules.gsf.api.SemanticAnalyzer;
-import org.netbeans.modules.gsf.api.StructureScanner;
-import org.netbeans.modules.gsf.spi.CommentHandler;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
+import org.netbeans.modules.web.core.syntax.JSPKit;
+import org.netbeans.modules.web.core.syntax.gsf.JspFormatter;
+import org.netbeans.modules.web.core.syntax.gsf.JspLanguage;
+import org.netbeans.modules.web.jspparser.JspParserImpl;
 
 /**
- * Configuration for CSS
+ * Common ancestor for all test classes.
  */
-public class CSSLanguage extends DefaultLanguageConfig {
-    
-    public CSSLanguage() {
+public class TestBase2 extends GsfTestBase {
+
+
+    public TestBase2(String name) {
+        super(name);
     }
 
-    @Override
-    public boolean isIdentifierChar(char c) {
-         /** Includes things you'd want selected as a unit when double clicking in the editor */
-        return Character.isJavaIdentifierPart(c) 
-                || (c == '-') || (c == '@') 
-                || (c == '&') || (c == '_')
-                || (c == '#');
-    }
-
-    @Override
-    public CommentHandler getCommentHandler() {
-        return new CssCommentHandler();
-    }
-
-    @Override
-    public Language getLexerLanguage() {
-        return CSSTokenId.language();
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "CSS"; //NOI18N ???
-    }
+//    private static final String PROP_MIME_TYPE = "mimeType"; //NOI18N
+//
+//    protected BaseDocument createDocument() {
+//        NbEditorDocument doc = new NbEditorDocument(Css.CSS_MIME_TYPE);
+//        doc.putProperty(PROP_MIME_TYPE, Css.CSS_MIME_TYPE);
+//        doc.putProperty(Language.class, CSSTokenId.language());
+//        return doc;
+//    }
     
     @Override
-    public String getPreferredExtension() {
-        return "css"; // NOI18N
-    }
-
-    // Service Registrations
-    
-    @Override
-    public SemanticAnalyzer getSemanticAnalyzer() {
-        return new CSSSemanticAnalyzer();
+    protected DefaultLanguageConfig getPreferredLanguage() {
+        return new JspLanguage();
     }
 
     @Override
-    public Parser getParser() {
-        return new CSSGSFParser();
+    protected String getPreferredMimeType() {
+        return "text/x-jsp";
     }
 
     @Override
-    public StructureScanner getStructureScanner() {
-        return new CSSStructureScanner();
+    public Formatter getFormatter(IndentPrefs preferences) {
+        if (preferences == null) {
+            preferences = new IndentPrefs(4,4);
+        }
+
+//        Preferences prefs = MimeLookup.getLookup(MimePath.get(Css.CSS_MIME_TYPE)).lookup(Preferences.class);
+//        prefs.putInt(SimpleValueNames.SPACES_PER_TAB, preferences.getIndentation());
+        // TODO: XXXX
+
+        Formatter formatter = new JspFormatter();
+
+        return formatter;
     }
 
     @Override
-    public boolean hasFormatter() {
-        return true;
+    protected BaseKit getEditorKit(String mimeType) {
+        return new JSPKit(JSPKit.JSP_MIME_TYPE);
     }
 
-    @Override
-    public Formatter getFormatter() {
-        return new CSSFormatter2();
-    }
-
-    @Override
-    public CodeCompletionHandler getCompletionHandler() {
-        return new CSSCompletion();
-    }
-
-    @Override
-    public KeystrokeHandler getKeystrokeHandler() {
-        return new CssBracketCompleter();
+    public final void initParserJARs() throws MalformedURLException {
+        String path = System.getProperty("jsp.parser.jars");
+        StringTokenizer st = new StringTokenizer(path, ":");
+        List<URL> list = new ArrayList();
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            File f = new File(token);
+            if (!f.exists()) {
+                fail("cannot find file "+token);
+            }
+            list.add(f.toURI().toURL());
+        }
+        JspParserImpl.setParserJARs(list.toArray(new URL[list.size()]));
     }
 }
