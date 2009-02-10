@@ -67,7 +67,7 @@ public final class TerminalLocalNativeProcess extends NativeProcess {
     private final static String dorunScript;
     private final static Integer TIMEOUT_TO_USE =
             Integer.valueOf(System.getProperty(
-            "dlight.localnativeexecutor.timeout", "3")); // NOI18N
+            "dlight.localnativeexecutor.timeout", "7")); // NOI18N
     private final InputStream processOutput;
     private final InputStream processError;
     private final OutputStream processInput;
@@ -168,7 +168,7 @@ public final class TerminalLocalNativeProcess extends NativeProcess {
             }
             processInfo.setState(this, State.ERROR);
         } else {
-    //        pout.write(loc("TerminalLocalNativeProcess.JobStarted.text").getBytes()); // NOI18N
+            //        pout.write(loc("TerminalLocalNativeProcess.JobStarted.text").getBytes()); // NOI18N
             processInfo.setState(this, State.RUNNING);
         }
     }
@@ -239,17 +239,28 @@ public final class TerminalLocalNativeProcess extends NativeProcess {
     private class PIDReader implements Callable<Integer> {
 
         public Integer call() throws Exception {
-            BufferedReader in = new BufferedReader(new FileReader(pidFile));
-            String pidLine = "-1";
 
-            while (true) {
-                pidLine = in.readLine();
-                if (pidLine != null) {
-                    break;
+            while (pidFile.length() == 0) {
+                try {
+                    // waiting for pid ...
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
                 }
             }
 
-            return new Integer(pidLine);
+            BufferedReader in = new BufferedReader(new FileReader(pidFile));
+            String pidLine = "-1";
+            pidLine = in.readLine();
+
+            Integer result = null;
+
+            try {
+                result = Integer.parseInt(pidLine);
+            } catch (NumberFormatException e) {
+            }
+
+            return result;
+
         }
     }
 }
