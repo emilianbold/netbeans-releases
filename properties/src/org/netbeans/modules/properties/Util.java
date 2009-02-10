@@ -544,6 +544,9 @@ public final class Util extends Object {
                 return (PropertiesDataObject) DataObject.find(candidate);
             } else if (candidate == null){
                 for (FileObject file : parent.getChildren()) {
+                    if (!file.hasExt(PropertiesDataLoader.PROPERTIES_EXTENSION)) {
+                        continue;
+                    }
                     if (file.getName().indexOf(baseName) != -1) {
                         if (isValidLocaleSuffix(file.getName().substring(index))) {
                             return (PropertiesDataObject) DataObject.find(file);
@@ -554,6 +557,52 @@ public final class Util extends Object {
             index = fName.indexOf(PropertiesDataLoader.PRB_SEPARATOR_CHAR, index + 1);
         }
         return obj;
+    }
+
+    /**
+     *
+     * @param f
+     * @param parent Directory where to search
+     * @param baseName of the locale (name without locale suffix)
+     * @return BundleStructure or null 
+     * @throws org.openide.loaders.DataObjectNotFoundException
+     */
+    static BundleStructure findBundleStructure (FileObject f, FileObject parent, String baseName) throws DataObjectNotFoundException{
+            String fName;
+            PropertiesDataObject dataObject;
+            BundleStructure structure;
+            for (FileObject file : parent.getChildren()) {
+                if (!file.hasExt(PropertiesDataLoader.PROPERTIES_EXTENSION) || file.equals(f)) {
+                    continue;
+                }
+                fName = file.getName();
+                if (fName.equals(baseName) && file.isValid()) {
+                        dataObject = (PropertiesDataObject) DataObject.find(file);
+                        if (dataObject == null) continue;
+                        structure = dataObject.getBundleStructureOrNull();
+                        if (structure != null)
+                             return structure;
+                        else
+                             continue;
+                }
+                if (fName.indexOf(baseName) != -1) {
+                    int index = fName.indexOf(PropertiesDataLoader.PRB_SEPARATOR_CHAR);
+                    if (baseName.length()!=index)
+                        continue;
+                    while (index != -1) {
+                        FileObject candidate = file;
+                        if (candidate != null && isValidLocaleSuffix(fName.substring(index)) && file.isValid()) {
+                            dataObject = (PropertiesDataObject) DataObject.find(candidate);
+                            if (dataObject == null) continue;
+                            structure = dataObject.getBundleStructureOrNull();
+                            if (structure != null) 
+                                return structure;
+                        }
+                        index = fName.indexOf(PropertiesDataLoader.PRB_SEPARATOR_CHAR, index + 1);
+                    }
+                }
+            }
+            return null;
     }
 
     /**

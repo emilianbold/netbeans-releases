@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -66,7 +67,7 @@ public final class TerminalLocalNativeProcess extends NativeProcess {
     private final static String dorunScript;
     private final static Integer TIMEOUT_TO_USE =
             Integer.valueOf(System.getProperty(
-            "dlight.localnativeexecutor.timeout", "3")); // NOI18N
+            "dlight.localnativeexecutor.timeout", "7")); // NOI18N
     private final InputStream processOutput;
     private final InputStream processError;
     private final OutputStream processInput;
@@ -80,8 +81,15 @@ public final class TerminalLocalNativeProcess extends NativeProcess {
 
     static {
         InstalledFileLocator fl = InstalledFileLocator.getDefault();
-        File file = fl.locate("bin/dorun.sh", null, false); // NOI18N
+        File file = fl.locate("bin/nativeexecution/dorun.sh", null, false); // NOI18N
         dorunScript = file.toString();
+        try {
+            new ProcessBuilder("/bin/chmod", "+x", dorunScript).start().waitFor(); // NOI18N
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     public TerminalLocalNativeProcess(final ExternalTerminal t,
@@ -94,7 +102,7 @@ public final class TerminalLocalNativeProcess extends NativeProcess {
 
         processInfo.setListeners(this, info.getListeners());
 
-        final String commandLine = info.getCommandLine();
+        final String commandLine = info.getCommandLine(true);
 
         pidFile = File.createTempFile("termexec", "pid"); // NOI18N
         pidFile.deleteOnExit();
@@ -118,9 +126,9 @@ public final class TerminalLocalNativeProcess extends NativeProcess {
 
         synchronized (rt) {
             ProcessBuilder pb = new ProcessBuilder(command);
-            pb.environment().putAll(info.getEnvVariables());
+            pb.environment().putAll(info.getEnvVariables(true));
 
-            final String wdir = info.getWorkingDirectory();
+            final String wdir = info.getWorkingDirectory(true);
 
             if (wdir != null) {
                 pb.directory(new File(wdir));
@@ -130,7 +138,6 @@ public final class TerminalLocalNativeProcess extends NativeProcess {
 
             processOutput = new ByteArrayInputStream(new byte[0]);
             processError = new ByteArrayInputStream(new byte[0]);
-//            processError = pin;
             processInput = null;
 
             /*
@@ -157,8 +164,20 @@ public final class TerminalLocalNativeProcess extends NativeProcess {
         }
 
         pid = ppid;
-//        pout.write(loc("TerminalLocalNativeProcess.JobStarted.text").getBytes()); // NOI18N
-        processInfo.setState(this, State.RUNNING);
+
+        if (pid == null) {
+            if (process != null) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                String s = null;
+                while ((s = reader.readLine()) != null) {
+                    System.err.println(s);
+                }
+            }
+            processInfo.setState(this, State.ERROR);
+        } else {
+            //        pout.write(loc("TerminalLocalNativeProcess.JobStarted.text").getBytes()); // NOI18N
+            processInfo.setState(this, State.RUNNING);
+        }
     }
 
     @Override
@@ -172,7 +191,11 @@ public final class TerminalLocalNativeProcess extends NativeProcess {
     @Override
     protected void cancel() {
         try {
-            rt.exec("/bin/kill -9 " + pid);
+            ProcessBuilder pb =
+                    new ProcessBuilder("/bin/kill", "-9", "" + pid); // NOI18N
+            pb.start().waitFor();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -223,17 +246,28 @@ public final class TerminalLocalNativeProcess extends NativeProcess {
     private class PIDReader implements Callable<Integer> {
 
         public Integer call() throws Exception {
-            BufferedReader in = new BufferedReader(new FileReader(pidFile));
-            String pidLine = "-1";
 
-            while (true) {
-                pidLine = in.readLine();
-                if (pidLine != null) {
-                    break;
+            while (pidFile.length() == 0) {
+                try {
+                    // waiting for pid ...
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
                 }
             }
 
-            return new Integer(pidLine);
+            BufferedReader in = new BufferedReader(new FileReader(pidFile));
+            String pidLine = "-1";
+            pidLine = in.readLine();
+
+            Integer result = null;
+
+            try {
+                result = Integer.parseInt(pidLine);
+            } catch (NumberFormatException e) {
+            }
+
+            return result;
+
         }
     }
 }

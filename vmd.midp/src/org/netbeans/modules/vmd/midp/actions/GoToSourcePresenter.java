@@ -49,6 +49,8 @@ import org.netbeans.modules.vmd.api.model.Presenter;
  */
 public abstract class GoToSourcePresenter extends Presenter {
 
+    public static enum Relationship {Parent, GrandParent};
+
     protected abstract boolean matches (GuardedSection section);
 
     public static GoToSourcePresenter createForwarder (final String propertyName) {
@@ -59,6 +61,28 @@ public abstract class GoToSourcePresenter extends Presenter {
                     return false;
                 GoToSourcePresenter presenter = forward.getPresenter (GoToSourcePresenter.class);
                 return presenter != null  &&  presenter.matches (section);
+            }
+        };
+    }
+
+    public static Presenter createParentForwarder(final Relationship relationship) {
+        return new GoToSourcePresenter() {
+
+            protected boolean matches(GuardedSection section) {
+                if (relationship == null) {
+                    throw new IllegalArgumentException("Argument relationship is null");
+                }
+                DesignComponent forward = null;
+                if (relationship == Relationship.Parent) {
+                    forward = getComponent().getParentComponent();
+                } else if (relationship == Relationship.GrandParent) {
+                    forward = getComponent().getParentComponent().getParentComponent();
+                }
+                if (forward == null) {
+                    return false;
+                }
+                GoToSourcePresenter presenter = forward.getPresenter(GoToSourcePresenter.class);
+                return presenter != null && presenter.matches(section);
             }
         };
     }

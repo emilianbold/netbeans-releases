@@ -63,6 +63,7 @@ import org.openide.util.NbBundle;
  * @version 1.0
  */
 public class ListActionElement implements PropertyEditorEventHandlerElement, CleanUp {
+
     private JRadioButton radioButton;
 
     public void clean(DesignComponent component) {

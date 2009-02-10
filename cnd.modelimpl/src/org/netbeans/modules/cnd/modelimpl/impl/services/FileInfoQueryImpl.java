@@ -340,4 +340,12 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
             }
         }
     }
+
+    @Override
+    public long getFileVersion(CsmFile file) {
+        if (file instanceof FileImpl) {
+            return FileImpl.getParseCount();
+        }
+        return 0;
+    }
 }

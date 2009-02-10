@@ -103,13 +103,15 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
     }
 
     public static Hk2OptionalFactory createPrelude() {
-        return new Hk2OptionalFactory(Hk2DeploymentFactory.createPrelude(),
-                ServerUtilities.getPreludeUtilities());
+        ServerUtilities t = ServerUtilities.getPreludeUtilities();
+        return null == t ? null : new Hk2OptionalFactory(Hk2DeploymentFactory.createPrelude(),
+                t);
     }
     
     public static Hk2OptionalFactory createEe6() {
-        return new Hk2OptionalFactory(Hk2DeploymentFactory.createEe6(),
-                ServerUtilities.getEe6Utilities());
+        ServerUtilities t = ServerUtilities.getEe6Utilities();
+        return null == t ? null : new Hk2OptionalFactory(Hk2DeploymentFactory.createEe6(),
+                t);
     }
     
     public StartServer getStartServer(DeploymentManager dm) {

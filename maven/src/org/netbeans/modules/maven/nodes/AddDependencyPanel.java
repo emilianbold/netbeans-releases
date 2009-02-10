@@ -702,6 +702,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             btv = new BeanTreeView();
             btv.setRootVisible(false);
             btv.setDefaultActionAllowed(false);
+            btv.setUseSubstringInQuickSearch(true);
             manager = new ExplorerManager();
             manager.setRootContext(getNoResultsRoot());
             setLayout(new BorderLayout());

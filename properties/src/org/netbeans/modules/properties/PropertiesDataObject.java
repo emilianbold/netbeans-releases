@@ -49,6 +49,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.logging.Logger;
+import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
 
 import org.openide.filesystems.FileObject;
@@ -153,6 +154,37 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
     CookieSet getCookieSet0() {
         return getCookieSet();
     }
+    
+    @Override
+    protected FileObject handleRename(String name) throws IOException {
+        boolean baseNameChanged = false;
+        BundleStructure oldStructure = (MultiBundleStructure) bundleStructure;
+        FileObject fo = this.getPrimaryFile();
+        PropertiesOpen openCookie = (PropertiesOpen) getCookie(OpenCookie.class);
+        if (openCookie != null) {
+            openCookie.removeModifiedListener(this);
+            openCookie.close();
+        }
+        if (bundleStructure != null && bundleStructure.getEntryCount()>1) {
+            if (!Util.getBaseName(name).equals(Util.getBaseName(this.getName()))) {
+                //This means that new OpenCookie should be created
+                baseNameChanged = true;
+                bundleStructure = null;
+                openSupport = null;
+            }
+        }
+        try {
+            return super.handleRename(name);
+        } finally {
+            if (baseNameChanged && oldStructure!=null && oldStructure.getEntryCount()>1) {
+                oldStructure.updateEntries();
+                oldStructure.notifyOneFileChanged(fo);
+            }
+            bundleStructure = null;
+            openSupport = null;
+        }
+    }
+
 
     /** Copies primary and secondary files to new folder.
      * Overrides superclass method.
@@ -189,17 +221,31 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
                     + FileUtil.getFileDisplayName(df.getPrimaryFile()) + ')');
         }
 
+        BundleStructure oldStructure = (MultiBundleStructure) bundleStructure;
+        FileObject fo = this.getPrimaryFile();
         // a simple fix of issue #92195 (impossible to save a moved prop. file):
         SaveCookie saveCookie = getCookie(SaveCookie.class);
         if (saveCookie != null) {
             saveCookie.save();
         }
-
+        PropertiesOpen openCookie = (PropertiesOpen) getCookie(OpenCookie.class);
+        if (openCookie != null) {
+            openCookie.removeModifiedListener(this);
+            openCookie.close();
+            bundleStructure = null;
+            openSupport = null;
+        }
+//        getCookieSet().remove(openCookie);
         try {
 //            pasteSuffix = createPasteSuffix(df);
 
             return super.handleMove(df);
         } finally {
+            //Here data object has old path still but in invalid state
+            if (oldStructure!=null && oldStructure.getEntryCount()>1) {
+                oldStructure.updateEntries();
+                oldStructure.notifyOneFileChanged(fo);
+            }
             pasteSuffix = null;
             bundleStructure = null;
             openSupport = null;
@@ -262,6 +308,7 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
     public PropertiesOpen getOpenSupport() {
         if (openSupport == null) {
             openSupport = ((MultiBundleStructure)getBundleStructure()).getOpenSupport();
+            openSupport.addDataObject(this);
         }
         return openSupport;
     }
@@ -308,25 +355,45 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
         return secondaryEntries().size() > 0;
     }
 
-    /** Returns a structural view of this data object */
-    public BundleStructure getBundleStructure() {
-        if (bundleStructure != null)
-            return bundleStructure;
+    /**
+     * Find existing BundleStructure instance.
+     * @return BundleStructure from first DataObject with the same base name or null
+     */
+    protected synchronized BundleStructure findBundleStructure() {
         PropertiesDataObject dataObject = null;
+        BundleStructure structure;
         try {
             dataObject = Util.findPrimaryDataObject(this);
-        } catch (DataObjectNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
+        } catch (DataObjectNotFoundException doe) {
+            Exceptions.printStackTrace(doe);
         }
-        if (this == dataObject) {
-            if (bundleStructure == null) {
-                bundleStructure = new MultiBundleStructure(this);
-                ((MultiBundleStructure)bundleStructure).updateEntries();
-            }
-            return bundleStructure;
+        if(this == dataObject) {
+            structure = new MultiBundleStructure(this);
+            return structure;
         } else {
             return dataObject.getBundleStructure();
         }
+    }
+
+    /** Getter for bundleStructure property */
+    protected  BundleStructure getBundleStructureOrNull () {
+        return bundleStructure;
+    }
+
+    /** Returns a structural view of this data object */
+    public BundleStructure getBundleStructure() {
+        if (bundleStructure==null) {
+            try {
+                bundleStructure = Util.findBundleStructure(this.getPrimaryFile(), this.getPrimaryFile().getParent(), Util.getBaseName(this.getName()));
+                if (bundleStructure == null)
+                    bundleStructure = new MultiBundleStructure(this);
+                bundleStructure.updateEntries();
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
+        }
+        return bundleStructure;
     }
 
     protected void setBundleStructure(BundleStructure structure) {

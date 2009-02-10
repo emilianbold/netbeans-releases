@@ -39,16 +39,19 @@
 package org.netbeans.modules.dlight.sync;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
+import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
+import org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration;
+import org.netbeans.modules.dlight.collector.stdout.CLIOParser;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
+import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
 
@@ -92,10 +95,13 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     dataCollectorConfiguration.setIndicatorFiringFactor(1);
     MultipleDTDCConfiguration multipleDTDCConfiguration = new MultipleDTDCConfiguration(dataCollectorConfiguration, "sync:");
     toolConfiguration.addDataCollectorConfiguration(multipleDTDCConfiguration);
-    toolConfiguration.addIndicatorDataProviderConfiguration(multipleDTDCConfiguration);
 
-    List<Column> indicatorColumns = Arrays.asList(
-            timeColumn);
+    Column locksColumn = new Column("locks", Float.class, "Percentage of time spent in locks", null); //NOI18N
+    List<Column> indicatorColumns = Arrays.asList(locksColumn);
+    final DataTableMetadata indicatorTableMetadata = new DataTableMetadata("prstat", indicatorColumns);
+    CLIODCConfiguration clioCollectorConfiguration = new CLIODCConfiguration("/bin/prstat", "-mv -p @PID -c 1", 
+            new SyncCLIOParser(locksColumn), Arrays.asList(indicatorTableMetadata));
+    toolConfiguration.addIndicatorDataProviderConfiguration(clioCollectorConfiguration);
     IndicatorMetadata indicatorMetadata = new IndicatorMetadata(indicatorColumns);
     SyncIndicatorConfiguration indicatorConf =
         new SyncIndicatorConfiguration(indicatorMetadata);
@@ -104,6 +110,49 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     return toolConfiguration;
   }
 
+    private static class SyncCLIOParser implements CLIOParser {
+
+        private final List<String> colnames;
+
+        public SyncCLIOParser(Column locksColumn) {
+            colnames = Arrays.asList(locksColumn.getColumnName());
+        }
+
+        public DataRow process(String line) {
+            DLightLogger.instance.fine("SyncCLIOParser: " + line); //NOI18N
+
+            /*----- Below is an example of output: -------------------------
+            PID USERNAME USR SYS TRP TFL DFL LCK SLP LAT VCX ICX SCL SIG PROCESS/NLWP
+            2732 vk155633 0.0 0.0 0.0 0.0 0.0 0.0 100 0.0   0   0   0   0 dlight_simpl/1
+            Total: 1 processes, 1 lwps, load averages: 0.30, 0.27, 0.34
+            ---------------------------------------------------------------- */
+
+            if (line == null || line.length() == 0) {
+                return null;
+            }
+
+            line = line.trim();
+
+            if (!Character.isDigit(line.charAt(0))) {
+                return null;
+            }
+            
+            String l = line.trim();
+            l = l.replaceAll(",", ".");
+            String[] tokens = l.split("[ \t]+");
+
+            if (tokens.length < 8) {
+                return null;
+            }
+
+            try {
+                float locks = Float.parseFloat(tokens[7]);
+                return new DataRow(colnames, Arrays.asList(locks));
+            } catch (NumberFormatException ex) {
+                return null;
+            }
+        }
+    }
 
   private VisualizerConfiguration getDetails(DataTableMetadata rawTableMetadata) {
 //        DLightManager.getDefault().openVisualizer(SyncToolConfigurationProvider.this, TableVisualizer.id, new TableVisualizerConfiguration(rawTableMetadata));

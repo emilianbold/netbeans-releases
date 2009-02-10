@@ -107,7 +107,7 @@ class MemoryMonitorUtil {
     }
 
     public static String getEnvVar() {
-        return Utilities.isMac() ? "o" : "LD_PRELOAD"; //NOI18N
+        return Utilities.isMac() ? "DYLD_INSERT_LIBRARIES" : "LD_PRELOAD"; //NOI18N
     }
 
     private static String getPlatformBinary(String nameWithSuffix) {

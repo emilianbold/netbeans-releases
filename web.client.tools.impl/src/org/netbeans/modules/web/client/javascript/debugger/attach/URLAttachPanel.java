@@ -45,6 +45,8 @@
 
 package org.netbeans.modules.web.client.javascript.debugger.attach;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -79,7 +81,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author sc32560
  */
-public class URLAttachPanel extends javax.swing.JPanel implements Controller {
+public class URLAttachPanel extends javax.swing.JPanel {
 
     private static Preferences preferences = NbPreferences.forModule(URLAttachPanel.class);
     private static final String DEBUG_URL = "debugURL";
@@ -88,10 +90,12 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
     
     private final boolean ieBrowserSupported;
     private final boolean ffBrowserSupported;
+    private final URLAttachController controller;
 
     /** Creates new form URLAttachPanel */
     public URLAttachPanel() {
-        initComponents();        
+        initComponents();
+        controller = new URLAttachController();
         debugURLTextField.setText(preferences.get(DEBUG_URL,""));
         debugURLTextField.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
@@ -106,7 +110,7 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
             }
 
             private void update() {                
-                firePropertyChange(PROP_VALID, null, null);
+                controller.firePropertyChange();
                 messageTextField.setText("");
             }
         });        
@@ -133,6 +137,11 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
             internetExplorerRadioButton.setSelected(ieBrowserSupported);
         }
     }
+
+    URLAttachController getController() {
+        return controller;
+    }
+
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -250,60 +259,6 @@ private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     }
 }//GEN-LAST:event_browseButtonActionPerformed
 
-    @Override
-    public boolean isValid() {
-        return ieBrowserSupported || ffBrowserSupported;
-    }
-
-    public boolean ok() {
-        preferences.put(DEBUG_URL, debugURLTextField.getText());
-        if (Utilities.isWindows() && internetExplorerRadioButton.isSelected()) {
-            preferences.put(BROWSER, WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER.name());
-        } else {
-            preferences.put(BROWSER, WebClientToolsProjectUtils.Browser.FIREFOX.name());            
-        }
-        if (WebClientToolsSessionStarterService.isAvailable()) {
-            try {
-                String text = debugURLTextField.getText().trim();
-                if (text.length() == 0) {
-                    return false;
-                }
-
-                URI uri = new URI(text);
-                try {
-                    Factory htmlBrowserFactory = null;
-                    if (internetExplorerRadioButton.isSelected()) {
-                        htmlBrowserFactory = WebClientToolsProjectUtils.getInternetExplorerBrowser();
-                    } else {
-                        htmlBrowserFactory = WebClientToolsProjectUtils.getFirefoxBrowser();
-                    }
-                    if (htmlBrowserFactory == null) {
-                        // TODO Display message
-                        try {
-                            // Simply launch the URL in the browser
-                            HtmlBrowser.URLDisplayer.getDefault().showURL(uri.toURL());
-                        } catch (MalformedURLException ex) {
-                            messageTextField.setText(ex.getMessage());
-                            return false;
-                        }
-                    } else {
-                        WebClientToolsSessionStarterService.startSession(uri, htmlBrowserFactory, Lookups.fixed(MAPPERS));
-                    }
-                } catch (WebClientToolsSessionException ex) {
-                    StatusDisplayer.getDefault().setStatusText(ex.getMessage());
-                }
-            } catch (URISyntaxException ex) {
-                messageTextField.setText(ex.getMessage());
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public boolean cancel() {        
-        return true;
-    }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
     private javax.swing.ButtonGroup browserButtonGroup;
@@ -374,5 +329,76 @@ private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         }
 
         return false;
+    }
+
+    private class URLAttachController implements Controller {
+
+        private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+
+        public boolean isValid() {
+            return ieBrowserSupported || ffBrowserSupported;
+        }
+
+        public boolean ok() {
+            preferences.put(DEBUG_URL, debugURLTextField.getText());
+            if (Utilities.isWindows() && internetExplorerRadioButton.isSelected()) {
+                preferences.put(BROWSER, WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER.name());
+            } else {
+                preferences.put(BROWSER, WebClientToolsProjectUtils.Browser.FIREFOX.name());
+            }
+            if (WebClientToolsSessionStarterService.isAvailable()) {
+                try {
+                    String text = debugURLTextField.getText().trim();
+                    if (text.length() == 0) {
+                        return false;
+                    }
+
+                    URI uri = new URI(text);
+                    try {
+                        Factory htmlBrowserFactory = null;
+                        if (internetExplorerRadioButton.isSelected()) {
+                            htmlBrowserFactory = WebClientToolsProjectUtils.getInternetExplorerBrowser();
+                        } else {
+                            htmlBrowserFactory = WebClientToolsProjectUtils.getFirefoxBrowser();
+                        }
+                        if (htmlBrowserFactory == null) {
+                            // TODO Display message
+                            try {
+                                // Simply launch the URL in the browser
+                                HtmlBrowser.URLDisplayer.getDefault().showURL(uri.toURL());
+                            } catch (MalformedURLException ex) {
+                                messageTextField.setText(ex.getMessage());
+                                return false;
+                            }
+                        } else {
+                            WebClientToolsSessionStarterService.startSession(uri, htmlBrowserFactory, Lookups.fixed(MAPPERS));
+                        }
+                    } catch (WebClientToolsSessionException ex) {
+                        StatusDisplayer.getDefault().setStatusText(ex.getMessage());
+                    }
+                } catch (URISyntaxException ex) {
+                    messageTextField.setText(ex.getMessage());
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public boolean cancel() {
+            return true;
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener l) {
+            pcs.addPropertyChangeListener(l);
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener l) {
+            pcs.removePropertyChangeListener(l);
+        }
+
+        void firePropertyChange() {
+            pcs.firePropertyChange(PROP_VALID, null, null);
+        }
+
     }
 }

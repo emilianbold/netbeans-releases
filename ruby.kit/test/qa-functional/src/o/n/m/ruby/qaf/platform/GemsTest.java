@@ -144,6 +144,9 @@ public class GemsTest extends JellyTestCase {
         JTabbedPaneOperator jtpo = new JTabbedPaneOperator(rgm);
         assertTrue(jtpo.getTitleAt(1).contains("17"));
         jtpo.selectPage(2);
+        if (JProgressBarOperator.findJProgressBar(rgm.getContentPane()) != null) {
+            new JProgressBarOperator(rgm).waitComponentShowing(false);
+        }
         JListOperator gemsList = new JListOperator(jtpo);
         //select Abundance Gem
         gemsList.selectItem(1);

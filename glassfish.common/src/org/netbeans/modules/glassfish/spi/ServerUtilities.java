@@ -85,11 +85,13 @@ public final class ServerUtilities {
     }
 
     public static ServerUtilities getPreludeUtilities() {
-        return new ServerUtilities(GlassfishInstanceProvider.getPrelude());
+        GlassfishInstanceProvider gip = GlassfishInstanceProvider.getPrelude();
+        return null == gip? null : new ServerUtilities(gip);
     }
     
     public static ServerUtilities getEe6Utilities() {
-        return new ServerUtilities(GlassfishInstanceProvider.getEe6());
+        GlassfishInstanceProvider gip = GlassfishInstanceProvider.getEe6();
+        return null == gip ? null : new ServerUtilities(gip);
     }
 
     /**
