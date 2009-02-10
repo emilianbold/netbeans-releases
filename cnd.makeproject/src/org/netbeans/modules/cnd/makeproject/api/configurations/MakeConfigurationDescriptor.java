@@ -62,6 +62,7 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWriter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -965,6 +966,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             } else {
                 rootPath = IpeUtils.toAbsolutePath(baseDir, dir.getPath());
             }
+            rootPath = FilePathAdaptor.normalize(rootPath);
             top.setRoot(rootPath);
         }
         addFiles(top, dir, null, filesAdded, true);
