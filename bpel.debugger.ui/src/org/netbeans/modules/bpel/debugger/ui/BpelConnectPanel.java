@@ -24,6 +24,7 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,12 +50,13 @@ import org.openide.util.NbBundle;
  *
  * @author Sun Microsystems
  */
-public class BpelConnectPanel extends JPanel implements Controller {
+public class BpelConnectPanel extends JPanel {
 
     private static final String PROPERTIES_KEY = "BpelDebuggerConnection";
 
     private JTextField mHostField;
     private JTextField mPortField;
+    private Controller controller;
     
     
     /**
@@ -82,33 +84,11 @@ public class BpelConnectPanel extends JPanel implements Controller {
         JPanel p = new JPanel();
         p.setPreferredSize(new Dimension(1, 1));
         add(p, c);
-    }
-    
-    public boolean isValid() {
-        return true;
+        controller = new BpelConnectController();
     }
 
-    public boolean cancel() {
-        return true;
-    }
-
-    public boolean ok() {
-        final String host = mHostField.getText();
-        final String port = mPortField.getText();
-        saveArgs(host, port);
-
-        ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(
-                BpelConnectPanel.class, "CTL_connectProgress"));
-        try {
-            progress.start();
-            DebuggerEngine[] es = DebuggerManager.getDebuggerManager().startDebugging(
-                    DebuggerInfo.create(AttachingCookie.ID,
-                            new Object[] {
-                            AttachingCookie.create(host, port) }));
-        } finally {
-            progress.finish();
-        }
-        return true;
+    Controller getController() {
+        return controller;
     }
 
     private void addSettingUI(String label, JTextField tfParam) {
@@ -174,4 +154,42 @@ public class BpelConnectPanel extends JPanel implements Controller {
 
     private static final String DEFAULT_PORT = "3343"; // NOI18N
     private static final String DEFAULT_HOST = "localhost"; // NOI18N
+
+    private class BpelConnectController implements Controller {
+        
+        public boolean isValid() {
+            return true;
+        }
+
+        public boolean cancel() {
+            return true;
+        }
+
+        public boolean ok() {
+            final String host = mHostField.getText();
+            final String port = mPortField.getText();
+            saveArgs(host, port);
+
+            ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(
+                    BpelConnectPanel.class, "CTL_connectProgress"));
+            try {
+                progress.start();
+                DebuggerEngine[] es = DebuggerManager.getDebuggerManager().startDebugging(
+                        DebuggerInfo.create(AttachingCookie.ID,
+                                new Object[] {
+                                AttachingCookie.create(host, port) }));
+            } finally {
+                progress.finish();
+            }
+            return true;
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener l) {
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener l) {
+        }
+
+        
+    }
 }

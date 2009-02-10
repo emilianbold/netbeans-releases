@@ -121,7 +121,7 @@ public class JspBreakpointActionsProvider implements NodeActionsProviderFilter {
     }
 
     private static void customize (Breakpoint b) {
-        JComponent c = null;
+        JspBreakpointPanel c = null;
         if (b instanceof JspLineBreakpoint) {
             c = new JspBreakpointPanel((JspLineBreakpoint) b);
         }
@@ -169,7 +169,7 @@ public class JspBreakpointActionsProvider implements NodeActionsProviderFilter {
         d.pack ();
         d.setVisible (true);
         if (descriptor.getValue () == bOk) {
-            ((Controller) c).ok ();
+            c.getController().ok ();
         }
     }
     
