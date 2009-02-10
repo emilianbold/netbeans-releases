@@ -79,7 +79,7 @@ public class CreateWarFileAction extends AbstractAction implements LineProcessor
     public void actionPerformed(ActionEvent e) {
         final GrailsRuntime runtime = GrailsRuntime.getInstance();
         if (!runtime.isConfigured()) {
-            ConfigSupport.showConfigurationWarning(runtime);
+            ConfigurationSupport.showConfigurationWarning(runtime);
             return;
         }
 
