@@ -213,6 +213,9 @@ public final class MacroExpanderFactory {
                 return string;
             }
 
+            res.setLength(0);
+            buf.setLength(0);
+            
             int state = 0, pos = 0, mpos = -1;
             char[] chars = (string + (char) 0).toCharArray();
 

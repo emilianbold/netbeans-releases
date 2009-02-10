@@ -363,7 +363,7 @@ public final class SolarisPrivilegesSupport {
 
             MacroExpander macroExpander = MacroExpanderFactory.getExpander(execEnv);
             String privp = null;
-            String path = "$osname-$arch";
+            String path = "$osname-$platform";
             try {
                 path = macroExpander.expandMacros(path); // NOI18N
             } catch (ParseException ex) {
