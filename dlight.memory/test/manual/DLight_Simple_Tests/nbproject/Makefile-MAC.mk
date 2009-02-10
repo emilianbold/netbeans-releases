@@ -15,16 +15,17 @@ RANLIB=ranlib
 CC=gcc
 CCC=g++
 CXX=g++
-FC=
+FC=g77
+AS=gas
 
 # Macros
-PLATFORM=GNU-MacOSX
+CND_PLATFORM=GNU-MacOSX
 
 # Include project Makefile
 include Makefile
 
 # Object Directory
-OBJECTDIR=build/MAC/${PLATFORM}
+OBJECTDIR=build/MAC/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
@@ -47,16 +48,19 @@ CXXFLAGS=
 # Fortran Compiler Flags
 FFLAGS=
 
+# Assembler Flags
+ASFLAGS=
+
 # Link Libraries and Options
 LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	${MAKE}  -f nbproject/Makefile-MAC.mk dist/MAC/${PLATFORM}/profiler_simple_tests
+	${MAKE}  -f nbproject/Makefile-MAC.mk dist/MAC/GNU-MacOSX/dlight_simple_tests
 
-dist/MAC/${PLATFORM}/profiler_simple_tests: ${OBJECTFILES}
-	${MKDIR} -p dist/MAC/${PLATFORM}
-	${LINK.cc} -o dist/MAC/${PLATFORM}/profiler_simple_tests ${OBJECTFILES} ${LDLIBSOPTIONS} 
+dist/MAC/GNU-MacOSX/dlight_simple_tests: ${OBJECTFILES}
+	${MKDIR} -p dist/MAC/GNU-MacOSX
+	${LINK.cc} -o dist/MAC/${CND_PLATFORM}/dlight_simple_tests ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 ${OBJECTDIR}/deadlock.o: deadlock.cpp 
 	${MKDIR} -p ${OBJECTDIR}
@@ -104,7 +108,7 @@ ${OBJECTDIR}/test_sync.o: test_sync.cpp
 # Clean Targets
 .clean-conf:
 	${RM} -r build/MAC
-	${RM} dist/MAC/${PLATFORM}/profiler_simple_tests
+	${RM} dist/MAC/GNU-MacOSX/dlight_simple_tests
 
 # Subprojects
 .clean-subprojects:

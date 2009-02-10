@@ -119,6 +119,7 @@ import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.JPDAStep;
 import org.netbeans.api.debugger.jpda.ListeningDICookie;
 
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.breakpoints.BreakpointsEngineListener;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.LocalsTreeModel;
@@ -131,6 +132,7 @@ import org.netbeans.modules.debugger.jpda.expr.EvaluationContext;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationException2;
 import org.netbeans.modules.debugger.jpda.expr.Evaluator;
 import org.netbeans.modules.debugger.jpda.expr.Expression2;
+import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.expr.ParseException;
 import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
@@ -325,7 +327,19 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * @return current value of given expression
      */
     public Variable evaluate (String expression) throws InvalidExpressionException {
-        return evaluate(expression, null);
+        return evaluate(expression, null, null);
+    }
+
+    /**
+     * Evaluates given expression in the context of the variable.
+     *
+     * @param expression a expression to be evaluated
+     *
+     * @return current value of given expression
+     */
+    public Variable evaluate (String expression, ObjectVariable var)
+    throws InvalidExpressionException {
+        return evaluate(expression, null, var);
     }
 
     /**
@@ -337,7 +351,19 @@ public class JPDADebuggerImpl extends JPDADebugger {
      */
     public Variable evaluate (String expression, CallStackFrame csf)
     throws InvalidExpressionException {
-        Value v = evaluateIn (expression, csf);
+        return evaluate(expression, csf, null);
+    }
+
+    /**
+     * Evaluates given expression in the current context.
+     *
+     * @param expression a expression to be evaluated
+     *
+     * @return current value of given expression
+     */
+    public Variable evaluate (String expression, CallStackFrame csf, ObjectVariable var)
+    throws InvalidExpressionException {
+        Value v = evaluateIn (expression, csf, var);
         return getLocalsTreeModel ().getVariable (v);
     }
 
@@ -697,9 +723,16 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * Used by AbstractVariable.
      */
     public Value evaluateIn (String expression, CallStackFrame csf) throws InvalidExpressionException {
+        return evaluateIn(expression, null, null);
+    }
+
+    /**
+     * Used by AbstractVariable.
+     */
+    public Value evaluateIn (String expression, CallStackFrame csf, ObjectVariable var) throws InvalidExpressionException {
         Expression expr = null;
         expr = new Expression (expression, Expression.LANGUAGE_JAVA_1_5);
-        return evaluateIn (expr, csf);
+        return evaluateIn (expr, csf, var);
     }
 
     //PATCH 48174
@@ -715,12 +748,16 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * Used by WatchesModel & BreakpointImpl.
      */
     public Value evaluateIn (Expression expression) throws InvalidExpressionException {
-        return evaluateIn(expression, null);
+        return evaluateIn(expression, null, null);
     }
     /**
      * Used by WatchesModel & BreakpointImpl.
      */
-    private Value evaluateIn (Expression expression, CallStackFrame c) throws InvalidExpressionException {
+    private Value evaluateIn (Expression expression, CallStackFrame c, ObjectVariable var) throws InvalidExpressionException {
+        ObjectReference v = null;
+        if (var instanceof JDIVariable) {
+            v = (ObjectReference) ((JDIVariable) var).getJDIValue();
+        }
         CallStackFrameImpl csf;
         if (c instanceof CallStackFrameImpl) {
             csf = (CallStackFrameImpl) c;
@@ -734,7 +771,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 Value value = null;
                 boolean passed = false;
                 try {
-                    value = evaluateIn (expression, csf.getStackFrame (), csf.getFrameDepth());
+                    value = evaluateIn (expression, csf.getStackFrame (), csf.getFrameDepth(), v);
                     passed = true;
                 } catch (InvalidStackFrameExceptionWrapper e) {
                 }
@@ -776,7 +813,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     try {
                         isSuspended = ThreadReferenceWrapper.isSuspended(tr);
                         if (isSuspended) {
-                            return evaluateIn (expression, altCSF, 0);
+                            return evaluateIn (expression, altCSF, 0, v);
                         }
                     } finally {
                         jtr.accessLock.writeLock().unlock();
@@ -809,6 +846,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
      */
     public  Value evaluateIn (Expression expression, final StackFrame frame, int frameDepth)
     throws InvalidExpressionException {
+        return evaluateIn(expression, frame, frameDepth, null);
+    }
+
+    private Value evaluateIn (Expression expression,
+                              final StackFrame frame, int frameDepth,
+                              ObjectReference var) throws InvalidExpressionException {
         // should be already synchronized on the frame's thread
         if (frame == null)
             throw new InvalidExpressionException
@@ -836,6 +879,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                             tr,
                             frame,
                             frameDepth,
+                            var,
                             imports,
                             staticImports,
                             methodCallsUnsupportedExc == null,
@@ -882,6 +926,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                             tr,
                             frame,
                             frameDepth,
+                            var,
                             imports,
                             staticImports,
                             methodCallsUnsupportedExc == null,

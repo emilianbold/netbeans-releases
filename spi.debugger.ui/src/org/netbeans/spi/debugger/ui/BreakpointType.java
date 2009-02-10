@@ -140,10 +140,18 @@ public abstract class BreakpointType {
          * @return The display name or resource bundle reference
          */
         String displayName();
+        
         /**
          * An optional path to register this implementation in.
          */
         String path() default "";
+
+        /**
+         * An optional position in which to register this service relative to others.
+         * Lower-numbered services are returned in the lookup result first.
+         * Services with no specified position are returned last.
+         */
+        int position() default Integer.MAX_VALUE;
     }
 
     static class ContextAware extends BreakpointType implements ContextAwareService<BreakpointType> {

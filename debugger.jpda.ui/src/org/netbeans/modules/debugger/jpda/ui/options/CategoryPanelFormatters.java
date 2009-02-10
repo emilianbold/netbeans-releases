@@ -526,8 +526,7 @@ class CategoryPanelFormatters extends StorablePanel {
     
     @Override
     void load() {
-        Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
-        VariablesFormatter[] formatters = (VariablesFormatter[]) p.getArray("VariableFormatters", null);
+        VariablesFormatter[] formatters = VariablesFormatter.loadFormatters();
         DefaultListModel filterClassesModel = (DefaultListModel) formattersList.getModel();
         filterClassesModel.clear();
         if (formatters != null) {
@@ -542,6 +541,9 @@ class CategoryPanelFormatters extends StorablePanel {
 
     @Override
     void store() {
+        if (selectedVariablesFormatter != null) {
+            storeSelectedFormatter(selectedVariablesFormatter);
+        }
         Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
         ListModel formattersModel = formattersList.getModel();
         VariablesFormatter[] formatters = new VariablesFormatter[formattersModel.getSize()];
