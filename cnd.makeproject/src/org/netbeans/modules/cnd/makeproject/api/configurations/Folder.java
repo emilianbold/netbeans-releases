@@ -894,7 +894,7 @@ public class Folder implements FileChangeListener {
         itemPath = FilePathAdaptor.mapToRemote(itemPath);
         itemPath = IpeUtils.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath);
         itemPath = FilePathAdaptor.normalize(itemPath);
-        Item item = new Item(IpeUtils.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath));
+        Item item = new Item(itemPath);
         getConfigurationDescriptor().setModified();
         addItemAction(item);
     }
