@@ -298,10 +298,6 @@ public class Utilities {
     }
     
     private static void writeMarkedFilesToFile (Collection<File> files, File dest) {
-        if(files==null) {
-            //#157703
-            return;
-        }
         // don't forget for content written before
         String content = "";
         if (dest.exists ()) {
@@ -309,7 +305,7 @@ public class Utilities {
         }
         
         for (File f : files) {
-            content += (f==null ? "" :  f.getAbsolutePath () + UpdateTracking.PATH_SEPARATOR);
+            content += f.getAbsolutePath () + UpdateTracking.PATH_SEPARATOR;
         }
         
         if (content == null || content.length () == 0) {
