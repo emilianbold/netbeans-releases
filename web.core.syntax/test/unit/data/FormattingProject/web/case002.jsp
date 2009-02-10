@@ -1,10 +1,18 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<html>
+<html style="color: aqua;
+background:silver;">
 <head>
 <% String s = "red"; %>
 <style>
+a {
+color:
+blue,
+<%= toString() %>,
+red;
+}
 h1 {
 background: <%=s %>;
+
 }
 </style>
 <style>

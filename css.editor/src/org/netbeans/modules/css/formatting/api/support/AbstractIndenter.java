@@ -40,7 +40,6 @@
 package org.netbeans.modules.css.formatting.api.support;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -71,7 +70,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
     private int indentationSize;
     private boolean compoundIndent;
 
-    private static final boolean DEBUG = true;
+    protected static final boolean DEBUG = true;
 
     public AbstractIndenter(Language<T1> language, Context context, boolean compoundIndent) {
         this.language = language;
@@ -135,17 +134,52 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         return context.startOffset() != 0 || context.endOffset() != context.document().getLength();
     }
 
+    private boolean isWithinLanguage(int startOffset, int endOffset) {
+        for (Context.Region r : context.indentRegions()) {
+            if ( (startOffset >= r.getStartOffset() && startOffset <= r.getEndOffset()) ||
+                    (endOffset >= r.getStartOffset() && endOffset <= r.getEndOffset()) ||
+                    (startOffset <= r.getStartOffset() && endOffset >= r.getEndOffset()) ) {
+                    return true;
+            }
+        }
+        return false;
+    }
+
     public void reindent() {
         final BaseDocument doc = getDocument();
         int startOffset = context.startOffset();
         int endOffset = context.endOffset();
 
         if (DEBUG) {
-            if (/*context.isPrimaryFormatter()*/true) {
-                System.err.println(">> TokenHierarchy of file to be indented:");
-                System.err.println(TokenHierarchy.get(doc));
-            }
             System.err.println(">> AbstractIndenter based indenter: "+this.getClass().toString());
+        }
+
+        if (!isWithinLanguage(startOffset, endOffset)) {
+            if (DEBUG) {
+                System.err.println("Nothing to be done by "+this.getClass().toString());
+            }
+            return;
+        }
+        if (endOffset-startOffset < 4) { // for line reindents etc.
+            boolean found = false;
+            for (int offset = startOffset; offset <= endOffset; offset++) {
+                Language l = LexUtilities.getLanguage(doc, offset);
+                if (l != null && l.equals(language)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                if (DEBUG) {
+                    System.err.println("Nothing to be done by "+this.getClass().toString());
+                }
+                return;
+            }
+        }
+
+        if (DEBUG) {
+            System.err.println(">> TokenHierarchy of file to be indented:");
+            System.err.println(TokenHierarchy.get(doc));
         }
 
         try {
@@ -293,9 +327,6 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 // find line ending offset
                 int rowEndOffset = Utilities.getRowEnd(doc, rowStartOffset);
                 int nextLineStartOffset = rowEndOffset+1;
-                if (rowEndOffset > overallEndOffset) {
-                    rowEndOffset = overallEndOffset;
-                }
 
                 boolean indentThisLine = true;
                 boolean emptyLine = false;
@@ -303,10 +334,16 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
 
                     // move rowStartOffset to beginning of language
                     rowStartOffset = findLanguageOffset(joinedTS, rowStartOffset, rowEndOffset, true);
+                    if (rowStartOffset > overallEndOffset) {
+                        continue;
+                    }
                     // move rowEndOffset to end of language
                     rowEndOffset = findLanguageOffset(joinedTS, rowEndOffset, rowStartOffset, false);
                     if (rowStartOffset == -1 || rowEndOffset == -1) {
                         continue;
+                    }
+                    if (rowEndOffset > overallEndOffset) {
+                        rowEndOffset = overallEndOffset;
                     }
                     
                     // set indentThisLine to false if line does not start with language
@@ -314,9 +351,8 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 } else {
                     emptyLine = true;
 
-                    // attempt to resolve case when JSP is trying to indent empty lines which
-                    // should be indented by HTML indenter
-                    if (!context.isPrimaryFormatter()) {
+                    Language l = LexUtilities.getLanguage(getDocument(), rowStartOffset);
+                    if (l == null || !l.equals(language)) {
                         continue;
                     }
                 }
@@ -327,7 +363,6 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
 
                 IndenterContextData<T1> cd = new IndenterContextData(joinedTS, rowStartOffset, rowEndOffset, firstNonWhite, nextLineStartOffset);
                 boolean newBlock = lastLineIndex == -1 || line-lastLineIndex > 1;
-                cd.setLanguageBlockStart(newBlock);
 
 
                 // if one of the lines was ignored (ie. indentThisLine is false) then do
@@ -340,6 +375,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
 
 
 
+                cd.setLanguageBlockStart(newBlock);
                 List<IndentCommand> preliminaryNextLineIndent = new ArrayList<IndentCommand>();
                 List<IndentCommand> iis = getLineIndent(cd, preliminaryNextLineIndent);
                 if (iis.isEmpty()) {
@@ -374,7 +410,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 // not update lastLineIndex so that newBlock flag is set consequently.
                 // experimental: I'm not sure whether to treat empty line as new block sematic
                 //   possibly to be revised.
-                if (!indentThisLine) {
+                if (!indentThisLine && !newBlock) {
                     lastLineIndex = -1;
                 }
 
@@ -445,6 +481,10 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
 
     }
 
+    private static int getCalulatedPreviousIndent(List<IndentCommand> indentations, int shift) {
+        return indentations.get(getCalulatedIndexOfPreviousIndent(indentations, shift)).getCalculatedIndentation();
+    }
+
     private static int getCalulatedIndexOfPreviousIndent(List<IndentCommand> indentations, int shift) {
         int balance = 1;
         int i = indentations.size();
@@ -458,33 +498,17 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             }
         } while (balance != 0 && i > 0);
         if (balance != 0 || indentations.get(i).getType() != IndentCommand.Type.INDENT) {
-            throw new IllegalStateException("cannot find INDENT command corresponding to RETURN " +
-                    "command at index "+(indentations.size()-1)+". make sure RETURN and INDENT commands are always paired. " +
-                    "this can be caused by wrong getFormatStableStart. commands:"+indentations);
+            if (DEBUG) {
+                System.err.println("WARNING: cannot find INDENT command corresponding to RETURN " +
+                        "command at index "+(indentations.size()-1)+". make sure RETURN and INDENT commands are always paired. " +
+                        "this can be caused by wrong getFormatStableStart. commands:"+indentations);
+            }
+            if (i+shift < 0) {
+                i = 0 - shift;
+            }
         }
         assert i+shift >= 0 : "i="+i+" shift="+shift;
-        return indentations.get(i+shift).getCalculatedIndentation();
-    }
-
-    private static int findIndexOfPreviousIndent(List<IndentCommand> indentations, int index) {
-        assert index > 0;
-        int balance = 1;
-        int i = index;
-        do {
-            i--;
-            if (indentations.get(i).getType() == IndentCommand.Type.RETURN) {
-                balance++;
-            }
-            if (indentations.get(i).getType() == IndentCommand.Type.INDENT) {
-                balance--;
-            }
-        } while (balance != 0 && i > 0);
-        if (balance != 0 || indentations.get(i).getType() != IndentCommand.Type.INDENT) {
-            throw new IllegalStateException("cannot find INDENT command corresponding to RETURN " +
-                    "command at index "+index+". make sure RETURN and INDENT commands are always paired. " +
-                    "this can be caused by wrong getFormatStableStart. commands:"+indentations);
-        }
-        return i;
+        return i+shift;
     }
 
     private boolean isPreviousLineEndsWithContinue(List<IndentCommand> allPreviousCommands) {
@@ -494,8 +518,11 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         return allPreviousCommands.get(allPreviousCommands.size()-1).getType() == IndentCommand.Type.CONTINUE;
     }
 
-    protected int calculateLineIndent(int indentation, Line line, List<IndentCommand> currentLineIndents, List<IndentCommand> allPreviousCommands, boolean update) {
+    protected int calculateLineIndent(int indentation, List<Line> lines, Line line, Line previousLine,
+            List<IndentCommand> currentLineIndents, List<IndentCommand> allPreviousCommands,
+            boolean update, boolean beingFormatted, int lineStart) throws BadLocationException {
         int thisLineIndent = 0;
+        int returnToLine = -1;
         List<IndentCommand> allCommands = new ArrayList<IndentCommand>(allPreviousCommands);
         for (IndentCommand ii : currentLineIndents) {
             //lineOffset = ii.getLineOffset();
@@ -508,7 +535,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
     //                        continue;
     //                    }
             if (isPreviousLineEndsWithContinue(allPreviousCommands) && ii.getType() != IndentCommand.Type.CONTINUE) {
-                indentation = getCalulatedIndexOfPreviousIndent(allCommands, 0);
+                indentation = getCalulatedPreviousIndent(allCommands, 0);
                 //indentation = allIndentComands.get(previousIndentIndex).getCalculatedIndentation();
                 thisLineIndent = 0;
             }
@@ -535,32 +562,77 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     }
                     break;
                 case RETURN:
-                    indentation = getCalulatedIndexOfPreviousIndent(allCommands, -1);
+                    int index = getCalulatedIndexOfPreviousIndent(allCommands, -1);
+                    returnToLine = Utilities.getLineOffset(getDocument(), allCommands.get(index).getLineOffset());
+                    if (returnToLine >= lineStart) {
+                        returnToLine = -1;
+                    }
+                    indentation = allCommands.get(index).getCalculatedIndentation();
                     //int previousIndentIndex = findIndexOfPreviousIndent(allIndentComands, currentIndex);
                     //assert previousIndentIndex > 0;
                     //indentation = allIndentComands.get(previousIndentIndex-1).getCalculatedIndentation();
                     thisLineIndent = 0;
                     break;
                 case DO_NOT_INDENT_THIS_LINE:
-                    line.indentThisLine = false;
+                    if (update) {
+                        line.indentThisLine = false;
+                    }
                     break;
                 case PRESERVE_INDENTATION:
-                    line.preserveThisLineIndent = true;
+                    if (update) {
+                        line.preserveThisLineIndent = true;
+                    }
                     break;
                 case BLOCK_START:
-                    line.compoundStart = true;
+                    if (update) {
+                        line.compoundStart = true;
+                    }
                     break;
                 case BLOCK_END:
-                    line.compoundEnd = true;
+                    if (update) {
+                        line.compoundEnd = true;
+                    }
                     break;
             }
             ii.setCalculatedIndentation(indentation+thisLineIndent);
             allCommands.add(ii);
         }
         if (update) {
+
+            if (beingFormatted) {
+                int diff = 0;
+                if (returnToLine != -1) {
+                    // get existing and calcualted indent of this line
+                    Line l = findLineByLineIndex(lines, returnToLine);
+                    if (l != null && !l.emptyLine) {
+                        if (l.existingLineIndent != 0) {
+                            diff = l.existingLineIndent - l.indentation;
+                        }
+                    }
+                } else if (previousLine != null && previousLine.existingLineIndent != 0) {
+                    // use diff from previous line
+                    diff = previousLine.existingLineIndent - previousLine.indentation;
+                }
+                indentation += diff;
+            } else {
+                // compare calculated indentation to existing one and store difference:
+                line.existingLineIndent = GsfUtilities.getLineIndent(getDocument(), line.offset);
+            }
+
             line.indentation = indentation + thisLineIndent;
         }
         return indentation + thisLineIndent;
+    }
+
+    private Line findLineByLineIndex(List<Line> lines, int index) {
+        for (Line l : lines) {
+            if (l.index == index) {
+                return l;
+            } else if (l.index > index) {
+                break;
+            }
+        }
+        return null;
     }
 
     protected void applyIndents(final List<Line> indentedLines,
@@ -586,9 +658,13 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         int indentation = 0;
         List<IndentCommand> commands = new ArrayList<IndentCommand>();
         Map<Integer, Integer> lineIndents = new TreeMap<Integer, Integer>();
+        Line previousLine = null;
+        int emptyLinesCount = 0;
+        int index = 0;
         for (Line line : indentedLines) {
 
-            if (line.blockStart && !context.isPrimaryFormatter()) {
+            if ((line.blockStart && !context.isPrimaryFormatter()) ||
+                    (previousLine != null && !previousLine.indentThisLine && previousLine.blockStart && !context.isPrimaryFormatter())) {
                 int ind = context.getLineInitialIndent(line.index);
                 if (ind != -1) {
                     indentation = ind;
@@ -598,7 +674,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     // and sometimes I may want to ignore it and use indent from previous line;
                     // TODO: identify concrete cases and design solution for them
 
-                    System.err.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+//                    System.err.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
 
                     // for now commen this out to make indentantaion of JSP's '%>' work
@@ -607,17 +683,30 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     }*/
                 }
             }
-            indentation = calculateLineIndent(indentation, line, line.lineIndent, commands, true);
+            if (previousLine != null && previousLine.index+1+emptyLinesCount != line.index) {
+                previousLine = null;
+            }
+            indentation = calculateLineIndent(indentation, indentedLines, line, previousLine, line.lineIndent, commands, true, line.index >= lineStart, lineStart);
             if (line.emptyLine && !indentEmptyLines) {
                 line.indentation = 0;
             }
-            if (line.blockEnd) {
-                if (context.getLineInitialIndent(line.index+1) == -1) {
-                    int indent = calculateLineIndent(indentation, line, line.preliminaryNextLineIndent, commands, false);
+            if (line.blockEnd || index+1 == indentedLines.size()) {
+                if (context.getLineInitialIndent(line.index+1) == -1 && line.indentThisLine) {
+                    List<IndentCommand> commands2 = new ArrayList<IndentCommand>(commands);
+                    commands2.addAll(line.lineIndent);
+                    int indent = calculateLineIndent(indentation, indentedLines, null, line, line.preliminaryNextLineIndent, commands2, false, line.index+1 >= lineStart, lineStart);
                     lineIndents.put(line.index+1, indent);
                 }
             }
             commands.addAll(line.lineIndent);
+            if (line.emptyLine) {
+                emptyLinesCount++;
+            } else {
+                previousLine = line;
+                emptyLinesCount = 0;
+            }
+
+            index++;
         }
 
 
@@ -703,24 +792,6 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             }
         }
 
-        // adjust indentation based on previous line
-        Line previousLine = null;
-        int difference = -1;
-        boolean update = false;
-        for (Line line : indentedLines) {
-            if (line.index == lineStart && previousLine != null && previousLine.index+1 == line.index) {
-                int realIndentOfPreviousLine = GsfUtilities.getLineIndent(getDocument(), previousLine.offset);
-                difference = realIndentOfPreviousLine - previousLine.indentation;
-                update = true;
-            }
-            if (update) {
-                line.indentation += difference;
-            }
-            previousLine = line;
-        }
-
-
-
         // iterate through lines backwards and ignore all lines with line.indentThisLine == false
         // modify line's indent using calculated indentation
         for (int i=indentedLines.size()-1; i>=0; i--) {
@@ -739,59 +810,6 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         }
 
 
-    }
-
-//    private static List<List<IndentCommand>> groupIndentationsByLine(List<IndentCommand> indentations) {
-//        List<List<IndentCommand>> l = new ArrayList<List<IndentCommand>>();
-//        List<IndentCommand> lineIndentations = null;
-//        IndentCommand lastIndentCommand = null;
-//        for (IndentCommand ic : indentations) {
-//            if (lineIndentations == null) {
-//                lineIndentations = new ArrayList<IndentCommand>();
-//                l.add(lineIndentations);
-//                lineIndentations.add(ic);
-//            } else {
-//                if (lastIndentCommand.getLineOffset() == ic.getLineOffset()) {
-//                    lineIndentations.add(ic);
-//                } else {
-//                    lineIndentations = new ArrayList<IndentCommand>();
-//                    l.add(lineIndentations);
-//                    lineIndentations.add(ic);
-//                }
-//            }
-//            lastIndentCommand = ic;
-//        }
-//        return l;
-//    }
-//
-//    private static class IndentationPair {
-//        public int offset;
-//        public int indentation;
-//        public int indentationBase;
-//        /** do not indent this line */
-//        public boolean noIndent;
-//
-//        public IndentationPair(int offset, int indentation, int indentationBase) {
-//            this.offset = offset;
-//            this.indentation = indentation;
-//            this.indentationBase = indentationBase;
-//            this.noIndent = false;
-//        }
-//
-//        @Override
-//        public String toString() {
-//            return "IndentationPair[offset="+offset+",indentation="+indentation+", base="+indentationBase+"]";
-//        }
-//
-//    }
-
-    /**
-     * Returns true if formatter operates on text embedded in a document; that is
-     * it mime of document differs from mime this formatter is written for.
-     */
-    protected boolean isEmbedded(Document document) {
-        String mimeType = (String)document.getProperty("mimeType"); // NOI18N
-        return !language.mimeType().equals(mimeType);
     }
 
     protected void debugIndentation(JoinedTokenSequence<T1> joinedTS, IndenterContextData cd, List<IndentCommand> iis, String text) {
@@ -836,6 +854,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         private boolean emptyLine;
         private boolean compoundStart;
         private boolean compoundEnd;
+        private int existingLineIndent;
 
         public String dump() {
             return String.format("[%4d]", index+1)+
@@ -843,6 +862,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     " ("+lineStartOffset+
                     "-"+lineEndOffset+
                     ") indent=" +indentation+
+                    ((existingLineIndent != 0) ? " existingIndent="+existingLineIndent : "") +
                     (blockStart? " blockStart" : "") +
                     (blockEnd? " blockEnd" : "") +
                     (compoundStart? " compStart" : "") +
@@ -860,6 +880,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     ",startOffset="+lineStartOffset+
                     ",endOffset="+lineEndOffset+
                     ",indentation=" +indentation+
+                    ((existingLineIndent != 0) ? " existingIndent="+existingLineIndent : "") +
                     (blockStart? ",blockStart" : "") +
                     (blockEnd? ",blockEnd" : "") +
                     (preserveThisLineIndent? ",preserveThisLineIndent" : "") +

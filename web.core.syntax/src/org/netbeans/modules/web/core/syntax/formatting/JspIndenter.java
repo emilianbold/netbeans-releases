@@ -173,7 +173,10 @@ public class JspIndenter extends MarkupAbstractIndenter<JspTokenId> {
 
     @Override
     protected boolean isInlineBlockStartToken(Token<JspTokenId> token) {
-        return token.id() == JspTokenId.SYMBOL2 && token.text().toString().equals("<%");
+        return token.id() == JspTokenId.SYMBOL2 && (
+                token.text().toString().equals("<%") || 
+                token.text().toString().equals("<%=") ||
+                token.text().toString().equals("<%!"));
     }
 
     @Override

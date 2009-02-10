@@ -1976,10 +1976,20 @@ public abstract class GsfTestBase extends NbTestCase {
             fail("MockMimeLookup was not found in lookup. Perhaps you are calling " +
                     "MockServices.setServices(..) and forgot to add MockMimeLookup.class?");
         }
-        if (indentOnly) {
-            MockMimeLookup.setInstances(MimePath.parse(mimeType), indentFactory, getEditorKit(mimeType));
+        MockMimeLookup lkp = new MockMimeLookup();
+        if ((lkp.getLookup(MimePath.parse(mimeType))).lookup(Object.class) == null) {
+            // lookup is empty so we can safely update it here:
+            if (indentOnly) {
+                MockMimeLookup.setInstances(MimePath.parse(mimeType), indentFactory);
+            } else {
+                MockMimeLookup.setInstances(MimePath.parse(mimeType), reformatFactory, indentFactory);
+            }
         } else {
-            MockMimeLookup.setInstances(MimePath.parse(mimeType), reformatFactory, indentFactory, getEditorKit(mimeType));
+            // lookup is already initialized by client
+            assert lkp.getLookup(MimePath.parse(mimeType)).lookup(IndentTask.Factory.class) != null : "you forgot to set IndentTask.Factory for mime "+mimeType;
+            if (!indentOnly) {
+                assert lkp.getLookup(MimePath.parse(mimeType)).lookup(ReformatTask.Factory.class) != null : "you forgot to set ReformatTask.Factory for mime "+mimeType;
+            }
         }
     }
 

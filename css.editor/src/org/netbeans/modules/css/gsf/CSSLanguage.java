@@ -112,7 +112,7 @@ public class CSSLanguage extends DefaultLanguageConfig {
 
     @Override
     public Formatter getFormatter() {
-        return new CSSFormatter();
+        return new CSSFormatter2();
     }
 
     @Override

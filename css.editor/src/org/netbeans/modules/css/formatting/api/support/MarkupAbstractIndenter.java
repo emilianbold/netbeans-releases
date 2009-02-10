@@ -82,7 +82,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
 
         // find open tag (with manadatory close tag) we are inside and use it
         // as formatting start
-        ts.move(endOffset);
+        ts.move(endOffset, false);
 
         // go backwards and find a tag in which reformatting area lies:
         while (ts.movePrevious()) {
@@ -500,8 +500,11 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             // found a closing tag -> jump before corresponding open tag
             if (!item.openingTag) {
                 int index = indexOfOpenTag(getStack(), item, i);
-                assert index != -1 : "cannot find open tag for "+item+" before index "+i+": "+getStack();
-                i = index;
+                if (index != -1) {
+                    i = index;
+                } else if (DEBUG) {
+                    System.err.println("WARNING: cannot find open tag for "+item+" before index "+i+": "+getStack());
+                }
                 continue;
             } else {
                 if (!item.optionalClosingTag) {
@@ -551,24 +554,46 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         //   if it matches tag being closed then everything is OK - break;
         //   else if tag has optional close tag then CLOSE it with virtual tag and continue going backwards.
         //   else if tag does not match and is not mandatory: something wrong so nothing break;
+        int lastFailureSize = -1;
         List<MarkupItem> newItems = new ArrayList<MarkupItem>();
         for (int i=getStack().size()-1; i>=0; i--) {
             MarkupItem item = getStack().get(i);
             // found a closing tag -> jump before corresponding open tag
             if (!item.openingTag) {
                 int index = indexOfOpenTag(getStack(), item, i);
-                assert index != -1 : "cannot find open tag for "+item+" before index "+i+": "+getStack();
-                i = index;
+                if (index != -1) {
+                    i = index;
+                } else if (AbstractIndenter.DEBUG) {
+                    System.err.println("WARNING: cannot find open tag for "+item+" before index "+i+": "+getStack());
+                }
                 continue;
             } else {
                 if (item.tagName.equalsIgnoreCase(newItem.tagName)) {
+                    lastFailureSize = -1;
                     // nothing to do:
                     break;
                 } else if (item.optionalClosingTag) {
                     newItems.add(MarkupAbstractIndenter.createVirtualMarkupItem(item.tagName, item.empty));
                 } else {
-                    assert false : "cannot find opening tag for "+newItem+": "+getStack()+" stopped searching at "+item;
+                    if (lastFailureSize == -1) {
+                        // recovery attempt: ignore this tag and keep looking backwards
+                        lastFailureSize = newItems.size();
+                        newItems.add(MarkupAbstractIndenter.createVirtualMarkupItem(item.tagName, item.empty));
+                        continue;
+                    } else {
+                        // recovery failed; rollback to where we were before recovery and exit
+                        if (AbstractIndenter.DEBUG) {
+                            System.err.println("WARNING: cannot find opening tag for "+newItem+": "+getStack()+" stopped searching at "+item);
+                        }
+                        break;
+                    }
+
                 }
+            }
+        }
+        if (lastFailureSize != -1) {
+            while (newItems.size() > lastFailureSize) {
+                newItems.remove(newItems.size()-1);
             }
         }
         return newItems;

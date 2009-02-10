@@ -184,13 +184,19 @@ public final class JoinedTokenSequence<T1 extends TokenId> {
                 currentTokenSequence().moveStart();
                 return true;
             }
-            if (!forward && start > offset) {
-                if (previous != -1) {
-                    currentTokenSequence = previous;
+            if (!forward) {
+                if (start > offset) {
+                    if (previous != -1) {
+                        currentTokenSequence = previous;
+                        currentTokenSequence().moveEnd();
+                        return true;
+                    } else {
+                        return false;
+                    }
+                } else if (i == tss.size()-1 && end < offset) {
+                    currentTokenSequence = i;
                     currentTokenSequence().moveEnd();
                     return true;
-                } else {
-                    return false;
                 }
             }
             previous = i;

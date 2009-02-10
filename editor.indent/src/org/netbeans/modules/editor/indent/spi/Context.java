@@ -71,8 +71,6 @@ public final class Context {
         IndentSpiPackageAccessor.register(new PackageAccessor());
     }
 
-    private Map<Integer, Integer> lineIndents;
-    
     /** Value type: Map<Integer, Integer> */
     private static final String CONTEXT_LINE_INDENTS = "context.line.indents";
 
@@ -80,11 +78,6 @@ public final class Context {
 
     Context(TaskHandler.MimeItem mimeItem) {
         this.mimeItem = mimeItem;
-        lineIndents = (Map<Integer, Integer>)document().getProperty(CONTEXT_LINE_INDENTS);
-        if (lineIndents == null) {
-            lineIndents = new HashMap<Integer, Integer>();
-            document().putProperty(CONTEXT_LINE_INDENTS, lineIndents);
-        }
     }
 
     public boolean isPrimaryFormatter() {
@@ -92,7 +85,7 @@ public final class Context {
     }
 
     public int getLineInitialIndent(int lineIndex) {
-        Integer i = lineIndents.get(lineIndex);
+        Integer i = mimeItem.getLineIndents().get(lineIndex);
         if (i != null) {
             return i.intValue();
         }
@@ -100,7 +93,7 @@ public final class Context {
     }
 
     public void setLineInitialIndent(int lineIndex, int indent) {
-        lineIndents.put(lineIndex, indent);
+        mimeItem.getLineIndents().put(lineIndex, indent);
     }
 
 

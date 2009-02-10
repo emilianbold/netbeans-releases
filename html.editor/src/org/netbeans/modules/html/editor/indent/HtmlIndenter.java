@@ -72,6 +72,12 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
     }
 
     @Override
+    protected boolean isWhiteSpaceToken(Token<HTMLTokenId> token) {
+        return getWhiteSpaceTokens().contains(token.id()) ||
+                (token.id() == HTMLTokenId.TEXT && token.text().toString().replace("\n", "").replace("\r", "").trim().length() == 0);
+    }
+
+    @Override
     protected boolean isOpenTagNameToken(Token<HTMLTokenId> token) {
         return token.id() == HTMLTokenId.TAG_OPEN /*||
                 token.id() == HTMLTokenId.DECLARATION && token.text().toString().startsWith("<!DOCTYPE")*/;

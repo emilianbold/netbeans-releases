@@ -71,9 +71,9 @@ public class LexUtilities {
     private LexUtilities(){};
 
     /** Find given language token sequence (in case it's embedded in something else at the top level */
-    public static <T extends TokenId> TokenSequence<T> getTokenSequence(BaseDocument doc, int offset, Language<T> langauge) {
+    public static <T extends TokenId> TokenSequence<T> getTokenSequence(BaseDocument doc, int offset, Language<T> language) {
         TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-        return getTokenSequence(th, offset, langauge);
+        return getTokenSequence(th, offset, language);
     }
 
     /** Find given language token sequence (in case it's embedded in something else at the top level */
@@ -109,13 +109,26 @@ public class LexUtilities {
         return ts;
     }
 
-
-    public static <T extends TokenId> TokenSequence<T> getPositionedSequence(BaseDocument doc, int offset, Language<T> langauge) {
-        return getPositionedSequence(doc, offset, true, langauge);
+    public static Language<? extends TokenId> getLanguage(BaseDocument doc, int offset) {
+        TokenHierarchy<BaseDocument> th = TokenHierarchy.get(doc);
+        return getLanguage(th, offset);
     }
 
-    public static <T extends TokenId>  TokenSequence<T> getPositionedSequence(BaseDocument doc, int offset, boolean lookBack, Language<T> langauge) {
-        TokenSequence<T> ts = getTokenSequence(doc, offset, langauge);
+    public static Language<? extends TokenId> getLanguage(TokenHierarchy<BaseDocument> th, int offset) {
+        List<TokenSequence<?>> list = th.embeddedTokenSequences(offset, true);
+
+        if (list.size() == 0) {
+            return null;
+        }
+        return list.get(list.size()-1).language();
+    }
+
+    public static <T extends TokenId> TokenSequence<T> getPositionedSequence(BaseDocument doc, int offset, Language<T> language) {
+        return getPositionedSequence(doc, offset, true, language);
+    }
+
+    public static <T extends TokenId>  TokenSequence<T> getPositionedSequence(BaseDocument doc, int offset, boolean lookBack, Language<T> language) {
+        TokenSequence<T> ts = getTokenSequence(doc, offset, language);
 
         if (ts != null) {
             try {

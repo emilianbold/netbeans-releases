@@ -39,12 +39,9 @@
 
 package org.netbeans.modules.web.core.syntax.formatting;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Language;
@@ -53,17 +50,18 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.css.lexer.api.CSSTokenId;
 import org.netbeans.modules.gsf.GsfIndentTaskFactory;
+import org.netbeans.modules.gsf.GsfReformatTaskFactory;
 import org.netbeans.modules.html.editor.NbReaderProvider;
+import org.netbeans.modules.java.source.parsing.ClassParserFactory;
+import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.save.Reformatter;
+import org.netbeans.modules.web.core.syntax.EmbeddingProviderImpl;
 import org.netbeans.modules.web.core.syntax.JSPKit;
-import org.netbeans.modules.web.core.syntax.JavaSourceProviderImpl;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+//import org.netbeans.modules.web.core.syntax.JavaSourceProviderImpl;
 import org.netbeans.test.web.core.syntax.TestBase2;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -84,7 +82,7 @@ public class JspIndenterTest extends TestBase2 {
 
         
         
-        MockServices.setServices(TestLanguageProvider.class, MockMimeLookup.class/*, X.class, Y.class*/);
+        MockServices.setServices(TestLanguageProvider.class, MockMimeLookup.class);
         // init TestLanguageProvider
         Lookup.getDefault().lookup(TestLanguageProvider.class);
 
@@ -98,8 +96,9 @@ public class JspIndenterTest extends TestBase2 {
         GsfIndentTaskFactory htmlReformatFactory = new GsfIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory);
         Reformatter.Factory factory = new Reformatter.Factory();
-        MockMimeLookup.setInstances(MimePath.parse("text/x-java"), factory);
-        MockMimeLookup.setInstances(MimePath.parse("text/x-jsp"), new JSPKit("text/x-jsp"));
+        MockMimeLookup.setInstances(MimePath.parse("text/x-java"), factory, new JavacParserFactory(), new ClassParserFactory());
+        MockMimeLookup.setInstances(MimePath.parse("text/x-jsp"), new JSPKit("text/x-jsp"), 
+                new EmbeddingProviderImpl.Factory(), new GsfIndentTaskFactory(), new GsfReformatTaskFactory());
 
         //MimeLookup.getLookup(MimePath.parse("text/x-jsp")).lookup(EditorKit.class);
     }
@@ -124,36 +123,24 @@ public class JspIndenterTest extends TestBase2 {
         }
     }
 
-    public static class X extends JavaSourceProviderImpl {
-        @Override
-        public boolean accept(FileObject file) {
-            return "text/x-jsp".equals(file.getMIMEType()) || "text/x-tag".equals(file.getMIMEType()); //NOI18N
-        }
-    }
-    public static class Y implements ClassPathProvider {
-
-        public ClassPath findClassPath(FileObject file, String type) {
-            if (type.equals(ClassPath.COMPILE)) {
-                try {
-                    return ClassPathSupport.createClassPath(new URL("jar:file:/home/david/apache-tomcat-6.0.16/lib/servlet-api.jar!/"));
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-            return null;
-        }
-
-    }
-
     @Override
     protected boolean runInEQ() {
         return true;
     }
 
-    public void XtestFormatting() throws Exception {
+    public void testFormattingCase001() throws Exception {
+        reformatFileContents("FormattingProject/web/case001.jsp",new IndentPrefs(4,4));
     }
 
-    public void testFormattingJSP() throws Exception {
+    public void testFormattingCase002() throws Exception {
+        reformatFileContents("FormattingProject/web/case002.jsp",new IndentPrefs(4,4));
+    }
+
+    public void testFormattingCase003() throws Exception {
+        reformatFileContents("FormattingProject/web/case003.jsp",new IndentPrefs(4,4));
+    }
+
+    public void testFormattingCase004() throws Exception {
         /*Project p = ProjectManager.getDefault().findProject(getTestFile("FormattingProject"));
         DataObject dobj = DataObject.find(getTestFile("FormattingProject/web/simple.jsp"));
         System.err.println("dobj="+dobj);
@@ -161,11 +148,19 @@ public class JspIndenterTest extends TestBase2 {
         System.err.println("ec="+ec);
         StyledDocument doc = ec.openDocument();*/
 
-        reformatFileContents("FormattingProject/web/simple.jsp",new IndentPrefs(4,4));
+        reformatFileContents("FormattingProject/web/case004.jsp",new IndentPrefs(4,4));
     }
 
-    public void XtestIndentation() throws Exception {
+    public void testFormattingIssue121102() throws Exception {
+        reformatFileContents("FormattingProject/web/issue121102.jsp",new IndentPrefs(4,4));
     }
 
+    public void testFormattingIssue129778() throws Exception {
+        reformatFileContents("FormattingProject/web/issue129778.jsp",new IndentPrefs(4,4));
+    }
+
+    public void testFormattingIssue89174() throws Exception {
+        reformatFileContents("FormattingProject/web/issue89174.jsp",new IndentPrefs(4,4));
+    }
 
 }

@@ -87,6 +87,10 @@ public class HtmlIndenterTest extends TestBase2 {
     }
 
     public void testFormatting() throws Exception {
+        // misc broken HTML:
+        format(
+            "<html>\n<xbody>\n<h1>Hello World!</h1>\n<p>text\n</body>",
+            "<html>\n    <xbody>\n        <h1>Hello World!</h1>\n        <p>text\n    </body>", null);
         format("<html>\n<body>\n<div>\nSome text\n<!--\n     Some comment\n       * bullet\n       * bullet2\n-->\n</div>\n</body>\n</html>\n",
                "<html>\n    <body>\n        <div>\n            Some text\n            <!--\n                 Some comment\n                   * bullet\n                   * bullet2\n            -->\n        </div>\n    </body>\n</html>\n", null);
         format("<html>\n<body>\n<pre>Some\ntext which\n  should not be formatted.\n \n </pre>\n</body>\n</html>\n",
@@ -113,6 +117,33 @@ public class HtmlIndenterTest extends TestBase2 {
         insertNewline("<html><div/>^<table>", "<html><div/>\n    ^<table>", null);
         // tab attriutes indentation:
         insertNewline("<html><table^>", "<html><table\n            ^>", null);
+        insertNewline("<html>^\n    <table>\n", "<html>\n    ^\n    <table>\n", null);
+
+        // test that returning </body> tag matches opening one:
+        insertNewline(
+            "<html>\n  <body>\n        <h1>Hello World!</h1>\n                <p>text^</body>",
+            "<html>\n  <body>\n        <h1>Hello World!</h1>\n                <p>text\n  ^</body>", null);
+        insertNewline(
+            "<html><body><table><tr>   <td>^</td></tr></table>",
+            "<html><body><table><tr>   <td>\n                ^</td></tr></table>", null);
+        insertNewline(
+            "<html>\n    <body><table><tr>   <td>\n                ^</td></tr></table>",
+            "<html>\n    <body><table><tr>   <td>\n                \n                ^</td></tr></table>", null);
+
+        // misc invalid HTML doc formatting:
+        insertNewline(
+            "<html>\n    <xbody>\n        <h1>Hello World!</h1>\n        <p>text\n^</body>",
+            "<html>\n    <xbody>\n        <h1>Hello World!</h1>\n        <p>text\n\n    ^</body>", null);
+
+        // #149719
+        insertNewline(
+            "<tr>some text^\n</tr>",
+            "<tr>some text\n    ^\n</tr>", null);
+
+        // #120136
+        insertNewline(
+            "<meta ^http-equiv=\"Content-Type\" content=\"text/html; charset=US-ASCII\">",
+            "<meta \n    ^http-equiv=\"Content-Type\" content=\"text/html; charset=US-ASCII\">", null);
     }
 
 }

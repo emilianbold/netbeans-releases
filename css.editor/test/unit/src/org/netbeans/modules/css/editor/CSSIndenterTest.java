@@ -39,23 +39,35 @@
 
 package org.netbeans.modules.css.editor;
 
+import java.util.List;
+import java.util.concurrent.Semaphore;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.jsp.lexer.JspTokenId;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.ext.html.parser.SyntaxElement;
+import org.netbeans.editor.ext.html.parser.SyntaxParser;
 import org.netbeans.junit.MockServices;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.css.editor.test.TestBase;
 import org.netbeans.modules.css.lexer.api.CSSTokenId;
 import org.netbeans.modules.gsf.GsfIndentTaskFactory;
+import org.netbeans.modules.gsf.GsfReformatTaskFactory;
 import org.netbeans.modules.gsf.GsfTestBase.IndentPrefs;
+import org.netbeans.modules.html.editor.HTMLKit;
 import org.netbeans.modules.html.editor.NbReaderProvider;
+import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
 import org.netbeans.modules.java.source.save.Reformatter;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 
-/**
- */
 public class CSSIndenterTest extends TestBase {
 
     public CSSIndenterTest(String name) {
@@ -76,9 +88,9 @@ public class CSSIndenterTest extends TestBase {
         TestLanguageProvider.register(JavaTokenId.language());
 
         GsfIndentTaskFactory jspReformatFactory = new GsfIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/x-jsp"), jspReformatFactory);
+        MockMimeLookup.setInstances(MimePath.parse("text/x-jsp"), jspReformatFactory, new GsfReformatTaskFactory());
         GsfIndentTaskFactory htmlReformatFactory = new GsfIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory);
+        MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new GsfReformatTaskFactory(), new HTMLKit("text/x-jsp"));
         Reformatter.Factory factory = new Reformatter.Factory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-java"), factory);
     }
@@ -86,6 +98,41 @@ public class CSSIndenterTest extends TestBase {
     @Override
     protected boolean runInEQ() {
         return true;
+    }
+
+    @Override
+    protected BaseDocument getDocument(FileObject fo, String mimeType, Language language) {
+        // for some reason GsfTestBase is not using DataObjects for BaseDocument construction
+        // which means that for example Java formatter which does call EditorCookie to retrieve
+        // document will get difference instance of BaseDocument for indentation
+        try {
+             DataObject dobj = DataObject.find(fo);
+             assertNotNull(dobj);
+
+             EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
+             assertNotNull(ec);
+
+             return (BaseDocument)ec.openDocument();
+        }
+        catch (Exception ex){
+            fail(ex.toString());
+            return null;
+        }
+    }
+
+    private static class Listener extends EmbeddingUpdater {
+        private Semaphore s;
+        public Listener(Document doc, Semaphore s) throws InterruptedException {
+            super(doc);
+            this.s = s;
+            s.acquire();
+        }
+        @Override
+        public void parsingFinished(List<SyntaxElement> elements) {
+            super.parsingFinished(elements);
+            s.release();
+        }
+
     }
 
     public void testFormatting() throws Exception {
@@ -110,8 +157,20 @@ public class CSSIndenterTest extends TestBase {
                "a{\n    background: red,\n", null);
     }
 
-    public void testEmbeddedFormatting() throws Exception {
-        reformatFileContents("testfiles/format1.jsp", "text/x-jsp", JspTokenId.language(), new IndentPrefs(4,4));
+    private void forceHTMLParsingAndWait(String file, String mimeType, Language language) throws Exception {
+        FileObject fo = getTestFile(file);
+        BaseDocument doc = getDocument(fo, mimeType, language);
+        LanguagePath htmlLP = LanguagePath.get(language);
+        Semaphore s = new Semaphore(1);
+        Listener l = new Listener(doc, s);
+        SyntaxParser.get(doc, htmlLP).addSyntaxParserListener(l);
+        s.acquire();
+        s.release();
+    }
+
+    public void testNativeEmbeddingFormatting() throws Exception {
+        forceHTMLParsingAndWait("testfiles/format1.html", "text/html", HTMLTokenId.language());
+        reformatFileContents("testfiles/format1.html", "text/html", HTMLTokenId.language(), new IndentPrefs(4,4));
     }
 
     public void testFormattingNetBeansCSS() throws Exception {
