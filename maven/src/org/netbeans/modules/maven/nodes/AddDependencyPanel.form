@@ -47,7 +47,7 @@
                       <Component id="txtArtifactId" alignment="0" pref="343" max="32767" attributes="0"/>
                       <Component id="txtGroupId" alignment="0" pref="343" max="32767" attributes="0"/>
                       <Group type="102" alignment="1" attributes="0">
-                          <Component id="txtVersion" pref="181" max="32767" attributes="0"/>
+                          <Component id="txtVersion" pref="156" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="lblScope" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>

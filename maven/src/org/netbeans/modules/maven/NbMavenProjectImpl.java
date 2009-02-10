@@ -222,11 +222,22 @@ public final class NbMavenProjectImpl implements Project {
 
     /**
      * load a project with properties and profiles other than the current ones.
+     * uses default project embedder
      * @param activeProfiles
      * @param properties
      * @return
      */
     public synchronized MavenProject loadMavenProject(List<String> activeProfiles, Properties properties) {
+        return loadMavenProject(getEmbedder(), activeProfiles, properties);
+    }
+    /**
+     * load a project with properties and profiles other than the current ones.
+     * @param embedder embedder to use
+     * @param activeProfiles
+     * @param properties
+     * @return
+     */
+    public synchronized MavenProject loadMavenProject(MavenEmbedder embedder, List<String> activeProfiles, Properties properties) {
         try {
             MavenExecutionRequest req = new DefaultMavenExecutionRequest();
             req.addActiveProfiles(activeProfiles);
@@ -245,7 +256,7 @@ public final class NbMavenProjectImpl implements Project {
             // #135070
             req.setRecursive(false);
             req.setProperty("netbeans.execution", "true"); //NOI18N
-            MavenExecutionResult res = getEmbedder().readProjectWithDependencies(req);
+            MavenExecutionResult res = embedder.readProjectWithDependencies(req);
             if (!res.hasExceptions()) {
                 return res.getProject();
             } else {
@@ -263,7 +274,7 @@ public final class NbMavenProjectImpl implements Project {
         } 
         File fallback = InstalledFileLocator.getDefault().locate("maven2/fallback_pom.xml", null, false); //NOI18N
         try {
-            return getEmbedder().readProject(fallback);
+            return embedder.readProject(fallback);
         } catch (Exception x) {
             // oh well..
             //NOPMD

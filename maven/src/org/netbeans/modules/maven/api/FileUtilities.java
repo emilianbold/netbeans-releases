@@ -43,6 +43,8 @@ import java.io.File;
 import java.net.URI;
 import java.util.Stack;
 import java.util.regex.Pattern;
+import org.apache.maven.artifact.Artifact;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -91,6 +93,18 @@ public final class FileUtilities {
         return null;
     }
 
+    /**
+     * take any (even unresolved) Maven Arfifact instance and construct a local
+     * repository based File instance for it. The file does not have to exist though.
+     * @param artifact
+     * @return
+     */
+    public static File convertArtifactToLocalRepositoryFile(Artifact artifact) {
+        String path = EmbedderFactory.getProjectEmbedder().getLocalRepository().pathOf(artifact);
+        File base = convertStringToFile(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir());
+        return resolveFilePath(base, path);
+    }
+
     private static final Pattern RELATIVE_SLASH_SEPARATED_PATH = 
             Pattern.compile("[^:/\\\\.][^:/\\\\]*(/[^:/\\\\.][^:/\\\\]*)*"); // NOI18N
      
@@ -135,7 +149,13 @@ public final class FileUtilities {
        return getDirURI(FileUtil.toFile(root), path);
    }
 
-//copied from o.o.f.FileUtil    
+//copied from o.o.f.FileUtil
+   /**
+    * get relative path between file and it's child. if not child, return null.
+    * @param dir
+    * @param file
+    * @return
+    */
     public static String getRelativePath(final File dir, final File file) {
         Stack<String> stack = new Stack<String>();
         File tempFile = file;

@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.maven.graph;
 
+import org.apache.maven.shared.dependency.tree.DependencyNode;
+
 /**
  *
  * @author Milos Kleint
@@ -46,10 +48,15 @@ package org.netbeans.modules.maven.graph;
 public class ArtifactGraphEdge {
     private String edge;
     private int level = 0;
-    
+    private DependencyNode source;
+    private DependencyNode target;
+    private boolean primary;
+
     /** Creates a new instance of ArtifactGraphEdge */
-    public ArtifactGraphEdge(String edge) {
-        this.edge = edge;
+    public ArtifactGraphEdge(DependencyNode source, DependencyNode target) {
+        edge = source.getArtifact().getId() + "--" + target.getArtifact().getId(); //NOI18N
+        this.target = target;
+        this.source = source;
     }
     
     @Override
@@ -63,6 +70,22 @@ public class ArtifactGraphEdge {
     
     public int getLevel() {
         return level;
+    }
+
+    public void setPrimaryPath(boolean primary) {
+        this.primary = primary;
+    }
+
+    public boolean isPrimary() {
+        return primary;
+    }
+
+    public DependencyNode getSource() {
+        return source;
+    }
+
+    public DependencyNode getTarget() {
+        return target;
     }
     
 }
