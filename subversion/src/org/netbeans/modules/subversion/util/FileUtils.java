@@ -281,5 +281,28 @@ public class FileUtils {
         }
         return checkoutFolder;
     }
-        
+
+    /**
+     * Returns the first found file whose filename is the same (in a case insensitive way) as given <code>file</code>'s.
+     * @param file
+     * @return the first found file with the same name, but ignoring case, or <code>null</code> if no such file is found.
+     */
+    public static String getExistingFilenameInParent(File file) {
+        String filename = null;
+        if (file == null) {
+            return filename;
+        }
+        File parent = file.getParentFile();
+        if (parent == null) {
+            return filename;
+        }
+        File[] children = parent.listFiles();
+        for (File child : children) {
+            if (file.getName().equalsIgnoreCase(child.getName())) {
+                filename = child.getName();
+                break;
+            }
+        }
+        return filename;
+    }
 }

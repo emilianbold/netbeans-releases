@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.api.model;
  * Represents static varable definition
  * @author Alexander Simon
  */
-public interface CsmVariableDefinition extends CsmVariable<CsmVariableDefinition> {
+public interface CsmVariableDefinition extends CsmVariable {
 
     /** Returns this variable declaration */
     CsmVariable getDeclaration();

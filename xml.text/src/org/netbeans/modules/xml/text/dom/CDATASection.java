@@ -42,6 +42,7 @@
 package org.netbeans.modules.xml.text.dom;
 
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 
 /**
  * CDATA section representation.
@@ -51,16 +52,16 @@ public class CDATASection extends Text {
     /**
      * Create content text node.
      */
-    public CDATASection(XMLSyntaxSupport support, Token from, int to) {
-        super( support, from, to );
+    CDATASection(XMLSyntaxSupport support, Token<XMLTokenId> from, int start, int end) {
+        super( support, from, start, end);
     }
 
-    /**
-     * Create attribute text node.
-     */
-    CDATASection(XMLSyntaxSupport syntax, Token from, Attr parent) {
-        super( syntax, from, parent);
-    }
+//    /**
+//     * Create attribute text node.
+//     */
+//    CDATASection(XMLSyntaxSupport syntax, Token from, Attr parent) {
+//        super( syntax, from, parent);
+//    }
     
 }
 

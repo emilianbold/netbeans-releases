@@ -628,7 +628,7 @@ public class DetectPanel extends javax.swing.JPanel {
         wizardPanel.fireChanged();
     }
     
-    protected PlatformDescriptor findSelectedPlatformDescriptor() {
+    PlatformDescriptor findSelectedPlatformDescriptor() {
         return (PlatformDescriptor) platformsList.getSelectedValue();
     }
     

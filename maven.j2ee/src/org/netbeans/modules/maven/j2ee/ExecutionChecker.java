@@ -38,10 +38,13 @@
  */
 package org.netbeans.modules.maven.j2ee;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.maven.model.Build;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
@@ -49,10 +52,12 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
+import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.spi.debug.MavenDebugger;
 import org.netbeans.modules.maven.j2ee.web.WebRunCustomizerPanel;
 import org.netbeans.modules.maven.model.ModelOperation;
@@ -80,6 +85,9 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
     public static final String MODULEURI = "netbeans.deploy.clientModuleUri"; //NOI18N
     public static final String CLIENTURLPART = "netbeans.deploy.clientUrlPart"; //NOI18N
 
+    private static final String NB_COS = ".netbeans_automatic_build"; //NOI18N
+
+
     ExecutionChecker(Project prj) {
         project = prj;
     }
@@ -87,15 +95,21 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
     public void executionResult(RunConfig config, ExecutionContext res, int resultCode) {
         boolean depl = Boolean.parseBoolean(config.getProperties().getProperty(Constants.ACTION_PROPERTY_DEPLOY));
         if (depl && resultCode == 0) {
+            if (RunUtils.hasApplicationCompileOnSaveEnabled(config)) {
+                //dump the nb java support's timestamp fil in output directory..
+                touchCoSTimeStamp(config, System.currentTimeMillis());
+            }
             String moduleUri = config.getProperties().getProperty(MODULEURI);
             String clientUrl = config.getProperties().getProperty(CLIENTURLPART, ""); //NOI18N
             boolean redeploy = Boolean.parseBoolean(config.getProperties().getProperty(Constants.ACTION_PROPERTY_DEPLOY_REDEPLOY, "true")); //NOI18N
             boolean debugmode = Boolean.parseBoolean(config.getProperties().getProperty(Constants.ACTION_PROPERTY_DEPLOY_DEBUG_MODE)); //NOI18N
-            performDeploy(res, debugmode, moduleUri, clientUrl, redeploy);
+            boolean profilemode = Boolean.parseBoolean(config.getProperties().getProperty("netbeans.deploy.profilemode")); //NOI18N
+
+            performDeploy(res, debugmode, profilemode, moduleUri, clientUrl, redeploy);
         }
     }
 
-    private void performDeploy(ExecutionContext res, boolean debugmode, String clientModuleUri, String clientUrlPart, boolean forceRedeploy) {
+    private void performDeploy(ExecutionContext res, boolean debugmode, boolean profilemode, String clientModuleUri, String clientUrlPart, boolean forceRedeploy) {
         FileUtil.refreshFor(FileUtil.toFile(project.getProjectDirectory()));
         OutputWriter err = res.getInputOutput().getErr();
         OutputWriter out = res.getInputOutput().getOut();
@@ -115,12 +129,21 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             out.println("NetBeans: Deploying on " + serverInstanceID); //NOI18N - no localization in maven build now.
         }
         try {
+            out.println("    profile mode: " + profilemode); //NOI18N - no localization in maven build now.
             out.println("    debug mode: " + debugmode);//NOI18N - no localization in maven build now.
 //                log.info("    clientModuleUri: " + clientModuleUri);//NOI18N - no localization in maven build now.
 //                log.info("    clientUrlPart: " + clientUrlPart);//NOI18N - no localization in maven build now.
             out.println("    force redeploy: " + forceRedeploy);//NOI18N - no localization in maven build now.
 
-            String clientUrl = Deployment.getDefault().deploy(jmp, debugmode, clientModuleUri, clientUrlPart, forceRedeploy, new DLogger(out));
+
+            Deployment.Mode mode = Deployment.Mode.RUN;
+            if (debugmode) {
+                mode = Deployment.Mode.DEBUG;
+            } else if (profilemode) {
+                mode = Deployment.Mode.PROFILE;
+            }
+
+            String clientUrl = Deployment.getDefault().deploy(jmp, mode, clientModuleUri, clientUrlPart, forceRedeploy, new DLogger(out));
             if (clientUrl != null) {
                 FileObject fo = project.getProjectDirectory();
                 boolean show = true;
@@ -191,6 +214,47 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         return true;
     }
 
+    private boolean touchCoSTimeStamp(RunConfig rc, long stamp) {
+        if (rc.getProject() == null) {
+            return false;
+        }
+        Build build = rc.getMavenProject().getBuild();
+        if (build == null || build.getOutputDirectory() == null) {
+            return false;
+        }
+        File fl = new File(build.getOutputDirectory());
+        fl = FileUtil.normalizeFile(fl);
+        if (!fl.exists()) {
+            //the project was not built
+            return false;
+        }
+        File check = new File(fl, NB_COS);
+        if (!check.exists()) {
+            try {
+                return check.createNewFile();
+            } catch (IOException ex) {
+                return false;
+            }
+        }
+        return check.setLastModified(stamp);
+    }
+
+    public static boolean hasCoSTimeStamp(Project prj) {
+        NbMavenProject nbprj = prj.getLookup().lookup(NbMavenProject.class);
+        if (nbprj == null) {
+            return false;
+        }
+        Build build = nbprj.getMavenProject().getBuild();
+        if (build == null || build.getOutputDirectory() == null) {
+            return false;
+        }
+        File fl = new File(build.getOutputDirectory());
+        fl = FileUtil.normalizeFile(fl);
+        File check = new File(fl, NB_COS);
+        return check.exists();
+    }
+
+
     private static class DLogger implements Deployment.Logger {
 
         private OutputWriter logger;
@@ -215,7 +279,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                     model.getProject().setProperties(props);
                 }
                 props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, sID);
-                //TODO also tweak the private properties..
+            //TODO also tweak the private properties..
 //                privateProf = handle.getNetbeansPrivateProfile();
 //                org.netbeans.modules.maven.model.profile.Properties privs = privateProf.getProperties();
 //                if (privs == null) {
@@ -229,7 +293,6 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         //#109507 workaround
         POHImpl poh = project.getLookup().lookup(POHImpl.class);
         poh.hackModuleServerChange();
-        
-    }
 
+    }
 }

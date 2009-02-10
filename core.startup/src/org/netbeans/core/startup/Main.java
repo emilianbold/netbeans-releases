@@ -44,6 +44,7 @@ package org.netbeans.core.startup;
 import java.beans.Introspector;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.logging.Level;
@@ -61,12 +62,16 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.UserCancelException;
 import org.openide.util.Utilities;
 
 /**
  * Main class for NetBeans when run in GUI mode.
  */
 public final class Main extends Object {
+
+    private static final Logger LOG = Logger.getLogger(Main.class.getName());
+
     /** module subsystem */
     private static ModuleSystem moduleSystem;
     /** module subsystem is fully ready */
@@ -390,19 +395,19 @@ public final class Main extends Object {
                         new String[0]
                     });
                     executedOk = true;
-                } catch (java.lang.reflect.InvocationTargetException ex) {
+                } catch (InvocationTargetException ex) {
                     // canceled by user, all is fine
-                    if (ex.getTargetException () instanceof org.openide.util.UserCancelException) {
+                    if (ex.getTargetException() instanceof UserCancelException) {
                         executedOk = true;
                     } else {
-                        ex.printStackTrace();
+                        LOG.log(Level.WARNING, null, ex);
                     }
                 } catch (Exception e) {
                     // If exceptions are thrown, notify them - something is broken.
-                    e.printStackTrace();
+                    LOG.log(Level.WARNING, null, e);
                 } catch (LinkageError e) {
                     // These too...
-                    e.printStackTrace();
+                    LOG.log(Level.WARNING, null, e);
                 }
             }
             
@@ -422,12 +427,12 @@ public final class Main extends Object {
                         }
                     } catch (IOException ex) {
                         // file was not created a bit of problem but go on
-                        ex.printStackTrace();
+                        LOG.log(Level.WARNING, null, ex);
                         return true;
                     } catch (java.lang.reflect.InvocationTargetException ex) {
                         return false;
                     } catch (InterruptedException ex) {
-                        ex.printStackTrace();
+                        LOG.log(Level.WARNING, null, ex);
                         return false;
                     }
                 } else {
@@ -479,22 +484,22 @@ public final class Main extends Object {
                         try {
                             f.createNewFile();
                         } catch (IOException exc) {
-                            exc.printStackTrace();
+                            LOG.log(Level.WARNING, null, exc);
                         }
                     }
-                } catch (java.lang.reflect.InvocationTargetException ex) {
+                } catch (InvocationTargetException ex) {
                     // canceled by user, all is fine
-                    if (ex.getTargetException() instanceof org.openide.util.UserCancelException) {
+                    if (ex.getTargetException() instanceof UserCancelException) {
                         executedOk = false;
                     } else {
-                        ex.printStackTrace();
+                        LOG.log(Level.WARNING, null, ex);
                     }
                 } catch (Exception ex) {
                     // If exceptions are thrown, notify them - something is broken.
-                    ex.printStackTrace();
+                    LOG.log(Level.WARNING, null, ex);
                 } catch (LinkageError ex) {
                     // These too...
-                    ex.printStackTrace();
+                    LOG.log(Level.WARNING, null, ex);
                 }
             }
             
@@ -510,7 +515,7 @@ public final class Main extends Object {
                     } catch (java.lang.reflect.InvocationTargetException ex) {
                         return false;
                     } catch (InterruptedException ex) {
-                        ex.printStackTrace();
+                        LOG.log(Level.WARNING, null, ex);
                         return false;
                     }
                 } else {

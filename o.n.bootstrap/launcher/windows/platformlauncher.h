@@ -81,6 +81,7 @@ public:
     virtual ~PlatformLauncher();
 
     bool start(char* argv[], int argc, DWORD *retCode);
+    void appendToHelp(const char *msg);
     void onExit();
 
 private:
@@ -117,6 +118,7 @@ private:
     JvmLauncher jvmLauncher;
     std::set<std::string> addedToCP;
     std::string classPath;
+    std::string appendHelp;
 };
 
 #endif	/* _PLATFORMLAUNCHER_H */

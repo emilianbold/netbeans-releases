@@ -47,6 +47,7 @@ import org.openide.util.LookupListener;
 
 import java.util.*;
 import org.openide.util.LookupEvent;
+import org.openide.util.Parameters;
 
 
 /** Allows exclusion of certain instances from lookup.
@@ -67,6 +68,9 @@ final class ExcludingLookup extends org.openide.util.Lookup {
     ExcludingLookup(Lookup delegate, Class[] classes) {
         this.delegate = delegate;
 
+        for (Class c : classes) {
+            Parameters.notNull("classes[x]", c);
+        }
         if (classes.length == 1) {
             this.classes = classes[0];
         } else {

@@ -55,6 +55,7 @@ public class ManufacturersConverter {
             items = new ArrayList<ManufacturerConverter>();
         }
         if (entities != null) {
+            items.clear();
             for (Manufacturer entity : entities) {
                 items.add(new ManufacturerConverter(entity, uri, expandLevel, true));
             }

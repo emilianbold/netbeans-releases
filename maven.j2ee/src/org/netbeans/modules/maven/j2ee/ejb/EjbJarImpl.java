@@ -47,6 +47,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
+import org.netbeans.modules.j2ee.dd.spi.webservices.WebservicesMetadataModelFactory;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -80,7 +82,7 @@ import org.openide.filesystems.URLMapper;
  * implementation of ejb netbeans functionality
  * @author Milos Kleint 
  */
-class EjbJarImpl implements EjbJarImplementation, J2eeModuleImplementation, ModuleChangeReporter {
+public class EjbJarImpl implements EjbJarImplementation, J2eeModuleImplementation, ModuleChangeReporter {
     
     private Project project;
     private List versionListeners;
@@ -88,6 +90,7 @@ class EjbJarImpl implements EjbJarImplementation, J2eeModuleImplementation, Modu
     private EjbModuleProviderImpl provider;
 
     private MetadataModel<EjbJarMetadata> ejbJarMetadataModel;
+    private MetadataModel<WebservicesMetadata> webservicesMetadataModel;
     private NbMavenProject mavenproject;
     
     
@@ -159,10 +162,15 @@ class EjbJarImpl implements EjbJarImplementation, J2eeModuleImplementation, Modu
     }
     
     public FileObject[] getJavaSources() {
-        //TODO !!!!
-//        System.out.println("EjbM:getJavaSources");
-        
-        return new FileObject[0];
+        Sources srcs = ProjectUtils.getSources(project);
+        SourceGroup[] gr = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        List<FileObject> toRet = new ArrayList<FileObject>();
+        if (gr != null) {
+            for (int i = 0; i < gr.length; i++) {
+                toRet.add(gr[i].getRootFolder());
+            }
+        }
+        return toRet.toArray(new FileObject[toRet.size()]);
     }
     
     public String getModuleVersion() {
@@ -459,14 +467,28 @@ class EjbJarImpl implements EjbJarImplementation, J2eeModuleImplementation, Modu
             @SuppressWarnings("unchecked") // NOI18N
             MetadataModel<T> model = (MetadataModel<T>)getMetadataModel();
             return model;
-//        } else if (type == WebservicesMetadata.class) {
-//            @SuppressWarnings("unchecked") // NOI18N
-//            MetadataModel<T> model = (MetadataModel<T>)getWebservicesMetadataModel();
-//            return model;
+        } else if (type == WebservicesMetadata.class) {
+            @SuppressWarnings("unchecked") // NOI18N
+            MetadataModel<T> model = (MetadataModel<T>)getWebservicesMetadataModel();
+            return model;
         }
         return null;
     }
     
-    
+    private synchronized MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {
+        if (webservicesMetadataModel == null) {
+            FileObject ddFO = getDeploymentDescriptor();
+            File ddFile = ddFO != null ? FileUtil.toFile(ddFO) : null;
+            ProjectSourcesClassPathProvider cpProvider = project.getLookup().lookup(ProjectSourcesClassPathProvider.class);
+            MetadataUnit metadataUnit = MetadataUnit.create(
+                cpProvider.getProjectSourcesClassPath(ClassPath.BOOT),
+                cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
+                cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
+                // XXX: add listening on deplymentDescriptor
+                ddFile);
+            webservicesMetadataModel = WebservicesMetadataModelFactory.createMetadataModel(metadataUnit);
+        }
+        return webservicesMetadataModel;
+    }
     
 }

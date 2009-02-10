@@ -43,9 +43,6 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.utils.CppUtils;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
 
 public class VectorConfiguration<E> {
 
@@ -79,17 +76,6 @@ public class VectorConfiguration<E> {
         this.value = l;
     }
 
-    /*
-     * @deprecated use setValue(List l)
-     * See IZ 122300
-     */
-    @Deprecated
-    @SuppressWarnings("unchecked")
-    public void setValue(String s) {
-        List list = CppUtils.tokenizeString(s);
-        setValue(list);
-    }
-
     public List<E> getValue() {
         return value;
     /*
@@ -100,9 +86,6 @@ public class VectorConfiguration<E> {
      */
     }
 
-//    public String[] getValueAsArray() {
-//        return (String[]) getValue().toArray(new String[getValue().size()]);
-//    }
     public boolean getModified() {
         return value.size() != 0;
     }
@@ -112,21 +95,6 @@ public class VectorConfiguration<E> {
         value = new ArrayList<E>();
     }
 
-    public String getOption(CompilerSet cs, String prependOption) {
-        StringBuilder option = new StringBuilder();
-        List<E> values = getValue();
-        for (E val : values) {
-            String s = val.toString();
-            if (s.length() > 0) { // See IZ 151364
-                if (cs != null) {
-                    s = cs.normalizeDriveLetter(s);
-                }
-                option.append(prependOption + IpeUtils.escapeOddCharacters(s) + " "); // NOI18N
-            }
-        }
-        return option.toString();
-    }
-
     // Clone and Assign
     public void assign(VectorConfiguration<E> conf) {
         setDirty(!this.equals(conf));
@@ -134,7 +102,12 @@ public class VectorConfiguration<E> {
         getValue().addAll(conf.getValue());
     }
 
-    public boolean equals(VectorConfiguration<E> conf) {
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof VectorConfiguration)) {
+            return false;
+        }
+        VectorConfiguration conf = (VectorConfiguration)obj;
         boolean eq = true;
         if (getValue().size() != conf.getValue().size()) {
             eq = false;
@@ -149,17 +122,41 @@ public class VectorConfiguration<E> {
         return eq;
     }
 
-    public VectorConfiguration<E> cloneConf() {
+    @Override
+    public VectorConfiguration<E> clone() {
         VectorConfiguration<E> clone = new VectorConfiguration<E>(master);
         clone.setValue(new ArrayList<E>(getValue()));
         return clone;
     }
 
-//    @Override
-//    @Deprecated
-//    public Object clone() {
-//        VectorConfiguration clone = new VectorConfiguration(master);
-//        clone.setValue((List) ((ArrayList) getValue()).clone());
-//        return clone;
-//    }
+    /**
+     * Converts each element of the vector to <code>String</code>
+     * and concatenates the results into a single <code>String</code>.
+     * Elements are separated with spaces.
+     *
+     * @param visitor  will be used to convert each element to <code>String</code>
+     * @return concatenated <code>String</code>
+     */
+    public String toString(ToString<E> visitor) {
+        StringBuilder buf = new StringBuilder();
+        List<E> list = getValue();
+        for (E item : list) {
+            String s = visitor.toString(item);
+            if (s != null && 0 < s.length()) {
+                buf.append(s).append(' '); // NOI18N
+            }
+        }
+        return buf.toString();
+    }
+
+    /**
+     * Used to convert vector elements to <code>String</code>.
+     * See {@link VectorConfiguration#toString(ToString)}.
+     *
+     * @param <E> vector element type
+     */
+    public static interface ToString<E> {
+        String toString(E item);
+    }
+
 }

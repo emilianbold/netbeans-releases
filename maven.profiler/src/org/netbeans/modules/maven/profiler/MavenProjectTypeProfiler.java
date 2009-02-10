@@ -39,16 +39,23 @@
 
 package org.netbeans.modules.maven.profiler;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.common.SessionSettings;
+import org.netbeans.lib.profiler.common.filters.SimpleFilter;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.profiler.AbstractProjectTypeProfiler;
 import org.netbeans.modules.profiler.NetBeansProfiler;
+import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
+import org.netbeans.modules.profiler.spi.ProjectProfilingSupport;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -61,6 +68,14 @@ public class MavenProjectTypeProfiler extends AbstractProjectTypeProfiler {
     private ProfilingSettings lastProfilingSettings;
     private SessionSettings lastSessionSettings;
     private Properties lastSessionProperties;
+
+    final private Set<String> supportedPTypes = new HashSet<String>() {
+        {
+            add(NbMavenProject.TYPE_JAR);
+            add(NbMavenProject.TYPE_WAR);
+            add(NbMavenProject.TYPE_EJB);
+        }
+    };
     
     
     ProfilingSettings getLastProfilingSettings() {
@@ -74,12 +89,6 @@ public class MavenProjectTypeProfiler extends AbstractProjectTypeProfiler {
     Properties getLastSessionProperties() {
         return lastSessionProperties;
     }
-    
-    
-    public boolean isFileObjectSupported(Project project, FileObject fo) {
-        // Profile File, Profile Test not supported in this version
-        return false;
-    }
 
     public String getProfilerTargetName(Project project, FileObject buildScript, int type, FileObject profiledClassFile) {
         throw new UnsupportedOperationException("Not supported"); // NOI18N
@@ -91,8 +100,7 @@ public class MavenProjectTypeProfiler extends AbstractProjectTypeProfiler {
 
     public boolean isProfilingSupported(Project project) {
         NbMavenProject mproject = project.getLookup().lookup(NbMavenProject.class);
-        return mproject == null ? false :
-            NbMavenProject.TYPE_JAR.equals(mproject.getPackagingType());
+        return mproject == null ? false : supportedPTypes.contains(mproject.getPackagingType());
     }
 
     public boolean checkProjectCanBeProfiled(Project project, FileObject profiledClassFile) {
@@ -118,11 +126,10 @@ public class MavenProjectTypeProfiler extends AbstractProjectTypeProfiler {
         
         lastProfilingSettings.load(properties);
         lastSessionSettings.load(properties);
-        
+
         NetBeansProfiler.getDefaultNB().setProfiledProject(project, profiledClassFile);
         
-        if (profiledClassFile != null) ProjectUtilities.invokeAction(project, "profile-single"); //NOI18N
+        if (profiledClassFile != null) ProjectUtilities.invokeAction(project, isTest ? "profile-tests":"profile-single"); //NOI18N
         else ProjectUtilities.invokeAction(project, isTest ? "profile-tests" : "profile"); //NOI18N
     }
-
 }

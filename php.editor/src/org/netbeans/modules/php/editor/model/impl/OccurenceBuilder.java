@@ -39,6 +39,7 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -57,10 +58,11 @@ import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.ConstantElement;
 import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.IncludeElement;
+import org.netbeans.modules.php.editor.model.IndexScope;
 import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
-import org.netbeans.modules.php.editor.model.ModelScope;
+import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.Parameter;
@@ -152,7 +154,7 @@ class OccurenceBuilder {
         this.docTags = new HashMap<PhpDocTypeTagInfo, Scope>();
     }
 
-    void prepare(FieldAccess fieldAccess, ScopeImpl scope) {
+    void prepare(FieldAccess fieldAccess, Scope scope) {
         if (canBePrepared(fieldAccess, scope)) {
             ASTNodeInfo<FieldAccess> node = ASTNodeInfo.create(fieldAccess);
             fieldInvocations.put(node, scope);
@@ -335,7 +337,7 @@ class OccurenceBuilder {
         setOccurenceAsCurrent(nodeInfo);
     }
 
-    private void buildFieldDeclarations(String queryName, FileScope fileScope) {
+    private void buildFieldDeclarations(String queryName, FileScopeImpl fileScope) {
         //queryName = queryName.startsWith("$") ? queryName : ("$"+queryName);
         for (Entry<SingleFieldDeclarationInfo, FieldElementImpl> entry : fldDeclarations.entrySet()) {
             SingleFieldDeclarationInfo nodeInfo = entry.getKey();
@@ -345,13 +347,13 @@ class OccurenceBuilder {
         }
     }
     
-    private void buildFieldInvocations(String queryName, FileScope fileScope) {
+    private void buildFieldInvocations(String queryName, FileScopeImpl fileScope) {
         Map<String, List<FieldElementImpl>> unknownFieldNameCache = new HashMap<String, List<FieldElementImpl>>();
         for (Entry<ASTNodeInfo<FieldAccess>, Scope> entry : fieldInvocations.entrySet()) {
             ASTNodeInfo<FieldAccess> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
                 //List<? extends ModelElement> elems = CachedModelSupport.getInheritedFields(queryName, fileScope);
-                List<? extends TypeScope> types = getClassName((VariableScope) entry.getValue(), nodeInfo.getOriginalNode());
+                Collection<? extends TypeScope> types = getClassName((VariableScope) entry.getValue(), nodeInfo.getOriginalNode());
                 List<ClassScope> classes = new ArrayList<ClassScope>();
                 for (TypeScope type : types) {
                     if (type instanceof ClassScope) {
@@ -361,7 +363,7 @@ class OccurenceBuilder {
                 List<ModelElement> allFields = new ArrayList<ModelElement>();
                 if (!classes.isEmpty()) {
                     for (ClassScope clz : classes) {
-                        List<? extends ModelElement> fields = CachedModelSupport.getInheritedFields(
+                        Collection<? extends ModelElement> fields = CachingSupport.getInheritedFields(
                                 clz, queryName, fileScope);
                         //TODO: if not found, then lookup inherited
                         //use ClassScope.getTopInheritedMethods(final String queryName, final int... modifiers)
@@ -391,7 +393,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildMethodDeclarations(String queryName, FileScope fileScope) {
+    private void buildMethodDeclarations(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<MethodDeclaration>, MethodScope> entry : methodDeclarations.entrySet()) {
             ASTNodeInfo<MethodDeclaration> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -400,23 +402,23 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildMethodInvocations(String queryName, FileScope fileScope) {
-        Map<String, List<MethodScopeImpl>> unknownMethodNameCache = new HashMap<String, List<MethodScopeImpl>>();
+    private void buildMethodInvocations(String queryName, FileScopeImpl fileScope) {
+        Map<String, List<MethodScope>> unknownMethodNameCache = new HashMap<String, List<MethodScope>>();
         for (Entry<ASTNodeInfo<MethodInvocation>, Scope> entry : methodInvocations.entrySet()) {
             ASTNodeInfo<MethodInvocation> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
-                List<? extends TypeScope> types = getClassName((VariableScope) entry.getValue(), nodeInfo.getOriginalNode());
-                List<ModelElement> allMethods = new ArrayList<ModelElement>();
+                Collection<? extends TypeScope> types = getClassName((VariableScope) entry.getValue(), nodeInfo.getOriginalNode());
+                Collection<ModelElement> allMethods = new ArrayList<ModelElement>();
                 if (!types.isEmpty()) {
                     for (TypeScope type : types) {
-                        List<? extends ModelElement> methods = CachedModelSupport.getInheritedMethods(
+                        Collection<? extends ModelElement> methods = CachingSupport.getInheritedMethods(
                                 type, queryName, fileScope);
                         //TODO: if not found, then lookup inherited
                         //use ClassScope.getTopInheritedMethods(final String queryName, final int... modifiers)
                         allMethods.addAll(methods);
                     }
                 } else {
-                    List<MethodScopeImpl> name2Methods = unknownMethodNameCache.get(queryName);
+                    List<MethodScope> name2Methods = unknownMethodNameCache.get(queryName);
                     if (name2Methods == null) {
                         name2Methods = name2Methods(fileScope, queryName, nodeInfo);
                         if (!name2Methods.isEmpty()) {
@@ -436,7 +438,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildIncludes(String queryName, FileScope fileScope) {
+    private void buildIncludes(String queryName, FileScopeImpl fileScope) {
         for (Entry<IncludeInfo, IncludeElement> entry : includes.entrySet()) {
             IncludeInfo nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -445,11 +447,11 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildConstantInvocations(String queryName, FileScope fileScope) {
+    private void buildConstantInvocations(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<Scalar>, Scope> entry : constInvocations.entrySet()) {
             ASTNodeInfo<Scalar> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
-                List<? extends ModelElement> elems = CachedModelSupport.getConstants(queryName, fileScope);
+                List<? extends ModelElement> elems = CachingSupport.getConstants(queryName, fileScope);
                 if (!elems.isEmpty()) {
                     fileScope.addOccurence(new OccurenceImpl(elems, nodeInfo.getRange(), fileScope));
                 }
@@ -457,7 +459,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildConstantDeclarations(String queryName, FileScope fileScope) {
+    private void buildConstantDeclarations(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<Scalar>, ConstantElement> entry : constDeclarations.entrySet()) {
             ASTNodeInfo<Scalar> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -467,7 +469,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildStaticConstantDeclarations(String queryName, FileScope fileScope) {
+    private void buildStaticConstantDeclarations(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<Identifier>, ClassConstantElement> entry : classConstantDeclarations.entrySet()) {
             ASTNodeInfo<Identifier> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -477,7 +479,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildStaticMethodInvocations(String queryName, FileScope fileScope) {
+    private void buildStaticMethodInvocations(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<StaticMethodInvocation>, Scope> entry : staticMethodInvocations.entrySet()) {
             ASTNodeInfo<StaticMethodInvocation> nodeInfo = entry.getKey();
             String methodName = nodeInfo.getName();
@@ -485,13 +487,13 @@ class OccurenceBuilder {
                 String originalClzName = nodeInfo.getOriginalNode().getClassName().getName();
                 boolean isParent = originalClzName.equals("parent");//NOI18N
                 List<ModelElement> allMethods = new ArrayList<ModelElement>();
-                List<? extends ClassScope> classes = getStaticClassName(entry.getValue(), originalClzName);
+                Collection<? extends ClassScope> classes = getStaticClassName(entry.getValue(), originalClzName);
                 for (ClassScope clz : classes) {
-                    List<? extends ModelElement> methods = null;
+                    Collection<? extends ModelElement> methods = null;
                     if (isParent) {
-                        methods = CachedModelSupport.getInheritedMethods(clz, methodName, fileScope);
+                        methods = CachingSupport.getInheritedMethods(clz, methodName, fileScope);
                     } else {
-                        methods = CachedModelSupport.getInheritedMethods(clz, methodName, fileScope, PhpModifiers.STATIC);
+                        methods = CachingSupport.getInheritedMethods(clz, methodName, fileScope, PhpModifiers.STATIC);
                     }
 //TODO: if not found, then lookup inherited
 //use ClassScope.getTopInheritedMethods(final String queryName, final int... modifiers)
@@ -507,15 +509,15 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildStaticFieldInvocations(String queryName, FileScope fileScope) {
+    private void buildStaticFieldInvocations(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<StaticFieldAccess>, Scope> entry : staticFieldInvocations.entrySet()) {
             ASTNodeInfo<StaticFieldAccess> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
                 StaticFieldAccess sfa = nodeInfo.getOriginalNode();
                 List<ModelElement> allFields = new ArrayList<ModelElement>();
-                List<? extends ClassScope> classes = getStaticClassName(entry.getValue(), sfa.getClassName().getName());
+                Collection<? extends ClassScope> classes = getStaticClassName(entry.getValue(), sfa.getClassName().getName());
                 for (ClassScope clz : classes) {
-                    List<? extends ModelElement> fields = clz.getInheritedFields(nodeInfo.getName());
+                    List<? extends ModelElement> fields = ModelUtils.filter(clz.getFields(), nodeInfo.getName());
                     //TODO: if not found, then lookup inherited
                     //use ClassScope.getTopInheritedFields(final String queryName, final int... modifiers)
                     allFields.addAll(fields);
@@ -529,15 +531,15 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildStaticConstantInvocations(String queryName, FileScope fileScope) {
+    private void buildStaticConstantInvocations(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<StaticConstantAccess>, Scope> entry : staticConstantInvocations.entrySet()) {
             ASTNodeInfo<StaticConstantAccess> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
                 StaticConstantAccess sca = nodeInfo.getOriginalNode();
                 List<ModelElement> allConstants = new ArrayList<ModelElement>();
-                List<? extends TypeScope> types = getStaticTypeName(entry.getValue(), sca.getClassName().getName());
+                Collection<? extends TypeScope> types = getStaticTypeName(entry.getValue(), sca.getClassName().getName());
                 for (TypeScope type : types) {
-                    List<? extends ModelElement> constants = type.getInheritedConstants(queryName);
+                    Collection<? extends ModelElement> constants = type.findInheritedConstants(queryName);
                     //TODO: if not found, then lookup inherited
                     //use ClassScope.getTopInheritedFields(final String queryName, final int... modifiers)
                     allConstants.addAll(constants);
@@ -551,12 +553,12 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildDocTagsForClasses(String queryName, FileScope fileScope) {
+    private void buildDocTagsForClasses(String queryName, FileScopeImpl fileScope) {
         for (Entry<PhpDocTypeTagInfo, Scope> entry : docTags.entrySet()) {
             PhpDocTypeTagInfo nodeInfo = entry.getKey();
             if (Kind.CLASS.equals(nodeInfo.getKind()) && queryName.equalsIgnoreCase(nodeInfo.getName())) {
                 List<? extends ModelElement> elems = null;
-                elems = CachedModelSupport.getClasses(nodeInfo.getName(), fileScope);
+                elems = CachingSupport.getClasses(nodeInfo.getName(), fileScope);
                 if (elems != null && !elems.isEmpty()) {
                     fileScope.addOccurence(new OccurenceImpl(elems, nodeInfo.getRange(), fileScope));
                 }
@@ -565,14 +567,14 @@ class OccurenceBuilder {
         }
     }
     
-    private void buildClassInstanceCreation(String queryName, FileScope fileScope) {
+    private void buildClassInstanceCreation(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<ClassInstanceCreation>, Scope> entry : clasInstanceCreations.entrySet()) {
             ASTNodeInfo<ClassInstanceCreation> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
-                List<? extends ClassScope> elems = CachedModelSupport.getClasses(queryName, fileScope);
+                List<? extends ClassScope> elems = CachingSupport.getClasses(queryName, fileScope);
                 List<MethodScope> methods = new ArrayList<MethodScope>();
                 for (ClassScope clz : elems) {
-                    methods.addAll(CachedModelSupport.getInheritedMethods(clz, "__construct", fileScope));//NOI18N
+                    methods.addAll(CachingSupport.getInheritedMethods(clz, "__construct", fileScope));//NOI18N
                 }
                 if (!elems.isEmpty()) {
                     OccurenceImpl occurenceImpl = new OccurenceImpl(elems, nodeInfo.getRange(), fileScope);
@@ -586,11 +588,11 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildClassNames(String queryName, FileScope fileScope) {
+    private void buildClassNames(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<ClassName>, Scope> entry : clasNames.entrySet()) {
             ASTNodeInfo<ClassName> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
-                List<? extends ModelElement> elems = CachedModelSupport.getClasses(queryName, fileScope);
+                List<? extends ModelElement> elems = CachingSupport.getClasses(queryName, fileScope);
                 if (!elems.isEmpty()) {
                     fileScope.addOccurence(new OccurenceImpl(elems, nodeInfo.getRange(), fileScope));
                 }
@@ -599,11 +601,11 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildInterfaceIDs(String queryName, FileScope fileScope) {
+    private void buildInterfaceIDs(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<Identifier>, Scope> entry : ifaceIDs.entrySet()) {
             ASTNodeInfo<Identifier> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
-                List<? extends ModelElement> elems = CachedModelSupport.getTypes(queryName, fileScope);
+                Collection<? extends ModelElement> elems = CachingSupport.getTypes(queryName, fileScope);
                 if (!elems.isEmpty()) {
                     fileScope.addOccurence(new OccurenceImpl(elems, nodeInfo.getRange(), fileScope));
                 }
@@ -612,11 +614,11 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildClassIDs(String queryName, FileScope fileScope) {
+    private void buildClassIDs(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<Identifier>, Scope> entry : clasIDs.entrySet()) {
             ASTNodeInfo<Identifier> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
-                List<? extends ModelElement> elems = CachedModelSupport.getClasses(queryName, fileScope);
+                List<? extends ModelElement> elems = CachingSupport.getClasses(queryName, fileScope);
                 if (!elems.isEmpty()) {
 
                     fileScope.addOccurence(new OccurenceImpl(elems, nodeInfo.getRange(), fileScope));
@@ -626,7 +628,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildInterfaceDeclarations(String queryName, FileScope fileScope) {
+    private void buildInterfaceDeclarations(String queryName, FileScopeImpl fileScope) {
         for (Entry<InterfaceDeclarationInfo, InterfaceScope> entry : ifaceDeclarations.entrySet()) {
             InterfaceDeclarationInfo nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -636,7 +638,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildClassDeclarations(String queryName, FileScope fileScope) {
+    private void buildClassDeclarations(String queryName, FileScopeImpl fileScope) {
         for (Entry<ClassDeclarationInfo, ClassScope> entry : clasDeclarations.entrySet()) {
             ClassDeclarationInfo nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -646,7 +648,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildFunctionDeclarations(String queryName, FileScope fileScope) {
+    private void buildFunctionDeclarations(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<FunctionDeclaration>, FunctionScope> entry : fncDeclarations.entrySet()) {
             ASTNodeInfo<FunctionDeclaration> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -656,11 +658,11 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildFunctionInvocations(String queryName, FileScope fileScope) {
+    private void buildFunctionInvocations(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<FunctionInvocation>, Scope> entry : fncInvocations.entrySet()) {
             ASTNodeInfo<FunctionInvocation> nodeInfo = entry.getKey();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
-                List<? extends ModelElement> elems = CachedModelSupport.getFunctions(queryName, fileScope);
+                Collection<? extends ModelElement> elems = CachingSupport.getFunctions(queryName, fileScope);
                 if (!elems.isEmpty()) {
                     fileScope.addOccurence(new OccurenceImpl(elems, nodeInfo.getRange(), fileScope));
                 }
@@ -669,16 +671,16 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildDocTagsForVars(String queryName, FileScope fileScope) {
+    private void buildDocTagsForVars(String queryName, FileScopeImpl fileScope) {
         for (Entry<PhpDocTypeTagInfo, Scope> entry : docTags.entrySet()) {
             PhpDocTypeTagInfo nodeInfo = entry.getKey();
             String name = nodeInfo.getName();
             Scope scope = entry.getValue();
             if (Kind.VARIABLE.equals(nodeInfo.getKind()) && scope instanceof VariableScope && queryName.equalsIgnoreCase(name)) {
                 VariableScope varScope = (VariableScope) entry.getValue();
-                List<? extends ModelElement> elems = varScope.getVariables(name);
+                List<? extends ModelElement> elems = ModelUtils.filter(varScope.getDeclaredVariables(), name);
                 if (elems.isEmpty()) {
-                    elems = fileScope.getVariables(name);
+                    elems = ModelUtils.filter(fileScope.getDeclaredVariables(), name);
                 }
 
                 if (!elems.isEmpty()) {
@@ -688,18 +690,18 @@ class OccurenceBuilder {
             }
         }
     }
-    private void buildDocTagsForFields(String queryName, FileScope fileScope) {
+    private void buildDocTagsForFields(String queryName, FileScopeImpl fileScope) {
         for (Entry<PhpDocTypeTagInfo, Scope> entry : docTags.entrySet()) {
             PhpDocTypeTagInfo nodeInfo = entry.getKey();
             String name = nodeInfo.getName();
             Scope scope = entry.getValue();
             if (Kind.FIELD.equals(nodeInfo.getKind()) && scope instanceof ClassScope && queryName.equalsIgnoreCase(name)) {
-                List<? extends ClassScope> classes = CachedModelSupport.getClasses(scope.getName(), scope);
+                List<? extends ClassScope> classes = CachingSupport.getClasses(scope.getName(), scope);
 
                 List<ModelElement> allFields = new ArrayList<ModelElement>();
                 if (!classes.isEmpty()) {
                     for (ClassScope clz : classes) {
-                        List<? extends ModelElement> fields = CachedModelSupport.getInheritedFields(
+                        Collection<? extends ModelElement> fields = CachingSupport.getInheritedFields(
                                 clz, queryName, fileScope);
                         //TODO: if not found, then lookup inherited
                         //use ClassScope.getTopInheritedMethods(final String queryName, final int... modifiers)
@@ -716,15 +718,15 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildVariables(String queryName, FileScope fileScope) {
+    private void buildVariables(String queryName, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<Variable>, Scope> entry : variables.entrySet()) {
             ASTNodeInfo<Variable> nodeInfo = entry.getKey();
             String name = nodeInfo.getName();
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
                 VariableScope varScope = (VariableScope) entry.getValue();
-                List<? extends ModelElement> elems = varScope.getVariables(name);
+                List<? extends ModelElement> elems = ModelUtils.filter(varScope.getDeclaredVariables(), name);
                 if (elems.isEmpty()) {
-                    elems = fileScope.getVariables(name);
+                    elems = ModelUtils.filter(fileScope.getDeclaredVariables(), name);
                 }
 
                 if (!elems.isEmpty()) {
@@ -735,7 +737,7 @@ class OccurenceBuilder {
         }
     }
 
-    void build(FileScope fileScope) {
+    void build(FileScopeImpl fileScope) {
         if (currentNodeInfo != null) {
             ASTNodeInfo.Kind kind = currentNodeInfo.getKind();
             String name = currentNodeInfo.getName();
@@ -815,15 +817,16 @@ class OccurenceBuilder {
 
     }
 
-    private static List<? extends TypeScope> getClassName(VariableScope scp, VariableBase varBase) {
-        String vartype = VariousUtils.extractTypeFroVariableBase(varBase, new HashMap<String, VariableNameImpl>());
-        ModelScope modelScope = ModelUtils.getModelScope(scp);
-        return VariousUtils.getType(modelScope, scp, vartype, varBase.getStartOffset(), true);
+    private static Collection<? extends TypeScope> getClassName(VariableScope scp, VariableBase varBase) {
+        String vartype = VariousUtils.extractTypeFroVariableBase(varBase, 
+                Collections.<String,AssignmentImpl>emptyMap());
+        FileScope fileScope = ModelUtils.getFileScope(scp);
+        return VariousUtils.getType(fileScope, scp, vartype, varBase.getStartOffset(), true);
     }
 
-    private static List<? extends ClassScope> getStaticClassName(Scope inScope, String staticClzName) {
-        if (inScope instanceof MethodScopeImpl) {
-            MethodScopeImpl msi = (MethodScopeImpl) inScope;
+    private static Collection<? extends ClassScope> getStaticClassName(Scope inScope, String staticClzName) {
+        if (inScope instanceof MethodScope) {
+            MethodScope msi = (MethodScope) inScope;
             ClassScope csi = (ClassScope) msi.getInScope();
             if ("self".equals(staticClzName)) {
                 return Collections.singletonList(csi);
@@ -832,11 +835,11 @@ class OccurenceBuilder {
             }
 
         }
-        return CachedModelSupport.getClasses(staticClzName, inScope);
+        return CachingSupport.getClasses(staticClzName, inScope);
     }
-    private static List<? extends TypeScope> getStaticTypeName(Scope inScope, String staticClzName) {
-        if (inScope instanceof MethodScopeImpl) {
-            MethodScopeImpl msi = (MethodScopeImpl) inScope;
+    private static Collection<? extends TypeScope> getStaticTypeName(Scope inScope, String staticClzName) {
+        if (inScope instanceof MethodScope) {
+            MethodScope msi = (MethodScope) inScope;
             ClassScope csi = (ClassScope) msi.getInScope();
             if ("self".equals(staticClzName)) {
                 return Collections.singletonList(csi);
@@ -845,58 +848,58 @@ class OccurenceBuilder {
             }
 
         }
-        return CachedModelSupport.getTypes(staticClzName, inScope);
+        return CachingSupport.getTypes(staticClzName, inScope);
     }
 
     @SuppressWarnings("unchecked")
-    private static List<MethodScopeImpl> methods4TypeNames(FileScope fileScope, Set<String> typeNamesForIdentifier, final String name) {
+    private static List<MethodScope> methods4TypeNames(FileScopeImpl fileScope, Set<String> typeNamesForIdentifier, final String name) {
         List<ClassScope> classes = new ArrayList<ClassScope>();
         for (Iterator<String> it = typeNamesForIdentifier.iterator(); it.hasNext();) {
             String type = it.next();
-            classes.addAll(CachedModelSupport.getClasses(type, fileScope));
+            classes.addAll(CachingSupport.getClasses(type, fileScope));
         }
-        final Set<MethodScopeImpl> methodSet = new HashSet<MethodScopeImpl>();
+        final Set<MethodScope> methodSet = new HashSet<MethodScope>();
         for (ClassScope classScope : classes) {
-            methodSet.addAll((List<MethodScopeImpl>) CachedModelSupport.getInheritedMethods(classScope, name, fileScope));
+            methodSet.addAll((List<MethodScope>) CachingSupport.getInheritedMethods(classScope, name, fileScope));
         }
 
-        final List<MethodScopeImpl> methods = new ArrayList<MethodScopeImpl>(methodSet);
+        final List<MethodScope> methods = new ArrayList<MethodScope>(methodSet);
         return methods;
     }
 
     @SuppressWarnings("unchecked")
-    private static List<FieldElementImpl> flds4TypeNames(FileScope fileScope, Set<String> typeNamesForIdentifier, final String name) {
+    private static List<FieldElementImpl> flds4TypeNames(FileScopeImpl fileScope, Set<String> typeNamesForIdentifier, final String name) {
         List<ClassScope> classes = new ArrayList<ClassScope>();
         for (Iterator<String> it = typeNamesForIdentifier.iterator(); it.hasNext();) {
             String type = it.next();
-            classes.addAll(CachedModelSupport.getClasses(type, fileScope));
+            classes.addAll(CachingSupport.getClasses(type, fileScope));
         }
 
         final Set<FieldElementImpl> fldSet = new HashSet<FieldElementImpl>();
         for (ClassScope classScope : classes) {
-            fldSet.addAll((List<FieldElementImpl>) CachedModelSupport.getInheritedFields(classScope, name, fileScope, PHPIndex.ANY_ATTR));
+            fldSet.addAll((List<FieldElementImpl>) CachingSupport.getInheritedFields(classScope, name, fileScope, PHPIndex.ANY_ATTR));
         }
 
         final List<FieldElementImpl> fields = new ArrayList<FieldElementImpl>(fldSet);
         return fields;
     }
 
-    private static List<MethodScopeImpl> name2Methods(FileScope fileScope, final String name, ASTNodeInfo<MethodInvocation> nodeInfo ) {
-        IndexScopeImpl indexScope = fileScope.getIndexScope();
+    private static List<MethodScope> name2Methods(FileScopeImpl fileScope, final String name, ASTNodeInfo<MethodInvocation> nodeInfo ) {
+        IndexScope indexScope = fileScope.getIndexScope();
         PHPIndex index = indexScope.getIndex();
         Set<String> typeNamesForIdentifier = index.typeNamesForIdentifier(name, null, NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.of(SearchScope.SOURCE, SearchScope.DEPENDENCIES));
-        List<MethodScopeImpl> methods = Collections.emptyList();
+        List<MethodScope> methods = Collections.emptyList();
         FunctionInvocation functionInvocation = nodeInfo.getOriginalNode().getMethod();
         int paramCount = functionInvocation.getParameters().size();
 
         if (typeNamesForIdentifier.size() > 0) {
-            List<MethodScopeImpl> methodsSuggestions = methods4TypeNames(fileScope, typeNamesForIdentifier, name);
-            methods = new ArrayList<MethodScopeImpl>();
-            for (MethodScopeImpl methodScopeImpl : methodsSuggestions) {
-                List<? extends Parameter> parameters = methodScopeImpl.getParameters();
-                if (ModelElementImpl.nameKindMatch(name, NameKind.EXACT_NAME, methodScopeImpl.getName())
+            List<MethodScope> methodsSuggestions = methods4TypeNames(fileScope, typeNamesForIdentifier, name);
+            methods = new ArrayList<MethodScope>();
+            for (MethodScope methodScope : methodsSuggestions) {
+                List<? extends Parameter> parameters = methodScope.getParameters();
+                if (ModelElementImpl.nameKindMatch(name, NameKind.EXACT_NAME, methodScope.getName())
                         && paramCount >= numberOfMandatoryParams(parameters) && paramCount <= parameters.size() ) {
-                    methods.add(methodScopeImpl);
+                    methods.add(methodScope);
                 }
             }
         }
@@ -904,8 +907,8 @@ class OccurenceBuilder {
         return methods;
     }
 
-    private static List<FieldElementImpl> name2Fields(FileScope fileScope, String name) {
-        IndexScopeImpl indexScope = fileScope.getIndexScope();
+    private static List<FieldElementImpl> name2Fields(FileScopeImpl fileScope, String name) {
+        IndexScope indexScope = fileScope.getIndexScope();
         PHPIndex index = indexScope.getIndex();
         Set<String> typeNamesForIdentifier = index.typeNamesForIdentifier((name.startsWith("$")) ? name.substring(1) : name,
                 null, NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.of(SearchScope.SOURCE));

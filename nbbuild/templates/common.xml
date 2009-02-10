@@ -340,7 +340,10 @@ made subject to such option by the copyright holder.
             <license file="${license.file.override}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
             <updaterjar>
-                <fileset dir="${netbeans.dest.dir}" includes="platform*/modules/ext/updater.jar"/>
+                <pathfileset>
+                    <path refid="cluster.path.id"/>
+                    <filename name="modules/ext/updater.jar"/>
+                </pathfileset>
             </updaterjar>
         </makenbm>
     </target>
@@ -486,7 +489,7 @@ made subject to such option by the copyright holder.
                           extralibs="extra.test.libs.short"
                           extralibsdir="${extra.test.libs.dir}"
                           testproperties="${test.@{test.type}.out.folder}/test.properties">
-                <replacement dir="${netbeans.dest.dir}" name="netbeans.dest.dir"/>
+                <replacement dir="${netbeans.dest.dir}" name="netbeans.dest.dir"/> <!-- for pre-7.0 and NB.org projects -->
                 <replacement dir="${test.dist.dir}" name="test.dist.dir"/>
                 <!-- XXX this will not be right on Macs: -->
                 <replacement dir="${nbjdk.home}/jre" name="java.home"/>
@@ -686,6 +689,67 @@ made subject to such option by the copyright holder.
         <debug-test-single-nb test.type="${test.type}"/>
     </target>
 
+    <target name="run-test-main"  depends="init,test-init,test-build">
+        <macrodef name="tjava">
+            <attribute name="test.type"/>
+            <element name="customize" optional="true"/>
+            <sequential>
+                <fail unless="main.class">Must set main.class.</fail>
+                <mkdir dir="${build.test.@{test.type}.results.dir}"/>
+                <java classname="${main.class}" dir="${build.test.@{test.type}.results.dir}" fork="true">
+                    <classpath refid="test.@{test.type}.run.cp"/>
+                    <syspropertyset refid="test.@{test.type}.properties"/>
+                    <jvmarg line="${test.run.args}"/>
+                    <customize/>
+                </java>
+            </sequential>
+        </macrodef>
+        <tjava test.type="unit"/>
+    </target>
+
+    <target name="do-debug-test-main" depends="test-init">
+        <macrodef name="do-debug-test-main">
+            <attribute name="test.type"/>
+            <element name="customize" optional="true"/>
+            <sequential>
+                <fail unless="main.class">Must set main.class.</fail>
+                <mkdir dir="${build.test.@{test.type}.results.dir}"/>
+                <java fork="true" classname="${main.class}">
+                    <jvmarg value="-Xdebug"/>
+                    <jvmarg value="-Xnoagent"/>
+                    <jvmarg value="-Djava.compiler=none"/>
+                    <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+                    <jvmarg line="${test.run.args}"/>
+                    <classpath refid="test.@{test.type}.run.cp"/>
+                    <syspropertyset refid="test.@{test.type}.properties"/>
+                    <customize/>
+                </java>
+            </sequential>
+        </macrodef>
+        <property name="test.type" value="unit"/>
+        <do-debug-test-main test.type="${test.type}"/>
+    </target>
+
+    <target name="debug-test-main-nb" depends="init,test-init,test-build,-jdk-presetdef-nbjpdastart" if="netbeans.home">
+        <macrodef name="debug-test-main-nb">
+            <attribute name="test.type"/>
+            <sequential>
+                <fail unless="main.class">Must set main.class</fail>
+                <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="${main.class}">
+                    <classpath>
+                        <path refid="test.@{test.type}.run.cp"/>
+                        <!-- Permit extra sources to be searched even if they are not in the actual CP. -->
+                        <!-- Used e.g. from ant/test/unit since some tests use dynamic loading: -->
+                        <pathelement path="${test.@{test.type}.debug.cp.extra}"/>
+                    </classpath>
+                </nbjpdastart>
+                <antcall target="do-debug-test-main"/>
+            </sequential>
+        </macrodef>
+        <property name="test.type" value="unit"/>
+        <debug-test-main-nb test.type="${test.type}"/>
+    </target>
+    
     <target name="-pre-debug-fix" depends="init">
         <fail unless="fix.class">Must set fix.class to e.g. org/netbeans/modules/foo/Bar</fail>
         <property name="javac.includes" value="${fix.class}.java"/>
@@ -804,6 +868,7 @@ made subject to such option by the copyright holder.
             </fileset>
         </delete>
         <delete file="${cluster}/update_tracking/${code.name.base.dashes}.xml"/>
+	<delete file="${netbeans.dest.dir}/${module.cluster.name}.built" failonerror="false"/>
     </target>
     <target name="test-clean" depends="basic-init,files-init">
         <macrodef name="test-clean">

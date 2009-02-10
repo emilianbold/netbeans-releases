@@ -45,7 +45,9 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.*;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
+import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
@@ -71,7 +73,7 @@ public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
             sysMacroMap = APTBaseMacroMap.EMPTY;
         }
         this.sysMacroMap = sysMacroMap;
-        fill(userMacros);
+        fill(userMacros, false);
     }
 
     public void setSysMacros(APTMacroMap sysMacroMap) {
@@ -92,33 +94,36 @@ public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
             if (res == null) {
                 res = APTMacroMapSnapshot.UNDEFINED_MACRO;
             }
-            macroCache.put(macroText, res);
+            if (res.getKind() != APTMacro.Kind.POSITION_PREDEFINED) {
+                // do not remember position based macro values
+                macroCache.put(macroText, res);
+            }
         }
         // If UNDEFINED_MACRO is found then the requested macro is undefined, return null
         return (res != APTMacroMapSnapshot.UNDEFINED_MACRO) ? res : null;
     }
 
     @Override
-    public void define(APTToken name, Collection<APTToken> params, List<APTToken> value) {
+    public void define(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
         if (false && sysMacroMap != null && sysMacroMap.isDefined(name)) { // disable for IZ#124635
             // TODO: report error about redefining system macros
         } else {
-            super.define(name, params, value);
+            super.define(file, name, params, value, Kind.DEFINED);
             macroCache.remove(name.getText());
         }
     }
 
     @Override
-    public void undef(APTToken name) {
+    public void undef(APTFile file, APTToken name) {
         if (false && sysMacroMap != null && sysMacroMap.isDefined(name)) { // disable for IZ#124635
-            // TODO: report error about undefined system macros
+            // TODO: report warning about undefined system macros
         }
-        super.undef(name);
+        super.undef(file, name);
         macroCache.remove(name.getText());
     }
 
-    protected APTMacro createMacro(APTToken name, Collection<APTToken> params, List<APTToken> value) {
-        return new APTMacroImpl(name, params, value, false);
+    protected APTMacro createMacro(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
+        return new APTMacroImpl(file, name, params, value, macroType);
     }
 
     protected APTMacroMapSnapshot makeSnapshot(APTMacroMapSnapshot parent) {

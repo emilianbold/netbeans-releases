@@ -228,6 +228,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
             databindingElement.clean(component);
             databindingElement = null;
         }
+        super.cleanUp(component);
     }
 
     @Override
@@ -372,14 +373,21 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         if (databindingElement != null) {
             databindingElement.updateDesignComponent(c);
         }
+
+        // Fix for #155579 - Cannot select a command to push dataset
+        boolean updateCustomEditor = true;
         if (isCurrentValueANull() || value == null) {
             customEditor.setText(null);
-        } else if (MidpDatabindingSupport.getDatabaindingAsText(component.get(), getPropertyNames().get(0)) != null) {
+            updateCustomEditor = false;
+        }
+        if (MidpDatabindingSupport.getDatabaindingAsText(component.get(), getPropertyNames().get(0)) != null) {
             ((DatabindingElementUI) databindingElement.getCustomEditorComponent()).updateComponent(c);
-        } else {
+            updateCustomEditor = false;
+        }
+        if ( updateCustomEditor ) {
             customEditor.setText((String) value.getPrimitiveValue());
         }
-        if (!isCurrentValueAUserCodeType()) {
+        if (!isCurrentValueAUserCodeType() && databindingElement== null ) {
             radioButton.setSelected(true);
             radioButton.requestFocus();
         }

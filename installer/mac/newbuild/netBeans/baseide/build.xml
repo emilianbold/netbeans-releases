@@ -26,7 +26,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="appdir" value="${builddir}/app/${appname}.app"/>
     <property name="scriptsdir" value="${builddir}/scripts"/>
 
-    <target name="clean">
+    <target name="clean" depends="clean-servicetag">
         <delete dir="${builddir}"/>
     </target>
 
@@ -70,10 +70,26 @@ Microsystems, Inc. All Rights Reserved.
         </exec>
     </target>
     
+    <target name="build-servicetag" depends="clean-servicetag">
+        <ant dir="${basedir}/servicetag" target="jar"/>
+    </target>
+
+    <target name="clean-servicetag">
+        <ant dir="${basedir}/servicetag" target="clean"/>
+        <delete file="pkg/scripts/servicetag.jar"/>
+    </target>    
     
     
-    <target name="build-pkg" depends="init, build-app">
-        <echo message="NETBEANS_INSTALL_DIR=&quot;${app.name}&quot;${line.separator}GLASSFISH_INSTALL_DIR=&quot;${glassfish.install.dir}&quot;${line.separator}TOMCAT_INSTALL_DIR=&quot;${tomcat.install.dir}&quot;${line.separator}NB_CLUSTER_DIR=&quot;${nbClusterDir}&quot;${line.separator}GLASSFISH_V3_INSTALL_DIR=&quot;${glassfish.v3.install.dir}&quot;${line.separator}MYSQL_INSTALL_DIR=&quot;${mysql.install.dir}&quot;${line.separator}" file="${scriptsdir}/env.sh"/>
+    <target name="build-pkg" depends="init, build-app,build-servicetag">
+        <echo file="${scriptsdir}/env.sh"><![CDATA[
+NETBEANS_INSTALL_DIR="${app.name}"
+GLASSFISH_INSTALL_DIR="${glassfish.install.dir}"
+TOMCAT_INSTALL_DIR="${tomcat.install.dir}"
+NB_CLUSTER_DIR="${nbClusterDir}"
+GLASSFISH_V3_INSTALL_DIR="${glassfish.v3.install.dir}"
+MYSQL_INSTALL_DIR="${mysql.install.dir}"
+SERVICE_TAG_SOURCE="${servicetag.source}"
+]]></echo>
         
         <copy file="pkg/Info.plist" filtering="true" tofile="${builddir}/Info.plist">
             <filterset>
@@ -83,14 +99,14 @@ Microsystems, Inc. All Rights Reserved.
             </filterset>
         </copy>
 
+        <copy file="${basedir}/../../commonfiles/unpack200.sh" tofile="${scriptsdir}/unpack200.sh"/>
+        <copy file="${basedir}/../../commonfiles/get_current_jdk.sh" tofile="${scriptsdir}/get_current_jdk.sh"/>        
+        <copy file="${basedir}/servicetag/dist/servicetag.jar"   tofile="${scriptsdir}/servicetag.jar"/>
+
+
         <copy  todir="${scriptsdir}">
             <fileset dir="${basedir}/pkg/scripts"/>
         </copy>
-        
-        <copy file="${basedir}/../../commonfiles/unpack200.sh" tofile="${scriptsdir}/unpack200.sh"/>
-        <copy file="${basedir}/../../commonfiles/get_current_jdk.sh" tofile="${scriptsdir}/get_current_jdk.sh"/>
-        
-        
         <copy file="${basedir}/../../commonfiles/Description.plist" filtering="true" overwrite="true" tofile="${builddir}/Description.plist">
             <filterset>
                 <filter token="TITLE" value="${netbeans-Title}"/>

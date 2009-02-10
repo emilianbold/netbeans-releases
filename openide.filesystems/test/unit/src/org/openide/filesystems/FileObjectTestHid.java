@@ -82,6 +82,7 @@ public class FileObjectTestHid extends TestBaseHid {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws java.lang.Exception {
         MockServices.setServices();
         
@@ -92,6 +93,7 @@ public class FileObjectTestHid extends TestBaseHid {
         root = fs.findResource(getResourcePrefix());
     }
 
+    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
         fs = this.testedFS = null;
@@ -118,17 +120,20 @@ public class FileObjectTestHid extends TestBaseHid {
         class L extends FileChangeAdapter {
             public int cnt;
             
+            @Override
             public void fileDataCreated(FileEvent fe) {
                 cnt++;
             }
         }
         
         final FileChangeListener noFileDataCreatedListener = new FileChangeAdapter(){
+            @Override
             public void fileDataCreated(FileEvent fe) {
                 fail();
             }
         };
         final FileChangeListener listener1 = new FileChangeAdapter(){
+            @Override
             public void fileDataCreated(FileEvent fe) {
                 try {
                     fold.getFileSystem().removeFileChangeListener(noFileDataCreatedListener);
@@ -172,11 +177,13 @@ public class FileObjectTestHid extends TestBaseHid {
             return;
         }
         final FileChangeListener noFileDataCreatedListener = new FileChangeAdapter(){
+            @Override
             public void fileDataCreated(FileEvent fe) {
                 fail();
             }
         };
         final FileChangeListener listener1 = new FileChangeAdapter(){
+            @Override
             public void fileDataCreated(FileEvent fe) {
                 fold.removeFileChangeListener(noFileDataCreatedListener);
                 fold.addFileChangeListener(noFileDataCreatedListener);
@@ -1543,6 +1550,7 @@ public class FileObjectTestHid extends TestBaseHid {
     public static void implOfTestGetFileObjectForSubversion(final FileObject folder, final String childName) throws InterruptedException {        
         final List l = new ArrayList();
         folder.addFileChangeListener(new FileChangeAdapter(){
+            @Override
             public void fileFolderCreated(FileEvent fe) {
                 l.add(fe.getFile());
                 synchronized(l) {
@@ -1811,6 +1819,120 @@ public class FileObjectTestHid extends TestBaseHid {
         }
         
         fsAssert ("After delete should be invalid",!fo1.isValid());        
+    }
+    public void testAsBytesAndString() throws java.io.FileNotFoundException, IOException {
+        checkSetUp();
+
+        FileObject fo1 = getTestFile1 (root);
+        try {
+            OutputStream os = fo1.getOutputStream();
+            String txt = "Ahoj\nJak\nSe\nMas";
+            os.write(txt.getBytes("UTF-8"));
+            os.close();
+            byte[] arr = fo1.asBytes();
+            assertNotNull("Arrays is read", arr);
+            assertEquals("Right length bytes", txt.length(), arr.length);
+            assertEquals(txt, new String(arr, "UTF-8"));
+            assertEquals(txt, fo1.asText("UTF-8"));
+
+            ArrayList<String> all = new ArrayList<String>();
+            List<String> lines = fo1.asLines("UTF-8");
+            for (String l : lines) {
+                // it is possible to rewrite the content, if the file is small
+                fo1.getOutputStream().close();
+                all.add(l);
+            }
+            assertEquals("Four lines: " + txt, 4, all.size());
+            assertEquals("Computed remain the same as read", all, lines);
+
+            ListIterator<String> it = lines.listIterator(all.size());
+            for (int i = all.size(); i > 0; ) {
+                i--;
+                assertEquals("Right index", i, it.previousIndex());
+                assertEquals("Ith " + i, all.get(i), it.previous());
+            }
+        } catch (IOException iex) {
+            fsAssert  ("Expected that FS provides InputStream ",fo1.getSize () == 0);
+        }
+        FileLock lock = null;
+
+        try {
+            lock = fo1.lock ();
+            fo1.delete(lock);
+        } catch (IOException iex) {
+            fsAssert("FileObject shopuld be allowd to be modified.",
+            fs.isReadOnly() || fo1.isReadOnly()) ;
+            return;
+        } finally {
+            if (lock != null) lock.releaseLock();
+        }
+        fsAssert ("After delete should be invalid",!fo1.isValid());
+    }
+    public void testBigFileAndAsString() throws java.io.FileNotFoundException, IOException {
+        checkSetUp();
+
+        FileObject fo1 = getTestFile1 (root);
+        try {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < 1000; i++) {
+                sb.append("Hi how are you, boy! ");
+            }
+            sb.append("\n");
+
+            OutputStream os = fo1.getOutputStream();
+            for (int i = 0; i < 10; i++) {
+                os.write(sb.toString().getBytes("UTF-8"));
+            }
+            os.close();
+            if (64 * 1024 > fo1.getSize()) {
+                fail("We need to generate big file: " + fo1.getSize());
+            }
+
+            OutputStream tmp = null;
+            FileLock lock = null;
+            int acquire = 3;
+            List<String> lines = fo1.asLines("UTF-8");
+            LinkedList<String> reverse = new LinkedList<String>();
+            for (int i = lines.size() - 1; i >= 0; i--) {
+                reverse.add(0, lines.get(i));
+            }
+
+            ArrayList<String> all = new ArrayList<String>();
+            for (String l : fo1.asLines("UTF-8")) {
+                int cnt = all.size();
+                if (cnt % 100 == 0 && acquire-- > 0) {
+                    try {
+                        lock = fo1.lock();
+                        tmp = fo1.getOutputStream(lock);
+                        tmp.write(0);
+                        fail("The input stream is open for big files. cnt = " + cnt);
+                    } catch (IOException ex) {
+                        // OK
+                    } finally {
+                        lock.releaseLock();
+                    }
+                }
+                all.add(l);
+            }
+            if (tmp != null) {
+                tmp.close();
+            }
+            assertEquals("Some lines: ", 10, all.size());
+            assertEquals("Generated same as read", all, fo1.asLines());
+            assertEquals("Normal and reverse are same", all, reverse);
+        } catch (IOException iex) {
+            fsAssert  ("Expected that FS provides InputStream ",fo1.getSize () == 0);
+        }
+
+        try {
+            FileLock lock = fo1.lock ();
+            fo1.delete(lock);
+        } catch (IOException iex) {
+            fsAssert("FileObject shopuld be allowd to be modified.",
+            fs.isReadOnly() || fo1.isReadOnly()) ;
+            return;
+        }
+        fsAssert ("After delete should be invalid",!fo1.isValid());
     }
 
     /** Test of getOutputStream()  method, of class org.openide.filesystems.FileObject. */                        

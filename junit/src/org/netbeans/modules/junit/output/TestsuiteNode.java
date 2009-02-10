@@ -41,8 +41,10 @@
 
 package org.netbeans.modules.junit.output;
 
+import java.awt.Image;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import static org.netbeans.modules.junit.output.HtmlMarkupUtils.COLOR_OK;
@@ -95,8 +97,6 @@ final class TestsuiteNode extends AbstractNode {
         assert this.suiteName != null;
         
         setDisplayName();
-        setIconBaseWithExtension(
-                "org/netbeans/modules/junit/output/res/class.gif");     //NOI18N
     }
     
     /**
@@ -123,6 +123,20 @@ final class TestsuiteNode extends AbstractNode {
         return report;
     }
     
+
+    @Override
+    public Image getIcon(int type) {
+        if (containsFailed()) {
+            return ImageUtilities.loadImage("org/netbeans/modules/junit/output/res/error_16.png"); //NOI18N
+        }
+        return ImageUtilities.loadImage("org/netbeans/modules/junit/output/res/ok_16.png"); //NOI18N
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        return getIcon(type);
+    }
+
     /**
      */
     private void setDisplayName() {

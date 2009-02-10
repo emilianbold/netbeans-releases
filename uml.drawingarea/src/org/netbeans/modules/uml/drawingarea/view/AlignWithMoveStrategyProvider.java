@@ -98,13 +98,6 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
 
     public Point locationSuggested (Widget widget, Point originalLocation, Point suggestedLocation) {
         
-        
-//        if(movingWidgets == null)
-//        {
-//            if(originalLocation.equals(suggestedLocation))return suggestedLocation;//do not move if no real movement started
-//            initializeMovingWidgets(widget.getScene(), widget);
-//        }
-        
         if(movingWidgets.size() > 1)
         {
             return suggestedLocation;
@@ -143,7 +136,6 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
             manager.cancelPalette();
         }
         moveWidgetInitialized=false;
-//        initializeMovingWidgets(scene, widget);
     }
 
     public void movementFinished (Widget widget) {
@@ -228,9 +220,6 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
         
         if(location != null && original != null)
         {
-            //int dx = location.x - original.x;
-            //int dy = location.y - original.y;
-
             // Determine if the new location of the widget has actually moved.
             //
             // Originally we used the dx and dy variables to determine if the
@@ -510,7 +499,7 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
                 if (data instanceof IPresentationElement)
                 {
                     IPresentationElement presentation = (IPresentationElement) data;
-                    element = (INamedElement) presentation.getFirstSubject();
+                    if(presentation.getFirstSubject() instanceof INamedElement)element = (INamedElement) presentation.getFirstSubject();
                 }
 
                 // Handle the namespace change.  The container widget will
@@ -518,7 +507,7 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
                 //
                 // We have to have to handle the case of when the widget
                 // is moved from a container to the scene.
-                if (details.getOwner() instanceof ContainerWidget)
+                if (details.getOwner() instanceof ContainerWidget && element!=null)
                 {
                     IDiagram diagram = lookup.lookup(IDiagram.class);
                     if (diagram != null)
@@ -780,5 +769,4 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
             }
         }
     }
-
 }

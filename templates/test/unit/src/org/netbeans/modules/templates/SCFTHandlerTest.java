@@ -51,6 +51,7 @@ import junit.framework.Test;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -326,7 +327,7 @@ public class SCFTHandlerTest extends NbTestCase {
          assertEquals(exp, read);
          
      }
-    
+
     public void testTemplateWizardCopiesItsPropertiesToMapForOverridenEntryOnMoreEntries() throws Exception {
         LocalFileSystem fs = new LocalFileSystem();
         fs.setRootDirectory(getWorkDir());
@@ -340,7 +341,7 @@ public class SCFTHandlerTest extends NbTestCase {
         Charset set = Charset.forName("iso-8859-2");
         OutputStream os = fo2.getOutputStream();
         OutputStreamWriter w = new OutputStreamWriter(os, set);
-        String txt = "skvělej tým, co nikdy neusíná";
+        String txt = "skvělej tým, co nikdy neusíná - ěščřžýáíéúů";
         w.write(txt);
         w.close();
         

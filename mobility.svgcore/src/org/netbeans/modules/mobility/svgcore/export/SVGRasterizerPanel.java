@@ -54,6 +54,7 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -73,6 +74,7 @@ import org.netbeans.modules.mobility.svgcore.composer.PerseusController;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObjectOutline;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.modules.mobility.svgcore.export.ComponentGroup.ComponentWrapper;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -97,7 +99,8 @@ public abstract class SVGRasterizerPanel extends JPanel implements AnimationRast
     protected          int                 m_overrideHeight = -1;
     protected volatile boolean             m_updateInProgress = false;
     protected volatile SVGImage            m_svgImage;
-    private            SVGLocatableElement m_exportedElement = null;            
+    private            SVGLocatableElement m_exportedElement = null;
+    private            boolean             m_isDialogValid = true;
     
     private static final String CONFIRM_REWRITE_TITLE = "LBL_Confirm_Rewrite_Title"; // NOI18N
     private static final String CONFIRM_REWRITE_MESSAGE = "LBL_Confirm_Rewrite_Msg"; // NOI18N
@@ -134,8 +137,12 @@ public abstract class SVGRasterizerPanel extends JPanel implements AnimationRast
         if (m_elementId == null && isInProject()) {
             m_dim = ScreenSizeHelper.getCurrentDeviceScreenSize(primaryFile, null);
         } else {
-            getSVGImage();
-            m_dim = new Dimension( m_svgImage.getViewportWidth(), m_svgImage.getViewportHeight());
+            SVGImage svgImage = getSVGImage();
+            if (svgImage != null){
+                m_dim = new Dimension( m_svgImage.getViewportWidth(), m_svgImage.getViewportHeight());
+            } else {
+                m_dim = new Dimension();
+            }
         }
     }
     
@@ -190,7 +197,19 @@ public abstract class SVGRasterizerPanel extends JPanel implements AnimationRast
         spinner.setModel( model);
         return new SVGRasterizerComponentGroup( spinner, sliderWrapper);
     }
-    
+
+    protected boolean isDialogValid(){
+        return m_isDialogValid;
+    }
+
+    private void setDialogValid(boolean valid){
+        if (m_isDialogValid != valid){
+            boolean oldValid = m_isDialogValid;
+            m_isDialogValid = valid;
+            firePropertyChange(DialogDescriptor.PROP_VALID, oldValid, valid);
+        }
+    }
+
     protected ComponentGroup createCompressionGroup(JComboBox combo, JSpinner spinner) {
         spinner.setModel( new SpinnerNumberModel( 0, 0, 99, 1));
         AnimationRasterizer.CompressionLevel defLevel = AnimationRasterizer.CompressionLevel.HIGH;
@@ -246,7 +265,8 @@ public abstract class SVGRasterizerPanel extends JPanel implements AnimationRast
         try {
             m_svgImage = m_dObj.getModel().parseSVGImage();
         } catch (Exception ex) {
-            SceneManager.error("Load of SVG image failed", ex); //NOI18N
+            setDialogValid(false);
+            SceneManager.log(Level.INFO, "Load of SVG image failed", ex); //NOI18N
         }
     }
     
@@ -267,9 +287,9 @@ public abstract class SVGRasterizerPanel extends JPanel implements AnimationRast
             } else {
                 loadSVGImage();
             }
-            assert m_svgImage != null;
+            //assert m_svgImage != null;
             
-            if ( m_elementId != null) {
+            if ( m_svgImage != null && m_elementId != null) {
                 SVGSVGElement svg = (SVGSVGElement) m_svgImage.getDocument().getDocumentElement();
                 SVGElement elem = PerseusController.hideAllButSubtree((ModelNode) svg, m_elementId);
                 if (elem != null && elem instanceof SVGLocatableElement) {

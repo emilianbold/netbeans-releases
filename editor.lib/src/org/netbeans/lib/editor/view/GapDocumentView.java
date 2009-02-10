@@ -166,7 +166,7 @@ public class GapDocumentView extends GapBoxView {
         clearDamageRangeBounds();
     }
 
-    protected GapBoxViewChildren createChildren() {
+    GapBoxViewChildren createChildren() {
         return new GapDocumentViewChildren(this);
     }
 

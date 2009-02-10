@@ -45,6 +45,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 
 /**
  *
@@ -57,7 +58,7 @@ public class DocOffsetableImpl implements CsmOffsetable {
     public DocOffsetableImpl(BaseDocument doc, CsmFile file, int offset) {
         this.pos = new DocOffsPositionImpl(doc, offset);
         assert file != null : "null file for document " + doc + " on offset " + offset;
-        this.uidFile = file.getUID();
+        this.uidFile = UIDs.get(file);
     }
 
     protected BaseDocument getDocument() {

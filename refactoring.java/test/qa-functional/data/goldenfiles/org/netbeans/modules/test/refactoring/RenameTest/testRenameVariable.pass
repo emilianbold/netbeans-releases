@@ -1,0 +1,15 @@
+==>RenameLocalVariable
+package renameClass;
+
+public class RenameLocalVariable {
+
+    public int test() {
+        int renamed = 3;
+        System.out.println(renamed);
+        if(renamed<renamed) {
+            System.out.println(renamed);
+        }
+        return renamed;
+    }
+
+}

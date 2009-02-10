@@ -579,6 +579,12 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
      * @param classLocation if true, returns the location of the class rather then the method.
      */
     public static DeclarationLocation getTestDeclaration(FileObject fileInProject, String testString, boolean classLocation) {
+        return getTestDeclaration(fileInProject, testString, classLocation, true);
+    }
+
+    public static DeclarationLocation getTestDeclaration(FileObject fileInProject, String testString, 
+            boolean classLocation, boolean requireDeclaredClass) {
+        
         int methodIndex = testString.indexOf('/'); //NOI18N
         if (methodIndex == -1) {
             return DeclarationLocation.NONE;
@@ -595,13 +601,20 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper
         RubyIndex index = RubyIndex.get(gsfIndex, fileInProject);
         Set<IndexedMethod> methods = index.getMethods(methodName, className, NameKind.EXACT_NAME, RubyIndex.SOURCE_SCOPE);
         DeclarationLocation methodLocation = getLocation(methods);
-        if (!classLocation || methodLocation.getFileObject() == null) {
+        if (!classLocation) {
+            if (DeclarationLocation.NONE == methodLocation && !requireDeclaredClass) {
+                // the test method is not defined in the class
+                methodLocation = getLocation(index.getMethods(methodName, NameKind.EXACT_NAME));
+            }
             return methodLocation;
         }
-        
         Set<IndexedClass> classes =
                 index.getClasses(className, NameKind.EXACT_NAME, false, false, true, RubyIndex.SOURCE_SCOPE, null);
         DeclarationLocation classDeclarationLocation = getLocation(classes);
+        
+        if (DeclarationLocation.NONE == methodLocation && classLocation) {
+            return classDeclarationLocation;
+        }
         if (methodLocation.getFileObject().equals(classDeclarationLocation.getFileObject())) {
             return classDeclarationLocation;
         }

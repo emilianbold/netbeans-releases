@@ -44,8 +44,9 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -95,23 +96,11 @@ implements PropertyChangeListener, LookupListener {
 
 
     public static Map<String,String> nbprojectTypes() {
-        Map<String,String> map = new HashMap<String, String>();
-
-        Lookup.Result<FeatureInfo> result = featureTypesLookup().lookupResult(FeatureInfo.class);
-        for (FeatureInfo info : result.allInstances()) {
-            map.putAll(info.nbproject);
-        }
-        return map;
+        return FeatureInfo.nbprojectTypes();
     }
 
     public static Map<String,String> projectFiles() {
-        Map<String,String> map = new HashMap<String, String>();
-
-        Lookup.Result<FeatureInfo> result = featureTypesLookup().lookupResult(FeatureInfo.class);
-        for (FeatureInfo info : result.allInstances()) {
-            map.putAll(info.files);
-        }
-        return map;
+        return FeatureInfo.projectFiles();
     }
     
     public static Collection<? extends FeatureInfo> features() {
@@ -166,7 +155,7 @@ implements PropertyChangeListener, LookupListener {
     }
 
     private static Lookup featureTypesLookup;
-    public static synchronized Lookup featureTypesLookup() {
+    private static synchronized Lookup featureTypesLookup() {
         if (featureTypesLookup != null) {
             return featureTypesLookup;
         }
@@ -177,7 +166,8 @@ implements PropertyChangeListener, LookupListener {
         } else {
             InstanceContent ic = new InstanceContent();
             AbstractLookup l = new AbstractLookup(ic);
-            for (String c : clusters.split(File.pathSeparator)) {
+            String[] paths = clusters.split(File.pathSeparator);
+            for (String c : paths) {
                 int last = c.lastIndexOf(File.separatorChar);
                 String clusterName = c.substring(last + 1).replaceFirst("[0-9\\.]*$", "");
                 String basename = "/org/netbeans/modules/ide/ergonomics/" + clusterName;

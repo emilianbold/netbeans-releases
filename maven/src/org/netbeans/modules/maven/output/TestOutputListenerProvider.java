@@ -176,9 +176,9 @@ public class TestOutputListenerProvider implements OutputProcessor {
         public void outputLineAction(OutputEvent ev) {
             FileObject outDir = null;
             if (outputDir != null) {
-                //TODO replace with FileUtil.refreshFile(File) in 6.1
                 File fl = FileUtil.normalizeFile(new File(outputDir));
-                outDir = FileUtilities.toFileObject(fl);
+                FileUtil.refreshFor(fl);
+                outDir = FileUtil.toFileObject(fl);
             } 
             if (outDir == null) {
                 LOG.info("Cannot find path " + outputDir + " to follow link in Output Window."); //NOI18N

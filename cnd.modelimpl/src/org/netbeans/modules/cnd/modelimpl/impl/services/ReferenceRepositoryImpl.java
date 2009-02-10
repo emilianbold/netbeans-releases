@@ -66,6 +66,8 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
+import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
+import org.netbeans.modules.cnd.api.model.services.CsmFileReferences.ReferenceVisitor;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -78,6 +80,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -180,8 +183,8 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
     ////////////////////////////////////////////////////////////////////////////
     // prototype of impl
     
-    private Collection<CsmReference> getReferences(CsmObject targetDecl, CsmObject targetDef, FileImpl file, 
-            Set<CsmReferenceKind> kinds, boolean unboxInstantiation, int startOffset, int endOffset, Interrupter interrupter) {
+    private Collection<CsmReference> getReferences(final CsmObject targetDecl, final CsmObject targetDef, FileImpl file,
+            final Set<CsmReferenceKind> kinds, final boolean unboxInstantiation, int startOffset, int endOffset, final Interrupter interrupter) {
         assert targetDecl != null;
         assert file != null;
         CharSequence name = "";
@@ -203,27 +206,38 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         if (TraceFlags.TRACE_XREF_REPOSITORY) {
             System.err.println("resolving " + name + " in file " + file.getAbsolutePath());
         }
-        Collection<CsmReference> out = new ArrayList<CsmReference>(20);
-        long time = 0;
-        if (TraceFlags.TRACE_XREF_REPOSITORY) {
-            time = System.currentTimeMillis();
-        }
+        //long time = 0;
+        //if (TraceFlags.TRACE_XREF_REPOSITORY) {
+        //    time = System.currentTimeMillis();
+        //}
         Collection<APTToken> tokens = getTokensToResolve(file, name.toString(), startOffset, endOffset);
         if (TraceFlags.TRACE_XREF_REPOSITORY) {
-            time = System.currentTimeMillis() - time;
+            //time = System.currentTimeMillis() - time;
             System.err.println("collecting tokens");
         }
+        Collection<CsmReference> refs = new ArrayList<CsmReference>(20);
         for (APTToken token : tokens) {
             if (interrupter != null && interrupter.cancelled()){
                 break;
             }
-            // this is candidate to resolve
-            int offset = token.getOffset();
-            CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, offset);
-            if (acceptReference(ref, targetDecl, targetDef, kinds, unboxInstantiation)) {
-                out.add(ref);
+            CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, token.getOffset());
+            if (ref != null) {
+                // this is candidate to resolve
+                refs.add(ref);
             }
         }
+        final Collection<CsmReference> out = new ArrayList<CsmReference>(20);
+        ReferenceVisitor visitor = new ReferenceVisitor() {
+            public void visit(CsmReference ref) {
+                if (interrupter != null && interrupter.cancelled()){
+                    return;
+                }
+                if (acceptReference(ref, targetDecl, targetDef, kinds, unboxInstantiation)) {
+                    out.add(ref);
+                }
+            }
+        };
+        CsmFileReferences.getDefault().visit(refs, visitor);
         return out;
     }
     
@@ -231,7 +245,11 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
     private boolean hasName(FileImpl file, String name){
         try {
             if (file.isValid()) {
-                String text = file.getBuffer().getText();
+                FileBuffer buffer = file.getBuffer();
+                if (buffer == null){
+                    return false;
+                }
+                String text = buffer.getText();
                 if (text.indexOf(name) < 0) {
                     return false;
                 }
@@ -292,8 +310,13 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         Reader reader = null;
         TokenStream ts = null;
         try {
-            reader = file.getBuffer().getReader();
-            ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), reader);
+            if (file.isValid()) {
+                FileBuffer buffer = file.getBuffer();
+                if (buffer != null){
+                    reader = buffer.getReader();
+                    ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), reader);
+                }
+            }
         } catch (IOException ex) {
             DiagnosticExceptoins.register(ex);
             ts = null;
@@ -306,9 +329,11 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
                 }
             }
         }
-        APTPreprocHandler preprocHandler = file.getPreprocHandler();
-        APTPreprocHandler.State ppState = preprocHandler == null ? null : preprocHandler.getState();        
-        return ts == null ? null : file.getLanguageFilter(ppState).getFilteredStream( new APTCommentsFilter(ts));
+        if (ts == null || !file.isValid()) {
+            return null;
+        }
+        APTPreprocHandler.State ppState = file.getProjectImpl(false).getPreprocState(file);
+        return file.getLanguageFilter(ppState).getFilteredStream( new APTCommentsFilter(ts));
     }
 
     private boolean acceptReference(CsmReference ref, CsmObject targetDecl, CsmObject targetDef, 

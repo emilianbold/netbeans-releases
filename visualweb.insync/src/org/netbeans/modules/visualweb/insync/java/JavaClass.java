@@ -70,6 +70,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreeMaker;
@@ -134,8 +135,17 @@ public class JavaClass {
     public boolean isSubTypeOf(final String typeName) {
          Boolean result = (Boolean)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
             public Object run(CompilationInfo cinfo) {
+                if (cinfo == null) {
+                    // XXX #156777 Possible NPE.
+                    return Boolean.FALSE;
+                }
                 TypeElement typeElement = typeElementHandle.resolve(cinfo);
-                TypeElement superElement = cinfo.getElements().getTypeElement(typeName);
+                Elements elements = cinfo.getElements();
+                if (elements == null) {
+                    // XXX #156777 Possible NPE.
+                    return Boolean.FALSE;
+                }
+                TypeElement superElement = elements.getTypeElement(typeName);
                 if (superElement == null) {
                     // XXX #153978 Possible NPE.
                     return Boolean.FALSE;

@@ -150,12 +150,24 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
                                 showRevisionDiff(r1, onSelectionshowLastDifference);
                             }
                         } else if (nodes.length == 2) {
-                            RepositoryRevision.Event r2 = (RepositoryRevision.Event) nodes[1].getLookup().lookup(RepositoryRevision.Event.class);
-                            if (r2.getFile() == null || !r2.getFile().equals(r1.getFile())) {
+                            RepositoryRevision.Event revOlder = null;
+                            if (container1 != null) {
+                                /**
+                                 * both repository revision events must be acquired from a container, not through a Lookup as before,
+                                 * since only two containers (and no rev-event) are present in the lookup
+                                 */
+                                RepositoryRevision container2 = nodes[1].getLookup().lookup(RepositoryRevision.class);
+                                r1 = getEventForRoots(container1);
+                                revOlder = getEventForRoots(container2);
+                            } else {
+                                revOlder = (RepositoryRevision.Event) nodes[1].getLookup().lookup(RepositoryRevision.Event.class);
+                            }
+                            if (r1 == null || revOlder == null || revOlder.getFile() == null || !revOlder.getFile().equals(r1.getFile())) {
                                 throw new Exception();
                             }
-                            showDiff(r1, r1.getLogInfoHeader().getLog().getRevision(), 
-                                    r2.getLogInfoHeader().getLog().getRevision(), false);
+                            String revisionNumberOlder = r1.getLogInfoHeader().getLog().getRevision();
+                            String revisionNumberNewer = revOlder.getLogInfoHeader().getLog().getRevision();
+                            showDiff(r1, revisionNumberNewer, revisionNumberOlder, false);
                         }
                     } catch (Exception e) {
                         showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_IllegalSelection")); // NOI18N
@@ -248,16 +260,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     private void showContainerDiff(RepositoryRevision container, boolean showLastDifference) {        
         List<RepositoryRevision.Event> revs = container.getEvents();
         
-        RepositoryRevision.Event newest = null;
-        //try to get the root        
-        File[] roots = parent.getRoots();
-        for(File root : roots) {
-            for(RepositoryRevision.Event evt : revs) {
-                if(root.equals(evt.getFile())) {
-                    newest = evt;   
-                }   
-            }            
-        }
+        RepositoryRevision.Event newest = getEventForRoots(container);
         if(newest == null) {
             newest = revs.get(0);   
         }        
@@ -265,6 +268,23 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         long rev = Long.parseLong(newest.getLogInfoHeader().getLog().getRevision());
         String ancestor = newest.getLogInfoHeader().getLog().getAncestor();        
         showDiff(newest, ancestor != null? ancestor: Long.toString(rev - 1), Long.toString(rev), showLastDifference);
+    }
+
+    private RepositoryRevision.Event getEventForRoots(RepositoryRevision container) {
+        RepositoryRevision.Event event = null;
+        List<RepositoryRevision.Event> revs = container.getEvents();
+
+        //try to get the root
+        File[] roots = parent.getRoots();
+        for(File root : roots) {
+            for(RepositoryRevision.Event evt : revs) {
+                if(root.equals(evt.getFile())) {
+                    event = evt;
+                }
+            }
+        }
+
+        return event;
     }
     
     void onNextButton() {

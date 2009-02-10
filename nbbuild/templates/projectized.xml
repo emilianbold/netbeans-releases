@@ -180,6 +180,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
     <target name="test-lib-init" depends="init">
         <path id="test.unit.lib.cp"/>
         <!-- The IDE is so big that anything enabling all clusters will exceed the JVM's defaults! -->
+        <!-- Any changes please propagate into nbbuild/testdist/release/one-module.xml test.run.args property -->
         <property name="test.run.args" value="-ea -XX:PermSize=32m -XX:MaxPermSize=200m -Xmx256m"/>
     </target>
 
@@ -202,12 +203,16 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
     </target>
 
     <target name="javadoc" depends="build-init,-javadoc-init,-conditional-javadoc-warn" unless="skip.javadoc">
+        <path id="javadoc.classpath">
+            <path refid="cp"/>
+            <path path="${module.run.classpath}"/><!-- XXX #157320: JDK 5 bug workaround -->
+        </path>
         <!-- This should become an import at some point, perhaps: -->
         <ant dir="${nb_all}/nbbuild/javadoctools" antfile="template.xml" target="javadoc">
             <property name="javadoc.base" location="."/>
             <property name="javadoc.name" value="${code.name.base.dashes}" />
             <property name="javadoc.packages" value="${module.javadoc.packages}"/>
-            <property name="javadoc.classpath" refid="cp"/>
+            <property name="javadoc.classpath" refid="javadoc.classpath"/>
             <property name="javadoc.project" location="nbproject/project.xml"/>
         </ant>
     </target>
@@ -471,49 +476,14 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         </exec>
     </target>
 
-    <target name="fix-cddl" depends="build-init">
-        <property name="license.root.dir" location="${basedir}"/>
-        <checklicense >
-            <cvsfileset dir="${license.root.dir}"/>
-            <cvsfileset dir="${src.dir}"/>
-            
-    <convert 
-        token='^([ \t]*[^ \n]+[ \t]?)?[ \t]*Sun Public License N?otice' 
-        prefix='true'
-    >
-        <line text='The contents of this file are subject to the terms of the Common Development'/>
-        <line text='and Distribution License (the License). You may not use this file except in'/>
-        <line text='compliance with the License.'/>
-    </convert>
-    <convert 
-     token='The *contents *of *this *file *are
- *subject *to *the *Sun *Public.*available.*at.*([hH][tT][tT][pP][^:]*://www.sun.com/|http://jalopy.sf.net/license-spl.html)'
-    >
-        <line text='You can obtain a copy of the License at http://www.netbeans.org/cddl.html'/>
-        <line text='or http://www.netbeans.org/cddl.txt.'/>
-        <line text=''/>
-        <line text='When distributing Covered Code, include this CDDL Header Notice in each file'/>
-        <line text='and include the License file at http://www.netbeans.org/cddl.txt.'/>
-        <line text='If applicable, add the following below the CDDL Header, with the fields'/>
-        <line text='enclosed by brackets [] replaced by your own identifying information:'/>
-        <line text='"Portions Copyrighted [year] [name of copyright owner]"'/>
-   </convert>
-   <convert token='1997-[0-2][09][09][0-9]' replace='1997-2007'/>
-   <convert token='Original\n[^A-Za-z]*Code' replace='Original\nSoftware' replaceall='true'/>
-   <convert token='Original Code' replace='Original Software' replaceall='true'/>
-        </checklicense>
-
-        <checklicense fragment="Sun Public License" fail="whenpresent">
-            <cvsfileset dir="${license.root.dir}"/>
-            <cvsfileset dir="${src.dir}"/>
-        </checklicense>
-    </target>
-
     <target name="fix-cddl-gpl" depends="build-init">
         <property name="license.root.dir" location="${basedir}"/>
+        <tstamp>
+            <format property="YEAR" pattern="yyyy"/>
+        </tstamp>
         <checklicense>
-            <cvsfileset dir="${license.root.dir}"/>
-            <cvsfileset dir="${src.dir}"/>
+            <fileset dir="${license.root.dir}"/>
+            <fileset dir="${src.dir}"/>
             
             <convert 
                 token='^([ \t]*[^ \n]+[ \t]?)?[ \t]*The contents of this file are subject to the terms of the Common Development' 
@@ -521,7 +491,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
             >
                 <line text='DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.'/>
                 <line text=''/>
-                <line text='Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.'/>
+                <line text='Copyright 1997-${YEAR} Sun Microsystems, Inc. All rights reserved.'/>
                 <line text=''/>
             </convert>
 
@@ -565,8 +535,8 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         </checklicense>
 
         <checklicense fragment="Common Development" fail="whenpresent">
-            <cvsfileset dir="${license.root.dir}"/>
-            <cvsfileset dir="${src.dir}"/>
+            <fileset dir="${license.root.dir}"/>
+            <fileset dir="${src.dir}"/>
         </checklicense>
     </target>
     

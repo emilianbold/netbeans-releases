@@ -105,6 +105,14 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         super(testName);
     }
 
+    /** Called before every test case. */
+    @Override
+    public void setUp() throws IOException {
+        openDataProjects(_testProjectName);
+        //workdirpath = getWorkDir().getParentFile().getAbsolutePath();
+        System.out.println("########  " + getName() + "  #######");
+    }
+
     /**
      * Simple console println
      */
@@ -349,7 +357,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         Action act = new Action(null, actionName);
         act.setComparator(new Operator.DefaultStringComparator(false, false));
         act.perform(node);
-    // p(actionName);
+        // p(actionName);
     }
 
     /**
@@ -361,7 +369,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         Action act = new ActionNoBlock(null, actionName);
         act.setComparator(new Operator.DefaultStringComparator(false, false));
         act.perform(node);
-    // p(actionName);
+        // p(actionName);
     }
 
     /**
@@ -374,7 +382,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
             Action act = new Action(null, actionName);
             act.setComparator(comparator);
             act.perform(node);
-        // p(actionName);
+            // p(actionName);
         }
     }
 
@@ -550,6 +558,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         new JButtonOperator(newJDAOp, "Finish").push(); // NOI18N
     }
     // Method for checking jdk version
+
     public static String getJDKVersionCode() {
         String specVersion = System.getProperty("java.version");
 

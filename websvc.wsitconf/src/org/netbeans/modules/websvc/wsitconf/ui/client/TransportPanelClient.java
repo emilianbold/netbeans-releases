@@ -41,13 +41,17 @@
 package org.netbeans.modules.websvc.wsitconf.ui.client;
 
 import javax.swing.JCheckBox;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
+import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.TransportModelHelper;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 
 /**
@@ -60,13 +64,20 @@ public class TransportPanelClient extends SectionInnerPanel {
     private Binding binding;
     private boolean inSync = false;
     private JaxWsModel jaxwsmodel;
+
+    private Project project;
    
     public TransportPanelClient(SectionView view, Node node, Binding binding, JaxWsModel jaxWsModel) {
         super(view);
         this.node = node;
         this.binding = binding;
         this.jaxwsmodel = jaxWsModel;
-        
+
+        FileObject fo = node.getLookup().lookup(FileObject.class);
+        if (fo != null) {
+            project = FileOwnerQuery.getOwner(fo);
+        }
+
         initComponents();
 
         optimalEncChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
@@ -92,6 +103,9 @@ public class TransportPanelClient extends SectionInnerPanel {
     @Override
     public void setValue(javax.swing.JComponent source, Object value) {
         if (!inSync) {
+
+            Util.checkMetroLibrary(project);
+
             if (source.equals(optimalEncChBox)) {
                 TransportModelHelper.setAutoEncoding(binding, optimalEncChBox.isSelected());
             }

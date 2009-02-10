@@ -1,0 +1,95 @@
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+
+Contributor(s):
+
+Portions Copyrighted 2009 Sun Microsystems, Inc.
+-->
+<html>
+    <head>
+        <title>Creating a Maven Project</title>
+        <link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+    <body>
+        <h2>Creating a Maven Project</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small></p>
+        <p>
+        The New Project wizard enables you to create a new Maven project (artifact) based on an archetype in your local or
+        a remote repository.
+        When you create the new artifact the wizard prompts you to specify the artifactId, groupId and versionId.
+        </p>
+        <p><strong>To create a new Maven project</strong></p>
+        <ol>
+            <li>Choose File &gt; New Project from the main menu to open the New Project wizard.</li>
+            <li>Choose the Maven category and then choose a Maven project template. Click Next.
+            <p>If you choose the Maven Project template you will need to choose an archetype.
+            The wizard displays the available archetypes contained in your local or registered remote repository.</p>
+            <p>If you choose the Enterprise Application, Web Application or EJB Module template,
+            the IDE uses predefined archetypes for the project.</p>
+            </li>
+            <li>Specify the project name, location and project details. Click Finish.</li>
+        </ol>
+
+        <p>When you click Finish, the IDE creates the Maven project and displays the node for the project
+        in the Projects window.</p>
+        <p><strong>Notes.</strong></p>
+        <ul class="note">
+            <li>If you have just installed Maven, the first time you create a project
+            Maven will need to download the most recent artifacts into your local repository.
+            This can take some time.</li>
+            <li>If you choose the Enterprise Application template, the IDE will automatically
+            create an assembly module for packaging the web application module and EJB module.
+            You can select the modules that you want the IDE to create.</li>
+            <li>If you have an existing Maven 2 project that contains <tt>pom.xml</tt> you do not need to use the New Project wizard.
+            You can open the project by choosing Open Project (Shift-Ctrl-O) from the main menu.</li>
+        </ul>
+
+        <p>After you create the project, you can configure the properties for the project by right-clicking the project
+        node in the Projects window and choosing Properties.</p>
+
+
+
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/maven/maven-about.html">About Working with Maven</a></dd>
+    <dd><a href="maven_settings.html">Configuring Maven Settings</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

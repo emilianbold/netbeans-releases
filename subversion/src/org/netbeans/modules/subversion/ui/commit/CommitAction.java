@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.subversion.ui.commit;
 
+import java.io.IOException;
 import org.netbeans.modules.versioning.util.DialogBoundsPreserver;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
@@ -49,6 +50,7 @@ import org.netbeans.modules.subversion.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.tigris.subversion.svnclientadapter.SVNBaseDir;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import javax.swing.*;
@@ -57,10 +59,13 @@ import java.io.File;
 import java.util.*;
 import java.util.List;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.hooks.spi.SvnHook;
+import org.netbeans.modules.subversion.hooks.spi.SvnHookContext;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
@@ -68,6 +73,7 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
+import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
 import org.tigris.subversion.svnclientadapter.ISVNProperty;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -78,7 +84,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author Petr Kuzel
  */
 public class CommitAction extends ContextAction {
-    
+
     static final String RECENT_COMMIT_MESSAGES = "recentCommitMessage";
 
     protected String getBaseName(Node[] nodes) {
@@ -87,8 +93,8 @@ public class CommitAction extends ContextAction {
 
     protected boolean enable(Node[] nodes) {
         if(isDeepRefresh()) {
-            // allway true as we have will accept and check for external changes 
-            // and we don't about them yet 
+            // allway true as we have will accept and check for external changes
+            // and we don't about them yet
             return true;
         }
         // XXX could be a performace issue, maybe a msg box in commit would be enough
@@ -96,93 +102,99 @@ public class CommitAction extends ContextAction {
         File[] files = cache.listFiles(getContext(nodes), FileInformation.STATUS_LOCAL_CHANGE);
         return files.length > 0;
     }
-        
+
     /** Run commit action. Shows UI */
     public static void commit(String contentTitle, final Context ctx) {
-        if(!Subversion.getInstance().checkClientAvailable()) {            
+        if(!Subversion.getInstance().checkClientAvailable()) {
             return;
-        }        
-                
-        if(isDeepRefresh()) {     
+        }
+
+        if(isDeepRefresh()) {
             commitAllChanges(contentTitle, ctx);
-        } else {            
-            commitKnownChanges(contentTitle, ctx);                       
+        } else {
+            commitKnownChanges(contentTitle, ctx);
         }
     }
-    
+
     private static boolean isDeepRefresh() {
         String noDeepRefresh = System.getProperty("netbeans.subversion.commit.deepStatusRefresh");  // NOI18N
         return noDeepRefresh != null && !noDeepRefresh.trim().equals("");
     }
-    
+
     /**
      * Opens the commit dialog displaying all changed files from the status cache which belong to the given context.
      * There is no guarantee that changes made outside of the IDE will be recognized
-     * 
+     *
      * @param contentTitle
      * @param ctx
      */
     public static void commitKnownChanges(String contentTitle, final Context ctx) {
-         
+
         // get files list
         List<File> fileList = getFiles(ctx);
         if(fileList.size() == 0) {
-            return; 
-        }        
-        
-        // show commit dialog                
-        final CommitPanel panel = new CommitPanel();   
-        final CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] { CommitTableModel.COLUMN_NAME_PATH });                                                 
+            return;
+        }
+
+        // show commit dialog
+        final CommitPanel panel = new CommitPanel();
+        List<SvnHook> hooks = Subversion.getInstance().getHooks();
+        panel.initHooks(hooks, new SvnHookContext(new File[] { fileList.get(0) }, null, null));
+        final CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] { CommitTableModel.COLUMN_NAME_PATH });
         panel.setCommitTable(data);
-        
+
         data.setNodes(getFileNodes(fileList));
-        
-        final JButton commitButton = new JButton();         
+
+        final JButton commitButton = new JButton();
         if (showCommitDialog(panel, data, commitButton, contentTitle, ctx) == commitButton) {
             // if OK setup sequence of add, remove and commit calls
-            startCommitTask(panel, data, ctx);                        
-        }      
-        
+            startCommitTask(panel, data, ctx, hooks);
+        }
+
     }
-        
+
     /**
      * Opens the commit dialog displaying all changed files from the status cache which belong to the given context.
      * The status for all files will be refrehed first and the commit button in the dialog stays disabled until then.
      * It may take a while until the dialog is setup.
-     * 
+     *
      * @param contentTitle
      * @param ctx
      */
     public static void commitAllChanges(String contentTitle, final Context ctx) {
-        
-        final CommitPanel panel = new CommitPanel();   
-        final CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] { CommitTableModel.COLUMN_NAME_PATH });                                 
-        panel.setCommitTable(data);                                
-        final JButton commitButton = new JButton(); 
-             
+
+        final CommitPanel panel = new CommitPanel();
+        List<SvnHook> hooks = Subversion.getInstance().getHooks();
+        File file = ctx.getRootFiles()[0];
+        panel.initHooks(hooks, new SvnHookContext(new File[] { file }, null, null));
+
+        final CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] { CommitTableModel.COLUMN_NAME_PATH });
+        panel.setCommitTable(data);
+        final JButton commitButton = new JButton();
+
         // start backround prepare
         SVNUrl repository = null;
-        try {            
+        try {
             repository = getSvnUrl(ctx);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);                
-        }               
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+        }
         SvnProgressSupport prepareSupport = getPrepareSupport(ctx, data, commitButton, panel);
-        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);        
+        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         prepareSupport.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "BK1009")); // NOI18N
-                
-        // show commit dialog        
-        if (showCommitDialog(panel, data, commitButton, contentTitle, ctx) == commitButton) {            
+
+        // show commit dialog
+        if (showCommitDialog(panel, data, commitButton, contentTitle, ctx) == commitButton) {
             // if OK setup sequence of add, remove and commit calls
-            startCommitTask(panel, data, ctx);
+            startCommitTask(panel, data, ctx, hooks);
         } else {
             prepareSupport.cancel();
         }
-    }    
-    
+    }
+
     /**
      * Returns all files from the given context honoring the flat folder logic
-     * 
+     *
      * @param ctx
      * @return
      */
@@ -192,14 +204,14 @@ public class CommitAction extends ContextAction {
         File[] contextFiles = ctx.getFiles();
         if (contextFiles.length == 0) {
             return fileList;
-        }        
-        
+        }
+
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        
-        // The commits are made non recursively, so 
-        // add also the roots to the to be commited list.       
-        List<File> rootFiles = ctx.getRoots();                
-        Set<File> filesSet = new HashSet<File>(); 
+
+        // The commits are made non recursively, so
+        // add also the roots to the to be commited list.
+        List<File> rootFiles = ctx.getRoots();
+        Set<File> filesSet = new HashSet<File>();
         for(File file : contextFiles) {
             filesSet.add(file);
         }
@@ -207,9 +219,9 @@ public class CommitAction extends ContextAction {
             filesSet.add(file);
         }
         contextFiles = filesSet.toArray(new File[filesSet.size()]);
-                
+
         // get all changed files while honoring the flat folder logic
-        File[][] split = Utils.splitFlatOthers(contextFiles);        
+        File[][] split = Utils.splitFlatOthers(contextFiles);
         for (int c = 0; c < split.length; c++) {
             contextFiles = split[c];
             boolean recursive = c == 1;
@@ -221,8 +233,8 @@ public class CommitAction extends ContextAction {
                             if(!fileList.contains(files[i])) {
                                 fileList.add(files[i]);
                             }
-                        }                    
-                    }                    
+                        }
+                    }
                 }
             } else {
                 File[] files = SvnUtils.flatten(contextFiles, FileInformation.STATUS_LOCAL_CHANGE);
@@ -230,7 +242,7 @@ public class CommitAction extends ContextAction {
                     if(!fileList.contains(files[i])) {
                         fileList.add(files[i]);
                     }
-                }                
+                }
             }
         }
 
@@ -245,7 +257,7 @@ public class CommitAction extends ContextAction {
         for (File file : fileList) {
             File parent = null;;
             while((parent = file.getParentFile()) != null) {
-                if(checked.contains(parent)) break;                
+                if(checked.contains(parent)) break;
                 checked.add(parent);
                 if(fileList.contains(parent)) break;
                 if(!SvnUtils.isManaged(parent)) break;
@@ -260,10 +272,10 @@ public class CommitAction extends ContextAction {
         }
         return ret;
     }
-    
+
     /**
      * Returns a SvnFileNode for each given file
-     * 
+     *
      * @param fileList
      * @return
      */
@@ -275,14 +287,14 @@ public class CommitAction extends ContextAction {
             File file = it.next();
             SvnFileNode node = new SvnFileNode(file);
             nodesList.add(node);
-        }        
+        }
         nodes = nodesList.toArray(new SvnFileNode[fileList.size()]);
         return nodes;
     }
-    
+
     /**
      * Opens the commit dlg
-     * 
+     *
      * @param panel
      * @param data
      * @param commitButton
@@ -303,16 +315,16 @@ public class CommitAction extends ContextAction {
         cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSN_Commit_Action_Cancel")); // NOI18N
         cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSD_Commit_Action_Cancel")); // NOI18N
         cancelButton.setDefaultCapable(false);
-        
+
         commitButton.setEnabled(false);
 
         DialogDescriptor dd = new DialogDescriptor(panel,
               org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_CommitDialog_Title", contentTitle), // NOI18N
-              true, 
+              true,
               new Object[] {commitButton, cancelButton},
-              commitButton, 
-              DialogDescriptor.DEFAULT_ALIGN, 
-              new HelpCtx(CommitAction.class), 
+              commitButton,
+              DialogDescriptor.DEFAULT_ALIGN,
+              new HelpCtx(CommitAction.class),
               null);
         panel.addVersioningListener(new VersioningListener() {
             public void versioningEvent(VersioningEvent event) {
@@ -325,51 +337,51 @@ public class CommitAction extends ContextAction {
             }
         });
         commitButton.setEnabled(containsCommitable(data));
-                
+
         panel.putClientProperty("contentTitle", contentTitle);  // NOI18N
         panel.putClientProperty("DialogDescriptor", dd); // NOI18N
-        final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);        
-        dialog.addWindowListener(new DialogBoundsPreserver(SvnModuleConfig.getDefault().getPreferences(), "svn.commit.dialog")); // NOI18N       
-        dialog.pack();        
+        final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.addWindowListener(new DialogBoundsPreserver(SvnModuleConfig.getDefault().getPreferences(), "svn.commit.dialog")); // NOI18N
+        dialog.pack();
         dialog.setVisible(true);
-        
-        return dd.getValue();                        
+
+        return dd.getValue();
     }
-    
-    private static void startCommitTask(final CommitPanel panel, final CommitTable data, final Context ctx) {
+
+    private static void startCommitTask(final CommitPanel panel, final CommitTable data, final Context ctx, final List<SvnHook> hooks) {
         final Map<SvnFileNode, CommitOptions> commitFiles = data.getCommitFiles();
         final String message = panel.messageTextArea.getText();
         org.netbeans.modules.versioning.util.Utils.insert(SvnModuleConfig.getDefault().getPreferences(), RECENT_COMMIT_MESSAGES, message, 20);
 
         SVNUrl repository = null;
-        try {            
+        try {
             repository = getSvnUrl(ctx);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);                
-        }                    
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+        }
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         SvnProgressSupport support = new SvnProgressSupport() {
-            public void perform() {                    
-                performCommit(message, commitFiles, ctx, this);
+            public void perform() {
+                performCommit(message, commitFiles, ctx, this, hooks);
             }
         };
-        support.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N        
+        support.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
     }
-    
+
     private static SvnProgressSupport getPrepareSupport(final Context ctx, final CommitTable data, final JButton commitButton, final CommitPanel panel) {
         SvnProgressSupport support = new SvnProgressSupport() {
-            public void perform() { 
+            public void perform() {
                 try {
                     // get files without exclusions
                     File[] contextFiles = ctx.getFiles();
                     if (contextFiles.length == 0) {
                         return;
-                    }        
+                    }
 
-                    // The commits are made non recursively, so 
-                    // add also the roots to the to be commited list.       
-                    List<File> rootFiles = ctx.getRoots();                
-                    Set<File> filesSet = new HashSet<File>(); 
+                    // The commits are made non recursively, so
+                    // add also the roots to the to be commited list.
+                    List<File> rootFiles = ctx.getRoots();
+                    Set<File> filesSet = new HashSet<File>();
                     for(File file : contextFiles) {
                         filesSet.add(file);
                     }
@@ -382,7 +394,7 @@ public class CommitAction extends ContextAction {
                     FileStatusCache cache = Subversion.getInstance().getStatusCache();
                     for(File f : contextFiles) {
                         cache.refreshRecursively(f);
-                    }                        
+                    }
                     // get all changed files while honoring the flat folder logic
                     File[][] split = Utils.splitFlatOthers(contextFiles);
                     List<File> fileList = new ArrayList<File>();
@@ -397,8 +409,8 @@ public class CommitAction extends ContextAction {
                                         if(!fileList.contains(files[i])) {
                                             fileList.add(files[i]);
                                         }
-                                    }                    
-                                }                    
+                                    }
+                                }
                             }
                         } else {
                             File[] files = SvnUtils.flatten(contextFiles, FileInformation.STATUS_LOCAL_CHANGE);
@@ -406,13 +418,13 @@ public class CommitAction extends ContextAction {
                                 if(!fileList.contains(files[i])) {
                                     fileList.add(files[i]);
                                 }
-                            }                
+                            }
                         }
-                    }       
+                    }
 
                     if(fileList.size()==0) {
-                        return; 
-                    }  
+                        return;
+                    }
                     fileList.addAll(getUnversionedParents(fileList, false));
                     ArrayList<SvnFileNode> nodesList = new ArrayList<SvnFileNode>(fileList.size());
                     SvnFileNode[] nodes;
@@ -420,12 +432,12 @@ public class CommitAction extends ContextAction {
                         File file = it.next();
                         SvnFileNode node = new SvnFileNode(file);
                         nodesList.add(node);
-                    }        
+                    }
                     nodes = nodesList.toArray(new SvnFileNode[fileList.size()]);
-                    data.setNodes(nodes);                
+                    data.setNodes(nodes);
                 } finally {
                     commitButton.setEnabled(containsCommitable(data));
-                    
+
                     panel.addVersioningListener(new VersioningListener() {
                         public void versioningEvent(VersioningEvent event) {
                             refreshCommitDialog(panel, data, commitButton);
@@ -435,65 +447,65 @@ public class CommitAction extends ContextAction {
                         public void tableChanged(TableModelEvent e) {
                             refreshCommitDialog(panel, data, commitButton);
                         }
-                    });                    
+                    });
                 }
             }
         };
         return support;
-    }                
-    
+    }
+
     private static boolean containsCommitable(CommitTable data) {
         Map<SvnFileNode, CommitOptions> map = data.getCommitFiles();
         for(CommitOptions co : map.values()) {
             if(co != CommitOptions.EXCLUDE) {
-                return true;                
+                return true;
             }
         }
         return false;
     }
-    
+
     /**
      * User changed a commit action.
-     * 
+     *
      * @param panel
      * @param commit
-     */ 
+     */
     private static void refreshCommitDialog(CommitPanel panel, CommitTable table, JButton commit) {
         ResourceBundle loc = NbBundle.getBundle(CommitAction.class);
         Map<SvnFileNode, CommitOptions> files = table.getCommitFiles();
         Set<String> stickyTags = new HashSet<String>();
         boolean conflicts = false;
-        
+
         boolean enabled = commit.isEnabled();
-        
-        for (SvnFileNode fileNode : files.keySet()) {                                    
+
+        for (SvnFileNode fileNode : files.keySet()) {
             CommitOptions options = files.get(fileNode);
             if (options == CommitOptions.EXCLUDE) continue;
             stickyTags.add(SvnUtils.getCopy(fileNode.getFile()));
             int status = fileNode.getInformation().getStatus();
             if ((status & FileInformation.STATUS_REMOTE_CHANGE) != 0 || status == FileInformation.STATUS_VERSIONED_CONFLICT) {
                 enabled = false;
-                String msg = (status == FileInformation.STATUS_VERSIONED_CONFLICT) ? 
+                String msg = (status == FileInformation.STATUS_VERSIONED_CONFLICT) ?
                         loc.getString("MSG_CommitForm_ErrorConflicts") :
                         loc.getString("MSG_CommitForm_ErrorRemoteChanges");
                 panel.setErrorLabel("<html><font color=\"#002080\">" + msg + "</font></html>");  // NOI18N
                 conflicts = true;
-            }            
+            }
         }
-        
+
         if (stickyTags.size() > 1) {
-            table.setColumns(new String [] { CommitTableModel.COLUMN_NAME_NAME, CommitTableModel.COLUMN_NAME_BRANCH, CommitTableModel.COLUMN_NAME_STATUS, 
+            table.setColumns(new String [] { CommitTableModel.COLUMN_NAME_NAME, CommitTableModel.COLUMN_NAME_BRANCH, CommitTableModel.COLUMN_NAME_STATUS,
                                                 CommitTableModel.COLUMN_NAME_ACTION, CommitTableModel.COLUMN_NAME_PATH });
         } else {
-            table.setColumns(new String [] { CommitTableModel.COLUMN_NAME_NAME, CommitTableModel.COLUMN_NAME_STATUS, 
+            table.setColumns(new String [] { CommitTableModel.COLUMN_NAME_NAME, CommitTableModel.COLUMN_NAME_STATUS,
                                                 CommitTableModel.COLUMN_NAME_ACTION, CommitTableModel.COLUMN_NAME_PATH });
         }
-        
+
         String contentTitle = (String) panel.getClientProperty("contentTitle"); // NOI18N
         DialogDescriptor dd = (DialogDescriptor) panel.getClientProperty("DialogDescriptor"); // NOI18N
         String errorLabel;
         if (stickyTags.size() <= 1) {
-            String stickyTag = stickyTags.size() == 0 ? null : (String) stickyTags.iterator().next(); 
+            String stickyTag = stickyTags.size() == 0 ? null : (String) stickyTags.iterator().next();
             if (stickyTag == null) {
                 dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title"), new Object [] { contentTitle }));
                 errorLabel = ""; // NOI18N
@@ -509,40 +521,45 @@ public class CommitAction extends ContextAction {
         }
         if (!conflicts) {
             panel.setErrorLabel(errorLabel);
-            enabled = true; 
+            enabled = true;
         }
         commit.setEnabled(enabled && containsCommitable(table));
     }
-    
+
     protected void performContextAction(Node[] nodes) {
-        if(!Subversion.getInstance().checkClientAvailable()) {            
+        if(!Subversion.getInstance().checkClientAvailable()) {
             return;
         }
         final Context ctx = getContext(nodes);
         commit(getContextDisplayName(nodes), ctx);
     }
 
-    public static void performCommit(String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support) {
-        performCommit(message, commitFiles, ctx, support, false);
+    private static void performCommit(String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support, List<SvnHook> hooks) {
+        performCommit(message, commitFiles, ctx, support, false, hooks);
     }
-    
+
     public static void performCommit(String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support, boolean rootUpdate) {
+        performCommit(message, commitFiles, ctx, support, rootUpdate, new ArrayList<SvnHook>(0));
+    }
+
+    public static void performCommit(String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support, boolean rootUpdate, List<SvnHook> hooks) {
+        ISVNLogMessage[] log;
         try {
-                                               
+
             SvnClient client;
             try {
                 client = Subversion.getInstance().getClient(ctx, support);
             } catch (SVNClientException ex) {
                 SvnClientExceptionHandler.notifyException(ex, true, true); // should not hapen
                 return;
-            }                   
+            }
             support.setDisplayName(org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
 
             List<SvnFileNode> addCandidates = new ArrayList<SvnFileNode>();
             List<File> removeCandidates = new ArrayList<File>();
             Set<File> commitCandidates = new LinkedHashSet<File>();
             Set<File> binnaryCandidates = new HashSet<File>();
-                        
+
             Iterator<SvnFileNode> it = commitFiles.keySet().iterator();
             // XXX refactor the olowing loop. there seem to be redundant blocks
             while (it.hasNext()) {
@@ -566,7 +583,7 @@ public class CommitAction extends ContextAction {
                     if(support.isCanceled()) {
                         return;
                     }
-                    binnaryCandidates.add(node.getFile());                                     
+                    binnaryCandidates.add(node.getFile());
 
                     addCandidates.add(node);
                     commitCandidates.add(node.getFile());
@@ -592,15 +609,15 @@ public class CommitAction extends ContextAction {
                     commitCandidates.add(node.getFile());
                 } else if (CommitOptions.COMMIT == option) {
                     commitCandidates.add(node.getFile());
-                } 
-            }                       
-            
+                }
+            }
+
             // perform adds
             performAdds(client, support, addCandidates);
             if(support.isCanceled()) {
                 return;
             }
-            
+
             // ensure all ignored properties are set.
             // This is more a hack than a clean solution but still seems to be
             // more reasonable than changing Subverion.isIgnored due to:
@@ -614,78 +631,131 @@ public class CommitAction extends ContextAction {
             // TODO perform removes. especialy package removes where
             // metadata must be replied from SvnMetadata (hold by FileSyatemHandler)
 
-            // set binary mimetype and group commitCandidates by managed trees            
+            // set binary mimetype and group commitCandidates by managed trees
             List<List<File>> managedTrees = getManagedTrees(client, support, commitCandidates, binnaryCandidates);
             if(support.isCanceled()) {
                 return;
-            }                    
-            
-            // finally commit            
+            }
+
+            List<ISVNLogMessage> logs = new ArrayList<ISVNLogMessage>();
+            List<File> hookFiles = new ArrayList<File>();
+            if(hooks.size() > 0) {
+                for (List<File> l : managedTrees) {
+                    hookFiles.addAll(l);
+                }
+                beforeCommit(hooks, hookFiles, message);
+            }
+            // finally commit
             for (Iterator<List<File>> itCandidates = managedTrees.iterator(); itCandidates.hasNext();) {
-                
+
                 // one commit for each wc
                 List<File> commitList = itCandidates.next();
-                
+
                 // handle recursive commits - deleted and copied folders can't be commited non recursively
-                List<File> recursiveCommits = getRecursiveCommits(commitList, removeCandidates);                                                
-                if(recursiveCommits.size() > 0) {                                        
-                    // remove from the commits list all files which are supposed to be commited recursively 
+                List<File> recursiveCommits = getRecursiveCommits(commitList, removeCandidates);
+                if(recursiveCommits.size() > 0) {
+                    // remove from the commits list all files which are supposed to be commited recursively
                     // or are children from recursively commited folders
                     commitList.removeAll(getAllChildren(recursiveCommits, commitList));
-                    
+
                     // commit recursively
-                    File[] files = recursiveCommits.toArray(new File[recursiveCommits.size()]);                
+                    File[] files = recursiveCommits.toArray(new File[recursiveCommits.size()]);
                     client.commit(files, message, true); // true = recursive
-                    
                     if(support.isCanceled()) {
                         return;
-                    }                    
-                }  
+                    }
+                    if(hooks.size() > 0 && files.length > 0) {
+                        ISVNLogMessage[] ls = (client.getLogMessages(files[0], SVNRevision.HEAD, SVNRevision.HEAD));
+                        if(ls.length > 0) {
+                            logs.add(ls[0]);
+                        }
+                    }
+                    if(support.isCanceled()) {
+                        return;
+                    }
+                }
 
                 // commit the remaining files non recursively
                 if(commitList.size() > 0) {
-                    
-                    File[] files = commitList.toArray(new File[commitList.size()]);                
+
+                    File[] files = commitList.toArray(new File[commitList.size()]);
                     client.commit(files, message, false); // false = non recursive
-                    
                     if(support.isCanceled()) {
                         return;
-                    }                    
-                }                
-                
-                // update and refresh 
+                    }
+                    if(hooks.size() > 0 && files.length > 0) {
+                        ISVNLogMessage[] ls = (client.getLogMessages(files[0], SVNRevision.HEAD, SVNRevision.HEAD));
+                        if(ls.length > 0) {
+                            logs.add(ls[0]);
+                        }
+                    }
+                    if(support.isCanceled()) {
+                        return;
+                    }
+                }
+                afterCommit(hooks, hookFiles, message, logs);
+
+                // update and refresh
                 FileStatusCache cache = Subversion.getInstance().getStatusCache();
                 if(rootUpdate) {
                     File[] rootFiles = ctx.getRootFiles();
                     for (int i = 0; i < rootFiles.length; i++) {
-                        client.update(rootFiles[i], SVNRevision.HEAD, false);                            
-                    }                    
+                        client.update(rootFiles[i], SVNRevision.HEAD, false);
+                    }
                     for (int i = 0; i < rootFiles.length; i++) {
                         cache.refresh(rootFiles[i], FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-                    }                                        
-                }    
-                
+                    }
+                }
+
                 // XXX it's probably already catched by cache's onNotify()
                 refreshFiles(cache, commitList);
                 if(support.isCanceled()) {
                     return;
                 }
-                refreshFiles(cache, recursiveCommits);                
+                refreshFiles(cache, recursiveCommits);
                 if(support.isCanceled()) {
                     return;
                 }
-            }                        
+            }
 
         } catch (SVNClientException ex) {
             support.annotate(ex);
-        } 
+        }
     }
 
-    
+    private static void beforeCommit(List<SvnHook> hooks, List<File> files, String message) {
+        if(hooks.size() == 0) {
+            return;
+        }
+        SvnHookContext context = new SvnHookContext(files.toArray(new File[files.size()]), message, null);
+        for (SvnHook hook : hooks) {
+            try {
+                // XXX handle returned context
+                hook.beforeCommit(context);
+            } catch (IOException ex) {
+                // XXX handle veto
+            }
+        }
+    }
+
+    private static void afterCommit(List<SvnHook> hooks, List<File> files, String message, List<ISVNLogMessage> logs) {
+        if(hooks.size() == 0) {
+            return;
+        }
+        SvnHookContext.LogEntry[] entries = new SvnHookContext.LogEntry[logs.size()];
+        for (int i = 0; i < logs.size(); i++) {
+            entries[i] = new SvnHookContext.LogEntry(logs.get(i));
+        }
+        SvnHookContext context = new SvnHookContext(files.toArray(new File[files.size()]), message, entries);
+        for (SvnHook hook : hooks) {
+            hook.afterCommit(context);
+        }
+    }
+
     /**
      * Groups files by distinct working copies and sets the binary mimetypes
-     */ 
-    private static List<List<File>> getManagedTrees(SvnClient client, SvnProgressSupport support, Set<File> commitCandidates, Set<File> binnaryCandidates) throws SVNClientException {        
+     */
+    private static List<List<File>> getManagedTrees(SvnClient client, SvnProgressSupport support, Set<File> commitCandidates, Set<File> binnaryCandidates) throws SVNClientException {
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         List<List<File>> managedTrees = new ArrayList<List<File>>();
         for (Iterator<File> itCommitCandidates = commitCandidates.iterator(); itCommitCandidates.hasNext();) {
@@ -698,15 +768,15 @@ public class CommitAction extends ContextAction {
                     String s = prop.getValue();
                     if (s == null || s.startsWith("text/")) { // NOI18N
                         client.propertySet(commitCandidateFile, ISVNProperty.MIME_TYPE, "application/octet-stream", false); // NOI18N
-                    }    
+                    }
                 } else {
                      client.propertySet(commitCandidateFile, ISVNProperty.MIME_TYPE, "application/octet-stream", false); // NOI18N
-                }   
+                }
             }
             if(support.isCanceled()) {
                 return null;
             }
-            
+
             List<File> managedTreesList = null;
             for (Iterator<List<File>> itManagedTrees = managedTrees.iterator(); itManagedTrees.hasNext();) {
                 List<File> list = itManagedTrees.next();
@@ -723,22 +793,22 @@ public class CommitAction extends ContextAction {
                 }
                 if(support.isCanceled()) {
                     return null;
-                }                
+                }
             }
             if(managedTreesList == null) {
                 // no list for files from the same wc as commitCandidateFile created yet
                 managedTreesList = new ArrayList<File>();
                 managedTrees.add(managedTreesList);
-            }                
-            managedTreesList.add(commitCandidateFile);                
+            }
+            managedTreesList.add(commitCandidateFile);
         }
-        
+
         return managedTrees;
     }
-    
+
     /**
      * Calls the svn add command on not yet added files
-     */ 
+     */
     private static void performAdds(SvnClient client, SvnProgressSupport support, List<SvnFileNode> addCandidates) throws SVNClientException {
         List<File> addFiles = new ArrayList<File>();
         List<File> addDirs = new ArrayList<File>();
@@ -817,72 +887,72 @@ public class CommitAction extends ContextAction {
 
     /**
      * Returns all files which have to be commited recursively (deleted and copied folders)
-     */ 
+     */
     private static List<File> getRecursiveCommits(List<File> nonRecursiveComits, List<File> removeCandidates) {
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         List<File> recursiveCommits = new ArrayList<File>();
-        
+
         // 1. if there is at least one directory which isn't removed or copied
-        //    we have to commit it nonrecursively ...           
+        //    we have to commit it nonrecursively ...
         boolean nonRecursiveDirs = false;
         for(File file : nonRecursiveComits) {
             if( file.isDirectory() &&
-                !( removeCandidates.contains(file) || 
+                !( removeCandidates.contains(file) ||
                    cache.getStatus(file).getEntry(file).isCopied()) )
-            {               
+            {
                 nonRecursiveDirs = true;
                 break;
-            }                        
+            }
         }
-        if(!nonRecursiveDirs) {            
+        if(!nonRecursiveDirs) {
             // 2. ... otherwise we may commit all files recursivelly
             recursiveCommits.addAll(recursiveCommits);
             recursiveCommits.addAll(nonRecursiveComits);
         } else {
-            // 3. ... well, this is the worst case. we have folders which were deleted or copied 
-            //        and such have to be commited recursively (svn restriction). On the other hand, 
-            //        there are also folders which have to be commited and doing it recursivelly 
-            //        could cause that the commit would also apply to files which because of exclusion or 
+            // 3. ... well, this is the worst case. we have folders which were deleted or copied
+            //        and such have to be commited recursively (svn restriction). On the other hand,
+            //        there are also folders which have to be commited and doing it recursivelly
+            //        could cause that the commit would also apply to files which because of exclusion or
             //        the (bloody) flat-folder loginc aren't supposed to be commited at all =>
-            //        => the commit has to be split in two parts. 
+            //        => the commit has to be split in two parts.
             for(File file : nonRecursiveComits) {
-                if(file.isDirectory() && 
+                if(file.isDirectory() &&
                     ( removeCandidates.contains(file) ||
-                      cache.getStatus(file).getEntry(file).isCopied() )) 
+                      cache.getStatus(file).getEntry(file).isCopied() ))
                 {
-                    recursiveCommits.add(file); 
-                }                
-            }                    
-        }        
-        
+                    recursiveCommits.add(file);
+                }
+            }
+        }
+
         return recursiveCommits;
     }
-    
+
     /**
-     * Returns all files from the children list which have a parent in or are equal to a folder from the parents list 
+     * Returns all files from the children list which have a parent in or are equal to a folder from the parents list
      */
     private static List<File> getAllChildren(List<File> parents, List<File> children) {
         List<File> ret = new ArrayList<File>();
-        if(parents.size() > 0) {            
-            for(File child : children) {                        
+        if(parents.size() > 0) {
+            for(File child : children) {
                 File parent = child;
                 while(parent != null) {
                     if(parents.contains(parent)) {
                         ret.add(child);
                     }
                     parent = parent.getParentFile();
-                }                        
-            }                                                                    
-        }            
+                }
+            }
+        }
         return ret;
     }
-    
+
     private static void refreshFiles(FileStatusCache cache, List<File> files) {
         for (File file : files) {
             cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-        }        
+        }
     }
-    
+
     private static List<File> listUnmanagedParents(SvnFileNode node) {
         List<File> unmanaged = new ArrayList<File>();
         File file = node.getFile();

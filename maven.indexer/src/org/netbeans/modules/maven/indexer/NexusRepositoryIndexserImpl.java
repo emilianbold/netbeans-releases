@@ -148,15 +148,23 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
     private static final Logger LOGGER =
             Logger.getLogger("org.netbeans.modules.maven.indexer.RepositoryIndexer");//NOI18N
     /*custom Index creators*/
-    public static final List<? extends IndexCreator> NB_INDEX = Arrays.asList(
-            new MinimalArtifactInfoIndexCreator(),
-            new JarFileContentsIndexCreator(),
-            new NbIndexCreator());
     /**
      * any reads, writes from/to index shal be done under mutex access.
      */
     static final Mutex MUTEX = new Mutex();
     private Lookup lookup;
+
+    //#158083 more caching to satisfy the classloading gods..
+    private List<? extends IndexCreator> CREATORS;
+    private List<? extends IndexCreator> getIndexCreators() {
+        if (CREATORS == null) {
+            CREATORS = Arrays.asList(
+                new MinimalArtifactInfoIndexCreator(),
+                new JarFileContentsIndexCreator(),
+                new NbIndexCreator());
+        }
+        return CREATORS;
+    }
 
     //#138102
     public static String createLocalRepositoryPath(FileObject fo) {
@@ -259,7 +267,7 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
                             loc,
                             info.isRemoteDownloadable() ? info.getRepositoryUrl() : null, // repositoryUrl
                             info.isRemoteDownloadable() ? info.getIndexUpdateUrl() : null, // index update url
-                            NB_INDEX);
+                            getIndexCreators());
                 } catch (IOException ex) {
                     LOGGER.info("Found a broken index at " + loc.getAbsolutePath()); //NOI18N
                     LOGGER.log(Level.FINE, "Caused by ", ex); //NOI18N
@@ -272,7 +280,7 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
                             loc,
                             info.isRemoteDownloadable() ? info.getRepositoryUrl() : null, // repositoryUrl
                             info.isRemoteDownloadable() ? info.getIndexUpdateUrl() : null, // index update url
-                            NB_INDEX);
+                            getIndexCreators());
                 }
                 if (index) {
                     indexLoadedRepo(info, true);
@@ -357,7 +365,7 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
                 }
             } else {
                 LOGGER.finer("Indexing Local Repository :" + repo.getId());//NOI18N
-                indexer.scan(indexingContext, new RepositoryIndexerListener(indexer, indexingContext, false), updateLocal);
+                indexer.scan(indexingContext, new RepositoryIndexerListener(indexer, indexingContext), updateLocal);
             }
         } catch (IOException iOException) {
             LOGGER.warning(iOException.getMessage());//NOI18N
@@ -377,6 +385,7 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
             MUTEX.writeAccess(new Mutex.ExceptionAction<Object>() {
 
                 public Object run() throws Exception {
+                    initIndexer();
                     //need to delete the index and recreate? the scan(update) parameter doesn't work?
                     IndexingContext cntx = indexer.getIndexingContexts().get(repo.getId());
                     if (cntx != null) {
@@ -934,6 +943,8 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
             return ArtifactInfo.NAME;
         } else if (QueryField.FIELD_DESCRIPTION.equals(field)) {
             return ArtifactInfo.DESCRIPTION;
+        } else if (QueryField.FIELD_PACKAGING.equals(field)) {
+            return ArtifactInfo.PACKAGING;
         }
         return field;
     }

@@ -77,11 +77,23 @@ public final class ServerUtilities {
     public static final String GFV3_VERSION_MATCHER = "(?:-[0-9]+(?:\\.[0-9]+(?:_[0-9]+|)|).*|).jar"; // NOI18N
     public static final String GFV3_JAR_MATCHER = "glassfish" + GFV3_VERSION_MATCHER; // NOI18N
     static public final String PROP_FIRST_RUN = "first_run";
+    private GlassfishInstanceProvider gip;
     
     
-    private ServerUtilities() {
+    private ServerUtilities(GlassfishInstanceProvider gip) {
+        this.gip = gip;
+    }
+
+    public static ServerUtilities getPreludeUtilities() {
+        GlassfishInstanceProvider gip = GlassfishInstanceProvider.getPrelude();
+        return null == gip? null : new ServerUtilities(gip);
     }
     
+    public static ServerUtilities getEe6Utilities() {
+        GlassfishInstanceProvider gip = GlassfishInstanceProvider.getEe6();
+        return null == gip ? null : new ServerUtilities(gip);
+    }
+
     /**
      * Returns the ServerInstance object for the server with the specified URI.
      * 
@@ -89,8 +101,9 @@ public final class ServerUtilities {
      * 
      * @return ServerInstance object for this server instance.
      */
-    public static ServerInstance getServerInstance(String uri) {
-        return GlassfishInstanceProvider.getDefault().getInstance(uri);
+    public ServerInstance getServerInstance(String uri) {
+        ServerInstance retVal = gip.getInstance(uri);
+        return retVal;
     }
 
     /**
@@ -101,8 +114,8 @@ public final class ServerUtilities {
      *
      * @return Lookup object maintained by backing instance implementation
      */
-    public static Lookup getLookupFor(ServerInstance instance) {
-        return GlassfishInstanceProvider.getDefault().getLookupFor(instance);
+    public Lookup getLookupFor(ServerInstance instance) {
+        return gip.getLookupFor(instance);
     }
 
     /**
@@ -116,9 +129,8 @@ public final class ServerUtilities {
      * @return facade implementation for specified server or null if either the
      *   server does not exist or the server does not implement this facade.
      */
-    public static <T> T getInstanceByCapability(String uri, Class <T> serverFacadeClass) {
-        return GlassfishInstanceProvider.getDefault().
-                getInstanceByCapability(uri, serverFacadeClass);
+    public <T> T getInstanceByCapability(String uri, Class <T> serverFacadeClass) {
+        return gip.getInstanceByCapability(uri, serverFacadeClass);
     }
     
     /**
@@ -131,9 +143,8 @@ public final class ServerUtilities {
      * @return list of servers that support the interface specified or an empty
      *   list if no servers support that interface.
      */
-    public static <T> List<T> getInstancesByCapability(Class<T> serverFacadeClass) {
-        return GlassfishInstanceProvider.getDefault().
-                getInstancesByCapability(serverFacadeClass);
+    public<T> List<T> getInstancesByCapability(Class<T> serverFacadeClass) {
+        return gip.getInstancesByCapability(serverFacadeClass);
     }
     
     /**
@@ -145,17 +156,17 @@ public final class ServerUtilities {
      * 
      * @return ServerInstanceImplementation object for this server instance.
      */
-    public static ServerInstanceImplementation getInternalServerInstance(String uri) {
-        return GlassfishInstanceProvider.getDefault().getInternalInstance(uri);
-    }
+//    public static ServerInstanceImplementation getInternalServerInstance(String uri) {
+//        return GlassfishInstanceProvider.getDefault().getInternalInstance(uri);
+//    }
     
     /**
      * Returns an instance of the AddServerWizard for this server plugin.
      * 
      * @return instance of the AddServerWizard for this server.
      */
-    public static InstantiatingIterator getAddInstanceIterator() {
-        return new ServerWizardIterator();
+    public InstantiatingIterator getAddInstanceIterator() {
+        return new ServerWizardIterator(gip);
     }
     
     /**
@@ -164,8 +175,8 @@ public final class ServerUtilities {
      * 
      * @return the GlassFish V3 impl for ServerInstanceProvider.
      */
-    public static ServerInstanceProvider getServerProvider() {
-        return GlassfishInstanceProvider.getDefault();
+    public ServerInstanceProvider getServerProvider() {
+        return gip;
     }
     
      /**
