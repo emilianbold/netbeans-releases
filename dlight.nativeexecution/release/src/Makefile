@@ -85,7 +85,7 @@ endif
 
 testit :sh= uname -s
 
-DIST=../bin
+DIST=../bin/nativeexecution
 BUILD=./build
 
 PLATFORM_DIR=$(OSNAME)-$(PLATFORM)

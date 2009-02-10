@@ -370,7 +370,7 @@ public final class SolarisPrivilegesSupport {
 
             }
 
-            privp = "bin/" + path + "/privp"; // NOI18N
+            privp = "bin/nativeexecution/" + path + "/privp"; // NOI18N
             InstalledFileLocator fl = InstalledFileLocator.getDefault();
             File file = fl.locate(privp, null, false);
 
