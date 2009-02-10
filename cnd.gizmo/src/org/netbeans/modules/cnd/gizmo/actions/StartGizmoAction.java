@@ -40,6 +40,7 @@ package org.netbeans.modules.cnd.gizmo.actions;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.modules.dlight.util.DLightLogger;
@@ -61,7 +62,7 @@ public final class StartGizmoAction implements ActionListener {
         DLightLogger.instance.info("StartDLightAction performed @ " + System.currentTimeMillis());
         String application = System.getProperty("dlight.application", "/export/home/ak119685/welcome");
         String[] arguments = System.getProperty("dlight.application.params", "1 2 3").split("[ \t]+");
-        String[] environment = new String[]{};
+        Map<String, String> environment = null;
 
         Project project = getCurrentProject();
         if (project != null) {

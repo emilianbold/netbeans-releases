@@ -125,6 +125,13 @@ public abstract class AttachType {
          * @return The display name or resource bundle reference
          */
         String displayName();
+        
+        /**
+         * An optional position in which to register this service relative to others.
+         * Lower-numbered services are returned in the lookup result first.
+         * Services with no specified position are returned last.
+         */
+        int position() default Integer.MAX_VALUE;
     }
 
     static class ContextAware extends AttachType implements ContextAwareService<AttachType> {

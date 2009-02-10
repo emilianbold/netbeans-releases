@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,30 +34,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.ui.models;
+package org.netbeans.modules.mercurial.hooks.spi;
 
-import javax.swing.JLabel;
-import javax.swing.JTabbedPane;
-import org.openide.util.NbBundle;
+import java.io.IOException;
+import javax.swing.JPanel;
 
 /**
  *
- * @author Martin Entlicher
+ * @author Tomas Stupka
  */
-public class SourcesTabs extends JTabbedPane {
+public abstract class HgHook {
 
-    public SourcesTabs() {
-        initComponent();
+
+
+    public HgHookContext beforeCommit(HgHookContext context) throws IOException {
+        return null;
     }
 
-    private void initComponent() {
-        // Will have two tabbs - one with the current sources, one for remote connection
-        addTab(NbBundle.getMessage(SourcesTabs.class, "LBL_SourcesTabbs.Current"), new JLabel("Current"));
-        addTab(NbBundle.getMessage(SourcesTabs.class, "LBL_SourcesTabbs.Remote"), new JLabel("Remote"));
+    public void afterCommit(HgHookContext context) {
 
     }
+
+    public HgHookContext beforePush(HgHookContext context) throws IOException {
+        return null;
+    }
+
+    public void afterPush(HgHookContext context) {
+
+    }
+
+    public abstract JPanel createComponent(HgHookContext context);
+
+    public abstract String getDisplayName();
 
 }

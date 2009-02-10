@@ -70,6 +70,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.support.ui.GrantPrivilegesDialog;
 import org.netbeans.modules.nativeexecution.support.Encrypter;
 import org.netbeans.modules.nativeexecution.support.InputRedirectorFactory;
+import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.modules.InstalledFileLocator;
@@ -95,7 +96,7 @@ import org.openide.windows.InputOutput;
  *
  */
 public final class SolarisPrivilegesSupport {
-
+    private static final java.util.logging.Logger log = Logger.getInstance();
     private Map<String, List<String>> privilegesHash =
             Collections.synchronizedMap(new HashMap<String, List<String>>());
     private static SolarisPrivilegesSupport instance = new SolarisPrivilegesSupport();
@@ -169,13 +170,13 @@ public final class SolarisPrivilegesSupport {
         NativeProcessBuilder npb =
                 new NativeProcessBuilder(execEnv, "/bin/ppriv").setArguments("-v $$ | /bin/grep [IL]"); // NOI18N
 
-        ExecutionDescriptor descriptor =
-                new ExecutionDescriptor().inputOutput(
-                InputOutput.NULL).outProcessorFactory(
-                new InputRedirectorFactory(outWriter));
+        ExecutionDescriptor d = new ExecutionDescriptor();
+        d = d.inputOutput(InputOutput.NULL);
+        d = d.outLineBased(true);
+        d = d.outProcessorFactory(new InputRedirectorFactory(outWriter));
 
         ExecutionService execService = ExecutionService.newService(
-                npb, descriptor, "getExecutionPrivileges"); // NOI18N
+                npb, d, "getExecutionPrivileges"); // NOI18N
 
         Future<Integer> fresult = execService.run();
         int result = -1;
@@ -414,7 +415,10 @@ public final class SolarisPrivilegesSupport {
             w.flush();
 
             try {
-                p.waitFor();
+                int result = p.waitFor();
+                if (result != 0) {
+                    log.severe("doRequestLocal failed due to privp " + result); // NOI18N
+                }
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             }

@@ -92,6 +92,10 @@ public class NativeProcessInfo {
         envVariables.put(name, value);
     }
 
+    public void addEnvironmentVariables(Map<String, String> envs) {
+        envVariables.putAll(envs);
+    }
+
     public void setArguments(String... arguments) {
         this.arguments.clear();
         this.arguments.addAll(Arrays.asList(arguments));
