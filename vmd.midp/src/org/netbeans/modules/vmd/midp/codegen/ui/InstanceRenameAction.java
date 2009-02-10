@@ -85,6 +85,7 @@ import org.netbeans.modules.vmd.midp.codegen.InstaceRenameRefactoring;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.LifecycleManager;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
@@ -113,6 +114,8 @@ public final class InstanceRenameAction extends SystemAction implements ActionCo
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
+                LifecycleManager.getDefault().saveAll();
+                 
                 if (myComponent == null || myComponent.get() == null) {
                     throw new IllegalArgumentException("No DesignComponent attached to RenameAction"); //NOI18N
                 }
