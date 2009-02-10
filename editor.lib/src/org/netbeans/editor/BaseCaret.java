@@ -1372,8 +1372,8 @@ AtomicLockListener, FoldHierarchyListener {
      */
     protected boolean isDragPossible(MouseEvent e) {
         JComponent comp = getEventComponent(e);
-        boolean possible =  (comp == null) ? true : (comp.getTransferHandler() != null);
-        if (possible){
+        boolean possible =  (comp == null) ? false : (comp.getTransferHandler() != null);
+        if (possible) {
             JTextComponent c = (JTextComponent) getEventComponent(e);
             if (c.getDragEnabled()) {
                 Caret caret = c.getCaret();
