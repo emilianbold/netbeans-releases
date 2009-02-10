@@ -66,9 +66,11 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -172,7 +174,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                 handle.progress(org.openide.util.NbBundle.getMessage(CreateLibraryAction.class, "MSG_Downloading", a.getId()), index);
                 try {
                     online.resolve(a, project.getRemoteArtifactRepositories(), online.getLocalRepository());
-                    classpathVolume.add(getJarUri(a, baseFolder, nonDefaultLibBase));
+                    classpathVolume.add(getJarUri(a, baseFolder, nonDefaultLibBase, TYPE_BINARY));
                     try {
                         if (allSourceAndJavadoc) {
                             handle.progress(org.openide.util.NbBundle.getMessage(CreateLibraryAction.class, "MSG_Downloading_javadoc", a.getId()), index + 1);
@@ -184,7 +186,8 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                                     "javadoc"); //NOI18N
                             online.resolve(javadoc, project.getRemoteArtifactRepositories(), online.getLocalRepository());
                             if (javadoc.getFile().exists()) {
-                                javadocVolume.add(getJarUri(javadoc, baseFolder, nonDefaultLibBase));
+                                URI javadocUri = getJarUri(javadoc, baseFolder, nonDefaultLibBase, TYPE_JAVADOC);
+                                javadocVolume.add(javadocUri);
                             }
 
                             handle.progress(org.openide.util.NbBundle.getMessage(CreateLibraryAction.class, "MSG_Downloading_sources", a.getId()), index + 2);
@@ -196,7 +199,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                                     "sources"); //NOI18N
                             online.resolve(sources, project.getRemoteArtifactRepositories(), online.getLocalRepository());
                             if (sources.getFile().exists()) {
-                                sourceVolume.add(getJarUri(sources, baseFolder, nonDefaultLibBase));
+                                sourceVolume.add(getJarUri(sources, baseFolder, nonDefaultLibBase, TYPE_SOURCE));
                             }
                         }
                     } catch (Exception ex) {
@@ -235,9 +238,14 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
     }
 
 
-    URI getJarUri(Artifact a, File copyTo, File nonDefaultLibBase) throws IOException {
+    private int TYPE_BINARY = 0;
+    private int TYPE_JAVADOC = 1;
+    private int TYPE_SOURCE = 2;
+
+    URI getJarUri(Artifact a, File copyTo, File nonDefaultLibBase, int type) throws IOException {
         File res = a.getFile();
         URI uri = res.toURI();
+        String jarPath = null;
         if (copyTo != null) {
             res = new File(copyTo, a.getFile().getName());
             FileUtils.copyFile(a.getFile(), res);
@@ -248,7 +256,22 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                 }
             }
         }
-        return appendJarFolder(uri, null);
+        FileUtil.refreshFor(res);
+        FileObject fo = FileUtil.toFileObject(res);
+        if (type == TYPE_JAVADOC && FileUtil.isArchiveFile(fo)) {
+            fo = FileUtil.getArchiveRoot(fo);
+            FileObject docRoot = JavadocAndSourceRootDetection.findJavadocRoot(fo);
+            if (docRoot != null) {
+                jarPath = FileUtil.getRelativePath(fo, docRoot);
+            }
+        } else if (type == TYPE_SOURCE && FileUtil.isArchiveFile(fo)) {
+            fo = FileUtil.getArchiveRoot(fo);
+            FileObject srcRoot = JavadocAndSourceRootDetection.findSourceRoot(fo);
+            if (srcRoot != null) {
+                jarPath = FileUtil.getRelativePath(fo, srcRoot);
+            }
+        }
+        return appendJarFolder(uri, jarPath);
     }
 
 }
