@@ -139,7 +139,7 @@ public class Utils {
         if (decl instanceof OffsetableIdentifiableBase) {
             ((OffsetableIdentifiableBase)decl).setSelfUID();
         } else {
-            throw new IllegalArgumentException("unexpected object:" + decl);
+            throw new IllegalArgumentException("unexpected object:" + decl);//NOI18N
         }
     }
 
