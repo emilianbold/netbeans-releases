@@ -194,6 +194,7 @@ public final class ConnectionManager {
 
         if (session != null) {
             sessions.put(sessionKey, session);
+            HostInfoUtils.updateHostInfo(env);
         }
 
         return session;

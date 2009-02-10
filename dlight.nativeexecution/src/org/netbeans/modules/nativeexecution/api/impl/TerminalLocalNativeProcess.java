@@ -44,8 +44,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -95,7 +95,7 @@ public final class TerminalLocalNativeProcess extends NativeProcess {
 
         processInfo.setListeners(this, info.getListeners());
 
-        final String commandLine = info.getCommandLine();
+        final String commandLine = info.getCommandLine(true);
 
         pidFile = File.createTempFile("termexec", "pid"); // NOI18N
         pidFile.deleteOnExit();
@@ -119,9 +119,9 @@ public final class TerminalLocalNativeProcess extends NativeProcess {
 
         synchronized (rt) {
             ProcessBuilder pb = new ProcessBuilder(command);
-            pb.environment().putAll(info.getEnvVariables());
+            pb.environment().putAll(info.getEnvVariables(true));
 
-            final String wdir = info.getWorkingDirectory();
+            final String wdir = info.getWorkingDirectory(true);
 
             if (wdir != null) {
                 pb.directory(new File(wdir));
@@ -131,7 +131,6 @@ public final class TerminalLocalNativeProcess extends NativeProcess {
 
             processOutput = new ByteArrayInputStream(new byte[0]);
             processError = new ByteArrayInputStream(new byte[0]);
-//            processError = pin;
             processInput = null;
 
             /*
@@ -158,8 +157,20 @@ public final class TerminalLocalNativeProcess extends NativeProcess {
         }
 
         pid = ppid;
-//        pout.write(loc("TerminalLocalNativeProcess.JobStarted.text").getBytes()); // NOI18N
-        processInfo.setState(this, State.RUNNING);
+
+        if (pid == null) {
+            if (process != null) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                String s = null;
+                while ((s = reader.readLine()) != null) {
+                    System.err.println(s);
+                }
+            }
+            processInfo.setState(this, State.ERROR);
+        } else {
+    //        pout.write(loc("TerminalLocalNativeProcess.JobStarted.text").getBytes()); // NOI18N
+            processInfo.setState(this, State.RUNNING);
+        }
     }
 
     @Override

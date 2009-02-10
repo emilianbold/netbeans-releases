@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution.api.impl;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -46,6 +47,8 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
+import org.netbeans.modules.nativeexecution.support.MacroExpanderFactory;
+import org.netbeans.modules.nativeexecution.support.MacroExpanderFactory.MacroExpander;
 
 /**
  *
@@ -59,6 +62,7 @@ public class NativeProcessInfo {
             new HashMap<String, String>();
     private String workingDirectory;
     private Collection<Listener> listeners = null;
+    protected final MacroExpander macroExpander;
 
     public NativeProcessInfo(NativeProcessInfo info) {
         this(info.execEnv, info.command);
@@ -74,6 +78,7 @@ public class NativeProcessInfo {
     public NativeProcessInfo(ExecutionEnvironment execEnv, String command) {
         this.execEnv = execEnv;
         this.command = command;
+        macroExpander = MacroExpanderFactory.getExpander(execEnv);
     }
 
     public void addNativeProcessListener(Listener listener) {
@@ -101,8 +106,19 @@ public class NativeProcessInfo {
         this.arguments.addAll(Arrays.asList(arguments));
     }
 
-    public String getCommandLine() {
-        StringBuilder sb = new StringBuilder(command);
+    public String getCommandLine(boolean expandMacros) {
+        String cmd;
+        if (expandMacros && macroExpander != null) {
+            try {
+                cmd = macroExpander.expandMacros(command);
+            } catch (ParseException ex) {
+                cmd = command;
+            }
+        } else {
+            cmd = command;
+        }
+        
+        StringBuilder sb = new StringBuilder(cmd);
 
         if (!arguments.isEmpty()) {
             for (String arg : arguments) {
@@ -121,11 +137,32 @@ public class NativeProcessInfo {
         return listeners;
     }
 
-    public String getWorkingDirectory() {
+    public String getWorkingDirectory(boolean expandMacros) {
+        if (expandMacros && macroExpander != null) {
+            try {
+                return macroExpander.expandMacros(workingDirectory);
+            } catch (ParseException ex) {
+                return workingDirectory;
+            }
+        }
+        
         return workingDirectory;
     }
 
-    public Map<String, String> getEnvVariables() {
-        return envVariables;
+    public Map<String, String> getEnvVariables(boolean expandMacros) {
+        if (expandMacros && macroExpander != null) {
+            Map<String, String> result = new HashMap<String, String>();
+            for (String var : envVariables.keySet()) {
+                try {
+                result.put(var,
+                        macroExpander.expandMacros(envVariables.get(var)));
+                } catch (ParseException ex) {
+                result.put(var, envVariables.get(var));
+                }
+            }
+            return result;
+        } else {
+            return envVariables;
+        }
     }
 }
