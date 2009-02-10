@@ -50,16 +50,13 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.AbstractSequentialList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.StringTokenizer;
 import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
@@ -600,27 +597,7 @@ public abstract class FileObject extends Object implements Serializable {
      * @since 7.21
      */
     public List<String> asLines(final String encoding) throws IOException {
-        return new AbstractSequentialList<String>() {
-            final FileObjectLineIterator ready = new FileObjectLineIterator(FileObject.this, encoding);
-
-            public synchronized ListIterator<String> listIterator(int position) {
-                FileObjectLineIterator ret = ready.cloneIterator();
-                while (position-- > 0) {
-                    ret.next();
-                }
-                return ret;
-            }
-
-            public synchronized int size() {
-                int cnt = 0;
-                Iterator<String> it = listIterator();
-                while (it.hasNext()) {
-                    it.next();
-                    cnt++;
-                }
-                return cnt;
-            }
-        };
+        return new FileObjectLines(encoding, this);
     }
 
     /** Get output stream.
