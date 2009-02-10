@@ -41,7 +41,6 @@
 package org.netbeans.modules.vmd.midp.components.handlers;
 
 import java.util.ArrayList;
-import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.modules.vmd.api.codegen.CodeMultiGuardedLevelPresenter;
 import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
@@ -58,7 +57,6 @@ import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.midp.actions.GoToSourcePresenter;
-import org.netbeans.modules.vmd.midp.codegen.MidpCodeSupport;
 
 /**
  * @author David Kaspar
