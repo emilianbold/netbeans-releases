@@ -41,7 +41,6 @@ package org.netbeans.modules.dlight.api.support;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
-import org.netbeans.modules.dlight.api.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -55,13 +54,14 @@ import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.dlight.api.execution.SubstitutableTarget;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.util.ExternalTerminalProvider;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.dlight.util.Util;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.util.ExternalTerminal;
+
 /**
  * Wrapper of {@link @org-netbeans-modules-nativexecution@org/netbeans/modules/nativexecution/api/NativeTask.html}
  *
@@ -116,9 +116,15 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     }
 
     public void stateChanged(ChangeEvent e) {
-        final NativeProcess process = (NativeProcess)e.getSource();
-        final DLightTarget.State prevState = state;
+        final Object src = e.getSource();
+
+        if (!(src instanceof NativeProcess)) {
+            return;
+        }
+
+        final NativeProcess process = (NativeProcess) src;
         final NativeProcess.State newState = process.getState();
+        final DLightTarget.State prevState = state;
 
         switch (newState) {
             case INITIAL:
@@ -182,7 +188,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         pb = pb.setWorkingDirectory(workingDirectory);
         pb = pb.addEnvironmentVariables(envs);
         pb = pb.useExternalTerminal(externalTerminal);
-        if (executionEnvProvider != null && executionEnvProvider.getExecutionEnv() != null){
+        if (executionEnvProvider != null && executionEnvProvider.getExecutionEnv() != null) {
             pb = pb.addEnvironmentVariables(executionEnvProvider.getExecutionEnv());
         }
         ExecutionDescriptor descr = new ExecutionDescriptor();
