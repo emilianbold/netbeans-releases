@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,14 +34,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ide.ergonomics.debugger;
+package org.netbeans.modules.ide.ergonomics;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
+import org.netbeans.modules.ide.ergonomics.fod.FeatureManager;
+import org.netbeans.spi.debugger.ui.AttachType;
 
 /**
  *
  * @author Pavel Flaska
  */
-public class GdbAttachTypeProxy extends AttachTypeProxy {
+public class DebuggerAttachTypesCheck extends NbTestCase {
+
+    public DebuggerAttachTypesCheck(String name) {
+        super(name);
+    }
+    
+    public void testGetAllDebuggers() {
+       List<? extends AttachType> debug = DebuggerManager.getDebuggerManager().lookup(null, AttachType.class);
+       int cnt = 0;
+       for (AttachType o : debug) {
+           System.setProperty("debugger." + ++cnt, o.getTypeDisplayName());
+       }
+    }
+
+    public void testGetAllDebuggersReal() {
+       List<? extends AttachType> debug = DebuggerManager.getDebuggerManager().lookup(null, AttachType.class);
+       int cnt = 0;
+       for (AttachType o : debug) {
+           String name = System.getProperty("debugger." + ++cnt);
+           assertEquals(name, o.getTypeDisplayName());
+       }
+    }
+
 }

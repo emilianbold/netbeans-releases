@@ -22,7 +22,6 @@ package org.netbeans.modules.bpel.debugger.ui;
 
 import javax.swing.JComponent;
 import org.netbeans.spi.debugger.ui.AttachType;
-import org.openide.util.NbBundle;
 
 
 /**
@@ -31,11 +30,8 @@ import org.openide.util.NbBundle;
  *
  * @author Sun Microsystems
  */
+@AttachType.Registration(displayName="#CTL_BpelConnector_name")
 public class BpelAttachType extends AttachType {
-
-    public String getTypeDisplayName () {
-        return NbBundle.getMessage (getClass(), "CTL_Connector_name");
-    }
 
     public JComponent getCustomizer () {
         return new BpelConnectPanel();
