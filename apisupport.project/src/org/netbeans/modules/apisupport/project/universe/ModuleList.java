@@ -303,7 +303,9 @@ public final class ModuleList {
         try {
             return loadNetBeansOrgCachedModuleList(root, nbdestdir);
         } catch (IOException x) {
-            Logger.getLogger(ModuleList.class.getName()).log(Level.FINE, "Failed to load cached module list in " + root + "; falling back to scan", x);
+            Logger.getLogger(ModuleList.class.getName()).log(Level.INFO, "Failed to load cached module list in " + 
+                    root + "; falling back to scan: " + x.getMessage());
+            Logger.getLogger(ModuleList.class.getName()).log(Level.FINE, "Caught exception: ", x);
         }
         Map<String,ModuleEntry> entries = new HashMap<String,ModuleEntry>();
         scanNetBeansOrgStableSources(entries, root, nbdestdir);
@@ -335,7 +337,6 @@ public final class ModuleList {
             for (Map.Entry<File,Long[]> entry : NbCollections.checkedMapByFilter((Map) oi.readObject(), File.class, Long[].class, true).entrySet()) {
                 File f = entry.getKey();
                 if (f.lastModified() != entry.getValue()[0] || f.length() != entry.getValue()[1]) {
-                    Logger.getLogger(ModuleList.class.getName()).log(Level.INFO, "Nbbuild cache ignored due to modifications in " + f);
                     throw new IOException("Nbbuild cache ignored due to modifications in " + f);
                 }
             }
@@ -356,8 +357,8 @@ public final class ModuleList {
                 String[] buildPrerequisites = (String[]) fields.get("buildPrerequisites").get(entry);
                 String clusterName = (String) fields.get("clusterName").get(entry);
                 String[] runtimeDependencies = (String[]) fields.get("runtimeDependencies").get(entry);
-                @SuppressWarnings("unchecked")
-                Map<String, String[]> testDependencies = (Map<String, String[]>) fields.get("testDependencies").get(entry);
+                Map<String, String[]> testDependencies = NbCollections.checkedMapByFilter(
+                        (Map) fields.get("testDependencies").get(entry), String.class, String[].class, false);
                 ModuleEntry me = new NetBeansOrgCachedEntry(
                     root, nbdestdir, cnb, jar, classPathExtensions, sourceLocation, netbeansOrgPath, buildPrerequisites, clusterName, 
                     runtimeDependencies, testDependencies.get("unit"));
