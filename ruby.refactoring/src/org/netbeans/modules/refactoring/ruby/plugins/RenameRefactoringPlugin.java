@@ -200,85 +200,10 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
         Problem preCheckProblem = null;
         fireProgressListenerStart(RenameRefactoring.PRE_CHECK, 4);
         info.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
-//        Element el = treePathHandle.resolveElement(info);
-//        preCheckProblem = isElementAvail(treePathHandle, info);
-//        if (preCheckProblem != null) {
-//            return preCheckProblem;
-//        }
-//        FileObject file = SourceUtils.getFile(el, info.getClasspathInfo());
-//        if (FileUtil.getArchiveFile(file)!= null) { //NOI18N
-//            preCheckProblem = createProblem(preCheckProblem, true, getCannotRename(file));
-//            return preCheckProblem;
-//        }
-//        
-//        if (!RetoucheUtils.isElementInOpenProject(file)) {
-//            preCheckProblem = new Problem(true, NbBundle.getMessage(RubyRefactoringPlugin.class, "ERR_ProjectNotOpened"));
-//            return preCheckProblem;
-//        }
-//        
-//        switch(treePathHandle.getKind()) {
-//        case METHOD:
-//            fireProgressListenerStep();
-//            fireProgressListenerStep();
-//            overriddenByMethods = RetoucheUtils.getOverridingMethods(el, info);
-//            fireProgressListenerStep();
-//            if (!overriddenByMethods.isEmpty()) {
-//                String msg = new MessageFormat(getString("ERR_IsOverridden")).format(
-//                        new Object[] {SourceUtils.getEnclosingTypeElement(el).getSimpleName().toString()});
-//                preCheckProblem = createProblem(preCheckProblem, false, msg);
-//            }
-//            overridesMethods = RetoucheUtils.getOverridenMethods((ExecutableElement)el, info);
-//            fireProgressListenerStep();
-//            if (!overridesMethods.isEmpty()) {
-//                boolean fatal = false;
-//                for (Iterator iter = overridesMethods.iterator();iter.hasNext();) {
-//                    ExecutableElement method = (ExecutableElement) iter.next();
-//                    if (RetoucheUtils.isFromLibrary(method, info.getClasspathInfo())) {
-//                        fatal = true;
-//                        break;
-//                    }
-//                }
-//                String msg = fatal?getString("ERR_Overrides_Fatal"):getString("ERR_Overrides");
-//                preCheckProblem = createProblem(preCheckProblem, fatal, msg);
-//            }
-//            break;
-//        case FIELD:
-//        case ENUM_CONSTANT:
-//            fireProgressListenerStep();
-//            fireProgressListenerStep();
-//            Element hiddenField = hides(el, el.getSimpleName().toString(), info);
-//            fireProgressListenerStep();
-//            fireProgressListenerStep();
-//            if (hiddenField != null) {
-//                String msg = new MessageFormat(getString("ERR_Hides")).format(
-//                        new Object[] {SourceUtils.getEnclosingTypeElement(hiddenField)}
-//                );
-//                preCheckProblem = createProblem(preCheckProblem, false, msg);
-//            }
-//            break;
-//        case PACKAGE:
-//            //TODO: any prechecks?
-//            break;
-//        case LOCAL_VARIABLE:
-//            //TODO: any prechecks for formal parametr or local variable?
-//            break;
-//        case CLASS:
-//        case INTERFACE:
-//        case ANNOTATION_TYPE:
-//        case ENUM:
-//            //TODO: any prechecks for JavaClass?
-//            break;
-//        default:
-//            //                if (!((jmiObject instanceof Resource) && ((Resource)jmiObject).getClassifiers().isEmpty()))
-//            //                    result = createProblem(result, true, NbBundle.getMessage(RenameRefactoring.class, "ERR_RenameWrongType"));
-//        }
         fireProgressListenerStop();
         return preCheckProblem;
     }
     
-//    private static final String getCannotRename(FileObject r) {
-//        return new MessageFormat(NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_CannotRenameFile")).format(new Object[] {r.getNameExt()});
-//    }
     
     protected Problem fastCheckParameters(CompilationController info) throws IOException {
         Problem fastCheckProblem = null;
@@ -333,58 +258,6 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
             fastCheckProblem = createProblem(fastCheckProblem, false, msg);
         }
         
-        // TODO
-//        System.out.println("TODO - look for variable clashes etc");
-        
-        
-//        if (kind.isClass() && !((TypeElement) element).getNestingKind().isNested()) {
-//            if (doCheckName) {
-//                String oldfqn = RetoucheUtils.getQualifiedName(treePathHandle);
-//                String newFqn = oldfqn.substring(0, oldfqn.lastIndexOf(oldName));
-//                
-//                String pkgname = oldfqn;
-//                int i = pkgname.indexOf('.');
-//                if (i>=0)
-//                    pkgname = pkgname.substring(0,i);
-//                else
-//                    pkgname = "";
-//                
-//                String fqn = "".equals(pkgname) ? newName : pkgname + '.' + newName;
-//                FileObject fo = treePathHandle.getFileObject();
-//                ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-//                if (RetoucheUtils.typeExist(treePathHandle, newFqn)) {
-//                    String msg = new MessageFormat(getString("ERR_ClassClash")).format(
-//                            new Object[] {newName, pkgname}
-//                    );
-//                    fastCheckProblem = createProblem(fastCheckProblem, true, msg);
-//                    return fastCheckProblem;
-//                }
-//            }
-//            FileObject primFile = treePathHandle.getFileObject();
-//            FileObject folder = primFile.getParent();
-//            FileObject[] children = folder.getChildren();
-//            for (int x = 0; x < children.length; x++) {
-//                if (children[x] != primFile && !children[x].isVirtual() && children[x].getName().equals(newName) && "java".equals(children[x].getExt())) { //NOI18N
-//                    String msg = new MessageFormat(getString("ERR_ClassClash")).format(
-//                            new Object[] {newName, folder.getPath()}
-//                    );
-//                    fastCheckProblem = createProblem(fastCheckProblem, true, msg);
-//                    break;
-//                }
-//            } // for
-//        } else if (kind == ElementKind.LOCAL_VARIABLE || kind == ElementKind.PARAMETER) {
-//            String msg = variableClashes(newName,treePath, info);
-//            if (msg != null) {
-//                fastCheckProblem = createProblem(fastCheckProblem, true, msg);
-//                return fastCheckProblem;
-//            }
-//        } else {
-//            String msg = clashes(element, newName, info);
-//            if (msg != null) {
-//                fastCheckProblem = createProblem(fastCheckProblem, true, msg);
-//                return fastCheckProblem;
-//            }
-//        }
         return fastCheckProblem;
     }
     
@@ -406,44 +279,9 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
         
         fireProgressListenerStep();
         fireProgressListenerStep();
-//        String msg;
-        
-        // TODO - check more parameters
-        //System.out.println("TODO - need to check parameters for hiding etc.");
-        
-        
-//        if (treePathHandle.getKind() == ElementKind.METHOD) {
-//            checkProblem = checkMethodForOverriding((ExecutableElement)element, refactoring.getNewName(), checkProblem, info);
-//            fireProgressListenerStep();
-//            fireProgressListenerStep();
-//        } else if (element.getKind().isField()) {
-//            fireProgressListenerStep();
-//            fireProgressListenerStep();
-//            Element hiddenField = hides(element, refactoring.getNewName(), info);
-//            fireProgressListenerStep();
-//            fireProgressListenerStep();
-//            fireProgressListenerStep();
-//            if (hiddenField != null) {
-//                msg = new MessageFormat(getString("ERR_WillHide")).format(
-//                        new Object[] {SourceUtils.getEnclosingTypeElement(hiddenField).toString()}
-//                );
-//                checkProblem = createProblem(checkProblem, false, msg);
-//            }
-//        }
         fireProgressListenerStop();
         return checkProblem;
     }
-    
-//        private Problem checkMethodForOverriding(ExecutableElement m, String newName, Problem problem, CompilationInfo info) {
-//            ElementUtilities ut = info.getElementUtilities();
-//            //problem = willBeOverridden(m, newName, argTypes, problem);
-//            fireProgressListenerStep();
-//            problem = willOverride(m, newName, problem, info);
-//            fireProgressListenerStep();
-//            return problem;
-//        }
-//    
-//    private Set<ElementHandle<ExecutableElement>> allMethods;
     
     @Override
     public Problem preCheck() {
@@ -468,44 +306,12 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                 
                 public void run(CompilationController info) throws Exception {
                     // TODO if getSearchInComments I -should- search all files
-//                    System.out.println("TODO - compute a full set of files to be checked... for now just lamely using the project files");
                     if (treePathHandle.getKind() == ElementKind.VARIABLE || treePathHandle.getKind() == ElementKind.PARAMETER) {
                         // For local variables, only look in the current file!
                         set.add(info.getFileObject());
                     }  else {
                         set.addAll(RetoucheUtils.getRubyFilesInProject(info.getFileObject()));
                     }
-//                    final ClassIndex idx = info.getClasspathInfo().getClassIndex();
-//                    info.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
-//                    Element el = treePathHandle.resolveElement(info);
-//                    ElementKind kind = el.getKind();
-//                    ElementHandle<TypeElement> enclosingType;
-//                    if (el instanceof TypeElement) {
-//                         enclosingType = ElementHandle.create((TypeElement)el);
-//                    } else {
-//                         enclosingType = ElementHandle.create(SourceUtils.getEnclosingTypeElement(el));
-//                    }
-//                    set.add(SourceUtils.getFile(el, info.getClasspathInfo()));
-//                    if (kind.isField()) {
-//                        set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.FIELD_REFERENCES), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-//                    } else if (el instanceof TypeElement) {
-//                        set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-//                    } else if (kind == ElementKind.METHOD) {
-//                        //add all references of overriding methods
-//                        allMethods = new HashSet();
-//                        allMethods.add(ElementHandle.create((ExecutableElement)el));
-//                        for (ExecutableElement e:RetoucheUtils.getOverridingMethods((ExecutableElement)el, info)) {
-//                            addMethods(e, set, info, idx);
-//                        }
-//                        //add all references of overriden methods
-//                        for (ExecutableElement ov: RetoucheUtils.getOverridenMethods((ExecutableElement)el, info)) {
-//                            addMethods(ov, set, info, idx);
-//                            for (ExecutableElement e:RetoucheUtils.getOverridingMethods((ExecutableElement)ov, info)) {
-//                                addMethods(e, set, info, idx);
-//                            }
-//                        }
-//                        set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE))); //?????
-//                    }
                 }
             }, true);
         } catch (IOException ioe) {
@@ -513,13 +319,6 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
         }
         return set;
     }
-    
-//    private void addMethods(ExecutableElement e, Set set, CompilationInfo info, ClassIndex idx) {
-//        set.add(SourceUtils.getFile(e, info.getClasspathInfo()));
-//        ElementHandle<TypeElement> encl = ElementHandle.create(SourceUtils.getEnclosingTypeElement(e));
-//        set.addAll(idx.getResources(encl, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-//        allMethods.add(ElementHandle.create(e));
-//    }
     
     private Set<RubyElementCtx> allMethods;
     
@@ -558,157 +357,6 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
         return null;
     }
 
-//    private static int getAccessLevel(Element e) {
-//        Set<Modifier> access = e.getModifiers();
-//        if (access.contains(Modifier.PUBLIC)) {
-//            return 3;
-//        } else if (access.contains(Modifier.PROTECTED)) {
-//            return 2;
-//        } else if (!access.contains(Modifier.PRIVATE)) {
-//            return 1;
-//        } else {
-//            return 0;
-//        }
-//    }
-//    
-//    private Problem willOverride(ExecutableElement method, String name, Problem problem, CompilationInfo info) {
-//        boolean isStatic = method.getModifiers().contains(Modifier.STATIC);
-//        TypeElement jc = (TypeElement) method.getEnclosingElement();
-//        LinkedList supertypes = new LinkedList();
-//        
-//        ElementUtilities ut = info.getElementUtilities();
-//        //TODO:
-//        //ExecutableElement m = ut.getOverriddenMethod(method, name);
-//        ExecutableElement m = null;
-//        if (m!=null) {
-//            if (m.getModifiers().contains(Modifier.FINAL)) {
-//                String msg = new MessageFormat(getString("ERR_WillOverride_final")).format(
-//                        new Object[] {
-//                    method.getSimpleName(),
-//                    method.getEnclosingElement().getSimpleName(),
-//                    m.getSimpleName(),
-//                    m.getEnclosingElement().getSimpleName()
-//                }
-//                );
-//                return createProblem(problem, true, msg);
-//            } else if (getAccessLevel(m) > getAccessLevel(method)) {
-//                String msg = new MessageFormat(getString("ERR_WillOverride_access")).format(
-//                        new Object[] {
-//                    method.getSimpleName(),
-//                    method.getEnclosingElement().getSimpleName(),
-//                    m.getSimpleName(),
-//                    m.getEnclosingElement().getSimpleName()
-//                }
-//                );
-//                return createProblem(problem, true, msg);
-//            } else if (m.getModifiers().contains(Modifier.STATIC)!= method.getModifiers().contains(Modifier.STATIC)) {
-//                String msg = new MessageFormat(getString("ERR_WillOverride_static")).format(
-//                        new Object[] {
-//                    isStatic ? getString("LBL_static") : getString("LBL_instance"),
-//                    method.getSimpleName(),
-//                    method.getEnclosingElement().getSimpleName(),
-//                    m.getModifiers().contains(Modifier.STATIC) ? getString("LBL_static") : getString("LBL_instance"),
-//                    m.getSimpleName(),
-//                    m.getEnclosingElement().getSimpleName()
-//                }
-//                );
-//                return createProblem(problem, true, msg);
-//            } else {
-//                String msg = new MessageFormat(getString("ERR_WillOverride")).format(
-//                        new Object[] {
-//                    method.getSimpleName(),
-//                    method.getEnclosingElement().getSimpleName(),
-//                    m.getSimpleName(),
-//                    m.getEnclosingElement().getSimpleName()
-//                }
-//                );
-//                return createProblem(problem, false, msg);
-//            }
-//        } else {
-//            return problem;
-//        }
-//    }
-//    private Element hides(Element field, String name, CompilationInfo info) {
-//        TypeElement jc = SourceUtils.getEnclosingTypeElement(field);
-//        Elements elements = info.getElements();
-//        ElementUtilities utils = info.getElementUtilities();
-//        for (Element el:elements.getAllMembers(jc)) {
-////TODO:
-////            if (utils.willHide(el, field, name)) {
-////                return el;
-////            }
-//            if (el.getKind().isField()) {
-//                if (el.getSimpleName().toString().equals(name)) {
-//                    if (!el.getEnclosingElement().equals(field.getEnclosingElement())) {
-//                        return el;
-//                    }
-//                }
-//            }
-//        };
-//        return null;
-//    }
-//    
-//    private String variableClashes(String newName, TreePath tp, CompilationInfo info) {
-//        LocalVarScanner lookup = new LocalVarScanner(info, newName);
-//        TreePath scopeBlok = tp;
-//        EnumSet set = EnumSet.of(Tree.Kind.BLOCK, Tree.Kind.FOR_LOOP, Tree.Kind.METHOD);
-//        while (!set.contains(scopeBlok.getLeaf().getKind())) {
-//            scopeBlok = scopeBlok.getParentPath();
-//        }
-//        Element var = info.getTrees().getElement(tp);
-//        lookup.scan(scopeBlok, var);
-//
-//        if (lookup.result)
-//            return new MessageFormat(getString("ERR_LocVariableClash")).format(
-//                new Object[] {newName}
-//            );
-//        
-//        TreePath temp = tp;
-//        while (temp.getLeaf().getKind() != Tree.Kind.METHOD) {
-//            Scope scope = info.getTrees().getScope(temp);
-//            for (Element el:scope.getLocalElements()) {
-//                if (el.getSimpleName().toString().equals(newName)) {
-//                    return new MessageFormat(getString("ERR_LocVariableClash")).format(
-//                            new Object[] {newName}
-//                    );
-//                }
-//            }
-//            temp = temp.getParentPath();
-//        }
-//        return null;
-//    }
-//    
-//    private String clashes(Element feature, String newName, CompilationInfo info) {
-//        ElementUtilities utils = info.getElementUtilities();
-//        Element dc = feature.getEnclosingElement();
-//        ElementKind kind = feature.getKind();
-//        if (kind.isClass() || kind.isInterface()) {
-//            for (Element current:ElementFilter.typesIn(dc.getEnclosedElements())) {
-//                if (current.getSimpleName().toString().equals(newName)) {
-//                    return new MessageFormat(getString("ERR_InnerClassClash")).format(
-//                            new Object[] {newName, dc.getSimpleName()}
-//                    );
-//                }
-//            }
-//        } else if (kind==ElementKind.METHOD) {
-//            if (utils.alreadyDefinedIn((CharSequence) newName, (ExecutableType) feature.asType(), (TypeElement) dc)) {
-//                return new MessageFormat(getString("ERR_MethodClash")).format(
-//                        new Object[] {newName, dc.getSimpleName()}
-//                );
-//            }
-//        } else if (kind.isField()) {
-//            for (Element current:ElementFilter.fieldsIn(dc.getEnclosedElements())) {
-//                if (current.getSimpleName().toString().equals(newName)) {
-//                    return new MessageFormat(getString("ERR_FieldClash")).format(
-//                            new Object[] {newName, dc.getSimpleName()}
-//                    );
-//                }
-//            }
-//        }
-//        return null;
-//    }
-    
-    
     private static final String getString(String key) {
         return NbBundle.getMessage(RenameRefactoringPlugin.class, key);
     }
@@ -795,7 +443,6 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                     path.ascend();
                 }
             } else {
-                //System.out.println("Skipping file " + workingCopy.getFileObject());
                 // See if the document contains references to this symbol and if so, put a warning in
                 if (workingCopy.getText().indexOf(oldName) != -1) {
                     // TODO - icon??
