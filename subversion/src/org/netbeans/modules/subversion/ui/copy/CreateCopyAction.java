@@ -120,15 +120,14 @@ public class CreateCopyAction extends ContextAction {
         }                   
         final RepositoryFile repositoryFile = new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.HEAD);        
 
-        final RequestProcessor rp = createRequestProcessor(nodes);
         final boolean hasChanges = files.length > 0;
         final CreateCopy createCopy = new CreateCopy(repositoryFile, interestingFile, hasChanges);
 
-        performCopy(createCopy, rp, nodes, roots);
+        performCopy(createCopy, nodes, roots);
     }
 
-    private void performCopy(final CreateCopy createCopy, final RequestProcessor rp, final Node[] nodes, final File[] roots) {
-        rp.post(new Runnable() {
+    private void performCopy(final CreateCopy createCopy, final Node[] nodes, final File[] roots) {
+        RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 if (createCopy.showDialog()) {
                     String errorText = validateTargetPath(createCopy);
@@ -144,7 +143,7 @@ public class CreateCopyAction extends ContextAction {
                         createCopy.setErrorText(errorText);
                         EventQueue.invokeLater(new Runnable() {
                             public void run() {
-                                performCopy(createCopy, rp, nodes, roots);
+                                performCopy(createCopy, nodes, roots);
                             }
                         });
                     }
