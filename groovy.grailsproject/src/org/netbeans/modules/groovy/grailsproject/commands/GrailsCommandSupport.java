@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.groovy.grailsproject.commands;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -59,10 +62,22 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
+import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
+import org.netbeans.modules.groovy.grailsproject.GrailsProjectFactory;
 import org.netbeans.modules.groovy.grailsproject.GrailsServerState;
 import org.netbeans.modules.groovy.grailsproject.actions.RefreshProjectRunnable;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
+import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
+import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
+import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionException;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
+import org.openide.awt.HtmlBrowser;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.InputOutput;
 
 /**
@@ -97,12 +112,16 @@ public final class GrailsCommandSupport {
         return commands;
     }
 
-    public ExecutionDescriptor getRunDescriptor() {
-        return getDescriptor("run-app"); // NOI18N
+    public ExecutionDescriptor getRunDescriptor(InputProcessorFactory outFactory) {
+        return getDescriptor("run-app", outFactory); // NOI18N
     }
 
     public ExecutionDescriptor getDescriptor(String command) {
-        if ("run-app".equals(command) || "run-app-https".equals(command) || "run-war".equals(command)) { // NOI18N
+        return getDescriptor(command, null);
+    }
+
+    public ExecutionDescriptor getDescriptor(String command, InputProcessorFactory outFactory) {
+        if (GrailsRuntime.KNOWN_RUN_COMMANDS.contains(command)) {
             Runnable runnable = new Runnable() {
                 public void run() {
                     final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
@@ -112,19 +131,36 @@ public final class GrailsCommandSupport {
                     }
                 }
             };
-            return RUN_DESCRIPTOR.postExecution(runnable);
-        } else if ("shell".equals(command)) { // NOI18N
-            return RUN_DESCRIPTOR.postExecution(new RefreshProjectRunnable(project))
-                    .outProcessorFactory(ANSI_STRIPPING).errProcessorFactory(ANSI_STRIPPING);
-        }
 
-        return GRAILS_DESCRIPTOR.postExecution(new RefreshProjectRunnable(project))
-                .outProcessorFactory(ANSI_STRIPPING).errProcessorFactory(ANSI_STRIPPING);
+            ExecutionDescriptor descriptor = RUN_DESCRIPTOR.postExecution(runnable);
+            if (outFactory != null) {
+                descriptor = descriptor.outProcessorFactory(new ProxyInputProcessorFactory(outFactory));
+            }
+            return descriptor;
+        } else if ("shell".equals(command)) { // NOI18N
+            ExecutionDescriptor descriptor = RUN_DESCRIPTOR.postExecution(new RefreshProjectRunnable(project))
+                    .errProcessorFactory(ANSI_STRIPPING);
+            if (outFactory != null) {
+                descriptor = descriptor.outProcessorFactory(new ProxyInputProcessorFactory(ANSI_STRIPPING, outFactory));
+            } else {
+                descriptor = descriptor.outProcessorFactory(ANSI_STRIPPING);
+            }
+            return descriptor;
+        } else {
+            ExecutionDescriptor descriptor = GRAILS_DESCRIPTOR.postExecution(new RefreshProjectRunnable(project))
+                    .errProcessorFactory(ANSI_STRIPPING);
+            if (outFactory != null) {
+                descriptor = descriptor.outProcessorFactory(new ProxyInputProcessorFactory(ANSI_STRIPPING, outFactory));
+            } else {
+                descriptor = descriptor.outProcessorFactory(ANSI_STRIPPING);
+            }
+            return descriptor;
+        }
     }
 
     public void refreshGrailsCommands() {
         Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand("help", // NOI18N
-                GrailsProjectConfig.forProject(project), new String[]{});
+                GrailsProjectConfig.forProject(project));
         final HelpLineProcessor lineProcessor = new HelpLineProcessor();
 
         ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL)
@@ -173,6 +209,65 @@ public final class GrailsCommandSupport {
         });
     }
 
+    public static final void showURL(URL url, boolean debug, GrailsProject project) {
+        boolean debuggerAvailable = WebClientToolsSessionStarterService.isAvailable();
+
+        if (!debug || !debuggerAvailable) {
+            if (GrailsProjectConfig.forProject(project).getDisplayBrowser()) {
+                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+            }
+        } else {
+            FileObject webAppDir = project.getProjectDirectory().getFileObject(GrailsProjectFactory.WEB_APP_DIR);
+            GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
+
+            String port = config.getPort();
+            String prefix = url.getProtocol() + "://" + url.getHost() + ":" + port + "/" + project.getProjectDirectory().getName();
+            String actualURL = url.toExternalForm();
+
+            Lookup debugLookup;
+            if (!actualURL.startsWith(prefix)) {
+                LOGGER.warning("Could not construct URL mapper for JavaScript debugger.");
+                debugLookup = Lookups.fixed(project);
+            } else {
+                LocationMappersFactory factory = Lookup.getDefault().lookup(LocationMappersFactory.class);
+
+                if (factory == null) {
+                    debugLookup = Lookups.fixed(project);
+                } else {
+                    try {
+                        URI prefixURI = new URI(prefix);
+
+                        JSToNbJSLocationMapper forwardMapper = factory.getJSToNbJSLocationMapper(webAppDir, prefixURI, null);
+                        NbJSToJSLocationMapper reverseMapper = factory.getNbJSToJSLocationMapper(webAppDir, prefixURI, null);
+
+                        debugLookup = Lookups.fixed(forwardMapper, reverseMapper, project);
+                    } catch (URISyntaxException ex) {
+                        LOGGER.log(Level.WARNING, "Server URI could not be constructed from displayed URL", ex);
+                        debugLookup = Lookups.fixed(project);
+                    }
+                }
+            }
+
+            try {
+                URI launchURI = url.toURI();
+                HtmlBrowser.Factory browser = WebClientToolsProjectUtils.getFirefoxBrowser();
+
+                String browserString = config.getDebugBrowser();
+                if (browserString == null) {
+                    browserString = WebClientToolsProjectUtils.Browser.FIREFOX.name();
+                }
+                if (WebClientToolsProjectUtils.Browser.valueOf(browserString) == WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER) {
+                     browser = WebClientToolsProjectUtils.getInternetExplorerBrowser();
+                }
+                WebClientToolsSessionStarterService.startSession(launchURI, browser, debugLookup);
+            } catch (URISyntaxException ex) {
+                LOGGER.log(Level.SEVERE, "Unable to obtain URI for URL", ex);
+            } catch (WebClientToolsSessionException ex) {
+                LOGGER.log(Level.SEVERE, "Unexpected exception launching javascript debugger", ex);
+            }
+        }
+    }
+
     private static class HelpLineProcessor implements LineProcessor {
 
         private List<String> commands = Collections.synchronizedList(new ArrayList<String>());
@@ -199,6 +294,27 @@ public final class GrailsCommandSupport {
 
         public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
             return InputProcessors.ansiStripping(defaultProcessor);
+        }
+    }
+
+    private static class ProxyInputProcessorFactory implements InputProcessorFactory {
+
+        private final List<InputProcessorFactory> factories = new ArrayList<InputProcessorFactory>();
+
+        public ProxyInputProcessorFactory(InputProcessorFactory... proxied) {
+            for (InputProcessorFactory factory : proxied) {
+                if (factory != null) {
+                    factories.add(factory);
+                }
+            }
+        }
+
+        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+            InputProcessor[] processors = new InputProcessor[factories.size()];
+            for (int i = 0; i < processors.length; i++) {
+                processors[i] = factories.get(i).newInputProcessor(defaultProcessor);
+            }
+            return InputProcessors.proxy(processors);
         }
 
     }
