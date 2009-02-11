@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
@@ -59,6 +60,9 @@ import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
+import org.netbeans.modules.groovy.grailsproject.GrailsServerState;
+import org.netbeans.modules.groovy.grailsproject.actions.RefreshProjectRunnable;
+import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.openide.windows.InputOutput;
 
 /**
@@ -66,6 +70,14 @@ import org.openide.windows.InputOutput;
  * @author Petr Hejl
  */
 public final class GrailsCommandSupport {
+
+    private static final ExecutionDescriptor GRAILS_DESCRIPTOR = new ExecutionDescriptor()
+            .controllable(true).frontWindow(true).inputVisible(true)
+                .showProgress(true).optionsPath(GroovySettings.GROOVY_OPTIONS_CATEGORY);
+
+    private static final ExecutionDescriptor RUN_DESCRIPTOR = GRAILS_DESCRIPTOR.showSuspended(true);
+
+    private static final InputProcessorFactory ANSI_STRIPPING = new AnsiStrippingInputProcessorFactory();
 
     private static final Logger LOGGER = Logger.getLogger(GrailsCommandSupport.class.getName());
 
@@ -83,6 +95,31 @@ public final class GrailsCommandSupport {
 
     public synchronized List<GrailsCommand> getGrailsCommands() {
         return commands;
+    }
+
+    public ExecutionDescriptor getRunDescriptor() {
+        return getDescriptor("run-app"); // NOI18N
+    }
+
+    public ExecutionDescriptor getDescriptor(String command) {
+        if ("run-app".equals(command) || "run-app-https".equals(command) || "run-war".equals(command)) { // NOI18N
+            Runnable runnable = new Runnable() {
+                public void run() {
+                    final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
+                    if (serverState != null) {
+                        serverState.setProcess(null);
+                        serverState.setRunningUrl(null);
+                    }
+                }
+            };
+            return RUN_DESCRIPTOR.postExecution(runnable);
+        } else if ("shell".equals(command)) { // NOI18N
+            return RUN_DESCRIPTOR.postExecution(new RefreshProjectRunnable(project))
+                    .outProcessorFactory(ANSI_STRIPPING).errProcessorFactory(ANSI_STRIPPING);
+        }
+
+        return GRAILS_DESCRIPTOR.postExecution(new RefreshProjectRunnable(project))
+                .outProcessorFactory(ANSI_STRIPPING).errProcessorFactory(ANSI_STRIPPING);
     }
 
     public void refreshGrailsCommands() {
@@ -156,5 +193,13 @@ public final class GrailsCommandSupport {
 
         public void reset() {
         }
+    }
+
+    private static class AnsiStrippingInputProcessorFactory implements InputProcessorFactory {
+
+        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+            return InputProcessors.ansiStripping(defaultProcessor);
+        }
+
     }
 }

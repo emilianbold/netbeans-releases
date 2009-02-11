@@ -108,6 +108,7 @@ public class NewArtifactWizardIterator implements
             Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
                     serverCommand, GrailsProjectConfig.forProject(project), pls.getArtifactName());
 
+            // we need a special descriptor here
             ExecutionDescriptor descriptor = new ExecutionDescriptor()
                     .frontWindow(true).inputVisible(true);
             descriptor = descriptor.outProcessorFactory(new InputProcessorFactory() {
