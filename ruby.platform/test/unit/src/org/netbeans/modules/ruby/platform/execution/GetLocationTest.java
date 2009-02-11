@@ -196,4 +196,8 @@ public class GetLocationTest extends NbTestCase {
     public void testCheck98799() {
         assertRecognized("To set a breakpoint, enter 'b test.rb:4'", "test.rb", 4);
     }
+
+    public void testCheck157616() {
+        assertRecognized(":1: /Users/something/aaa.rb:3: , unexpected end-of-file (SyntaxError)", "/Users/something/aaa.rb", 3);
+    }
 }
