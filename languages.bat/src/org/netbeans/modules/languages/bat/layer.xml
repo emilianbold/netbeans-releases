@@ -109,6 +109,7 @@ made subject to such option by the copyright holder.
         <folder name="MIMEResolver">
             <file name="BatResolver.xml" url="BatResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.bat.Bundle"/>
+                <attr name="position" intvalue="150"/>
             </file>
         </folder>
     </folder>
