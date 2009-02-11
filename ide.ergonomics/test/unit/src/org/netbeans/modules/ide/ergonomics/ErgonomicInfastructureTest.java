@@ -53,7 +53,6 @@ public class ErgonomicInfastructureTest extends Object {
         Test ergonomics = NbModuleSuite.create(
             NbModuleSuite.emptyConfiguration().
             addTest(PerClusterEnablementCheck.class).
-            addTest(EnableKitRefreshesLayersCheck.class).
             gui(false).
             clusters("ergonomics.*").
             clusters(".*").
