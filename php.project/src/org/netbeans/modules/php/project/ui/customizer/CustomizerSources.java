@@ -105,17 +105,16 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         final LocalServer copyTarget = initCopyTarget();
         originalCopySrcTarget = copyTarget.getSrcRoot();
 
-        PhpEnvironment.get().readDocumentRoots(new PhpEnvironment.ReadDocumentRootsNotifier() {
-            public void finished(List<DocumentRoot> documentRoots) {
-                initCopyTargets(documentRoots, copyTarget);
-            }
-        }, getSourcesFolderName());
-
         copyFilesVisual = new CopyFilesVisual(this, LocalServer.PENDING_LOCAL_SERVER);
         copyFilesVisual.setCopyFiles(originalCopySrcFiles);
         copyFilesVisual.setState(false);
         copyFilesPanel.add(BorderLayout.NORTH, copyFilesVisual);
 
+        PhpEnvironment.get().readDocumentRoots(new PhpEnvironment.ReadDocumentRootsNotifier() {
+            public void finished(List<DocumentRoot> documentRoots) {
+                initCopyTargets(documentRoots, copyTarget);
+            }
+        }, getSourcesFolderName());
 
         encodingComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {

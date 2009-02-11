@@ -127,7 +127,19 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         switch (wizardType) {
             case NEW:
                 // sources - we need them first because of free project name
-                configureProjectPanelVisual.setLocalServerModel(getLocalServers());
+                MutableComboBoxModel localServers = getLocalServers();
+                if (localServers != null) {
+                    configureProjectPanelVisual.setLocalServerModel(localServers);
+                } else {
+                    configureProjectPanelVisual.setLocalServerModel(new LocalServer.ComboBoxModel(LocalServer.PENDING_LOCAL_SERVER));
+                    configureProjectPanelVisual.setState(false);
+                    fireChangeEvent();
+                    PhpEnvironment.get().readDocumentRoots(new PhpEnvironment.ReadDocumentRootsNotifier() {
+                        public void finished(List<DocumentRoot> documentRoots) {
+                            initLocalServers(documentRoots);
+                        }
+                    });
+                }
                 LocalServer sourcesLocation = getLocalServer();
                 if (sourcesLocation != null) {
                     configureProjectPanelVisual.selectSourcesLocation(sourcesLocation);
@@ -320,20 +332,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private MutableComboBoxModel getLocalServers() {
-        MutableComboBoxModel model = (MutableComboBoxModel) descriptor.getProperty(LOCAL_SERVERS);
-        if (model != null) {
-            return model;
-        }
-
-        configureProjectPanelVisual.setState(false);
-        fireChangeEvent();
-
-        PhpEnvironment.get().readDocumentRoots(new PhpEnvironment.ReadDocumentRootsNotifier() {
-            public void finished(List<DocumentRoot> documentRoots) {
-                initLocalServers(documentRoots);
-            }
-        });
-        return new LocalServer.ComboBoxModel(LocalServer.PENDING_LOCAL_SERVER);
+        return (MutableComboBoxModel) descriptor.getProperty(LOCAL_SERVERS);
     }
 
     private void initLocalServers(List<DocumentRoot> documentRoots) {

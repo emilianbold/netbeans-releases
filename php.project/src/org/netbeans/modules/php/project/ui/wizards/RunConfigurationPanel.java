@@ -184,7 +184,20 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                 break;
         }
 
-        runAsLocalWeb.setLocalServerModel(getLocalServerModel());
+        MutableComboBoxModel localServerModel = getLocalServerModel();
+        if (localServerModel != null) {
+            runAsLocalWeb.setLocalServerModel(localServerModel);
+        } else {
+            runAsLocalWeb.setLocalServerModel(new LocalServer.ComboBoxModel(LocalServer.PENDING_LOCAL_SERVER));
+            readingDocumentRoots = true;
+            runAsLocalWeb.setCopyFilesState(false);
+            PhpEnvironment.get().readDocumentRoots(new PhpEnvironment.ReadDocumentRootsNotifier() {
+                public void finished(List<DocumentRoot> documentRoots) {
+                    initLocalServerModel(documentRoots);
+                }
+            });
+            fireChangeEvent();
+        }
         runAsLocalWeb.setCopyFiles(getCopyFiles());
 
         runAsRemoteWeb.setUploadDirectory(getUploadDirectory());
@@ -220,21 +233,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private MutableComboBoxModel getLocalServerModel() {
-        MutableComboBoxModel model = (MutableComboBoxModel) descriptor.getProperty(COPY_SRC_TARGETS);
-        if (model != null) {
-            return model;
-        }
-
-        readingDocumentRoots = true;
-        runAsLocalWeb.setCopyFilesState(false);
-        PhpEnvironment.get().readDocumentRoots(new PhpEnvironment.ReadDocumentRootsNotifier() {
-            public void finished(List<DocumentRoot> documentRoots) {
-                initLocalServerModel(documentRoots);
-            }
-        });
-        fireChangeEvent();
-
-        return new LocalServer.ComboBoxModel(LocalServer.PENDING_LOCAL_SERVER);
+        return (MutableComboBoxModel) descriptor.getProperty(COPY_SRC_TARGETS);
     }
 
     void initLocalServerModel(List<DocumentRoot> documentRoots) {
