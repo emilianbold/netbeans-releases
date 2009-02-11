@@ -67,6 +67,7 @@ public final class ExecutionUtils {
     private static final Pattern[] LOCATION_RECOGNIZER_PATTERNS = new Pattern[]{
         RubyLineConvertorFactory.RAILS_RECOGNIZER,
         RubyLineConvertorFactory.RUBY_COMPILER_WIN_MY,
+        RubyLineConvertorFactory.JRUBY_COMPILER,
         RubyLineConvertorFactory.RUBY_COMPILER,
         RubyLineConvertorFactory.RUBY_COMPILER_WIN};
 
