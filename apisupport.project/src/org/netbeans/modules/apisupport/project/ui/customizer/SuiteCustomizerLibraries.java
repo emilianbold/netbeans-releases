@@ -1051,6 +1051,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         
         public Boolean getValue() throws IllegalAccessException, InvocationTargetException {
             Children ch = node.getChildren();
+            // TODO C.P bugfix - new empty app shows all platform nodes checked for a while
             Logger logger = Logger.getLogger(EnabledProp.class.getName());
             if (ch == Children.LEAF) {
                 logger.log(Level.FINE, "Node '" + node.getName() + "' is LEAF, enabled=" + node.isEnabled());
@@ -1108,7 +1109,6 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         protected void addNotify() {
             super.addNotify();
             setMergedKeys();
-//          TODO C.P use RP.post when performance suffers
         }
 
         @Override
@@ -1124,7 +1124,6 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
          * @param clusterDir
          * @return Node for found cluster or null if not found
          */
-        // TODO C.P add equals to nodes, use Set#contains
         private ClusterNode findCluster(File clusterDir) {
             for (ClusterNode node : extraNodes) {
                 if (node.getClusterInfo().getClusterDir().equals(clusterDir))
