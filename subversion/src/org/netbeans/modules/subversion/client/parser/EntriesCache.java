@@ -49,6 +49,7 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.modules.subversion.Subversion;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
@@ -168,20 +169,28 @@ public class EntriesCache {
     }
 
     private EntryAttributes getMergedAttributes(EntryAttributes ea) throws SAXException {        
-        for(String fileName : ea.keySet()) {                                       
-            boolean isDirectory = ea.get(fileName).get("kind").equals("dir");
-            Map<String, String> attributes = mergeThisDirAttributes(isDirectory, fileName, ea);                    
+        for(String fileName : ea.keySet()) {
+            String kind = ea.get(fileName).get("kind");
+            if (kind == null) {
+                // missing svn node type (dir or file) - svn allows that and considers such node to be missing.
+                Subversion.LOG.log(Level.INFO, "File " + fileName + " is missing - metadata: " + ea.get(fileName));
+                Subversion.LOG.log(Level.WARNING, "File " + fileName + " probably does not exist on the hard drive, please check your working copy.");
+                kind = "file";
+                ea.get(fileName).put("kind", kind);
+            }
+            boolean isDirectory = kind.equals("dir");
+            Map<String, String> attributes = mergeThisDirAttributes(isDirectory, fileName, ea);
             if(isDirectory) {
                 attributes.put(WorkingCopyDetails.IS_HANDLED, "" + (ea.get(SVN_THIS_DIR).get("deleted") == null));  // NOI18N
-            } else {
+                } else {
                 if(ea.get(fileName) != null) {
                     for(Map.Entry<String, String> entry : ea.get(fileName).entrySet()) {
-                        attributes.put(entry.getKey(), entry.getValue());                        
-                    }            
-                }           
+                        attributes.put(entry.getKey(), entry.getValue());
+                    }
+                }
                 // it's realy a file
                 attributes.put(WorkingCopyDetails.IS_HANDLED, "" + (ea.containsKey(fileName) && ea.get("deleted") == null));        // NOI18N
-            }                                    
+                }
         }    
         return ea;
     }    
