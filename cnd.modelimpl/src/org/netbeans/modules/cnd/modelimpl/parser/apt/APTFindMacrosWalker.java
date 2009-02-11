@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -299,9 +300,13 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
                 CsmFile target = getTargetFile();
                 if (target != null) {
                     Collection<CsmMacro> macrosCollection = target.getMacros();
-                    List<CsmMacro> macros = new ArrayList<CsmMacro>(macrosCollection);
-                    for (int i = macros.size() - 1; i >= 0; i--) {
-                        CsmMacro macro = macros.get(i);
+                    List<CsmMacro> macros = new ArrayList<CsmMacro>(macrosCollection.size());
+                    for(CsmMacro macro : macrosCollection) {
+                        macros.add(macro);
+                    }
+                    ListIterator<CsmMacro> it = macros.listIterator(macros.size());
+                    while (it.hasPrevious()){
+                        CsmMacro macro = it.previous();
                         if (macro!=null && mi.startOffset == macro.getStartOffset()) {
                             ref = macro;
                             break;
