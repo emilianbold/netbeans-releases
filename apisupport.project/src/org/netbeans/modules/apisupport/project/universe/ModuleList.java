@@ -309,7 +309,8 @@ public final class ModuleList {
         scanNetBeansOrgStableSources(entries, root, nbdestdir);
         return new ModuleList(entries, root, true);
     }
-    
+
+    // TODO test that cache is being used after clean build
     private static ModuleList loadNetBeansOrgCachedModuleList(File root, File nbdestdir) throws IOException {
         if (!PERMIT_CACHES) {
             throw new IOException("Not using caches any more due to previous call of refresh()");
@@ -334,7 +335,8 @@ public final class ModuleList {
             for (Map.Entry<File,Long[]> entry : NbCollections.checkedMapByFilter((Map) oi.readObject(), File.class, Long[].class, true).entrySet()) {
                 File f = entry.getKey();
                 if (f.lastModified() != entry.getValue()[0] || f.length() != entry.getValue()[1]) {
-                    throw new IOException("Cache ignored due to modifications in " + f);
+                    Logger.getLogger(ModuleList.class.getName()).log(Level.INFO, "Nbbuild cache ignored due to modifications in " + f);
+                    throw new IOException("Nbbuild cache ignored due to modifications in " + f);
                 }
             }
             Map cachedEntries = (Map) oi.readObject();
@@ -354,9 +356,11 @@ public final class ModuleList {
                 String[] buildPrerequisites = (String[]) fields.get("buildPrerequisites").get(entry);
                 String clusterName = (String) fields.get("clusterName").get(entry);
                 String[] runtimeDependencies = (String[]) fields.get("runtimeDependencies").get(entry);
-                String[] testDependencies = (String[]) fields.get("testDependencies").get(entry);
+                @SuppressWarnings("unchecked")
+                Map<String, String[]> testDependencies = (Map<String, String[]>) fields.get("testDependencies").get(entry);
                 ModuleEntry me = new NetBeansOrgCachedEntry(
-                    root, nbdestdir, cnb, jar, classPathExtensions, sourceLocation, netbeansOrgPath, buildPrerequisites, clusterName, runtimeDependencies, testDependencies);
+                    root, nbdestdir, cnb, jar, classPathExtensions, sourceLocation, netbeansOrgPath, buildPrerequisites, clusterName, 
+                    runtimeDependencies, testDependencies.get("unit"));
                 entries.put(cnb, me);
                 // Forget about registering anything else for now, too slow:
                 registerEntry(me, Collections.singleton(jar));
