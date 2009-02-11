@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.node;
@@ -50,7 +50,6 @@ import org.openide.util.HelpCtx;
  */
 public class ForeignKeyListNode extends BaseNode {
     private static final String NAME = "Foreign Keys"; // NOI18N
-    private static final String DISPLAYNAME = "Foreign Keys"; // NOI18N
     private static final String ICONBASE = "org/netbeans/modules/db/resources/folder.gif";
     private static final String FOLDER = "ForeignKeyList"; //NOI18N
 
@@ -80,7 +79,7 @@ public class ForeignKeyListNode extends BaseNode {
 
     @Override
     public String getDisplayName() {
-        return DISPLAYNAME;
+        return bundle().getString("ForeignKeyListNode_DISPLAYNAME"); // NOI18N
     }
 
     @Override

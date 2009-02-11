@@ -58,7 +58,6 @@ import org.openide.util.HelpCtx;
  */
 public class TableListNode extends BaseNode implements SchemaNameProvider {
     private static final String NAME = "Tables"; // NOI18N
-    private static final String DISPLAYNAME = "Tables"; // NOI18N
     private static final String ICONBASE = "org/netbeans/modules/db/resources/folder.gif"; // NOI18N
     private static final String FOLDER = "TableList"; //NOI18N
 
@@ -93,7 +92,7 @@ public class TableListNode extends BaseNode implements SchemaNameProvider {
 
     @Override
     public String getDisplayName() {
-        return DISPLAYNAME;
+        return bundle().getString ("TableListNode_DISPLAYNAME"); // NOI18N
     }
 
     @Override
