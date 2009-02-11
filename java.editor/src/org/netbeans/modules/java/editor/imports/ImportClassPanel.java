@@ -74,6 +74,7 @@ import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.java.editor.overridden.PopupUtil;
 import org.openide.ErrorManager;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 
 /**
@@ -272,7 +273,7 @@ public class ImportClassPanel extends javax.swing.JPanel {
                         NbBundle.getMessage(
                                 ImportClassPanel.class,
                                 packageImport ? "MSG_PackageAlreadyImported" : "MSG_ClassAlreadyImported", 
-                                fqn));
+                                fqn), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
                         return;
                     }
                     

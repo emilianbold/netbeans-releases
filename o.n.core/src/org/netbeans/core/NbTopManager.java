@@ -310,6 +310,8 @@ public abstract class NbTopManager {
                 for( int i=0; i<messages.size() && !added; i++ ) {
                     WeakReference<MessageImpl> ref = messages.get(0);
                     MessageImpl impl = ref.get();
+                    if (impl == null)
+                        continue;
                     if( impl.importance == importance ) {
                         messages.set(i, newRef);
                         added = true;
