@@ -133,7 +133,12 @@ ExplorerManager.Provider, PropertyChangeListener {
             //   Change visibility map
 
             public void columnAdded(TableColumnModelEvent e) {
-                logger.fine("columnAdded("+e+")");
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine("columnAdded("+e+") to = "+e.getToIndex());
+                    TableColumnModel tcme = (TableColumnModel) e.getSource();
+                    logger.fine(" column header = '"+tcme.getColumn(e.getToIndex()).getHeaderValue()+"'");
+                    dumpColumnVisibleMap();
+                }
                 if (tableColumns != null && e.getToIndex() >= 0) {
                     // It does not say *which* column was added to the toIndex.
                     int visibleIndex = e.getToIndex();
@@ -174,7 +179,8 @@ ExplorerManager.Provider, PropertyChangeListener {
                                 columnVisibleMap[i]++;
                             }
                         }
-                        if (prefferedVisibleIndex != visibleIndex) {
+                        if (prefferedVisibleIndex >= 0 && prefferedVisibleIndex != visibleIndex) {
+                            logger.fine("moveColumn("+visibleIndex+", "+prefferedVisibleIndex+")");
                             ignoreMove = true;
                             try {
                                 treeTable.getTable().getColumnModel().moveColumn(visibleIndex, prefferedVisibleIndex);
@@ -190,7 +196,10 @@ ExplorerManager.Provider, PropertyChangeListener {
             }
 
             public void columnRemoved(TableColumnModelEvent e) {
-                logger.fine("columnRemoved("+e+")");
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine("columnRemoved("+e+") from = "+e.getFromIndex());
+                    dumpColumnVisibleMap();
+                }
                 if (tableColumns != null && e.getFromIndex() >= 0) {
                     int visibleIndex = e.getFromIndex();
                     logger.fine("  from index = "+visibleIndex);
@@ -220,9 +229,11 @@ ExplorerManager.Provider, PropertyChangeListener {
                 int fc = getColumnIndex(from);
                 int tc = getColumnIndex(to);
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.fine("columnMoved("+e+")");
+                    logger.fine("columnMoved("+e+") from = "+from+", to = "+to);
                     logger.fine("  from = "+from+", to = "+to);
                     logger.fine("  fc = "+fc+", tc = "+tc);
+                    TableColumnModel tcme = (TableColumnModel) e.getSource();
+                    logger.fine(" column headers = '"+tcme.getColumn(e.getFromIndex()).getHeaderValue()+"' => '"+tcme.getColumn(e.getToIndex()).getHeaderValue()+"'");
                     dumpColumnVisibleMap();
                 }
                 int toColumnOrder = getColumnOrder(columns[tc]);
@@ -278,7 +289,8 @@ ExplorerManager.Provider, PropertyChangeListener {
     }
 
     private void dumpColumnVisibleMap() {
-        logger.fine("\nColumn Visible Map ("+columnVisibleMap.length+"):");
+        logger.fine("");
+        logger.fine("Column Visible Map ("+columnVisibleMap.length+"):");
         for (int i = 0; i < columnVisibleMap.length; i++) {
             logger.fine(" map["+i+"] = "+columnVisibleMap[i]+"; columnOrder["+i+"] = "+getColumnOrder(columns[i]));
         }
