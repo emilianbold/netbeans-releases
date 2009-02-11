@@ -102,10 +102,6 @@ public class ServiceTagGenerator {
                     e.printStackTrace();
                     result = 1;
                 }
-
-
-
-
             }
         }
         System.exit(result);
@@ -120,7 +116,6 @@ public class ServiceTagGenerator {
         System.out.println("version = " + version);
         System.out.println("gfHome = " + gfHome);
      
-
         ServiceTag gfST = null;
         if (System.getProperty("netbeans.home") != null) {
             gfST= NbServiceTagSupport.createGfServiceTag(
