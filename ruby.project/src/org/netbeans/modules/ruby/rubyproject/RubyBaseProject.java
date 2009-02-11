@@ -293,7 +293,8 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
     }
 
     private void updateRakeTasks() {
-        if (hasRakeFile() && getPlatform().hasValidRake(false)) {
+        RubyPlatform platform = getPlatform();
+        if (hasRakeFile() && platform != null && platform.hasValidRake(false)) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     RakeSupport.refreshTasks(RubyBaseProject.this, false);
