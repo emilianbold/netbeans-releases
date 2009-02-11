@@ -51,7 +51,9 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroupModifier;
 import org.netbeans.modules.junit.GuiUtils;
 import org.netbeans.modules.junit.JUnitPluginTrampoline;
 import org.netbeans.modules.junit.JUnitSettings;
@@ -180,6 +182,7 @@ public class SimpleTestCaseWizardIterator
     private WizardDescriptor.Panel<WizardDescriptor> getClassChooserPanel() {
         final Project project = Templates.getProject(wizard);
         if (classChooserPanel == null || project != lastSelectedProject) {
+            SourceGroupModifier.createSourceGroup(project, JavaProjectConstants.SOURCES_TYPE_JAVA, JavaProjectConstants.SOURCES_HINT_TEST);
             final Utils utils = new Utils(project);
             if (utils.getSourcesToTestsMap(true).isEmpty()) {
                 classChooserPanel = new StepProblemMessage(

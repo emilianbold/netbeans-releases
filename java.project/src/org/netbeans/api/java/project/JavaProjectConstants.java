@@ -62,6 +62,23 @@ public class JavaProjectConstants {
      */
     public static final String SOURCES_TYPE_RESOURCES = "resources"; // NOI18N
 
+
+    /**
+     * Hint for <code>SourceGroupModifier</code> to create a <code>SourceGroup</code>
+     * for main project codebase.
+     * @see org.netbeans.api.project.SourceGroupModifier
+     * @since org.netbeans.modules.java.project/1 1.24
+     */
+    public static final String SOURCES_HINT_MAIN = "main"; //NOI18N
+
+    /**
+     * Hint for <code>SourceGroupModifier</code> to create a <code>SourceGroup</code>
+     * for project's tests.
+     * @see org.netbeans.api.project.SourceGroupModifier
+     * @since org.netbeans.modules.java.project/1 1.24
+     */
+    public static final String SOURCES_HINT_TEST = "test"; //NOI18N
+
     /**
      * Standard artifact type representing a JAR file, presumably
      * used as a Java library of some kind.

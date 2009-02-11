@@ -70,6 +70,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.maven.spi.nodes.NodeUtils;
+import org.netbeans.spi.project.SourceGroupModifierImplementation;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -85,7 +86,7 @@ import org.openide.util.RequestProcessor;
  * IMHO at least..
  * @author  Milos Kleint
  */
-public class MavenSourcesImpl implements Sources {
+public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementation {
     public static final String TYPE_OTHER = "Resources"; //NOI18N
     public static final String TYPE_TEST_OTHER = "TestResources"; //NOI18N
     public static final String TYPE_GEN_SOURCES = "GeneratedSources"; //NOI18N
@@ -377,6 +378,36 @@ public class MavenSourcesImpl implements Sources {
             changed = true;
         }
         return changed;
+    }
+
+    public SourceGroup createSourceGroup(String type, String hint) {
+        assert type != null;
+        MavenProject mp = project.getOriginalMavenProject();
+        File folder = null;
+        if (JavaProjectConstants.SOURCES_TYPE_JAVA.equals(type)) {
+            if (JavaProjectConstants.SOURCES_HINT_MAIN.equals(hint)) {
+                folder = FileUtilities.convertStringToFile(mp.getBuild().getSourceDirectory());
+            }
+            if (JavaProjectConstants.SOURCES_HINT_TEST.equals(hint)) {
+                folder = FileUtilities.convertStringToFile(mp.getBuild().getTestSourceDirectory());
+            }
+        }
+        if (folder != null) {
+            folder.mkdirs();
+            FileUtil.refreshFor(folder);
+            checkChanges(false);
+            FileObject fo = FileUtil.toFileObject(folder);
+            assert fo != null;
+            SourceGroup[] grps = getSourceGroups(type);
+            for (SourceGroup sg : grps) {
+                if (fo.equals(sg.getRootFolder())) {
+                    return sg;
+                }
+            }
+            //shall we somehow report it?
+        }
+
+        return null;
     }
     
     
