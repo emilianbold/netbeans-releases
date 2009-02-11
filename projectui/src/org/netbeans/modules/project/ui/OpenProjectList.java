@@ -251,10 +251,13 @@ public final class OpenProjectList {
         }
 
         final void waitFinished() {
+            LOGGER.log(Level.FINER, "waitFinished, action {0}", action); // NOI18N
             if (action == 0) {
                 run();
             }
+            LOGGER.log(Level.FINER, "waitFinished, before wait"); // NOI18N
             TASK.waitFinished();
+            LOGGER.log(Level.FINER, "waitFinished, after wait"); // NOI18N
         }
         
         public void run() {
@@ -266,6 +269,9 @@ public final class OpenProjectList {
                     resultChanged(null);
                     return;
                 case 1:
+                    if (!RP.isRequestProcessorThread()) {
+                        return;
+                    }
                     action = 2;
                     try {
                         progress.start();
@@ -299,6 +305,7 @@ public final class OpenProjectList {
             LOGGER.log(Level.FINER, "updateGlobalState"); // NOI18N
             synchronized (INSTANCE) {
                 INSTANCE.openProjects = lazilyOpenedProjects;
+                LOGGER.log(Level.FINER, "openProjects changed: {0}", lazilyOpenedProjects); // NOI18N
                 if (lazyMainProject != null) {
                     INSTANCE.mainProject = lazyMainProject;
                 }
@@ -1041,8 +1048,11 @@ public final class OpenProjectList {
         boolean recentProjectsChanged;
         LOGGER.finer("doOpenProject(): opening project " + p.toString());
         synchronized (this) {
-            if (openProjects.contains(p)) {
-                return false;
+            LOGGER.log(Level.FINER, "already opened: {0} ", openProjects);
+            for (Project existing : openProjects) {
+                if (p.equals(existing) || existing.equals(p)) {
+                    return false;
+                }
             }
             openProjects.add(p);
             addModuleInfo(p);
