@@ -93,7 +93,14 @@ public final class TemplateDescriptor {
     }
 
     public List<CsmTemplateParameter> getTemplateParameters() {
-    	return (templateParams != null) ? new ArrayList<CsmTemplateParameter>(UIDCsmConverter.UIDsToCsmObjects(templateParams)) : Collections.<CsmTemplateParameter>emptyList();
+        if (templateParams != null) {
+            List<CsmTemplateParameter> res = new ArrayList<CsmTemplateParameter>();
+            for(CsmTemplateParameter par : UIDCsmConverter.UIDsToCsmObjects(templateParams)){
+                res.add(par);
+            }
+            return res;
+        }
+    	return Collections.<CsmTemplateParameter>emptyList();
     }
     
     public CharSequence getTemplateSuffix() {
