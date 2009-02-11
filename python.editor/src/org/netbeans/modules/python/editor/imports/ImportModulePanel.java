@@ -376,7 +376,7 @@ public class ImportModulePanel extends javax.swing.JPanel {
                 }
                 // TODO - depend on gsf directly and get icons from there!
                 //setIcon( ElementIcons.getElementIcon( td.kind, null ) );
-                setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/python/editor/imports/module.png"))); // NOI18N
+                setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/python/editor/imports/module.png", false)); // NOI18N
             } else {
                 setText(value.toString());
             }

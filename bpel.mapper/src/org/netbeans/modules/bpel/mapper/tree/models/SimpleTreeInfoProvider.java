@@ -41,8 +41,7 @@ import org.openide.util.Utilities;
 public class SimpleTreeInfoProvider 
         implements TreeItemInfoProvider, TreeItemActionsProvider {
 
-    public static Icon RESULT_IMAGE = new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/bpel/mapper/tree/models/RESULT.png"));
+    public static Icon RESULT_IMAGE = ImageUtilities.loadImageIcon("org/netbeans/modules/bpel/mapper/tree/models/RESULT.png", false);
     
     private static SimpleTreeInfoProvider singleton = new SimpleTreeInfoProvider();
     

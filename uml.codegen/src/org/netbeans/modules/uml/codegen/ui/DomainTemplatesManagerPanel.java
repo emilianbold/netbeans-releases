@@ -91,12 +91,10 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
     private Map<String, Boolean> treeExpandState = new HashMap<String, Boolean>();
     
     private static final Icon DOMAIN_OBJECT_NODE_ICON =
-        new ImageIcon(ImageUtilities.loadImage(
-        "org/netbeans/modules/uml/resources/images/templates.png")); // NOI18N
+        ImageUtilities.loadImageIcon("org/netbeans/modules/uml/resources/images/templates.png", false); // NOI18N
     
     private static final Icon TEMPLATE_FAMILY_NODE_ICON =
-        new ImageIcon(ImageUtilities.loadImage(
-        "org/netbeans/modules/uml/resources/images/default-category.gif")); // NOI18N
+        ImageUtilities.loadImageIcon("org/netbeans/modules/uml/resources/images/default-category.gif", false); // NOI18N
     
     public DomainTemplatesManagerPanel()
     {

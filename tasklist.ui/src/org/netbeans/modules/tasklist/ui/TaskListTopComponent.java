@@ -456,7 +456,7 @@ final class TaskListTopComponent extends TopComponent {
         toolbar.add( toggleFilter );
         //grouping & other butons
         toolbar.addSeparator();
-        final JToggleButton toggleGroups = new JToggleButton( new ImageIcon(ImageUtilities.loadImage( "org/netbeans/modules/tasklist/ui/resources/groups.png" )) ); //NOI18N
+        final JToggleButton toggleGroups = new JToggleButton( ImageUtilities.loadImageIcon("org/netbeans/modules/tasklist/ui/resources/groups.png", false)); //NOI18N
         toggleGroups.addItemListener( new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 switchTableModel( e.getStateChange() == ItemEvent.SELECTED );

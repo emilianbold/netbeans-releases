@@ -203,7 +203,7 @@ public class GroovyTypeSearcher implements IndexSearcher {
                 initProjectInfo();
             }
             if (isLibrary) {
-                return new ImageIcon(ImageUtilities.loadImage(GroovySources.GROOVY_FILE_ICON_16x16));
+                return ImageUtilities.loadImageIcon(GroovySources.GROOVY_FILE_ICON_16x16, false);
             }
             return projectIcon;
         }

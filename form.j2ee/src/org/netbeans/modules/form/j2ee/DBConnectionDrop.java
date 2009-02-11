@@ -97,8 +97,7 @@ public class DBConnectionDrop implements NewComponentDrop {
         PaletteItem pItem = new PaletteItem(new ClassSource("javax.persistence.EntityManager", // NOI18N
                 new ClassSource.LibraryEntry(LibraryManager.getDefault().getLibrary("toplink"))), // NOI18N
                 null);
-        pItem.setIcon(new ImageIcon(
-            ImageUtilities.loadImage("org/netbeans/modules/form/j2ee/resources/EntityManager.png")).getImage()); // NOI18N
+        pItem.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/j2ee/resources/EntityManager.png", false).getImage()); // NOI18N
         return pItem;
     }
 

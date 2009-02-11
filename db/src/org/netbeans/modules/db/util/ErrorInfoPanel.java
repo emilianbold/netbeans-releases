@@ -88,8 +88,8 @@ public class ErrorInfoPanel extends javax.swing.JPanel {
             infoColor = UIManager.getColor("Label.foreground"); //NOI18N;
         }
         
-        errorIcon = new ImageIcon(ImageUtilities.loadImage(ERRORICON));
-        infoIcon = new ImageIcon(ImageUtilities.loadImage(INFOICON));
+        errorIcon = ImageUtilities.loadImageIcon(ERRORICON, false);
+        infoIcon = ImageUtilities.loadImageIcon(INFOICON, false);
 
     }
     

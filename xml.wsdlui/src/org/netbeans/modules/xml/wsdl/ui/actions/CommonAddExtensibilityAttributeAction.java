@@ -69,9 +69,7 @@ public class CommonAddExtensibilityAttributeAction extends CommonNodeAction {
      *
      */
     private static final long serialVersionUID = 2110730939475660217L;
-    private static final ImageIcon ICON  = new ImageIcon
-    (ImageUtilities.loadImage
-     ("org/netbeans/modules/xml/wsdl/ui/view/resources/message.png"));
+    private static final ImageIcon ICON  = ImageUtilities.loadImageIcon("org/netbeans/modules/xml/wsdl/ui/view/resources/message.png", false);
 
     public CommonAddExtensibilityAttributeAction() {
         this.setIcon(ICON);

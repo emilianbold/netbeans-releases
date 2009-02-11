@@ -346,8 +346,7 @@ public class CustomizerProjectReferences extends javax.swing.JPanel implements H
         
         ReferenceHelper.RawReference missingRef;
         
-        static Icon icon = new ImageIcon(ImageUtilities.loadImage(
-                "org/netbeans/modules/java/j2seproject/ui/resources/brokenProjectBadge.gif")); // NOI18N
+        static Icon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/java/j2seproject/ui/resources/brokenProjectBadge.gif", false); // NOI18N
 
         public MissingProjectInformation(ReferenceHelper.RawReference missingRef) {
             this.missingRef = missingRef;

@@ -77,7 +77,7 @@ public class AssistantView extends JPanel {
 
         // Message label
         messageLabel = new JLabel();
-        messageLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/form/resources/lightbulb.gif"))); // NOI18N
+        messageLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/resources/lightbulb.gif", false)); // NOI18N
 
         // Close button
         JButton closeButton = new JButton("x"); // NOI18N

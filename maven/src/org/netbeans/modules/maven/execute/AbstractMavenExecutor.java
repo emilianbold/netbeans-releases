@@ -246,8 +246,8 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
 
         public ReRunAction(boolean debug) {
             this.debug = debug;
-            this.putValue(Action.SMALL_ICON, debug ? new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/maven/execute/refreshdebug.png")) : //NOI18N
-                    new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/maven/execute/refresh.png")));//NOI18N
+            this.putValue(Action.SMALL_ICON, debug ? ImageUtilities.loadImageIcon("org/netbeans/modules/maven/execute/refreshdebug.png", false) : //NOI18N
+                    ImageUtilities.loadImageIcon("org/netbeans/modules/maven/execute/refresh.png", false));//NOI18N
 
             putValue(Action.NAME, debug ? NbBundle.getMessage(AbstractMavenExecutor.class, "TXT_Rerun_extra") : NbBundle.getMessage(AbstractMavenExecutor.class, "TXT_Rerun"));
             putValue(Action.SHORT_DESCRIPTION, debug ? NbBundle.getMessage(AbstractMavenExecutor.class, "TIP_Rerun_Extra") : NbBundle.getMessage(AbstractMavenExecutor.class, "TIP_Rerun"));
@@ -283,7 +283,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
         private AbstractMavenExecutor exec;
 
         StopAction() {
-            putValue(Action.SMALL_ICON, new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/maven/execute/stop.png"))); //NOi18N
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/maven/execute/stop.png", false)); //NOi18N
 
             putValue(Action.NAME, NbBundle.getMessage(AbstractMavenExecutor.class, "TXT_Stop_execution"));
             putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(AbstractMavenExecutor.class, "TIP_Stop_Execution"));
@@ -306,7 +306,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
         private MavenBuildPlanSupport mbps;
 
         BuildPlanAction() {
-            putValue(Action.SMALL_ICON, new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/maven/execute/buildplangoals.png"))); //NOi18N
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/maven/execute/buildplangoals.png", false)); //NOi18N
 
             putValue(Action.NAME, NbBundle.getMessage(AbstractMavenExecutor.class, "TXT_Build_Plan"));
             putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(AbstractMavenExecutor.class, "TIP_Build_Plan_tip"));

@@ -71,7 +71,7 @@ public class OpenProject extends BasicAction {
         
     /** Creates a new instance of BrowserAction */
     public OpenProject() {
-        super( DISPLAY_NAME, new ImageIcon( ImageUtilities.loadImage( "org/netbeans/modules/project/ui/resources/openProject.png" ) ) );
+        super( DISPLAY_NAME, ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/openProject.png", false));
         putValue("iconBase","org/netbeans/modules/project/ui/resources/openProject.png"); //NOI18N
         putValue(SHORT_DESCRIPTION, _SHORT_DESCRIPTION);
     }

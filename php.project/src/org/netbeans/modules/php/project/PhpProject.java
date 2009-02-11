@@ -92,8 +92,7 @@ public class PhpProject implements Project {
 
     public static final String USG_LOGGER_NAME = "org.netbeans.ui.metrics.php"; //NOI18N
 
-    private static final Icon PROJECT_ICON = new ImageIcon(
-            ImageUtilities.loadImage("org/netbeans/modules/php/project/ui/resources/phpProject.png")); // NOI18N
+    private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/php/project/ui/resources/phpProject.png", false); // NOI18N
 
     final AntProjectHelper helper;
     final UpdateHelper updateHelper;

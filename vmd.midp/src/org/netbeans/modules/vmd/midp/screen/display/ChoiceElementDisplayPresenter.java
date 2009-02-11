@@ -82,12 +82,12 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
     public static final String ICON_POPUP_PATH = "org/netbeans/modules/vmd/midp/resources/screen/drop-down.png"; // NOI18N
     public static final String ICON_BROKEN_PATH = "org/netbeans/modules/vmd/midp/resources/screen/broken-image.png"; // NOI18N
     
-    public static final Icon ICON_EMPTY_CHECKBOX = new ImageIcon(ImageUtilities.loadImage(ICON_EMPTY_CHECKBOX_PATH));
-    public static final Icon ICON_CHECKBOX = new ImageIcon(ImageUtilities.loadImage(ICON_CHECKBOX_PATH));
-    public static final Icon ICON_EMPTY_RADIOBUTTON = new ImageIcon(ImageUtilities.loadImage(ICON_EMPTY_RADIOBUTTON_PATH));
-    public static final Icon ICON_RADIOBUTTON = new ImageIcon(ImageUtilities.loadImage(ICON_RADIOBUTTON_PATH));
-    public static final Icon ICON_POPUP = new ImageIcon(ImageUtilities.loadImage(ICON_POPUP_PATH));
-    public static final Icon ICON_BROKEN = new ImageIcon(ImageUtilities.loadImage(ICON_BROKEN_PATH));
+    public static final Icon ICON_EMPTY_CHECKBOX = ImageUtilities.loadImageIcon(ICON_EMPTY_CHECKBOX_PATH, false);
+    public static final Icon ICON_CHECKBOX = ImageUtilities.loadImageIcon(ICON_CHECKBOX_PATH, false);
+    public static final Icon ICON_EMPTY_RADIOBUTTON = ImageUtilities.loadImageIcon(ICON_EMPTY_RADIOBUTTON_PATH, false);
+    public static final Icon ICON_RADIOBUTTON = ImageUtilities.loadImageIcon(ICON_RADIOBUTTON_PATH, false);
+    public static final Icon ICON_POPUP = ImageUtilities.loadImageIcon(ICON_POPUP_PATH, false);
+    public static final Icon ICON_BROKEN = ImageUtilities.loadImageIcon(ICON_BROKEN_PATH, false);
     
     private JPanel view;
     private JLabel state;

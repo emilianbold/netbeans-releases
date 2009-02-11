@@ -62,7 +62,7 @@ public class OpenVersioningAction extends StatusProjectsAction {
     
     public OpenVersioningAction() {
         putValue("noIconInMenu", Boolean.FALSE); // NOI18N
-        setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/window-versioning.png"))); // NOI18N
+        setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/versioning/system/cvss/resources/icons/window-versioning.png", false)); // NOI18N
     }
 
     public String getName() {

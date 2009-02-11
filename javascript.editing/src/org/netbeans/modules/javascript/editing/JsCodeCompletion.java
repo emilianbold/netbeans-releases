@@ -2754,7 +2754,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             }
 
             if (keywordIcon == null) {
-                keywordIcon = new ImageIcon(ImageUtilities.loadImage(Js_KEYWORD));
+                keywordIcon = ImageUtilities.loadImageIcon(Js_KEYWORD, false);
             }
 
             return keywordIcon;

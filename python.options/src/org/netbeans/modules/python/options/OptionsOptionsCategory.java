@@ -14,7 +14,7 @@ import org.openide.util.Utilities;
 public final class OptionsOptionsCategory extends OptionsCategory {
 
     public Icon getIcon() {
-        return new ImageIcon(Utilities.loadImage("org/netbeans/modules/python/options/py_25_32.png"));
+        return ImageUtilities.loadImageIcon("org/netbeans/modules/python/options/py_25_32.png", false);
     }
 
     public String getCategoryName() {

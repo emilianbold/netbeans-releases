@@ -37,7 +37,6 @@ public interface TreeItemInfoProvider {
     Icon getIcon(TreeItem treeItem);
     String getToolTipText(TreeItem treeItem);
     
-    Icon UNKNOWN_IMAGE = new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/soa/ui/tree/UNKNOWN_ICON.png"));
+    Icon UNKNOWN_IMAGE = ImageUtilities.loadImageIcon("org/netbeans/modules/soa/ui/tree/UNKNOWN_ICON.png", false);
     
 }

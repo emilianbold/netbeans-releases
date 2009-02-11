@@ -92,7 +92,7 @@ public final class NavigationHistoryForwardAction extends TextAction implements 
                 "NavigationHistoryForwardAction_Tooltip", actionName)); //NOI18N
             this.popupMenu = null;
         } else if (component != null) {
-            putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/editor/resources/navigate_forward_16.png"))); //NOI18N
+            putValue(SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/editor/resources/navigate_forward_16.png", false)); //NOI18N
             this.popupMenu = new JPopupMenu();
             update();
             NavigationHistory nav = NavigationHistory.getNavigations();

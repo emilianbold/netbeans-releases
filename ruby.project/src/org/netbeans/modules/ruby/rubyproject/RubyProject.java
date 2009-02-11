@@ -74,7 +74,7 @@ import org.openide.util.lookup.Lookups;
  */
 public final class RubyProject extends RubyBaseProject {
     
-    private static final Icon RUBY_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/ruby/rubyproject/ui/resources/jruby.png")); // NOI18N
+    private static final Icon RUBY_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/ruby/rubyproject/ui/resources/jruby.png", false); // NOI18N
 
     private SourceRoots sourceRoots;
     private SourceRoots testRoots;

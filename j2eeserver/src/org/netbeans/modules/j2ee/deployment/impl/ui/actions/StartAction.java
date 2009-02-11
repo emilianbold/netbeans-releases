@@ -143,8 +143,7 @@ public class StartAction extends NodeAction {
         private final ServerInstance instance;
         
         public OutputAction(ServerInstance instance) {
-            super(NbBundle.getMessage(StartAction.class, "LBL_StartOutput"),
-                  new ImageIcon(ImageUtilities.loadImage(ICON)));
+            super(NbBundle.getMessage(StartAction.class, "LBL_StartOutput"),ImageUtilities.loadImageIcon(ICON, false));
             putValue(SHORT_DESCRIPTION, NbBundle.getMessage(StartAction.class, "LBL_StartOutputDesc"));
             this.instance = instance;
             

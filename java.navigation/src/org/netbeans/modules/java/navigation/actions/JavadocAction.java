@@ -59,7 +59,7 @@ public class JavadocAction extends AbstractAction {
     
     public JavadocAction() {
         super(NbBundle.getMessage(JavadocAction.class, "CTL_JavadocAction"));
-        putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(JavadocTopComponent.ICON_PATH, true)));
+        putValue(SMALL_ICON, ImageUtilities.loadImageIcon(JavadocTopComponent.ICON_PATH, true));
     }
     
     public void actionPerformed(ActionEvent evt) {

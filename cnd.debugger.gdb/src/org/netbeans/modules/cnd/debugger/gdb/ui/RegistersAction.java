@@ -19,7 +19,7 @@ public class RegistersAction extends AbstractAction {
     public RegistersAction() {
         // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
         super(NbBundle.getMessage(RegistersAction.class, "CTL_RegistersAction"));
-        putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(RegistersTopComponent.ICON_PATH, true)));
+        putValue(SMALL_ICON, ImageUtilities.loadImageIcon(RegistersTopComponent.ICON_PATH, true));
     }
 
     public void actionPerformed(ActionEvent evt) {

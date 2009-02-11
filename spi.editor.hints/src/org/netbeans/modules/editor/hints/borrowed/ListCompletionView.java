@@ -70,7 +70,7 @@ public class ListCompletionView extends JList implements ListCellRenderer {
 
     private final HtmlRenderer.Renderer defaultRenderer = HtmlRenderer.createRenderer();
     private Font font;
-    private Icon icon = new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/editor/hints/resources/suggestion.gif")); // NOI18N
+    private Icon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/editor/hints/resources/suggestion.gif", false); // NOI18N
                 
     public ListCompletionView() {
         setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);

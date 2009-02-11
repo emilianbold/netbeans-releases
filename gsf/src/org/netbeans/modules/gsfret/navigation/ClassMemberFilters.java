@@ -170,22 +170,19 @@ public final class ClassMemberFilters {
         desc.addFilter(SHOW_FIELDS,
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowFields"),     //NOI18N
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowFieldsTip"),     //NOI18N
-                true,
-                new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/gsfret/navigation/resources/filterHideFields.gif")), //NOI18N
+                true, ImageUtilities.loadImageIcon("org/netbeans/modules/gsfret/navigation/resources/filterHideFields.gif", false), //NOI18N
                 null
         );
         desc.addFilter(SHOW_STATIC,
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowStatic"),     //NOI18N
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowStaticTip"),     //NOI18N
-                true,
-                new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/gsfret/navigation/resources/filterHideStatic.png")), //NOI18N
+                true, ImageUtilities.loadImageIcon("org/netbeans/modules/gsfret/navigation/resources/filterHideStatic.png", false), //NOI18N
                 null
         );
         desc.addFilter(SHOW_NON_PUBLIC,
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowNonPublic"),     //NOI18N
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowNonPublicTip"),     //NOI18N
-                true,
-                new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/gsfret/navigation/resources/filterHideNonPublic.png")), //NOI18N
+                true, ImageUtilities.loadImageIcon("org/netbeans/modules/gsfret/navigation/resources/filterHideNonPublic.png", false), //NOI18N
                 null
         );
         

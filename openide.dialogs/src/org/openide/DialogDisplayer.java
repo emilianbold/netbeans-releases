@@ -513,18 +513,15 @@ public abstract class DialogDisplayer {
             if (msg != null && msg.trim().length() > 0) {
                 switch (msgType) {
                     case StandardDialog.MSG_TYPE_ERROR:
-                        prepareMessage(dialog.notificationLine,
-                            new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/dialogs/error.gif")),
+                        prepareMessage(dialog.notificationLine, ImageUtilities.loadImageIcon("org/netbeans/modules/dialogs/error.gif", false),
                             dialog.nbErrorForeground);
                         break;
                     case StandardDialog.MSG_TYPE_WARNING:
-                        prepareMessage(dialog.notificationLine,
-                            new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/dialogs/warning.gif")),
+                        prepareMessage(dialog.notificationLine, ImageUtilities.loadImageIcon("org/netbeans/modules/dialogs/warning.gif", false),
                             dialog.nbWarningForeground);
                         break;
                     case StandardDialog.MSG_TYPE_INFO:
-                        prepareMessage(dialog.notificationLine,
-                            new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/dialogs/info.png")),
+                        prepareMessage(dialog.notificationLine, ImageUtilities.loadImageIcon("org/netbeans/modules/dialogs/info.png", false),
                             dialog.nbInfoForeground);
                         break;
                     default:

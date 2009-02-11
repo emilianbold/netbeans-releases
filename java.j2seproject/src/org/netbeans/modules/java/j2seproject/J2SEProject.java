@@ -141,7 +141,7 @@ import org.w3c.dom.NodeList;
  */
 public final class J2SEProject implements Project, AntProjectListener {
     
-    private static final Icon J2SE_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png")); // NOI18N
+    private static final Icon J2SE_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png", false); // NOI18N
     private static final Logger LOG = Logger.getLogger(J2SEProject.class.getName());
 
     private final AuxiliaryConfiguration aux;

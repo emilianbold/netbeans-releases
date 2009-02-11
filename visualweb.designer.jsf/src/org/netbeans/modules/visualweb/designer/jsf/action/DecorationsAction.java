@@ -77,7 +77,7 @@ public class DecorationsAction extends AbstractAction implements Presenter.Toolb
     public DecorationsAction() {
         putValue(NAME, NbBundle.getMessage(DecorationsAction.class, "LBL_DecorationsActionName"));
         putValue(SHORT_DESCRIPTION, NbBundle.getMessage(DecorationsAction.class, "LBL_DecorationsAction"));
-        putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/visualweb/designer/resources/decorations.png"))); // NOI18N
+        putValue(SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/visualweb/designer/resources/decorations.png", false)); // NOI18N
 
         DecorationManager decorationManager = DecorationManager.getDefault();
         decorationManager.addPropertyChangeListener(WeakListeners.propertyChange(decorationManagerListener, decorationManager));

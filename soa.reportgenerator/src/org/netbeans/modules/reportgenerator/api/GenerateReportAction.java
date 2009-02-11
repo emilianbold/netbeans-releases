@@ -30,8 +30,7 @@ public class GenerateReportAction extends AbstractAction {
 
     public static final String ACCELERATOR = "alt shift F10"; // NOI18N
     
-    private static final Icon icon = new ImageIcon(ImageUtilities.loadImage(
-    "org/netbeans/modules/reportgenerator/api/impl/resources/images/generateReport.png")); 
+    private static final Icon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/reportgenerator/api/impl/resources/images/generateReport.png", false); 
     
     private static final String label = NbBundle.getMessage(
     GenerateReportAction.class,"NAME_Generate_Report");

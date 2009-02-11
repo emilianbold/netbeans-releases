@@ -56,7 +56,7 @@ public class PHPOptionsCategory extends OptionsCategory{
     
     @Override
     public Icon getIcon() {
-        return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/php/project/ui/resources/php-options-icon.png")); // NOI18N
+        return ImageUtilities.loadImageIcon("org/netbeans/modules/php/project/ui/resources/php-options-icon.png", false); // NOI18N
     }
 
     @Override

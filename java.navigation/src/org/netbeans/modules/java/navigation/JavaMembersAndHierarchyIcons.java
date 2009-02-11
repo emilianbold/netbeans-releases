@@ -55,20 +55,15 @@ import javax.swing.ImageIcon;
  * @author Sandip Chitale (Sandip.Chitale@Sun.Com)
  */
 final class JavaMembersAndHierarchyIcons {
-    public static final Icon INHERITED_ICON = new ImageIcon(ImageUtilities.loadImage(
-                "org/netbeans/modules/java/navigation/resources/filterHideInherited.png")); // NOI18N
+    public static final Icon INHERITED_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/filterHideInherited.png", false); // NOI18N
     
-    public static final Icon SUPER_TYPE_HIERARCHY_ICON = new ImageIcon(ImageUtilities.loadImage(
-                "org/netbeans/modules/java/navigation/resources/supertypehierarchy.gif")); // NOI18N
+    public static final Icon SUPER_TYPE_HIERARCHY_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/supertypehierarchy.gif", false); // NOI18N
 
-    public static final Icon SUB_TYPE_HIERARCHY_ICON = new ImageIcon(ImageUtilities.loadImage(
-                "org/netbeans/modules/java/navigation/resources/subtypehierarchy.gif")); // NOI18N
+    public static final Icon SUB_TYPE_HIERARCHY_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/subtypehierarchy.gif", false); // NOI18N
 
-    public static final Icon EXPAND_ALL_ICON = new ImageIcon(ImageUtilities.loadImage(
-                "org/netbeans/modules/java/navigation/resources/expandall.gif")); // NOI18N
+    public static final Icon EXPAND_ALL_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/expandall.gif", false); // NOI18N
     
-    public static final Icon FQN_ICON = new ImageIcon(ImageUtilities.loadImage(
-                "org/netbeans/modules/java/navigation/resources/fqn.gif")); // NOI18N
+    public static final Icon FQN_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/fqn.gif", false); // NOI18N
     
     public static final Icon CLASS_ICON = ElementIcons.getElementIcon(ElementKind.CLASS,
             EnumSet.of(Modifier.PUBLIC));
@@ -90,14 +85,9 @@ final class JavaMembersAndHierarchyIcons {
             EnumSet.of(Modifier.PUBLIC));
     public static final Icon ENUM_CONSTANTS_ICON = ElementIcons.getElementIcon(ElementKind.ENUM_CONSTANT,
             EnumSet.of(Modifier.PUBLIC));
-    public static final Icon PACKAGE_ICON = new ImageIcon(ImageUtilities.loadImage(
-                "org/netbeans/modules/java/navigation/resources/package.gif")); // NOI18N
-    public static final Icon PRIVATE_ICON = new ImageIcon(ImageUtilities.loadImage(
-                "org/netbeans/modules/java/navigation/resources/private.gif")); // NOI18N
-    public static final Icon PROTECTED_ICON = new ImageIcon(ImageUtilities.loadImage(
-                "org/netbeans/modules/java/navigation/resources/protected.gif")); // NOI18N
-    public static final Icon PUBLIC_ICON = new ImageIcon(ImageUtilities.loadImage(
-                "org/netbeans/modules/java/navigation/resources/public.gif")); // NOI18N
-    public static final Icon STATIC_ICON = new ImageIcon(ImageUtilities.loadImage(
-                "org/netbeans/modules/java/navigation/resources/static.gif")); // NOI18N
+    public static final Icon PACKAGE_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/package.gif", false); // NOI18N
+    public static final Icon PRIVATE_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/private.gif", false); // NOI18N
+    public static final Icon PROTECTED_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/protected.gif", false); // NOI18N
+    public static final Icon PUBLIC_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/public.gif", false); // NOI18N
+    public static final Icon STATIC_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/static.gif", false); // NOI18N
 }

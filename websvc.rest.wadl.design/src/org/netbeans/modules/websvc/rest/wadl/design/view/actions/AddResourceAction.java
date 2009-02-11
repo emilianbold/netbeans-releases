@@ -77,8 +77,7 @@ public class AddResourceAction extends AbstractAction implements Node.Cookie {
      */
     public AddResourceAction(Object parent, WadlModel model) {
         super(getName());
-        putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage
-            ("org/netbeans/modules/websvc/rest/wadl/design/view/resources/resource.png")));
+        putValue(SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/websvc/rest/wadl/design/view/resources/resource.png", false));
         putValue(SHORT_DESCRIPTION, NbBundle.getMessage(AddResourceAction.class, "Hint_AddResource"));
         putValue(MNEMONIC_KEY, Integer.valueOf(NbBundle.getMessage(AddResourceAction.class, "LBL_AddResource_mnem_pos")));
         this.parent=parent;

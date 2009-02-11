@@ -183,12 +183,12 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         
         initComponents();
     
-        resumeIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/debugger/jpda/resources/resume_button_16.png"));
-        focusedResumeIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/resume_button_focused_16.png"));
-        pressedResumeIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/resume_button_pressed_16.png"));
-        suspendIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/suspend_button_16.png"));
-        focusedSuspendIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/suspend_button_focused_16.png"));
-        pressedSuspendIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/suspend_button_pressed_16.png"));
+        resumeIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/resume_button_16.png", false);
+        focusedResumeIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/resume_button_focused_16.png", false);
+        pressedResumeIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/resume_button_pressed_16.png", false);
+        suspendIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/suspend_button_16.png", false);
+        focusedSuspendIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/suspend_button_focused_16.png", false);
+        pressedSuspendIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/suspend_button_pressed_16.png", false);
         
         setBackground(treeBackgroundColor);
         

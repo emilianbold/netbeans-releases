@@ -67,7 +67,7 @@ public class JSFResultItem {
 
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(ImageUtilities.loadImage(BEAN_PATH));
+            return ImageUtilities.loadImageIcon(BEAN_PATH, false);
         }
     }
 
@@ -81,7 +81,7 @@ public class JSFResultItem {
 
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(ImageUtilities.loadImage(METHOD_PATH));
+            return ImageUtilities.loadImageIcon(METHOD_PATH, false);
         }
     }
 
@@ -99,7 +99,7 @@ public class JSFResultItem {
 
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(ImageUtilities.loadImage(BUNDLE_ICON_PATH));
+            return ImageUtilities.loadImageIcon(BUNDLE_ICON_PATH, false);
         }
     }
 
@@ -113,7 +113,7 @@ public class JSFResultItem {
 
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(ImageUtilities.loadImage(BUNDLE_ICON_PATH));
+            return ImageUtilities.loadImageIcon(BUNDLE_ICON_PATH, false);
         }
     }
 }

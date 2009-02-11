@@ -274,7 +274,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         @Override
         public ImageIcon getIcon() {
             if (groovyIcon == null) {
-                groovyIcon = new ImageIcon(ImageUtilities.loadImage(GroovySources.GROOVY_FILE_ICON_16x16));
+                groovyIcon = ImageUtilities.loadImageIcon(GroovySources.GROOVY_FILE_ICON_16x16, false);
             }
 
             return groovyIcon;
@@ -362,7 +362,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         @Override
         public ImageIcon getIcon() {
             if (groovyIcon == null) {
-                groovyIcon = new ImageIcon(ImageUtilities.loadImage(GroovySources.GROOVY_FILE_ICON_16x16));
+                groovyIcon = ImageUtilities.loadImageIcon(GroovySources.GROOVY_FILE_ICON_16x16, false);
             }
 
             return groovyIcon;
@@ -483,7 +483,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
             }
 
             if (groovyIcon == null) {
-                groovyIcon = new ImageIcon(ImageUtilities.loadImage(GroovySources.GROOVY_FILE_ICON_16x16));
+                groovyIcon = ImageUtilities.loadImageIcon(GroovySources.GROOVY_FILE_ICON_16x16, false);
             }
 
             return groovyIcon;
@@ -557,12 +557,12 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
             if (isGroovy) {
                 if (groovyIcon == null) {
-                    groovyIcon = new ImageIcon(ImageUtilities.loadImage(GroovySources.GROOVY_FILE_ICON_16x16));
+                    groovyIcon = ImageUtilities.loadImageIcon(GroovySources.GROOVY_FILE_ICON_16x16, false);
                 }
                 return groovyIcon;
             } else {
                 if (javaIcon == null) {
-                    javaIcon = new ImageIcon(ImageUtilities.loadImage(JAVA_KEYWORD));
+                    javaIcon = ImageUtilities.loadImageIcon(JAVA_KEYWORD, false);
                 }
                 return javaIcon;
             }
@@ -716,7 +716,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         public ImageIcon getIcon() {
 
             if (newConstructorIcon == null) {
-                newConstructorIcon = new ImageIcon(ImageUtilities.loadImage(NEW_CSTR));
+                newConstructorIcon = ImageUtilities.loadImageIcon(NEW_CSTR, false);
             }
             return newConstructorIcon;
         }

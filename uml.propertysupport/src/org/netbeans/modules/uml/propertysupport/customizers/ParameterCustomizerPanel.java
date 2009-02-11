@@ -822,8 +822,7 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
         if (text != null) {
             messageArea.setText(text);
             if (text.trim().length() > 0) {
-                errorIcon = new ImageIcon(
-                  ImageUtilities.loadImage("org/netbeans/modules/uml/resources/images/error.png"));
+                errorIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/uml/resources/images/error.png", false);
             }
             iconLabel.setIcon(errorIcon); // NOI18N
         }

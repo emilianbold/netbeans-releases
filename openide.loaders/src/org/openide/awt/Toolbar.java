@@ -440,7 +440,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                         }
                         if (null == a.getValue(Action.SMALL_ICON)
                             && (null == a.getValue(Action.NAME) || a.getValue(Action.NAME).toString().length() == 0)) {
-                            a.putValue(Action.SMALL_ICON, new ImageIcon( ImageUtilities.loadImage( "org/openide/loaders/unknown.gif") ));
+                            a.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/openide/loaders/unknown.gif", false));
                         }
                         org.openide.awt.Actions.connect(b, a);
                         b.putClientProperty("file", file);
@@ -563,7 +563,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             Icon retValue = super.getIcon();
             if( null == retValue && (null == getText() || getText().length() == 0 ) ) {
                 if (unknownIcon == null) {
-                    unknownIcon = new ImageIcon( ImageUtilities.loadImage( "org/openide/loaders/unknown.gif") ); //NOI18N
+                    unknownIcon = ImageUtilities.loadImageIcon("org/openide/loaders/unknown.gif", false); //NOI18N
                 }
                 retValue = unknownIcon;
             }

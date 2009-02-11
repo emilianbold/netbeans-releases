@@ -83,8 +83,8 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
     public static final PropertyValue NULL_VALUE = PropertyValue.createNull();
     public static final String NULL_TEXT = NbBundle.getMessage(PropertyEditorUserCode.class, "LBL_STRING_NULL"); // NOI18N
     public static final String USER_CODE_TEXT = NbBundle.getMessage(PropertyEditorUserCode.class, "LBL_STRING_USER_CODE"); // NOI18N
-    private static final Icon ICON_WARNING = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/vmd/midp/resources/warning.gif")); // NOI18N
-    private static final Icon ICON_ERROR = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/vmd/midp/resources/error.gif")); // NOI18N
+    private static final Icon ICON_WARNING = ImageUtilities.loadImageIcon("org/netbeans/modules/vmd/midp/resources/warning.gif", false); // NOI18N
+    private static final Icon ICON_ERROR = ImageUtilities.loadImageIcon("org/netbeans/modules/vmd/midp/resources/error.gif", false); // NOI18N
     private CustomEditor customEditor;
     private JRadioButton userCodeRadioButton;
     private JLabel messageLabel;

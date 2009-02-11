@@ -113,7 +113,7 @@ public final class PythonStructureItem extends AstElement implements StructureIt
         if (kind == ElementKind.CLASS && getModifiers().contains(Modifier.PRIVATE)) {
             // GSF doesn't automatically handle icons on private classes, so I have to
             // work around that here
-            return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/python/editor/resources/private-class.png")); //NOI18N
+            return ImageUtilities.loadImageIcon("org/netbeans/modules/python/editor/resources/private-class.png", false); //NOI18N
         }
 
         return null;

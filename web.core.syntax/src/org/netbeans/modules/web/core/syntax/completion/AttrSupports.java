@@ -390,7 +390,7 @@ public class AttrSupports {
     /** Support for code completing of package and class. */
     public static class FilenameSupport extends AttributeValueSupport.Default {
         static final ImageIcon PACKAGE_ICON =
-                new ImageIcon(ImageUtilities.loadImage("org/openide/loaders/defaultFolder.gif")); // NOI18N
+                ImageUtilities.loadImageIcon("org/openide/loaders/defaultFolder.gif", false); // NOI18N
       
         public FilenameSupport(boolean tag, String longName, String attrName) {
             super(tag, longName, attrName);

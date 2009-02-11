@@ -75,7 +75,7 @@ public class SelectImageForLayerDialog extends javax.swing.JPanel implements Act
 	
 	public static final boolean DEBUG = false;
 
-	private static final Icon ICON_ERROR = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/vmd/midp/resources/error.gif")); // NOI18N
+	private static final Icon ICON_ERROR = ImageUtilities.loadImageIcon("org/netbeans/modules/vmd/midp/resources/error.gif", false); // NOI18N
 	
 	private String path;
 	private Collection<FileObject> images;

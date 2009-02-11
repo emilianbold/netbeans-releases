@@ -88,7 +88,7 @@ import org.w3c.dom.Text;
  */
 public class XsltproProject implements Project, AntProjectListener {
     
-    private static final Icon PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage(XSLT_PROJECT_ICON)); // NOI18N
+    private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon(XSLT_PROJECT_ICON, false); // NOI18N
     public static final String SOURCES_TYPE_XSLTPRO = "BIZPRO";
     public static final String ARTIFACT_TYPE_JBI_ASA = "CAPS.asa";
     

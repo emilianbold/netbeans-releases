@@ -106,10 +106,7 @@ public final class StatisticsPanel extends JPanel implements ItemListener {
     /**
      */
     private void createFilterButton() {
-        btnFilter = new JToggleButton(new ImageIcon(
-                ImageUtilities.loadImage(
-                    "org/netbeans/modules/junit/output/res/filter.png", //NOI18N
-                    true)));
+        btnFilter = new JToggleButton(ImageUtilities.loadImageIcon("org/netbeans/modules/junit/output/res/filter.png", true));
         btnFilter.getAccessibleContext().setAccessibleName(
                 NbBundle.getMessage(getClass(), "ACSN_FilterButton"));  //NOI18N
         btnFilter.addItemListener(this);

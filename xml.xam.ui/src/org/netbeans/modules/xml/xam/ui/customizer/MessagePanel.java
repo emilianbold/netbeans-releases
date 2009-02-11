@@ -100,12 +100,10 @@ public class MessagePanel extends javax.swing.JPanel implements MessageDisplayer
 		{
 			case ERROR:
                                 messageLabel.setForeground(Color.RED);
-				messageLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(
-						"org/netbeans/modules/xml/xam/ui/resources/error.gif"))); // NOI18N
+				messageLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/xml/xam/ui/resources/error.gif", false)); // NOI18N
 				break;
 			case WARNING:
-				messageLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(
-						"org/netbeans/modules/xml/xam/ui/resources/warning.gif"))); // NOI18N
+				messageLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/xml/xam/ui/resources/warning.gif", false)); // NOI18N
 				break;
 			case INFO:
 			default:

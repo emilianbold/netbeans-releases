@@ -98,7 +98,7 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
                 onNext();
             }
         };
-        nextAction.putValue(Action.SMALL_ICON, new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/editable/diff-next.png"))); // NOI18N
+        nextAction.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/diff/builtin/visualizer/editable/diff-next.png", false)); // NOI18N
         bNext.setAction(nextAction);
             
         prevAction = new AbstractAction() {
@@ -106,7 +106,7 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
                 onPrev();
             }
         };
-        prevAction.putValue(Action.SMALL_ICON, new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/editable/diff-prev.png"))); // NOI18N
+        prevAction.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/diff/builtin/visualizer/editable/diff-prev.png", false)); // NOI18N
         bPrevious.setAction(prevAction);
         
         getActionMap().put("jumpNext", nextAction);  // NOI18N

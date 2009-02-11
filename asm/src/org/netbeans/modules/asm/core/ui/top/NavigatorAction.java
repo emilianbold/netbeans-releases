@@ -56,7 +56,7 @@ public class NavigatorAction extends AbstractAction {
     
     public NavigatorAction() {
         super(NbBundle.getMessage(NavigatorAction.class, "CTL_NavigatorAction"));
-        putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(NavigatorTopComponent.ICON_PATH, true)));
+        putValue(SMALL_ICON, ImageUtilities.loadImageIcon(NavigatorTopComponent.ICON_PATH, true));
     }
     
     public void actionPerformed(ActionEvent evt) {

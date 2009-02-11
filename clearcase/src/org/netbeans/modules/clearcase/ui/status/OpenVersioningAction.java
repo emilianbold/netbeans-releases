@@ -56,7 +56,7 @@ public class OpenVersioningAction extends SystemAction {
 
     public OpenVersioningAction() {
         putValue("noIconInMenu", Boolean.FALSE); // NOI18N
-        setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/clearcase/resources/icons/versioning-view.png"))); // NOI18N
+        setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/clearcase/resources/icons/versioning-view.png", false)); // NOI18N
     }
 
 

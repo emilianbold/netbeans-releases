@@ -78,8 +78,7 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar {
     public DebugMainProjectAction() {
         delegate = MainProjectSensitiveActions.mainProjectCommandAction(
                 ActionProvider.COMMAND_DEBUG,
-                NbBundle.getMessage(DebugMainProjectAction.class, "LBL_DebugMainProjectAction_Name" ),
-                new ImageIcon(ImageUtilities.loadImage( "org/netbeans/modules/debugger/resources/debugProject.png" ))); // NOI18N
+                NbBundle.getMessage(DebugMainProjectAction.class, "LBL_DebugMainProjectAction_Name" ),ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/resources/debugProject.png", false)); // NOI18N
         delegate.putValue("iconBase","org/netbeans/modules/debugger/resources/debugProject.png"); //NOI18N
     }
     

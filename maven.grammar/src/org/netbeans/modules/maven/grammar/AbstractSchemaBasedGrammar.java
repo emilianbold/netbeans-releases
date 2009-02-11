@@ -467,7 +467,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
         
         MyElement(String name) {
             this.name = name;
-            setIcon(ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/grammar/element.png"))); //NOI18N
+            setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/grammar/element.png", false)); //NOI18N
         }
         
         public short getNodeType() {
@@ -494,7 +494,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
         MyTextElement(String name, String prefix) {
             this.name = name;
             this.prefix = prefix;
-            setIcon(ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/grammar/value.png"))); //NOI18N
+            setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/grammar/value.png", false)); //NOI18N
         }
         
         public short getNodeType() {

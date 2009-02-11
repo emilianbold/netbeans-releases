@@ -100,8 +100,7 @@ public final class MessageUtils {
          */
         ERROR  {
             protected Icon getIcon() {
-                return new ImageIcon(ImageUtilities.loadImage(
-                        "org/netbeans/modules/j2ee/common/project/ui/resources/error.gif")); // NOI18N
+                return ImageUtilities.loadImageIcon("org/netbeans/modules/j2ee/common/project/ui/resources/error.gif", false); // NOI18N
             }
 
             protected Color getColor() {
@@ -118,8 +117,7 @@ public final class MessageUtils {
          */
         WARNING {
             protected Icon getIcon() {
-                return new ImageIcon(ImageUtilities.loadImage(
-                        "org/netbeans/modules/j2ee/common/project/ui/resources/warning.gif")); // NOI18N
+                return ImageUtilities.loadImageIcon("org/netbeans/modules/j2ee/common/project/ui/resources/warning.gif", false); // NOI18N
             }
 
             protected Color getColor() {

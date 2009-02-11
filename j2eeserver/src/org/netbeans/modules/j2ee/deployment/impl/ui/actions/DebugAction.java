@@ -143,8 +143,7 @@ public class DebugAction extends NodeAction {
         private final ServerInstance instance;
         
         public OutputAction(ServerInstance instance) {
-            super(NbBundle.getMessage(DebugAction.class, "LBL_DebugOutput"),
-                  new ImageIcon(ImageUtilities.loadImage(ICON)));
+            super(NbBundle.getMessage(DebugAction.class, "LBL_DebugOutput"),ImageUtilities.loadImageIcon(ICON, false));
             putValue(SHORT_DESCRIPTION, NbBundle.getMessage(DebugAction.class, "LBL_DebugOutputDesc"));
             this.instance = instance;
             

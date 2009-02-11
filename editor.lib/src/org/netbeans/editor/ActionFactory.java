@@ -1158,8 +1158,7 @@ public class ActionFactory {
 
         public ToggleHighlightSearchAction() {
             super(BaseKit.toggleHighlightSearchAction, CLEAR_STATUS_TEXT);
-            putValue(Action.SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(
-                "org/netbeans/modules/editor/resources/toggle_highlight.png"))); // NOI18N
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/editor/resources/toggle_highlight.png", false)); // NOI18N
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {

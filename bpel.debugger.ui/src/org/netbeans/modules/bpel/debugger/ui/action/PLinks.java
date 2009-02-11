@@ -40,8 +40,7 @@ public class PLinks extends AbstractAction {
       // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
       putValue(NAME, NbBundle.getMessage(
               PLinks.class, "LBL_PLinksView")); // NOI18N
-      putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(
-              PLinksNodeModel.PARTNER_LINK_ICON + ".gif"))); // NOI18N
+      putValue(SMALL_ICON, ImageUtilities.loadImageIcon(PLinksNodeModel.PARTNER_LINK_ICON + ".gif", false)); // NOI18N
     }
     
     public void actionPerformed(ActionEvent e) {

@@ -81,13 +81,13 @@ public final class ProjectProperties {
     private static String RESOURCE_ICON_CLASSPATH = "org/netbeans/modules/java/api/common/project/ui/resources/referencedClasspath.gif"; //NOI18N
         
         
-    public static ImageIcon ICON_JAR = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_JAR ) );
-    public static ImageIcon ICON_LIBRARY = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_LIBRARY ) );
-    public static ImageIcon ICON_ARTIFACT  = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_ARTIFACT ) );
-    public static ImageIcon ICON_BROKEN_BADGE  = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_BROKEN_BADGE ) );
-    public static ImageIcon ICON_JAVADOC_BADGE  = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_JAVADOC_BADGE ) );
-    public static ImageIcon ICON_SOURCE_BADGE  = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_SOURCE_BADGE ) );
-    public static ImageIcon ICON_CLASSPATH  = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_CLASSPATH ) );
+    public static ImageIcon ICON_JAR = ImageUtilities.loadImageIcon(RESOURCE_ICON_JAR, false);
+    public static ImageIcon ICON_LIBRARY = ImageUtilities.loadImageIcon(RESOURCE_ICON_LIBRARY, false);
+    public static ImageIcon ICON_ARTIFACT  = ImageUtilities.loadImageIcon(RESOURCE_ICON_ARTIFACT, false);
+    public static ImageIcon ICON_BROKEN_BADGE  = ImageUtilities.loadImageIcon(RESOURCE_ICON_BROKEN_BADGE, false);
+    public static ImageIcon ICON_JAVADOC_BADGE  = ImageUtilities.loadImageIcon(RESOURCE_ICON_JAVADOC_BADGE, false);
+    public static ImageIcon ICON_SOURCE_BADGE  = ImageUtilities.loadImageIcon(RESOURCE_ICON_SOURCE_BADGE, false);
+    public static ImageIcon ICON_CLASSPATH  = ImageUtilities.loadImageIcon(RESOURCE_ICON_CLASSPATH, false);
 
     public static final String INCLUDES = "includes"; // NOI18N
     public static final String EXCLUDES = "excludes"; // NOI18N

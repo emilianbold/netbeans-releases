@@ -416,7 +416,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         protected ImageIcon getIcon(){
-            if (icon == null) icon = new ImageIcon(ImageUtilities.loadImage(JAVA_KEYWORD));
+            if (icon == null) icon = ImageUtilities.loadImageIcon(JAVA_KEYWORD, false);
             return icon;            
         }
         
@@ -541,7 +541,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         protected ImageIcon getIcon(){
-            if (icon == null) icon = new ImageIcon(ImageUtilities.loadImage(PACKAGE));
+            if (icon == null) icon = ImageUtilities.loadImageIcon(PACKAGE, false);
             return icon;            
         }
         
@@ -623,7 +623,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         protected ImageIcon getIcon(){
-            if (icon == null) icon = new ImageIcon(ImageUtilities.loadImage(CLASS));
+            if (icon == null) icon = ImageUtilities.loadImageIcon(CLASS, false);
             return icon;            
         }
 
@@ -876,7 +876,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         protected ImageIcon getIcon(){
-            if (icon == null) icon = new ImageIcon(ImageUtilities.loadImage(INTERFACE));
+            if (icon == null) icon = ImageUtilities.loadImageIcon(INTERFACE, false);
             return icon;            
         }
         
@@ -895,7 +895,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         protected ImageIcon getIcon(){
-            if (icon == null) icon = new ImageIcon(ImageUtilities.loadImage(ENUM));
+            if (icon == null) icon = ImageUtilities.loadImageIcon(ENUM, false);
             return icon;            
         }
     }
@@ -910,7 +910,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         protected ImageIcon getIcon(){
-            if (icon == null) icon = new ImageIcon(ImageUtilities.loadImage(ANNOTATION));
+            if (icon == null) icon = ImageUtilities.loadImageIcon(ANNOTATION, false);
             return icon;            
         }
     }
@@ -994,7 +994,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         protected ImageIcon getIcon(){
-            if (icon == null) icon = new ImageIcon(ImageUtilities.loadImage(LOCAL_VARIABLE));
+            if (icon == null) icon = ImageUtilities.loadImageIcon(LOCAL_VARIABLE, false);
             return icon;            
         }
 
@@ -1123,7 +1123,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         break;
                 }
             }
-            ImageIcon newIcon = new ImageIcon(ImageUtilities.loadImage(iconPath));
+            ImageIcon newIcon = ImageUtilities.loadImageIcon(iconPath, false);
             icon[isStatic?1:0][level] = newIcon;
             return newIcon;            
         }
@@ -1306,7 +1306,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         break;
                 }
             }
-            ImageIcon newIcon = new ImageIcon(ImageUtilities.loadImage(iconPath));
+            ImageIcon newIcon = ImageUtilities.loadImageIcon(iconPath, false);
             icon[isStatic?1:0][level] = newIcon;
             return newIcon;            
         }
@@ -1464,8 +1464,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String OVERRIDE_TEXT = NbBundle.getMessage(JavaCompletionItem.class, "override_Lbl");
         private static final String IMPLEMENT_TEXT = NbBundle.getMessage(JavaCompletionItem.class, "implement_Lbl");
         
-        private static ImageIcon implementBadge = new ImageIcon(ImageUtilities.loadImage(IMPL_BADGE_PATH));
-        private static ImageIcon overrideBadge = new ImageIcon(ImageUtilities.loadImage(OVRD_BADGE_PATH));
+        private static ImageIcon implementBadge = ImageUtilities.loadImageIcon(IMPL_BADGE_PATH, false);
+        private static ImageIcon overrideBadge = ImageUtilities.loadImageIcon(OVRD_BADGE_PATH, false);
         private static ImageIcon merged_icon[][] = new ImageIcon[2][4];
         
         
@@ -1650,13 +1650,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
         protected ImageIcon getIcon() {
             if (merged_icons[setter ? 1 : 0] == null) {
                 if (superIcon == null)
-                    superIcon = new ImageIcon(ImageUtilities.loadImage(METHOD_PUBLIC));
+                    superIcon = ImageUtilities.loadImageIcon(METHOD_PUBLIC, false);
                 if (setter) {
-                    ImageIcon setterBadge = new ImageIcon(ImageUtilities.loadImage(SETTER_BADGE_PATH));
+                    ImageIcon setterBadge = ImageUtilities.loadImageIcon(SETTER_BADGE_PATH, false);
                     merged_icons[1] = new ImageIcon(ImageUtilities.mergeImages(superIcon.getImage(),
                             setterBadge.getImage(), 16 - 8, 16 - 8));
                 } else {
-                    ImageIcon getterBadge = new ImageIcon(ImageUtilities.loadImage(GETTER_BADGE_PATH));
+                    ImageIcon getterBadge = ImageUtilities.loadImageIcon(GETTER_BADGE_PATH, false);
                     merged_icons[0] = new ImageIcon(ImageUtilities.mergeImages(superIcon.getImage(),
                             getterBadge.getImage(), 16 - 8, 16 - 8));
                 }
@@ -1864,7 +1864,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     iconPath = CONSTRUCTOR_PUBLIC;
                     break;
             }
-            ImageIcon newIcon = new ImageIcon(ImageUtilities.loadImage(iconPath));
+            ImageIcon newIcon = ImageUtilities.loadImageIcon(iconPath, false);
             icon[level] = newIcon;
             return newIcon;            
         }
@@ -2070,7 +2070,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }        
 
         protected ImageIcon getIcon() {
-            if (icon == null) icon = new ImageIcon(ImageUtilities.loadImage(CONSTRUCTOR));
+            if (icon == null) icon = ImageUtilities.loadImageIcon(CONSTRUCTOR, false);
             return icon;            
         }
 
@@ -2503,7 +2503,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         protected ImageIcon getIcon(){
-            if (icon == null) icon = new ImageIcon(ImageUtilities.loadImage(ATTRIBUTE));
+            if (icon == null) icon = ImageUtilities.loadImageIcon(ATTRIBUTE, false);
             return icon;            
         }
         
@@ -2698,7 +2698,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
             if (iconPath == null)
                 return null;
-            ImageIcon newIcon = new ImageIcon(ImageUtilities.loadImage(iconPath));
+            ImageIcon newIcon = ImageUtilities.loadImageIcon(iconPath, false);
             icon[isField ? 0 : 1][level - 1] = newIcon;
             return newIcon;            
         }
@@ -2944,7 +2944,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         
         protected ImageIcon getIcon() {
             if (icon == null) 
-                icon = new ImageIcon(ImageUtilities.loadImage(CONSTRUCTOR_PUBLIC));
+                icon = ImageUtilities.loadImageIcon(CONSTRUCTOR_PUBLIC, false);
             return icon;            
         }
         

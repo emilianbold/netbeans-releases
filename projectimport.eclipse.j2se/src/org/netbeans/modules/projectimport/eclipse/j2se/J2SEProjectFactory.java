@@ -73,7 +73,7 @@ import org.w3c.dom.NodeList;
 public class J2SEProjectFactory implements ProjectTypeUpdater {
 
     private static final String JAVA_NATURE = "org.eclipse.jdt.core.javanature"; // NOI18N
-    private static final Icon J2SE_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png")); // NOI18N
+    private static final Icon J2SE_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png", false); // NOI18N
 
     public J2SEProjectFactory() {
     }

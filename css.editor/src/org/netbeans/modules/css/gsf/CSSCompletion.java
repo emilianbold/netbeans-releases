@@ -757,12 +757,12 @@ public class CSSCompletion implements CodeCompletionHandler {
         public ImageIcon getIcon() {
             if (kind == CompletionItemKind.PROPERTY) {
                 if (propertyIcon == null) {
-                    propertyIcon = new ImageIcon(ImageUtilities.loadImage(CSS_PROPERTY));
+                    propertyIcon = ImageUtilities.loadImageIcon(CSS_PROPERTY, false);
                 }
                 return propertyIcon;
             } else if (kind == CompletionItemKind.VALUE) {
                 if (valueIcon == null) {
-                    valueIcon = new ImageIcon(ImageUtilities.loadImage(CSS_VALUE));
+                    valueIcon = ImageUtilities.loadImageIcon(CSS_VALUE, false);
                 }
                 return valueIcon;
             }

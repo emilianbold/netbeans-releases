@@ -92,7 +92,7 @@ public abstract class SortActionSupport extends AbstractAction implements Presen
         public SortByNameAction ( ClassMemberFilters filters) {
             super(filters);
             putValue(Action.NAME, NbBundle.getMessage(SortByNameAction.class, "LBL_SortByName")); //NOI18N
-            putValue(Action.SMALL_ICON, new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/java/navigation/resources/sortAlpha.png"))); //NOI18N
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/sortAlpha.png", false)); //NOI18N
         }
     
         public void actionPerformed (ActionEvent e) {
@@ -113,7 +113,7 @@ public abstract class SortActionSupport extends AbstractAction implements Presen
         public SortBySourceAction ( ClassMemberFilters filters ) {
             super(filters);
             putValue(Action.NAME, NbBundle.getMessage(SortBySourceAction.class, "LBL_SortBySource")); //NOI18N
-            putValue(Action.SMALL_ICON, new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/java/navigation/resources/sortPosition.png"))); //NOI18N
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/sortPosition.png", false)); //NOI18N
         }
     
         public void actionPerformed (ActionEvent e) {
