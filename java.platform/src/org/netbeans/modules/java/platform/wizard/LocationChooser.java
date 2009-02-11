@@ -348,8 +348,8 @@ public class LocationChooser extends JFileChooser implements PropertyChangeListe
     
     private static class PlatformFileView extends FileView {
         
-        private static final Icon BADGE = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/java/platform/resources/platformBadge.gif")); // NOI18N
-        private static final Icon EMPTY = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/java/platform/resources/empty.gif")); // NOI18N
+        private static final Icon BADGE = ImageUtilities.loadImageIcon("org/netbeans/modules/java/platform/resources/platformBadge.gif", false); // NOI18N
+        private static final Icon EMPTY = ImageUtilities.loadImageIcon("org/netbeans/modules/java/platform/resources/empty.gif", false); // NOI18N
         
         private FileSystemView fsv;
         private Icon lastOriginal;

@@ -126,8 +126,7 @@ public final class NbModuleProject implements Project {
     public static final String NB_PROJECT_ICON_PATH =
             "org/netbeans/modules/apisupport/project/resources/module.png"; // NOI18N
     
-    private static final Icon NB_PROJECT_ICON = new ImageIcon(
-            ImageUtilities.loadImage(NB_PROJECT_ICON_PATH));
+    private static final Icon NB_PROJECT_ICON = ImageUtilities.loadImageIcon(NB_PROJECT_ICON_PATH, false);
     
     public static final String SOURCES_TYPE_JAVAHELP = "javahelp"; // NOI18N
     static final String[] COMMON_TEST_TYPES = {"unit", "qa-functional"}; // NOI18N

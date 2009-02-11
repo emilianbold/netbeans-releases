@@ -107,6 +107,7 @@ import org.netbeans.modules.ruby.elements.AstNameElement;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 
 /**
  * @todo Rewrite various other helper classes to use the scanned structure
@@ -1564,7 +1565,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
         public ImageIcon getCustomIcon() {
             if (keywordIcon == null) {
-                keywordIcon = new ImageIcon(org.openide.util.ImageUtilities.loadImage(RUBY_KEYWORD));
+                keywordIcon = ImageUtilities.loadImageIcon(RUBY_KEYWORD, false);
             }
             
             return keywordIcon;

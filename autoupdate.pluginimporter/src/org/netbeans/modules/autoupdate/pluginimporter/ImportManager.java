@@ -158,7 +158,7 @@ public class ImportManager extends java.awt.Panel {
     }
 
     private void attachRealFlashingIcon (final JPanel p) {
-        ImageIcon img = new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/autoupdate/pluginimporter/resources/import.png", false)); // NOI18N
+        ImageIcon img = ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/pluginimporter/resources/import.png", false); // NOI18N
         final JButton bRemindLaterButton = new JButton ();
         final JButton bImportButton = new JButton ();
         final JButton bNoButton = new JButton ();
@@ -200,7 +200,7 @@ public class ImportManager extends java.awt.Panel {
         JPanel panel = new JPanel (new GridBagLayout ());
         panel.setOpaque (false);
         JLabel top = new JLabel (msg);
-        top.setIcon (new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/autoupdate/ui/resources/info_icon.png"))); //NOI18N
+        top.setIcon (ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/info_icon.png", false)); //NOI18N
         top.setIconTextGap (10);
         panel.add (top, new GridBagConstraints (0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.NORTHWEST,
                 GridBagConstraints.NONE, new Insets (6, 0, 0, 0), 0, 0));

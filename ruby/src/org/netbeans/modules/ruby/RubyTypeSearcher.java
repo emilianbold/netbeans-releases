@@ -49,7 +49,6 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.jruby.nb.ast.Node;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.Index;
@@ -70,6 +69,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -321,7 +321,7 @@ public class RubyTypeSearcher implements IndexSearcher {
                 initProjectInfo();
             }
             if (isLibrary) {
-                return new ImageIcon(org.openide.util.ImageUtilities.loadImage(RUBY_KEYWORD));
+                return ImageUtilities.loadImageIcon(RUBY_KEYWORD, false);
             }
             return projectIcon;
         }

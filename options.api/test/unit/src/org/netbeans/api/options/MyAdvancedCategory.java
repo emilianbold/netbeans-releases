@@ -51,7 +51,7 @@ public final class MyAdvancedCategory extends OptionsCategory {
     
     @Override
     public Icon getIcon() {
-        return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/options/resources/advanced.png"));
+        return ImageUtilities.loadImageIcon("org/netbeans/modules/options/resources/advanced.png", false);
     }
 
     public String getCategoryName() {

@@ -125,10 +125,7 @@ final class StatisticsPanel extends JPanel implements ItemListener {
     }
     
     private void createRerunButton() {
-        rerunButton = new JButton(new ImageIcon(
-                ImageUtilities.loadImage(
-                    "org/netbeans/modules/gsf/testrunner/resources/rerun.png", //NOI18N
-                    true)));
+        rerunButton = new JButton(ImageUtilities.loadImageIcon("org/netbeans/modules/gsf/testrunner/resources/rerun.png", true));
         rerunButton.getAccessibleContext().setAccessibleName(
                 NbBundle.getMessage(getClass(), "ACSN_RerunButton"));  //NOI18N
 
@@ -155,10 +152,7 @@ final class StatisticsPanel extends JPanel implements ItemListener {
     /**
      */
     private void createFilterButton() {
-        btnFilter = new JToggleButton(new ImageIcon(
-                ImageUtilities.loadImage(
-                    "org/netbeans/modules/gsf/testrunner/resources/filter.png", //NOI18N
-                    true)));
+        btnFilter = new JToggleButton(ImageUtilities.loadImageIcon("org/netbeans/modules/gsf/testrunner/resources/filter.png", true));
         btnFilter.getAccessibleContext().setAccessibleName(
                 NbBundle.getMessage(getClass(), "ACSN_FilterButton"));  //NOI18N
         btnFilter.addItemListener(this);
@@ -182,10 +176,7 @@ final class StatisticsPanel extends JPanel implements ItemListener {
     }
     
     private void createNextPrevFailureButtons() {
-        nextFailure = new JButton(new ImageIcon(
-                ImageUtilities.loadImage(
-                    "org/netbeans/modules/gsf/testrunner/resources/nextmatch.png", //NOI18N
-                    true)));
+        nextFailure = new JButton(ImageUtilities.loadImageIcon("org/netbeans/modules/gsf/testrunner/resources/nextmatch.png", true));
         nextFailure.setToolTipText(NbBundle.getMessage(StatisticsPanel.class, "MSG_NextFailure"));
         nextFailure.addActionListener(new ActionListener() {
 
@@ -194,10 +185,7 @@ final class StatisticsPanel extends JPanel implements ItemListener {
             }
         });
 
-        previousFailure = new JButton(new ImageIcon(
-                ImageUtilities.loadImage(
-                    "org/netbeans/modules/gsf/testrunner/resources/prevmatch.png", //NOI18N
-                    true)));
+        previousFailure = new JButton(ImageUtilities.loadImageIcon("org/netbeans/modules/gsf/testrunner/resources/prevmatch.png", true));
 
         previousFailure.setToolTipText(NbBundle.getMessage(StatisticsPanel.class, "MSG_PreviousFailure"));
         previousFailure.addActionListener(new ActionListener() {

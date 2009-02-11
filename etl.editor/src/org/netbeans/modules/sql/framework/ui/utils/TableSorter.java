@@ -102,8 +102,8 @@ public final class TableSorter extends AbstractTableModel {
         }
     };
 
-    private final Icon ICON_ASCENDING = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/sql/framework/ui/resources/images/columnsSortedAsc.gif", true)); // NOI18N
-    private final Icon ICON_DESCENDING = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/sql/framework/ui/resources/images/columnsSortedDesc.gif", true)); // NOI18N
+    private final Icon ICON_ASCENDING = ImageUtilities.loadImageIcon("org/netbeans/modules/sql/framework/ui/resources/images/columnsSortedAsc.gif", true); // NOI18N
+    private final Icon ICON_DESCENDING = ImageUtilities.loadImageIcon("org/netbeans/modules/sql/framework/ui/resources/images/columnsSortedDesc.gif", true); // NOI18N
     
     private Row[] viewToModel;
     private int[] modelToView;

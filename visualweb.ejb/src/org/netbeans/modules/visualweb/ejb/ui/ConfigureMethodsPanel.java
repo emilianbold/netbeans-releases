@@ -97,12 +97,12 @@ public class ConfigureMethodsPanel extends JPanel{
                     MethodInfo method = ((EjbGroupTreeNodes.MethodNode)value).getMethod();
                     if( method.getReturnType().isCollection() && method.getReturnType().getElemClassName() == null )
                         // Show the warning icon to indicate to the user that extra info needed
-                        setIcon( new ImageIcon( ImageUtilities.loadImage("org/netbeans/modules/visualweb/ejb/resources/warning.png") ) );
+                        setIcon( ImageUtilities.loadImageIcon("org/netbeans/modules/visualweb/ejb/resources/warning.png", false));
                     else
-                        setIcon( new ImageIcon( ImageUtilities.loadImage("org/netbeans/modules/visualweb/ejb/resources/methodPublic.gif") ) );
+                        setIcon( ImageUtilities.loadImageIcon("org/netbeans/modules/visualweb/ejb/resources/methodPublic.gif", false));
                 } else {
                     // Must be session ejb node
-                    setIcon( new ImageIcon( ImageUtilities.loadImage("org/netbeans/modules/visualweb/ejb/resources/session_bean.png" ) ) );
+                    setIcon( ImageUtilities.loadImageIcon("org/netbeans/modules/visualweb/ejb/resources/session_bean.png", false));
                 }
             
                 return this;

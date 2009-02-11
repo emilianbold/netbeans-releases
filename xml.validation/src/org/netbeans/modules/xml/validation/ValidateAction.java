@@ -70,8 +70,7 @@ public class ValidateAction extends AbstractAction {
     private static final long serialVersionUID = 1L;
     
     public static final String ACCELERATOR = "alt shift F9"; // NOI18N
-    private static final Icon icon = new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/xml/validation/resources/validation.png")); 
+    private static final Icon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/xml/validation/resources/validation.png", false); 
     private static final String label = NbBundle.getMessage(
             ValidateAction.class,"NAME_Validate_XML");
     private Model model;

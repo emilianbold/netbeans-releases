@@ -61,7 +61,7 @@ public abstract class AbstractOutputAction extends AbstractAction implements Cha
 
     public AbstractOutputAction(final GlassfishModule commonSupport, 
             String localizedName, String localizedShortDesc, String iconBase) {
-        super(localizedName, new ImageIcon(ImageUtilities.loadImage(iconBase)));
+        super(localizedName, ImageUtilities.loadImageIcon(iconBase, false));
         putValue(SHORT_DESCRIPTION, localizedShortDesc);
         this.commonSupport = commonSupport;
 

@@ -58,7 +58,7 @@ public final class FileCommandAction extends ProjectAction {
     private String presenterName;
         
     public FileCommandAction( String command, String namePattern, String iconResource, Lookup lookup ) {
-        this( command, namePattern, new ImageIcon( ImageUtilities.loadImage( iconResource ) ), lookup );
+        this( command, namePattern, ImageUtilities.loadImageIcon(iconResource, false), lookup );
     }
     
     public FileCommandAction( String command, String namePattern, Icon icon, Lookup lookup ) {

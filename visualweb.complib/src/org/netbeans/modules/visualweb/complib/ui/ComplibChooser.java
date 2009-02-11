@@ -246,7 +246,7 @@ class ComplibChooser extends javax.swing.JPanel implements HelpCtx.Provider {
             String iconPath = ComplibChooser.class.getPackage().getName()
                     .replace('.', '/')
                     + "/images/library.png";
-            icon = new ImageIcon(ImageUtilities.loadImage(iconPath));
+            icon = ImageUtilities.loadImageIcon(iconPath, false);
         }
 
         public Component getListCellRendererComponent(JList list, Object value,

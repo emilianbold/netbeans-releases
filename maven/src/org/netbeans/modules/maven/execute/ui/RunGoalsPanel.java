@@ -79,8 +79,8 @@ public class RunGoalsPanel extends javax.swing.JPanel {
     public RunGoalsPanel() {
         initComponents();
         historyMappings = new ArrayList<NetbeansActionMapping>();
-        btnPrev.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/maven/execute/back.png"))); //NOI18N
-        btnNext.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/maven/execute/forward.png"))); //NOI18N
+        btnPrev.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/execute/back.png", false)); //NOI18N
+        btnNext.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/execute/forward.png", false)); //NOI18N
 
         goalcompleter = new TextValueCompleter(new ArrayList<String>(0), txtGoals, " "); //NOI18N
         goalcompleter.setLoading(true);

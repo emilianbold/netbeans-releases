@@ -90,7 +90,7 @@ public class BundleNodeCustomizer extends JPanel {
 
     /** Utility method. Gets icon for key item in key list. */    
     private static Icon getLocaleIcon() {
-        return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/properties/propertiesLocale.gif")); // NOI18N
+        return ImageUtilities.loadImageIcon("org/netbeans/modules/properties/propertiesLocale.gif", false); // NOI18N
     }
     
     /** Retrieves entry locales. Utility method.

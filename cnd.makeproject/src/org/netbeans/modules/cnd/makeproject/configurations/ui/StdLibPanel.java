@@ -73,7 +73,7 @@ public class StdLibPanel extends javax.swing.JPanel {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 	    JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 	    LibraryItem libraryItem = (LibraryItem)value;
-	    label.setIcon(new ImageIcon(ImageUtilities.loadImage(libraryItem.getIconName())));
+	    label.setIcon(ImageUtilities.loadImageIcon(libraryItem.getIconName(), false));
 	    label.setToolTipText(libraryItem.getToolTip());
             return label;
         }

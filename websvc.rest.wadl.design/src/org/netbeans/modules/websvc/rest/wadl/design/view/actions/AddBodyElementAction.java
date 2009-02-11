@@ -78,8 +78,7 @@ public class AddBodyElementAction<T extends WadlComponent> extends AbstractActio
     public AddBodyElementAction(ParamStyle type, T parent, WadlModel model) {
         super(NbBundle.getMessage(AddBodyElementAction.class, "LBL_AddBodyElement", 
                 getType(parent instanceof Response)));
-        putValue(SMALL_ICON, new ImageIcon(
-                ImageUtilities.loadImage("org/netbeans/modules/websvc/rest/wadl/design/view/resources/method.png")));
+        putValue(SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/websvc/rest/wadl/design/view/resources/method.png", false));
         putValue(SHORT_DESCRIPTION, NbBundle.getMessage(AddBodyElementAction.class, 
                 "Hint_AddBodyElement", getType(parent instanceof Response)));
         putValue(MNEMONIC_KEY, Integer.valueOf(NbBundle.getMessage(AddBodyElementAction.class, 

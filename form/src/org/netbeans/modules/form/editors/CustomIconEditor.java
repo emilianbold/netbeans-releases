@@ -92,7 +92,7 @@ public class CustomIconEditor extends javax.swing.JPanel {
     private boolean ignoreNull;
     private boolean ignoreCombo;
 
-    private Icon packageIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/form/resources/package.gif")); // NOI18N
+    private Icon packageIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/form/resources/package.gif", false); // NOI18N
 
     public CustomIconEditor(IconEditor prEd) {
         propertyEditor = prEd;

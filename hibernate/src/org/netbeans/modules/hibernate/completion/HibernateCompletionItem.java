@@ -317,7 +317,7 @@ public abstract class HibernateCompletionItem implements CompletionItem {
         @Override
         protected ImageIcon getIcon() {
 
-            return new ImageIcon(ImageUtilities.loadImage(FIELD_ICON));
+            return ImageUtilities.loadImageIcon(FIELD_ICON, false);
         }
 
         @Override
@@ -457,7 +457,7 @@ public abstract class HibernateCompletionItem implements CompletionItem {
 
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(ImageUtilities.loadImage(CLASS));
+            return ImageUtilities.loadImageIcon(CLASS, false);
         }
 
         @Override
@@ -544,7 +544,7 @@ public abstract class HibernateCompletionItem implements CompletionItem {
         @Override
         protected ImageIcon getIcon() {
             if (icon == null) {
-                icon = new ImageIcon(ImageUtilities.loadImage(PACKAGE));
+                icon = ImageUtilities.loadImageIcon(PACKAGE, false);
             }
             return icon;
         }
@@ -649,7 +649,7 @@ public abstract class HibernateCompletionItem implements CompletionItem {
 
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(ImageUtilities.loadImage(TABLE_ICON));
+            return ImageUtilities.loadImageIcon(TABLE_ICON, false);
         }
     }
 
@@ -694,9 +694,9 @@ public abstract class HibernateCompletionItem implements CompletionItem {
         @Override
         protected ImageIcon getIcon() {
             if (pk) {
-                return new ImageIcon(ImageUtilities.loadImage(PK_COLUMN_ICON));
+                return ImageUtilities.loadImageIcon(PK_COLUMN_ICON, false);
             } else {
-                return new ImageIcon(ImageUtilities.loadImage(COLUMN_ICON));
+                return ImageUtilities.loadImageIcon(COLUMN_ICON, false);
             }
         }
     }
@@ -796,7 +796,7 @@ public abstract class HibernateCompletionItem implements CompletionItem {
 
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(ImageUtilities.loadImage(HB_MAPPING_ICON));
+            return ImageUtilities.loadImageIcon(HB_MAPPING_ICON, false);
         }
     }
 

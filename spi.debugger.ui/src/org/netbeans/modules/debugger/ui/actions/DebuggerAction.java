@@ -279,8 +279,7 @@ public class DebuggerAction extends AbstractAction {
     public static Action createDebugFileAction() {
         Action a = FileSensitiveActions.fileCommandAction(
             "debug.single", // XXX Define standard
-            NbBundle.getMessage(DebuggerAction.class, "LBL_DebugSingleAction_Name"), // NOI18N
-            new ImageIcon( ImageUtilities.loadImage( "org/netbeans/modules/debugger/resources/debugSingle.png" ) )); //NOI18N
+            NbBundle.getMessage(DebuggerAction.class, "LBL_DebugSingleAction_Name"),ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/resources/debugSingle.png", false)); //NOI18N
         a.putValue("iconBase","org/netbeans/modules/debugger/resources/debugSingle.png"); //NOI18N
         a.putValue("noIconInMenu", Boolean.TRUE); //NOI18N
         return a;
@@ -289,8 +288,7 @@ public class DebuggerAction extends AbstractAction {
     public static Action createDebugTestFileAction()  {
         Action a = FileSensitiveActions.fileCommandAction(
             "debug.test.single", // XXX Define standard
-            NbBundle.getMessage(DebuggerAction.class, "LBL_DebugTestSingleAction_Name" ),// NOI18N
-            new ImageIcon( ImageUtilities.loadImage( "org/netbeans/modules/debugger/resources/debugTestSingle.png" ) )); //NOI18N
+            NbBundle.getMessage(DebuggerAction.class, "LBL_DebugTestSingleAction_Name" ),ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/resources/debugTestSingle.png", false)); //NOI18N
         a.putValue("iconBase","org/netbeans/modules/debugger/resources/debugTestSingle.png"); //NOI18N
         a.putValue("noIconInMenu", Boolean.TRUE); //NOI18N
         return a;

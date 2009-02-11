@@ -74,7 +74,7 @@ import org.w3c.dom.Text;
  */
 public final class IcanproProject implements Project, AntProjectListener {
 
-    private static final Icon PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/compapp/projects/base/ui/resources/icanproProjectIcon.gif")); // NOI18N
+    private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/compapp/projects/base/ui/resources/icanproProjectIcon.gif", false); // NOI18N
     public static final String SOURCES_TYPE_ICANPRO = "BIZPRO";
 
     private final AntProjectHelper helper;

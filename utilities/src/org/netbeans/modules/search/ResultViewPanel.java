@@ -180,21 +180,18 @@ class ResultViewPanel extends JPanel{
 
         //Toolbar
         toolBar = new JToolBar(SwingConstants.VERTICAL);
-        btnDisplayContext.setIcon(new ImageIcon(ImageUtilities.loadImage(
-                "org/netbeans/modules/search/res/context.gif", true))); //NOI18N
+        btnDisplayContext.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/search/res/context.gif", true)); //NOI18N
         btnDisplayContext.setToolTipText(
                 NbBundle.getMessage(getClass(), "TOOLTIP_ShowContext"));//NOI18N
         btnDisplayContext.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(getClass(), "ACSD_ShowContext"));   //NOI18N
         btnDisplayContext.setSelected(SHOW_CONTEXT_BY_DEFAULT);
         btnPrev = new JButton();
-        btnPrev.setIcon(new ImageIcon(ImageUtilities.loadImage(
-                "org/netbeans/modules/search/res/prev.png", true)));    //NOI18N
+        btnPrev.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/search/res/prev.png", true));    //NOI18N
         btnPrev.setToolTipText(
                 NbBundle.getMessage(getClass(), "TEXT_BUTTON_PREV_MATCH"));//NOI18N);
         btnNext = new JButton();
-        btnNext.setIcon(new ImageIcon(ImageUtilities.loadImage(
-                "org/netbeans/modules/search/res/next.png", true)));    //NOI18N
+        btnNext.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/search/res/next.png", true));    //NOI18N
         btnNext.setToolTipText(
                 NbBundle.getMessage(getClass(), "TEXT_BUTTON_NEXT_MATCH"));//NOI18N);
 

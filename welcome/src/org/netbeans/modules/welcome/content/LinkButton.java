@@ -70,7 +70,7 @@ public abstract class LinkButton extends JButton
 
     private boolean underline = false;
 
-    final ImageIcon BULLET_ICON = new ImageIcon( ImageUtilities.loadImage( BULLET_IMAGE ) );
+    final ImageIcon BULLET_ICON = ImageUtilities.loadImageIcon(BULLET_IMAGE, false);
 
     public LinkButton( String label, boolean showBullet ) {
         super( label );

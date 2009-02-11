@@ -391,8 +391,8 @@ public class ImportCDCProjectPanel extends javax.swing.JPanel implements Documen
     private static class ProjectFileView extends FileView {
 
         final private FileSystemView fsv;
-        private static final Icon BADGE = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/j2me/cdc/project/resources/projectBadge.gif")); // NOI18N
-        private static final Icon EMPTY = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/project/ui/resources/empty.gif")); // NOI18N
+        private static final Icon BADGE = ImageUtilities.loadImageIcon("org/netbeans/modules/j2me/cdc/project/resources/projectBadge.gif", false); // NOI18N
+        private static final Icon EMPTY = ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/empty.gif", false); // NOI18N
         private Icon lastOriginal;
         private Icon lastMerged;
         

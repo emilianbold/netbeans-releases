@@ -115,7 +115,7 @@ public class BluejSources implements Sources {
         }
 
         public Icon getIcon(boolean b) {
-            return new ImageIcon(ImageUtilities.loadImage("/org/netbeans/bluej/resources/bluejproject.png"));   // NOI18N
+            return ImageUtilities.loadImageIcon("/org/netbeans/bluej/resources/bluejproject.png", false);   // NOI18N
         }
 
         public boolean contains(FileObject fileObject) throws IllegalArgumentException {

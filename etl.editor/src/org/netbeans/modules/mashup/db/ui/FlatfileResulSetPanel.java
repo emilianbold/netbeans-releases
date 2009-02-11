@@ -206,7 +206,7 @@ public class FlatfileResulSetPanel extends JPanel implements ActionListener, Pro
     public static Icon getDbIcon() {
         Icon icon = null;
         try {
-            icon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/mashup/db/ui/resource/images/root.png"));
+            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/mashup/db/ui/resource/images/root.png", false);
         } catch (Exception ex) {
             // Log exception
         }

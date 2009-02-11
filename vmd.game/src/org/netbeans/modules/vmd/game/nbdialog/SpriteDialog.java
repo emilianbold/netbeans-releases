@@ -98,8 +98,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 	
     private GlobalRepository gameDesign;
 	
-    private static final Icon ICON_ERROR = new ImageIcon(
-            ImageUtilities.loadImage("org/netbeans/modules/vmd/midp/resources/error.gif")); // NOI18N
+    private static final Icon ICON_ERROR = ImageUtilities.loadImageIcon("org/netbeans/modules/vmd/midp/resources/error.gif", false); // NOI18N
 	
     private static final int DEFAULT_FRAMES = 5;
     private static final int DEFAULT_TILE_WIDTH = 18;

@@ -217,7 +217,7 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
         constraints.fill = GridBagConstraints.BOTH;
         add(createUCAwarePanel(component), constraints);
 
-        icon = new ImageIcon(ImageUtilities.loadImage(element.getIconPath()));
+        icon = ImageUtilities.loadImageIcon(element.getIconPath(), false);
         componentsList.addFocusListener(new FocusListener() {
 
             public void focusGained(FocusEvent e) {

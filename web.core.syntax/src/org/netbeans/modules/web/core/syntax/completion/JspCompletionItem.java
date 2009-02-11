@@ -921,10 +921,10 @@ public class JspCompletionItem implements CompletionItem {
             ImageIcon icon = null;
             switch (type) {
                 case ELImplicitObjects.OBJECT_TYPE:
-                    icon = new ImageIcon(ImageUtilities.loadImage(OBJECT_PATH));
+                    icon = ImageUtilities.loadImageIcon(OBJECT_PATH, false);
                     break;
                 case ELImplicitObjects.MAP_TYPE:
-                    icon = new ImageIcon(ImageUtilities.loadImage(MAP_PATH));
+                    icon = ImageUtilities.loadImageIcon(MAP_PATH, false);
                     break;
             }
             return icon;
@@ -982,7 +982,7 @@ public class JspCompletionItem implements CompletionItem {
 
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(ImageUtilities.loadImage(BEAN_PATH));
+            return ImageUtilities.loadImageIcon(BEAN_PATH, false);
         }
     }
 
@@ -1002,7 +1002,7 @@ public class JspCompletionItem implements CompletionItem {
 
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(ImageUtilities.loadImage(PROPERTY_PATH));
+            return ImageUtilities.loadImageIcon(PROPERTY_PATH, false);
         }
     }
 
@@ -1037,7 +1037,7 @@ public class JspCompletionItem implements CompletionItem {
 
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(ImageUtilities.loadImage(ICON_PATH));
+            return ImageUtilities.loadImageIcon(ICON_PATH, false);
         }
 
         @Override

@@ -145,8 +145,7 @@ public abstract class AbstractXMLNavigatorContent extends javax.swing.JPanel
     public void showWaitPanel() {
         removeAll();
         if (waitIcon == null) {
-            waitIcon = new ImageIcon( ImageUtilities.loadImage(
-            "org/netbeans/modules/xml/text/navigator/resources/wait.gif" ) ); //NOI18N
+            waitIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/xml/text/navigator/resources/wait.gif", false); //NOI18N
         }
         msgLabel.setIcon(waitIcon);
         msgLabel.setHorizontalAlignment(SwingConstants.LEFT);

@@ -69,7 +69,7 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
     /** Creates new form ConvertPanel */
     public ConvertPanel() {
         initComponents();
-        ImageIcon warningMessage = new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/vmd/midp/resources/warning.gif"));
+        ImageIcon warningMessage = ImageUtilities.loadImageIcon("org/netbeans/modules/vmd/midp/resources/warning.gif", false);
         finishIcon.setIcon (warningMessage); // NOI18N
         message.setIcon (warningMessage); // NOI18N
         startButton.setDefaultCapable(true);

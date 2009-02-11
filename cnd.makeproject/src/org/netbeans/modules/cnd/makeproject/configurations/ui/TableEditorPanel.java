@@ -238,7 +238,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
             Object element = listData.elementAt(row);
             if (!(element instanceof LibraryItem)) {
                 // FIXUP ERROR!
-                label.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/resources/blank.gif"))); // NOI18N
+                label.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/resources/blank.gif", false)); // NOI18N
                 label.setToolTipText("unknown"); // NOI18N
                 return label;
             }

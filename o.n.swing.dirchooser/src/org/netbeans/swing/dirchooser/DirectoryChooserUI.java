@@ -595,7 +595,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         // on Mac all icons from UIManager are the same, some default, so load our own.
         // it's also fallback if icon from UIManager not found, may happen
         if (isMac || upFolderIcon == null) {
-            upFolderIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/swing/dirchooser/resources/upFolderIcon.gif"));
+            upFolderIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/dirchooser/resources/upFolderIcon.gif", false);
         }
         upFolderButton.setIcon(upFolderIcon);
         upFolderButton.setToolTipText(upFolderToolTipText);
@@ -618,7 +618,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 homeIcon = UIManager.getIcon("FileChooser.homeFolderIcon");
             }
             if (isMac || homeIcon == null) {
-                homeIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/swing/dirchooser/resources/homeIcon.gif"));
+                homeIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/dirchooser/resources/homeIcon.gif", false);
             }
             homeButton.setIcon(homeIcon);
             homeButton.setText(null);
@@ -646,7 +646,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         // on Mac all icons from UIManager are the same, some default, so load our own.
         // it's also fallback if icon from UIManager not found, may happen
         if (isMac || newFolderIcon == null) {
-            newFolderIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/swing/dirchooser/resources/newFolderIcon.gif"));
+            newFolderIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/dirchooser/resources/newFolderIcon.gif", false);
         }
         newFolderButton.setIcon(newFolderIcon);
         newFolderButton.setToolTipText(newFolderToolTipText);

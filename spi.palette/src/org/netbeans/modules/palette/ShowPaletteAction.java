@@ -63,8 +63,7 @@ public class ShowPaletteAction extends AbstractAction {
 
     public ShowPaletteAction() {
         putValue(NAME, Utils.getBundleString("CTL_PaletteAction") );
-        putValue(SMALL_ICON, new ImageIcon(
-            ImageUtilities.loadImage("org/netbeans/modules/palette/resources/palette.png"))); // NOI18N
+        putValue(SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/palette/resources/palette.png", false)); // NOI18N
     }
 
 

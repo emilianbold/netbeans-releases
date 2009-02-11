@@ -172,7 +172,7 @@ public class PythonIndexSearcher implements IndexSearcher {
                 initProjectInfo();
             }
             if (isLibrary) {
-                return new ImageIcon(org.openide.util.ImageUtilities.loadImage(ICON_PATH));
+                return ImageUtilities.loadImageIcon(ICON_PATH, false);
             }
             return projectIcon;
         }

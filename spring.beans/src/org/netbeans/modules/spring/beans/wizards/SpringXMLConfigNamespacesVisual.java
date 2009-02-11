@@ -45,7 +45,6 @@ package org.netbeans.modules.spring.beans.wizards;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableColumn;
@@ -53,8 +52,8 @@ import javax.swing.table.TableModel;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.spring.api.SpringUtilities;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 public final class SpringXMLConfigNamespacesVisual extends JPanel {
 
@@ -151,7 +150,7 @@ public final class SpringXMLConfigNamespacesVisual extends JPanel {
             }
         });
 
-        springNotOnClassPathLabel.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/spring/beans/resources/warning.gif"))   );
+        springNotOnClassPathLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/spring/beans/resources/warning.gif", false));
         org.openide.awt.Mnemonics.setLocalizedText(springNotOnClassPathLabel, org.openide.util.NbBundle.getMessage(SpringXMLConfigNamespacesVisual.class, "LBL_SpringNotOnClassPath")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);

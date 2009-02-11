@@ -659,8 +659,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     
     private Image resizeHandle() {
         if (resizeHandle == null) {
-            resizeHandle = new ImageIcon(ImageUtilities.loadImage(
-                "org/netbeans/modules/form/resources/resize_handle.png")).getImage(); // NOI18N
+            resizeHandle = ImageUtilities.loadImageIcon("org/netbeans/modules/form/resources/resize_handle.png", false).getImage(); // NOI18N
         }
         return resizeHandle;
     }

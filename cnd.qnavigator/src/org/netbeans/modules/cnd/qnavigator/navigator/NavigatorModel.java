@@ -527,8 +527,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         private JRadioButtonMenuItem menuItem;
         public SortByNameAction() {
             putValue(Action.NAME, NbBundle.getMessage(NavigatorModel.class, "SortByNameText")); // NOI18N
-            putValue(Action.SMALL_ICON,
-                    new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/cnd/qnavigator/resources/sortAlpha.png"))); // NOI18N
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/qnavigator/resources/sortAlpha.png", false)); // NOI18N
             menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME));
             menuItem.setAction(this);
             //Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
@@ -555,8 +554,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         private JRadioButtonMenuItem menuItem;
         public SortBySourceAction() {
             putValue(Action.NAME, NbBundle.getMessage(NavigatorModel.class, "SortBySourceText")); // NOI18N
-            putValue(Action.SMALL_ICON, 
-                    new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/cnd/qnavigator/resources/sortPosition.png"))); // NOI18N
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/qnavigator/resources/sortPosition.png", false)); // NOI18N
             menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME));
             menuItem.setAction(this);
             //Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));

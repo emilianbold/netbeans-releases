@@ -2554,18 +2554,15 @@ public class WizardDescriptor extends DialogDescriptor {
             if (msg != null && msg.trim().length() > 0) {
                 switch (msgType) {
                     case MSG_TYPE_ERROR:
-                        prepareMessage(m_lblMessage,
-                            new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/dialogs/error.gif")),
+                        prepareMessage(m_lblMessage, ImageUtilities.loadImageIcon("org/netbeans/modules/dialogs/error.gif", false),
                             nbErrorForeground);
                         break;
                     case MSG_TYPE_WARNING:
-                        prepareMessage(m_lblMessage,
-                            new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/dialogs/warning.gif")),
+                        prepareMessage(m_lblMessage, ImageUtilities.loadImageIcon("org/netbeans/modules/dialogs/warning.gif", false),
                             nbWarningForeground);
                         break;
                     case MSG_TYPE_INFO:
-                        prepareMessage(m_lblMessage,
-                            new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/dialogs/info.png")),
+                        prepareMessage(m_lblMessage, ImageUtilities.loadImageIcon("org/netbeans/modules/dialogs/info.png", false),
                             nbInfoForeground);
                         break;
                     default:

@@ -280,7 +280,7 @@ public class YamlCompletion implements CodeCompletionHandler {
 
         public ImageIcon getIcon() {
             if (keywordIcon == null) {
-                keywordIcon = new ImageIcon(ImageUtilities.loadImage(YAML_KEYWORD));
+                keywordIcon = ImageUtilities.loadImageIcon(YAML_KEYWORD, false);
             }
 
             return keywordIcon;

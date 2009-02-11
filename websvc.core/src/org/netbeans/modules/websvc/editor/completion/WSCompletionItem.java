@@ -170,7 +170,7 @@ public abstract class WSCompletionItem  implements CompletionItem {
             this.displayPath = displayPath;
         }
         protected ImageIcon getIcon(){
-            if (icon == null) icon = new ImageIcon(ImageUtilities.loadImage(FILE_ICON));
+            if (icon == null) icon = ImageUtilities.loadImageIcon(FILE_ICON, false);
             return icon;      
         }
         protected String getLeftHtmlText() {
@@ -206,7 +206,7 @@ public abstract class WSCompletionItem  implements CompletionItem {
             this.itemType=itemType;
         }
         protected ImageIcon getIcon(){
-            if (icon == null) icon = new ImageIcon(ImageUtilities.loadImage(ENUM_ICON));
+            if (icon == null) icon = ImageUtilities.loadImageIcon(ENUM_ICON, false);
             return icon;
         }
         protected String getLeftHtmlText() {

@@ -66,9 +66,9 @@ import org.openide.util.Utilities;
  */
 public class RowSetSelectionQuery extends javax.swing.JPanel {
 
-    private static final ImageIcon closedIcon = new ImageIcon( ImageUtilities.loadImage("org/netbeans/modules/visualweb/dataconnectivity/resources/sqlClosed.gif") ) ;
-    private static final ImageIcon openIcon = new ImageIcon( ImageUtilities.loadImage("org/netbeans/modules/visualweb/dataconnectivity/resources/sqlOpened.gif") ) ;
-    private static final ImageIcon emptyIcon = new ImageIcon( ImageUtilities.loadImage("org/openide/resources/actions/empty.gif") ) ;
+    private static final ImageIcon closedIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/visualweb/dataconnectivity/resources/sqlClosed.gif", false) ;
+    private static final ImageIcon openIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/visualweb/dataconnectivity/resources/sqlOpened.gif", false) ;
+    private static final ImageIcon emptyIcon = ImageUtilities.loadImageIcon("org/openide/resources/actions/empty.gif", false) ;
     boolean expanded = false ;
     private static final Color bgColor = (new javax.swing.JLabel() ).getBackground() ;
 

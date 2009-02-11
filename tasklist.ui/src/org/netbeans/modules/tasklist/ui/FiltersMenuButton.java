@@ -72,8 +72,7 @@ public class FiltersMenuButton extends MenuToggleButton implements PropertyChang
     
     /** Creates a new instance of FiltersMenuButton */
     public FiltersMenuButton( TaskFilter currentFilter ) {
-        super( new ImageIcon( ImageUtilities.loadImage( "org/netbeans/modules/tasklist/ui/resources/filter.png" ) ),  //NOI18N
-                new ImageIcon( ImageUtilities.loadImage( "org/netbeans/modules/tasklist/ui/resources/filter_rollover.png" ) ), 4 );  //NOI18N
+        super( ImageUtilities.loadImageIcon("org/netbeans/modules/tasklist/ui/resources/filter.png", false), ImageUtilities.loadImageIcon("org/netbeans/modules/tasklist/ui/resources/filter_rollover.png", false), 4 );  //NOI18N
         taskManager = TaskManagerImpl.getInstance();
         
         updateState( currentFilter );

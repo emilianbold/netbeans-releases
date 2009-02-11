@@ -63,7 +63,7 @@ public class DocumentViewAction extends AbstractAction
    public DocumentViewAction()
    {
       putValue(Action.NAME, NbBundle.getMessage(DocumentViewAction.class, "Action.Doc.Title"));
-      putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/uml/documentation/ui/resources/DocPane.gif"))); // NOI18N
+      putValue(SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/uml/documentation/ui/resources/DocPane.gif", false)); // NOI18N
    }
 
    public static synchronized DocumentViewAction getInstance() {

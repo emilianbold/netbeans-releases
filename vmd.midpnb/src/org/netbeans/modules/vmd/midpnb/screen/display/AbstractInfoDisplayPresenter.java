@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
 public class AbstractInfoDisplayPresenter extends DisplayableDisplayPresenter {
 
     private static final String ICON_BROKEN_PATH = "org/netbeans/modules/vmd/midpnb/resources/broken-image.png"; // NOI18N
-    private static final Icon ICON_BROKEN = new ImageIcon(ImageUtilities.loadImage(ICON_BROKEN_PATH));
+    private static final Icon ICON_BROKEN = ImageUtilities.loadImageIcon(ICON_BROKEN_PATH, false);
     private JLabel imageLabel;
     private JLabel stringLabel;
     private ScreenFileObjectListener imageFileListener;

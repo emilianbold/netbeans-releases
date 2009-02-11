@@ -85,7 +85,7 @@ final class CallHierarchyTopComponent extends TopComponent implements ExplorerMa
         
         initComponents();
 
-        jBtnRefresh.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/refactoring/api/resources/refresh.png")));
+        jBtnRefresh.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/api/resources/refresh.png", false));
         
         ContextPanel ctxpanel = new ContextPanel();
         ctxpanel.setLayout(new java.awt.BorderLayout());

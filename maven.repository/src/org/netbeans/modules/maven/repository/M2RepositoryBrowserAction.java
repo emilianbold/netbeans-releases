@@ -55,7 +55,7 @@ public class M2RepositoryBrowserAction extends AbstractAction {
     
     public M2RepositoryBrowserAction() {
         super(NbBundle.getMessage(M2RepositoryBrowserAction.class, "CTL_M2RepositoryBrowserAction"));
-        putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(M2RepositoryBrowserTopComponent.ICON_PATH, true)));
+        putValue(SMALL_ICON, ImageUtilities.loadImageIcon(M2RepositoryBrowserTopComponent.ICON_PATH, true));
     }
     
     public void actionPerformed(ActionEvent evt) {

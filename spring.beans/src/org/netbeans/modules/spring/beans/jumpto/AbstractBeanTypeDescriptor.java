@@ -55,7 +55,7 @@ import org.openide.util.Utilities;
  */
 public abstract class AbstractBeanTypeDescriptor extends TypeDescriptor {
 
-    private static final Icon beanIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/spring/beans/resources/spring-bean.png")); // NOI18N
+    private static final Icon beanIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/spring/beans/resources/spring-bean.png", false); // NOI18N
     
     private final String simpleName;
     private final FileObject fileObject;

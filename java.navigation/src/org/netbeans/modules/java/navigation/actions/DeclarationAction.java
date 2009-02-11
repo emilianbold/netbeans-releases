@@ -60,7 +60,7 @@ public class DeclarationAction extends AbstractAction {
     
     public DeclarationAction() {
         super(NbBundle.getMessage(DeclarationAction.class, "CTL_DeclarationAction"));
-        putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(DeclarationTopComponent.ICON_PATH, true)));
+        putValue(SMALL_ICON, ImageUtilities.loadImageIcon(DeclarationTopComponent.ICON_PATH, true));
     }
     
     public void actionPerformed(ActionEvent evt) {

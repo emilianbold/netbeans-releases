@@ -107,7 +107,7 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
                 "NavigationHistoryBackAction_Tooltip", actionName)); //NOI18N
             this.popupMenu = null;
         } else if (component != null) {
-            putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/editor/resources/navigate_back_16.png"))); //NOI18N
+            putValue(SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/editor/resources/navigate_back_16.png", false)); //NOI18N
             this.popupMenu = new JPopupMenu();
             update();
             NavigationHistory nav = NavigationHistory.getNavigations();

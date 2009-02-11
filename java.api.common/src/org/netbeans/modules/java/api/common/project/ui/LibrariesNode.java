@@ -401,7 +401,7 @@ public final class LibrariesNode extends AbstractNode {
                     Library lib = refHelper.findLibrary(eval);
                     if (lib != null) {
                         List/*<URL>*/ roots = lib.getContent("classpath");  //NOI18N
-                        Icon libIcon = new ImageIcon (ImageUtilities.loadImage(LIBRARIES_ICON));
+                        Icon libIcon = ImageUtilities.loadImageIcon(LIBRARIES_ICON, false);
                         for (Iterator it = roots.iterator(); it.hasNext();) {
                             URL rootUrl = (URL) it.next();
                             rootsList.add (rootUrl);
@@ -475,7 +475,7 @@ public final class LibrariesNode extends AbstractNode {
                 URL url = file.toURI().toURL();
                 if (FileUtil.isArchiveFile(url)) {
                     url = FileUtil.getArchiveRoot(url);
-                    icon = openedIcon = new ImageIcon (ImageUtilities.loadImage(ARCHIVE_ICON));
+                    icon = openedIcon = ImageUtilities.loadImageIcon(ARCHIVE_ICON, false);
                     displayName = file.getName();
                 }
                 else {

@@ -131,7 +131,7 @@ public class FlowViewController implements DesignDocumentAwareness {
     }
 
     private JButton addToolbarButton (String imageResourceName, String toolTipText, ActionListener listener) {
-        final JButton button = new JButton (new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/vmd/flow/resources/" + imageResourceName + ".png"))); // NOI18N
+        final JButton button = new JButton (ImageUtilities.loadImageIcon("org/netbeans/modules/vmd/flow/resources/" + imageResourceName + ".png", false)); // NOI18N
         button.setOpaque (false);
         button.setToolTipText (toolTipText);
         button.setBorderPainted (false);

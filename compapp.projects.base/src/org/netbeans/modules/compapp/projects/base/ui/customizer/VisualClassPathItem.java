@@ -50,10 +50,10 @@ public class VisualClassPathItem {
     private static String RESOURCE_ICON_ARTIFACT = "org/netbeans/modules/compapp/projects/base/ui/resources/projectDependencies.gif"; //NOI18N
     private static String RESOURCE_ICON_CLASSPATH = "org/netbeans/modules/compapp/projects/base/ui/resources/j2seProject.gif"; //NOI18N
 
-    private static Icon ICON_JAR = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_JAR ) );
-    private static Icon ICON_LIBRARY = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_LIBRARY ) );
-    private static Icon ICON_ARTIFACT  = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_ARTIFACT ) );
-    private static Icon ICON_CLASSPATH  = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_CLASSPATH ) );
+    private static Icon ICON_JAR = ImageUtilities.loadImageIcon(RESOURCE_ICON_JAR, false);
+    private static Icon ICON_LIBRARY = ImageUtilities.loadImageIcon(RESOURCE_ICON_LIBRARY, false);
+    private static Icon ICON_ARTIFACT  = ImageUtilities.loadImageIcon(RESOURCE_ICON_ARTIFACT, false);
+    private static Icon ICON_CLASSPATH  = ImageUtilities.loadImageIcon(RESOURCE_ICON_CLASSPATH, false);
 
 
     private int type;

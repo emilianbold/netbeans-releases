@@ -104,7 +104,7 @@ public class EntityWizardPanel extends javax.swing.JPanel {
         createPUButton.setVisible(visible);
         Icon icon = null;
         if (warning != null) {
-            icon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/j2ee/persistence/ui/resources/warning.gif"));
+            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/j2ee/persistence/ui/resources/warning.gif", false);
         } else {
             warning = " ";
         }

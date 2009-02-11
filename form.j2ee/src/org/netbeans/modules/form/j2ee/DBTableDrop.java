@@ -117,8 +117,7 @@ public class DBTableDrop extends DBConnectionDrop {
             pItem = new PaletteItem(new ClassSource("javax.persistence.EntityManager", // NOI18N
                         new ClassSource.LibraryEntry(LibraryManager.getDefault().getLibrary("toplink"))), // NOI18N
                         null);
-            pItem.setIcon(new ImageIcon(
-                ImageUtilities.loadImage("org/netbeans/modules/form/j2ee/resources/binding.gif")).getImage()); // NOI18N
+            pItem.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/j2ee/resources/binding.gif", false).getImage()); // NOI18N
         } else {
             pItem = new PaletteItem(new ClassSource("javax.swing.JTable"), null); // NOI18N
         }
