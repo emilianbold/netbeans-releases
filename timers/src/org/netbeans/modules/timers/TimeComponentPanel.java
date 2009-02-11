@@ -74,7 +74,7 @@ import org.openide.util.NbBundle;
  * @author Jan Lahoda
  */
 public class TimeComponentPanel extends javax.swing.JPanel implements PropertyChangeListener {
-    private static final Logger LOG = Logger.getLogger(TimeComponentPanel.class.getName());
+    static final Logger LOG = Logger.getLogger(TimeComponentPanel.class.getName());
     
     /** Creates new form TimeComponentPanel */
     public TimeComponentPanel() {
