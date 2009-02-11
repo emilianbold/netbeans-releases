@@ -236,7 +236,7 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
         add(cbKeepPrefSize, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(cbSlidingNotAllowed, "&Sliding not allowed");
+        org.openide.awt.Mnemonics.setLocalizedText(cbSlidingNotAllowed, org.openide.util.NbBundle.getMessage(BasicSettingsPanel.class, "CTL_SlidingNotAllowed")); // NOI18N
         cbSlidingNotAllowed.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbSlidingNotAllowed.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -247,7 +247,7 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
         add(cbSlidingNotAllowed, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(cbClosingNotAllowed, "&Closing not allowed");
+        org.openide.awt.Mnemonics.setLocalizedText(cbClosingNotAllowed, org.openide.util.NbBundle.getMessage(BasicSettingsPanel.class, "CTL_ClosingNotAllowed")); // NOI18N
         cbClosingNotAllowed.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -257,7 +257,7 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
         add(cbClosingNotAllowed, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(cbUndockingNotAllowed, "&Undocking not allowed");
+        org.openide.awt.Mnemonics.setLocalizedText(cbUndockingNotAllowed, org.openide.util.NbBundle.getMessage(BasicSettingsPanel.class, "CTL_UndockingNotAllowed")); // NOI18N
         cbUndockingNotAllowed.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -267,7 +267,7 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
         add(cbUndockingNotAllowed, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(cbDraggingNotAllowed, "&Dragging not allowed");
+        org.openide.awt.Mnemonics.setLocalizedText(cbDraggingNotAllowed, org.openide.util.NbBundle.getMessage(BasicSettingsPanel.class, "CTL_DraggingNotAllowed")); // NOI18N
         cbDraggingNotAllowed.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -277,7 +277,7 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
         add(cbDraggingNotAllowed, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(cbMaximizationNotAllowed, "&Maximization not allowed");
+        org.openide.awt.Mnemonics.setLocalizedText(cbMaximizationNotAllowed, org.openide.util.NbBundle.getMessage(BasicSettingsPanel.class, "CTL_MaximizationNotAllowed")); // NOI18N
         cbMaximizationNotAllowed.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
