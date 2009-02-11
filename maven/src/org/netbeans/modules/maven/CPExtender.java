@@ -425,9 +425,10 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
 
     @Override
     protected boolean addProjects(final Project[] projects, SourceGroup sg, String classPathType) throws IOException, UnsupportedOperationException {
-        final Boolean[] added = new Boolean[1];
+        final Boolean[] added = new Boolean[2];
 
-        added[0] = projects.length > 0;
+        added[0] = false;
+        added[1] = false;
         String scope = ClassPath.EXECUTE.equals(classPathType) ? Artifact.SCOPE_RUNTIME : null;//NOI18N
         //figure if we deal with test or regular sources.
         String name = sg.getName();
@@ -437,23 +438,38 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
         final String fScope = scope;
         ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
             public void performOperation(POMModel model) {
+                Set<Artifact> arts = project.getOriginalMavenProject().getArtifacts();
                 for (Project prj: projects) {
                     NbMavenProject nbprj = prj.getLookup().lookup(NbMavenProject.class);
                     if (nbprj != null) {
                         MavenProject mp = nbprj.getMavenProject();
+                        String id = mp.getArtifact().getId();
+                        for (Artifact a : arts) {
+                            if (a.getId().equals(id)) {
+                                //already there..
+                                continue;
+                            }
+                        }
                         Dependency dependency = ModelUtils.checkModelDependency(model, mp.getGroupId(), mp.getArtifactId(), true);
                         dependency.setVersion(mp.getVersion());
                         if (fScope != null) {
                             dependency.setScope(fScope);
                         }
+                        added[0] = true;
                     } else {
-                        Logger.getLogger(CPExtender.class.getName()).warning("Attempting to add a non-Maven project dependency to a Maven project. Skipping."); //NOI18N
+                        // unsupported usecase, not a maven project
+                        added[1] = true;
                     }
                 }
             }
         };
         FileObject pom = project.getProjectDirectory().getFileObject(POM_XML);//NOI18N
         org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
+        if (added[1]) {
+            //throw late to prevent the pom model to go bust eventually
+            throw new UnsupportedOperationException("Attempting to add a non-Maven project dependency to a Maven project, not supported."); //NOI18N
+        }
+
         return added[0];
 
     }
