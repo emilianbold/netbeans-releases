@@ -159,7 +159,7 @@ class ConfigureExistingProjectPanelVisual extends ConfigurableProjectPanel {
                         .add(sourcesBrowseButton))
                     .add(GroupLayout.TRAILING, projectNameTextField, GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
                     .add(encodingComboBox, 0, 309, Short.MAX_VALUE)))
-        
+
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
@@ -183,7 +183,7 @@ class ConfigureExistingProjectPanelVisual extends ConfigurableProjectPanel {
                 .addPreferredGap(LayoutStyle.UNRELATED)
                 .add(projectFolderPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
-        
+
         );
 
         sourcesLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.sourcesLabel.AccessibleContext.accessibleName")); // NOI18N
@@ -265,5 +265,16 @@ class ConfigureExistingProjectPanelVisual extends ConfigurableProjectPanel {
 
     public void setEncoding(Charset encoding) {
         encodingComboBox.setSelectedItem(encoding);
+    }
+
+    @Override
+    public void setState(boolean enabled) {
+        throw new IllegalStateException("Should not be called for existing sources");
+    }
+
+    @Override
+    public boolean getState() {
+        // always enabled
+        return true;
     }
 }
