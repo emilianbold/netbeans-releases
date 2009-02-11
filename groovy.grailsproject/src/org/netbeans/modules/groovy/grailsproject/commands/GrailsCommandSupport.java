@@ -44,7 +44,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -99,6 +101,12 @@ public final class GrailsCommandSupport {
     private static final Pattern COMMAND_PATTERN = Pattern.compile("grails\\s(.*)"); // NOI18N
 
     private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
+
+    private static final Set<String> CREATE_COMMANDS = new HashSet<String>(4);
+
+    static {
+        Collections.addAll(CREATE_COMMANDS, "create-app", "create-plugin"); // NOI18N
+    }
 
     private final GrailsProject project;
 
@@ -274,7 +282,7 @@ public final class GrailsCommandSupport {
 
         public void processLine(String line) {
             Matcher matcher = COMMAND_PATTERN.matcher(line);
-            if (matcher.matches()) {
+            if (matcher.matches() && !CREATE_COMMANDS.contains(matcher.group(1))) {
                 commands.add(matcher.group(1));
             }
         }
