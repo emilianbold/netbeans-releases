@@ -52,7 +52,7 @@ final class UnknownPhpEnvironment extends PhpEnvironment {
     }
 
     @Override
-    public List<DocumentRoot> getDocumentRoots(String projectName) {
+    protected List<DocumentRoot> getDocumentRoots(String projectName) {
         return Collections.<DocumentRoot>emptyList();
     }
 

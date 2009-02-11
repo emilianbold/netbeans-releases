@@ -47,6 +47,7 @@ import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.util.PhpProgram;
@@ -67,6 +68,24 @@ public class ConfigActionScript extends ConfigAction {
         super(project);
         sourceRoot = ProjectPropertiesSupport.getSourcesDirectory(project);
         assert sourceRoot != null;
+    }
+
+    @Override
+    public boolean isValid(boolean indexFileNeeded) {
+        boolean valid = true;
+        if (indexFileNeeded && !isIndexFileValid(sourceRoot)) {
+            valid = false;
+        } else if (RunAsValidator.validateScriptFields(
+                ProjectPropertiesSupport.getPhpInterpreter(project).getProgram(),
+                FileUtil.toFile(sourceRoot),
+                null,
+                ProjectPropertiesSupport.getArguments(project)) != null) {
+            valid = false;
+        }
+        if (!valid) {
+            showCustomizer();
+        }
+        return valid;
     }
 
     @Override

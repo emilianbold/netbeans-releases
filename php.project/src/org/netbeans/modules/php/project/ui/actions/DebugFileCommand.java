@@ -65,11 +65,12 @@ public class DebugFileCommand extends Command implements Displayable {
             ConfigAction.get(ConfigAction.Type.TEST, getProject()).debugFile(context);
         } else {
             // source
-            if (!isRunConfigurationValid(false)) {
+            ConfigAction configAction = getConfigAction();
+            if (!configAction.isValid(false)) {
                 // property not set yet
                 return;
             }
-            getConfigAction().debugFile(context);
+            configAction.debugFile(context);
         }
     }
 
