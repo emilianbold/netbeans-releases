@@ -182,8 +182,7 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
     // other methods ...........................................................
     
     void update () {
-        if (colorModel == null)
-            colorModel = new ColorModel ();
+        colorModel = new ColorModel ();
         
         for(FontsColorsController c : panels) {
             c.update(colorModel);
