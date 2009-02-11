@@ -84,7 +84,7 @@ class InstallPanel implements WizardDescriptor.Panel, ChangeListener {
     }
 
     public boolean isValid() {
-        boolean result = getVisual().isValid();
+        boolean result = getVisual().hasValidData();
         wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
         wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
         if (!result) {
