@@ -1,4 +1,4 @@
-package org.netbeans.modules.nativeexecution.util;
+package org.netbeans.modules.nativeexecution.api.util;
 
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
@@ -37,8 +37,6 @@ public final class HostInfoUtils {
             Collections.synchronizedMap(new WeakHashMap<String, Boolean>());
     private static Map<ExecutionEnvironment, HostInfo> hostInfo =
             Collections.synchronizedMap(new WeakHashMap<ExecutionEnvironment, HostInfo>());
-    private static final String cmd_uname = "/bin/uname"; // NOI18N
-    private static final String cmd_sh = "/bin/sh"; // NOI18N
     private static final String cmd_test = "/bin/test"; // NOI18N
 
 
@@ -149,13 +147,33 @@ public final class HostInfoUtils {
         return info.os;
     }
 
+    /**
+     * Returns string that identifies platform that <tT>execEnv</tt> is refers
+     * to.
+     * @param execEnv <tt>ExecutionEnvironment</tt>
+     * @return string that identifies platform that <tT>execEnv</tt> is refers
+     * to.
+     * @throws java.net.ConnectException if host, identified by this execution
+     * environment is not connected.
+     */
     public static String getPlatform(final ExecutionEnvironment execEnv)
             throws ConnectException {
         HostInfo info = getHostInfo(execEnv);
         return info.platform;
     }
 
-    public static String getIsaInfo(ExecutionEnvironment execEnv) 
+    /**
+     * Returns string that identifies the number of bits in the address space of
+     * the native instruction set (32- or 64-bit) on the host that
+     * <tt>execEnv</tt> is refers to.
+     *
+     * @param execEnv <tt>ExecutionEnvironment</tt>
+     * @return "32" for 32-bit OS and "64" for 64-bit one
+     *
+     * @throws java.net.ConnectException if host, identified by this execution
+     * environment is not connected.
+     */
+    public static String getIsaBits(ExecutionEnvironment execEnv)
             throws ConnectException {
         HostInfo info = getHostInfo(execEnv);
         return info.instructionSet;

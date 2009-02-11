@@ -59,7 +59,6 @@ import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.actions.ConfigurationSupport;
-import org.netbeans.modules.groovy.grailsproject.actions.RefreshProjectRunnable;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
@@ -87,14 +86,6 @@ public class GrailsActionProvider implements ActionProvider {
     public static final String COMMAND_STATS = "stats"; // NOI18N
     public static final String COMMAND_UPGRADE = "upgrade"; // NOI18N
     public static final String COMMAND_WAR = "war"; // NOI18N
-
-    private static final ExecutionDescriptor GRAILS_DESCRIPTOR = new ExecutionDescriptor()
-            .controllable(true).frontWindow(true).inputVisible(true)
-                .showProgress(true).optionsPath(GroovySettings.GROOVY_OPTIONS_CATEGORY);
-
-    private static final ExecutionDescriptor RUN_DESCRIPTOR = GRAILS_DESCRIPTOR.showSuspended(true);
-
-    private static final InputProcessorFactory ANSI_STRIPPING = new AnsiStrippingInputProcessorFactory();
 
     private static final Logger LOGGER = Logger.getLogger(GrailsActionProvider.class.getName());
 
@@ -172,7 +163,6 @@ public class GrailsActionProvider implements ActionProvider {
         final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
         if (serverState != null && serverState.isRunning()) {
             URL url = serverState.getRunningUrl();
-            GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
             if (url != null) {
                 showURL(url, debug, project);
             }
@@ -194,23 +184,13 @@ public class GrailsActionProvider implements ActionProvider {
 
         ProjectInformation inf = project.getLookup().lookup(ProjectInformation.class);
         String displayName = inf.getDisplayName() + " (run-app)"; // NOI18N
-        Runnable runnable = new Runnable() {
-            public void run() {
-                final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
-                if (serverState != null) {
-                    serverState.setProcess(null);
-                    serverState.setRunningUrl(null);
-                }
-            }
-        };
 
-        ExecutionDescriptor descriptor = RUN_DESCRIPTOR;
+        ExecutionDescriptor descriptor = project.getCommandSupport().getRunDescriptor();
         descriptor = descriptor.outProcessorFactory(new InputProcessorFactory() {
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                 return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new ServerURLProcessor(project, debug)));
             }
         });
-        descriptor = descriptor.postExecution(runnable);
 
         ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
         service.run();
@@ -233,10 +213,7 @@ public class GrailsActionProvider implements ActionProvider {
         ProjectInformation inf = project.getLookup().lookup(ProjectInformation.class);
         String displayName = inf.getDisplayName() + " (shell)"; // NOI18N
 
-        InputProcessorFactory factory = new AnsiStrippingInputProcessorFactory();
-
-        ExecutionDescriptor execDescriptor = RUN_DESCRIPTOR.postExecution(
-                new RefreshProjectRunnable(project)).outProcessorFactory(ANSI_STRIPPING).errProcessorFactory(ANSI_STRIPPING);
+        ExecutionDescriptor execDescriptor = project.getCommandSupport().getDescriptor(command);
 
         ExecutionService service = ExecutionService.newService(callable, execDescriptor, displayName);
         service.run();
@@ -249,8 +226,7 @@ public class GrailsActionProvider implements ActionProvider {
         Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
                 command, GrailsProjectConfig.forProject(project));
 
-        ExecutionDescriptor descriptor = GRAILS_DESCRIPTOR.postExecution(
-                new RefreshProjectRunnable(project));
+        ExecutionDescriptor descriptor = project.getCommandSupport().getDescriptor(command);
 
         ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
         service.run();
@@ -353,13 +329,5 @@ public class GrailsActionProvider implements ActionProvider {
         public void close() {
             // noop
         }
-    }
-
-    private static class AnsiStrippingInputProcessorFactory implements InputProcessorFactory {
-
-        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-            return InputProcessors.ansiStripping(defaultProcessor);
-        }
-
     }
 }

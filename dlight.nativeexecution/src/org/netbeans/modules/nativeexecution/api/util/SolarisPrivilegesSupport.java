@@ -36,10 +36,10 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.util;
+package org.netbeans.modules.nativeexecution.api.util;
 
+import org.netbeans.modules.nativeexecution.support.ObservableAction;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ObservableAction;
 import com.jcraft.jsch.ChannelShell;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
@@ -61,12 +61,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.nativeexecution.api.impl.ConnectionManagerAccessor;
+import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.support.ui.GrantPrivilegesDialog;
 import org.netbeans.modules.nativeexecution.support.Encrypter;
@@ -74,6 +75,7 @@ import org.netbeans.modules.nativeexecution.support.InputRedirectorFactory;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.support.MacroExpanderFactory.MacroExpander;
+import org.netbeans.modules.nativeexecution.support.ObservableActionListener;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.modules.InstalledFileLocator;
@@ -255,6 +257,7 @@ public final class SolarisPrivilegesSupport {
 
         final ProgressHandle ph = ProgressHandleFactory.createHandle(
                 loc("TaskPrivilegesSupport_Progress_RequestPrivileges")); // NOI18N
+
         ph.start();
 
         final List<String> currentPrivileges =
@@ -285,20 +288,37 @@ public final class SolarisPrivilegesSupport {
     }
 
     /**
-     * Returns <tt>ObservableAction<Boolean></tt> that can be invoked in order
+     * Returns {@link Action javax.swing.Action} that can be invoked in order
      * to request needed execution privileges
      *
      * @param execEnv <tt>ExecutionEnvironment</tt> where to request privileges
      * @param requestedPrivileges a list of execution privileges to request
-     * @return <tt>ObservableAction<Boolean></tt> that can be invoked in order
-     * to request needed execution privileges
+     * @param onPrivilegesGranted Runnable that is executed on successful
+     *        privileges gain
+     * @return <tt>Action</tt> that can be invoked in order
+     *        to request needed execution privileges
      */
-    public ObservableAction<Boolean> requestPrivilegesAction(
+    public AsynchronousAction requestPrivilegesAction(
             final ExecutionEnvironment execEnv,
-            final List<String> requestedPrivileges) {
+            final List<String> requestedPrivileges,
+            final Runnable onPrivilegesGranted) {
 
         RequestPrivilegesAction action =
                 new RequestPrivilegesAction(execEnv, requestedPrivileges);
+
+        if (onPrivilegesGranted != null) {
+            action.addObservableActionListener(new ObservableActionListener<Boolean>() {
+
+                public void actionStarted(Action source) {
+                }
+
+                public void actionCompleted(Action source, Boolean result) {
+                    if (result != null && result.booleanValue() == true) {
+                        onPrivilegesGranted.run();
+                    }
+                }
+            });
+        }
 
         return action;
     }
@@ -319,7 +339,7 @@ public final class SolarisPrivilegesSupport {
         }
 
         @Override
-        protected Boolean performAction() {
+        public Boolean performAction() {
             SolarisPrivilegesSupport sup = SolarisPrivilegesSupport.getInstance();
             return sup.requestExecutionPrivileges(execEnv, requestedPrivileges);
         }
@@ -367,7 +387,6 @@ public final class SolarisPrivilegesSupport {
             try {
                 path = macroExpander.expandMacros(path); // NOI18N
             } catch (ParseException ex) {
-
             }
 
             privp = "bin/nativeexecution/" + path + "/privp"; // NOI18N

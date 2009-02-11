@@ -36,15 +36,17 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.util;
+package org.netbeans.modules.nativeexecution.api.util;
 
 import org.netbeans.modules.nativeexecution.support.*;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Stack;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -55,7 +57,11 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
+ * A factory that creates {@link ExternalTerminal} to be passed to a
+ * {@link NativeProcessBuilder} in case when task execution needs to be
+ * performed in an external terminal.
  *
+ * @see #getTerminal(java.lang.String)
  */
 public final class ExternalTerminalProvider {
 
@@ -71,16 +77,38 @@ public final class ExternalTerminalProvider {
     private ExternalTerminalProvider() {
     }
 
+    /**
+     * Returns a new instance of ExternalTerminal for terminal, identified by
+     * the <tt>id</tt>.
+     *
+     * @param id ID that identifies terminal type
+     * @return a new instance of ExternalTerminal for terminal, identified by
+     * <tt>id</tt>.
+     *
+     * @throws IllegalArgumentException in case it passed termonal id is not
+     *         registered
+     *
+     * @see #getSupportedTerminalIDs()
+     */
     public static ExternalTerminal getTerminal(String id) {
         TerminalProfile ti = hash.get(id);
 
         if (ti == null) {
-            throw new IllegalArgumentException("Unsupported terminal type");
+            throw new IllegalArgumentException("Unsupported terminal type"); // NOI18N
         }
 
         ExternalTerminal result = new ExternalTerminal(ti);
 
         return result;
+    }
+
+    /**
+     * Returns collection of all suported terminals IDs. These IDs can be passed
+     * to {@link #getTerminal(java.lang.String)} method.
+     * @return collection of all suported terminals IDs.
+     */
+    public static Collection<String> getSupportedTerminalIDs() {
+        return hash.keySet();
     }
 
     private static void init() {
@@ -133,10 +161,14 @@ public final class ExternalTerminalProvider {
         }
 
         @Override
-        public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+        public void startElement(
+                String uri,
+                String localName,
+                String qName,
+                Attributes attributes) throws SAXException {
             accumulator.setLength(0);
 
-            if ("terminaldefinition".equals(qName)) {
+            if ("terminaldefinition".equals(qName)) { // NOI18N
                 context.push(Context.root);
 
                 String xmlns = attributes.getValue("xmlns"); // NOI18N
@@ -178,36 +210,37 @@ public final class ExternalTerminalProvider {
         }
 
         public Context elementStarted(String name, Attributes attributes) {
-            if ("terminal".equals(name)) {
-                info.setID(attributes.getValue("id"));
-                info.setSupportedPlatforms(attributes.getValue("platforms"));
+            if ("terminal".equals(name)) { // NOI18N
+                info.setID(attributes.getValue("id")); // NOI18N
+                info.setSupportedPlatforms(attributes.getValue("platforms")); // NOI18N
                 return Context.terminal;
             }
 
-            if ("searchpaths".equals(name)) {
+            if ("searchpaths".equals(name)) { // NOI18N
                 return Context.searchpaths;
             }
 
-            if (context.lastElement() == Context.searchpaths && "path".equals(name)) {
+            if (context.lastElement() == Context.searchpaths &&
+                    "path".equals(name)) { // NOI18N
                 return Context.searchpath;
             }
 
-            if ("platforms".equals(name)) {
+            if ("platforms".equals(name)) { // NOI18N
                 // TODO
                 return Context.terminaldefinition;
             }
 
-            if ("command".equals(name)) {
+            if ("command".equals(name)) { // NOI18N
                 info.setCommand(attributes.getValue("stringvalue")); // NOI18N
                 return Context.terminaldefinition;
             }
 
-            if ("arguments".equals(name)) {
+            if ("arguments".equals(name)) { // NOI18N
                 return Context.arguments;
             }
 
             if (context.lastElement() == Context.arguments &&
-                    "arg".equals(name)) {
+                    "arg".equals(name)) { // NOI18N
                 return Context.argument;
             }
 

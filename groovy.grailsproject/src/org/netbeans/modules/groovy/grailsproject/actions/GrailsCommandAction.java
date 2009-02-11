@@ -101,11 +101,7 @@ public class GrailsCommandAction extends AbstractAction {
         Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
                 commandDescriptor.getGrailsCommand().getCommand(), GrailsProjectConfig.forProject(project), params); // NOI18N
 
-        ExecutionDescriptor descriptor = new ExecutionDescriptor()
-                .controllable(true).inputVisible(true).showProgress(true).frontWindow(true);
-
-        descriptor = descriptor.postExecution(new RefreshProjectRunnable(project));
-        descriptor = descriptor.optionsPath(GroovySettings.GROOVY_OPTIONS_CATEGORY);
+        ExecutionDescriptor descriptor = project.getCommandSupport().getDescriptor(commandDescriptor.getGrailsCommand().getCommand());
 
         ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
         service.run();

@@ -36,17 +36,20 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.api.impl;
+package org.netbeans.modules.nativeexecution;
 
-import com.jcraft.jsch.Session;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.util.ConnectionManager;
+import java.util.List;
+import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
+import org.netbeans.modules.nativeexecution.support.TerminalProfile;
 
-public abstract class ConnectionManagerAccessor {
+/**
+ *
+ */
+public abstract class ExternalTerminalAccessor {
 
-    private static volatile ConnectionManagerAccessor DEFAULT;
+    private static volatile ExternalTerminalAccessor DEFAULT;
 
-    public static void setDefault(ConnectionManagerAccessor accessor) {
+    public static void setDefault(ExternalTerminalAccessor accessor) {
         if (DEFAULT != null) {
             throw new IllegalStateException(
                     "ConnectionManagerAccessor is already defined"); // NOI18N
@@ -55,20 +58,25 @@ public abstract class ConnectionManagerAccessor {
         DEFAULT = accessor;
     }
 
-    public static synchronized ConnectionManagerAccessor getDefault() {
+    public static synchronized ExternalTerminalAccessor getDefault() {
         if (DEFAULT != null) {
             return DEFAULT;
         }
 
         try {
-            Class.forName(ConnectionManager.class.getName(), true,
-                    ConnectionManager.class.getClassLoader());
+            Class.forName(ExternalTerminal.class.getName(), true,
+                    ExternalTerminal.class.getClassLoader());
         } catch (ClassNotFoundException ex) {
         }
 
         return DEFAULT;
     }
 
-    public abstract Session getConnectionSession(
-            final ConnectionManager mgr, final ExecutionEnvironment env);
+    public abstract TerminalProfile getTerminalProfile(final ExternalTerminal terminal);
+
+    public abstract String getPrompt(final ExternalTerminal terminal);
+
+    public abstract List<String> wrapCommand(final ExternalTerminal terminal, String... args);
+
+    public abstract String getTitle(final ExternalTerminal terminal);
 }

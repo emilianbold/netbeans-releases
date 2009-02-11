@@ -39,7 +39,7 @@
 package org.netbeans.modules.nativeexecution;
 
 import java.net.ConnectException;
-import org.netbeans.modules.nativeexecution.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.junit.After;
 import org.junit.AfterClass;

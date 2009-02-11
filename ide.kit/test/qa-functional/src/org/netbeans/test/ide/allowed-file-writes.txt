@@ -21,6 +21,10 @@ config/Preferences/org/netbeans/modules/uihandler.properties
 config/Preferences/org/netbeans/modules/welcome.properties
 config/Preferences/org/netbeans/modules/mercurial.properties
 
+# issue 154037
+config/Preferences/org/netbeans/modules/maven
+config/Preferences/org/netbeans/modules/maven/touchme.properties
+
 # why is this happening?
 var/cache/index
 var/cache/index/0.11

@@ -116,7 +116,7 @@ public final class TimerTaskExecutionService {
 
     }
 
-    public void unregisterTimerTask(Callable<Integer> task) {
+    public void unregisterTimerTask(final Callable<Integer> task) {
         SubscriberTask removedTask = subscribedTasks.remove(task);
 
         if (removedTask != null) {
@@ -151,7 +151,7 @@ public final class TimerTaskExecutionService {
                 Callable<Integer> key = keys.nextElement();
                 SubscriberTask task = subscribedTasks.get(key);
                 Future<Integer> future = runningHash.get(key);
-                if (future == null || future.isDone()) {
+                if ((future == null || future.isDone()) && task != null) {
                     if (task.count-- == 0) {
                         task.count = task.factor;
                         runningHash.put(task.callable,

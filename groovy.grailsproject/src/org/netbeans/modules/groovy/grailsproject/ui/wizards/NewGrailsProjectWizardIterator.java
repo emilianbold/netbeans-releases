@@ -94,6 +94,7 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Progress
             Callable<Process> callable = ExecutionSupport.getInstance().createCreateApp(
                     (File) wiz.getProperty("projectFolder")); // NOI18N
 
+            // we need a special descriptor here
             ExecutionDescriptor descriptor = new ExecutionDescriptor().frontWindow(true).inputVisible(true);
             descriptor = descriptor.outProcessorFactory(new InputProcessorFactory() {
                 public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {

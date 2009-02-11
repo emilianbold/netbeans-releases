@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.api.impl;
+package org.netbeans.modules.nativeexecution;
 
 import java.text.ParseException;
 import java.util.ArrayList;

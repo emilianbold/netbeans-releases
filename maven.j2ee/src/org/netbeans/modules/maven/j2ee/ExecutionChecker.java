@@ -46,6 +46,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.model.Build;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
@@ -114,6 +115,12 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         OutputWriter err = res.getInputOutput().getErr();
         OutputWriter out = res.getInputOutput().getOut();
         J2eeModuleProvider jmp = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (jmp == null) {
+            err.println();
+            err.println();
+            err.println("NetBeans: Application Server deployment not available for Maven project '" + ProjectUtils.getInformation(project).getDisplayName() + "'");//NOI18N - no localization in maven build
+            return;
+        }
         String serverInstanceID = jmp.getServerInstanceID();
         if (DEV_NULL.equals(serverInstanceID)) {
             err.println();
