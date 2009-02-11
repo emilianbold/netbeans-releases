@@ -824,7 +824,9 @@ public final class SearchBar extends JPanel {
                 } else {
                     String findWhat = (String) FindSupport.getFindSupport().getFindProperty(EditorFindSupport.FIND_WHAT);
                     if (findWhat != null && findWhat.length() > 0) {
+                        incrementalSearchTextField.getDocument().removeDocumentListener(incrementalSearchTextFieldListener);
                         incrementalSearchTextField.setText(findWhat);
+                        incrementalSearchTextField.getDocument().addDocumentListener(incrementalSearchTextFieldListener);
                     }
                 }
             }

@@ -131,7 +131,6 @@ made subject to such option by the copyright holder.
     <bind actionName="select-element-next" key="OS-PERIOD"/>
     <bind actionName="select-element-previous" key="OS-COMMA"/>
     <bind actionName="select-identifier" key="OS-J"/>
-    <bind actionName="select-next-parameter" key="D-M"/>
     <bind actionName="selection-backward" key="S-LEFT"/>
     <bind actionName="selection-begin" key="DS-HOME"/>
     <bind actionName="selection-begin-line" key="S-HOME"/>

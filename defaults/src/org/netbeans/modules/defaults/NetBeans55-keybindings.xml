@@ -130,7 +130,6 @@ made subject to such option by the copyright holder.
     <bind actionName="scroll-up" key="D-DOWN"/>
     <bind actionName="select-all" key="D-A"/>
     <bind actionName="select-identifier" key="O-J"/>
-    <bind actionName="select-next-parameter" key="D-M"/>
     <bind actionName="selection-backward" key="S-LEFT"/>
     <bind actionName="selection-begin" key="DS-HOME"/>
     <bind actionName="selection-begin-line" key="S-HOME"/>

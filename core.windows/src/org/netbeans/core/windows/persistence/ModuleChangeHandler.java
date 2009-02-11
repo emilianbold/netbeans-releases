@@ -102,6 +102,7 @@ class ModuleChangeHandler implements FileChangeListener {
         for (FileObject fo : arr) {
             if (fo.isFolder()) {
                 modesModuleChildren.add(fo);
+                fo.getChildren();  // #156573 - to get events about children
             }
         }
     }
@@ -113,6 +114,7 @@ class ModuleChangeHandler implements FileChangeListener {
         for (FileObject fo : arr) {
             if (fo.isFolder()) {
                 groupsModuleChildren.add(fo);
+                fo.getChildren();  // #156573 - to get events about children
             }
         }
     }

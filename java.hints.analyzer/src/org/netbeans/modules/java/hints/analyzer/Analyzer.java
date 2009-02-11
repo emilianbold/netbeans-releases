@@ -83,6 +83,7 @@ import org.openide.util.lookup.Lookups;
  * @author Jan Lahoda
  */
 public class Analyzer implements Runnable {
+    public static final String JAVA_MIME_TYPE = "text/x-java"; // NOI18N
 
     private final Lookup context;
     private final AtomicBoolean cancel;
@@ -107,7 +108,7 @@ public class Analyzer implements Runnable {
         while (!q.isEmpty()) {
             FileObject f = q.poll();
             
-            if (f.isData() && "text/x-java".equals(FileUtil.getMIMEType(f))) {
+            if (f.isData() && JAVA_MIME_TYPE.equals(FileUtil.getMIMEType(f))) {
                 toProcess.add(f);
             }
             
@@ -181,7 +182,7 @@ public class Analyzer implements Runnable {
             }
         }
         
-        ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(Analyzer.class, "LBL_AnalyzingJavadoc"), new Cancel());
+        ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(Analyzer.class, "LBL_AnalyzingJavadoc"), new Cancel()); // NOI18N
 
         RequestProcessor.getDefault().post(new Analyzer(context, abCancel, h, preferencesOverlay));
     }
@@ -202,21 +203,51 @@ public class Analyzer implements Runnable {
     
     private static Collection<? extends FileObject> toAnalyze(Lookup l) {
         Set<FileObject> result = new LinkedHashSet<FileObject>();
-        
-        result.addAll(l.lookupAll(FileObject.class));
+
+        for (FileObject fo : l.lookupAll(FileObject.class)) {
+            if (fo.getMIMEType().equals(JAVA_MIME_TYPE)) {
+                result.add(fo);
+            }
+            if (fo.isFolder()) {
+                if (containsJavaFiles(fo)) {
+                    result.add(fo);
+                }
+            }
+        }
 
         for (DataObject od : l.lookupAll(DataObject.class)) {
-            result.add(od.getPrimaryFile());
+            FileObject primaryFile = od.getPrimaryFile();
+            if (primaryFile.getMIMEType().equals(JAVA_MIME_TYPE)) {
+                result.add(primaryFile);
+            }
+            if (primaryFile.isFolder()) {
+                if (containsJavaFiles(primaryFile)) {
+                    result.add(primaryFile);
+                }
+            }
         }
         
         for (Project p : l.lookupAll(Project.class)) {
             Sources s = ProjectUtils.getSources(p);
             
-            for (SourceGroup sg : s.getSourceGroups("java")) {
+            for (SourceGroup sg : s.getSourceGroups("java")) { // NOI18N
                 result.add(sg.getRootFolder());
             }
         }
         
         return result;
+    }
+
+    private static boolean containsJavaFiles(FileObject folder) {
+        FileObject[] children = folder.getChildren();
+        for (int i = 0; i < children.length; i++) {
+            FileObject child = children[i];
+            if (child.getMIMEType().equals(JAVA_MIME_TYPE)) {
+                return true;
+            } else {
+                return containsJavaFiles(child);
+            }
+        }
+        return false;
     }
 }
