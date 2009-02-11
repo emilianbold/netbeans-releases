@@ -74,6 +74,11 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
+ * V58 - NB 7.0
+ *   CCOMPILERTOOL_ELEMENT2
+ *   CCCOMPILERTOOL_ELEMENT2
+ *   INCLUDE_DIRECTORIES_ELEMENT2
+ *   PATH_ELEMENT
  * V57 - NB 7.0
  *   new attributs for ITEM_ELEMENT: <item path="../gcc/zlib/examples/gzlog.h" ex="true" tool="1">
  * V56 - NB 7.0
@@ -166,7 +171,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 57;
+    public final static int CURRENT_VERSION = 58;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -177,6 +182,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String CONFS_ELEMENT = "confs"; // NOI18N
     protected final static String CONF_ELEMENT = "conf"; // NOI18N
     protected final static String DIRECTORY_PATH_ELEMENT = "directoryPath"; // NOI18N
+    protected final static String PATH_ELEMENT = "pElem"; // NOI18N
     protected final static String FOLDER_PATH_ELEMENT = "folderPath"; // Old style. FIXUP : < version 5 // NOI18N
     protected final static String SOURCE_FOLDERS_ELEMENT = "sourceFolders"; // Old style. FIXUP : < version 5 // NOI18N
     protected final static String LOGICAL_FOLDER_ELEMENT = "logicalFolder"; // NOI18N
@@ -217,6 +223,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String INHERIT_PRE_VALUES_ELEMENT = "inheritPreValues"; // NOI18N
     // Compiler (Generic) Tool
     protected final static String INCLUDE_DIRECTORIES_ELEMENT = "includeDirectories"; // NOI18N
+    protected final static String INCLUDE_DIRECTORIES_ELEMENT2 = "incDir"; // NOI18N
     protected final static String COMPILERTOOL_ELEMENT = "compilerTool"; // OLD style. FIXUP < version 11 // NOI18N
     protected final static String DEBUGGING_SYMBOLS_ELEMENT = "debuggingSymbols"; // NOI18N
     protected final static String OPTIMIZATION_LEVEL_ELEMENT = "optimizationLevel"; // NOI18N
@@ -235,11 +242,13 @@ public abstract class CommonConfigurationXMLCodec
     // C Compiler Tool
     protected final static String SUN_CCOMPILERTOOL_OLD_ELEMENT = "sunCCompilerTool"; // FIXUP <=23 // NOI18N
     protected final static String CCOMPILERTOOL_ELEMENT = "cCompilerTool"; // NOI18N
+    protected final static String CCOMPILERTOOL_ELEMENT2 = "cTool"; // NOI18N
     protected final static String CONFORMANCE_LEVEL_ELEMENT = "conformanceLevel"; // FIXUP: <=21 // NOI18N
     protected final static String CPP_STYLE_COMMENTS_ELEMENT = "cppstylecomments"; // FIXUP: <=21 // NOI18N
     // CC Compiler Tool
     protected final static String SUN_CCCOMPILERTOOL_OLD_ELEMENT = "sunCCCompilerTool"; // FIXUP <=23 // NOI18N
     protected final static String CCCOMPILERTOOL_ELEMENT = "ccCompilerTool"; // NOI18N
+    protected final static String CCCOMPILERTOOL_ELEMENT2 = "ccTool"; // NOI18N
     protected final static String COMPATIBILITY_MODE_ELEMENT = "compatibilityMode"; // FIXUP: <=21 // NOI18N
     protected final static String LIBRARY_LEVEL_ELEMENT = "libraryLevel"; // NOI18N
     // Fortran Compiler Tool
@@ -563,7 +572,7 @@ public abstract class CommonConfigurationXMLCodec
         if (!cCompilerConfiguration.getModified()) {
             return;
         }
-        xes.elementOpen(CCOMPILERTOOL_ELEMENT);
+        xes.elementOpen(CCOMPILERTOOL_ELEMENT2);
         if (cCompilerConfiguration.getDevelopmentMode().getModified()) {
             xes.element(DEVELOPMENT_MODE_ELEMENT, "" + cCompilerConfiguration.getDevelopmentMode().getValue()); // NOI18N
         }
@@ -577,7 +586,7 @@ public abstract class CommonConfigurationXMLCodec
             xes.element(COMMANDLINE_TOOL_ELEMENT, "" + cCompilerConfiguration.getTool().getValue()); // NOI18N
         }
         if (cCompilerConfiguration.getIncludeDirectories().getModified()) {
-            writeDirectories(xes, INCLUDE_DIRECTORIES_ELEMENT, cCompilerConfiguration.getIncludeDirectories().getValue());
+            writeDirectories(xes, INCLUDE_DIRECTORIES_ELEMENT2, cCompilerConfiguration.getIncludeDirectories().getValue());
         }
         if (cCompilerConfiguration.getStandardsEvolution().getModified()) {
             xes.element(STANDARDS_EVOLUTION_ELEMENT, "" + cCompilerConfiguration.getStandardsEvolution().getValue()); // NOI18N
@@ -606,14 +615,14 @@ public abstract class CommonConfigurationXMLCodec
         if (cCompilerConfiguration.getAdditionalDependencies().getModified()) {
             xes.element(ADDITIONAL_DEP_ELEMENT, "" + cCompilerConfiguration.getAdditionalDependencies().getValue()); // NOI18N
         }
-        xes.elementClose(CCOMPILERTOOL_ELEMENT);
+        xes.elementClose(CCOMPILERTOOL_ELEMENT2);
     }
 
     public static void writeCCCompilerConfiguration(XMLEncoderStream xes, CCCompilerConfiguration ccCompilerConfiguration) {
         if (!ccCompilerConfiguration.getModified()) {
             return;
         }
-        xes.elementOpen(CCCOMPILERTOOL_ELEMENT);
+        xes.elementOpen(CCCOMPILERTOOL_ELEMENT2);
         if (ccCompilerConfiguration.getDevelopmentMode().getModified()) {
             xes.element(DEVELOPMENT_MODE_ELEMENT, "" + ccCompilerConfiguration.getDevelopmentMode().getValue()); // NOI18N
         }
@@ -627,7 +636,7 @@ public abstract class CommonConfigurationXMLCodec
             xes.element(COMMANDLINE_TOOL_ELEMENT, "" + ccCompilerConfiguration.getTool().getValue()); // NOI18N
         }
         if (ccCompilerConfiguration.getIncludeDirectories().getModified()) {
-            writeDirectories(xes, INCLUDE_DIRECTORIES_ELEMENT, ccCompilerConfiguration.getIncludeDirectories().getValue()); // NOI18N
+            writeDirectories(xes, INCLUDE_DIRECTORIES_ELEMENT2, ccCompilerConfiguration.getIncludeDirectories().getValue()); // NOI18N
         }
         if (ccCompilerConfiguration.getStandardsEvolution().getModified()) {
             xes.element(STANDARDS_EVOLUTION_ELEMENT, "" + ccCompilerConfiguration.getStandardsEvolution().getValue()); // NOI18N
@@ -659,7 +668,7 @@ public abstract class CommonConfigurationXMLCodec
         if (ccCompilerConfiguration.getAdditionalDependencies().getModified()) {
             xes.element(ADDITIONAL_DEP_ELEMENT, "" + ccCompilerConfiguration.getAdditionalDependencies().getValue()); // NOI18N
         }
-        xes.elementClose(CCCOMPILERTOOL_ELEMENT);
+        xes.elementClose(CCCOMPILERTOOL_ELEMENT2);
     }
 
     public static void writeFortranCompilerConfiguration(XMLEncoderStream xes, FortranCompilerConfiguration fortranCompilerConfiguration) {
@@ -888,7 +897,7 @@ public abstract class CommonConfigurationXMLCodec
     }
 
     public static void writeDirectories(XMLEncoderStream xes, String tag, List<String> directories) {
-        writeList(xes, tag, DIRECTORY_PATH_ELEMENT, directories);
+        writeList(xes, tag, PATH_ELEMENT, directories);
     }
 
     public static void writeList(XMLEncoderStream xes, String tag, String listTag, List<String> directories) {
