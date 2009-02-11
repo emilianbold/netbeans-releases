@@ -346,6 +346,8 @@ public class FeatureProjectFactory implements ProjectFactory {
                     ModulesActivator enabler = new ModulesActivator (toEnable, findModules);
                     enabler.getEnableTask ().waitFinished ();
                     success = true;
+                } else if (toEnable == null || toInstall == null) {
+                    success = true;
                 } else if (toEnable.isEmpty() && toInstall.isEmpty()) {
                     success = true;
                 }
