@@ -69,31 +69,6 @@ public class BatLanguageProvider extends LanguageProvider {
     ) {
         return null;
     }
-
-//    public LanguageEmbedding<?> findLanguageEmbedding (
-//        Token token,
-//        LanguagePath languagePath,
-//        InputAttributes inputAttributes
-//    ) {
-//        String mimeType = languagePath.innerLanguage ().mimeType ();
-//        if (!LanguagesManager.getDefault ().isSupported (mimeType)) return null;
-//        Language<STokenId> language = getTokenImport (mimeType, token);
-//        if (language == null)
-//            language = getPreprocessorImport (languagePath, token);
-//        if (language == null) return null;
-//        Integer i = (Integer) token.getProperty ("startSkipLength");
-//        int startSkipLength = i == null ? 0 : i.intValue ();
-//        i = (Integer) token.getProperty ("endSkipLength");
-//        int endSkipLength = i == null ? 0 : i.intValue ();
-//        return LanguageEmbedding.create (
-//            language,
-//            startSkipLength,
-//            endSkipLength
-//        );
-//    }
-
-    
-    // other methods ...........................................................
 }
 
 
