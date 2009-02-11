@@ -302,18 +302,31 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         }
     }
 
+    /**
+     * Iterates over given code blocks (decribed as pairs of start and end line)
+     * and calls formatter on each line.
+     *
+     * Line can be skipped in two cases:
+     * #1) line is blank and its first token is not of language of this formatter; or
+     * #2) line does not start with language of our formatter and our language
+     * is represented on the line only via whitespace tokens which can be ignored.
+     *
+     * If line does not start with language of the formatter then line.indentThisLine
+     * is set to false.
+     */
     protected void processLanguage(JoinedTokenSequence<T1> joinedTS, List<LinePair> lines,
             int overallStartOffset, int overallEndOffset,
             List<Line> lineIndents) throws BadLocationException {
 
         int lastLineIndex = -1;
         BaseDocument doc = getDocument();
-        List<IndentCommand> indentations;
 
         joinedTS.moveStart();
         joinedTS.moveNext();
 
+        // iterate over blocks of code to indent:
         for (LinePair lp : lines) {
+            // iterate over each line:
             for (int line = lp.startingLine; line <= lp.endingLine; line++) {
 
                 // find line starting offset
@@ -322,6 +335,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     rowStartOffset = overallStartOffset;
                 }
 
+                // find first non-white character
                 int firstNonWhite = Utilities.getRowFirstNonWhite(doc, rowStartOffset);
 
                 // find line ending offset
@@ -330,16 +344,23 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
 
                 boolean indentThisLine = true;
                 boolean emptyLine = false;
-                if (firstNonWhite != -1) {
 
+                if (firstNonWhite != -1) {
+                    // line contains some characters:
                     // move rowStartOffset to beginning of language
-                    rowStartOffset = findLanguageOffset(joinedTS, rowStartOffset, rowEndOffset, true);
-                    if (rowStartOffset > overallEndOffset) {
+                    int newRowStartOffset = findLanguageOffset(joinedTS, rowStartOffset, rowEndOffset, true);
+                    if (newRowStartOffset > overallEndOffset) {
                         continue;
                     }
                     // move rowEndOffset to end of language
                     rowEndOffset = findLanguageOffset(joinedTS, rowEndOffset, rowStartOffset, false);
+                    rowStartOffset = newRowStartOffset;
+                    // if this line does not contain any our "language" to format 
+                    // then skip this line completely
                     if (rowStartOffset == -1 || rowEndOffset == -1) {
+                        assert rowStartOffset == -1 && rowEndOffset == -1 : "if language start " +
+                                "was not found them language end canot be found neither. " +
+                                "firstNonWhite="+firstNonWhite+" joinedTS="+joinedTS;
                         continue;
                     }
                     if (rowEndOffset > overallEndOffset) {
@@ -347,40 +368,43 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     }
                     
                     // set indentThisLine to false if line does not start with language
+                    // but process tokens from the line
                     indentThisLine = firstNonWhite == rowStartOffset;
                 } else {
+                    // line is empty:
                     emptyLine = true;
 
                     Language l = LexUtilities.getLanguage(getDocument(), rowStartOffset);
                     if (l == null || !l.equals(language)) {
+                        // line is empty and first token on line is not from out language
                         continue;
                     }
                 }
 
+                // firstNonWhite must e within our language:
                 if (firstNonWhite < rowStartOffset) {
                     firstNonWhite = rowStartOffset;
                 }
 
-                IndenterContextData<T1> cd = new IndenterContextData(joinedTS, rowStartOffset, rowEndOffset, firstNonWhite, nextLineStartOffset);
+                // is this line beginning of a new code block:
                 boolean newBlock = lastLineIndex == -1 || line-lastLineIndex > 1;
 
-
-                // if one of the lines was ignored (ie. indentThisLine is false) then do
-                // not update lastLineIndex so that newBlock flag is set consequently.
-                // experimental: I'm not sure whether to treat empty line as new block sematic
-                //   possibly to be revised.
+                // if we are not formatting this line then force
+                // start of new code block (which will also close previous block):
                 if (!indentThisLine) {
                     newBlock = true;
                 }
 
-
-
+                // ask formatter for line indentation:
+                IndenterContextData<T1> cd = new IndenterContextData(joinedTS, rowStartOffset, rowEndOffset, firstNonWhite, nextLineStartOffset);
                 cd.setLanguageBlockStart(newBlock);
                 List<IndentCommand> preliminaryNextLineIndent = new ArrayList<IndentCommand>();
                 List<IndentCommand> iis = getLineIndent(cd, preliminaryNextLineIndent);
                 if (iis.isEmpty()) {
                     throw new IllegalStateException("getLineIndent must always return at least IndentInstance.Type.NO_CHANGE");
                 }
+
+                // record line indentation:
                 Line ln = new Line();
                 ln.lineIndent = iis;
                 ln.preliminaryNextLineIndent = preliminaryNextLineIndent;
@@ -397,25 +421,20 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     }
                 }
                 lineIndents.add(ln);
+
+                // store last line index
+                lastLineIndex = line;
+
+                // debug line:
                 if (DEBUG) {
                     debugIndentation(joinedTS, cd, iis, getDocument().getText(rowStartOffset, rowEndOffset-rowStartOffset+1).
                             replace("\n", "").replace("\r", "").trim());
                 }
-
-                lastLineIndex = line;
-
-
-
-                // if one of the lines was ignored (ie. indentThisLine is false) then do
-                // not update lastLineIndex so that newBlock flag is set consequently.
-                // experimental: I'm not sure whether to treat empty line as new block sematic
-                //   possibly to be revised.
-                if (!indentThisLine && !newBlock) {
-                    lastLineIndex = -1;
-                }
-
-
             }
+        }
+        // close last block:
+        if (lineIndents.size() > 0) {
+            lineIndents.get(lineIndents.size()-1).blockEnd = true;
         }
     }
 
@@ -518,27 +537,19 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         return allPreviousCommands.get(allPreviousCommands.size()-1).getType() == IndentCommand.Type.CONTINUE;
     }
 
-    protected int calculateLineIndent(int indentation, List<Line> lines, Line line, Line previousLine,
+    private int calculateLineIndent(int indentation, List<Line> lines, Line line, Line previousLine,
             List<IndentCommand> currentLineIndents, List<IndentCommand> allPreviousCommands,
             boolean update, boolean beingFormatted, int lineStart) throws BadLocationException {
         int thisLineIndent = 0;
         int returnToLine = -1;
         List<IndentCommand> allCommands = new ArrayList<IndentCommand>(allPreviousCommands);
+        boolean previousLineEndsWithContinue = isPreviousLineEndsWithContinue(allPreviousCommands);
+        if (previousLineEndsWithContinue && currentLineIndents.size() > 0 &&
+                currentLineIndents.get(0).getType() != IndentCommand.Type.CONTINUE) {
+            indentation = getCalulatedPreviousIndent(allCommands, 0);
+            thisLineIndent = 0;
+        }
         for (IndentCommand ii : currentLineIndents) {
-            //lineOffset = ii.getLineOffset();
-            //blankLine = false; //ii.isBlankLine(); // TODO: XXX: detect whether line is blank or not
-    //                    if (ii.getType() == IndentCommand.Type.BLOCK_INDENT) {
-    //                        assert i == 0 : "BLOCK_INDENT should be first on line";
-    //                        indentation = ii.getFixedIndentSize();
-    //                        newBlock = true;
-    //                        //index++;
-    //                        continue;
-    //                    }
-            if (isPreviousLineEndsWithContinue(allPreviousCommands) && ii.getType() != IndentCommand.Type.CONTINUE) {
-                indentation = getCalulatedPreviousIndent(allCommands, 0);
-                //indentation = allIndentComands.get(previousIndentIndex).getCalculatedIndentation();
-                thisLineIndent = 0;
-            }
             switch (ii.getType()) {
                 case NO_CHANGE:
                     break;
@@ -551,8 +562,9 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     }
                     break;
                 case CONTINUE:
-                    if (isPreviousLineEndsWithContinue(allPreviousCommands)) {
-                        // only first occurance of CONTINUE is indented
+                    // only first occurance of CONTINUE is indented:
+                    if (previousLineEndsWithContinue) {
+                        // do nothing
                     } else {
                         if (ii.getFixedIndentSize() != -1) {
                             thisLineIndent = ii.getFixedIndentSize();
@@ -598,7 +610,6 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             allCommands.add(ii);
         }
         if (update) {
-
             if (beingFormatted) {
                 int diff = 0;
                 if (returnToLine != -1) {

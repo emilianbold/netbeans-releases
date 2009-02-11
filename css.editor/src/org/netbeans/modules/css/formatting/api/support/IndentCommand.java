@@ -118,7 +118,9 @@ public final class IndentCommand {
 
         /**
          * Foreign language block between lines carying BLOCK_START and BLOCK_END
-         * will be automatically shift.
+         * will be automatically shift. Blocks cannot overlap or be nested.
+         * Useful for example in case of JSP's scriptlet tag which contains block
+         * of Java code and which starts with <% and ends with %>.
          */
         BLOCK_START,
         BLOCK_END,
