@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
@@ -126,14 +127,23 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         switch (wizardType) {
             case NEW:
                 // sources - we need them first because of free project name
-                configureProjectPanelVisual.setLocalServerModel(getLocalServers());
+                MutableComboBoxModel localServers = getLocalServers();
+                if (localServers != null) {
+                    configureProjectPanelVisual.setLocalServerModel(localServers);
+                } else {
+                    configureProjectPanelVisual.setLocalServerModel(new LocalServer.ComboBoxModel(LocalServer.PENDING_LOCAL_SERVER));
+                    configureProjectPanelVisual.setState(false);
+                    fireChangeEvent();
+                    PhpEnvironment.get().readDocumentRoots(new PhpEnvironment.ReadDocumentRootsNotifier() {
+                        public void finished(List<DocumentRoot> documentRoots) {
+                            initLocalServers(documentRoots);
+                        }
+                    });
+                }
                 LocalServer sourcesLocation = getLocalServer();
                 if (sourcesLocation != null) {
                     configureProjectPanelVisual.selectSourcesLocation(sourcesLocation);
                 }
-
-                // set project name only for empty project
-                configureProjectPanelVisual.setProjectName(getProjectName());
                 break;
             case EXISTING:
                 // noop
@@ -195,11 +205,18 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
     public boolean isValid() {
         getComponent();
+        if (!configureProjectPanelVisual.getState()) {
+            return false;
+        }
         descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, " "); // NOI18N
         String error = null;
         // different order of validation for each wizard type
         switch (wizardType) {
             case NEW:
+                // first check whether document roots are read already
+                if (descriptor.getProperty(ROOTS) == null) {
+                    return false;
+                }
                 error = validateProject();
                 if (error != null) {
                     descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error);
@@ -276,19 +293,8 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     String getProjectName() {
         String projectName = (String) descriptor.getProperty(PROJECT_NAME);
         if (projectName == null) {
-            // this can happen only for the first time
-            switch (wizardType) {
-                case NEW:
-                    assert false : "Project name must be already set during getting possible sourcce directories";
-                    break;
-                case EXISTING:
-                    projectName = getDefaultFreeName(ProjectChooser.getProjectsFolder());
-                    break;
-                default:
-                    assert false : "Unknown wizard type: " + wizardType;
-                    break;
-            }
-            assert projectName != null : "Project name must be already set during getting possible sourcce directories";
+            // this can happen only for the first time and ideally only for NEW project wizard (see NewPhpProjectWizardIterator#getPreferredDocumentRoot)
+            projectName = getDefaultFreeName(ProjectChooser.getProjectsFolder());
             descriptor.putProperty(PROJECT_NAME, projectName);
         }
         return projectName;
@@ -326,29 +332,38 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private MutableComboBoxModel getLocalServers() {
-        MutableComboBoxModel model = (MutableComboBoxModel) descriptor.getProperty(LOCAL_SERVERS);
-        if (model != null) {
-            return model;
-        }
-        return getOSDependentLocalServers();
+        return (MutableComboBoxModel) descriptor.getProperty(LOCAL_SERVERS);
     }
 
-    private MutableComboBoxModel getOSDependentLocalServers() {
+    private void initLocalServers(List<DocumentRoot> documentRoots) {
         // first, get preferred document root because we need to find free folder name for project
         File preferredRoot = ProjectChooser.getProjectsFolder();
-        List<DocumentRoot> roots = PhpEnvironment.get().getDocumentRoots();
-        for (DocumentRoot root : roots) {
+        for (DocumentRoot root : documentRoots) {
             if (root.isPreferred()) {
                 preferredRoot = new File(root.getDocumentRoot());
                 break;
             }
         }
-        descriptor.putProperty(ROOTS, roots);
+        // store document roots
+        descriptor.putProperty(ROOTS, documentRoots);
 
+        // find free folder name
         String projectName = getDefaultFreeName(preferredRoot);
         descriptor.putProperty(PROJECT_NAME, projectName);
+
+        // prepare copy-to-folder targets
+        int size = documentRoots.size();
+        List<LocalServer> localServers = new ArrayList<LocalServer>(size);
+        for (DocumentRoot root : documentRoots) {
+            String srcRoot = new File(root.getDocumentRoot(), projectName).getAbsolutePath();
+            LocalServer ls = new LocalServer(null, root.getUrl(), root.getDocumentRoot(), srcRoot, true);
+            localServers.add(ls);
+        }
+        descriptor.putProperty(RunConfigurationPanel.COPY_SRC_TARGETS, new LocalServer.ComboBoxModel(localServers.toArray(new LocalServer[size])));
+
+        // create & set a new model for document roots
         MutableComboBoxModel model = new LocalServer.ComboBoxModel(new LocalServer(getProjectFolder().getAbsolutePath()));
-        for (DocumentRoot root : roots) {
+        for (DocumentRoot root : documentRoots) {
             LocalServer ls = new LocalServer(root.getDocumentRoot() + File.separator + projectName);
             ls.setHint(root.getHint());
             model.addElement(ls);
@@ -356,7 +371,11 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
                 model.setSelectedItem(ls);
             }
         }
-        return model;
+        configureProjectPanelVisual.setLocalServerModel(model);
+        configureProjectPanelVisual.setProjectName(projectName);
+
+        configureProjectPanelVisual.setState(true);
+        fireChangeEvent();
     }
 
     private String validFreeProjectName(File parentFolder, int index) {

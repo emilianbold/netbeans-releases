@@ -42,7 +42,6 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Stack;
@@ -57,7 +56,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 
 /**
  * parameter list of non K&R function
@@ -78,7 +77,7 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
         return "Fun " + super.toString(); // NOI18N
     }
 
-    /*package*/ static FunctionParameterListImpl create(CsmFile file, AST funAST, CsmScope scope) {
+    /*package*/ static FunctionParameterListImpl create(CsmFile file, AST funAST, CsmScope scope, boolean isLocal) {
         AST lParen = null;
         AST rParen = null;
         AST paramList = null;
@@ -116,16 +115,15 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
         } else {
             return null;
         }
-        return create(file, lParen, rParen, paramList, krList, scope);
+        return create(file, lParen, rParen, paramList, krList, scope, isLocal);
     }
 
-    /*package*/ static FunctionParameterListImpl create(CsmFile file, AST lParen, AST rParen, AST firstList, AST krList, CsmScope scope) {
+    private static FunctionParameterListImpl create(CsmFile file, AST lParen, AST rParen, AST firstList, AST krList, CsmScope scope, boolean isLocal) {
         if (lParen == null || lParen.getType() != CPPTokenTypes.LPAREN || rParen == null || rParen.getType() != CPPTokenTypes.RPAREN) {
             return null;
         }
-        List<CsmParameter> parameters = AstRenderer.renderParameters(krList == null ? firstList : krList, file, scope);
-        // put params into repository
-        Collection<CsmUID<CsmParameter>> paramUIDs = RepositoryUtils.put(parameters);
+        List<CsmParameter> parameters = AstRenderer.renderParameters(krList == null ? firstList : krList, file, scope, isLocal);
+        Collection<CsmUID<CsmParameter>> paramUIDs = UIDCsmConverter.objectsToUIDs(parameters);
         return new FunctionParameterListImpl(file, getStartOffset(lParen), getEndOffset(rParen), paramUIDs);
     }
 

@@ -65,10 +65,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.JOptionPane;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.php.dbgp.DebugSession.IDESessionBridge;
+import org.netbeans.modules.php.dbgp.breakpoints.Utils;
 import org.netbeans.modules.php.dbgp.models.ThreadsModel;
 import org.netbeans.modules.php.dbgp.packets.StatusCommand;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
@@ -365,9 +367,11 @@ public class StartActionProviderImpl {
                             StartActionProviderImpl.class, PORT_OCCUPIED);
                     mesg = MessageFormat.format(mesg, myPort);
                     NotifyDescriptor descriptor =
-                            new NotifyDescriptor.Message(mesg,
-                            NotifyDescriptor.INFORMATION_MESSAGE);
-                    DialogDisplayer.getDefault().notify(descriptor);
+                            new NotifyDescriptor.Confirmation(mesg, JOptionPane.YES_NO_OPTION);
+                    Object choice =  DialogDisplayer.getDefault().notify(descriptor);
+                    if (choice.equals(JOptionPane.YES_OPTION)) {
+                        Utils.openPhpOptionsDialog();
+                    }
                     log(e);
                     return false;
                 }

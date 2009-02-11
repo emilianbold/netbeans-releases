@@ -112,6 +112,7 @@ public class ChooseArchetypePanel extends javax.swing.JPanel implements Explorer
         tv.setPopupAllowed(false);
         tv.setRootVisible(false);
         tv.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        tv.setUseSubstringInQuickSearch(true);
         Childs childs = new Childs();
         childs.addArchetype(LOADING_ARCHETYPE);
         AbstractNode root = new AbstractNode(childs);
@@ -187,7 +188,7 @@ public class ChooseArchetypePanel extends javax.swing.JPanel implements Explorer
             .add(jLabel2)
             .add(lblHint)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(pnlView, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 385, Short.MAX_VALUE)
+                .add(pnlView, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(btnCustom)
@@ -212,11 +213,11 @@ public class ChooseArchetypePanel extends javax.swing.JPanel implements Explorer
                         .add(btnCustom)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(btnRemove))
-                    .add(pnlView, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE))
+                    .add(pnlView, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 124, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 104, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

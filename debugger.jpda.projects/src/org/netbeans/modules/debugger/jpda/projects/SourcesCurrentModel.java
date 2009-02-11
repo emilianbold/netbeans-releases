@@ -45,7 +45,6 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.util.*;
 import javax.swing.AbstractAction;
@@ -54,13 +53,19 @@ import javax.swing.JFileChooser;
 import javax.swing.KeyStroke;
 import javax.swing.filechooser.FileFilter;
 
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.Properties;
+import org.netbeans.api.debugger.Session;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.spi.viewmodel.ColumnModel;
+import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.TableModel;
@@ -70,6 +75,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -85,22 +91,73 @@ NodeActionsProvider {
 
     private Vector<ModelListener>   listeners = new Vector<ModelListener>();
     // set of filters
-    private Set<String>             enabledSourceRoots = new HashSet<String>();
+    //private Set<String>             enabledSourceRoots = new HashSet<String>();
     private Set<String>             disabledSourceRoots = new HashSet<String>();
-    private List<String>            additionalSourceRoots = new ArrayList<String>();
-    private Properties              filterProperties = Properties.
+    private List<String>            additionalSourceRoots = Collections.emptyList();
+    private Properties              sourcesProperties = Properties.
         getDefault ().getProperties ("debugger").getProperties ("sources");
-    private final Set<String>       sourceRootsSet = new HashSet<String>();
+    //private final Set<String>       sourceRootsSet = new HashSet<String>();
+    private String                  projectRoot;
     private PropertyChangeListener  mainProjectListener;
+    private DebuggerManagerListener debuggerListener;
+    private SourcePathProviderImpl  currentSourcePathProvider;
 
 
     public SourcesCurrentModel () {
-        loadFilters ();
-        updateCachedRoots();
+        bindWithSourcePathProvider();
         DELETE_ACTION.putValue (
             Action.ACCELERATOR_KEY,
             KeyStroke.getKeyStroke ("DELETE")
         );
+    }
+
+    private void bindWithSourcePathProvider() {
+        debuggerListener = new DebuggerManagerAdapter() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                String propertyName = evt.getPropertyName();
+                if (DebuggerManager.PROP_CURRENT_SESSION.equals(propertyName)) {
+                    Session s = DebuggerManager.getDebuggerManager().getCurrentSession();
+                    SourcePathProviderImpl spImpl = null;
+                    if (s != null) {
+                        List<? extends SourcePathProvider> sourcePathProviders = s.lookup(null, SourcePathProvider.class);
+                        for (SourcePathProvider sp : sourcePathProviders) {
+                            if (sp instanceof SourcePathProviderImpl) {
+                                spImpl = (SourcePathProviderImpl) sp;
+                                setSources(spImpl);
+                                break;
+                            }
+                        }
+                    }
+                    synchronized (this) {
+                        currentSourcePathProvider = spImpl;
+                    }
+                    fireTreeChanged();
+                }
+            }
+        };
+        DebuggerManager.getDebuggerManager().addDebuggerListener(
+                WeakListeners.create(DebuggerManagerListener.class, debuggerListener,
+                                             DebuggerManager.getDebuggerManager()));
+    }
+
+    private synchronized void setSources(SourcePathProviderImpl sp) {
+        //Find the correct project root and take the disabled and additional sources for that project root.
+        /*
+        File projectBase = sp.baseDir;
+        String rootPath = null;
+        if (projectBase != null) {
+            try {
+                rootPath = projectBase.toURI().toURL().toExternalForm();
+                System.err.println("\n\nrootPath = '"+rootPath+"'\n\n");
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+         */
+        currentSourcePathProvider = sp;
+        //Unset disabled source roots from sp.
+        //Add additional source roots to sp.
     }
 
 
@@ -121,6 +178,14 @@ NodeActionsProvider {
     public Object[] getChildren (Object parent, int from, int to)
     throws UnknownTypeException {
         if (parent == ROOT) {
+
+            //Display source roots from currentSourcePathProvider, if set.
+            synchronized (this) {
+                if (currentSourcePathProvider != null) {
+                    return currentSourcePathProvider.getSourceRoots();
+                }
+            }
+
             // 1) get source roots
             if (mainProjectListener == null) {
                 mainProjectListener = new PropertyChangeListener() {
@@ -133,35 +198,42 @@ NodeActionsProvider {
             }
             Project p = MainProjectManager.getDefault().getMainProject();
             String[] sourceRoots;
+            String root = null;
             if (p != null) {
-                Sources s = ProjectUtils.getSources(p);
-                SourceGroup[] sg = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-                sourceRoots = new String[sg.length];
-                for (int i = 0; i < sg.length; i++) {
-                    try {
-                        sourceRoots[i] = sg[i].getRootFolder().getURL().toExternalForm();
-                    } catch (FileStateInvalidException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                List<FileObject> projectSources = getProjectSources(p);
+                //System.err.println("\nProject sources = "+projectSources);
+                sourceRoots = new String[projectSources.size()];
+                for (int i = 0; i < sourceRoots.length; i++) {
+                    sourceRoots[i] = SourcePathProviderImpl.getRoot(projectSources.get(i));
+                }
+                try {
+                    root = p.getProjectDirectory().getURL().toExternalForm();
+                } catch (FileStateInvalidException ex) {
                 }
             } else {
                 sourceRoots = new String[] {};
             }
             //String[] sourceRoots = sourcePath.getOriginalSourceRoots ();
 
-            // 3) find additional disabled source roots (enabled are in sourceRoots)
-            List<String> addSrcRoots;
+            // 3) find additional and disabled source roots
+            List<String> addSrcRoots = null;
             synchronized (this) {
-                if (additionalSourceRoots.size() > 0) {
-                    addSrcRoots = new ArrayList<String>(additionalSourceRoots.size());
-                    for (String addSrcRoot : additionalSourceRoots) {
-                        if (!enabledSourceRoots.contains(addSrcRoot)) {
-                            addSrcRoots.add(addSrcRoot);
-                        }
-                    }
-                } else {
-                    addSrcRoots = Collections.emptyList();
+                if (root != null) {
+                    addSrcRoots = loadAdditionalSourceRoots(root);
                 }
+                if (addSrcRoots == null) {
+                    addSrcRoots = new ArrayList<String>();
+                } else {
+                    addSrcRoots = new ArrayList<String>(addSrcRoots);
+                }
+                additionalSourceRoots = addSrcRoots;
+                disabledSourceRoots = loadDisabledSourceRoots(root);
+                if (disabledSourceRoots == null) {
+                    disabledSourceRoots = new HashSet<String>();
+                } else {
+                    disabledSourceRoots = new HashSet<String>(disabledSourceRoots);
+                }
+                projectRoot = root;
             }
 
             // 3) join them
@@ -175,6 +247,84 @@ NodeActionsProvider {
             return fos;
         } else
         throw new UnknownTypeException (parent);
+    }
+
+    private List<String> loadAdditionalSourceRoots(String projectRoot) {
+        if (projectRoot == null) return null;
+        return (List<String>) sourcesProperties.getProperties("additional_source_roots").
+                getMap("project", Collections.emptyMap()).
+                get(projectRoot);
+    }
+
+    private Set<String> loadDisabledSourceRoots(String projectRoot) {
+        if (projectRoot == null) return null;
+        return (Set<String>) sourcesProperties.getProperties("source_roots").
+                getMap("project_disabled", Collections.emptyMap()).
+                get(projectRoot);
+    }
+
+    private static List<FileObject> getProjectSources(Project p) {
+        List<FileObject> allSourceRoots = new ArrayList<FileObject>();
+        Set<FileObject> addedBinaryRoots = new HashSet<FileObject>();
+        Set<FileObject> preferredRoots = new HashSet<FileObject>();
+        Sources s = ProjectUtils.getSources(p);
+        SourceGroup[] sgs = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        for (SourceGroup sg : sgs) {
+            ClassPath ecp = ClassPath.getClassPath(sg.getRootFolder(), ClassPath.SOURCE);
+            if (ecp != null) {
+                addSourceRoots(ecp, allSourceRoots, preferredRoots);
+            }
+        }
+        for (SourceGroup sg : sgs) {
+            ClassPath ecp = ClassPath.getClassPath(sg.getRootFolder(), ClassPath.EXECUTE);
+            if (ecp != null) {
+                addSourceRoots(ecp, allSourceRoots, addedBinaryRoots, preferredRoots);
+            }
+        }
+        for (SourceGroup sg : sgs) {
+            ClassPath ecp = ClassPath.getClassPath(sg.getRootFolder(), ClassPath.BOOT);
+            if (ecp != null) {
+                addSourceRoots(ecp, allSourceRoots, addedBinaryRoots, preferredRoots);
+            }
+        }
+        
+        return allSourceRoots;
+    }
+
+    private static void addSourceRoots(ClassPath ecp,
+                                       List<FileObject> allSourceRoots,
+                                       Set<FileObject> addedBinaryRoots,
+                                       Set<FileObject> preferredRoots) {
+        FileObject[] binaryRoots = ecp.getRoots();
+        for (FileObject fo : binaryRoots) {
+            if (addedBinaryRoots.contains(fo)) {
+                continue;
+            }
+            addedBinaryRoots.add(fo);
+            try {
+                FileObject[] roots = SourceForBinaryQuery.findSourceRoots(fo.getURL()).getRoots();
+                for (FileObject fr : roots) {
+                    if (!preferredRoots.contains(fr)) {
+                        allSourceRoots.add(fr);
+                        preferredRoots.add(fr);
+                    }
+                }
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
+    private static void addSourceRoots(ClassPath ecp,
+                                       List<FileObject> allSourceRoots,
+                                       Set<FileObject> preferredRoots) {
+        FileObject[] sourceRoots = ecp.getRoots();
+        for (FileObject fr : sourceRoots) {
+            if (!preferredRoots.contains(fr) && !fr.isVirtual()) {
+                allSourceRoots.add(fr);
+                preferredRoots.add(fr);
+            }
+        }
     }
 
     /**
@@ -281,64 +431,57 @@ NodeActionsProvider {
 
     private boolean isEnabled (String root) {
         synchronized(this) {
-            return sourceRootsSet.contains(root);
+            return !disabledSourceRoots.contains(root);
         }
     }
 
     private void setEnabled (String root, boolean enabled) {
-            List<String> sourceRoots = new ArrayList<String>(sourceRootsSet);
-            synchronized (this) {
-                if (enabled) {
-                    enabledSourceRoots.add (root);
-                    disabledSourceRoots.remove (root);
-                    sourceRoots.add (root);
-                } else {
-                    disabledSourceRoots.add (root);
-                    enabledSourceRoots.remove (root);
-                    sourceRoots.remove (root);
-                }
+        synchronized (this) {
+            if (enabled) {
+                disabledSourceRoots.remove (root);
+            } else {
+                disabledSourceRoots.add (root);
             }
-            String[] ss = new String [sourceRoots.size ()];
-            //sourcePath.setSourceRoots (sourceRoots.toArray (ss));
-
-        saveFilters ();
+            saveDisabledSourceRoots ();
+        }
     }
 
+    /*
     private void loadFilters () {
         enabledSourceRoots = new HashSet (
-            filterProperties.getProperties ("source_roots").getCollection (
+            sourcesProperties.getProperties ("source_roots").getCollection (
                 "enabled",
                 Collections.EMPTY_SET
             )
         );
         disabledSourceRoots = new HashSet (
-            filterProperties.getProperties ("source_roots").getCollection (
+            sourcesProperties.getProperties ("source_roots").getCollection (
                 "disabled",
                 Collections.EMPTY_SET
             )
         );
         additionalSourceRoots = new ArrayList(
-            filterProperties.getProperties("additional_source_roots").getCollection(
+            sourcesProperties.getProperties("additional_source_roots").getCollection(
                 "src_roots",
                 Collections.EMPTY_LIST)
         );
     }
+     */
 
-    private synchronized void saveFilters () {
-        filterProperties.getProperties ("source_roots").setCollection
-            ("enabled", enabledSourceRoots);
-        filterProperties.getProperties ("source_roots").setCollection
-            ("disabled", disabledSourceRoots);
-        filterProperties.getProperties("additional_source_roots").
-            setCollection("src_roots", additionalSourceRoots);
+    private synchronized void saveDisabledSourceRoots () {
+        Map map = sourcesProperties.getProperties("source_roots").
+                getMap("project_disabled", new HashMap());
+        map.put(projectRoot, disabledSourceRoots);
+        sourcesProperties.getProperties("source_roots").
+                setMap("project_disabled", map);
     }
 
-    private synchronized void updateCachedRoots() {
-//        String[] roots = sourcePath.getSourceRoots();
-//        sourceRootsSet.clear();
-//        for (int x = 0; x < roots.length; x++) {
-//            sourceRootsSet.add(roots[x]);
-//        }
+    private synchronized void saveAdditionalSourceRoots () {
+        Map map = sourcesProperties.getProperties("additional_source_roots").
+                getMap("project", new HashMap());
+        map.put(projectRoot, additionalSourceRoots);
+        sourcesProperties.getProperties("additional_source_roots").
+                setMap("project", map);
     }
 
     // innerclasses ............................................................
@@ -362,7 +505,7 @@ NodeActionsProvider {
                             return true;
                         }
                         try {
-                            return FileUtil.isArchiveFile(file.toURL());
+                            return FileUtil.isArchiveFile(file.toURI().toURL());
                         } catch (MalformedURLException ex) {
                             Exceptions.printStackTrace(ex);
                             return false;
@@ -376,13 +519,13 @@ NodeActionsProvider {
             if (state == JFileChooser.APPROVE_OPTION) {
                 File zipOrDir = newSourceFileChooser.getSelectedFile();
                 try {
-                    if (!zipOrDir.isDirectory() && !FileUtil.isArchiveFile(zipOrDir.toURL())) {
+                    if (!zipOrDir.isDirectory() && !FileUtil.isArchiveFile(zipOrDir.toURI().toURL())) {
                         return ;
                     }
                     String d = zipOrDir.getCanonicalPath();
                     synchronized (SourcesCurrentModel.this) {
                         additionalSourceRoots.add(d);
-                        enabledSourceRoots.add(d);
+                        //enabledSourceRoots.add(d);
                     }
                     // Set the new source roots:
                     /*
@@ -393,7 +536,7 @@ NodeActionsProvider {
                     newSourceRoots[l] = d;
                     sourcePath.setSourceRoots(newSourceRoots);
                     */
-                    saveFilters();
+                    saveAdditionalSourceRoots();
                     fireTreeChanged ();
                 } catch (java.io.IOException ioex) {
                     ErrorManager.getDefault().notify(ioex);
@@ -411,13 +554,15 @@ NodeActionsProvider {
             }
             public void perform (Object[] nodes) {
                 int i, k = nodes.length;
-                for (i = 0; i < k; i++) {
-                    String node = (String) nodes [i];
-                    synchronized (SourcesCurrentModel.this) {
+                synchronized (SourcesCurrentModel.this) {
+                    for (i = 0; i < k; i++) {
+                        String node = (String) nodes [i];
                         additionalSourceRoots.remove(node);
-                        enabledSourceRoots.remove(node);
+                        //enabledSourceRoots.remove(node);
                         disabledSourceRoots.remove(node);
                     }
+                    saveAdditionalSourceRoots();
+                    saveDisabledSourceRoots();
                     // Set the new source roots:
                     /*
                     String[] sourceRoots = sourcePath.getSourceRoots();
@@ -437,7 +582,6 @@ NodeActionsProvider {
                     }
                      */
                 }
-                saveFilters ();
                 fireTreeChanged ();
             }
         },

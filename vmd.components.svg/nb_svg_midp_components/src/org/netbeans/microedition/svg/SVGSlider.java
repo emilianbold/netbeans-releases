@@ -91,7 +91,8 @@ public class SVGSlider extends SVGComponent {
         initNestedElements();
         verify();
         myInputHandler = new SliderInputHandler();
-        setValue( myMin );
+        //setValue( myMin );
+        myValue = myMin;
     }
 
     public SVGSlider( int min, int max, SVGForm form, String elemId ) {
@@ -109,33 +110,75 @@ public class SVGSlider extends SVGComponent {
     }
     
     public void setValue( final int value ){
-        if ( myValue > myMax || myValue < myMin ){
-            throw new IllegalArgumentException( value +" is out of range"); // NOI18N
+        int val = value;
+        if ( val > myMax ){
+            val = myMax;
+        }
+        if ( val < myMin ){
+            val = myMin;
         }
         
-        final int step = value - myValue;
+        final int step = val - myValue;
+
+        if ( myMax == myMin ){
+            return;
+        }
         getForm().invokeLaterSafely(new Runnable() {
 
             public void run() {
                 SVGRect rect = myRuleElement.getBBox();
                 float width = rect.getWidth();
                 SVGMatrix matrix = myKnobElement.getMatrixTrait(TRANSFORM);
-                matrix.mTranslate(step * width / (myMax - myMin),
-                        0);
+                matrix.mTranslate(step * width / (myMax - myMin),0);
                 myKnobElement.setMatrixTrait(TRANSFORM, matrix);
             }
         });
         
-        myValue = value;
+        myValue = val;
         fireActionPerformed();
     }
     
     public void setMin( int min ){
-        myMin = min;
+        /*
+         * This is needed to reset knob. Otherwise visual knob
+         * element will have position that can't be express
+         * in relationship between current value/min/max.
+         */
+        setValue(myMin);
+        
+        if ( min > myMax ){
+            myMin = myMax;
+        }
+        else {
+            myMin = min;
+        }
+
+        if ( myValue <myMin ){
+            myValue = myMin;
+        }
     }
     
     public void setMax( int max ){
-        myMax = max;
+        /*
+         * This is needed to reset knob. Otherwise visual knob
+         * element will have position that can't be express
+         * in relationship between current value/min/max.
+         */
+        setValue(myMin);
+        
+        if ( max < myMin ){
+            myMax = myMin;
+        }
+        else {
+            myMax = max;
+        }
+        if ( myValue > myMax ){
+            myValue = myMax;
+        }
+
+        if ( myValue >myMax ){
+            myValue = myMax;
+        }
     }
     
     public int getMin(){

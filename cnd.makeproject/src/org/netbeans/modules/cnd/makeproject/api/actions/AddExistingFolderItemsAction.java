@@ -42,11 +42,13 @@
 package org.netbeans.modules.cnd.makeproject.api.actions;
 
 import java.awt.Dimension;
+import java.util.Iterator;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -147,7 +149,11 @@ public class AddExistingFolderItemsAction extends NodeAction {
                 null);
         Object ret = DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (ret == addButton) {
-            makeConfigurationDescriptor.addSourceFilesFromFolders(folder, sourceFilesPanel.getListData().iterator(), true, true, false);
+            Iterator<? extends SourceFolderInfo> iterator = sourceFilesPanel.getListData().iterator();
+            while (iterator.hasNext()) {
+                SourceFolderInfo sourceFolderInfo = iterator.next();
+                makeConfigurationDescriptor.addSourceFilesFromRoot(folder, sourceFolderInfo.getFile(), false, false);
+            }
         }
     }
     

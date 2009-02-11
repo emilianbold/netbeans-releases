@@ -184,7 +184,11 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
                 CharSequence[] newNameParts = new CharSequence[l.size()];
                 l.toArray(newNameParts);
                 nameParts = newNameParts;
-                RepositoryUtils.put(this);
+                if (registerInProject) {
+                    RepositoryUtils.put(this);
+                } else {
+                    Utils.setSelfUID(this);
+                }
             }
         }
         // create fake class we refer to

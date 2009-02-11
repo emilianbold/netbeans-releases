@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
-import org.netbeans.modules.cnd.api.model.util.*;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
@@ -79,7 +79,9 @@ public final class PersistentKey {
         } else {
             //System.out.println("Skip "+uniq);
         }
-        return new PersistentKey(UIDs.get(decl));
+        // obtain UID directly without "null-check", because notificator works
+        // in separate thread which can be run after closed project
+        return new PersistentKey(UIDProviderIml.get(decl, false));
     }
     
     public Object getObject(){

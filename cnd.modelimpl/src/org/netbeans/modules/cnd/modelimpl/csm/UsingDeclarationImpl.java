@@ -78,13 +78,16 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
     private boolean lastResolveFalure;
     private final CsmUID<CsmScope> scopeUID;
     
-    public UsingDeclarationImpl(AST ast, CsmFile file, CsmScope scope) {
+    public UsingDeclarationImpl(AST ast, CsmFile file, CsmScope scope, boolean global) {
         super(ast, file);
         this.scopeUID = UIDCsmConverter.scopeToUID(scope);
         name = NameCache.getManager().getString(ast.getText());
         // TODO: here we override startOffset which is not good because startPosition is now wrong
         startOffset = ((CsmAST)ast.getFirstChild()).getOffset();
         rawName = AstUtil.getRawNameInChildren(ast);
+        if (!global) {
+            Utils.setSelfUID(this);
+        }
     }
     
     public CsmDeclaration getReferencedDeclaration() {

@@ -58,8 +58,13 @@ import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.subversion.hooks.spi.SvnHook;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 /**
  * A singleton Subversion manager class, center of Subversion module. Use {@link #getInstance()} to get access
@@ -67,7 +72,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Maros Sandor
  */
-public class Subversion {
+public class Subversion implements LookupListener {
 
     /**
      * Fired when textual annotations and badges have changed. The NEW value is Set<File> of files that changed or NULL
@@ -106,6 +111,8 @@ public class Subversion {
 
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion");
 
+    private Result<? extends SvnHook> hooksResult;
+
     public static synchronized Subversion getInstance() {
         if (instance == null) {
             instance = new Subversion();
@@ -130,6 +137,14 @@ public class Subversion {
         SubversionVCS svcs  = org.openide.util.Lookup.getDefault().lookup(SubversionVCS.class);
         fileStatusCache.addVersioningListener(svcs);
         addPropertyChangeListener(svcs);
+
+
+        hooksResult = (Result<? extends SvnHook>) Lookup.getDefault().lookupResult(SvnHook.class);
+        hooksResult.addLookupListener(this);
+    }
+
+    public void resultChanged(LookupEvent ev) {
+        hooksResult = (Result<? extends SvnHook>) Lookup.getDefault().lookupResult(SvnHook.class);
     }
 
     /**
@@ -486,4 +501,16 @@ public class Subversion {
             LOG.log(Level.INFO, "Unable to get original file", e);
         }
     }
+    
+    public List<SvnHook> getHooks() {
+        List<SvnHook> ret = new ArrayList<SvnHook>();
+        Collection<? extends SvnHook> hooks = hooksResult.allInstances();
+        if (hooks.size() > 0) {
+            for (SvnHook hook : hooks) {
+                ret.add(hook);
+            }
+        }
+        return ret;
+    }
+
 }

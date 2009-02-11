@@ -40,14 +40,13 @@ package org.netbeans.modules.nativeexecution.api;
 
 import org.netbeans.modules.nativeexecution.util.ExternalTerminal;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.impl.LocalNativeProcess;
 import java.util.concurrent.Callable;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.nativeexecution.api.impl.NativeProcessInfo;
-import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
 import org.netbeans.modules.nativeexecution.api.impl.RemoteNativeProcess;
 import org.netbeans.modules.nativeexecution.api.impl.TerminalLocalNativeProcess;
 
@@ -89,10 +88,10 @@ public final class NativeProcessBuilder implements Callable<Process> {
     /**
      * Creates a new instance of the builder that will create a {@link NativeProcess}
      * by running <tt>executable</tt> on the localhost.
-     * @param command executable to run.
+     * @param executable executable to run.
      */
-    public NativeProcessBuilder(final String command) {
-        this(new ExecutionEnvironment(), command);
+    public NativeProcessBuilder(final String executable) {
+        this(new ExecutionEnvironment(), executable);
     }
 
     private NativeProcessBuilder(NativeProcessBuilder b) {
@@ -111,7 +110,7 @@ public final class NativeProcessBuilder implements Callable<Process> {
      * @return new instance of the <tt>NativeProcessBuilder</tt> with
      *        registered listener.
      */
-    public NativeProcessBuilder addNativeProcessListener(Listener listener) {
+    public NativeProcessBuilder addNativeProcessListener(ChangeListener listener) {
         NativeProcessBuilder result = new NativeProcessBuilder(this);
         result.info.addNativeProcessListener(listener);
         return result;
@@ -175,6 +174,7 @@ public final class NativeProcessBuilder implements Callable<Process> {
         result.info.addEnvironmentVariable(name, value);
         return result;
     }
+
     /**
      * Returns a builder with additional environment variables for the command.
      * <p>
@@ -188,15 +188,12 @@ public final class NativeProcessBuilder implements Callable<Process> {
      * environment variables for the command.
      */
     public NativeProcessBuilder addEnvironmentVariables(Map<String, String> envs) {
-        NativeProcessBuilder result = new NativeProcessBuilder(this);
-        if (envs == null || envs.isEmpty()){
-            return result;
+        if (envs == null || envs.isEmpty()) {
+            return this;
         }
-        Iterator<String> names = envs.keySet().iterator();
-        while (names.hasNext()){
-            String name = names.next();
-            result.info.addEnvironmentVariable(name, envs.get(name));
-        }        
+
+        NativeProcessBuilder result = new NativeProcessBuilder(this);
+        result.info.addEnvironmentVariables(envs);
         return result;
     }
 

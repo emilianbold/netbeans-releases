@@ -119,6 +119,25 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
         } else {
 
         }
+
+        txtArtifactId.getAccessibleContext().setAccessibleDescription(
+                lblArtifactId.getAccessibleContext().getAccessibleName());
+        txtGroupId.getAccessibleContext().setAccessibleDescription(
+                lblGroupId.getAccessibleContext().getAccessibleName());
+        txtVersion.getAccessibleContext().setAccessibleDescription(
+                lblVersion.getAccessibleContext().getAccessibleName());
+        txtPackage.getAccessibleContext().setAccessibleDescription(
+                lblPackage.getAccessibleContext().getAccessibleName());
+        projectLocationTextField.getAccessibleContext().setAccessibleDescription(
+                projectLocationLabel.getAccessibleContext().getAccessibleName());
+        projectNameTextField.getAccessibleContext().setAccessibleDescription(
+                projectNameLabel.getAccessibleContext().getAccessibleName());
+        createdFolderTextField.getAccessibleContext().setAccessibleDescription(
+                createdFolderLabel.getAccessibleContext().getAccessibleName());
+        browseButton.getAccessibleContext().setAccessibleDescription(
+                browseButton.getAccessibleContext().getAccessibleName());
+        getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(BasicPanelVisual.class, "LBL_CreateProjectStep2"));
     }
     
     
@@ -209,7 +228,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
             pnlAdditionalsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(pnlAdditionalsLayout.createSequentialGroup()
                 .add(lblAdditionalProps)
-                .addContainerGap(423, Short.MAX_VALUE))
+                .addContainerGap(434, Short.MAX_VALUE))
             .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 468, Short.MAX_VALUE)
         );
         pnlAdditionalsLayout.setVerticalGroup(
@@ -245,13 +264,13 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
                     .add(projectNameLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
-                    .add(txtPackage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
-                    .add(txtVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
-                    .add(txtGroupId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
-                    .add(txtArtifactId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
+                    .add(txtPackage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
+                    .add(txtVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
+                    .add(txtGroupId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
+                    .add(txtArtifactId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(browseButton)

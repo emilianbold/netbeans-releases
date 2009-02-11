@@ -41,8 +41,10 @@ package org.netbeans.modules.php.project.ui.actions.support;
 
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.ui.actions.UploadCommand;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -55,6 +57,24 @@ public class ConfigActionRemote extends ConfigActionLocal {
 
     protected ConfigActionRemote(PhpProject project) {
         super(project);
+    }
+
+    @Override
+    public boolean isValid(boolean indexFileNeeded) {
+        boolean valid = super.isValid(indexFileNeeded);
+        if (!valid) {
+            return false;
+        }
+        String remoteConnection = ProjectPropertiesSupport.getRemoteConnection(project);
+        if (remoteConnection == null || RemoteConnections.get().remoteConfigurationForName(remoteConnection) == null) {
+            valid = false;
+        } else if (RunAsValidator.validateUploadDirectory(ProjectPropertiesSupport.getRemoteDirectory(project), true) != null) {
+            valid = false;
+        }
+        if (!valid) {
+            showCustomizer();
+        }
+        return valid;
     }
 
     @Override

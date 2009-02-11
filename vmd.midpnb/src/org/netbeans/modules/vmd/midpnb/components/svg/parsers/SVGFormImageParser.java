@@ -501,6 +501,9 @@ public class SVGFormImageParser extends SVGComponentImageParser {
 
     private static Float getPositionForRadioButton(Attributes atts, Float framePosition) {
         Float position = getPosition(atts);
+        if (position == null || atts == null || framePosition == null) {
+            return new Float(0);
+        }
         if (position != null){
             position = position + framePosition;
         }

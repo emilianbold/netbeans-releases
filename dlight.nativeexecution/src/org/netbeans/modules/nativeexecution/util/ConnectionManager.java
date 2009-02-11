@@ -52,7 +52,6 @@ import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.ObservableAction;
 import org.netbeans.modules.nativeexecution.api.ObservableActionListener;
 import org.netbeans.modules.nativeexecution.api.impl.ConnectionManagerAccessor;
@@ -194,6 +193,7 @@ public final class ConnectionManager {
 
         if (session != null) {
             sessions.put(sessionKey, session);
+            HostInfoUtils.updateHostInfo(env);
         }
 
         return session;

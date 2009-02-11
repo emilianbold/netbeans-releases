@@ -48,7 +48,8 @@ class NbRspecMediator < Spec::Runner::ExampleGroupRunner
     "Spec::Rails::Example::RailsExampleGroup",
     "ActionController::IntegrationTest",
     "ActionController::TestCase",
-    "ActiveSupport::TestCase"]
+    "ActiveSupport::TestCase",
+    "ActionMailer::TestCase"]
 
   def initialize(options, args)
     super(options)

@@ -101,7 +101,6 @@ import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.RenameAction;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -1006,6 +1005,21 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
 
         @Override
+        public void destroy() throws IOException {
+            if (!getFolder().isDiskFolder()) {
+                return;
+            }
+            String absPath = IpeUtils.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), getFolder().getRootPath());
+            File folderFile = new File(absPath);
+            if (!folderFile.isDirectory() || !folderFile.exists()) {
+                return;
+            }
+            FileObject folderFileObject = FileUtil.toFileObject(folderFile);
+            folderFileObject.delete();
+            super.destroy();
+        }
+
+        @Override
         public PasteType getDropType(Transferable transferable, int action, int index) {
             DataFlavor[] flavors = transferable.getTransferDataFlavors();
             for (int i = 0; i < flavors.length; i++) {
@@ -1046,8 +1060,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                         SystemAction.get(CopyAction.class),
                         SystemAction.get(PasteAction.class),
                         null,
-                        new RefreshItemAction((LogicalViewChildren) getChildren(), folder, null),
-                        null,
+//                        new RefreshItemAction((LogicalViewChildren) getChildren(), folder, null),
+//                        null,
                         SystemAction.get(DeleteAction.class),
                         createRenameAction(),
                         null,
@@ -1056,20 +1070,20 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             else {
             return new Action[]{
                         CommonProjectActions.newFileAction(),
+                        SystemAction.get(NewFolderAction.class),
                         SystemAction.get(AddExistingItemAction.class),
                         SystemAction.get(AddExistingFolderItemsAction.class),
-                        SystemAction.get(NewFolderAction.class),
+                        SystemAction.get(org.openide.actions.FindAction.class),
                         null,
-                        new RefreshItemAction((LogicalViewChildren) getChildren(), folder, null),
-                        null,
+//                        new RefreshItemAction((LogicalViewChildren) getChildren(), folder, null),
+//                        null,
                         SystemAction.get(CutAction.class),
                         SystemAction.get(CopyAction.class),
                         SystemAction.get(PasteAction.class),
+                        null,
                         SystemAction.get(RemoveFolderAction.class),
                         //                SystemAction.get(RenameAction.class),
                         createRenameAction(),
-                        null,
-                        SystemAction.get(org.openide.actions.FindAction.class),
                         null,
                         SystemAction.get(PropertiesFolderAction.class),};
             }
@@ -1110,9 +1124,28 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 // Drag&Drop, Cut&Paste
                 if (toFolder.getProject() == viewItemNode.getFolder().getProject()) {
                     // Move within same project
-                    viewItemNode.getFolder().removeItem(item);
-                    toFolder.addItem(item);
-                    copyItemConfigurations(item.getItemConfigurations(), oldConfigurations);
+                    if (toFolder.isDiskFolder()) {
+                        FileObject itemFO = item.getFileObject();
+                        String toFolderPath = IpeUtils.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
+                        FileObject toFolderFO = FileUtil.toFileObject(new File(toFolderPath));
+                        String newName = IpeUtils.createUniqueFileName(toFolderPath, itemFO.getName(), itemFO.getExt());
+                        FileObject movedFileFO = FileUtil.moveFile(itemFO, toFolderFO, newName);
+
+                        File movedFileFile = FileUtil.toFile(movedFileFO);
+                        String itemPath = movedFileFile.getPath();
+                        itemPath = FilePathAdaptor.mapToRemote(itemPath);
+                        itemPath = IpeUtils.toRelativePath(toFolder.getConfigurationDescriptor().getBaseDir(), itemPath);
+                        itemPath = FilePathAdaptor.normalize(itemPath);
+                        Item movedItem = toFolder.findItemByPath(itemPath);
+                        if (movedItem != null) {
+                            copyItemConfigurations(movedItem.getItemConfigurations(), oldConfigurations);
+                        }
+                    }
+                    else {
+                        viewItemNode.getFolder().removeItem(item);
+                        toFolder.addItem(item);
+                        copyItemConfigurations(item.getItemConfigurations(), oldConfigurations);
+                    }
                 } else {
                     if (IpeUtils.isPathAbsolute(item.getPath())) {
                         viewItemNode.getFolder().removeItem(item);
@@ -1139,22 +1172,40 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             } else if (type == DnDConstants.ACTION_COPY) {
                 // Copy&Paste
                 if (toFolder.getProject() == viewItemNode.getFolder().getProject()) {
-                    if (IpeUtils.isPathAbsolute(item.getPath()) || item.getPath().startsWith("..")) { // NOI18N
+                    if ((IpeUtils.isPathAbsolute(item.getPath()) || item.getPath().startsWith("..")) && !toFolder.isDiskFolder()) { // NOI18N
                         Toolkit.getDefaultToolkit().beep();
                     } else {
                         FileObject fo = FileUtil.toFileObject(item.getCanonicalFile());
-                        String parent = FileUtil.toFile(fo.getParent()).getPath();
                         String ext = fo.getExt();
-                        String newName = IpeUtils.createUniqueFileName(parent, fo.getName(), ext);
-                        fo.copy(fo.getParent(), newName, ext);
-                        String newPath = parent + "/" + newName; // NOI18N
-                        if (ext.length() > 0) {
-                            newPath = newPath + "." + ext; // NOI18N
+                        if (toFolder.isDiskFolder()) {
+                            String toFolderPath = IpeUtils.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
+                            FileObject toFolderFO = FileUtil.toFileObject(new File(toFolderPath));
+                            String newName = IpeUtils.createUniqueFileName(toFolderPath, fo.getName(), ext);
+                            FileObject copiedFileObject = fo.copy(toFolderFO, newName, ext);
+
+                            File copiedFileFile = FileUtil.toFile(copiedFileObject);
+                            String itemPath = copiedFileFile.getPath();
+                            itemPath = FilePathAdaptor.mapToRemote(itemPath);
+                            itemPath = IpeUtils.toRelativePath(toFolder.getConfigurationDescriptor().getBaseDir(), itemPath);
+                            itemPath = FilePathAdaptor.normalize(itemPath);
+                            Item copiedItemItem = toFolder.findItemByPath(itemPath);
+                            if (copiedItemItem != null) {
+                                copyItemConfigurations(copiedItemItem.getItemConfigurations(), oldConfigurations);
+                            }
                         }
-                        newPath = IpeUtils.toRelativePath(FileUtil.toFile(viewItemNode.getFolder().getProject().getProjectDirectory()).getPath(), newPath);
-                        Item newItem = new Item(FilePathAdaptor.normalize(newPath));
-                        toFolder.addItemAction(newItem);
-                        copyItemConfigurations(newItem.getItemConfigurations(), oldConfigurations);
+                        else {
+                            String parent = FileUtil.toFile(fo.getParent()).getPath();
+                            String newName = IpeUtils.createUniqueFileName(parent, fo.getName(), ext);
+                            fo.copy(fo.getParent(), newName, ext);
+                            String newPath = parent + "/" + newName; // NOI18N
+                            if (ext.length() > 0) {
+                                newPath = newPath + "." + ext; // NOI18N
+                            }
+                            newPath = IpeUtils.toRelativePath(FileUtil.toFile(viewItemNode.getFolder().getProject().getProjectDirectory()).getPath(), newPath);
+                            Item newItem = new Item(FilePathAdaptor.normalize(newPath));
+                            toFolder.addItemAction(newItem);
+                            copyItemConfigurations(newItem.getItemConfigurations(), oldConfigurations);
+                        }
                     }
                 } else {
                     if (IpeUtils.isPathAbsolute(item.getPath())) {
@@ -1462,8 +1513,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                     if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.OpenAction) {
                         newActions.add(oldActions[i]);
                         newActions.add(null);
-                        newActions.add(new RefreshItemAction(childrenKeys, null, getItem()));
-                        newActions.add(null);
+//                        newActions.add(new RefreshItemAction(childrenKeys, null, getItem()));
+//                        newActions.add(null);
                     } else if (oldActions[i] != null && oldActions[i] instanceof RenameAction) {
                         newActions.add(createRenameAction());
                     } else if (oldActions[i] != null && oldActions[i] instanceof DeleteAction) {
@@ -1481,10 +1532,11 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                     if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.OpenAction) {
                         newActions.add(oldActions[i]);
                         newActions.add(null);
-                        newActions.add(new RefreshItemAction(childrenKeys, null, getItem()));
-                        newActions.add(null);
+//                        newActions.add(new RefreshItemAction(childrenKeys, null, getItem()));
+//                        newActions.add(null);
+                    } else if (oldActions[i] != null && oldActions[i] instanceof PasteAction) {
+                        newActions.add(oldActions[i]);
                         newActions.add(SystemAction.get(CompileSingleAction.class));
-                        newActions.add(null);
                     } else if (oldActions[i] != null && oldActions[i] instanceof RenameAction) {
                         newActions.add(createRenameAction());
                     } else if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.PropertiesAction && getFolder().isProjectFiles()) {
