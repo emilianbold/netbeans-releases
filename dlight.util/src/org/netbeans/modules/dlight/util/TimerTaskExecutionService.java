@@ -38,14 +38,11 @@
  */
 package org.netbeans.modules.dlight.util;
 
-import java.security.AccessControlException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Enumeration;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -53,19 +50,38 @@ import java.util.logging.Logger;
 
 public final class TimerTaskExecutionService {
 
-    private final Object lock = new Object();
-    private Collection<SubscriberTask> subscribedTasks = new ArrayList<SubscriberTask>();
-    private Map<Callable<Integer>, Future<Integer>> hash = new HashMap<Callable<Integer>, Future<Integer>>();
-    private ExecutorService timerTasksExecutor = null;
+    private static final ExecutorService timerTasksExecutor;
+    private static final Logger log;
+    private static final TimerTaskExecutionService instance;
+    private final ConcurrentHashMap<Callable<Integer>, SubscriberTask> subscribedTasks;
+    private final ConcurrentHashMap<Callable<Integer>, Future<Integer>> runningHash;
     private Timer timer = null;
-    private static final Logger log = DLightLogger.getLogger(TimerTaskExecutionService.class);
-    private static final TimerTaskExecutionService instance = new TimerTaskExecutionService();
+    private final Object lock;
+
+
+    static {
+        log = DLightLogger.getLogger(TimerTaskExecutionService.class);
+        timerTasksExecutor = Executors.newCachedThreadPool();
+        instance = new TimerTaskExecutionService();
+
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+
+            @Override
+            public void run() {
+                log.fine("Stop TimerTaskExecutionService"); // NOI18N
+                timerTasksExecutor.shutdown();
+            }
+        });
+    }
 
     public static TimerTaskExecutionService getInstance() {
         return instance;
     }
 
     private TimerTaskExecutionService() {
+        lock = new String(TimerTaskExecutionService.class.getName());
+        subscribedTasks = new ConcurrentHashMap<Callable<Integer>, SubscriberTask>();
+        runningHash = new ConcurrentHashMap<Callable<Integer>, Future<Integer>>();
     }
 
     public void registerTimerTask(Callable<Integer> task, int factor) {
@@ -73,52 +89,54 @@ public final class TimerTaskExecutionService {
             return;
         }
 
-        SubscriberTask st = new SubscriberTask(task, factor);
         boolean willStartTimer = false;
 
-        synchronized (lock) {
-            if (subscribedTasks.isEmpty()) {
-                willStartTimer = true;
-            } else {
-                for (SubscriberTask t : subscribedTasks) {
-                    if (t.callable == task) {
-                        // Already registered
-                        return;
-                    }
-                }
+        if (subscribedTasks.isEmpty()) {
+            willStartTimer = true;
+        }
+
+        if (!subscribedTasks.contains(task)) {
+            SubscriberTask newTask = new SubscriberTask(task, factor);
+            SubscriberTask prevTask = subscribedTasks.putIfAbsent(task, newTask);
+            if (prevTask == null) {
+                log.fine("Register timer task " + task + " for every " + // NOI18N
+                        factor + " tick"); // NOI18N
             }
-            subscribedTasks.add(st);
         }
 
         if (willStartTimer) {
-            timerTasksExecutor = Executors.newCachedThreadPool();
-            timer = new Timer("D-Light Global Timer"); // NOI18N
-            timer.schedule(new DLightGlobalTimerTask(), 0, 100);
+            synchronized (lock) {
+                if (timer == null) {
+                    log.fine("Start D-Light Global Timer"); // NOI18N
+                    timer = new Timer("D-Light Global Timer"); // NOI18N
+                    timer.schedule(new DLightGlobalTimerTask(), 0, 100);
+                }
+            }
         }
 
     }
 
-    public void unregisterTimerTask(Callable task) {
-        synchronized (lock) {
-            for (SubscriberTask t : subscribedTasks.toArray(new SubscriberTask[0])) {
-                if (t.callable == task) {
-                    subscribedTasks.remove(t);
+    public void unregisterTimerTask(Callable<Integer> task) {
+        SubscriberTask removedTask = subscribedTasks.remove(task);
+
+        if (removedTask != null) {
+            log.fine("Timer task " + task + " unregistered"); // NOI18N
+        }
+
+        if (subscribedTasks.isEmpty()) {
+            synchronized (lock) {
+                if (timer != null) {
+                    log.fine("No tasks left for D-Light Global Timer; Stop timer"); // NOI18N
+                    timer.cancel();
+                    timer = null;
                 }
             }
-            hash.remove(task);
-            if (subscribedTasks.isEmpty()) {
-                // No subscribers - stop timer.
-                log.info("NO MORE TASKS - STOP GLOBAL TIMER"); // NOI18N
-                timer.cancel();
-                timer = null;
-                try {
-                    timerTasksExecutor.shutdownNow();
-                } catch (AccessControlException ace) {
-                    // TODO: ??? When it appears?
-                    DLightLogger.instance.severe(ace.getMessage());
-                }
-                timerTasksExecutor = null;
-            }
+        }
+
+        Future<Integer> submittedTask = runningHash.remove(task);
+
+        if (submittedTask != null) {
+            submittedTask.cancel(true);
         }
     }
 
@@ -127,16 +145,17 @@ public final class TimerTaskExecutionService {
         @Override
         // On every timer tick ...
         public void run() {
-            synchronized (lock) {
-                for (SubscriberTask task : subscribedTasks) {
-                    // Will submit only finished tasks!
-                    Future<Integer> f = hash.get(task.callable);
 
-                    if (f == null || f.isDone() || f.isCancelled()) {
-                        if (task.count-- == 0) {
-                            task.count = task.factor;
-                            hash.put(task.callable, timerTasksExecutor.submit(task.callable));
-                        }
+            Enumeration<Callable<Integer>> keys = subscribedTasks.keys();
+            while (keys.hasMoreElements()) {
+                Callable<Integer> key = keys.nextElement();
+                SubscriberTask task = subscribedTasks.get(key);
+                Future<Integer> future = runningHash.get(key);
+                if (future == null || future.isDone()) {
+                    if (task.count-- == 0) {
+                        task.count = task.factor;
+                        runningHash.put(task.callable,
+                                timerTasksExecutor.submit(task.callable));
                     }
                 }
             }
@@ -151,7 +170,7 @@ public final class TimerTaskExecutionService {
 
         public SubscriberTask(Callable<Integer> callable, int factor) {
             if (factor <= 0) {
-                throw new IllegalArgumentException("Timer factor should be positive integer"); // NOI18N
+                throw new IllegalArgumentException("Timer factor should be a positive integer"); // NOI18N
             }
 
             this.callable = callable;
