@@ -41,14 +41,16 @@
 
 package org.netbeans.modules.refactoring.api;
 
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.Lookup.Template;
+import org.openide.util.Parameters;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
 /**
- * Context contains "enviroment" in which the refactoring was invoked
+ * Context contains "environment" in which the refactoring was invoked
  * e.g. Java refactoring might put instance of ClasspathInfo here
  * @see AbstractRefactoring
  * @author Jan Becicka
@@ -70,7 +72,8 @@ public final class Context extends Lookup {
      * If there is an instance already set for this context, old
      * value is replaced by new one.
      */
-    public void add(Object value) {
+    public void add(@NonNull Object value) {
+        Parameters.notNull("value", value); // NOI18N
         Object old = lookup(value.getClass());
         if (old!=null) {
             instanceContent.remove(old);

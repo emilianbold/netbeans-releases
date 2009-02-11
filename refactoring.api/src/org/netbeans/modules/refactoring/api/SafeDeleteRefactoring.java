@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.refactoring.api;
 
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Lookup;
 
 /**
@@ -68,7 +69,7 @@ public final class SafeDeleteRefactoring extends AbstractRefactoring {
      * </table>
      * @param namedElements The elements to be safely deleted
      */
-    public SafeDeleteRefactoring(Lookup namedElements) {
+    public SafeDeleteRefactoring(@NonNull Lookup namedElements) {
         super(namedElements);
     }
     

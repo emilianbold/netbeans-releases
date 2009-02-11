@@ -48,6 +48,8 @@ import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.refactoring.api.impl.ProgressSupport;
 import org.netbeans.modules.refactoring.api.impl.SPIAccessor;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
@@ -55,6 +57,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.Transaction;
 import org.netbeans.modules.refactoring.spi.impl.UndoManager;
 import org.openide.LifecycleManager;
+import org.openide.util.Parameters;
 
 
 /** Class used to invoke refactorings.
@@ -82,7 +85,9 @@ public final class RefactoringSession {
      * @param description textual description of this session
      * @return instance of RefactoringSession
      */
-    public static RefactoringSession create(String description) {
+    @NonNull
+    public static RefactoringSession create(@NonNull String description) {
+        Parameters.notNull("description", description); // NOI18N
         return new RefactoringSession(description);
     }
 
@@ -94,6 +99,7 @@ public final class RefactoringSession {
      * @param saveAfterDone save all if true
      * @return instance of Problem or null, if everything is OK
      */
+    @CheckForNull
     public Problem doRefactoring(boolean saveAfterDone) {
         long time = System.currentTimeMillis();
         
@@ -147,6 +153,7 @@ public final class RefactoringSession {
      * @param saveAfterDone save all if true
      * @return instance of Problem or null, if everything is OK
      */
+    @CheckForNull
     public Problem undoRefactoring(boolean saveAfterDone) {
         try {
             ListIterator it = internalList.listIterator(internalList.size());
@@ -184,6 +191,7 @@ public final class RefactoringSession {
      * get elements from session
      * @return collection of RefactoringElements
      */
+    @NonNull
     public Collection<RefactoringElement> getRefactoringElements() {
         return refactoringElements;
     }
@@ -192,7 +200,8 @@ public final class RefactoringSession {
      *  Adds progress listener to this RefactoringSession
      * @param listener to add
      */
-    public synchronized void addProgressListener(ProgressListener listener) {
+    public synchronized void addProgressListener(@NonNull ProgressListener listener) {
+        Parameters.notNull("listener", listener); // NOI18N
         if (progressSupport == null ) {
             progressSupport = new ProgressSupport();
         }
@@ -203,7 +212,8 @@ public final class RefactoringSession {
      * Remove progress listener from this RefactoringSession
      * @param listener to remove
      */
-    public synchronized void removeProgressListener(ProgressListener listener) {
+    public synchronized void removeProgressListener(@NonNull ProgressListener listener) {
+        Parameters.notNull("listener", listener); // NOI18N
         if (progressSupport != null ) {
             progressSupport.removeProgressListener(listener); 
         }

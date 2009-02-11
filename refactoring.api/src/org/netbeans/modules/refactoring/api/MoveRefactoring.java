@@ -41,7 +41,10 @@
 
 package org.netbeans.modules.refactoring.api;
 
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 
 /**
  * This class is just holder for parameters of Move Refactoring.
@@ -67,7 +70,7 @@ public final class MoveRefactoring extends AbstractRefactoring {
      * </table>
      * @param objectsToMove store your objects into Lookup
      */
-    public MoveRefactoring (Lookup objectsToMove) {
+    public MoveRefactoring (@NonNull Lookup objectsToMove) {
         super(objectsToMove);
     }
 
@@ -83,7 +86,8 @@ public final class MoveRefactoring extends AbstractRefactoring {
      * </table>
      * @param target
      */
-    public void setTarget(Lookup target) {
+    public void setTarget(@NonNull Lookup target) {
+        Parameters.notNull("target", target); // NOI18N
         this.target = target;
     }
 
@@ -92,6 +96,7 @@ public final class MoveRefactoring extends AbstractRefactoring {
      * @see #setTarget
      * @return target
      */
+    @CheckForNull
     public Lookup getTarget() {
         return this.target;
     }

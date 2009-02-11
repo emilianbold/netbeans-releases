@@ -40,12 +40,14 @@
  */
 package org.netbeans.modules.refactoring.api;
 
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 
 /** Interface representing a refactoring element (object affected by a refactoring)
  * returned in a collection from {@link org.netbeans.modules.refactoring.api.AbstractRefactoring#prepare} operation.
@@ -69,13 +71,14 @@ public final class RefactoringElement {
     final RefactoringElementImplementation impl;
     
     RefactoringElement(RefactoringElementImplementation impl) {
-        assert impl != null;
+        Parameters.notNull("impl", impl); // NOI18N
         this.impl = impl;
     }
     
     /** Returns text describing the refactoring element.
      * @return Text.
      */
+    @NonNull
     public String getText() {
         return impl.getText();
     }
@@ -83,6 +86,7 @@ public final class RefactoringElement {
     /** Returns text describing the refactoring formatted for display (using HTML tags).
      * @return Formatted text.
      */
+    @NonNull
     public String getDisplayText() {
         return impl.getDisplayText();
     }
@@ -109,6 +113,7 @@ public final class RefactoringElement {
      * @see org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation 
      * @return Lookup.
      */
+    @NonNull
     public Lookup getLookup() {
         return impl.getLookup();
     }

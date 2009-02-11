@@ -41,7 +41,10 @@
 
 package org.netbeans.modules.refactoring.api;
 
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 
 /**
  * This class is just holder for parameters of Single Copy Refactoring. 
@@ -70,7 +73,7 @@ public final class SingleCopyRefactoring extends AbstractRefactoring {
      * </table>
      * @param objectToCopy Object to be copied stored into Lookup
      */
-    public SingleCopyRefactoring (Lookup objectToCopy) {
+    public SingleCopyRefactoring (@NonNull Lookup objectToCopy) {
         super(objectToCopy);
     }
 
@@ -86,7 +89,8 @@ public final class SingleCopyRefactoring extends AbstractRefactoring {
      * </table>
      * @param target
      */
-    public void setTarget(Lookup target) {
+    public void setTarget(@NonNull Lookup target) {
+        Parameters.notNull("target", target); // NOI18N
         this.target = target;
     }
     
@@ -95,6 +99,7 @@ public final class SingleCopyRefactoring extends AbstractRefactoring {
      * @see #setTarget
      * @return target
      */
+    @CheckForNull
     public Lookup getTarget() {
         return target;
     }
@@ -103,6 +108,7 @@ public final class SingleCopyRefactoring extends AbstractRefactoring {
      * getter for new name of copied file
      * @return value String value
      */
+    @CheckForNull
     public String getNewName() {
         return newName;
     }
@@ -111,7 +117,8 @@ public final class SingleCopyRefactoring extends AbstractRefactoring {
      * setter for new name of copied file
      * @param newName new value
      */
-    public void setNewName(String newName) {
+    public void setNewName(@NonNull String newName) {
+        Parameters.notNull("newName", newName); // NOI18N
         this.newName = newName;
     }
 }

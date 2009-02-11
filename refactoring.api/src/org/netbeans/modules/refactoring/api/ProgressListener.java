@@ -41,6 +41,7 @@
 package org.netbeans.modules.refactoring.api;
 
 import java.util.EventListener;
+import org.netbeans.api.annotations.common.NonNull;
 
 /** Progress listener. Enables objects to listen to a progress of long operations.
  *
@@ -50,15 +51,15 @@ public interface ProgressListener extends EventListener {
     /** Signals that an operation has started.
      * @param event Event object describing this event.
      */
-    public void start(ProgressEvent event);
+    public void start(@NonNull ProgressEvent event);
 
     /** Signals that an operation has progressed.
      * @param event Event object describing this event.
      */
-    public void step(ProgressEvent event);
+    public void step(@NonNull ProgressEvent event);
 
     /** Signals that an operation has finished.
      * @param event Event object describing this event.
      */
-    public void stop(ProgressEvent event);
+    public void stop(@NonNull ProgressEvent event);
 }

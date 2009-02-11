@@ -41,7 +41,10 @@
 
 package org.netbeans.modules.refactoring.api;
 
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 
 /**
  * This class is just holder for parameters of Multiple Copy Refactoring. 
@@ -61,7 +64,7 @@ public final class MultipleCopyRefactoring extends AbstractRefactoring {
      * Multiple Copy Refactoring Refactoring currently does not have any implementation.
      * @param objectsToCopy store your objects into Lookup
      */
-    public MultipleCopyRefactoring (Lookup objectsToCopy) {
+    public MultipleCopyRefactoring (@NonNull Lookup objectsToCopy) {
         super(objectsToCopy);
     }
 
@@ -70,7 +73,8 @@ public final class MultipleCopyRefactoring extends AbstractRefactoring {
      * Multiple Copy Refactoring Refactoring currently does not have any implementation.
      * @param target
      */
-    public void setTarget(Lookup target) {
+    public void setTarget(@NonNull Lookup target) {
+        Parameters.notNull("target", target); // NOI18N
         this.target = target;
     }
     
@@ -79,7 +83,7 @@ public final class MultipleCopyRefactoring extends AbstractRefactoring {
      * Multiple Copy Refactoring Refactoring currently does not have any implementation.
      * @return target
      */
-    public Lookup getTarget() {
+    public @CheckForNull Lookup getTarget() {
         return target;
     }
 }
