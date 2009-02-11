@@ -120,33 +120,35 @@ public class CreateCopyAction extends ContextAction {
         }                   
         final RepositoryFile repositoryFile = new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.HEAD);        
 
+        final RequestProcessor rp = createRequestProcessor(nodes);
         final boolean hasChanges = files.length > 0;
         final CreateCopy createCopy = new CreateCopy(repositoryFile, interestingFile, hasChanges);
 
-        performCopy(createCopy, nodes, roots);
+        performCopy(createCopy, rp, nodes, roots);
     }
 
-    private void performCopy(final CreateCopy createCopy, final Node[] nodes, final File[] roots) {
-        RequestProcessor.getDefault().post(new Runnable() {
+    private void performCopy(final CreateCopy createCopy, final RequestProcessor rp, final Node[] nodes, final File[] roots) {
+        if (!createCopy.showDialog()) {
+            return;
+        }
+        rp.post(new Runnable() {
             public void run() {
-                if (createCopy.showDialog()) {
-                    String errorText = validateTargetPath(createCopy);
-                    if (errorText == null) {
-                        ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(CreateCopyAction.this, nodes) {
-                            public void perform() {
-                                performCopy(createCopy, this, roots);
-                            }
-                        };
-                        support.start(createRequestProcessor(nodes));
-                    } else {
-                        SvnClientExceptionHandler.annotate(errorText);
-                        createCopy.setErrorText(errorText);
-                        EventQueue.invokeLater(new Runnable() {
-                            public void run() {
-                                performCopy(createCopy, nodes, roots);
-                            }
-                        });
-                    }
+                String errorText = validateTargetPath(createCopy);
+                if (errorText == null) {
+                    ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(CreateCopyAction.this, nodes) {
+                        public void perform() {
+                            performCopy(createCopy, this, roots);
+                        }
+                    };
+                    support.start(rp);
+                } else {
+                    SvnClientExceptionHandler.annotate(errorText);
+                    createCopy.setErrorText(errorText);
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            performCopy(createCopy, rp, nodes, roots);
+                        }
+                    });
                 }
             }
         });
