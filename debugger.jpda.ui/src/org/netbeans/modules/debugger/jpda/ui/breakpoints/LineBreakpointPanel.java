@@ -305,17 +305,6 @@ public class LineBreakpointPanel extends JPanel implements Controller, org.openi
         return true;
     }
     
-    /**
-     * Return <code>true</code> whether value of this customizer 
-     * is valid (and OK button can be enabled).
-     *
-     * @return <code>true</code> whether value of this customizer 
-     * is valid
-     */
-    public boolean isValid () {
-        return true;
-    }
-    
     private String valiadateMsg () {
         int line;
         try {

@@ -38,14 +38,17 @@
  */
 package org.netbeans.modules.nativeexecution.api.impl;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
+import org.netbeans.modules.nativeexecution.support.MacroExpanderFactory;
+import org.netbeans.modules.nativeexecution.support.MacroExpanderFactory.MacroExpander;
 
 /**
  *
@@ -58,7 +61,8 @@ public class NativeProcessInfo {
     private final Map<String, String> envVariables =
             new HashMap<String, String>();
     private String workingDirectory;
-    private Collection<Listener> listeners = null;
+    private Collection<ChangeListener> listeners = null;
+    protected final MacroExpander macroExpander;
 
     public NativeProcessInfo(NativeProcessInfo info) {
         this(info.execEnv, info.command);
@@ -67,18 +71,19 @@ public class NativeProcessInfo {
         arguments.addAll(info.arguments);
 
         if (info.listeners != null) {
-            listeners = new ArrayList<Listener>(info.listeners);
+            listeners = new ArrayList<ChangeListener>(info.listeners);
         }
     }
 
     public NativeProcessInfo(ExecutionEnvironment execEnv, String command) {
         this.execEnv = execEnv;
         this.command = command;
+        macroExpander = MacroExpanderFactory.getExpander(execEnv);
     }
 
-    public void addNativeProcessListener(Listener listener) {
+    public void addNativeProcessListener(ChangeListener listener) {
         if (listeners == null) {
-            listeners = new ArrayList<Listener>();
+            listeners = new ArrayList<ChangeListener>();
         }
 
         listeners.add(listener);
@@ -92,13 +97,28 @@ public class NativeProcessInfo {
         envVariables.put(name, value);
     }
 
+    public void addEnvironmentVariables(Map<String, String> envs) {
+        envVariables.putAll(envs);
+    }
+
     public void setArguments(String... arguments) {
         this.arguments.clear();
         this.arguments.addAll(Arrays.asList(arguments));
     }
 
-    public String getCommandLine() {
-        StringBuilder sb = new StringBuilder(command);
+    public String getCommandLine(boolean expandMacros) {
+        String cmd;
+        if (expandMacros && macroExpander != null) {
+            try {
+                cmd = macroExpander.expandMacros(command);
+            } catch (ParseException ex) {
+                cmd = command;
+            }
+        } else {
+            cmd = command;
+        }
+        
+        StringBuilder sb = new StringBuilder(cmd);
 
         if (!arguments.isEmpty()) {
             for (String arg : arguments) {
@@ -113,15 +133,36 @@ public class NativeProcessInfo {
         return execEnv;
     }
 
-    public Collection<Listener> getListeners() {
+    public Collection<ChangeListener> getListeners() {
         return listeners;
     }
 
-    public String getWorkingDirectory() {
+    public String getWorkingDirectory(boolean expandMacros) {
+        if (expandMacros && macroExpander != null) {
+            try {
+                return macroExpander.expandMacros(workingDirectory);
+            } catch (ParseException ex) {
+                return workingDirectory;
+            }
+        }
+        
         return workingDirectory;
     }
 
-    public Map<String, String> getEnvVariables() {
-        return envVariables;
+    public Map<String, String> getEnvVariables(boolean expandMacros) {
+        if (expandMacros && macroExpander != null) {
+            Map<String, String> result = new HashMap<String, String>();
+            for (String var : envVariables.keySet()) {
+                try {
+                result.put(var,
+                        macroExpander.expandMacros(envVariables.get(var)));
+                } catch (ParseException ex) {
+                result.put(var, envVariables.get(var));
+                }
+            }
+            return result;
+        } else {
+            return envVariables;
+        }
     }
 }

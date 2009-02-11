@@ -40,6 +40,7 @@ package org.netbeans.modules.dlight.dtrace.collector.support;
 
 import java.io.File;
 import java.io.OutputStreamWriter;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -82,7 +83,6 @@ import org.netbeans.modules.nativeexecution.api.ObservableActionListener;
 import org.netbeans.modules.nativeexecution.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
 import org.netbeans.modules.nativeexecution.util.SolarisPrivilegesSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -302,7 +302,7 @@ public final class DtraceDataCollector
 
         try {
             fileExists = HostInfoUtils.fileExists(target.getExecEnv(), command);
-        } catch (HostNotConnectedException ex) {
+        } catch (ConnectException ex) {
             connected = false;
         }
 

@@ -94,7 +94,8 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
             AttachType.Registration reg = e.getAnnotation(AttachType.Registration.class);
 
             final String displayName = reg.displayName();
-            handleProviderRegistrationDisplayName(e, AttachType.class, displayName, null);
+            final int position = reg.position();
+            handleProviderRegistrationDisplayName(e, AttachType.class, displayName, null, position);
             cnt++;
         }
         for (Element e : env.getElementsAnnotatedWith(BreakpointType.Registration.class)) {
@@ -102,7 +103,8 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
 
             final String displayName = reg.displayName();
             final String path = reg.path();
-            handleProviderRegistrationDisplayName(e, BreakpointType.class, displayName, path);
+            final int position = reg.position();
+            handleProviderRegistrationDisplayName(e, BreakpointType.class, displayName, path, position);
             cnt++;
         }
         for (Element e : env.getElementsAnnotatedWith(ColumnModelRegistration.class)) {
@@ -135,7 +137,7 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
                 write();
     }
 
-    private void handleProviderRegistrationDisplayName(Element e, Class providerClass, String displayName, String path) throws IllegalArgumentException, LayerGenerationException {
+    private void handleProviderRegistrationDisplayName(Element e, Class providerClass, String displayName, String path, int position) throws IllegalArgumentException, LayerGenerationException {
         String className = instantiableClassOrMethod(e);
         if (!isClassOf(e, providerClass)) {
             throw new IllegalArgumentException("Annotated element "+e+" is not an instance of " + providerClass);
@@ -150,6 +152,7 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
                 stringvalue("serviceClass", providerClass.getName()).
                 bundlevalue("displayName", displayName).
                 methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService").
+                position(position).
                 write();
     }
 

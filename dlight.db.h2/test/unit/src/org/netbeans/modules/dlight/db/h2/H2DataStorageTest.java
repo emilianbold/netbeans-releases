@@ -47,7 +47,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
-import org.netbeans.modules.dlight.storage.api.Time;
+import org.netbeans.modules.dlight.api.storage.types.Time;
 import static org.junit.Assert.*;
 
 /**
@@ -59,7 +59,7 @@ public class H2DataStorageTest {
 
     @Before
     public void setUp() {
-        db = new H2DataStorage().newInstance();
+        db = new H2DataStorage();
     }
 
     @Test

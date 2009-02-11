@@ -64,18 +64,18 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     private CsmUID<CsmFunction> declarationUID;
     
     private final CsmCompoundStatement body;
-    private int parseCount;
+    private int parseCount;   
     
-    public FunctionDefinitionImpl(AST ast, CsmFile file, CsmScope scope) throws AstRendererException {
-        this(ast, file, scope, true);
-    }
-    
-    protected  FunctionDefinitionImpl(AST ast, CsmFile file, CsmScope scope, boolean register) throws AstRendererException {
-        super(ast, file, scope, false);
+    public FunctionDefinitionImpl(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
+        super(ast, file, scope, false, global);
         body = AstRenderer.findCompoundStatement(ast, getContainingFile(), this);
         boolean assertionCondition = body != null;
         if (!assertionCondition) {
-            RepositoryUtils.hang(this);
+            if (register) {
+                RepositoryUtils.hang(this);
+            } else {
+                Utils.setSelfUID(this);
+            }
             throw new AstRendererException((FileImpl)file, getStartOffset(),
                     "Null body in function definition."); // NOI18N
             //assert body != null : "null body in function definition, line " + getStartPosition().getLine() + ":" + file.getAbsolutePath();

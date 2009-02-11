@@ -78,6 +78,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterEllipsisImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterListImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TypedefImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDirectiveImpl;
@@ -102,14 +103,14 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
 
     private CsmObjectFactory() {
     }
-    
+
     public static CsmObjectFactory instance() {
         return instance;
     }
 
     public boolean canWrite(Persistent obj) {
         if (obj instanceof FileImpl) {
-            return ((FileImpl)obj).getBuffer().isFileBased();
+            return ((FileImpl) obj).getBuffer().isFileBased();
         } else {
             return true;
         }
@@ -122,7 +123,7 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = LIB_PROJECT_IMPL;
         } else if (object instanceof ProjectImpl) {
             aHandler = PROJECT_IMPL;
-        } else if (object instanceof FileContainer ) {
+        } else if (object instanceof FileContainer) {
             aHandler = FILES_CONTAINER;
         } else if (object instanceof GraphContainer) {
             aHandler = GRAPH_CONTAINER;
@@ -204,12 +205,12 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                     aHandler = DESTRUCTOR_IMPL;
                 } else {
                     aHandler = METHOD_IMPL;
-                }                
+                }
             } else if (object instanceof FunctionDDImpl) {
                 if (object instanceof CsmFriendFunction) {
                     aHandler = FRIEND_FUNCTION_DEF_DECL_IMPL;
                 } else {
-                aHandler = FUNCTION_DEF_DECL_IMPL;
+                    aHandler = FUNCTION_DEF_DECL_IMPL;
                 }
             } else {
                 if (object instanceof CsmFriendFunction) {
@@ -247,8 +248,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = MACRO_IMPL;
         } else if (object instanceof FriendClassImpl) {
             aHandler = FRIEND_CLASS_IMPL;
-	} else if (object instanceof DeclarationContainer) {
-	    aHandler = DECLARATION_CONTAINER;
+        } else if (object instanceof DeclarationContainer) {
+            aHandler = DECLARATION_CONTAINER;
+        } else if (object instanceof TemplateParameterImpl) {
+            aHandler = TEMPLATE_PARAMETER_IMPL;
         } else {
             throw new IllegalArgumentException("instance of unknown class " + object.getClass().getName());  //NOI18N
         }
@@ -257,28 +260,28 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
 
     protected SelfPersistent createObject(int handler, DataInput stream) throws IOException {
         SelfPersistent obj;
-        
+
         switch (handler) {
             case PROJECT_IMPL:
                 obj = new ProjectImpl(stream);
                 break;
-                
+
             case LIB_PROJECT_IMPL:
                 obj = new LibProjectImpl(stream);
                 break;
-                
+
             case FILES_CONTAINER:
                 obj = new FileContainer(stream);
                 break;
-                
+
             case GRAPH_CONTAINER:
                 obj = new GraphContainer(stream);
                 break;
-                
+
             case FILE_IMPL:
                 obj = new FileImpl(stream);
                 break;
-                
+
 //            case UNRESOLVED_FILE:
 //                obj = new Unresolved.UnresolvedFile(stream);
 //                break;
@@ -286,11 +289,11 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
 //            case UNRESOLVED_CLASS:
 //                obj = new Unresolved.UnresolvedClass(stream);
 //                break;
-                
+
             case ENUM_IMPL:
                 obj = new EnumImpl(stream);
                 break;
-                
+
             case CLASS_IMPL:
                 obj = new ClassImpl(stream);
                 break;
@@ -302,35 +305,35 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             case FORWARD_CLASS:
                 obj = new ForwardClass(stream);
                 break;
-                
+
             case TYPEDEF_IMPL:
                 obj = new TypedefImpl(stream);
                 break;
-                
+
             case MEMBER_TYPEDEF:
                 obj = new ClassImpl.MemberTypedef(stream);
                 break;
-                
+
             case NAMESPACE_IMPL:
                 obj = new NamespaceImpl(stream);
                 break;
-                
+
             case NAMESPACE_DEF_IMPL:
                 obj = new NamespaceDefinitionImpl(stream);
                 break;
-                
+
             case NAMESPACE_ALIAS_IMPL:
                 obj = new NamespaceAliasImpl(stream);
                 break;
-                
+
             case USING_DECLARATION_IMPL:
                 obj = new UsingDeclarationImpl(stream);
                 break;
-                
+
             case USING_DIRECTIVE_IMPL:
                 obj = new UsingDirectiveImpl(stream);
                 break;
-                
+
             case CLASS_FORWARD_DECLARATION_IMPL:
                 obj = new ClassForwardDeclarationImpl(stream);
                 break;
@@ -338,63 +341,63 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             case CLASS_MEMBER_FORWARD_DECLARATION:
                 obj = new ClassImpl.ClassMemberForwardDeclaration(stream);
                 break;
-                
+
             case FUNCTION_IMPL:
                 obj = new FunctionImpl(stream);
                 break;
-                
+
             case FUNCTION_IMPL_EX:
                 obj = new FunctionImplEx(stream);
                 break;
-                
+
             case DESTRUCTOR_DEF_IMPL:
                 obj = new DestructorDefinitionImpl(stream);
                 break;
-                
+
             case CONSTRUCTOR_DEF_IMPL:
                 obj = new ConstructorDefinitionImpl(stream);
                 break;
-                
+
             case CONSTRUCTOR_DEF_DECL_IMPL:
                 obj = new ConstructorDDImpl(stream);
-                break;                
-                
+                break;
+
             case FUNCTION_DEF_IMPL:
                 obj = new FunctionDefinitionImpl(stream);
                 break;
-                
+
             case DESTRUCTOR_DEF_DECL_IMPL:
                 obj = new DestructorDDImpl(stream);
                 break;
-                
+
             case METHOD_DEF_DECL_IMPL:
                 obj = new MethodDDImpl(stream);
                 break;
-                
+
             case CONSTRUCTOR_IMPL:
                 obj = new ConstructorImpl(stream);
                 break;
-                
+
             case DESTRUCTOR_IMPL:
                 obj = new DestructorImpl(stream);
                 break;
-                
+
             case METHOD_IMPL:
                 obj = new MethodImpl(stream);
                 break;
-                
+
             case FUNCTION_DEF_DECL_IMPL:
                 obj = new FunctionDDImpl(stream);
                 break;
-                
+
             case VARIABLE_DEF_IMPL:
                 obj = new VariableDefinitionImpl(stream);
                 break;
-                
+
             case FIELD_IMPL:
                 obj = new FieldImpl(stream);
                 break;
-                
+
             case PARAMETER_IMPL:
                 obj = new ParameterImpl(stream);
                 break;
@@ -402,19 +405,19 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             case PARAMETER_ELLIPSIS_IMPL:
                 obj = new ParameterEllipsisImpl(stream);
                 break;
-                
+
             case VARIABLE_IMPL:
                 obj = new VariableImpl(stream);
                 break;
-                
+
             case ENUMERATOR_IMPL:
                 obj = new EnumeratorImpl(stream);
                 break;
-                
+
             case INCLUDE_IMPL:
                 obj = new IncludeImpl(stream);
                 break;
-                
+
             case PARAM_LIST_IMPL:
                 obj = new ParameterListImpl(stream);
                 break;
@@ -438,11 +441,11 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             case FRIEND_FUNCTION_IMPL:
                 obj = new FriendFunctionImpl(stream);
                 break;
-                
+
             case FRIEND_FUNCTION_IMPL_EX:
                 obj = new FriendFunctionImplEx(stream);
                 break;
-                
+
             case FRIEND_FUNCTION_DEF_IMPL:
                 obj = new FriendFunctionDefinitionImpl(stream);
                 break;
@@ -450,11 +453,15 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             case FRIEND_FUNCTION_DEF_DECL_IMPL:
                 obj = new FriendFunctionDDImpl(stream);
                 break;
-		
+
             case DECLARATION_CONTAINER:
-		obj = new DeclarationContainer(stream);
-		break;
-		
+                obj = new DeclarationContainer(stream);
+                break;
+
+            case TEMPLATE_PARAMETER_IMPL:
+                obj = new TemplateParameterImpl(stream);
+                break;
+
             default:
                 throw new IllegalArgumentException("unknown handler" + handler);  //NOI18N
         }
@@ -462,14 +469,14 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     }
 
     public void write(DataOutput out, Persistent obj) throws IOException {
-        SelfPersistent persistentObj = (SelfPersistent)obj;
+        SelfPersistent persistentObj = (SelfPersistent) obj;
         super.writeSelfPersistent(persistentObj, out);
     }
 
     public Persistent read(DataInput in) throws IOException {
         SelfPersistent persistentObj = super.readSelfPersistent(in);
         assert persistentObj == null || persistentObj instanceof Persistent;
-        return (Persistent)persistentObj;
+        return (Persistent) persistentObj;
     }
     
     
@@ -542,8 +549,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int FUNCTION_PARAM_LIST_IMPL       = PARAM_LIST_IMPL + 1;
     private static final int FUNCTION_KR_PARAM_LIST_IMPL    = FUNCTION_PARAM_LIST_IMPL + 1;
     private static final int MACRO_IMPL                     = FUNCTION_KR_PARAM_LIST_IMPL + 1;
+    private static final int TEMPLATE_PARAMETER_IMPL        = MACRO_IMPL + 1;
+
     
     // index to be used in another factory (but only in one) 
     // to start own indeces from the next after LAST_INDEX        
-    public static final int LAST_INDEX = MACRO_IMPL;
+    public static final int LAST_INDEX = TEMPLATE_PARAMETER_IMPL;
 }

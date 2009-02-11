@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
-import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
@@ -75,11 +74,9 @@ import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NestedType;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterListImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor;
-import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterTypeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
-import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
 
 /**
@@ -460,65 +457,21 @@ public class PersistentUtils {
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // support template parameters
-    public static void writeTemplateParameter(CsmTemplateParameter param, DataOutput output) throws IOException {
-        assert param != null;
-        if (param instanceof TemplateParameterImpl) {
-            ((TemplateParameterImpl) param).write(output);
-        } else {
-            throw new IllegalArgumentException("instance of unknown TemplateParameterImpl " + param);  //NOI18N
-        }
-    }
-
-    public static CsmTemplateParameter readTemplateParameter(DataInput input) throws IOException {
-        CsmTemplateParameter param = new TemplateParameterImpl(input);
-        return param;
-    }
-
-    public static List<CsmTemplateParameter> readTemplateParameters(DataInput input) throws IOException {
-        int collSize = input.readInt();
-        if (collSize == AbstractObjectFactory.NULL_POINTER) {
-            return null;
-        }
-        List<CsmTemplateParameter> res = new ArrayList<CsmTemplateParameter>();
-        assert collSize >= 0;
-        for (int i = 0; i < collSize; ++i) {
-            CsmTemplateParameter param = readTemplateParameter(input);
-            assert param != null;
-            res.add(param);
-        }
-        return res;
-    }
-
-    public static void writeTemplateParameters(Collection<CsmTemplateParameter> params, DataOutput output) throws IOException {
-        if (params == null) {
-            output.writeInt(AbstractObjectFactory.NULL_POINTER);
-        } else {
-            int collSize = params.size();
-            output.writeInt(collSize);
-
-            for (CsmTemplateParameter param : params) {
-                assert param != null;
-                writeTemplateParameter(param, output);
-            }
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
     // support Template Descriptors
     public static TemplateDescriptor readTemplateDescriptor(DataInput input) throws IOException {
-        List<CsmTemplateParameter> readTemplateParameters = PersistentUtils.readTemplateParameters(input);
-        if (readTemplateParameters == null) {
+        int handler = input.readInt();
+        if (handler == AbstractObjectFactory.NULL_POINTER) {
             return null;
         }
-        CharSequence string = NameCache.getManager().getString(input.readUTF());
-        return new TemplateDescriptor(readTemplateParameters, string);
+        assert handler == TEMPLATE_DESCRIPTOR_IMPL;
+        return new TemplateDescriptor(input);
     }
 
     public static void writeTemplateDescriptor(TemplateDescriptor templateDescriptor, DataOutput output) throws IOException {
         if (templateDescriptor == null) {
             output.writeInt(AbstractObjectFactory.NULL_POINTER);
         } else {
+            output.writeInt(TEMPLATE_DESCRIPTOR_IMPL);
             templateDescriptor.write(output);
         }
     }
@@ -672,7 +625,10 @@ public class PersistentUtils {
     private static final int FUN_PARAM_LIST_IMPL = PARAM_LIST_IMPL + 1;
     private static final int FUN_KR_PARAM_LIST_IMPL = FUN_PARAM_LIST_IMPL + 1;
 
+    // tempalte descriptor
+    private static final int TEMPLATE_DESCRIPTOR_IMPL = FUN_KR_PARAM_LIST_IMPL + 1;
+
     // index to be used in another factory (but only in one)
     // to start own indeces from the next after LAST_INDEX
-    public static final int LAST_INDEX = FUN_KR_PARAM_LIST_IMPL;
+    public static final int LAST_INDEX = TEMPLATE_DESCRIPTOR_IMPL;
 }

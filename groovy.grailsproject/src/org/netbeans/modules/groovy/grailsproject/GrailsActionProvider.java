@@ -58,7 +58,7 @@ import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
-import org.netbeans.modules.groovy.grailsproject.actions.ConfigSupport;
+import org.netbeans.modules.groovy.grailsproject.actions.ConfigurationSupport;
 import org.netbeans.modules.groovy.grailsproject.actions.RefreshProjectRunnable;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
@@ -133,7 +133,7 @@ public class GrailsActionProvider implements ActionProvider {
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
         final GrailsRuntime runtime = GrailsRuntime.getInstance();
         if (!runtime.isConfigured()) {
-            ConfigSupport.showConfigurationWarning(runtime);
+            ConfigurationSupport.showConfigurationWarning(runtime);
             return;
         }
 

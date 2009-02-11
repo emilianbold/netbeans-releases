@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.web.debug;
 
+import java.beans.PropertyChangeListener;
 import org.openide.*;
 //import org.openide.NotifyDescriptor.Message;
 import org.openide.util.NbBundle;
@@ -58,13 +59,14 @@ import org.netbeans.modules.web.debug.breakpoints.*;
 *
 * @author Martin Grebac
 */
-public class JspBreakpointPanel extends JPanel implements Controller {
+public class JspBreakpointPanel extends JPanel {
 
     static final long serialVersionUID =-8164649328980808272L;
 
     private ActionsPanel actionsPanel;
     private JspLineBreakpoint breakpoint;
     private boolean createBreakpoint = false;
+    private Controller controller;
 
     public JspBreakpointPanel() {
         this(JspLineBreakpoint.create(Context.getCurrentURL(), Context.getCurrentLineNumber()));
@@ -75,6 +77,7 @@ public class JspBreakpointPanel extends JPanel implements Controller {
     public JspBreakpointPanel(JspLineBreakpoint b) {
 
         breakpoint = b;
+        controller = new JspBreakpointController();
         initComponents ();
         putClientProperty("HelpID", "jsp_breakpoint");//NOI18N
 
@@ -98,6 +101,10 @@ public class JspBreakpointPanel extends JPanel implements Controller {
         
         actionsPanel = new ActionsPanel(b);
         pActions.add(actionsPanel, "Center");
+    }
+
+    public Controller getController() {
+        return controller;
     }
 
     /** This method is called from within the constructor to
@@ -240,40 +247,6 @@ public class JspBreakpointPanel extends JPanel implements Controller {
 //        }
     }
     
-    /******************************/
-    /* CONTROLLER:                */
-    /******************************/
-    
-    //interface org.netbeans.modules.debugger.Controller
-    public boolean ok() {
-        if (!isValid()) {
-            return false;
-        }
-        
-        actionsPanel.ok ();        
-        breakpoint.setLineNumber(Integer.parseInt(tfLineNumber.getText().trim()));
-        
-        if (createBreakpoint) {
-            DebuggerManager.getDebuggerManager().addBreakpoint(breakpoint);
-        }
-        return true;
-    }
-    
-    //interface org.netbeans.modules.debugger.Controller
-    public boolean cancel() {
-        return true;
-    }
-    
-    //interface org.netbeans.modules.debugger.Controller
-    public boolean isValid() {
-        try {
-            int line = Integer.parseInt(tfLineNumber.getText().trim());
-            return line > 0;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-        
     // Variables declaration - do not modify
     private javax.swing.JTextField cboxJspSourcePath;
     private javax.swing.JPanel jPanel1;
@@ -284,4 +257,43 @@ public class JspBreakpointPanel extends JPanel implements Controller {
     private javax.swing.JTextField tfLineNumber;
     // End of variables declaration
 
+    private class JspBreakpointController implements Controller {
+
+        //interface org.netbeans.modules.debugger.Controller
+        public boolean ok() {
+            if (!isValid()) {
+                return false;
+            }
+
+            actionsPanel.ok ();
+            breakpoint.setLineNumber(Integer.parseInt(tfLineNumber.getText().trim()));
+
+            if (createBreakpoint) {
+                DebuggerManager.getDebuggerManager().addBreakpoint(breakpoint);
+            }
+            return true;
+        }
+
+        //interface org.netbeans.modules.debugger.Controller
+        public boolean cancel() {
+            return true;
+        }
+
+        //interface org.netbeans.modules.debugger.Controller
+        public boolean isValid() {
+            try {
+                int line = Integer.parseInt(tfLineNumber.getText().trim());
+                return line > 0;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener l) {
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener l) {
+        }
+
+    }
 }

@@ -96,7 +96,7 @@ public class SourcesNodeModel implements NodeModel {
             if (((String) o).startsWith ("D"))
                 return NbBundle.getBundle(SourcesNodeModel.class).getString("CTL_SourcesModel_Column_Name_DescExclusion");
             else
-                return NbBundle.getBundle(SourcesNodeModel.class).getString("CTL_SourcesModel_Column_Name_DescRoot");
+                return (String) o;//NbBundle.getBundle(SourcesNodeModel.class).getString("CTL_SourcesModel_Column_Name_DescRoot");
         } else
         throw new UnknownTypeException (o);
     }
