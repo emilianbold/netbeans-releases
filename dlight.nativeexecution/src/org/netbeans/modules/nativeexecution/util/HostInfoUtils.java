@@ -1,29 +1,27 @@
 package org.netbeans.modules.nativeexecution.util;
 
-import java.io.CharArrayWriter;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.support.InputRedirectorFactory;
 import org.openide.util.Exceptions;
-import org.openide.windows.InputOutput;
 
 /**
  * Utility class that provides information about particual host.
@@ -37,8 +35,8 @@ public final class HostInfoUtils {
     private static List<String> myIPAdresses = new ArrayList<String>();
     private static Map<String, Boolean> filesExistenceHash =
             Collections.synchronizedMap(new WeakHashMap<String, Boolean>());
-    private static Map<String, String> platformPathsHash =
-            Collections.synchronizedMap(new WeakHashMap<String, String>());
+    private static Map<ExecutionEnvironment, HostInfo> hostInfo =
+            Collections.synchronizedMap(new WeakHashMap<ExecutionEnvironment, HostInfo>());
     private static final String cmd_uname = "/bin/uname"; // NOI18N
     private static final String cmd_sh = "/bin/sh"; // NOI18N
     private static final String cmd_test = "/bin/test"; // NOI18N
@@ -68,25 +66,25 @@ public final class HostInfoUtils {
      * fileExists(execEnv, fname, true)
      * </pre>
      * If execEnv referes to remote host that is not connected yet, a
-     * <tt>HostNotConnectedException</tt> is thrown.
+     * <tt>ConnectException</tt> is thrown.
      *
      * @param execEnv <tt>ExecutionEnvironment</tt> to check for file existence
      *        in.
      * @param fname name of file to check for
      * @return <tt>true</tt> if file exists, <tt>false</tt> otherwise.
      *
-     * @throws HostNotConnectedException if host, identified by this execution
+     * @throws ConnectException if host, identified by this execution
      * environment is not connected.
      */
     public static boolean fileExists(final ExecutionEnvironment execEnv,
-            final String fname) throws HostNotConnectedException {
+            final String fname) throws ConnectException {
         return fileExists(execEnv, fname, true);
     }
 
     /**
      * Tests whether a file <tt>fname</tt> exists in <tt>execEnv</tt>.
      * If execEnv referes to remote host that is not connected yet, a
-     * <tt>HostNotConnectedException</tt> is thrown.
+     * <tt>ConnectException</tt> is thrown.
      *
      * @param execEnv <tt>ExecutionEnvironment</tt> to check for file existence
      *        in.
@@ -95,12 +93,12 @@ public final class HostInfoUtils {
      * in the same environment will not be actually performed, but result from
      * hash will be returned.
      * @return <tt>true</tt> if file exists, <tt>false</tt> otherwise.
-     * @throws HostNotConnectedException if host, identified by this execution
+     * @throws ConnectException if host, identified by this execution
      * environment is not connected.
      */
     public static boolean fileExists(final ExecutionEnvironment execEnv,
             final String fname, final boolean useCache)
-            throws HostNotConnectedException {
+            throws ConnectException {
         String key = execEnv.toString() + fname;
 
         if (useCache && filesExistenceHash.containsKey(key)) {
@@ -113,7 +111,7 @@ public final class HostInfoUtils {
             fileExists = new File(fname).exists();
         } else {
             if (ConnectionManager.getInstance().isConnectedTo(execEnv)) {
-                throw new HostNotConnectedException();
+                throw new ConnectException();
             }
 
             NativeProcessBuilder npb = new NativeProcessBuilder(
@@ -142,43 +140,25 @@ public final class HostInfoUtils {
      * @param execEnv <tt>ExecutionEnvironment</tt>
      * @return string that identifies OS installed on the host specified by the
      * <tt>execEnv</tt>
-     * @throws HostNotConnectedException if host, identified by this execution
+     * @throws ConnectException if host, identified by this execution
      * environment is not connected.
      */
     public static String getOS(final ExecutionEnvironment execEnv)
-            throws HostNotConnectedException {
-        if (execEnv.isLocal()) {
-            return System.getProperty("os.name"); // NOI18N
-        }
+            throws ConnectException {
+        HostInfo info = getHostInfo(execEnv);
+        return info.os;
+    }
 
-        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
-            throw new HostNotConnectedException();
-        }
+    public static String getPlatform(final ExecutionEnvironment execEnv)
+            throws ConnectException {
+        HostInfo info = getHostInfo(execEnv);
+        return info.platform;
+    }
 
-        CharArrayWriter taskOutput = new CharArrayWriter();
-
-        ExecutionDescriptor descriptor =
-                new ExecutionDescriptor().outProcessorFactory(
-                new InputRedirectorFactory(taskOutput));
-
-        ExecutionService execService = ExecutionService.newService(
-                new NativeProcessBuilder(execEnv, cmd_uname).setArguments("-s"), // NOI18N
-                descriptor, ""); // NOI18N
-
-        int result = -1;
-
-        String error = null;
-
-        try {
-            result = execService.run().get().intValue();
-        } catch (InterruptedException ex) {
-            error = ex.getMessage();
-        } catch (ExecutionException ex) {
-            error = ex.getMessage();
-        }
-
-        return result == 0 ? taskOutput.toString().trim()
-                : "Error: " + error; // NOI18N
+    public static String getIsaInfo(ExecutionEnvironment execEnv) 
+            throws ConnectException {
+        HostInfo info = getHostInfo(execEnv);
+        return info.instructionSet;
     }
 
     /**
@@ -199,86 +179,99 @@ public final class HostInfoUtils {
         return result;
     }
 
-    /**
-     * Returns a platform path (i.e. intel-S2, sparc-S2, intel-Linux).
-     * This is to be used in paths construction to system-dependent executables
-     *
-     * @param execEnv - execution environment to get information from
-     * @return string, that represents a platform path <br>
-     *         <tt>UNKNOWN</tt> if platform is unknown.
-     */
-    public static String getPlatformPath(
-            final ExecutionEnvironment execEnv) {
-        String key = execEnv.toString();
+    static synchronized void updateHostInfo(ExecutionEnvironment execEnv) {
+        if (execEnv.isLocal()) {
+            hostInfo.put(execEnv, getLocalHostInfo());
+        } else {
+            Session session =
+                    ConnectionManager.getInstance().getConnectionSession(execEnv);
+            hostInfo.put(execEnv, getRemoteHostInfo(session));
+        }
+    }
 
-        if (platformPathsHash.containsKey(key)) {
-            return platformPathsHash.get(key);
+    private static HostInfo getHostInfo(ExecutionEnvironment execEnv) throws ConnectException {
+        HostInfo info = hostInfo.get(execEnv);
+        if (info == null) {
+            if (execEnv.isRemote()) {
+                throw new ConnectException();
+            }
+
+            updateHostInfo(execEnv);
+            info = hostInfo.get(execEnv);
         }
 
-        NativeProcessBuilder npb =
-                new NativeProcessBuilder(execEnv, cmd_sh).setArguments(
-                "-c", "\"" + // NOI18N
-                cmd_uname + " -s; " + // NOI18N
-                cmd_uname + " -p; " + // NOI18N
-                cmd_uname + " -m\"");
+        return info;
+    }
 
-        final CharArrayWriter taskOutput = new CharArrayWriter();
+    private static HostInfo getLocalHostInfo() {
+        HostInfo info = new HostInfo();
+        info.os = System.getProperty("os.name");
+        info.platform = System.getProperty("os.arch");
+        info.instructionSet = System.getProperty("sun.cpu.isalist").contains("amd64") ? "64" : "32";
+        return info;
+    }
 
-        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
-                InputOutput.NULL).outProcessorFactory(
-                new InputRedirectorFactory(taskOutput));
+    private static HostInfo getRemoteHostInfo(Session session) {
+        ChannelExec echannel = null;
+        StringBuilder command = new StringBuilder();
 
-        ExecutionService execService = ExecutionService.newService(
-                npb, descriptor, "getPlatformPath"); // NOI18N
-
-        Future<Integer> fr = execService.run();
-
-        int result = -1;
+        command.append("U=/bin/uname &&"); // NOI18N
+        command.append("O=`$U -s` && /bin/echo $O &&"); // NOI18N
+        command.append("P=`$U -p` && test 'unknown' = $P && $U -m || echo $P &&"); // NOI18N
+        command.append("test 'SunOS' = $O && /bin/isainfo -b || $U -a | grep x86_64 || echo 32"); // NOI18N
 
         try {
-            result = fr.get();
-        } catch (InterruptedException ex) {
-        } catch (ExecutionException ex) {
+            echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
+            echannel.setCommand(command.toString());
+            echannel.connect();
+        } catch (JSchException ex) {
+            Exceptions.printStackTrace(ex);
         }
 
-        if (result != 0) {
-            return "UNKNOWN"; // NOI18N
+        HostInfo info = new HostInfo();
+
+        try {
+            InputStream out = echannel.getInputStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(out));
+            String str;
+            int lineno = 0;
+            while ((str = reader.readLine()) != null) {
+                switch (lineno) {
+                    case 0:
+                        String uname_s = str.trim();
+                        if (uname_s.contains("_NT-")) { // NOI18N catches Cygwin and MinGW
+                            info.os = "Windows"; // NOI18N
+                        } else if (uname_s.equals("Darwin")) { // NOI18N
+                            info.os = "Mac_OS_X"; // NOI18N
+                        } else {
+                            info.os = uname_s;
+                        }
+                        break;
+                    case 1:
+                        info.platform = str.trim().toLowerCase();
+                        break;
+                    case 2:
+                        info.instructionSet = str.trim().toLowerCase();
+                        break;
+                }
+                lineno++;
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
 
-        String[] out = taskOutput.toString().split("\n"); // NOI18N
-
-        if (out.length != 3) {
-            return "UNKNOWN (output is " + Arrays.toString(out) + ")"; // NOI18N
-        }
-
-        String osType = out[0];
-        String platform = out[1];
-
-        if (platform.equalsIgnoreCase("unknown")) { // NOI18N
-            platform = out[2];
-        }
-
-        String os = osType.equals("SunOS") ? "S2" : "Linux"; // NOI18N
-
-        if (platform.startsWith("i")) { // NOI18N
-            platform = "intel"; // NOI18N
-        }
-
-        String platformPath = platform + "-" + os; // NOI18N
-        platformPathsHash.put(key, platformPath);
-
-        return platformPath;
+        return info;
     }
-    /**
-     * Tests whether the OS, that is ran in this execution environment, is Unix
-     * or not.
-     * @param execEnv <tt>ExecutionEnvironment</tt> to test
-     * @return true if execEnv refers to a host that runs Solaris or Linux.
-     * @throws HostNotConnectedException if host is not connected yet.
-     */
-//    public static boolean isUnix(ExecutionEnvironment execEnv)
-//            throws HostNotConnectedException {
-//        String os = getOS(execEnv);
-//        return "SunOS".equals(os) || "Linux".equals(os); // NOI18N
-//    }
+
+    private static class HostInfo {
+
+        String os;
+        String platform;
+        String instructionSet;
+
+        @Override
+        public String toString() {
+            return "os = " + os + "; platform = " + platform + "; instructionSet = " + instructionSet; // NOI18N
+        }
+    }
 }

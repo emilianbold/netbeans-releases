@@ -36,31 +36,29 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.perfan.util;
 
-import java.util.Arrays;
-import org.netbeans.modules.dlight.util.ExecUtil;
-import org.openide.modules.ModuleInstall;
+package org.netbeans.modules.groovy.grailsproject.actions;
+
+import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
- * Manages a module's lifecycle. Remember that an installer is optional and
- * often not needed at all.
+ *
+ * @author Petr Hejl
  */
-public class Installer extends ModuleInstall {
+public final class ConfigurationSupport {
 
-  @Override
-  public void restored() {
-    ExecUtil.setExecutionPermissions(Arrays.asList(
-            getBinDir() + "idbe", // NOI18N
-            getBinDir() + "er_print", // NOI18N()
-            getBinDir() + "perftools_validate", // NOI18N
-            getBinDir() + "perftools_whichami", // NOI18N
-            getBinDir() + "dbx", // NOI18N
-            getBinDir() + "collect")); // NOI18N
-  }
-  
-  private String getBinDir() {
-    // TODO: result depends on platform
-    return "perfan/intel-S2/prod/bin/"; // NOI18N
-  }
+    private ConfigurationSupport() {
+        super();
+    }
+
+    public static void showConfigurationWarning(GrailsRuntime runtime) {
+        if (!runtime.isConfigured()) {
+            String msg = NbBundle.getMessage(ConfigurationSupport.class, "MSG_Runtime_Not_Configured");
+            DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
+        }
+    }
 }

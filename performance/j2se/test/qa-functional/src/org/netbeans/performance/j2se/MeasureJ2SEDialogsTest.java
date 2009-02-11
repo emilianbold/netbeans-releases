@@ -101,7 +101,7 @@ public class MeasureJ2SEDialogsTest {
         .addTest(RuntimeWindowTest.class)
         .addTest(SelectProfilingTaskDialogTest.class)
         // tb moved to j2ee .addTest(ServerManagerTest.class)
-        .addTest(TemplateManagerTest.class)
+//        .addTest(TemplateManagerTest.class)
         // needs to be fixed .addTest(ToDoWindowTest.class)
         .addTest(VersioningWindowTest.class)
         .enableModules(".*").clusters("ergonomics[0-9]|websvccommon[0-9]|apisupport[0-9]|profiler[0-9]|gsf[0-9]").reuseUserDir(true)));

@@ -54,8 +54,8 @@ import java.io.IOException;
  */
 public class ParameterImpl extends VariableImpl<CsmParameter> implements CsmParameter {
 
-    public ParameterImpl(AST ast, CsmFile file, CsmType type, String name, CsmScope scope) {
-        super(ast, file, type, name, scope, false);
+    public ParameterImpl(AST ast, CsmFile file, CsmType type, String name, CsmScope scope, boolean global) {
+        super(ast, file, type, name, scope, false, global);
     }
 
     public boolean isVarArgs() {

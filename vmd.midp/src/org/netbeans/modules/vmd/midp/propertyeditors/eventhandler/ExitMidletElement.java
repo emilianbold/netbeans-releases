@@ -54,6 +54,7 @@ import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.categories.PointsCategoryCD;
 import org.netbeans.modules.vmd.midp.components.handlers.ExitMidletEventHandlerCD;
 import org.netbeans.modules.vmd.midp.components.points.MobileDeviceCD;
+import org.netbeans.modules.vmd.midp.propertyeditors.CleanUp;
 import org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorElementFactory;
 import org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorEventHandlerElement;
 import org.openide.awt.Mnemonics;
@@ -63,7 +64,8 @@ import org.openide.util.NbBundle;
  *
  * @author Anton Chechel
  */
-public class ExitMidletElement implements PropertyEditorEventHandlerElement {
+public class ExitMidletElement implements PropertyEditorEventHandlerElement, CleanUp {
+
     private JRadioButton radioButton;
     
     public ExitMidletElement() {
@@ -131,6 +133,10 @@ public class ExitMidletElement implements PropertyEditorEventHandlerElement {
     
     public Collection<TypeID> getTypes() {
         return Collections.emptyList();
+    }
+
+    public void clean(DesignComponent component) {
+        radioButton = null;
     }
     
     @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorElementFactory.class)

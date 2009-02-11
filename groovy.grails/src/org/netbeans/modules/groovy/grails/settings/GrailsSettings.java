@@ -49,6 +49,7 @@ import org.openide.util.Utilities;
  *
  * @author schmidtm
  */
+// FIXME this will fail for multiple projects with same name or on rename (?)
 public final class GrailsSettings {
 
     public static final String GRAILS_BASE_PROPERTY = "grailsBase"; // NOI18N

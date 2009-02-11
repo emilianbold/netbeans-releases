@@ -68,7 +68,7 @@ public final class AlignWithMoveStrategyProvider extends AlignWithSupport implem
             suggestedLocation.x += insets.left;
             suggestedLocation.y += insets.top;
         }
-        Point point = super.locationSuggested (widget, bounds, suggestedLocation, true, true, true, true);
+        Point point = super.locationSuggested (widget, bounds, widget.getParentWidget().convertLocalToScene(suggestedLocation), true, true, true, true);
         if (! outerBounds) {
             point.x -= insets.left;
             point.y -= insets.top;

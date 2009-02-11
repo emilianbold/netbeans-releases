@@ -36,42 +36,26 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.api.impl;
+package org.netbeans.modules.dlight.perfan.util;
 
-import java.util.Collection;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
-import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
-public abstract class NativeProcessAccessor {
+/**
+ *
+ * @author ak119685
+ */
+public final class SunStudioLocator {
 
-    private static volatile NativeProcessAccessor DEFAULT;
+    private static final SunStudioLocator DEFAULT = new SunStudioLocator();
 
-    public static void setDefault(NativeProcessAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException(
-                    "NativeTaskInfoAccessor is already defined"); // NOI18N
-        }
-
-        DEFAULT = accessor;
+    private SunStudioLocator() {
     }
-
-    public static synchronized NativeProcessAccessor getDefault() {
-        if (DEFAULT != null) {
-            return DEFAULT;
-        }
-
-        try {
-            Class.forName(NativeProcess.class.getName(), true,
-                    NativeProcess.class.getClassLoader());
-        } catch (ClassNotFoundException ex) {
-        }
-
+    
+    public static SunStudioLocator getDefault() {
         return DEFAULT;
     }
 
-    public abstract void setID(NativeProcess process, String id);
-
-    public abstract void setListeners(NativeProcess process, Collection<Listener> listeners);
-
-    public abstract void setState(NativeProcess process, NativeProcess.State state);
+    public String getSproHome(ExecutionEnvironment execEnv) {
+        return "/shared/dp/sstrunk/intel-S2";
+    }
 }

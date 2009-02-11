@@ -53,12 +53,12 @@ import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 public abstract class GenerateAction extends NodeAction {
 
-    private static final Logger LOG = Logger.getLogger(GenerateAction.class.getName());
-
-    private static final String DOMAIN_DIR = "domain"; // NOI18N
+    private static final String DOMAIN_DIR = "grails-app/domain"; // NOI18N
 
     private final String command;
 
@@ -72,19 +72,33 @@ public abstract class GenerateAction extends NodeAction {
     protected void performAction(Node[] activatedNodes) {
         final GrailsRuntime runtime = GrailsRuntime.getInstance();
         if (!runtime.isConfigured()) {
-            ConfigSupport.showConfigurationWarning(runtime);
+            ConfigurationSupport.showConfigurationWarning(runtime);
             return;
         }
 
         DataObject dataObject = activatedNodes[0].getLookup().lookup(DataObject.class);
 
         GrailsProject prj = (GrailsProject) FileOwnerQuery.getOwner(dataObject.getFolder().getPrimaryFile());
+        FileObject domainDir = prj.getProjectDirectory().getFileObject(DOMAIN_DIR);
+        if (domainDir == null) {
+            return;
+        }
+
+        String relativePath = FileUtil.getRelativePath(domainDir, dataObject.getPrimaryFile());
+        if (relativePath == null) {
+            return;
+        }
+
+        // replace slashes and cut off the extension
+        StringBuilder builder = new StringBuilder(relativePath.replace('/', '.'));
+        builder.setLength(builder.length() - dataObject.getPrimaryFile().getNameExt().length());
+        builder.append(dataObject.getPrimaryFile().getName());
 
         ProjectInformation inf = prj.getLookup().lookup(ProjectInformation.class);
         String displayName = inf.getDisplayName() + " (" + command + ")"; // NOI18N
 
         Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
-                command, GrailsProjectConfig.forProject(prj), dataObject.getPrimaryFile().getName()); // NOI18N
+                command, GrailsProjectConfig.forProject(prj), builder.toString()); // NOI18N
 
         ExecutionDescriptor descriptor = new ExecutionDescriptor()
                 .controllable(true).frontWindow(true).inputVisible(true).showProgress(true);
@@ -121,12 +135,17 @@ public abstract class GenerateAction extends NodeAction {
         }
         DataObject dataObject = activatedNodes[0].getLookup().lookup(DataObject.class);
 
-        if (dataObject == null) {
+        if (dataObject == null || dataObject.getFolder() == null) {
             return false;
         }
-        String name = dataObject.getFolder().getName();
-        return DOMAIN_DIR.equals(name);
-    }
 
+        GrailsProject prj = (GrailsProject) FileOwnerQuery.getOwner(dataObject.getFolder().getPrimaryFile());
+        FileObject domainDir = prj.getProjectDirectory().getFileObject(DOMAIN_DIR);
+        if (domainDir == null) {
+            return false;
+        }
+
+        return FileUtil.isParentOf(domainDir, dataObject.getFolder().getPrimaryFile());
+    }
 }
 

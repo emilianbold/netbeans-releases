@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,31 +34,64 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.grailsproject.actions;
+package org.netbeans.modules.nativeexecution.support;
 
-import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
+import java.text.ParseException;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.support.MacroExpanderFactory.MacroExpander;
+import org.netbeans.modules.nativeexecution.util.ConnectionManager;
+import org.openide.util.Exceptions;
 
 /**
  *
- * @author Petr Hejl
+ * @author ak119685
  */
-public final class ConfigSupport {
+public class MacroExpanderFactoryTest {
 
-    private ConfigSupport() {
-        super();
+    public MacroExpanderFactoryTest() {
     }
 
-    public static void showConfigurationWarning(GrailsRuntime runtime) {
-        if (!runtime.isConfigured()) {
-            String msg = NbBundle.getMessage(ConfigSupport.class, "MSG_Runtime_Not_Configured");
-            DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
+    }
+
+    /**
+     * Test of getExpander method, of class MacroExpanderFactory.
+     */
+    @Test
+    public void testGetExpander_ExecutionEnvironment_String() {
+        System.out.println("getExpander");
+        ExecutionEnvironment execEnv = new ExecutionEnvironment("ak119685", "brighton.russia.sun.com");
+//        ExecutionEnvironment execEnv = new ExecutionEnvironment();
+        ConnectionManager.getInstance().getConnectToAction(execEnv).invoke();
+        MacroExpander expander = MacroExpanderFactory.getExpander(execEnv, "SunStudio");
+        try {
+            System.out.println("$osname-${platform}$_isa -> " + expander.expandMacros("$osname-$platform$_isa"));
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
         }
+
+
     }
+
 }

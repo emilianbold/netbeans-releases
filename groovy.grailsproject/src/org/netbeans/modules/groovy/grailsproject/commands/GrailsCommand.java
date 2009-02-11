@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,13 +34,68 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.util;
+
+package org.netbeans.modules.groovy.grailsproject.commands;
 
 /**
- * This exception is thrown to indicate that no ssh connection with a host has
- * been established prior to an attempt to execute NativeTask on it.
+ *
+ * @author Petr Hejl
  */
-public final class HostNotConnectedException extends Throwable {
+public class GrailsCommand implements Comparable<GrailsCommand> {
+
+    private final String command;
+    private final String description;
+    private final String displayName;
+
+    public GrailsCommand(String command, String description, String displayName) {
+        this.command = command;
+        this.description = description;
+        this.displayName = displayName;
+    }
+
+    public String getCommand() {
+        return command;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final GrailsCommand other = (GrailsCommand) obj;
+        if ((this.command == null) ? (other.command != null) : !this.command.equals(other.command)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 67 * hash + (this.command != null ? this.command.hashCode() : 0);
+        return hash;
+    }
+
+    public int compareTo(GrailsCommand o) {
+        if (command == null || o.getCommand() == null) {
+            assert displayName != null : "displayName not null";
+            assert o.getDisplayName() != null : "other displayName not null";
+            return displayName.compareTo(o.getDisplayName());
+        }
+        return this.getCommand().compareTo(o.getCommand());
+    }
+
 }

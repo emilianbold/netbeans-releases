@@ -206,7 +206,7 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
             if (next.getType() == CPPTokenTypes.CSM_PARMLIST) {
                 if (instance != null) {
                     instance.functionParameters = RepositoryUtils.put(
-                            AstRenderer.renderParameters(next, instance.getContainingFile(), null));
+                            AstRenderer.renderParameters(next, instance.getContainingFile(), null, false));
                 }
                 return true;
             } else if (next.getType() == CPPTokenTypes.RPAREN) {
@@ -217,7 +217,7 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
         } else if (inFunctionParams && next != null && next.getType() == CPPTokenTypes.CSM_PARMLIST) {
             if (instance != null) {
                 instance.functionParameters = RepositoryUtils.put(
-                        AstRenderer.renderParameters(next, instance.getContainingFile(), null));
+                        AstRenderer.renderParameters(next, instance.getContainingFile(), null, false));
             }
             return true;
         } else {

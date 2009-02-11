@@ -181,7 +181,8 @@ public class ConfigurationXMLReader extends XMLDocReader {
         Vector<Folder> firstLevelFolders = configurationDescriptor.getLogicalFolders().getFolders();
         for (Folder f : firstLevelFolders) {
             if (f.isDiskFolder()) {
-                f.attachListenersAndRefresh();
+                f.refreshDiskFolder();
+                f.attachListeners();
             }
         }
 
