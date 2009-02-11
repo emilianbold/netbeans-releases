@@ -57,6 +57,7 @@ import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.perfan.storage.impl.PerfanDataStorage;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
@@ -67,9 +68,9 @@ import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.ObservableAction;
-import org.netbeans.modules.nativeexecution.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.windows.InputOutput;
 
 /**
@@ -131,12 +132,20 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
 
     protected synchronized ValidationStatus doValidation(DLightTarget targetToValidate) {
         String os = null;
-
+        final ExecutionEnvironment targetEnv = targetToValidate.getExecEnv();
+        
         try {
-            os = HostInfoUtils.getOS(targetToValidate.getExecEnv());
+            os = HostInfoUtils.getOS(targetEnv);
         } catch (ConnectException ex) {
-            ObservableAction<Boolean> connectAction = ConnectionManager.getInstance().
-                    getConnectToAction(targetToValidate.getExecEnv());
+            final ConnectionManager mgr = ConnectionManager.getInstance();
+            Runnable onConnect = new Runnable() {
+
+                public void run() {
+                    DLightManager.getDefault().revalidateSessions();
+                }
+            };
+            
+            AsynchronousAction connectAction = mgr.getConnectToAction(targetEnv, onConnect);
 
             return ValidationStatus.unknownStatus("Host is not connected...", // NOI18N
                     connectAction);

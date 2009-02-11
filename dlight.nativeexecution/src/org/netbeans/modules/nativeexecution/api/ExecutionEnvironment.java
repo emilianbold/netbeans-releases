@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution.api;
 
-import org.netbeans.modules.nativeexecution.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 /**
  * The configuration of the environment for a {@link NativeProcess} execution.

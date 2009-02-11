@@ -36,62 +36,77 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.nativeexecution;
 
-package org.netbeans.modules.nativeexecution.support;
-
-import java.text.ParseException;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.support.MacroExpanderFactory.MacroExpander;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.openide.util.Exceptions;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Arrays;
 
 /**
  *
- * @author ak119685
  */
-public class MacroExpanderFactoryTest {
+public final class LocalNativeProcess extends AbstractNativeProcess {
 
-    public MacroExpanderFactoryTest() {
-    }
+    private static final Runtime rt = Runtime.getRuntime();
+    private final InputStream processOutput;
+    private final InputStream processError;
+    private final OutputStream processInput;
+    private final Process process;
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
+    public LocalNativeProcess(NativeProcessInfo info) throws IOException {
+        super(info);
+        
+        final String commandLine = info.getCommandLine(true);
+        final String workingDirectory = info.getWorkingDirectory(true);
+        final File wdir =
+                workingDirectory == null ? null : new File(workingDirectory);
 
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
+        synchronized (rt) {
+            ProcessBuilder pb = new ProcessBuilder(Arrays.asList(
+                    "/bin/sh", "-c", // NOI18N
+                    "/bin/echo $$ && exec " + commandLine)); // NOI18N
 
-    @Before
-    public void setUp() {
-    }
+            pb.environment().putAll(info.getEnvVariables(true));
+            pb.directory(wdir);
 
-    @After
-    public void tearDown() {
-    }
+            process = pb.start();
 
-    /**
-     * Test of getExpander method, of class MacroExpanderFactory.
-     */
-    @Test
-    public void testGetExpander_ExecutionEnvironment_String() {
-        System.out.println("getExpander");
-        ExecutionEnvironment execEnv = new ExecutionEnvironment("ak119685", "brighton.russia.sun.com");
-//        ExecutionEnvironment execEnv = new ExecutionEnvironment();
-        ConnectionManager.getInstance().getConnectToAction(execEnv).invoke();
-        MacroExpander expander = MacroExpanderFactory.getExpander(execEnv, "SunStudio");
-        try {
-            System.out.println("$osname-${platform}$_isa -> " + expander.expandMacros("$osname-$platform$_isa"));
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
+            processOutput = process.getInputStream();
+            processError = process.getErrorStream();
+            processInput = process.getOutputStream();
+
+
+            readPID(processOutput);
         }
-
-
     }
 
+    @Override
+    public OutputStream getOutputStream() {
+        return processInput;
+    }
+
+    @Override
+    public InputStream getInputStream() {
+        return processOutput;
+    }
+
+    @Override
+    public InputStream getErrorStream() {
+        return processError;
+    }
+
+    @Override
+    public final int waitResult() throws InterruptedException {
+        int result = process.waitFor();
+//        // TODO: How to wait for all buffers?
+        Thread.yield();
+        return result;
+    }
+
+    @Override
+    public void cancel() {
+        process.destroy();
+    }
 }

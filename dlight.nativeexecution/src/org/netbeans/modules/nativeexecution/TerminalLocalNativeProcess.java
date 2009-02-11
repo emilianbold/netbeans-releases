@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.api.impl;
+package org.netbeans.modules.nativeexecution;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -45,7 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
-import org.netbeans.modules.nativeexecution.util.ExternalTerminal;
+import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 

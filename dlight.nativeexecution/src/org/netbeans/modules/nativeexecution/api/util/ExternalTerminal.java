@@ -36,17 +36,24 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.util;
+package org.netbeans.modules.nativeexecution.api.util;
 
 import java.util.List;
-import org.netbeans.modules.nativeexecution.api.impl.ExternalTerminalAccessor;
+import org.netbeans.modules.nativeexecution.ExternalTerminalAccessor;
 import org.netbeans.modules.nativeexecution.support.TerminalProfile;
 
+/**
+ * NativeProcessBuilder can create a process that is executed in an external
+ * terminal identified by ExternalTerminal object. The object can be obtained
+ * with {@link ExternalTerminalProvider#getTerminal(java.lang.String)}.
+ *
+ * @see ExternalTerminalProvider
+ */
 public final class ExternalTerminal {
 
     private final TerminalProfile profile;
     private String title = null;
-    private String prompt = "Press [Enter] to close terminal ...";
+    private String prompt = "Press [Enter] to close the terminal ..."; // NOI18N
 
 
     static {
@@ -63,12 +70,28 @@ public final class ExternalTerminal {
         prompt = terminal.prompt;
     }
 
+    /**
+     * Returnes an ExternalTerminal with configured prompt message that
+     * appears in terminal after command execution is finished.
+     *
+     * @param prompt prompt to be used in external terminal
+     * @return ExternalTerminal with configured prompt message
+     */
     public ExternalTerminal setPrompt(String prompt) {
         ExternalTerminal result = new ExternalTerminal(this);
         result.prompt = prompt;
         return result;
     }
 
+    /**
+     * Returnes an ExternalTerminal with configured title that
+     * appears in terminal that executes a native process.
+     *
+     * @param title String to be displayed in a title of a terminal (if a
+     *        terminal has capabilities to set a title)
+     * 
+     * @return ExternalTerminal with configured title
+     */
     public ExternalTerminal setTitle(String title) {
         ExternalTerminal result = new ExternalTerminal(this);
         result.title = title;

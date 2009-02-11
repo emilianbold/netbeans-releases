@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,35 +34,26 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.api;
+
+package org.netbeans.modules.nativeexecution.api.util;
 
 import javax.swing.Action;
 
 /**
- * The listener interface for receiving <tt>actionStarted</tt>/
- * <tt>actionCompleted</tt> events from an {@link ObservableAction}. The class
- * that is interested in processing an action event implements
- * this interface, and the object created with that class is registered with an
- * <tt>ObservableAction</tt>, using it's <tt>addObservableActionListener</tt>
- * method. When the action starts, that object's <tt>actionStarted</tt> method
- * is invoked. On action completion <tt>actionCompleted</tt> is invoked.
- * 
- * @param <T> type of action's result.
+ * This intrface is pretty much the same as {@link Action javax.swing.Action}
+ * but it assures that action is performed asynchronously
+ * ({@link #actionPerformed(java.awt.event.ActionEvent)} must be implemented so
+ * that it does not block the current thread).
+ *
+ * Also method {@link #invoke()} is provided that assures synchronous execution
+ * of the action. I.e. it must be implemented so, that it does block the current
+ * thread until the action is performed.
  */
-public interface ObservableActionListener<T> {
-
+public interface AsynchronousAction extends Action {
     /**
-     * Notifies listeners that action started.
-     * @param source the Action that has been started.
+     * Synchronous action invocation.
      */
-    public void actionStarted(Action source);
-
-    /**
-     * Notifies listeners that action completed.
-     * @param source the Action that has been completed.
-     * @param result the result of the action.
-     */
-    public void actionCompleted(Action source, T result);
+    public void invoke();
 }

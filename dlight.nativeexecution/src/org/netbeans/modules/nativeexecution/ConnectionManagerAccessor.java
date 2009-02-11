@@ -36,77 +36,39 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.api.impl;
+package org.netbeans.modules.nativeexecution;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Arrays;
+import com.jcraft.jsch.Session;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 
-/**
- *
- */
-public final class LocalNativeProcess extends AbstractNativeProcess {
+public abstract class ConnectionManagerAccessor {
 
-    private static final Runtime rt = Runtime.getRuntime();
-    private final InputStream processOutput;
-    private final InputStream processError;
-    private final OutputStream processInput;
-    private final Process process;
+    private static volatile ConnectionManagerAccessor DEFAULT;
 
-    public LocalNativeProcess(NativeProcessInfo info) throws IOException {
-        super(info);
-        
-        final String commandLine = info.getCommandLine(true);
-        final String workingDirectory = info.getWorkingDirectory(true);
-        final File wdir =
-                workingDirectory == null ? null : new File(workingDirectory);
-
-        synchronized (rt) {
-            ProcessBuilder pb = new ProcessBuilder(Arrays.asList(
-                    "/bin/sh", "-c", // NOI18N
-                    "/bin/echo $$ && exec " + commandLine)); // NOI18N
-
-            pb.environment().putAll(info.getEnvVariables(true));
-            pb.directory(wdir);
-
-            process = pb.start();
-
-            processOutput = process.getInputStream();
-            processError = process.getErrorStream();
-            processInput = process.getOutputStream();
-
-
-            readPID(processOutput);
+    public static void setDefault(ConnectionManagerAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException(
+                    "ConnectionManagerAccessor is already defined"); // NOI18N
         }
+
+        DEFAULT = accessor;
     }
 
-    @Override
-    public OutputStream getOutputStream() {
-        return processInput;
+    public static synchronized ConnectionManagerAccessor getDefault() {
+        if (DEFAULT != null) {
+            return DEFAULT;
+        }
+
+        try {
+            Class.forName(ConnectionManager.class.getName(), true,
+                    ConnectionManager.class.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+        }
+
+        return DEFAULT;
     }
 
-    @Override
-    public InputStream getInputStream() {
-        return processOutput;
-    }
-
-    @Override
-    public InputStream getErrorStream() {
-        return processError;
-    }
-
-    @Override
-    public final int waitResult() throws InterruptedException {
-        int result = process.waitFor();
-//        // TODO: How to wait for all buffers?
-        Thread.yield();
-        return result;
-    }
-
-    @Override
-    public void cancel() {
-        process.destroy();
-    }
+    public abstract Session getConnectionSession(
+            final ConnectionManager mgr, final ExecutionEnvironment env);
 }

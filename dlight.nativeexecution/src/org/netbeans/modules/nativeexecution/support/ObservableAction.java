@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.api;
+package org.netbeans.modules.nativeexecution.support;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -48,7 +48,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 
 /**
  * Extension of the {@link AbstractAction} implementation that allows to attach
@@ -56,14 +56,16 @@ import org.openide.util.Exceptions;
  *
  * @param <T> result type of the action
  */
-public abstract class ObservableAction<T> extends AbstractAction {
+public abstract class ObservableAction<T>
+        extends AbstractAction
+        implements AsynchronousAction {
 
     private static ExecutorService executorService =
             Executors.newCachedThreadPool();
     private final List<ObservableActionListener<T>> listeners =
             Collections.synchronizedList(new ArrayList<ObservableActionListener<T>>());
-    private volatile Future<T> task = null;
-    private ActionEvent event;
+    private volatile Future<T> taskFutureResult = null;
+    private final Object lock = new String(ObservableAction.class.getName());
 
 
     static {
@@ -93,7 +95,7 @@ public abstract class ObservableAction<T> extends AbstractAction {
      *
      * @param listener a <tt>ObservableActionListener</tt> object
      */
-    public void addObservableActionListener(
+    public final void addObservableActionListener(
             ObservableActionListener<T> listener) {
         if (!listeners.contains(listener)) {
             listeners.add(listener);
@@ -106,7 +108,7 @@ public abstract class ObservableAction<T> extends AbstractAction {
      *
      * @param listener a <tt>ObservableActionListener</tt> object
      */
-    public void removeObservableActionListener(
+    public final void removeObservableActionListener(
             ObservableActionListener<T> listener) {
         listeners.remove(listener);
     }
@@ -123,46 +125,58 @@ public abstract class ObservableAction<T> extends AbstractAction {
     abstract protected T performAction();
 
     /**
-     * Invoked when an action occurs.
+     * Invoked when an action occurs. <p>
+     * Action is submitted for an execution in a separate thread and
+     * current thread is not blocked. If this method is invoked again before
+     * previously submitted task completion, it returns immideately without new
+     * task submition.
+     *
      * @param e event that causes the action. May be <tt>NULL</tt>
      */
     public final void actionPerformed(final ActionEvent e) {
         // Will not start the task if it is already started.
-        if (task != null) {
-            return;
-        }
+        synchronized (lock) {
 
-        // Will execute task unsynchronously ... Post the task
-        event = e;
-        task = executorService.submit(new Callable<T>() {
+            if (e == null) {
 
-            public T call() throws Exception {
-                fireStarted();
-                T result = performAction();
-                task = null;
-                fireCompleted(result);
-
-                return result;
             }
-        });
+
+            if (taskFutureResult == null || taskFutureResult.isDone()) {
+                // Will execute task unsynchronously ... Post the task
+                taskFutureResult = executorService.submit(new Callable<T>() {
+
+                    public T call() throws Exception {
+                        fireStarted();
+                        T result = performAction();
+                        fireCompleted(result);
+
+                        return result;
+                    }
+                });
+            }
+        }
     }
 
     /**
-     * Performs synchronous execution of the action.
-     * @return result ofaction execution.
+     * Performs synchronous execution of the action. <p>
+     * If the action is executed at the moment of <tt>invoke</tt> call,
+     * the current thread is blocked until the action is completed and
+     * a result of <b>that</b> invocation in returned. Otherwise new task is
+     * submitted and result of it's execution is returned.
+     *
+     * @return a result of ths action execution.
      */
-    public final T invoke() {
-        actionPerformed(null);
+    public final void invoke() {
+        synchronized (lock) {
+            actionPerformed(null);
 
-        try {
-            return task.get();
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ExecutionException ex) {
-            Exceptions.printStackTrace(ex);
+            try {
+                taskFutureResult.get();
+            } catch (InterruptedException ex) {
+            } catch (ExecutionException ex) {
+            }
         }
-
-        return null;
+        
     }
 
     private void fireStarted() {

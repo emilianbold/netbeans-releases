@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,49 +34,35 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.api.impl;
+package org.netbeans.modules.nativeexecution.support;
 
-import java.util.List;
-import org.netbeans.modules.nativeexecution.util.ExternalTerminal;
-import org.netbeans.modules.nativeexecution.support.TerminalProfile;
+import javax.swing.Action;
 
 /**
- *
+ * The listener interface for receiving <tt>actionStarted</tt>/
+ * <tt>actionCompleted</tt> events from an {@link ObservableAction}. The class
+ * that is interested in processing an action event implements
+ * this interface, and the object created with that class is registered with an
+ * <tt>ObservableAction</tt>, using it's <tt>addObservableActionListener</tt>
+ * method. When the action starts, that object's <tt>actionStarted</tt> method
+ * is invoked. On action completion <tt>actionCompleted</tt> is invoked.
+ * 
+ * @param <T> type of action's result.
  */
-public abstract class ExternalTerminalAccessor {
+public interface ObservableActionListener<T> {
 
-    private static volatile ExternalTerminalAccessor DEFAULT;
+    /**
+     * Notifies listeners that action started.
+     * @param source the Action that has been started.
+     */
+    public void actionStarted(Action source);
 
-    public static void setDefault(ExternalTerminalAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException(
-                    "ConnectionManagerAccessor is already defined"); // NOI18N
-        }
-
-        DEFAULT = accessor;
-    }
-
-    public static synchronized ExternalTerminalAccessor getDefault() {
-        if (DEFAULT != null) {
-            return DEFAULT;
-        }
-
-        try {
-            Class.forName(ExternalTerminal.class.getName(), true,
-                    ExternalTerminal.class.getClassLoader());
-        } catch (ClassNotFoundException ex) {
-        }
-
-        return DEFAULT;
-    }
-
-    public abstract TerminalProfile getTerminalProfile(final ExternalTerminal terminal);
-
-    public abstract String getPrompt(final ExternalTerminal terminal);
-
-    public abstract List<String> wrapCommand(final ExternalTerminal terminal, String... args);
-
-    public abstract String getTitle(final ExternalTerminal terminal);
+    /**
+     * Notifies listeners that action completed.
+     * @param source the Action that has been completed.
+     * @param result the result of the action.
+     */
+    public void actionCompleted(Action source, T result);
 }

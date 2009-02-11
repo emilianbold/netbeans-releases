@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.api.impl;
+package org.netbeans.modules.nativeexecution;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -52,20 +52,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 
-/**
- * A {@link NativeProcessBuilder} starts a system process and returns an
- * instance of the {@link AbstractNativeProcess} which is a subclass of the
- * {@link Process java.lang.Process}.
- * The differentiator is that this implementation can represent as local as well
- * as remote process, has information about process' PID and about it's
- * {@link AbstractNativeProcess.State state}.
- */
 public abstract class AbstractNativeProcess extends NativeProcess {
 
     private final static java.util.logging.Logger log = Logger.getInstance();
@@ -87,12 +78,6 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         setState(State.STARTING);
     }
 
-    /**
-     * Returns PID of underlaying system process.<br>
-     * @return PID of underlaying system process.
-     * @throws IllegalStateException if no PID was obtained prior to method
-     *         invokation.
-     */
     public final int getPID() {
         if (pid == null) {
             throw new IllegalStateException("Process was not started"); // NOI18N
@@ -120,10 +105,6 @@ public abstract class AbstractNativeProcess extends NativeProcess {
      */
     public abstract int waitResult() throws InterruptedException;
 
-    /**
-     * Returns the current {@link AbstractNativeProcess.State state} of the process.
-     * @return current state of the process.
-     */
     public final State getState() {
         return state;
     }
@@ -294,7 +275,8 @@ public abstract class AbstractNativeProcess extends NativeProcess {
                 Callable<Integer> readErrorTask = new Callable<Integer>() {
 
                     public Integer call() {
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(errorStream));
+                        BufferedReader reader = new BufferedReader(
+                                new InputStreamReader(errorStream));
                         String s = null;
                         try {
                             while ((s = reader.readLine()) != null) {

@@ -39,12 +39,27 @@
 package org.netbeans.modules.nativeexecution.api;
 
 /**
- *
+ * A {@link NativeProcessBuilder} starts a system process and returns an
+ * instance of the {@link NativeProcess} which is a subclass of the
+ * {@link Process java.lang.Process}.
+ * The differentiator is that this implementation can represent as local as well
+ * as remote process, has information about process' PID and about it's
+ * {@link NativeProcess.State state}.
  */
 public abstract class NativeProcess extends Process {
 
+    /**
+     * Returns PID of the underlaying system process.<br>
+     * @return PID of the underlaying system process.
+     * @throws IllegalStateException if no PID was obtained prior to method
+     *         invocation.
+     */
     public abstract int getPID() throws IllegalStateException;
 
+    /**
+     * Returns the current {@link NativeProcess.State state} of the process.
+     * @return current state of the process.
+     */
     public abstract State getState();
 
     /**

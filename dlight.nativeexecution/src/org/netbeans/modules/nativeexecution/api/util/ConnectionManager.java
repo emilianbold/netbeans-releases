@@ -36,8 +36,10 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.util;
+package org.netbeans.modules.nativeexecution.api.util;
 
+import org.netbeans.modules.nativeexecution.support.ObservableAction;
+import org.netbeans.modules.nativeexecution.support.ObservableActionListener;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import java.util.concurrent.ExecutionException;
 import com.jcraft.jsch.JSch;
@@ -52,9 +54,8 @@ import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ObservableAction;
-import org.netbeans.modules.nativeexecution.api.ObservableActionListener;
-import org.netbeans.modules.nativeexecution.api.impl.ConnectionManagerAccessor;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.support.RemoteUserInfo;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -223,22 +224,55 @@ public final class ConnectionManager {
     }
 
     /**
-     * Returns <tt>ObservableAction&lt;Boolean&gt;</tt> action that can be used
+     * Returns {@link Action javax.swing.Action} that can be used
      * to get connected to the {@link ExecutionEnvironment}.
      * It is guaranteed that the same Action is returned for equal execution
      * environments.
      *
      * @param execEnv - {@link ExecutionEnvironment} to connect to.
+     * @param onConnect - Runnable that is executed when connection is
+     *        established.
      * @return action to be used to connect to the <tt>execEnv</tt>.
-     * @see org.netbeans.modules.nativeexecution.api.ObservableAction
+     * @see Action
      */
-    public synchronized ObservableAction<Boolean> getConnectToAction(
-            final ExecutionEnvironment execEnv) {
+    public synchronized AsynchronousAction getConnectToAction(
+            final ExecutionEnvironment execEnv, final Runnable onConnect) {
         if (actionsProvider == null) {
             actionsProvider = new ActionsProvider();
         }
 
-        return actionsProvider.getConnectAction(execEnv);
+        ObservableAction<Boolean> result =
+                actionsProvider.getConnectAction(execEnv);
+
+        if (onConnect != null) {
+            /*
+             * TODO: FIXME. This is not correct (though it works)...
+             * The problem is that we get the same connect action for
+             * the same execEnv for everyone who requested this action,
+             * but on *every* request we add additional listener.
+             *
+             * So, speaking about our implementation, we will invoke
+             * revalidateSessions() as many times as many tools we have... But,
+             * because we do not do validation if it is already in progress, in
+             * 'works'...
+             * 
+             * Still need to be fixed.
+             */
+
+            result.addObservableActionListener(new ObservableActionListener<Boolean>() {
+
+                public void actionStarted(Action source) {
+                }
+
+                public void actionCompleted(Action source, Boolean result) {
+                    if (result != null && result.booleanValue() == true) {
+                        onConnect.run();
+                    }
+                }
+            });
+        }
+
+        return result;
     }
 
     private static class ActionsProvider
@@ -291,7 +325,7 @@ public final class ConnectionManager {
             }
 
             @Override
-            protected Boolean performAction() {
+            public Boolean performAction() {
                 ConnectionManager cm = ConnectionManager.getInstance();
 
                 if (cm.isConnectedTo(execEnv)) {
