@@ -589,7 +589,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         cancel.setEnabled(true); 
         previewButton.setEnabled(!problem.isFatal());
         if (progressHandle!=null) {
-            stop(null);
+            stop(new ProgressEvent(this, ProgressEvent.STOP));
         }
         repaint();
     }
