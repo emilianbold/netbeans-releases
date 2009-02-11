@@ -285,7 +285,11 @@ public class FeatureProjectFactory implements ProjectFactory {
             }
         }
         final void switchToReal() {
-            ProjectState s = state;
+            ProjectState s = null;
+            synchronized (this) {
+                s = state;
+                state = null;
+            }
             if (s != null) {
                 try {
                     s.notifyDeleted();
@@ -294,7 +298,6 @@ public class FeatureProjectFactory implements ProjectFactory {
                         throw new IllegalStateException("New project shall be found! " + p); // NOI18N
                     }
                     delegate.associate(p);
-                    state = null;
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                 }

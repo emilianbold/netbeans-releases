@@ -43,18 +43,13 @@ package org.netbeans.modules.debugger.jpda.ui;
 
 import javax.swing.JComponent;
 import org.netbeans.spi.debugger.ui.AttachType;
-import org.openide.util.NbBundle;
-
 
 /**
  *
  * @author   Jan Jancura
  */
+@AttachType.Registration(displayName="#CTL_Connector_name")
 public class JPDAAttachType extends AttachType {
-
-    public String getTypeDisplayName () {
-        return NbBundle.getMessage (JPDAAttachType.class, "CTL_Connector_name");
-    }
 
     public JComponent getCustomizer () {
         return new ConnectPanel ();

@@ -42,13 +42,9 @@ package org.netbeans.modules.ruby.debugger.ui;
 
 import javax.swing.JComponent;
 import org.netbeans.spi.debugger.ui.AttachType;
-import org.openide.util.NbBundle;
 
+@AttachType.Registration(displayName="#RubyAttachType.ConnectorName")
 public final class RubyAttachType extends AttachType {
-
-    public String getTypeDisplayName() {
-        return NbBundle.getMessage(RubyAttachType.class, "RubyAttachType.ConnectorName");
-    }
 
     public JComponent getCustomizer() {
         return new ConnectPanel();
