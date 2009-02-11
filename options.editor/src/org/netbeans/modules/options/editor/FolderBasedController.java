@@ -75,9 +75,8 @@ public final class FolderBasedController extends OptionsPanelController implemen
                 (String) args.get (OPTIONS_SUB_FOLDER),
                 (String) args.get (HELP_CTX_ID)
         );
-        if (folderBasedController.getMimeTypes ().iterator().hasNext ())
-            return folderBasedController;
-        return null;
+
+        return folderBasedController;
     }
 
     private FolderBasedController(String subFolder, String helpCtxId) {
@@ -86,29 +85,37 @@ public final class FolderBasedController extends OptionsPanelController implemen
     }    
     
     public final synchronized void update() {
+        mimeType2delegates = null;
+        
         Collection<? extends OptionsPanelController> controllers = getMimeType2delegates ().values();
         for(OptionsPanelController c : controllers) {
+            c.getComponent(masterLookup);
             c.update();
         }
-        if (panel != null)
-            panel.update ();
+
+        assert panel != null;
+        panel.update ();
     }
     
-    public final void applyChanges() {
+    public final synchronized void applyChanges() {
         Collection<? extends OptionsPanelController> controllers = getMimeType2delegates ().values();
         for(OptionsPanelController c : controllers) {
             c.applyChanges();
         }
+
+        mimeType2delegates = null;
     }
     
-    public final void cancel() {
+    public final synchronized void cancel() {
         Collection<? extends OptionsPanelController> controllers = getMimeType2delegates ().values();
         for(OptionsPanelController c : controllers) {
             c.cancel();
         }
+        
+        mimeType2delegates = null;
     }
     
-    public final boolean isValid() {
+    public final synchronized boolean isValid() {
         Collection<? extends OptionsPanelController> controllers = getMimeType2delegates ().values();
         for(OptionsPanelController c : controllers) {
             if (!c.isValid()) {
@@ -118,7 +125,7 @@ public final class FolderBasedController extends OptionsPanelController implemen
         return true;
     }
     
-    public final boolean isChanged() {
+    public final synchronized boolean isChanged() {
         Collection<? extends OptionsPanelController> controllers = getMimeType2delegates ().values();
         for(OptionsPanelController c : controllers) {
             if (c.isChanged()) {
@@ -136,8 +143,10 @@ public final class FolderBasedController extends OptionsPanelController implemen
     public synchronized JComponent getComponent(Lookup masterLookup) {
         if (panel == null) {
             this.masterLookup = masterLookup;
-            for (OptionsPanelController controller : getMimeType2delegates ().values())
+            for (OptionsPanelController controller : getMimeType2delegates ().values()) {
+                controller.getComponent(masterLookup);
                 controller.addPropertyChangeListener(this);
+            }
             panel = new FolderBasedOptionPanel(this);
         }
         return panel;
@@ -172,8 +181,9 @@ public final class FolderBasedController extends OptionsPanelController implemen
             for (String mimeType : EditorSettings.getDefault().getAllMimeTypes()) {
                 Lookup l = Lookups.forPath(folder + mimeType);
                 OptionsPanelController controller = l.lookup(OptionsPanelController.class);
-                if (controller != null)
+                if (controller != null) {
                     mimeType2delegates.put(mimeType, controller);
+                }
             }
         }
         return mimeType2delegates;
