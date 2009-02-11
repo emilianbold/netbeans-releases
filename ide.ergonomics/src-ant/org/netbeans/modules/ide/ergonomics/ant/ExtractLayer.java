@@ -60,10 +60,12 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.filters.LineContainsRegExp;
 import org.apache.tools.ant.taskdefs.Concat;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.FilterChain;
+import org.apache.tools.ant.types.RegularExpression;
 import org.apache.tools.ant.types.Resource;
 import org.apache.tools.ant.types.ResourceCollection;
 import org.apache.tools.ant.types.resources.StringResource;
@@ -128,10 +130,12 @@ public final class ExtractLayer extends Task {
 
         Pattern concatPattern;
         Pattern copyPattern;
+        RegularExpression linePattern = new RegularExpression();
         try {
             Set<String> concatregs = new TreeSet<String>();
             Set<String> copyregs = new TreeSet<String>();
-            parse(layer, concatregs, copyregs);
+            Set<String> keys = new TreeSet<String>();
+            parse(layer, concatregs, copyregs, keys);
 
             log("Concats: " + concatregs, Project.MSG_VERBOSE);
             log("Copies : " + copyregs, Project.MSG_VERBOSE);
@@ -153,6 +157,15 @@ public final class ExtractLayer extends Task {
                 sep = "|";
             }
             copyPattern = Pattern.compile(sb.toString());
+
+            sb = new StringBuilder();
+            sep = "";
+            for (String s : keys) {
+                sb.append(sep);
+                sb.append(s);
+                sep = "|";
+            }
+            linePattern.setPattern("(" + sb + ") *=");
         } catch (Exception ex) {
             throw new BuildException("Cannot parse " + layer, ex);
         }
@@ -221,7 +234,12 @@ public final class ExtractLayer extends Task {
         bundles.add(new StringResource(""));
         concat.add(bundles);
         concat.setDestfile(bundle);
-        if (bundleFilter != null) {
+        {
+            FilterChain ch = new FilterChain();
+            LineContainsRegExp filter = new LineContainsRegExp();
+            filter.addConfiguredRegexp(linePattern);
+            ch.addLineContainsRegExp(filter);
+            concat.addFilterChain(ch);
             concat.addFilterChain(bundleFilter);
         }
         Concat.TextElement te = new Concat.TextElement();
@@ -256,7 +274,11 @@ public final class ExtractLayer extends Task {
     }
 
 
-    private void parse(final File file, final Set<String> concat, final Set<String> copy) throws Exception {
+    private void parse(
+        final File file,
+        final Set<String> concat, final Set<String> copy,
+        final Set<String> additionalKeys
+    ) throws Exception {
         SAXParserFactory f = SAXParserFactory.newInstance();
         f.setValidating(false);
         f.setNamespaceAware(false);
@@ -276,9 +298,16 @@ public final class ExtractLayer extends Task {
                     if (name.equals("SystemFileSystem.localizingBundle")) {
                         String bundlepath = attributes.getValue("stringvalue").replace('.', '/') + ".*properties";
                         concat.add(bundlepath);
+                        additionalKeys.add(prefix);
     //                    String key = prefix.replaceAll("/$", "");
                     } else if (attributes.getValue("bundlevalue") != null) {
-                        throw new BuildException("bundlevalue in " + file);
+                        String bundlevalue = attributes.getValue("bundlevalue");
+                        int idx = bundlevalue.indexOf('#');
+                        String bundle = bundlevalue.substring(0, idx);
+                        String key = bundlevalue.substring(idx + 1);
+                        String bundlepath = bundle.replace('.', '/') + ".*properties";
+                        concat.add(bundlepath);
+                        additionalKeys.add(key);
                     } else {
                         addResource(attributes.getValue("urlvalue"), false);
                     }

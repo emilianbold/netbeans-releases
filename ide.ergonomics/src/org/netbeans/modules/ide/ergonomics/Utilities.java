@@ -52,6 +52,7 @@ import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Set of static useful methods.
@@ -77,7 +78,8 @@ public class Utilities {
             SwingUtilities.invokeAndWait(new Runnable() {
 
                 public void run() {
-                    descriptor[0] = new DialogDescriptor(new ConfigurationPanel(featureName, call, featureInfo), "Feature Not Found");
+                    String notFound = NbBundle.getMessage(Utilities.class, "LBL_FeatureNotFound");
+                    descriptor[0] = new DialogDescriptor(new ConfigurationPanel(featureName, call, featureInfo), notFound);
                 }
             });
         } catch (InterruptedException ex) {

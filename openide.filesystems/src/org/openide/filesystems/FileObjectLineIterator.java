@@ -54,21 +54,21 @@ import org.openide.util.Exceptions;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 final class FileObjectLineIterator implements ListIterator<String> {
-    private final FileObject fo;
     private final String encoding;
+    private final FileObjectLines lines;
     private byte[] buffer;
     private BufferedReader reader;
     private String line;
     private int index;
 
-    public FileObjectLineIterator(FileObject fo, String encoding) throws IOException {
-        this.fo = fo;
+    public FileObjectLineIterator(FileObjectLines lines, String encoding) throws IOException {
+        this.lines = lines;
         this.encoding = encoding;
         initReader();
     }
 
     private FileObjectLineIterator(FileObjectLineIterator orig) {
-        this.fo = orig.fo;
+        this.lines = orig.lines;
         this.encoding = orig.encoding;
         this.buffer = orig.buffer;
         try {
@@ -146,13 +146,13 @@ final class FileObjectLineIterator implements ListIterator<String> {
 
     private void initReader() throws UnsupportedEncodingException, IOException {
         InputStream is;
-        if (fo.getSize() < 64 * 1024) {
+        if (lines.fo.getSize() < 64 * 1024) {
             if (buffer == null) {
-                buffer = fo.asBytes();
+                buffer = lines.fo.asBytes();
             }
             is = new ByteArrayInputStream(buffer);
         } else {
-            is = fo.getInputStream();
+            is = lines.fo.getInputStream();
         }
         this.reader = new BufferedReader(new InputStreamReader(is, encoding));
         this.index = 0;

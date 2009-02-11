@@ -45,16 +45,12 @@ import java.lang.ref.WeakReference;
 import javax.swing.JComponent;
 import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.debugger.ui.Controller;
-import org.openide.util.NbBundle;
 
+@AttachType.Registration(displayName="#RubyAttachType.ConnectorName")
 public final class RubyAttachType extends AttachType {
 
     private Reference<ConnectPanel> customizerRef = new WeakReference<ConnectPanel>(null);
     
-    @Override
-    public String getTypeDisplayName() {
-        return NbBundle.getMessage(RubyAttachType.class, "RubyAttachType.ConnectorName");
-    }
 
     public JComponent getCustomizer () {
         ConnectPanel panel = new ConnectPanel ();
