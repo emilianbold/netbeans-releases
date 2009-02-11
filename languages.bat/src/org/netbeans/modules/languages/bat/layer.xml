@@ -112,4 +112,11 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
+    <folder name="OptionsDialog">
+        <folder name="PreviewExamples">
+            <folder name="text">
+                <file name="bat" url="BatExample.bat"/>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>
