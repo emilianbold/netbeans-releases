@@ -51,9 +51,12 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -71,6 +74,7 @@ import org.openide.util.NbBundle;
  * @author Jan Lahoda
  */
 public class TimeComponentPanel extends javax.swing.JPanel implements PropertyChangeListener {
+    private static final Logger LOG = Logger.getLogger(TimeComponentPanel.class.getName());
     
     /** Creates new form TimeComponentPanel */
     public TimeComponentPanel() {
@@ -178,9 +182,16 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
         if (fo == null) return;
         
         Collection<String> keys = TimesCollectorPeer.getDefault().getKeysForFile(fo);
-        synchronized(keys) {
-            for (String key : keys) {
-                changeRow(fo, key);
+        for (int i = 0; i < 10; i++) {
+            try {
+                synchronized(keys) {
+                    for (String key : keys) {
+                        changeRow(fo, key);
+                    }
+                    return;
+                }
+            } catch (ConcurrentModificationException ex) {
+                LOG.log(Level.INFO, "Retry " + i, ex);
             }
         }
     }
