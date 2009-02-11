@@ -345,7 +345,6 @@ public class SftpClient implements RemoteClient {
             sftpLogger.info(NbBundle.getMessage(SftpClient.class, "LOG_DirectorySendOk"));
         } catch (SftpException ex) {
             LOGGER.log(Level.FINE, "Error while getting permissions for " + path, ex);
-            throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotGetPermissions", path), ex);
         }
         return permissions;
     }

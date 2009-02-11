@@ -161,7 +161,7 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
                     .add(encodingComboBox, 0, 297, Short.MAX_VALUE)))
             .add(separator, GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
             .add(projectFolderPanel, GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
-        
+
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
@@ -186,7 +186,7 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
                 .addPreferredGap(LayoutStyle.UNRELATED)
                 .add(projectFolderPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
-        
+
         );
 
         projectNameLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "ConfigureNewProjectPanelVisual.projectNameLabel.AccessibleContext.accessibleName")); // NOI18N
@@ -269,6 +269,17 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
         String hint = localServerComponent.getLocalServer().getHint();
         localServerInfoLabel.setText(hint);
         super.stateChanged(e);
+    }
+
+    @Override
+    public void setState(boolean enabled) {
+        projectNameTextField.setEnabled(enabled);
+        localServerComponent.setEnabled(enabled);
+    }
+
+    @Override
+    public boolean getState() {
+        return projectNameTextField.isEnabled();
     }
 
     private static class BrowseSources implements LocalServerController.BrowseHandler {

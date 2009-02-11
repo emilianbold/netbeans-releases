@@ -79,17 +79,16 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public class CustomizerSources extends JPanel implements SourcesFolderProvider, HelpCtx.Provider {
-    private static final long serialVersionUID = -588487546787474071L;
+    private static final long serialVersionUID = -58846454454544071L;
 
     private static final String DEFAULT_WEB_ROOT = NbBundle.getMessage(CustomizerSources.class, "LBL_DefaultWebRoot");
-
+    private final CopyFilesVisual copyFilesVisual;
+    private final boolean originalCopySrcFiles;
     final Category category;
     final PhpProjectProperties properties;
     String originalEncoding;
     boolean notified;
-    private final CopyFilesVisual copyFilesVisual;
-    private final boolean originalCopySrcFiles;
-    private final String originalCopySrcTarget;
+    private String originalCopySrcTarget;
 
     public CustomizerSources(final Category category, final PhpProjectProperties properties) {
         initComponents();
@@ -101,15 +100,21 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         initProjectAndSources();
         webRootTextField.setText(getWebRoot());
         originalCopySrcFiles = initCopyFiles();
-        LocalServer copyTarget = initCopyTarget();
-        LocalServer[] copyTargets = getCopyTargets(copyTarget);
-        originalCopySrcTarget = copyTarget.getSrcRoot();
         initTags();
 
-        copyFilesVisual = new CopyFilesVisual(this, copyTargets);
-        copyFilesVisual.selectLocalServer(copyTarget);
+        final LocalServer copyTarget = initCopyTarget();
+        originalCopySrcTarget = copyTarget.getSrcRoot();
+
+        copyFilesVisual = new CopyFilesVisual(this, LocalServer.PENDING_LOCAL_SERVER);
         copyFilesVisual.setCopyFiles(originalCopySrcFiles);
+        copyFilesVisual.setState(false);
         copyFilesPanel.add(BorderLayout.NORTH, copyFilesVisual);
+
+        PhpEnvironment.get().readDocumentRoots(new PhpEnvironment.ReadDocumentRootsNotifier() {
+            public void finished(List<DocumentRoot> documentRoots) {
+                initCopyTargets(documentRoots, copyTarget);
+            }
+        }, getSourcesFolderName());
 
         encodingComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -136,7 +141,7 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         aspTagsCheckBox.addActionListener(defaultActionListener);
 
         // check init values
-        validateFields(category);
+        validateFields();
     }
 
     private void initEncoding() {
@@ -198,9 +203,7 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         return new LocalServer(FileUtil.getFileDisplayName(resolvedFO));
     }
 
-    private LocalServer[] getCopyTargets(LocalServer initialLocalServer) {
-        List<DocumentRoot> roots = PhpEnvironment.get().getDocumentRoots(getSourcesFolderName());
-
+    void initCopyTargets(final List<DocumentRoot> roots, LocalServer initialLocalServer) {
         int size = roots.size() + 1;
         List<LocalServer> localServers = new ArrayList<LocalServer>(size);
         localServers.add(initialLocalServer);
@@ -208,7 +211,10 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
             LocalServer ls = new LocalServer(root.getDocumentRoot());
             localServers.add(ls);
         }
-        return localServers.toArray(new LocalServer[size]);
+        copyFilesVisual.setLocalServerModel(new LocalServer.ComboBoxModel(localServers.toArray(new LocalServer[size])));
+        copyFilesVisual.selectLocalServer(initialLocalServer);
+        copyFilesVisual.setState(true);
+        validateFields();
     }
 
     public String getSourcesFolderName() {
@@ -219,7 +225,12 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         return FileUtil.normalizeFile(new File(projectFolderTextField.getText()));
     }
 
-    void validateFields(Category category) {
+    void validateFields() {
+        if (!copyFilesVisual.getState()) {
+            // document roots not read yet
+            category.setValid(false);
+            return;
+        }
         category.setErrorMessage(null);
         category.setValid(true);
 
@@ -501,25 +512,25 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
 
     private class DefaultChangeListener implements ChangeListener {
         public void stateChanged(ChangeEvent e) {
-            validateFields(category);
+            validateFields();
         }
     }
 
     private class DefaultDocumentListener implements DocumentListener {
         public void insertUpdate(DocumentEvent e) {
-            validateFields(category);
+            validateFields();
         }
         public void removeUpdate(DocumentEvent e) {
-            validateFields(category);
+            validateFields();
         }
         public void changedUpdate(DocumentEvent e) {
-            validateFields(category);
+            validateFields();
         }
     }
 
     private class DefaultActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            validateFields(category);
+            validateFields();
         }
 
     }
