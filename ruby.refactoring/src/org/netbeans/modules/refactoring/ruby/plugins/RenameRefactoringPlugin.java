@@ -306,7 +306,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
         
         // TODO - get a better ruby name picker - and check for invalid Ruby symbol names etc.
         // TODO - call RubyUtils.isValidLocalVariableName if we're renaming a local symbol!
-        if (kind == ElementKind.CLASS && !RubyUtils.isValidConstantName(newName)) {
+        if (kind == ElementKind.CLASS && !RubyUtils.isValidConstantFQN(newName)) {
             String s = getString("ERR_InvalidClassName"); //NOI18N
             String msg = new MessageFormat(s).format(
                     new Object[] {newName}
@@ -328,9 +328,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
             fastCheckProblem = createProblem(fastCheckProblem, true, msg);
             return fastCheckProblem;
         }
-        
-        
-        String msg = RubyUtils.getIdentifierWarning(newName, 0);
+        String msg = getWarningMsg(kind, newName);
         if (msg != null) {
             fastCheckProblem = createProblem(fastCheckProblem, false, msg);
         }
@@ -713,6 +711,22 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
     
     private static final String getString(String key) {
         return NbBundle.getMessage(RenameRefactoringPlugin.class, key);
+    }
+
+    private String getWarningMsg(ElementKind kind, String newName) {
+        String msg = null;
+        if (ElementKind.CLASS == kind) {
+            for (String each : newName.split("::")) {
+                //NOI18N
+                msg = RubyUtils.getIdentifierWarning(each, 0);
+                if (msg != null) {
+                    break;
+                }
+            }
+        } else {
+            msg = RubyUtils.getIdentifierWarning(newName, 0);
+        }
+        return msg;
     }
     
     /**
