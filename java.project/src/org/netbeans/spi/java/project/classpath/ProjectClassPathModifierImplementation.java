@@ -278,14 +278,14 @@ public abstract class ProjectClassPathModifierImplementation {
 
     /**
      * Adds projects as dependencies into project's classpath if the
-     * artifacts are not already on it. The default behaviour will behave as {@link #addAntArtifacts(org.netbeans.api.project.ant.AntArtifact[], java.net.URI[], org.netbeans.api.project.SourceGroup, java.lang.String)}
+     * artifacts are not already on it. The default behaviour will behave as {@link ProjectClassPathModifierImplementation#addAntArtifacts(org.netbeans.api.project.ant.AntArtifact[], java.net.URI[], org.netbeans.api.project.SourceGroup, java.lang.String)}
      * Other project types can override the behaviour.
      * @param projects to be added
      * (must be owned by the artifact and be relative to it)
      * @param sourceGroup of type {@link org.netbeans.api.java.project.JavaProjectConstants#SOURCES_TYPE_JAVA}
      * identifying the compilation unit to change
      * @param type the type of the classpath the artifact should be added to,
-     * eg {@link org.netbeans.api.java.classpath.ClassPath.COMPILE}
+     * eg {@link org.netbeans.api.java.classpath.ClassPath#COMPILE}
      * @return true in case the classpath was changed, (at least one artifact was added to the classpath),
      * the value false is returned when all the artifacts are already included on the classpath.
      * @exception IOException in case the project metadata cannot be changed
