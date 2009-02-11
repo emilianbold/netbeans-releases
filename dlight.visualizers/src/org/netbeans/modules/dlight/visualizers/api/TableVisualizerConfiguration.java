@@ -39,23 +39,27 @@
 
 package org.netbeans.modules.dlight.visualizers.api;
 
+import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
+import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.impl.VisualizerConfigurationIDsProvider;
-import org.netbeans.modules.dlight.dataprovider.api.DataModelScheme;
-import org.netbeans.modules.dlight.dataprovider.impl.TableDataModel;
-import org.netbeans.modules.dlight.visualizer.api.VisualizerConfiguration;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
+
 
 
 /**
  * This configuration is used to be able to show data collected
- * in Table View.
+ * in Table View. It supports "model:table" scheme. Which means
+ * if you would like to create own implementation of  implementation of Visualizer DataProvider which will be used by default implementation
+ * of Table visualizer, it should return that it supports model scheme which can be retrieved  using
+ * {@link org.netbeans.modules.dlight.api.support.DataModelSchemeProvider#getScheme(java.lang.String)} where id equals to "model:table".
  */
 public final  class TableVisualizerConfiguration implements VisualizerConfiguration {
   private DataTableMetadata metadata;
 
   /**
    * Creates new configuration to display meta table <code>metadata</code>
-   * @param metadata see {@link @org-netbeans-modules-dlight@/org/netbeans/modules/dlight/storage/api/DataTableMetadata.html}
+   * @param metadata see {@link @org-netbeans-modules-dlight@org/netbeans/modules/dlight/api/storage/DataTableMetadata.html}
    */
   public TableVisualizerConfiguration(DataTableMetadata metadata) {
     this.metadata = metadata;
@@ -68,7 +72,7 @@ public final  class TableVisualizerConfiguration implements VisualizerConfigurat
 
 
   public final DataModelScheme getSupportedDataScheme() {
-    return TableDataModel.instance;
+    return DataModelSchemeProvider.getInstance().getScheme("model:table");
   }
 
   public final String getID() {

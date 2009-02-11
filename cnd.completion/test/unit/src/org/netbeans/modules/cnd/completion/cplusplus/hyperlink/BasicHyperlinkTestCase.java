@@ -51,6 +51,15 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ157907() throws Exception {
+        // IZ#157907: False positive recognition of macro
+        performTest("fun_macro_and_name.c", 6, 5, "fun_macro_and_name.c", 6, 3); // PREFIX as name of typedef
+        performTest("fun_macro_and_name.c", 10, 10, "fun_macro_and_name.c", 6, 3); // PREFIX as name of typedef
+
+        performTest("fun_macro_and_name.c", 1, 10, "fun_macro_and_name.c", 1, 1); // PREFIX as name of macro with params
+        performTest("fun_macro_and_name.c", 8, 15, "fun_macro_and_name.c", 1, 1); // PREFIX as name of macro with params
+    }
+
     public void testIZ151061() throws Exception {
         // IZ#151061: code model inaccuracy on VLC's is above boundary
         performTest("iz151061.c", 6, 10, "iz151061.c", 2, 5);

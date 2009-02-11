@@ -289,7 +289,39 @@ public class HgConfigFiles {
         } catch (IOException ex) {
             Mercurial.LOG.log(Level.INFO, null, ex);
         }
-    }    
+    }
+
+    /**
+     * Returns a default ini instance, with classloader issue workaround (#141364)
+     * @return ini instance
+     */
+    private Ini createIni () {
+        return createIni(null);
+    }
+
+    /**
+     * Returns an ini instance for given file, with classloader issue workaround (#141364)
+     * @param file ini file being parsed. If null then a default ini will be created.
+     * @return ini instance for the given file
+     */
+    private Ini createIni (File file) {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(Mercurial.class.getClassLoader());
+        try {
+            if (file == null) {
+                return new Ini();
+            } else {
+                return new Ini(new FileReader(file));
+            }
+        } catch (FileNotFoundException ex) {
+            // ignore
+        } catch (IOException ex) {
+            Mercurial.LOG.log(Level.INFO, null, ex);
+        } finally {
+            Thread.currentThread().setContextClassLoader(cl);
+        }
+        return null;
+    }
 
     /**
      * Loads Repository configuration file  <repo>/.hg/hgrc on all platforms
@@ -299,21 +331,15 @@ public class HgConfigFiles {
         File file = FileUtil.normalizeFile(new File(filePath));
         File tmpFile = HgUtils.fixPathsInIniFileOnWindows(file);
         Ini system = null;
-        try {            
-            if (Utilities.isWindows() && tmpFile != null && tmpFile.isFile() && tmpFile.canWrite() && file != null) {
-                tmpFile.deleteOnExit();
-                system = new Ini(new FileReader(tmpFile));
-            } else {
-                system = new Ini(new FileReader(file));
-            }
-        } catch (FileNotFoundException ex) {
-            // ignore
-        } catch (IOException ex) {
-            Mercurial.LOG.log(Level.INFO, null, ex); 
+        if (Utilities.isWindows() && tmpFile != null && tmpFile.isFile() && tmpFile.canWrite() && file != null) {
+            tmpFile.deleteOnExit();
+            system = createIni(tmpFile);
+        } else {
+            system = createIni(file);
         }
 
         if(system == null) {
-            system = new Ini();
+            system = createIni();
             Mercurial.LOG.log(Level.FINE, "Could not load the file " + filePath + ". Falling back on hg defaults."); // NOI18N
         }
         return system;
@@ -335,41 +361,28 @@ public class HgConfigFiles {
         File file = FileUtil.normalizeFile(new File(filePath));
         File tmpFile = HgUtils.fixPathsInIniFileOnWindows(file);
         Ini system = null;
-        try {            
-            if (Utilities.isWindows() && tmpFile != null && tmpFile.isFile() && tmpFile.canWrite() && file != null) {
-                tmpFile.deleteOnExit();
-                system = new Ini(new FileReader(tmpFile));
-            } else {
-                system = new Ini(new FileReader(file));
-            }
-
-        } catch (FileNotFoundException ex) {
-            // ignore
-        } catch (IOException ex) {
-            Mercurial.LOG.log(Level.INFO, null, ex); 
+        if (Utilities.isWindows() && tmpFile != null && tmpFile.isFile() && tmpFile.canWrite() && file != null) {
+            tmpFile.deleteOnExit();
+            system = createIni(tmpFile);
+        } else {
+            system = createIni(file);
         }
 
         if(system == null) {
-            system = new Ini();
+            system = createIni();
             Mercurial.LOG.log(Level.WARNING, "Could not load the file " + filePath + ". Falling back on hg defaults."); // NOI18N
         }
         
-        Ini global = null;      
-        try {
-            File gFile = FileUtil.normalizeFile(new File(getGlobalConfigPath() + File.separator + fileName));
-            File tmp2File = HgUtils.fixPathsInIniFileOnWindows(gFile);
-            if (Utilities.isWindows() && tmp2File != null) {
-                tmp2File.deleteOnExit();
-                global = new Ini(new FileReader(tmp2File));   // NOI18N
-            } else {
-                global = new Ini(new FileReader(gFile));   // NOI18N            
-            }
-        } catch (FileNotFoundException ex) {
-            // just doesn't exist - ignore
-        } catch (IOException ex) {
-            Mercurial.LOG.log(Level.INFO, null, ex); 
+        Ini global = null;
+        File gFile = FileUtil.normalizeFile(new File(getGlobalConfigPath() + File.separator + fileName));
+        File tmp2File = HgUtils.fixPathsInIniFileOnWindows(gFile);
+        if (Utilities.isWindows() && tmp2File != null) {
+            tmp2File.deleteOnExit();
+            global = createIni(tmp2File);   // NOI18N
+        } else {
+            global = createIni(gFile);   // NOI18N
         }
-         
+
         if(global != null) {
             merge(global, system);
         }                

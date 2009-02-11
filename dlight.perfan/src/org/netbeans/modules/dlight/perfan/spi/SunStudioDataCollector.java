@@ -38,37 +38,35 @@
  */
 package org.netbeans.modules.dlight.perfan.spi;
 
+import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
+import org.netbeans.modules.dlight.api.execution.AttachableTarget;
+import org.netbeans.modules.dlight.api.execution.DLightTarget;
+import org.netbeans.modules.dlight.api.execution.ValidationListener;
+import org.netbeans.modules.dlight.api.execution.ValidationStatus;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.perfan.storage.impl.PerfanDataStorage;
-import org.netbeans.modules.dlight.collector.spi.DataCollector;
-import org.netbeans.modules.dlight.execution.api.AttachableTarget;
-import org.netbeans.modules.dlight.execution.api.DLightTarget;
-import org.netbeans.modules.dlight.model.Validateable.ValidationState;
-import org.netbeans.modules.dlight.model.Validateable.ValidationStatus;
-import org.netbeans.modules.dlight.model.ValidationListener;
-import org.netbeans.modules.dlight.perfan.impl.SunStudioDCConfigurationAccessor;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.storage.spi.DataStorage;
-import org.netbeans.modules.dlight.storage.spi.DataStorageType;
-import org.netbeans.modules.dlight.storage.spi.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.util.HostInfo;
+import org.netbeans.modules.nativeexecution.api.ObservableAction;
+import org.netbeans.modules.nativeexecution.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
-import org.netbeans.modules.nativeexecution.api.NativeTask;
-import org.netbeans.modules.nativeexecution.util.RemoveTask;
-import org.openide.modules.InstalledFileLocator;
 
 /**
  * This class will represent SunStudio Performance Analyzer collect
@@ -76,212 +74,237 @@ import org.openide.modules.InstalledFileLocator;
  */
 public class SunStudioDataCollector implements DataCollector<SunStudioDCConfiguration> {
 
-  private List<ValidationListener> validationListeners = Collections.synchronizedList(new ArrayList<ValidationListener>());
-  private ValidationStatus validationStatus = ValidationStatus.NOT_VALIDATED;
-  private static final List<DataStorageType> supportedStorageTypes = Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(PerfanDataStorage.ID));
-  public static final Column TOP_FUNCTION_INFO = new Column("currentFunction", String.class);
-  private static DataTableMetadata dataTableMetadata = new DataTableMetadata("idbe", Arrays.asList(TOP_FUNCTION_INFO));
-  private static final Logger log = DLightLogger.getLogger(SunStudioDataCollector.class);
-  private NativeTask collectorTask;
-  private  String experimentDir;
-  private  String execFileName;
-  private PerfanDataStorage storage;
+    private static final String ID = "PerfanDataStorage";
+    private List<ValidationListener> validationListeners = Collections.synchronizedList(new ArrayList<ValidationListener>());
+    private ValidationStatus validationStatus = ValidationStatus.initialStatus();
+    private static final List<DataStorageType> supportedStorageTypes = Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(ID));
+    public static final Column TOP_FUNCTION_INFO = new Column("currentFunction", String.class);
+    private static DataTableMetadata dataTableMetadata = new DataTableMetadata("idbe", Arrays.asList(TOP_FUNCTION_INFO));
+    private static final Logger log = DLightLogger.getLogger(SunStudioDataCollector.class);
+//    private NativeTask collectorTask;
+    private String experimentDir;
+    private String execFileName;
+    private PerfanDataStorage storage;
 //  private IndicatorsNotifyerTask indicatorsNotifyerTask;
-  private List<CollectedInfo> collectedInfoList;
-  private DLightTarget target = null;
+    private List<CollectedInfo> collectedInfoList;
+    private DLightTarget target = null;
 
-  public SunStudioDataCollector() {
-  }
+    public SunStudioDataCollector() {
+    }
 
-  
+    SunStudioDataCollector(List<CollectedInfo> collectedInfoList) {
+        //TODO: Uncomment
+     //   File collectFile = InstalledFileLocator.getDefault().locate("perfan/intel-S2/prod/bin/collect", null, false);
+      // execFileName = collectFile.getAbsolutePath();
+        // experimentDir either local or remote! This will be known when target is known
+        experimentDir = "/tmp/perfanDataStorage.er"; // TODO:
+        this.collectedInfoList = collectedInfoList;
 
-  SunStudioDataCollector(List<CollectedInfo> collectedInfoList) {
-    File collectFile = InstalledFileLocator.getDefault().locate("perfan/intel-S2/prod/bin/collect", null, false);
-    execFileName = collectFile.getAbsolutePath();
-    // experimentDir either local or remote! This will be known when target is known
-    experimentDir = "/tmp/perfanDataStorage.er"; // TODO:
-    this.collectedInfoList = collectedInfoList;
+    }
 
-  }
+    public Future<ValidationStatus> validate(final DLightTarget targetToValidate) {
+        return DLightExecutorService.service.submit(new Callable<ValidationStatus>() {
 
-   
+            public ValidationStatus call() throws Exception {
+                if (validationStatus.isValid()) {
+                    return validationStatus;
+                }
 
-  public Future<ValidationStatus> validate(final DLightTarget targetToValidate) {
-    return DLightExecutorService.service.submit(new Callable<ValidationStatus>() {
+                ValidationStatus oldStatus = validationStatus;
+                ValidationStatus newStatus = doValidation(targetToValidate);
 
-      public ValidationStatus call() throws Exception {
-        if (validationStatus.isOK()) {
-          return validationStatus;
+                notifyStatusChanged(oldStatus, newStatus);
+
+                validationStatus = newStatus;
+                return newStatus;
+            }
+        });
+    }
+
+    public void invalidate() {
+        validationStatus = ValidationStatus.initialStatus();
+    }
+
+    public ValidationStatus getValidationStatus() {
+        return validationStatus;
+    }
+
+    protected synchronized ValidationStatus doValidation(DLightTarget targetToValidate) {
+        String os = null;
+
+        try {
+            os = HostInfoUtils.getOS(targetToValidate.getExecEnv());
+        } catch (HostNotConnectedException ex) {
+            ObservableAction<Boolean> connectAction = ConnectionManager.getInstance().
+                    getConnectToAction(targetToValidate.getExecEnv());
+
+            return ValidationStatus.unknownStatus("Host is not connected...", // NOI18N
+                    connectAction);
         }
 
-        ValidationStatus oldStatus = validationStatus;
-        ValidationStatus newStatus = doValidation(targetToValidate);
-
-        if (!(newStatus.getState().equals(oldStatus.getState()) &&
-                newStatus.getReason().equals(oldStatus.getReason()))) {
-          notifyStatusChanged(newStatus);
+        if (!"SunOS".equals(os)) {
+            return ValidationStatus.invalidStatus("SunStudioDataCollector works on SunOS only."); // NOI18N
         }
 
-        validationStatus = newStatus;
-        return newStatus;
-      }
-    });
-  }
+        ValidationStatus result = null;
 
-  public void invalidate() {
-    validationStatus = ValidationStatus.NOT_VALIDATED;
-  }
+        // TODO: files copying...????
+        result = ValidationStatus.validStatus();
 
-  public ValidationStatus getValidationStatus() {
-    return validationStatus;
-  }
-
-  protected synchronized ValidationStatus doValidation(DLightTarget targetToValidate) {
-    String os = null;
-
-    try {
-      os = HostInfo.getOS(targetToValidate.getExecEnv());
-    } catch (HostNotConnectedException ex) {
-      return new ValidationStatus(ValidationState.UNKNOWN, "Host is not connected...");
+        return result;
     }
 
-    if (!"SunOS".equals(os)) {
-      return new ValidationStatus(ValidationState.NOT_VALID, "SunStudioDataCollector works on SunOS only.");
+    public void addValidationListener(ValidationListener listener) {
+        if (!validationListeners.contains(listener)) {
+            validationListeners.add(listener);
+        }
     }
 
-    ValidationStatus result = ValidationStatus.NOT_VALIDATED;
-
-    // TODO: files copying...????
-    result = ValidationStatus.VALID;
-
-    return result;
-  }
-
-  public void addValidationListener(ValidationListener listener) {
-    if (!validationListeners.contains(listener)) {
-      validationListeners.add(listener);
-    }
-  }
-
-  public void removeValidationListener(ValidationListener listener) {
-    validationListeners.remove(listener);
-  }
-
-  protected void notifyStatusChanged(ValidationStatus newStatus) {
-    for (ValidationListener validationListener : validationListeners) {
-      validationListener.validationStateChanged(this, newStatus);
-    }
-  }
-
- 
- 
-
-  /**
-   * Returns unmodifiable list of information collected
-   * @return an unmodifiable view of the {@link CollectedInfo}
-   */
-  public List<CollectedInfo> getCollectedInfo() {
-    return Collections.unmodifiableList(collectedInfoList);
-  }
-
-  void addCollectedInfo(List<CollectedInfo> collectedInfo) {
-    if (this.collectedInfoList == null) {
-      collectedInfoList = collectedInfo;
-      return;
-    }
-    //should add if do not have yet
-    for (CollectedInfo c : collectedInfo) {
-      if (!collectedInfoList.contains(c)) {
-        collectedInfoList.add(c);
-      }
-    }
-  }
-
-  public String getExperimentDirectory() {
-    return experimentDir;
-  }
-
-  
-  // Is called before target has been started
-  public void init(DataStorage dataStorage, DLightTarget target) {
-    if (!(dataStorage instanceof PerfanDataStorage)) {
-      throw new IllegalArgumentException("You can not use storage " + dataStorage + " for PerfanDataCollector!");
+    public void removeValidationListener(ValidationListener listener) {
+        validationListeners.remove(listener);
     }
 
-    log.fine("Initialize perfan collector and storage for target " + target.toString());
-    log.fine("Prepare PerfanDataCollector. Clean directory " + experimentDir);
-    RemoveTask.removeDirectory(target.getExecEnv(), experimentDir, true);
-
-    storage = (PerfanDataStorage) dataStorage;
-    storage.setCollector(this);
-
-  }
-
-  public ExecutionEnvironment getExecEnv() {
-    return isAttachable() ? collectorTask.getExecEnv() : target.getExecEnv();
-  }
-
-  public void targetStarted(DLightTarget target) {
-    if (!isAttachable()) {
-      this.target = target;
-      return;
+    protected void notifyStatusChanged(ValidationStatus oldStatus, ValidationStatus newStatus) {
+        if (newStatus.equals(oldStatus)) {
+            return;
+        }
+        
+        for (ValidationListener validationListener : validationListeners) {
+            validationListener.validationStateChanged(this, oldStatus, newStatus);
+        }
     }
 
-    AttachableTarget at = (AttachableTarget) target;
-    //resetIndicators();
-    // Only now we know the PID of the target.
-    // Start collector task
-    // TODO: collector failures handle
-    collectorTask = new NativeTask(target.getExecEnv(), execFileName, new String[]{"-P", Integer.toString(at.getPID()), "-o", experimentDir});
-    collectorTask.submit();
-  }
+    /**
+     * Returns unmodifiable list of information collected
+     * @return an unmodifiable view of the {@link CollectedInfo}
+     */
+    public List<CollectedInfo> getCollectedInfo() {
+        return Collections.unmodifiableList(collectedInfoList);
+    }
 
-  public void targetFinished(DLightTarget target, int result) {
-    log.fine("Stopping PerfanDataCollector: " + execFileName);
-    if (!isAttachable()) {
+    void addCollectedInfo(List<CollectedInfo> collectedInfo) {
+        if (this.collectedInfoList == null) {
+            collectedInfoList = collectedInfo;
+            return;
+        }
+        //should add if do not have yet
+        for (CollectedInfo c : collectedInfo) {
+            if (!collectedInfoList.contains(c)) {
+                collectedInfoList.add(c);
+            }
+        }
+    }
+
+    public String getExperimentDirectory() {
+        return experimentDir;
+    }
+
+    // Is called before target has been started
+    public void init(DataStorage dataStorage, DLightTarget target) {
+        if (!(dataStorage instanceof PerfanDataStorage)) {
+            throw new IllegalArgumentException("You can not use storage " + dataStorage + " for PerfanDataCollector!");
+        }
+
+        log.fine("Initialize perfan collector and storage for target " + target.toString());
+        log.fine("Prepare PerfanDataCollector. Clean directory " + experimentDir);
+
+//        NativeTask rmTask = CommonTasksSupport.getRemoveDirectoryTask(
+//                target.getExecEnv(), experimentDir, true, null);
+//
+//        try {
+//            rmTask.invoke(true);
+//        } catch (Exception ex) {
+//        }
+
+        storage = (PerfanDataStorage) dataStorage;
+        storage.setCollector(this);
+
+    }
+
+    public ExecutionEnvironment getExecEnv() {
+        return null;
+//        return isAttachable() ? collectorTask.getExecutionEnvironment() : target.getExecEnv();
+    }
+
+    private void targetStarted(DLightTarget target) {
+        if (!isAttachable()) {
+            this.target = target;
+            return;
+        }
+
+        AttachableTarget at = (AttachableTarget) target;
+        //resetIndicators();
+        // Only now we know the PID of the target.
+        // Start collector task
+        // TODO: collector failures handle
+//        collectorTask = new NativeTask(target.getExecEnv(), execFileName, new String[]{"-P", Integer.toString(at.getPID()), "-o", experimentDir});
+//        collectorTask.submit(true, false);
+    }
+
+    private void targetFinished(DLightTarget target) {
+        log.fine("Stopping PerfanDataCollector: " + execFileName);
+        if (!isAttachable()) {
 //      this.target = null;
-    } else {
-      collectorTask.cancel();
-    }
+        } else {
+//            collectorTask.cancel(true);
+        }
 
 //    if (indicatorsNotifyerTask != null) {
 //      DLightGlobalTimer.getInstance().unregisterTimerTask(indicatorsNotifyerTask);
 //    }
-  }
-
-  public List<DataStorageType> getSupportedDataStorageTypes() {
-    return supportedStorageTypes;
-  }
-
-  public List<? extends DataTableMetadata> getDataTablesMetadata() {
-    return Arrays.asList(dataTableMetadata);
-  }
-
-  public boolean isAttachable() {
-    if (collectedInfoList.contains(CollectedInfo.SYNCHRONIZARION)) {
-      return false;
     }
-    return true;
-  }
 
-  public String getCmd() {
-    return execFileName;
-  }
-
-  public String[] getArgs() {
-    List<String> args = new ArrayList<String>();
-    if (collectedInfoList.contains(CollectedInfo.SYNCHRONIZARION)) {
-      args.add("-s");
-      args.add("30");
+    public Collection<DataStorageType> getSupportedDataStorageTypes() {
+        return supportedStorageTypes;
     }
-    args.add("-o");
-    args.add(getExperimentDir());
-    return args.toArray(new String[0]);
-  }
 
-  protected String getExperimentDir() {
-    return experimentDir;
-  }
+    public List<DataTableMetadata> getDataTablesMetadata() {
+        return Arrays.asList(dataTableMetadata);
+    }
 
-  
+    public boolean isAttachable() {
+        if (collectedInfoList.contains(CollectedInfo.SYNCHRONIZARION)) {
+            return false;
+        }
+        return true;
+    }
+
+    public String getCmd() {
+        return execFileName;
+    }
+
+    public String[] getArgs() {
+        List<String> args = new ArrayList<String>();
+        if (collectedInfoList.contains(CollectedInfo.SYNCHRONIZARION)) {
+            args.add("-s");
+            args.add("30");
+        }
+        args.add("-o");
+        args.add(getExperimentDir());
+        return args.toArray(new String[0]);
+    }
+
+    protected String getExperimentDir() {
+        return experimentDir;
+    }
+
+    public void targetStateChanged(DLightTarget source, State oldState, State newState) {
+        switch (newState) {
+            case RUNNING:
+                targetStarted(source);
+                return;
+            case FAILED:
+                targetFinished(source);
+                return;
+            case TERMINATED:
+                targetFinished(source);
+                return;
+            case DONE:
+                targetFinished(source);
+                return;
+            case STOPPED:
+                targetFinished(source);
+                return;
+        }
+    }
 }

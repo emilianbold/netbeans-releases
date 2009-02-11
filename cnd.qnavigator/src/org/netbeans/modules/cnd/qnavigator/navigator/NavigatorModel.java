@@ -386,6 +386,30 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         }
     }
 
+    private class ShowForwardClassDeclarationsAction extends AbstractAction implements Presenter.Popup {
+        private JCheckBoxMenuItem menuItem;
+        public ShowForwardClassDeclarationsAction() {
+            putValue(Action.NAME, NbBundle.getMessage(NavigatorModel.class, "ShowForwardClassDeclarationsText")); // NOI18N
+            menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME));
+            menuItem.setAction(this);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            fileModel.getFilter().setShowForwardClassDeclarations(!fileModel.getFilter().isShowForwardClassDeclarations());
+            int selection = storeSelection();
+            update(getCsmFile());
+            if (selection >= 0) {
+                setSelection(selection);
+            }
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(fileModel.getFilter().isShowForwardClassDeclarations());
+            return menuItem;
+        }
+    }
+
+
     private class ShowMacroAction extends AbstractAction implements Presenter.Popup {
         private JCheckBoxMenuItem menuItem;
         public ShowMacroAction() {
@@ -608,6 +632,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
 
         private JMenuItem createSubmenu () {
             JMenuItem menu = new JMenu(NbBundle.getMessage(NavigatorModel.class, "FilterSubmenu")); //NOI18N
+            menu.add(new ShowForwardClassDeclarationsAction().getPopupPresenter());
             menu.add(new ShowForwardFunctionDeclarationsAction().getPopupPresenter());
             menu.add(new ShowMacroAction().getPopupPresenter());
             menu.add(new ShowIncludeAction().getPopupPresenter());

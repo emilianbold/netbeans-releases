@@ -55,6 +55,7 @@ public class ProductCodesConverter {
             items = new ArrayList<ProductCodeConverter>();
         }
         if (entities != null) {
+            items.clear();
             for (ProductCode entity : entities) {
                 items.add(new ProductCodeConverter(entity, uri, expandLevel, true));
             }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -20,6 +20,17 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  *
  * Contributor(s):
  *
@@ -40,34 +51,29 @@
  */
 package org.netbeans.modules.cnd.navigation.macroview;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
-import org.netbeans.modules.cnd.model.tasks.CaretAwareCsmFileTaskFactory;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.openide.cookies.EditorCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
+ * Macro Expansion panel.
  *
- * @author  Alexander Simon
+ * @author Nick Krasilnikov
  */
 public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider {
 
     public static final String ICON_PATH = "org/netbeans/modules/cnd/navigation/includeview/resources/tree.png"; // NOI18N
     private transient ExplorerManager explorerManager = new ExplorerManager();
 
-    /** Creates new form MacroExpansionPanel */
+    /** Creates new form MacroExpansionPanel. */
     public MacroExpansionPanel(boolean isView) {
         initComponents();
         setName(NbBundle.getMessage(getClass(), "CTL_MacroExpansionTopComponent")); // NOI18N
@@ -102,21 +108,7 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         }
         jCodeExpansionEditorPane.setContentType(mimeType);
         jCodeExpansionEditorPane.setDocument(doc);
-        jCodeExpansionEditorPane.enableInputMethods(false);
         doc.putProperty(JEditorPane.class, jCodeExpansionEditorPane);
-
-        Document doc2 = (Document) doc.getProperty(Document.class);
-        if (doc2 != null) {
-            FileObject file2 = CsmUtilities.getFileObject(doc2);
-            if (file2 != null) {
-                JEditorPane ep = getEditor(doc2);
-                int doc2CarretPosition = ep.getCaretPosition();
-                int docCarretPosition = getDocumentOffset(doc, getFileOffset(doc2, doc2CarretPosition));
-                if (docCarretPosition >= 0 && docCarretPosition < doc.getLength()) {
-                    jCodeExpansionEditorPane.setCaretPosition(docCarretPosition);
-                }
-            }
-        }
     }
 
     /**
@@ -149,15 +141,111 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
     /**
      * Sets scope for macro expansion (local or whole file).
      *
-     * @param local - is scole local
+     * @param local - is scope local
      */
     public void setLocalContext(boolean local) {
         localContext.setSelected(local);
         fileContext.setSelected(!local);
     }
 
+    /**
+     * Indicates is caret synchronization enabled or not.
+     *
+     * @return is caret synchronization enabled
+     */
+    public boolean isSyncCaret() {
+        return syncCaret.isSelected();
+    }
+
+    /**
+     * Sets caret synchronization.
+     *
+     * @param sync - is caret synchronization enabled
+     */
+    public void setSyncCaret(boolean sync) {
+        Document doc = jCodeExpansionEditorPane.getDocument();
+        if (doc == null) {
+            return;
+        }
+        doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CARET, sync);
+        syncCaret.setSelected(sync);
+    }
+
+    /**
+     * Indicates is context synchronization enabled or not.
+     *
+     * @return is context synchronization enabled
+     */
+    public boolean isSyncContext() {
+        return syncContext.isSelected();
+    }
+
+    /**
+     * Sets context synchronization.
+     *
+     * @param sync - is context synchronization enabled
+     */
+    public void setSyncContext(boolean sync) {
+        Document doc = jCodeExpansionEditorPane.getDocument();
+        if (doc == null) {
+            return;
+        }
+        doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CONTEXT, sync);
+        syncContext.setSelected(sync);
+    }
+
+    /**
+     * Sets text in status bar.
+     * 
+     * @param s - text
+     */
+    public void setStatusBarText(String s) {
+        jStatusBar.setText(s);
+    }
+
+    /**
+     * Updates cursor position.
+     */
+    public void updateCaretPosition() {
+        jCodeExpansionEditorPane.setCaretPosition(getCursorPositionFromMainDocument());
+    }
+
+    private int getCursorPositionFromMainDocument() {
+        Document doc = jCodeExpansionEditorPane.getDocument();
+        if (doc == null) {
+            return 0;
+        }
+        Document doc2 = (Document) doc.getProperty(Document.class);
+        if (doc2 == null) {
+            return 0;
+        }
+        int docCarretPosition = MacroExpansionViewUtils.getDocumentOffset(doc,
+                MacroExpansionViewUtils.getFileOffset(doc2, getMainDocumentCursorPosition()));
+        if (docCarretPosition >= 0 && docCarretPosition < doc.getLength()) {
+            return docCarretPosition;
+        }
+        return 0;
+    }
+
+    private int getMainDocumentCursorPosition() {
+        Document doc = jCodeExpansionEditorPane.getDocument();
+        if (doc == null) {
+            return 0;
+        }
+        Document doc2 = (Document) doc.getProperty(Document.class);
+        if (doc2 != null) {
+            FileObject file2 = CsmUtilities.getFileObject(doc2);
+            if (file2 != null) {
+                JEditorPane ep = MacroExpansionViewUtils.getEditor(doc2);
+                int doc2CarretPosition = ep.getCaretPosition();
+                return doc2CarretPosition;
+            }
+        }
+        return 0;
+    }
+
     private void update() {
-        Document doc = (Document) jCodeExpansionEditorPane.getDocument();
+        Document doc = jCodeExpansionEditorPane.getDocument();
         if (doc == null) {
             return;
         }
@@ -165,44 +253,12 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         if (mainDoc == null) {
             return;
         }
-        JEditorPane ep = getEditor(doc);
+        JEditorPane ep = MacroExpansionViewUtils.getEditor(doc);
         if (ep == null) {
             return;
         }
-        int offset = getDocumentOffset(mainDoc, getFileOffset(doc, ep.getCaretPosition()));
+        int offset = MacroExpansionViewUtils.getDocumentOffset(mainDoc, MacroExpansionViewUtils.getFileOffset(doc, ep.getCaretPosition()));
         CsmMacroExpansion.showMacroExpansionView(mainDoc, offset);
-    }
-
-    private int getFileOffset(Document doc, int documentOffset) {
-        return CsmMacroExpansion.getOffsetInOriginalText(doc, documentOffset);
-    }
-
-    private int getDocumentOffset(Document doc, int fileOffset) {
-        return CsmMacroExpansion.getOffsetInExpandedText(doc, fileOffset);
-    }
-
-    private JEditorPane getEditor(Document doc) {
-        FileObject file = CsmUtilities.getFileObject(doc);
-        if (file != null) {
-            DataObject dobj = null;
-            try {
-                dobj = DataObject.find(file);
-            } catch (DataObjectNotFoundException ex) {
-                Logger.getLogger(CaretAwareCsmFileTaskFactory.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            if (dobj != null) {
-                EditorCookie ec = dobj.getCookie(EditorCookie.class);
-                JEditorPane jEditorPanes[] = ec.getOpenedPanes();
-                if (jEditorPanes != null && jEditorPanes.length > 0) {
-                    return jEditorPanes[0];
-                }
-            }
-        }
-        Object jEditorPane = doc.getProperty(JEditorPane.class);
-        if (jEditorPane != null) {
-            return (JEditorPane) jEditorPane;
-        }
-        return null;
     }
 
     /** This method is called from within the constructor to
@@ -213,30 +269,68 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jSplitPane1 = new javax.swing.JSplitPane();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jMacroExpansionEditorPane = new javax.swing.JEditorPane();
+        jPanel1 = new javax.swing.JPanel();
+        jCodeExpansionPane = new javax.swing.JScrollPane();
+        jCodeExpansionEditorPane = new javax.swing.JEditorPane();
+        jStatusBar = new javax.swing.JLabel();
         jToolBar1 = new javax.swing.JToolBar();
         refresh = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JToolBar.Separator();
         localContext = new javax.swing.JToggleButton();
         fileContext = new javax.swing.JToggleButton();
         jSeparator2 = new javax.swing.JToolBar.Separator();
+        syncCaret = new javax.swing.JToggleButton();
+        jSeparator3 = new javax.swing.JToolBar.Separator();
+        syncContext = new javax.swing.JToggleButton();
+        jSeparator4 = new javax.swing.JToolBar.Separator();
         prevMacro = new javax.swing.JButton();
         nextMacro = new javax.swing.JButton();
-        jSplitPane1 = new javax.swing.JSplitPane();
-        jCodeExpansionPane = new javax.swing.JScrollPane();
-        jCodeExpansionEditorPane = new javax.swing.JEditorPane();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jMacroExpansionEditorPane = new javax.swing.JEditorPane();
+
+        jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane1.setResizeWeight(1.0);
+        jSplitPane1.setFocusable(false);
+        jSplitPane1.setOneTouchExpandable(true);
+
+        jScrollPane1.setBorder(null);
+
+        jMacroExpansionEditorPane.setBorder(null);
+        jMacroExpansionEditorPane.setEditable(false);
+        jScrollPane1.setViewportView(jMacroExpansionEditorPane);
 
         setLayout(new java.awt.BorderLayout());
+
+        jPanel1.setMaximumSize(new java.awt.Dimension(100, 100));
+        jPanel1.setMinimumSize(new java.awt.Dimension(100, 100));
+        jPanel1.setLayout(new java.awt.BorderLayout());
+
+        jCodeExpansionPane.setBorder(null);
+
+        jCodeExpansionEditorPane.setBorder(null);
+        jCodeExpansionPane.setViewportView(jCodeExpansionEditorPane);
+
+        jPanel1.add(jCodeExpansionPane, java.awt.BorderLayout.CENTER);
+
+        jStatusBar.setText(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.jStatusBar.text")); // NOI18N
+        jPanel1.add(jStatusBar, java.awt.BorderLayout.PAGE_END);
+
+        add(jPanel1, java.awt.BorderLayout.CENTER);
 
         jToolBar1.setFloatable(false);
         jToolBar1.setOrientation(1);
         jToolBar1.setRollover(true);
+        jToolBar1.setMaximumSize(new java.awt.Dimension(28, 240));
+        jToolBar1.setPreferredSize(new java.awt.Dimension(28, 240));
 
         refresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/navigation/macroview/resources/refresh.png"))); // NOI18N
         refresh.setToolTipText(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.refresh.toolTipText")); // NOI18N
         refresh.setFocusable(false);
         refresh.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        refresh.setMaximumSize(new java.awt.Dimension(24, 24));
+        refresh.setMinimumSize(new java.awt.Dimension(24, 24));
+        refresh.setPreferredSize(new java.awt.Dimension(24, 24));
         refresh.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         refresh.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -246,12 +340,16 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         jToolBar1.add(refresh);
         refresh.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.refresh.AccessibleContext.accessibleDescription")); // NOI18N
 
+        jSeparator1.setSeparatorSize(new java.awt.Dimension(0, 4));
         jToolBar1.add(jSeparator1);
 
         localContext.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/navigation/macroview/resources/declscope.png"))); // NOI18N
         localContext.setToolTipText(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.localContext.toolTipText")); // NOI18N
         localContext.setFocusable(false);
         localContext.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        localContext.setMaximumSize(new java.awt.Dimension(24, 24));
+        localContext.setMinimumSize(new java.awt.Dimension(24, 24));
+        localContext.setPreferredSize(new java.awt.Dimension(24, 24));
         localContext.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         localContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -265,6 +363,9 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         fileContext.setToolTipText(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.fileContext.toolTipText")); // NOI18N
         fileContext.setFocusable(false);
         fileContext.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        fileContext.setMaximumSize(new java.awt.Dimension(24, 24));
+        fileContext.setMinimumSize(new java.awt.Dimension(24, 24));
+        fileContext.setPreferredSize(new java.awt.Dimension(24, 24));
         fileContext.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         fileContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -274,12 +375,53 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         jToolBar1.add(fileContext);
         fileContext.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.fileContext.AccessibleContext.accessibleDescription")); // NOI18N
 
+        jSeparator2.setSeparatorSize(new java.awt.Dimension(0, 4));
         jToolBar1.add(jSeparator2);
+
+        syncCaret.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/navigation/macroview/resources/synccaret.png"))); // NOI18N
+        syncCaret.setToolTipText(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.syncCaret.toolTipText")); // NOI18N
+        syncCaret.setFocusable(false);
+        syncCaret.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        syncCaret.setMaximumSize(new java.awt.Dimension(24, 24));
+        syncCaret.setMinimumSize(new java.awt.Dimension(24, 24));
+        syncCaret.setPreferredSize(new java.awt.Dimension(24, 24));
+        syncCaret.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        syncCaret.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                syncCaretActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(syncCaret);
+        syncCaret.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.fileContext1.AccessibleContext.accessibleDescription")); // NOI18N
+
+        jSeparator3.setSeparatorSize(new java.awt.Dimension(0, 4));
+        jToolBar1.add(jSeparator3);
+
+        syncContext.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/navigation/macroview/resources/synccontext.png"))); // NOI18N
+        syncContext.setToolTipText(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.syncContext.toolTipText")); // NOI18N
+        syncContext.setFocusable(false);
+        syncContext.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        syncContext.setMaximumSize(new java.awt.Dimension(24, 24));
+        syncContext.setMinimumSize(new java.awt.Dimension(24, 24));
+        syncContext.setPreferredSize(new java.awt.Dimension(24, 24));
+        syncContext.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        syncContext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                syncContextActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(syncContext);
+
+        jSeparator4.setSeparatorSize(new java.awt.Dimension(0, 4));
+        jToolBar1.add(jSeparator4);
 
         prevMacro.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/navigation/macroview/resources/prevmacro.png"))); // NOI18N
         prevMacro.setToolTipText(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.prevMacro.toolTipText")); // NOI18N
         prevMacro.setFocusable(false);
         prevMacro.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        prevMacro.setMaximumSize(new java.awt.Dimension(24, 24));
+        prevMacro.setMinimumSize(new java.awt.Dimension(24, 24));
+        prevMacro.setPreferredSize(new java.awt.Dimension(24, 24));
         prevMacro.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         prevMacro.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -293,6 +435,9 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         nextMacro.setToolTipText(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.nextMacro.toolTipText")); // NOI18N
         nextMacro.setFocusable(false);
         nextMacro.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        nextMacro.setMaximumSize(new java.awt.Dimension(24, 24));
+        nextMacro.setMinimumSize(new java.awt.Dimension(24, 24));
+        nextMacro.setPreferredSize(new java.awt.Dimension(24, 24));
         nextMacro.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         nextMacro.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -303,29 +448,47 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         nextMacro.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.nextMacro.AccessibleContext.accessibleDescription")); // NOI18N
 
         add(jToolBar1, java.awt.BorderLayout.LINE_START);
-
-        jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane1.setResizeWeight(0.9);
-        jSplitPane1.setFocusable(false);
-        jSplitPane1.setOneTouchExpandable(true);
-
-        jCodeExpansionPane.setBorder(null);
-
-        jCodeExpansionEditorPane.setBorder(null);
-        jCodeExpansionPane.setViewportView(jCodeExpansionEditorPane);
-
-        jSplitPane1.setLeftComponent(jCodeExpansionPane);
-
-        jScrollPane1.setBorder(null);
-
-        jMacroExpansionEditorPane.setBorder(null);
-        jMacroExpansionEditorPane.setEditable(false);
-        jScrollPane1.setViewportView(jMacroExpansionEditorPane);
-
-        jSplitPane1.setRightComponent(jScrollPane1);
-
-        add(jSplitPane1, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void nextMacroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextMacroActionPerformed
+        Document doc = jCodeExpansionEditorPane.getDocument();
+        if (doc == null) {
+            return;
+        }
+        int offset = CsmMacroExpansion.getNextMacroExpansionStartOffset(doc, jCodeExpansionEditorPane.getCaretPosition());
+        if (offset >= 0 && offset < doc.getLength()) {
+            jCodeExpansionEditorPane.setCaretPosition(offset);
+        }
+}//GEN-LAST:event_nextMacroActionPerformed
+
+    private void prevMacroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_prevMacroActionPerformed
+        Document doc = jCodeExpansionEditorPane.getDocument();
+        if (doc == null) {
+            return;
+        }
+        int offset = CsmMacroExpansion.getPrevMacroExpansionStartOffset(doc, jCodeExpansionEditorPane.getCaretPosition());
+        if (offset >= 0 && offset < doc.getLength()) {
+            jCodeExpansionEditorPane.setCaretPosition(offset);
+        }
+}//GEN-LAST:event_prevMacroActionPerformed
+
+    private void syncContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_syncContextActionPerformed
+        Document doc = jCodeExpansionEditorPane.getDocument();
+        if (doc == null) {
+            return;
+        }
+        doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CONTEXT, isSyncContext());
+        MacroExpansionViewUtils.updateView(getMainDocumentCursorPosition());
+}//GEN-LAST:event_syncContextActionPerformed
+
+    private void syncCaretActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_syncCaretActionPerformed
+        Document doc = jCodeExpansionEditorPane.getDocument();
+        if (doc == null) {
+            return;
+        }
+        doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CARET, isSyncCaret());
+        updateCaretPosition();
+}//GEN-LAST:event_syncCaretActionPerformed
 
     private void fileContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileContextActionPerformed
         fileContext.setSelected(true);
@@ -343,28 +506,6 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         update();
 }//GEN-LAST:event_refreshActionPerformed
 
-    private void prevMacroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_prevMacroActionPerformed
-        Document doc = (Document) jCodeExpansionEditorPane.getDocument();
-        if (doc == null) {
-            return;
-        }
-        int offset = CsmMacroExpansion.getPrevMacroExpansionStartOffset(doc, jCodeExpansionEditorPane.getCaretPosition());
-        if (offset >= 0 && offset < doc.getLength()) {
-            jCodeExpansionEditorPane.setCaretPosition(offset);
-        }
-}//GEN-LAST:event_prevMacroActionPerformed
-
-    private void nextMacroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextMacroActionPerformed
-        Document doc = (Document) jCodeExpansionEditorPane.getDocument();
-        if (doc == null) {
-            return;
-        }
-        int offset = CsmMacroExpansion.getNextMacroExpansionStartOffset(doc, jCodeExpansionEditorPane.getCaretPosition());
-        if (offset >= 0 && offset < doc.getLength()) {
-            jCodeExpansionEditorPane.setCaretPosition(offset);
-        }
-}//GEN-LAST:event_nextMacroActionPerformed
-
     @Override
     public boolean requestFocusInWindow() {
         super.requestFocusInWindow();
@@ -380,15 +521,21 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
     private javax.swing.JEditorPane jCodeExpansionEditorPane;
     private javax.swing.JScrollPane jCodeExpansionPane;
     private javax.swing.JEditorPane jMacroExpansionEditorPane;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JToolBar.Separator jSeparator1;
     private javax.swing.JToolBar.Separator jSeparator2;
+    private javax.swing.JToolBar.Separator jSeparator3;
+    private javax.swing.JToolBar.Separator jSeparator4;
     private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JLabel jStatusBar;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JToggleButton localContext;
     private javax.swing.JButton nextMacro;
     private javax.swing.JButton prevMacro;
     private javax.swing.JButton refresh;
+    private javax.swing.JToggleButton syncCaret;
+    private javax.swing.JToggleButton syncContext;
     // End of variables declaration//GEN-END:variables
 
     public HelpCtx getHelpCtx() {

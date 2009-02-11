@@ -39,6 +39,7 @@ import java.io.File;
 import java.net.URI;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.utils.BrowserUtils;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.StringUtils;
@@ -84,7 +85,11 @@ public class NbShowUninstallationSurveyAction extends WizardAction {
                         
                         String url = StringUtils.format(UNINSTALLATION_SURVEY_URL, version, id, days.toString());
                         LogManager.log("... URL  : " + url);
-                        NbRegistrationAction.openBrowser(new URI(url));
+                        if(BrowserUtils.isBrowseSupported()) {
+                            BrowserUtils.openBrowser(new URI(url));
+                        } else {
+                            LogManager.log("... browser is not supported");
+                        }
                     }
                 }
             }

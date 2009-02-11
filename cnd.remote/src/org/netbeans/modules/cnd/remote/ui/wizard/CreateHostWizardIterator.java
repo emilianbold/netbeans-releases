@@ -44,11 +44,9 @@ import java.text.MessageFormat;
 import java.util.NoSuchElementException;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 public final class CreateHostWizardIterator implements WizardDescriptor.Iterator<WizardDescriptor> {
@@ -77,7 +75,7 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
                     // TODO if using org.openide.dialogs >= 7.8, can use WizardDescriptor.PROP_*:
-                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); //NOI18N
+                    jc.putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(i)); //NOI18N
                     // Sets steps names for a panel
                     jc.putClientProperty("WizardPanel_contentData", steps); //NOI18N
                     // Turn on subtitle creation on each step

@@ -73,8 +73,11 @@ import org.openide.windows.TopComponent;
 public class BundleEditPanel extends JPanel implements PropertyChangeListener {
     
     /** PropertiesDataObject this panel presents. */
-    private PropertiesDataObject obj;
-    
+//    private PropertiesDataObject obj;
+
+    /** */
+    private BundleStructure structure;
+
     /** Document listener for value and comment textareas. */
     private DocumentListener listener;
     
@@ -88,8 +91,10 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
     private int lastSelectedColumn;
     
     /** Creates new form BundleEditPanel */
+    @Deprecated
     public BundleEditPanel(final PropertiesDataObject obj, PropertiesTableModel propTableModel) {
-        this.obj = obj;
+//        this.obj = obj;
+        this.structure = obj.getBundleStructure();
         
         initComponents();
         initAccessibility();
@@ -131,6 +136,10 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
                     updateEnabled();
                 } else if (evt.getPropertyName().equals("model")) { // NOI18N
                     updateAddButton();
+                } else if (evt.getPropertyName().equals("marginChanged")||
+                            evt.getPropertyName().equals("columnMoved") ||
+                            evt.getPropertyName().equals("componentHidden")) {
+                    saveEditorValue(false);
                 }
             }
         });
@@ -153,8 +162,92 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
                 obj.getBundleStructure().sort(modelIndex);
             }
         });
+
         
+        table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent evt) {
+                final boolean correctCellSelection = !selectionUpdateDisabled;
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        updateSelection(correctCellSelection);
+                    }
+                });
+            }
+        });
         
+    } // End of constructor.
+    
+    /** Creates new form BundleEditPanel */
+    public BundleEditPanel(final BundleStructure structure, PropertiesTableModel propTableModel) {
+        this.structure = structure;
+
+        initComponents();
+        initAccessibility();
+        initSettings();
+
+        // Sets table column model.
+        table.setColumnModel(new TableViewColumnModel());
+
+        // Sets custom table header renderer (with sorting indicators).
+        JTableHeader header = table.getTableHeader();
+        header.setDefaultRenderer(
+                new TableViewHeaderRenderer(structure, header.getDefaultRenderer()));
+
+        // Sets table model.
+        table.setModel(propTableModel);
+
+        // Sets table cell editor.
+        JTextField textField = new JTextField();
+        // Force the document to accept newlines. The textField doesn't like
+        // it, but the same document is used by the <code>textValue</code> text
+        // area that must accept newlines.
+        textField.getDocument().putProperty("filterNewlines",  Boolean.FALSE); // NOI18N
+        textField.setBorder(new LineBorder(Color.black));
+        textField.getAccessibleContext().setAccessibleName(NbBundle.getBundle(BundleEditPanel.class).getString("ACSN_CellEditor"));
+        textField.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BundleEditPanel.class).getString("ACSD_CellEditor"));
+        listener = new ModifiedListener();
+        table.setDefaultEditor(PropertiesTableModel.StringPair.class,
+            new PropertiesTableCellEditor(textField, textComment, textValue, valueLabel, listener));
+
+        // Sets renderer.
+        table.setDefaultRenderer(PropertiesTableModel.StringPair.class, new TableViewRenderer());
+
+        updateAddButton();
+
+        // property change listener - listens to editing state of the table
+        table.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals("tableCellEditor")) { // NOI18N
+                    updateEnabled();
+                } else if (evt.getPropertyName().equals("model")) { // NOI18N
+                    updateAddButton();
+                } else if (evt.getPropertyName().equals("marginChanged")||
+                            evt.getPropertyName().equals("columnMoved") ||
+                            evt.getPropertyName().equals("componentHidden")) {
+                    saveEditorValue(false);
+                }
+            }
+        });
+
+        // listens on clikcs on table header, detects column and sort accordingly to chosen one
+        table.getTableHeader().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                TableColumnModel colModel = table.getColumnModel();
+                int columnModelIndex = colModel.getColumnIndexAtX(e.getX());
+                // No column was clicked.
+                if (columnModelIndex < 0) {
+                    return;
+                }
+                int modelIndex = colModel.getColumn(columnModelIndex).getModelIndex();
+                // not detected column
+                if (modelIndex < 0) {
+                    return;
+                }
+                structure.sort(modelIndex);
+            }
+        });
+
         ListSelectionListener listSelectionListener = new ListSelectionListener() {
 
             public void valueChanged(ListSelectionEvent evt) {
@@ -169,9 +262,8 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
 
         table.getColumnModel().getSelectionModel().addListSelectionListener(listSelectionListener);
         table.getSelectionModel().addListSelectionListener(listSelectionListener);
-        
+
     } // End of constructor.
-    
     
     /** Stops editing if editing is in run. */
     protected void stopEditing() {
@@ -233,7 +325,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
                     if (ex == null) {
                         return;
                     } 
-                    String [] keys = obj.getBundleStructure().getKeys();
+                    String [] keys = structure.getKeys();
                     int idx;
                     for (idx = 0; idx < keys.length; idx++) {
                         String key = keys[idx];
@@ -252,7 +344,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         }
         
         lastSelectedColumn = column;
-        BundleStructure structure = obj.getBundleStructure();
+//        BundleStructure structure = obj.getBundleStructure();
         removeButton.setEnabled((row >= 0) && (!structure.isReadOnly()));
         String value;
         String comment;
@@ -285,14 +377,13 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
     }
     
     private void updateAddButton() {
-        addButton.setEnabled(!obj.getBundleStructure().isReadOnly());
+        addButton.setEnabled(!structure.isReadOnly());
     }
     
     /** Returns the main table with all values */
     public JTable getTable() {
         return table;
     }
-    
     
     /** Initializes <code>settings</code> variable. */
     private void initSettings() {
@@ -334,7 +425,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the FormEditor.
      */
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
@@ -515,10 +606,11 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         if (DialogDisplayer.getDefault().notify(msg).equals(NotifyDescriptor.OK_OPTION)) {
             try {
                 // Starts "atomic" acion for special undo redo manager of open support.
-                obj.getOpenSupport().atomicUndoRedoFlag = new Object();
+//                obj.getOpenSupport().atomicUndoRedoFlag = new Object();
+                structure.getOpenSupport().atomicUndoRedoFlag = new Object();
                 
-                for (int i=0; i < obj.getBundleStructure().getEntryCount(); i++) {
-                    PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(i);
+                for (int i=0; i < structure.getEntryCount(); i++) {
+                    PropertiesFileEntry entry = structure.getNthEntry(i);
                     if (entry != null) {
                         PropertiesStructure ps = entry.getHandler().getStructure();
                         if (ps != null) {
@@ -528,7 +620,8 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
                 }
             } finally {
                 // finishes "atomic" undo redo action for special undo redo manager of open support
-                obj.getOpenSupport().atomicUndoRedoFlag = null;
+//                obj.getOpenSupport().atomicUndoRedoFlag = null;
+                structure.getOpenSupport().atomicUndoRedoFlag = null;
             }
         }
     }//GEN-LAST:event_removeButtonActionPerformed
@@ -567,14 +660,13 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
             selectionUpdateDisabled = true;
 
             // Starts "atomic" acion for special undo redo manager of open support.
-            obj.getOpenSupport().atomicUndoRedoFlag = new Object();
-            
+//            obj.getOpenSupport().atomicUndoRedoFlag = new Object();
+            structure.getOpenSupport().atomicUndoRedoFlag = new Object();
             String existingLocales = "";
-            String comma = ",\r\n"; //NOI18N
-            int count = obj.getBundleStructure().getEntryCount();
+            String comma =",\r\n";
             // add key to all entries
-            for (int i=0; i < count; i++) {
-                PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(i);
+            for (int i=0; i < structure.getEntryCount(); i++) {
+                PropertiesFileEntry entry = structure.getNthEntry(i);
                 
                 if (entry != null && !entry.getHandler().getStructure().addItem(key, value, comment)) {
                     existingLocales += Util.getLocaleLabel(entry) + comma;
@@ -595,10 +687,10 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
                     NotifyDescriptor.ERROR_MESSAGE);
                     DialogDisplayer.getDefault().notify(msg);
             }
-
         } finally {
             // Finishes "atomic" undo redo action for special undo redo manager of open support.
-            obj.getOpenSupport().atomicUndoRedoFlag = null;
+//            obj.getOpenSupport().atomicUndoRedoFlag = null;
+            structure.getOpenSupport().atomicUndoRedoFlag = null;
 
             selectionUpdateDisabled = false;
         }
@@ -612,7 +704,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
             PropertiesRequestProcessor.getInstance().post(new Runnable() {
                 public void run() {
                     // Find indexes.
-                    int rowIndex = obj.getBundleStructure().getKeyIndexByName(key);
+                    int rowIndex = structure.getKeyIndexByName(key);
                     
                     if((rowIndex != -1)) {
                         final int row = rowIndex;
@@ -647,8 +739,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
             });
         }
     }//GEN-LAST:event_addButtonActionPerformed
-    
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JCheckBox autoResizeCheck;
@@ -681,13 +772,20 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         private static final String SORT_ASC_ICON = ICON_PKG + "columnSortedAsc.gif";   //NOI18N
         private static final String SORT_DESC_ICON = ICON_PKG + "columnSortedDesc.gif"; //NOI18N
 
-        private final PropertiesDataObject propDataObj;
+        private final BundleStructure bundleStructure;
         private final TableCellRenderer origRenderer;
         private ImageIcon iconSortAsc, iconSortDesc;
-        
+
+        @Deprecated
         TableViewHeaderRenderer(PropertiesDataObject propDataObj,
                                 TableCellRenderer origRenderer) {
-            this.propDataObj = propDataObj;
+            bundleStructure = propDataObj.getBundleStructure();
+            this.origRenderer = origRenderer;
+        }
+
+        TableViewHeaderRenderer(BundleStructure bundleStructure,
+                                TableCellRenderer origRenderer) {
+            this.bundleStructure = bundleStructure;
             this.origRenderer = origRenderer;
         }
 
@@ -702,7 +800,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
 
             if (comp instanceof JLabel) {
                 JLabel label = (JLabel) comp;
-                BundleStructure bundleStruct = propDataObj.getBundleStructure();
+                BundleStructure bundleStruct = bundleStructure;
                 int sortIndex = table.convertColumnIndexToView(
                                         bundleStruct.getSortIndex());
                 if (column == sortIndex) {
@@ -742,7 +840,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
     private class TableViewColumnModel extends DefaultTableColumnModel {
         /** Helper listener. */
         private AncestorListener ancestorListener;
-        
+
         /** Overrides superclass method. */
         @Override
         public void addColumn(TableColumn aColumn) {
@@ -841,7 +939,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         }
     } // End of inner class TableViewColumnModel.
     
-    
+
     /** Renderer which renders cells in table view. */
     @SuppressWarnings("serial")
     private class TableViewRenderer extends DefaultTableCellRenderer {
@@ -939,16 +1037,30 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         }
     } // End of inner class TableViewRenderer.
     
-    
-    
+
+
     /** <code>JTable</code> with one bug fix.
      * @see #removeEditorSilent */
     @SuppressWarnings("serial")
     static class BundleTable extends JTable {
-        
+
         public BundleTable(){
             super();
             this.setRowHeight(getCellFontHeight() + 1);
+        }
+
+        @Override
+        public void columnMoved(TableColumnModelEvent arg0) {
+            firePropertyChange("columnMoved", null, null); //NOI18N
+            super.columnMoved(arg0);
+        }
+        @Override
+        public void columnMarginChanged(ChangeEvent evt) {
+            if (this.isEditing()) {
+            //Need to notify table's PropertyChangeListener to save editing values
+                firePropertyChange("marginChanged", null, null); //NOI18N
+            }
+            super.columnMarginChanged(evt);
         }
         
         /**
@@ -989,7 +1101,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         }        
         
     } // End of BundleTable class.
-    
+
     private class ModifiedListener implements DocumentListener {
         
         public void changedUpdate(DocumentEvent e) {
@@ -1005,9 +1117,10 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         }
         
         private void documentModified() {
-            obj.setModified(true);
+            ((PropertiesTableModel)table.getModel()).getFileEntry(table.getEditingColumn()).getDataObject().setModified(true);
+//            obj.setModified(true);
         }
         
     }
-    
+
 }

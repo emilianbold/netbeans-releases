@@ -255,7 +255,7 @@ public class WsValidation extends WebServicesTestBase {
             //ignore
         }
         assertTrue("missing @BindingType", eo.contains("@BindingType")); //NOI18N
-        assertTrue("missing namespace", eo.contains("http://java.sun.com/xml/ns/jaxws/2003/05/soap/bindings/HTTP/")); //NOI18N
+        assertTrue("missing namespace", eo.contains("SOAPBinding.SOAP12HTTP_BINDING")); //NOI18N
         //Switch to SOAP 1.1
         actionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.actions.Bundle", "LBL_SetSoap11");
         GenerateCodeOperator.openDialog(actionName, eo);
@@ -265,8 +265,8 @@ public class WsValidation extends WebServicesTestBase {
         } catch (InterruptedException ex) {
             //ignore
         }
-        assertFalse("has @BindingType", eo.getText().contains("@BindingType(value")); //NOI18N
-        assertFalse("has namespace", eo.getText().contains("http://java.sun.com/xml/ns/jaxws/2003/05/soap/bindings/HTTP/")); //NOI18N
+        assertFalse("has @BindingType", eo.getText().contains("@BindingType(")); //NOI18N
+        assertFalse("has namespace", eo.getText().contains("SOAPBinding.SOAP12HTTP_BINDING")); //NOI18N
     }
 
     public void testDeployWsProject() throws IOException {
@@ -301,7 +301,7 @@ public class WsValidation extends WebServicesTestBase {
         assertServerRunning();
         Node wsNode = new Node(getProjectRootNode(), WEB_SERVICES_NODE_NAME + "|" + getWsName()); //NOI18N
         String wrapperLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.actions.Bundle", "LBL_ConvertToRestAction");
-        wsNode.performPopupAction(wrapperLabel);
+        wsNode.performPopupActionNoBlock(wrapperLabel);
         String progressLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.saas.Bundle", "MSG_GENERATING_REST_RESOURCE");
         try {
             // wait at most 60 second until progress dialog dismiss
@@ -319,8 +319,6 @@ public class WsValidation extends WebServicesTestBase {
         String restName = getWsName() + "Port"; //NOI18N
         Node restWsNode = new Node(restNode, restName);
         restWsNode.expand();
-        System.out.println("lookup  : " + getWsClientLookupCall());
-        System.out.println("expected: " + getWsClientLookupCall().replace(".ws.", ".ws_client."));
         EditorOperator eo = new EditorOperator(restName + ".java"); //NOI18N
         assertTrue("myIntMethod missing", eo.contains("myIntMethod")); //NOI18N
         workaroundIZ152542(eo);
@@ -640,7 +638,7 @@ public class WsValidation extends WebServicesTestBase {
     private void configureHandlers(Node n, File handlerCfg, boolean isService) throws IOException {
         assertFalse(handlerCfg.exists());
         //Configure Handlers...
-        String handlersLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.Bundle", "LBL_ConfigureHandlerAction");
+        String handlersLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.spi.support.Bundle", "LBL_ConfigureHandlerAction");
         n.performPopupActionNoBlock(handlersLabel);
         //Configure Message Handlers
         String handlersDlgLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.nodes.Bundle", "TTL_MessageHandlerPanel");
@@ -841,7 +839,7 @@ public class WsValidation extends WebServicesTestBase {
         //Add...
         JButtonOperator jbo = new JButtonOperator(ndo, 0);
         //Add Message Handler Class
-        String addHandlerDlg = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.webservices.ui.Bundle", "TTL_SelectHandler");
+        String addHandlerDlg = Bundle.getStringTrimmed("org.netbeans.modules.websvc.utilities.ui.Bundle", "TTL_SelectHandler");
         //Source Packages
         String srcPkgLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir");
         for (int i = 0; i < handlers.length; i++) {
@@ -858,7 +856,7 @@ public class WsValidation extends WebServicesTestBase {
 
     private void removeHandlers(NbDialogOperator ndo, String[] handlers) {
         //Confirm Handler Configuration Change
-        String changeTitle = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.webservices.ui.panels.Bundle", "TTL_CONFIRM_DELETE");
+        String changeTitle = Bundle.getStringTrimmed("org.netbeans.modules.websvc.spi.support.Bundle", "TTL_CONFIRM_DELETE");
         JTableOperator jto = new JTableOperator(ndo);
         for (int i = 0; i < handlers.length; i++) {
             jto.selectCell(jto.findCellRow(handlers[i]), jto.findCellColumn(handlers[i]));

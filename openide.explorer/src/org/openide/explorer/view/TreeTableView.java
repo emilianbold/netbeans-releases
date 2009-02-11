@@ -770,6 +770,9 @@ public class TreeTableView extends BeanTreeView {
             tableModel.setNodes(nodes);
         }
         listener.revalidateScrollBar();
+        ViewUtil.adjustBackground(treeTable);
+        ViewUtil.adjustBackground(scrollPane);
+        ViewUtil.adjustBackground(scrollPane.getViewport());
     }
 
     @Override

@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.makeproject;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import java.awt.Dialog;
 import java.awt.Frame;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.text.MessageFormat;
@@ -79,7 +78,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
@@ -93,8 +91,7 @@ import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
-import org.netbeans.modules.cnd.makeproject.api.CustomProjectActionHandler;
-import org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfiguration;
@@ -275,7 +272,7 @@ public class MakeActionProvider implements ActionProvider {
 
                 // Execute actions
                 if (actionEvents.size() > 0) {
-                    ProjectActionSupport.fireActionPerformed(actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]));
+                    ProjectActionSupport.getInstance().fireActionPerformed(actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]));
                 }
             }
         };
@@ -294,16 +291,15 @@ public class MakeActionProvider implements ActionProvider {
         }
     }
 
-    public void invokeCustomAction(final String projectName, final MakeConfigurationDescriptor pd, final MakeConfiguration conf, final CustomProjectActionHandler customProjectActionHandler) {
+    public void invokeCustomAction(final String projectName, final MakeConfigurationDescriptor pd, final MakeConfiguration conf, final ProjectActionHandler customProjectActionHandler) {
         Runnable actionWorker = new Runnable() {
 
             public void run() {
                 ArrayList<ProjectActionEvent> actionEvents = new ArrayList<ProjectActionEvent>();
                 addAction(actionEvents, projectName, pd, conf, MakeActionProvider.COMMAND_CUSTOM_ACTION, null);
-                ActionEvent ae = new ActionEvent(actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]), 0, null);
-                DefaultProjectActionHandler defaultProjectActionHandler = new DefaultProjectActionHandler();
-                defaultProjectActionHandler.setCustomActionHandlerProvider(customProjectActionHandler);
-                defaultProjectActionHandler.actionPerformed(ae);
+                ProjectActionSupport.getInstance().fireActionPerformed(
+                        actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]),
+                        customProjectActionHandler);
             }
         };
         runActionWorker(conf.getDevelopmentHost().getName(), actionWorker);
@@ -432,30 +428,30 @@ public class MakeActionProvider implements ActionProvider {
 
         for (int i = 0; i < targetNames.length; i++) {
             String targetName = targetNames[i];
-            int actionEvent;
+            ProjectActionEvent.Type actionEvent;
             if (targetName.equals("build")) { // NOI18N
-                actionEvent = ProjectActionEvent.BUILD;
+                actionEvent = ProjectActionEvent.Type.BUILD;
             } else if (targetName.equals("build-package")) { // NOI18N
-                actionEvent = ProjectActionEvent.BUILD;
+                actionEvent = ProjectActionEvent.Type.BUILD;
             } else if (targetName.equals("clean")) { // NOI18N
-                actionEvent = ProjectActionEvent.CLEAN;
+                actionEvent = ProjectActionEvent.Type.CLEAN;
             } else if (targetName.equals("compile-single")) { // NOI18N
-                actionEvent = ProjectActionEvent.BUILD;
+                actionEvent = ProjectActionEvent.Type.BUILD;
             } else if (targetName.equals("run")) { // NOI18N
-                actionEvent = ProjectActionEvent.RUN;
+                actionEvent = ProjectActionEvent.Type.RUN;
             } else if (targetName.equals("run-single")) { // NOI18N
-                actionEvent = ProjectActionEvent.RUN;
+                actionEvent = ProjectActionEvent.Type.RUN;
             } else if (targetName.equals("debug")) { // NOI18N
-                actionEvent = ProjectActionEvent.DEBUG;
+                actionEvent = ProjectActionEvent.Type.DEBUG;
             } else if (targetName.equals("debug-stepinto")) { // NOI18N
-                actionEvent = ProjectActionEvent.DEBUG_STEPINTO;
+                actionEvent = ProjectActionEvent.Type.DEBUG_STEPINTO;
             } else if (targetName.equals("debug-load-only")) { // NOI18N
-                actionEvent = ProjectActionEvent.DEBUG_LOAD_ONLY;
+                actionEvent = ProjectActionEvent.Type.DEBUG_LOAD_ONLY;
             } else if (targetName.equals("custom-action")) { // NOI18N
-                actionEvent = ProjectActionEvent.CUSTOM_ACTION;
+                actionEvent = ProjectActionEvent.Type.CUSTOM_ACTION;
             } else {
                 // All others
-                actionEvent = ProjectActionEvent.RUN;
+                actionEvent = ProjectActionEvent.Type.RUN;
             }
 
             PlatformInfo pi = conf.getPlatformInfo();
@@ -541,7 +537,7 @@ public class MakeActionProvider implements ActionProvider {
                     // Should never get here...
                     assert false;
                     return;
-                } else if (conf.isCompileConfiguration() || conf.isQmakeConfiguration()) {
+                } else if (conf.isApplicationConfiguration()) {
                     RunProfile runProfile = null;
                     int platform = conf.getPlatform().getValue();
                     if (platform == Platform.PLATFORM_WINDOWS) {
@@ -830,7 +826,7 @@ public class MakeActionProvider implements ActionProvider {
                         profile.setArgs(args);
                         ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                                 project,
-                                ProjectActionEvent.CLEAN,
+                                ProjectActionEvent.Type.CLEAN,
                                 getActionName(projectName, "clean", conf), // NOI18N
                                 commandLine,
                                 conf,
@@ -863,17 +859,7 @@ public class MakeActionProvider implements ActionProvider {
                 }
                 validated = true;
             } else if (targetName.equals("custom-action")) { // NOI18N
-                String exe = ""; // NOI18N
-                if (conf.isMakefileConfiguration()) {
-                    exe = conf.getMakefileConfiguration().getOutput().getValue();
-                } else if (conf.isApplicationConfiguration()) {
-                    exe = conf.getLinkerConfiguration().getOutputValue();
-                }
-                exe = conf.expandMacros(exe);
-                // Always absolute
-                if (exe.length() > 0) {
-                    exe = IpeUtils.toAbsolutePath(conf.getBaseDir(), exe);
-                }
+                String exe = conf.getAbsoluteOutputValue();
                 ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                         project,
                         actionEvent,

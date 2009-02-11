@@ -36,11 +36,10 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.dtrace.collector.support;
 
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
-import org.netbeans.modules.dlight.collector.spi.DataCollector;
+import org.netbeans.modules.dlight.spi.collector.DataCollector;
 
 /**
  * This class merges several
@@ -68,14 +67,12 @@ public final class MultipleDtraceDataCollectorSupport {
     /**
      * Singleton pattern: private constructor.
      */
-    private MultipleDtraceDataCollectorSupport() {}
-
+    private MultipleDtraceDataCollectorSupport() {
+    }
     /**
      * Singleton pattern: singleton instance field.
      */
     private static MultipleDtraceDataCollectorSupport instance = null;
-
-
     private MultipleDtraceDataCollector collectorInstance = null;
 
     /**
@@ -86,7 +83,7 @@ public final class MultipleDtraceDataCollectorSupport {
      * @param collector  collector to be merged with others
      * @return  merged collector
      */
-    public DataCollector getCollector(MultipleDTDCConfiguration configuration) {
+    public MultipleDtraceDataCollector getCollector(MultipleDTDCConfiguration configuration) {
         if (collectorInstance == null) {
             collectorInstance = new MultipleDtraceDataCollector(configuration);
         } else {
@@ -94,7 +91,4 @@ public final class MultipleDtraceDataCollectorSupport {
         }
         return collectorInstance;
     }
-
-    
-
 }

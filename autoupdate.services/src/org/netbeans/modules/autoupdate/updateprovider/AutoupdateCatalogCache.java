@@ -109,6 +109,9 @@ public class AutoupdateCatalogCache {
             }
             assert new File (dir, codeName).exists () : "Cache " + cache + " exists.";
             err.log (Level.FINER, "Cache file " + cache + " was wrote from original URL " + original);
+            if(cache.exists() && cache.length()==0) {
+                err.log (Level.INFO, "Written cache size is zero bytes");
+            }
             return url;
         }
     }
@@ -119,6 +122,9 @@ public class AutoupdateCatalogCache {
         File cache = new File (dir, codeName);
         
         if (cache != null && cache.exists ()) {
+            if(cache.length() == 0) {
+                err.log(Level.INFO, "Cache file " + cache + " exists and of zero size");
+            }
             URL url = null;
             try {
                 url = cache.toURI ().toURL ();
@@ -204,15 +210,19 @@ public class AutoupdateCatalogCache {
         
         OutputStream os = null;
         int read = 0;
+        int totalRead = 0;
         
         try {
-            os = new BufferedOutputStream(new FileOutputStream (temp));
-            while ((read = is.read ()) != -1) {
-                os.write (read);
+            os = new BufferedOutputStream(new FileOutputStream (temp));            
+            byte [] bytes = new byte [1024];
+            while ((read = is.read (bytes)) != -1) {
+                os.write (bytes, 0, read);
+                totalRead+=read;
             }
             is.close ();
             os.flush ();
             os.close ();
+            os = null;
             synchronized (this) {
                 if (cache.exists () && ! cache.delete ()) {
                     err.log (Level.INFO, "Cannot delete cache " + cache);
@@ -224,8 +234,17 @@ public class AutoupdateCatalogCache {
                     cache.delete();
                 }
             }
+            if(totalRead==0) {
+                err.log (Level.INFO, "Read zero bytes from server");
+            }
+            if(temp.length()==0) {
+                err.log (Level.INFO, "Temp cache size is zero bytes");
+            }
             if (! temp.renameTo (cache)) {
                 err.log (Level.INFO, "Cannot rename temp " + temp + " to cache " + cache);
+            }
+            if(cache.exists() && cache.length()==0) {
+                err.log (Level.INFO, "Final cache size is zero bytes");
             }
         } catch (IOException ioe) {
             err.log (Level.INFO, "Writing content of URL " + sourceUrl + " failed.", ioe);
@@ -233,8 +252,10 @@ public class AutoupdateCatalogCache {
         } finally {
             try {
                 if (is != null) is.close ();
-                if (os != null) os.flush ();
-                if (os != null) os.close ();
+                if (os != null)  {
+                    os.flush ();
+                    os.close ();
+                }
             } catch (IOException ioe) {
                 err.log (Level.INFO, "Closing streams failed.", ioe);
             }

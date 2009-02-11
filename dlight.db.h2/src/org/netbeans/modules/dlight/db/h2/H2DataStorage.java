@@ -49,37 +49,49 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.dlight.core.stack.model.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.model.FunctionMetric;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
-import org.netbeans.modules.dlight.storage.spi.DataStorageType;
-import org.netbeans.modules.dlight.storage.spi.DataStorageTypeFactory;
-import org.netbeans.modules.dlight.storage.spi.support.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.impl.SQLDataStorage;
 
-public class H2DataStorage extends SQLDataStorage implements StackDataStorage {
+public final class H2DataStorage extends SQLDataStorage implements StackDataStorage {
 
-  private static final String H2_DATA_STORAGE_TYPE = "db:sql:h2";
+  
   private static final String SQL_QUERY_DELIMETER = ";";
   private static final Logger logger = DLightLogger.getLogger(H2DataStorage.class);
   private static boolean driverLoaded = false;
   static private int dbIndex = 1;
   private SQLStackStorage stackStorage;
-  private final List<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
-
-  public H2DataStorage() {
-    initStorageTypes();
+  private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
+  private static final String url = "jdbc:h2:/tmp/dlight";
+  static{
+    try {
+        Class driver = Class.forName("org.h2.Driver");
+        logger.info("Driver for H2DB (" + driver.getName() + ") Loaded ");
+      } catch (ClassNotFoundException ex) {
+        logger.log(Level.SEVERE, null, ex);
+      }
   }
 
   private void initStorageTypes() {
-    supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(H2_DATA_STORAGE_TYPE));
+    supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(H2DataStorageFactory.H2_DATA_STORAGE_TYPE));
     supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
     supportedStorageTypes.addAll(super.getStorageTypes());
   }
+
+  H2DataStorage() {
+    this(url +  (dbIndex++));
+  }
+
+
 
   private H2DataStorage(String url) {
     super(url);
@@ -94,10 +106,7 @@ public class H2DataStorage extends SQLDataStorage implements StackDataStorage {
     }
   }
 
-  @Override
-  public String getID() {
-    return "H2DataStorage";
-  }
+ 
 
   private void initTables() throws SQLException, IOException {
     InputStream is = H2DataStorage.class.getClassLoader().getResourceAsStream("org/netbeans/modules/dlight/db/h2/schema.sql");
@@ -124,20 +133,7 @@ public class H2DataStorage extends SQLDataStorage implements StackDataStorage {
     s.close();
   }
 
-  @Override
-  public H2DataStorage newInstance() {
-    if (!driverLoaded) {
-      try {
-        Class driver = Class.forName("org.h2.Driver");
-        driverLoaded = true;
-        logger.info("Driver for H2DB (" + driver.getName() + ") Loaded ");
-      } catch (ClassNotFoundException ex) {
-        logger.log(Level.SEVERE, null, ex);
-      }
-    }
-
-    return new H2DataStorage("jdbc:h2:/tmp/dlight" + (dbIndex++));
-  }
+  
 
   // FIXUP: deleting /tmp/dlight*
 
@@ -158,7 +154,7 @@ public class H2DataStorage extends SQLDataStorage implements StackDataStorage {
   }
 
   @Override
-  public boolean createTablesImpl(List<? extends DataTableMetadata> tableMetadatas) {
+  public boolean createTablesImpl(List<DataTableMetadata> tableMetadatas) {
     for (DataTableMetadata tdmd : tableMetadatas) {
       if (!tdmd.getName().equals(STACK_METADATA_VIEW_NAME)) {
         if (!createTable(tdmd)) {
@@ -171,7 +167,7 @@ public class H2DataStorage extends SQLDataStorage implements StackDataStorage {
   }
 
   @Override
-  public List<DataStorageType> getStorageTypes() {
+  public Collection<DataStorageType> getStorageTypes() {
     return supportedStorageTypes;
   }
 

@@ -41,17 +41,17 @@ package org.netbeans.modules.dlight.sync;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
+import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
-import org.netbeans.modules.dlight.indicator.api.ConfigurationData;
-import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
-import org.netbeans.modules.dlight.indicator.api.IndicatorMetadata;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.tool.api.DLightToolConfiguration;
-import org.netbeans.modules.dlight.tool.spi.DLightToolConfigurationProvider;
+import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.util.Util;
-import org.netbeans.modules.dlight.visualizer.api.VisualizerConfiguration;
+import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
+
 
 
 
@@ -97,13 +97,8 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     List<Column> indicatorColumns = Arrays.asList(
             timeColumn);
     IndicatorMetadata indicatorMetadata = new IndicatorMetadata(indicatorColumns);
-
-    HashMap<String, Object> configuration = new HashMap<String, Object>();
-    configuration.put("aggregation", "avrg");
-
     SyncIndicatorConfiguration indicatorConf =
         new SyncIndicatorConfiguration(indicatorMetadata);
-    indicatorConf.setConfigurationData(new ConfigurationData(configuration));
     indicatorConf.setVisualizerConfiguration(getDetails(rawTableMetadata));
     toolConfiguration.addIndicatorConfiguration(indicatorConf);
     return toolConfiguration;
@@ -123,7 +118,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     String sql = "SELECT func.func_name as func_name, SUM(sync.time/1000000) as time, COUNT(*) as count" +
             " FROM sync, node AS node, func" +
             " WHERE  sync.stackid = node.node_id and node.func_id = func.func_id" +
-            " GROUP BY node.func_id";
+            " GROUP BY node.func_id, func.func_name";
 
     final DataTableMetadata viewTableMetadata = new DataTableMetadata("sync", viewColumns, sql, Arrays.asList(rawTableMetadata));
     return new TableVisualizerConfiguration(viewTableMetadata);

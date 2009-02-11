@@ -96,7 +96,13 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("src/format2.c", 19, 15, "src/format2.c", 12, 5);
         performTest("src/format2.c", 20, 15, "src/format2.c", 13, 5);
     }
-    
+
+    public void testIZ157797() throws Exception {
+        // IZ#157797: no hyperlink on macro reference
+        performTest("src/macro_incl_ok.h", 2, 25, "src/macro_def.cc", 3, 9);
+        performNullTargetTest("src/macro_incl_err.h", 2, 25);
+    }
+
     public void testStructFromSystemDir() throws Exception {
         performTest("src/testTdClassFwdResolve1.c", 7, 15, "sys_include2/addrinfo.h", 5, 5);
     }
@@ -184,8 +190,8 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("src/iz140787_cout.cc", 10, 10, "sys_include2/include2.h", 28, 5);
     }
 
-//    public void testQtUsage() throws Exception {
-//        // IZ#155122: Completion doesn't work for Qt examples
-//        performTest("src/qt_usage.cc", 8, 25, "sys_include/QtDecls.h", 4, 5);
-//    }
+    public void testQtUsage() throws Exception {
+        // IZ#155122: Completion doesn't work for Qt examples
+        performTest("src/qt_usage.cc", 8, 25, "sys_include/QtDecls.h", 4, 5);
+    }
 }

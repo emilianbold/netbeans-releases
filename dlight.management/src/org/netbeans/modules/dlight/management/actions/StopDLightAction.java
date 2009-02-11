@@ -48,13 +48,14 @@ import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 import org.netbeans.modules.dlight.management.api.DLightSessionListener;
 import org.netbeans.modules.dlight.management.api.SessionStateListener;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author mt154047
  */
 public class StopDLightAction extends AbstractAction
-        implements DLightSessionListener, SessionStateListener {
+    implements DLightSessionListener, SessionStateListener {
 
     public StopDLightAction() {
         super("Stop D-Light");
@@ -66,12 +67,18 @@ public class StopDLightAction extends AbstractAction
     @Override
     public boolean isEnabled() {
         return (DLightManager.getDefault().getActiveSession() != null && ((DLightManager.getDefault().getActiveSession().getState() == DLightSession.SessionState.RUNNING) ||
-                (DLightManager.getDefault().getActiveSession().getState() == DLightSession.SessionState.STARTING)));
+            (DLightManager.getDefault().getActiveSession().getState() == DLightSession.SessionState.STARTING)));
     }
 
     public void actionPerformed(ActionEvent e) {
-        DLightLogger.instance.info("StopDLightAction performed @ " + System.currentTimeMillis());
-        DLightManager.getDefault().stopActiveSession();
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            public void run() {
+                DLightLogger.instance.info("StopDLightAction performed @ " + System.currentTimeMillis());
+                DLightManager.getDefault().stopActiveSession();
+            }
+        });
+
     }
 
     public void activeSessionChanged(DLightSession oldSession, DLightSession newSession) {
@@ -82,7 +89,7 @@ public class StopDLightAction extends AbstractAction
         if (newSession != null) {
             newSession.addSessionStateListener(this);
         }
-        
+
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
@@ -101,10 +108,21 @@ public class StopDLightAction extends AbstractAction
     }
 
     public void sessionAdded(DLightSession newSession) {
-        //throw new UnsupportedOperationException("Not supported yet.");
+        if (newSession !=null){
+            newSession.addSessionStateListener(this);
+        }
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                setEnabled(isEnabled());
+            }
+        });
     }
 
     public void sessionRemoved(DLightSession removedSession) {
-        //throw new UnsupportedOperationException("Not supported yet.");
+        if (removedSession != null) {
+            removedSession.removeSessionStateListener(this);
+        }
+    //throw new UnsupportedOperationException("Not supported yet.");
     }
 }

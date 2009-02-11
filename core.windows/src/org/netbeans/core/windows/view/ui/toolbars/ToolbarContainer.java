@@ -44,10 +44,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.GradientPaint;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Paint;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
@@ -64,6 +61,8 @@ import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import javax.swing.JToolBar;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
@@ -145,6 +144,9 @@ final class ToolbarContainer extends JPanel {
                 b = BorderFactory.createEtchedBorder( EtchedBorder.LOWERED );
 
             toolbar.setBorder( new CompoundBorder( b, new EmptyBorder (TOP, LEFT, BOTTOM, RIGHT) ) );
+        } else if( "Aqua".equals(lAndF) ) { //NOI18N
+            toolbar.setBorder(BorderFactory.createEmptyBorder(0,0,2,0));
+            toolbar.setOpaque(false);
         }
 
         if( !"Aqua".equals(lAndF) ) { //NOI18N
@@ -546,33 +548,13 @@ final class ToolbarContainer extends JPanel {
         Dimension max;
 
         public ToolbarAqua() {
+            super( new BorderLayout() );
+            JSeparator sep = new JToolBar.Separator();
+            sep.setOrientation(JSeparator.VERTICAL);
+            sep.setForeground(UIManager.getColor("NbSplitPane.background")); //NOI18N
+            add( sep, BorderLayout.CENTER );
             dim = new Dimension (GRIP_WIDTH, GRIP_WIDTH);
             max = new Dimension (GRIP_WIDTH, Integer.MAX_VALUE);
-        }
-
-        @Override
-        public void paintComponent (Graphics g) {
-            super.paintComponent(g);
-            java.awt.Graphics2D g2d = (Graphics2D) g;
-            g2d.addRenderingHints(getHints());
-
-            int sz = 5;
-
-            int y = ((getHeight() / 2) - (sz / 2)) - 2;
-            int x = ((getWidth() / 2) - (sz / 2)) - 2;
-
-            GradientPaint gradient = new GradientPaint(x+1, y+1, Color.BLACK,
-            x+sz-1, y+sz-1, Color.WHITE);
-
-            Paint paint = g2d.getPaint();
-
-            g2d.setPaint(gradient);
-            g2d.drawArc(x,y,sz,sz,0,359);
-
-            g.setColor(new Color(240,240,240));
-            g.drawLine(x+(sz/2), y + (sz/2),x+(sz/2), y + (sz/2));
-
-            g2d.setPaint(paint);
         }
 
         /** @return minimum size */

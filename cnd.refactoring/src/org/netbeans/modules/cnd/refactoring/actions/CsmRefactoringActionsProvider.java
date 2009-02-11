@@ -47,10 +47,10 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.refactoring.hints.infrastructure.Utilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.spi.CsmActionsImplementationProvider;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
-import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils;
 import org.netbeans.modules.cnd.refactoring.ui.ChangeParametersUI;
 import org.netbeans.modules.cnd.refactoring.ui.EncapsulateFieldUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -70,6 +70,9 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
     
     @Override
     public boolean canChangeParameters(Lookup lookup) {
+        if (!CsmRefactoringUtils.REFACTORING_EXTRA) {
+            return false;
+        }
         Collection<? extends Node> nodes = new HashSet<Node>(lookup.lookupAll(Node.class));
         if(nodes.size() != 1) {
             return false;
@@ -120,7 +123,7 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
             // if inside class => allow to encapsulate fields
             CsmContext editorContext = CsmContext.create(lookup);
             if (editorContext != null) {
-                CsmClass cls = GeneratorUtils.extractEnclosingClass(editorContext);
+                CsmClass cls = Utilities.extractEnclosingClass(editorContext);
                 return cls != null;
             }
             return false;

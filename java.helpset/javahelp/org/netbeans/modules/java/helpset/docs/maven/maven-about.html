@@ -38,16 +38,63 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
 -->
 <html>
     <head>
-        <title>About Maven Project Support</title>
+        <title>About Working with Maven</title>
         <link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     </head>
     <body>
-        <h2>About Maven Project Support</h2>
+        <h2>About Working with Maven</h2>
         <p>
-            <!-- TODO describe your module, add more pages... -->
+        Maven is a framework that provides help with managing the project lifecycle,
+        including building and 
+
+        When using Maven as the build infrastructure for Java projects,
+        Maven uses patterns in order to provide a uniform build system.
+
+    * Builds
+    * Documentation
+    * Reporting
+    * Dependencies
+    * SCMs
+    * Releases
+    * Distribution
+
+
+        Maven uses its project object model (POM) to build projects.
+
+        Maven retrieves
+
+        If you have just installed Maven, it may take a while on the first run.
+        This is because Maven is downloading the most recent artifacts (plugin jars and other files) into your local repository.
+
+        All projects using Maven share a set of plugins that are retrieved from the Maven repository
+        providing a uniform build system.
+
+        archetype is a template of a project which is combined with some user input to produce a working Maven project
         </p>
-    </body>
+        <p>For more information about Maven, see:
+        <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://maven.apache.org/">
+        <param name="text" value="<html><u>http://maven.apache.org/</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+        </object></p>
+
+        About Maven archetypes
+        About Maven repositories
+        Editing POM
+
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="nbdocs://org.netbeans.modules.maven/org/netbeans/modules/maven/docs/maven-newproj.html">Creating a Maven Project</a></dd>
+    <dd><a href="nbdocs://org.netbeans.modules.maven/org/netbeans/modules/maven/docs/maven-pom.html">Working with the Maven POM</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
 </html>
 <!--
 Tip: to create a link which will open in an external web browser, try:

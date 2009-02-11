@@ -452,7 +452,12 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         assert SwingUtilities.isEventDispatchThread();
 
         if(tempFolder != null) {
-            Utils.deleteRecursively(tempFolder);
+            final File folderToDelete = tempFolder;
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    Utils.deleteRecursively(folderToDelete);
+                }
+            });
         }
 
         if (fileObject != null) {

@@ -40,21 +40,19 @@ package org.netbeans.modules.dlight.webstack;
 
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import org.netbeans.modules.dlight.collector.stdout.api.CLIODCConfiguration;
-import org.netbeans.modules.dlight.collector.stdout.api.CLIOParser;
+import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
+import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
+import org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration;
+import org.netbeans.modules.dlight.collector.stdout.CLIOParser;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.indicator.api.ConfigurationData;
-import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
-import org.netbeans.modules.dlight.indicator.api.IndicatorMetadata;
 import org.netbeans.modules.dlight.indicators.BarIndicatorConfiguration;
-import org.netbeans.modules.dlight.tool.spi.DLightToolConfigurationProvider;
-import org.netbeans.modules.dlight.storage.api.DataRow;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.tool.api.DLightToolConfiguration;
+import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.util.Util;
+import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
 
 /**
  *
@@ -79,11 +77,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 
 
     IndicatorMetadata indicatorMetadata = new IndicatorMetadata(indicatorColumns);
-    HashMap<String, Object> configuration = new HashMap<String, Object>();
-    configuration.put("aggregation", "avrg");
-
     BarIndicatorConfiguration cpuIndicator = new BarIndicatorConfiguration(indicatorMetadata);
-    cpuIndicator.setConfigurationData(new ConfigurationData(configuration));
     toolConfiguration.addIndicatorConfiguration(cpuIndicator);
 
     List<Column> phpColumns = Arrays.asList(

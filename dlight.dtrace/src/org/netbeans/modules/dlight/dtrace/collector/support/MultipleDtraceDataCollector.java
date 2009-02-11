@@ -1,6 +1,40 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.dlight.dtrace.collector.support;
 
@@ -18,20 +52,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
+import org.netbeans.modules.dlight.api.execution.DLightTarget;
+import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
+import org.netbeans.modules.dlight.api.execution.ValidationStatus;
+import org.netbeans.modules.dlight.api.execution.ValidationListener;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.impl.MultipleDTDCConfigurationAccessor;
-import org.netbeans.modules.dlight.execution.api.DLightTarget;
-import org.netbeans.modules.dlight.model.Validateable.ValidationStatus;
-import org.netbeans.modules.dlight.model.ValidationListener;
-import org.netbeans.modules.dlight.collector.spi.DataCollector;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
-import org.netbeans.modules.dlight.storage.spi.DataStorage;
-import org.netbeans.modules.dlight.storage.spi.DataStorageType;
-import org.netbeans.modules.dlight.storage.spi.DataStorageTypeFactory;
-import org.netbeans.modules.dlight.storage.spi.support.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
-
 
 /**
  *
@@ -67,7 +101,7 @@ public final class MultipleDtraceDataCollector implements DataCollector<Multiple
   }
 
 //  @Override
-  public List<? extends DataTableMetadata> getDataTablesMetadata() {
+  public List<DataTableMetadata> getDataTablesMetadata() {
     List<DataTableMetadata> ret = new ArrayList<DataTableMetadata>(slaveCollectors.size());
     for (DtraceDataCollector ddc : slaveCollectors.values()) {
       ret.addAll(ddc.getDataTablesMetadata());
@@ -82,22 +116,6 @@ public final class MultipleDtraceDataCollector implements DataCollector<Multiple
     }
     collector.setLocalScriptPath(mergeScripts().getAbsolutePath());
     collector.init(storage, target);
-  }
-
-//  @Override
-  public void targetStarted(DLightTarget target) {
-    collector.targetStarted(target);
-    for (DtraceDataCollector ddc : slaveCollectors.values()) {
-      ddc.targetStarted(target);
-    }
-  }
-
-//  @Override
-  public void targetFinished(DLightTarget target, int result) {
-    collector.targetFinished(target, result);
-    for (DtraceDataCollector ddc : slaveCollectors.values()) {
-      ddc.targetFinished(target, result);
-    }
   }
 
   private File mergeScripts() {
@@ -131,8 +149,6 @@ public final class MultipleDtraceDataCollector implements DataCollector<Multiple
     }
   }
 
-  
-
   public boolean isAttachable() {
     return collector.isAttachable();
   }
@@ -144,8 +160,6 @@ public final class MultipleDtraceDataCollector implements DataCollector<Multiple
   public String[] getArgs() {
     return collector.getArgs();
   }
-
-  
 
   public Future<ValidationStatus> validate(DLightTarget target) {
     return collector.validate(target);
@@ -167,22 +181,30 @@ public final class MultipleDtraceDataCollector implements DataCollector<Multiple
     collector.removeValidationListener(listener);
   }
 
-    private class ProcessLineCallbackImpl implements ProcessLineCallback {
-
-        public void processLine(String line) {
-            DtraceDataCollector target = lastSlaveCollector;
-            for (Map.Entry<String, DtraceDataCollector> entry : slaveCollectors.entrySet()) {
-                String prefix = entry.getKey();
-                if (line.startsWith(prefix)) {
-                    line = line.substring(prefix.length());
-                    target = entry.getValue();
-                    break;
-                }
-            }
-            if (target != null) {
-                target.getProcessLineCallback().processLine(line);
-            }
-            lastSlaveCollector = target;
-        }
+  public void targetStateChanged(DLightTarget source, State oldState, State newState) {
+    collector.targetStateChanged(source, oldState, newState);
+    for (DtraceDataCollector ddc : slaveCollectors.values()) {
+      ddc.targetStateChanged(source, oldState, newState);
     }
+
+  }
+
+  private class ProcessLineCallbackImpl implements ProcessLineCallback {
+
+    public void processLine(String line) {
+      DtraceDataCollector target = lastSlaveCollector;
+      for (Map.Entry<String, DtraceDataCollector> entry : slaveCollectors.entrySet()) {
+        String prefix = entry.getKey();
+        if (line.startsWith(prefix)) {
+          line = line.substring(prefix.length());
+          target = entry.getValue();
+          break;
+        }
+      }
+      if (target != null) {
+        target.getProcessLineCallback().processLine(line);
+      }
+      lastSlaveCollector = target;
+    }
+  }
 }

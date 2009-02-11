@@ -40,15 +40,22 @@ package org.netbeans.modules.dlight.perfan;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.dlight.perfan.spi.SunStudioIDsProvider;
-import org.netbeans.modules.dlight.collector.api.DataCollectorConfiguration;
+import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.perfan.impl.SunStudioDCConfigurationAccessor;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.perfan.spi.SunStudioIDsProvider;
+
 
 /**
- *
- * @author masha
+ * This class is configuration classs to create {@link @org-netbeans-modules-dlight@/org/netbeans/modules/dlight/spi/collector/DataCollector.html}
+ *  based onbn SunStudio Performance Analyzer.
+ * This collector can collect the following information for Java and Native code:
+ * <ul>
+ * <li>Functions list with metrics: Incl. Time and Excl.Time</li>
+ * <li>Functions list with the synchronization metrics:  Sync. Wait Time and Sync. Wait Count</li>
+ * <li>Functoins list containing memory leaks</li>
+ * </ul>
  */
 public final class SunStudioDCConfiguration implements DataCollectorConfiguration {
 
@@ -59,22 +66,34 @@ public final class SunStudioDCConfiguration implements DataCollectorConfiguratio
    * Types of information to be collected by SunStudio Performance Analyzer
    */
   public enum CollectedInfo {
-
+    /**
+     * Collects Functions Info with the metrics : Inclusive Time  and Exclusive Time
+     */
     FUNCTIONS_LIST,
+    /**
+     * Collects synchronization information: Sync. Wait Time and Sync. Wait Count
+     */
     SYNCHRONIZARION,
+    /**
+     * Collects information about memory leaks
+     */
     MEMORY
   }
   private final List<CollectedInfo> collectedInfoList;
 
+  /**
+   * Creates new SunStudio Data Collector Configuration which should collect information <code>info</code>
+   * @param info information to be collected
+   */
   public SunStudioDCConfiguration(List<CollectedInfo> info) {
     collectedInfoList = info;
   }
 
    /**
-   * Returns {@link org.netbeans.modules.dlight.core.storage.model.DataTableMetadata}
+   * Returns {@link @org-netbeans-modules-dlight@/org/netbeans/modules/dlight/api/storage/DataTableMetadata.html}
    * for types of information collected
-   * @param collectedInfo
-   * @return
+   * @param collectedInfo information to be collected
+   * @return virtual table description
    */
   public static final DataTableMetadata getDataTableMetaDataFor(List<CollectedInfo> collectedInfo) {
     List<Column> columns = new ArrayList<Column>();
@@ -94,7 +113,10 @@ public final class SunStudioDCConfiguration implements DataCollectorConfiguratio
     return result;
   }
 
-   //TODO : should do it another way
+   /**
+    * Return name of the column which represents Function name
+    * @return name of the column which represents Function name
+    */
   public static final String getFunctionNameColumnName() {
     return "name";
   }

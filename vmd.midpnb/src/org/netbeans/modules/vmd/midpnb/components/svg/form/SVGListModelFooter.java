@@ -76,12 +76,13 @@ public class SVGListModelFooter extends CodeClassInitHeaderFooterPresenter {
                     value.getUserCode()+");\n");     // NOI18N
         }
         else {
-            section.getWriter().write("java.util.Vector vector = new java.util.Vector();\n");  //NOI18N
             List<PropertyValue> list = value.getArray();
             
-            if ( list == null ){
+            if ( list == null || list.isEmpty() ){
                 return;
             }
+
+            section.getWriter().write("java.util.Vector vector = new java.util.Vector();\n");  //NOI18N
             
             for (PropertyValue propertyValue : list) {
                 String item = propertyValue.getPrimitiveValue().toString();

@@ -347,9 +347,10 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.maven.persistence</friend>
                 <friend>org.netbeans.modules.maven.profiler</friend>
                 <friend>org.netbeans.modules.maven.repository</friend>
+                <friend>org.netbeans.modules.maven.samples</friend>
                 <friend>org.netbeans.modules.maven.spring</friend>
-                <friend>org.netbeans.modules.testng.maven</friend>
                 <friend>org.netbeans.modules.selenium.maven</friend>
+                <friend>org.netbeans.modules.testng.maven</friend>
                 <package>org.netbeans.modules.maven.api</package>
                 <package>org.netbeans.modules.maven.api.archetype</package>
                 <package>org.netbeans.modules.maven.api.classpath</package>

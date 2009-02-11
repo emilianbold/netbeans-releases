@@ -191,27 +191,29 @@ public class ConfigurationMakefileWriter {
 
     public static String getCompilerName(MakeConfiguration conf, int tool) {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(tool);
-        if (compiler != null) {
-            BasicCompilerConfiguration compilerConf = null;
-            switch (tool) {
-                case Tool.CCompiler:
-                    compilerConf = conf.getCCompilerConfiguration();
-                    break;
-                case Tool.CCCompiler:
-                    compilerConf = conf.getCCCompilerConfiguration();
-                    break;
-                case Tool.FortranCompiler:
-                    compilerConf = conf.getFortranCompilerConfiguration();
-                    break;
-                case Tool.Assembler:
-                    compilerConf = conf.getAssemblerConfiguration();
-                    break;
-            }
-            if (compilerConf != null && compilerConf.getTool().getModified()) {
-                return compilerConf.getTool().getValue();
-            } else {
-                return compiler.getName();
+        if (compilerSet != null) {
+            BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(tool);
+            if (compiler != null) {
+                BasicCompilerConfiguration compilerConf = null;
+                switch (tool) {
+                    case Tool.CCompiler:
+                        compilerConf = conf.getCCompilerConfiguration();
+                        break;
+                    case Tool.CCCompiler:
+                        compilerConf = conf.getCCCompilerConfiguration();
+                        break;
+                    case Tool.FortranCompiler:
+                        compilerConf = conf.getFortranCompilerConfiguration();
+                        break;
+                    case Tool.Assembler:
+                        compilerConf = conf.getAssemblerConfiguration();
+                        break;
+                }
+                if (compilerConf != null && compilerConf.getTool().getModified()) {
+                    return compilerConf.getTool().getValue();
+                } else {
+                    return compiler.getName();
+                }
             }
         }
         return ""; // NOI18N
@@ -290,12 +292,21 @@ public class ConfigurationMakefileWriter {
         bw.write("\n"); // NOI18N
 
         if (conf.isQmakeConfiguration()) {
-            bw.write("Qt-${CONF}.mk: Qt-${CONF}.pro FORCE\n"); // NOI18N
-            bw.write("\tqmake -o Qt-${CONF}.mk Qt-${CONF}.pro\n"); // NOI18N
+            String qmakespec = compilerSet.getQmakeSpec(conf.getPlatform().getValue());
+            if (qmakespec == null) {
+                qmakespec = ""; // NOI18N
+            } else {
+                qmakespec = "-spec " + qmakespec + " "; // NOI18N
+            }
+            bw.write("nbproject/qt-${CONF}.mk: nbproject/qt-${CONF}.pro FORCE\n"); // NOI18N
+            // It is important to generate makefile in current directory, and then move it to nbproject/.
+            // Otherwise qmake will complain that sources are not found.
+            bw.write("\tqmake VPATH=. " + qmakespec + "-o qttmp-${CONF}.mk nbproject/qt-${CONF}.pro\n"); // NOI18N
+            bw.write("\tmv -f qttmp-${CONF}.mk nbproject/qt-${CONF}.mk\n"); // NOI18N
             if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
                 // qmake uses backslashes on Windows, this code corrects them to forward slashes
-                bw.write("\tsed -e 's:\\\\\\(.\\):/\\1:g' Qt-${CONF}.mk >Qt-${CONF}.tmp\n"); // NOI18N
-                bw.write("\tmv -f Qt-${CONF}.tmp Qt-${CONF}.mk\n"); // NOI18N
+                bw.write("\t@sed -e 's:\\\\\\(.\\):/\\1:g' nbproject/qt-${CONF}.mk >nbproject/qt-${CONF}.tmp\n"); // NOI18N
+                bw.write("\t@mv -f nbproject/qt-${CONF}.tmp nbproject/qt-${CONF}.mk\n"); // NOI18N
             }
             bw.write('\n'); // NOI18N
             bw.write("FORCE:\n\n"); // NOI18N
@@ -303,9 +314,16 @@ public class ConfigurationMakefileWriter {
     }
 
     protected void writeBuildTarget(MakeConfiguration conf, BufferedWriter bw) throws IOException {
-        CompilerSet cs = conf.getCompilerSet().getCompilerSet();
+        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+        if (compilerSet == null) {
+            bw.write(".build-conf:\n"); // NOI18N
+            bw.write("\t@echo Tool collection not found.\n"); // NOI18N
+            bw.write("\t@echo Please specify existing tool collection in project properties\n"); // NOI18N
+            bw.write("\t@exit 1\n\n"); // NOI18N
+            return;
+        }
         String output = getOutput(conf);
-        output = cs.normalizeDriveLetter(output);
+        output = compilerSet.normalizeDriveLetter(output);
         bw.write("# Build Targets\n"); // NOI18N
         if (conf.isCompileConfiguration()) {
             bw.write(".build-conf: ${BUILD_SUBPROJECTS}\n"); // NOI18N
@@ -325,8 +343,8 @@ public class ConfigurationMakefileWriter {
             bw.write(".build-conf: ${BUILD_SUBPROJECTS}\n"); // NOI18N
             writeMakefileTargets(conf, bw);
         } else if (conf.isQmakeConfiguration()) {
-            bw.write(".build-conf: ${BUILD_SUBPROJECTS} Qt-${CONF}.mk\n"); // NOI18N
-            bw.write("\t${MAKE} -f Qt-${CONF}.mk\n"); // NOI18N
+            bw.write(".build-conf: ${BUILD_SUBPROJECTS} nbproject/qt-${CONF}.mk\n"); // NOI18N
+            bw.write("\t${MAKE} -f nbproject/qt-${CONF}.mk " + output + "\n"); // NOI18N
         }
         writeSubProjectBuildTargets(conf, bw);
         bw.write("\n"); // NOI18N
@@ -355,8 +373,7 @@ public class ConfigurationMakefileWriter {
         for (int i = 0; i < additionalDependencies.length; i++) {
             bw.write(output + ": " + additionalDependencies[i] + "\n\n"); // NOI18N
         }
-        LibraryItem[] libs = linkerConfiguration.getLibrariesConfiguration().getLibraryItemsAsArray();
-        for (LibraryItem lib : libs) {
+        for (LibraryItem lib : linkerConfiguration.getLibrariesConfiguration().getValue()) {
             String libPath = lib.getPath();
             if (libPath != null && libPath.length() > 0) {
                 bw.write(output + ": " + IpeUtils.escapeOddCharacters(cs.normalizeDriveLetter(libPath)) + "\n\n"); // NOI18N
@@ -486,10 +503,9 @@ public class ConfigurationMakefileWriter {
         if (conf.isLinkerConfiguration()) {
             librariesConfiguration = conf.getLinkerConfiguration().getLibrariesConfiguration();
 
-            LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
-            for (int j = 0; j < libraryItems.length; j++) {
-                if (libraryItems[j] instanceof LibraryItem.ProjectItem) {
-                    LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) libraryItems[j];
+            for (LibraryItem item : librariesConfiguration.getValue()) {
+                if (item instanceof LibraryItem.ProjectItem) {
+                    LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) item;
                     MakeArtifact makeArtifact = projectItem.getMakeArtifact();
                     String location = makeArtifact.getWorkingDirectory();
                     if (!makeArtifact.getBuild()) {
@@ -500,9 +516,8 @@ public class ConfigurationMakefileWriter {
             }
         }
 
-        LibraryItem.ProjectItem[] projectItems = conf.getRequiredProjectsConfiguration().getRequiredProjectItemsAsArray();
-        for (int i = 0; i < projectItems.length; i++) {
-            MakeArtifact makeArtifact = projectItems[i].getMakeArtifact();
+        for (LibraryItem.ProjectItem item : conf.getRequiredProjectsConfiguration().getValue()) {
+            MakeArtifact makeArtifact = item.getMakeArtifact();
             String location = makeArtifact.getWorkingDirectory();
             if (!makeArtifact.getBuild()) {
                 continue;
@@ -519,10 +534,9 @@ public class ConfigurationMakefileWriter {
         if (conf.isLinkerConfiguration()) {
             librariesConfiguration = conf.getLinkerConfiguration().getLibrariesConfiguration();
 
-            LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
-            for (int j = 0; j < libraryItems.length; j++) {
-                if (libraryItems[j] instanceof LibraryItem.ProjectItem) {
-                    LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) libraryItems[j];
+            for (LibraryItem item : librariesConfiguration.getValue()) {
+                if (item instanceof LibraryItem.ProjectItem) {
+                    LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) item;
                     MakeArtifact makeArtifact = projectItem.getMakeArtifact();
                     String location = makeArtifact.getWorkingDirectory();
                     if (!makeArtifact.getBuild()) {
@@ -533,9 +547,8 @@ public class ConfigurationMakefileWriter {
             }
         }
 
-        LibraryItem.ProjectItem[] projectItems = conf.getRequiredProjectsConfiguration().getRequiredProjectItemsAsArray();
-        for (int i = 0; i < projectItems.length; i++) {
-            MakeArtifact makeArtifact = projectItems[i].getMakeArtifact();
+        for (LibraryItem.ProjectItem item : conf.getRequiredProjectsConfiguration().getValue()) {
+            MakeArtifact makeArtifact = item.getMakeArtifact();
             String location = makeArtifact.getWorkingDirectory();
             if (!makeArtifact.getBuild()) {
                 continue;
@@ -552,7 +565,7 @@ public class ConfigurationMakefileWriter {
             bw.write(".clean-conf:"); // NOI18N
         }
         if (conf.isQmakeConfiguration()) {
-            bw.write(" Qt-" + conf.getName() + ".mk"); // NOI18N
+            bw.write(" nbproject/qt-" + conf.getName() + ".mk"); // NOI18N
         }
         bw.write('\n'); // NOI18N
         if (conf.isCompileConfiguration()) {
@@ -586,7 +599,7 @@ public class ConfigurationMakefileWriter {
 
             bw.write("\tcd " + IpeUtils.escapeOddCharacters(cwd) + " && " + command + "\n"); // NOI18N
         } else if (conf.isQmakeConfiguration()) {
-            bw.write("\t$(MAKE) -f Qt-" + conf.getName() + ".mk distclean\n"); // NOI18N
+            bw.write("\t$(MAKE) -f nbproject/qt-" + conf.getName() + ".mk distclean\n"); // NOI18N
         }
 
         writeSubProjectCleanTargets(conf, bw);
@@ -603,23 +616,17 @@ public class ConfigurationMakefileWriter {
     }
 
     private String getOutput(MakeConfiguration conf) {
-        if (conf.isLinkerConfiguration()) {
-            String output = conf.getLinkerConfiguration().getOutputValue();
-            if (conf.isApplicationConfiguration() &&
-                    conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS &&
-                    !output.endsWith(".exe")) { // NOI18N
-                output += ".exe"; // NOI18N
-            }
-            return output;
-        } else if (conf.isArchiverConfiguration()) {
-            return conf.getArchiverConfiguration().getOutputValue();
-        } else if (conf.isMakefileConfiguration()) {
-            return conf.getMakefileConfiguration().getOutput().getValue();
-        } else if (conf.isQmakeConfiguration()) {
-            return conf.getLinkerConfiguration().getOutputValue();
+        String output = conf.getOutputValue();
+        switch (conf.getConfigurationType().getValue()) {
+            case MakeConfiguration.TYPE_APPLICATION:
+            case MakeConfiguration.TYPE_QT_APPLICATION:
+                if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS &&
+                        !output.endsWith(".exe")) { // NOI18N
+                    output += ".exe"; // NOI18N
+                }
+                break;
         }
-        assert false;
-        return null;
+        return conf.expandMacros(output);
     }
 
     public static String getObjectDir(MakeConfiguration conf) {
@@ -652,9 +659,8 @@ public class ConfigurationMakefileWriter {
 
     private boolean hasSubprojects(MakeConfiguration conf) {
         LibrariesConfiguration librariesConfiguration = conf.getLinkerConfiguration().getLibrariesConfiguration();
-        LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
-        for (int j = 0; j < libraryItems.length; j++) {
-            if (libraryItems[j] instanceof LibraryItem.ProjectItem) {
+        for (LibraryItem item : librariesConfiguration.getValue()) {
+            if (item instanceof LibraryItem.ProjectItem) {
                 return true;
             }
         }

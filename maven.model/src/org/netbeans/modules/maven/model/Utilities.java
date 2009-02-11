@@ -210,8 +210,9 @@ public class Utilities {
             ic.add(fl);
         } else {
             editable = false;
-            assert false : "Creating a non-editable ModelSource for '" + thisFileObj.getPath() + "'. As these models get cached, one gets errors down the road eventually."; //NOI18N
-            Logger.getLogger(Utilities.class.getName()).warning("Creating a non-editable ModelSource for '" + thisFileObj.getPath() + "'. As these models get cached, one gets errors down the road eventually."); //NOI18N
+            if (FileUtil.getArchiveFile(thisFileObj) == null && thisFileObj.canWrite()) {
+                Logger.getLogger(Utilities.class.getName()).warning("Creating a non-editable ModelSource for '" + thisFileObj.getPath() + "'. As these models get cached, one gets errors down the road eventually."); //NOI18N
+            }
         }
 
         ModelSource ms = new ModelSource(lookup, editable);

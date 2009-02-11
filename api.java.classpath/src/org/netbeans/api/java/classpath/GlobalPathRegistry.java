@@ -143,6 +143,7 @@ public final class GlobalPathRegistry {
     void clear() {
         paths.clear();
         listeners.clear();
+        sourceRoots = null;
     }
     
     /**
@@ -367,10 +368,21 @@ public final class GlobalPathRegistry {
      * @return some file found with that path, or null
      */
     public FileObject findResource(String resource) {
-        // XXX try to use java.io.File's wherever possible for the search; FileObject is too slow
         for (ClassPath cp : getPaths(ClassPath.SOURCE)) {
             FileObject f = cp.findResource(resource);
             if (f != null) {
+                return f;
+            }
+        }
+        for (FileObject root : getSourceRoots()) {
+            FileObject f = root.getFileObject(resource);
+            if (f != null) {
+                // Make sure it is not from one of the above, since they control incl/excl.
+                for (ClassPath cp : getPaths(ClassPath.SOURCE)) {
+                    if (cp.findOwnerRoot(f) != null) {
+                        return null;
+                    }
+                }
                 return f;
             }
         }

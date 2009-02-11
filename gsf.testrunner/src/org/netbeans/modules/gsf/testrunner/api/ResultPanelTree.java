@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.gsf.testrunner.api;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -50,8 +52,10 @@ import java.util.Collections;
 import java.util.List;
 import javax.accessibility.AccessibleContext;
 import javax.swing.JPanel;
+import javax.swing.JToolBar;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.gsf.testrunner.ResultBar;
 import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
@@ -83,12 +87,20 @@ final class ResultPanelTree extends JPanel
     /** */
     private final ResultDisplayHandler displayHandler;
 
+    private final ResultBar resultBar = new ResultBar();
+
     ResultPanelTree(ResultDisplayHandler displayHandler) {
-        super(new java.awt.BorderLayout());
+        super(new BorderLayout());
         treeView = new ResultTreeView();
         treeView.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_TestResults"));
         treeView.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TestResults"));
-        add(treeView, java.awt.BorderLayout.CENTER);
+        resultBar.setPassedPercentage(0.0f);
+        JToolBar toolBar = new JToolBar();
+        toolBar.setFloatable(false);
+        toolBar.addSeparator(new Dimension(1, 0));
+        toolBar.add(resultBar);
+        add(toolBar, BorderLayout.NORTH);
+        add(treeView, BorderLayout.CENTER);
 
         explorerManager = new ExplorerManager();
         explorerManager.setRootContext(rootNode = new RootNode(displayHandler.getSession(), filtered));
@@ -177,6 +189,7 @@ final class ResultPanelTree extends JPanel
         if ((node != null) && (report.containsFailed() || Status.PENDING == report.getStatus())) {
             treeView.expandReportNode(node);
         }
+        resultBar.setPassedPercentage(rootNode.getPassedPercentage());
     }
 
     /**
@@ -192,7 +205,8 @@ final class ResultPanelTree extends JPanel
         } else {
             rootNode.displayReports(reports);
         }
-    }
+        resultBar.setPassedPercentage(rootNode.getPassedPercentage());
+   }
 
     /**
      */
@@ -297,7 +311,10 @@ final class ResultPanelTree extends JPanel
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex2);
             }
         }
-        node.getPreferredAction().actionPerformed(null);
+        Locator locator = node.getLookup().lookup(Locator.class);
+        if (locator != null) {
+            locator.jumpToSource(node);
+        }
     }
 
     private List<TestMethodNode> getFailedTestMethodNodes() {

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="MSVC" display="Microsoft Compiler Collection" family="MSVC"/>
+    <toolchain name="MSVC" display="Microsoft Compiler Collection" family="MSVC" qmakespec="win32-msvc"/>
     <platforms stringvalue="windows"/>
     <drive_letter_prefix stringvalue="/"/>
     <base_folder regestry="hklm\software\Microsoft\VisualStudio\SxS\VC7"  pattern=".*REG_SZ(.*)" suffix="bin" path_patern=".*[\\/]VC7[\\/]bin[\\/]?$"/>

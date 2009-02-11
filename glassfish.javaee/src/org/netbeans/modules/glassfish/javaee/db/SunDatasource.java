@@ -119,24 +119,19 @@ public class SunDatasource implements Datasource {
             return false;
         }
         final SunDatasource other = (SunDatasource) obj;
-        if (this.jndiName != other.jndiName && 
-                (this.jndiName == null || !this.jndiName.equals(other.jndiName))) {
+        if (this.jndiName == null || !this.jndiName.equals(other.jndiName)) {
             return false;
         }
-        if (this.url != other.url && 
-                (this.url == null || !this.url.equals(other.url))) {
+        if (this.url == null || !this.url.equals(other.url)) {
             return false;
         }
-        if (this.username != other.username && 
-                (this.username == null || !this.username.equals(other.username))) {
+        if (this.username == null || !this.username.equals(other.username)) {
             return false;
         }
-        if (this.password != other.password && 
-                (this.password == null || !this.password.equals(other.password))) {
+        if (this.password == null || !this.password.equals(other.password)) {
             return false;
         }
-        if (this.driverClassName != other.driverClassName && 
-                (this.driverClassName == null || !this.driverClassName.equals(other.driverClassName))) {
+        if (this.driverClassName == null || !this.driverClassName.equals(other.driverClassName)) {
             return false;
         }
         return true;

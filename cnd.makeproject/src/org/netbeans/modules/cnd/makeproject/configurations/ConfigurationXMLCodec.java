@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
+import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.xml.sax.Attributes;
@@ -103,8 +104,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private LinkerConfiguration currentLinkerConfiguration = null;
     private PackagingConfiguration currentPackagingConfiguration = null;
     private ArchiverConfiguration currentArchiverConfiguration = null;
-    private LibrariesConfiguration<LibraryItem> currentLibrariesConfiguration = null;
-    private RequiredProjectsConfiguration<LibraryItem> currentRequiredProjectsConfiguration = null;
+    private LibrariesConfiguration currentLibrariesConfiguration = null;
+    private RequiredProjectsConfiguration currentRequiredProjectsConfiguration = null;
+    private QmakeConfiguration currentQmakeConfiguration = null;
     private List<String> currentList = null;
     private int defaultConf = 0;
     private Stack<Folder> currentFolderStack = new Stack<Folder>();
@@ -200,6 +202,17 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                     ((MakeConfigurationDescriptor) projectDescriptor).setExternalFileItems(currentFolder);
                 }
             }
+        } else if (element.equals(DISK_FOLDER_ELEMENT)) {
+            if (currentFolderStack.size() == 0) {
+                currentFolder = ((MakeConfigurationDescriptor) projectDescriptor).getLogicalFolders();
+                currentFolderStack.push(currentFolder);
+            } else {
+                String name = getString(atts.getValue(NAME_ATTR));
+                String root = getString(atts.getValue(ROOT_ATTR));
+                currentFolder = currentFolder.addNewFolder(name, name, true);
+                currentFolder.setRoot(root);
+                currentFolderStack.push(currentFolder);
+            }
         } else if (element.equals(SOURCE_ROOT_LIST_ELEMENT)) {
             currentList = new ArrayList<String>();
         } else if (element.equals(ItemXMLCodec.ITEM_ELEMENT)) {
@@ -211,6 +224,12 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 ItemConfiguration itemConfiguration = new ItemConfiguration(currentConf, item);
                 currentItemConfiguration = itemConfiguration;
                 currentConf.addAuxObject(itemConfiguration);
+                if (descriptorVersion >= 57) {
+                    String excluded = atts.getValue(ItemXMLCodec.EXCLUDED_ATTR);
+                    int tool = new Integer(atts.getValue(ItemXMLCodec.TOOL_ATTR)).intValue();
+                    itemConfiguration.getExcluded().setValue(excluded.equals(TRUE_VALUE));
+                    itemConfiguration.setTool(tool);
+                }
             } else {
                 // FIXUP
             }
@@ -340,6 +359,10 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (currentPackagingConfiguration != null) {
                 currentPackagingConfiguration.getInfo().add(infoElement);
             }
+        } else if (element.equals(QT_ELEMENT)) {
+            currentQmakeConfiguration = ((MakeConfiguration) currentConf).getQmakeConfiguration();
+        } else if (element.equals(QT_DEFS_LIST_ELEMENT)) {
+            currentList = currentQmakeConfiguration.getCustomDefs().getValue();
         }
     }
 
@@ -432,7 +455,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             currentFolder.addItem(new Item(getString(currentText)));
         } else if (element.equals(SOURCE_FOLDERS_ELEMENT)) { // FIXUP: < version 5
             //((MakeConfigurationDescriptor)projectDescriptor).setExternalFileItems(currentList);
-        } else if (element.equals(LOGICAL_FOLDER_ELEMENT)) {
+        } else if (element.equals(LOGICAL_FOLDER_ELEMENT) || element.equals(DISK_FOLDER_ELEMENT)) {
             currentFolderStack.pop();
             if (currentFolderStack.size() > 0) {
                 currentFolder = currentFolderStack.peek();
@@ -445,6 +468,13 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             currentList = null;
         } else if (element.equals(ITEM_PATH_ELEMENT)) {
             String path = currentText;
+            path = getString(adjustOffset(path));
+            currentFolder.addItem(new Item(path));
+        } else if (element.equals(ITEM_NAME_ELEMENT)) {
+            String path = currentFolder.getRootPath() + '/' + currentText;
+            if (path.startsWith("./")) { // NOI18N
+                path = path.substring(2);
+            }
             path = getString(adjustOffset(path));
             currentFolder.addItem(new Item(path));
         } else if (element.equals(ItemXMLCodec.ITEM_EXCLUDED_ELEMENT) || element.equals(ItemXMLCodec.EXCLUDED_ELEMENT)) {
@@ -717,6 +747,38 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             LibraryItem.StdLibItem stdLibItem = Platforms.getPlatform(((MakeConfiguration) currentConf).getPlatform().getValue()).getStandardLibrarie(currentText);
             if (currentLibrariesConfiguration != null && stdLibItem != null) {
                 currentLibrariesConfiguration.add(stdLibItem);
+            }
+        } else if (element.equals(QT_BUILD_MODE_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.getBuildMode().setValue(Integer.parseInt(currentText));
+            }
+        } else if (element.equals(QT_DESTDIR_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.getDestdir().setValue(getString(currentText));
+            }
+        } else if (element.equals(QT_TARGET_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.getTarget().setValue(getString(currentText));
+            }
+        } else if (element.equals(QT_VERSION_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.getVersion().setValue(getString(currentText));
+            }
+        } else if (element.equals(QT_MODULES_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.setEnabledModules(currentText);
+            }
+        } else if (element.equals(QT_MOC_DIR_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.getMocDir().setValue(getString(currentText));
+            }
+        } else if (element.equals(QT_RCC_DIR_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.getRccDir().setValue(getString(currentText));
+            }
+        } else if (element.equals(QT_UI_DIR_ELEMENT)) {
+            if (currentQmakeConfiguration != null) {
+                currentQmakeConfiguration.getUiDir().setValue(getString(currentText));
             }
         }
     }

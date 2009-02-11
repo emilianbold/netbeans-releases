@@ -93,6 +93,8 @@ public class J2eeLookupProvider implements LookupProvider {
         private EntRefContainerImpl webEnt;
         private EjbEntRefContainerImpl ejbEnt;
         private JPAStuffImpl jpa;
+        private EMGSResolverImpl resolver;
+        private MavenPersistenceProviderSupplier supplier;
         public Provider(Project proj, InstanceContent cont) {
             super(cont);
             project = proj;
@@ -101,6 +103,8 @@ public class J2eeLookupProvider implements LookupProvider {
             webEnt = new EntRefContainerImpl(proj);
             ejbEnt = new EjbEntRefContainerImpl(proj);
             jpa = new JPAStuffImpl(proj);
+            resolver = new EMGSResolverImpl();
+            supplier = new MavenPersistenceProviderSupplier(proj);
             checkJ2ee();
             NbMavenProject.addPropertyChangeListener(project, this);
         }
@@ -136,15 +140,15 @@ public class J2eeLookupProvider implements LookupProvider {
                 copyOnSave = null;
             }
             if (NbMavenProject.TYPE_WAR.equals(packaging) && !lastType.equals(packaging)) {
-                removeLastInstance();
+                removeInstances();
                 WebModuleProviderImpl prov = new WebModuleProviderImpl(project);
                 lastInstance = prov;
-                content.remove(ejbEnt);
-                content.remove(jpa);
                 content.add(lastInstance);
                 content.add(replacer);
                 content.add(webEnt);
                 content.add(jpa);
+                content.add(resolver);
+                content.add(supplier);
                 copyOnSave = new CopyOnSave(project, prov);
                 try {
                     copyOnSave.initialize();
@@ -152,45 +156,45 @@ public class J2eeLookupProvider implements LookupProvider {
                     ex.printStackTrace();
                 }
             } else if (NbMavenProject.TYPE_EAR.equals(packaging) && !lastType.equals(packaging)) {
-                removeLastInstance();
-                content.remove(replacer);
-                content.remove(webEnt);
-                content.remove(ejbEnt);
-                content.remove(jpa);
+                removeInstances();
                 lastInstance = new EarModuleProviderImpl(project);
                 content.add(lastInstance);
                 content.add(((EarModuleProviderImpl)lastInstance).getEarImplementation());
             } else if (NbMavenProject.TYPE_EJB.equals(packaging) && !lastType.equals(packaging)) {
-                removeLastInstance();
-                content.remove(jpa);
-                content.remove(replacer);
-                content.remove(webEnt);
+                removeInstances();
                 lastInstance = new EjbModuleProviderImpl(project);
                 content.add(lastInstance);
                 content.add(jpa);
                 content.add(ejbEnt);
+                content.add(resolver);
+                content.add(supplier);
             } else if (lastInstance != null && !(
                     NbMavenProject.TYPE_WAR.equals(packaging) || 
                     NbMavenProject.TYPE_EJB.equals(packaging) || 
                     NbMavenProject.TYPE_EAR.equals(packaging)))
             {
-                removeLastInstance();
-                content.remove(replacer);
-                content.remove(webEnt);
-                content.remove(ejbEnt);
-                content.remove(jpa);
+                removeInstances();
+
                 lastInstance = null;
             }
             lastType = packaging;
         }
         
-        private void removeLastInstance() {
+        private void removeInstances() {
             if (lastInstance != null) {
                 if (lastInstance instanceof EarModuleProviderImpl) {
                     content.remove(((EarModuleProviderImpl)lastInstance).getEarImplementation());
                 }
                 content.remove(lastInstance);
             }
+            content.remove(replacer);
+            content.remove(webEnt);
+            content.remove(ejbEnt);
+            content.remove(jpa);
+            content.remove(resolver);
+            content.remove(supplier);
+
+
         }
     }
 }

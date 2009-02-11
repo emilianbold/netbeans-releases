@@ -43,25 +43,39 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
+import org.openide.util.Exceptions;
 
 /**
- * Extension of the <tt>AbstractAction</tt> implementation that allows to attach
- * listeners to get notifications on task start / finish events. 
- * 
+ * Extension of the {@link AbstractAction} implementation that allows to attach
+ * listeners to get notifications on task start / completion events.
+ *
  * @param <T> result type of the action
  */
-public abstract class ObservableAction<T> extends AbstractAction implements Callable<T> {
+public abstract class ObservableAction<T> extends AbstractAction {
 
-    private static ExecutorService executorService = Executors.newCachedThreadPool();
+    private static ExecutorService executorService =
+            Executors.newCachedThreadPool();
     private final List<ObservableActionListener<T>> listeners =
             Collections.synchronizedList(new ArrayList<ObservableActionListener<T>>());
-    private volatile T result = null;
     private volatile Future<T> task = null;
     private ActionEvent event;
+
+
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+
+            public void run() {
+                if (executorService != null) {
+                    executorService.shutdown();
+                }
+            }
+        }));
+    }
 
     /**
      * Constructor
@@ -72,14 +86,15 @@ public abstract class ObservableAction<T> extends AbstractAction implements Call
     }
 
     /**
-     * Adds an <tt>ObservableAction</tt> listener. Listener should be specified 
+     * Adds an <tt>ObservableAction</tt> listener. Listener should be specified
      * with the same type parameter as <tt>ObservableAction</tt> does.
      *
      * It is guarantied that the same listener will not be added more than once.
-     * 
+     *
      * @param listener a <tt>ObservableActionListener</tt> object
      */
-    public void addObservableActionListener(ObservableActionListener<T> listener) {
+    public void addObservableActionListener(
+            ObservableActionListener<T> listener) {
         if (!listeners.contains(listener)) {
             listeners.add(listener);
         }
@@ -88,79 +103,83 @@ public abstract class ObservableAction<T> extends AbstractAction implements Call
     /**
      * Removes an <tt>ObservableAction</tt> listener. Removing not previously
      * added listener has no effect.
-     * 
+     *
      * @param listener a <tt>ObservableActionListener</tt> object
      */
-    public void removeObservableActionListener(ObservableActionListener<T> listener) {
+    public void removeObservableActionListener(
+            ObservableActionListener<T> listener) {
         listeners.remove(listener);
     }
 
     /**
      * Must be implemented in descendant class to perform an action.
-     * Should not be invoked directly.
+     * Normally it should not be invoked directly.
      *
-     * @param e <tt>ActionEvent</tt>
      * @return result of <tt>ObservableAction</tt> execution.
-     * 
-     * @see #actionPerformed(java.awt.event.ActionEvent) 
+     *
+     * @see #invoke()
+     * @see #actionPerformed(java.awt.event.ActionEvent)
      */
-    abstract protected T performAction(ActionEvent e);
+    abstract protected T performAction();
 
     /**
      * Invoked when an action occurs.
+     * @param e event that causes the action. May be <tt>NULL</tt>
      */
-    @Override
     public final void actionPerformed(final ActionEvent e) {
         // Will not start the task if it is already started.
         if (task != null) {
             return;
         }
-        
+
         // Will execute task unsynchronously ... Post the task
         event = e;
-        task = executorService.submit(this);
+        task = executorService.submit(new Callable<T>() {
+
+            public T call() throws Exception {
+                fireStarted();
+                T result = performAction();
+                task = null;
+                fireCompleted(result);
+
+                return result;
+            }
+        });
     }
 
     /**
-     * Performs an action, or throws an exception if unable to do so.
-     *
-     * @return result of performed action
-     * @throws Exception if unable to compute a result
+     * Performs synchronous execution of the action.
+     * @return result ofaction execution.
      */
-    public T call() throws Exception {
-        fireStarted();
-        result = performAction(event);
-        task = null;
-        fireCompleted();
-        
-        return result;
+    public final T invoke() {
+        actionPerformed(null);
+
+        try {
+            return task.get();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return null;
     }
 
     private void fireStarted() {
-        List<ObservableActionListener<T>> ll = new ArrayList<ObservableActionListener<T>>(listeners);
+        List<ObservableActionListener<T>> ll =
+                new ArrayList<ObservableActionListener<T>>(listeners);
 
         for (ObservableActionListener l : ll) {
             l.actionStarted(this);
         }
     }
 
-    private void fireCompleted() {
-        List<ObservableActionListener<T>> ll = new ArrayList<ObservableActionListener<T>>(listeners);
+    private void fireCompleted(T result) {
+        List<ObservableActionListener<T>> ll =
+                new ArrayList<ObservableActionListener<T>>(listeners);
 
         for (ObservableActionListener<T> l : ll) {
             l.actionCompleted(this, result);
         }
-    }
-    
-    /**
-     * Returns result of most recent finished invokation.
-     * It is allowed to start action multiply times (though request to start
-     * action will be disregarded in case action execution is in progress). The
-     * object stores a value of the result from the last finished invokation.
-     *
-     * @return result of most recent finished invokation.
-     */
-    public T getLastResult() {
-        return result;
     }
 }

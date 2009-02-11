@@ -65,6 +65,7 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
@@ -475,6 +476,9 @@ public class InfoPanel extends javax.swing.JPanel {
         toolbar.setFloatable(false);
         toolbar.setRollover(true);
         toolbar.setBorderPainted(false);
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+            toolbar.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+        }
         // create toggle buttons
         int filterCount = filtersDesc.getFilterCount();
         ArrayList<JToggleButton> toggles = new ArrayList<JToggleButton>(filterCount);

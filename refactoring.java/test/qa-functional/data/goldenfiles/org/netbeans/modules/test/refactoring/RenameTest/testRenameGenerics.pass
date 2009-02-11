@@ -1,0 +1,14 @@
+==>RenameGenerics
+package renameClass;
+
+public class RenameGenerics<A> {
+
+    public A getT(A a) {
+        return a;
+    }
+
+    public <X extends A> X getX() {
+        return null;
+    }
+
+}

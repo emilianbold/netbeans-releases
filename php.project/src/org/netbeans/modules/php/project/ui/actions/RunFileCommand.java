@@ -61,14 +61,14 @@ public class RunFileCommand extends Command implements Displayable {
     public void invokeAction(Lookup context) {
         if (isTestFile(context)) {
             // test
-            ConfigAction.get(ConfigAction.Type.TEST).runFile(getProject(), context);
+            ConfigAction.get(ConfigAction.Type.TEST, getProject()).runFile(context);
         } else {
             // source
             if (!isRunConfigurationValid(false)) {
                 // property not set yet
                 return;
             }
-            getConfigAction().runFile(getProject(), context);
+            getConfigAction().runFile(context);
         }
     }
 
@@ -76,10 +76,10 @@ public class RunFileCommand extends Command implements Displayable {
     public boolean isActionEnabled(Lookup context) {
         if (isTestFile(context)) {
             // test
-            return ConfigAction.get(ConfigAction.Type.TEST).isRunFileEnabled(getProject(), context);
+            return ConfigAction.get(ConfigAction.Type.TEST, getProject()).isRunFileEnabled(context);
         }
         // source
-        return getConfigAction().isRunFileEnabled(getProject(), context);
+        return getConfigAction().isRunFileEnabled(context);
     }
 
     @Override

@@ -554,7 +554,9 @@ public final class MakeProject implements Project, AntProjectListener {
     public String getSourceEncoding() {
         if (sourceEncoding == null) {
             // Read configurations.xml. That's where encoding is stored for project version < 50)
-            projectDescriptorProvider.getConfigurationDescriptor();
+            if (!projectDescriptorProvider.gotDescriptor()){
+                return FileEncodingQuery.getDefaultEncoding().name();
+            }
         }
         if (sourceEncoding == null) {
             sourceEncoding = FileEncodingQuery.getDefaultEncoding().name();
@@ -851,19 +853,26 @@ public final class MakeProject implements Project, AntProjectListener {
     class RemoteProjectImpl implements RemoteProject {
 
         public String getDevelopmentHost() {
-            MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
-            MakeConfiguration conf = (MakeConfiguration) projectDescriptor.getConfs().getActive();
-            return conf.getDevelopmentHost().getName();
+            if (projectDescriptorProvider.gotDescriptor()) {
+                MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
+                MakeConfiguration conf = (MakeConfiguration) projectDescriptor.getConfs().getActive();
+                if (conf != null) {
+                    return conf.getDevelopmentHost().getName();
+                }
+            }
+            return null;
         }
     }
 
     class ToolchainProjectImpl implements ToolchainProject {
 
         public CompilerSet getCompilerSet() {
-            MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
-            MakeConfiguration conf = (MakeConfiguration) projectDescriptor.getConfs().getActive();
-            if (conf != null) {
-                return conf.getCompilerSet().getCompilerSet();
+            if (projectDescriptorProvider.gotDescriptor()) {
+                MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
+                MakeConfiguration conf = (MakeConfiguration) projectDescriptor.getConfs().getActive();
+                if (conf != null) {
+                    return conf.getCompilerSet().getCompilerSet();
+                }
             }
             return null;
         }

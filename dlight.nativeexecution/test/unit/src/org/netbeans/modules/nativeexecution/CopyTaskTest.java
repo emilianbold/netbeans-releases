@@ -38,15 +38,16 @@
  */
 package org.netbeans.modules.nativeexecution;
 
-import org.netbeans.modules.nativeexecution.util.CopyTask;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import java.io.FileNotFoundException;
+import java.io.CharArrayWriter;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.netbeans.modules.nativeexecution.util.CommonTasksSupport;
 import org.openide.util.Exceptions;
 
 /**
@@ -81,31 +82,173 @@ public class CopyTaskTest {
     public void testCopyTo() throws InterruptedException {
         System.out.println("copyTo");
         String srcFileName = "/tmp/src";
-        String dstFileName = "/tmp/trg1";
-        boolean showProgress = false;
-        Integer result = -1;
-        CopyTask task = null;
-        
-        try {
-//        task = CopyTask.copyLocalFile(new ExecutionEnvironment("ak119685", "129.159.127.252", 22), srcFileName, dstFileName, 700, showProgress);
-            task = CopyTask.copyLocalFile(new ExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
-            
-            try {
-                result = task.get();
-            } catch (ExecutionException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+        String dstFileName = "/tmp/trg_x";
 
-            System.out.println("DONE!!!! " + result);
+        CharArrayWriter err = new CharArrayWriter();
+        Future<Integer> fresult = CommonTasksSupport.copyLocalFile(new ExecutionEnvironment(),
+                srcFileName,
+                dstFileName, 777, err);
 
-            if (result != 0) {
-                System.out.println(task.getError());
-            }
-        } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
+        if (fresult == null) {
+            System.out.println("Error: " + err.toString());
         }
 
-        Thread.sleep(500);
+        int result = -1;
+        try {
+            result = fresult.get();
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        System.out.println("Done with status " + result);
+
+        if (result != 0) {
+            System.out.println("Error: " + err.toString());
+        }
+
+
+//        boolean showProgress = false;
+//        Integer result = -1;
+//            StringBuilder err = new StringBuilder();
+//
+//            NativeTask task = CommonTasksSupport.getCopyLocalFileTask(
+//                    new ExecutionEnvironment("ak119685", "129.159.127.252", 22), srcFileName, dstFileName, 700, err);
+//
+////            CommonTasksSupport.CommonTask task = CommonTasksSupport.getCopyLocalFileTask(
+////                    new ExecutionEnvironment(), srcFileName, dstFileName, 700);
+//            if (task == null) {
+//                System.out.println("ERROR: " + err);
+//                return;
+//            }
+//
+//            task.submit(true, false);
+//
+//            try {
+//                result = task.get();
+//            } catch (ExecutionException ex) {
+////                Exceptions.printStackTrace(ex);
+//            }
+//            System.out.println("RESULT == " + result);
+//
+//            if (result != 0) {
+//                System.out.println("ERROR is '" + err + "'");
+//            }
+//        CopyTask task = null;
+//
+//        try {
+////        task = CopyTask.copyLocalFile(new ExecutionEnvironment("ak119685", "129.159.127.252", 22), srcFileName, dstFileName, 700, showProgress);
+//            task = CopyTask.copyLocalFile(new ExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
+//
+//            try {
+//                result = task.get();
+//            } catch (ExecutionException ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
+//
+//            System.out.println("DONE!!!! " + result);
+//
+//            if (result != 0) {
+//                System.out.println(task.getError());
+//            }
+//        } catch (FileNotFoundException ex) {
+//            ex.printStackTrace();
+//        }
+//        CopyTask task = null;
+//
+//        try {
+////        task = CopyTask.copyLocalFile(new ExecutionEnvironment("ak119685", "129.159.127.252", 22), srcFileName, dstFileName, 700, showProgress);
+//            task = CopyTask.copyLocalFile(new ExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
+//
+//            try {
+//                result = task.get();
+//            } catch (ExecutionException ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
+//
+//            System.out.println("DONE!!!! " + result);
+//
+//            if (result != 0) {
+//                System.out.println(task.getError());
+//            }
+//        } catch (FileNotFoundException ex) {
+//            ex.printStackTrace();
+//        }
+//        Thread.sleep(500);
+    // TODO review the generated test code and remove the default call to fail.
+//    fail("The test case is a prototype.");
+
+
+//        boolean showProgress = false;
+//        Integer result = -1;
+//            StringBuilder err = new StringBuilder();
+//
+//            NativeTask task = CommonTasksSupport.getCopyLocalFileTask(
+//                    new ExecutionEnvironment("ak119685", "129.159.127.252", 22), srcFileName, dstFileName, 700, err);
+//
+////            CommonTasksSupport.CommonTask task = CommonTasksSupport.getCopyLocalFileTask(
+////                    new ExecutionEnvironment(), srcFileName, dstFileName, 700);
+//            if (task == null) {
+//                System.out.println("ERROR: " + err);
+//                return;
+//            }
+//
+//            task.submit(true, false);
+//
+//            try {
+//                result = task.get();
+//            } catch (ExecutionException ex) {
+////                Exceptions.printStackTrace(ex);
+//            }
+
+//            System.out.println("RESULT == " + result);
+//
+//            if (result != 0) {
+//                System.out.println("ERROR is '" + err + "'");
+//            }
+
+//        CopyTask task = null;
+//
+//        try {
+////        task = CopyTask.copyLocalFile(new ExecutionEnvironment("ak119685", "129.159.127.252", 22), srcFileName, dstFileName, 700, showProgress);
+//            task = CopyTask.copyLocalFile(new ExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
+//
+//            try {
+//                result = task.get();
+//            } catch (ExecutionException ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
+//
+//            System.out.println("DONE!!!! " + result);
+//
+//            if (result != 0) {
+//                System.out.println(task.getError());
+//            }
+//        } catch (FileNotFoundException ex) {
+//            ex.printStackTrace();
+//        }
+
+//        CopyTask task = null;
+//
+//        try {
+////        task = CopyTask.copyLocalFile(new ExecutionEnvironment("ak119685", "129.159.127.252", 22), srcFileName, dstFileName, 700, showProgress);
+//            task = CopyTask.copyLocalFile(new ExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
+//
+//            try {
+//                result = task.get();
+//            } catch (ExecutionException ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
+//
+//            System.out.println("DONE!!!! " + result);
+//
+//            if (result != 0) {
+//                System.out.println(task.getError());
+//            }
+//        } catch (FileNotFoundException ex) {
+//            ex.printStackTrace();
+//        }
+
+//        Thread.sleep(500);
     // TODO review the generated test code and remove the default call to fail.
 //    fail("The test case is a prototype.");
     }

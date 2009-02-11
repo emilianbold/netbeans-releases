@@ -96,7 +96,7 @@ public class OccurrencesFinderImpl implements OccurrencesFinder {
         if (caretOccurence != null) {
             ModelElement decl = caretOccurence.getDeclaration();
             if (decl != null && !decl.getPhpKind().equals(PhpKind.INCLUDE)) {
-                List<Occurence> allOccurences = caretOccurence.getAllOccurences();
+                Collection<Occurence> allOccurences = caretOccurence.getAllOccurences();
                 for (Occurence occurence : allOccurences) {
                     result.add(occurence.getOccurenceRange());
                 }
@@ -104,7 +104,7 @@ public class OccurrencesFinderImpl implements OccurrencesFinder {
         } else  {
             CodeMarker codeMarker = occurencesSupport.getCodeMarker();
             if (codeMarker != null) {
-                List<? extends CodeMarker> allMarkers = codeMarker.getAllMarkers();
+                Collection<? extends CodeMarker> allMarkers = codeMarker.getAllMarkers();
                 for (CodeMarker marker : allMarkers) {
                     result.add(marker.getOffsetRange());
                 }

@@ -40,8 +40,8 @@ package org.netbeans.modules.dlight.memory;
 
 import java.util.List;
 import javax.swing.JComponent;
-import org.netbeans.modules.dlight.indicator.spi.Indicator;
-import org.netbeans.modules.dlight.storage.api.DataRow;
+import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.spi.indicator.Indicator;
 
 
 /**

@@ -40,25 +40,45 @@
  */
 package org.netbeans.modules.cnd.refactoring.support;
 
+import java.awt.Toolkit;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.Position.Bias;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmField;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
-import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring;
+import org.netbeans.modules.cnd.refactoring.hints.infrastructure.Utilities;
+import org.netbeans.modules.cnd.refactoring.ui.EncapsulateFieldPanel.InsertPoint;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.text.PositionRef;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -70,26 +90,25 @@ public class GeneratorUtils {
 
     private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(GeneratorUtils.class.getName());
     private static final String ERROR = "<error>"; //NOI18N
-    public static final int GETTERS_ONLY = 1;
-    public static final int SETTERS_ONLY = 2;
 
     private GeneratorUtils() {
     }
-
-    public static CsmClass extractEnclosingClass(CsmContext editorContext) {
-        if (editorContext == null) {
-            return null;
-        }
-        CsmClass cls = editorContext.getEnclosingClass();
-        if (cls == null) {
-            CsmFunction fun = editorContext.getEnclosingFunction();
-            if (fun != null && CsmKindUtilities.isMethod(fun)) {
-                cls = ((CsmMethod) CsmBaseUtilities.getFunctionDeclaration(fun)).getContainingClass();
-            }
-        }
-        return cls;
+    public enum Kind {
+        GETTERS_ONLY,
+        SETTERS_ONLY,
+        GETTERS_SETTERS,
     }
-    
+
+    public static String getGetterSetterDisplayName(Kind type) {
+        if (type == Kind.GETTERS_ONLY) {
+            return org.openide.util.NbBundle.getMessage(GeneratorUtils.class, "LBL_generate_getter"); //NOI18N
+        }
+        if (type == Kind.SETTERS_ONLY) {
+            return org.openide.util.NbBundle.getMessage(GeneratorUtils.class, "LBL_generate_setter"); //NOI18N
+        }
+        return org.openide.util.NbBundle.getMessage(GeneratorUtils.class, "LBL_generate_getter_and_setter"); //NOI18N
+    }
+
     public static Collection<CsmMember> getAllMembers(CsmClass typeElement) {
         // for now returns only current class elements, but in fact needs full hierarchy
         return typeElement.getMembers();
@@ -277,36 +296,216 @@ public class GeneratorUtils {
 //        wc.rewrite(clazz, decl);
 //    }
 //
-//    public static void generateGettersAndSetters(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> fields, int type, int index) {
-//        assert path.getLeaf().getKind() == Tree.Kind.CLASS;
-//        TypeElement te = (TypeElement)wc.getTrees().getElement(path);
-//        if (te != null) {
-//            TreeMaker make = wc.getTreeMaker();
-//            GeneratorUtilities gu = GeneratorUtilities.get(wc);
-//            ClassTree clazz = (ClassTree)path.getLeaf();
-//            List<Tree> members = new ArrayList<Tree>(clazz.getMembers());
-//            List<Tree> methods = new ArrayList<Tree>();
-//            for(VariableElement element : fields) {
-//                if (type != SETTERS_ONLY)
-//                    methods.add(gu.createGetter(te, element));
-//                if (type != GETTERS_ONLY)
-//                    methods.add(gu.createSetter(te, element));
-//            }
-//            members.addAll(index, methods);
-//            ClassTree nue = make.Class(clazz.getModifiers(), clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), (List<ExpressionTree>)clazz.getImplementsClause(), members);
-//            wc.rewrite(clazz, nue);
-//        }
-//    }
-//
+
+    private static final class InsertInfo {
+        final CloneableEditorSupport ces;
+        final PositionRef start;
+        final PositionRef end;
+        final int dot;
+
+        public InsertInfo(CloneableEditorSupport ces, int dot, PositionRef start, PositionRef end) {
+            this.ces = ces;
+            this.start = start;
+            this.end = end;
+            this.dot = dot;
+        }
+
+    }
+
+    /**
+     * returns two elements array. The first contains information about declarations,
+     * the second about definitions
+     * @param path
+     * @return
+     */
+    private static InsertInfo[] getInsertPositons(CsmContext path, InsertPoint insPt) {
+        int position = 0;
+        CsmFile declFile = null;
+        CsmFile defFile = null;
+        CsmClass enclClass = null;
+        InsertInfo[] out = new InsertInfo[2];
+        if (insPt == InsertPoint.DEFAULT) {
+            // calculate using editor context
+            CsmOffsetable decl = path.getObjectUnderOffset();
+            if (decl == null) {
+                for (CsmObject csmObject : path.getPath()) {
+                    if (CsmKindUtilities.isClass(csmObject)) {
+                        enclClass = (CsmClass) csmObject;
+                        position = path.getCaretOffset();
+                    } else {
+                        if (CsmKindUtilities.isOffsetableDeclaration(csmObject)) {
+                            decl = (CsmOffsetable)csmObject;
+                        }
+                    }
+                }
+            }
+            if (decl != null) {
+                position = decl.getEndOffset();
+                if (CsmKindUtilities.isClassMember(decl)) {
+                    enclClass = ((CsmMember)decl).getContainingClass();
+                    if (CsmKindUtilities.isField(decl)) {
+                        // we are on field, so let's try to find better place for insert point
+                        CsmMember lastPublicMethod = null;
+                        CsmMember firstPublicMethod = null;
+                        CsmMember lastPublicConstructor = null;
+                        CsmMember firstPublicConstructor = null;
+                        for (CsmMember member : enclClass.getMembers()) {
+                            if ((member.getVisibility() == CsmVisibility.PUBLIC) && CsmKindUtilities.isMethod(member)) {
+                                lastPublicMethod = member;
+                                if (firstPublicMethod == null) {
+                                    firstPublicMethod = member;
+                                }
+                                if (CsmKindUtilities.isConstructor(member)) {
+                                    lastPublicConstructor = member;
+                                    if (firstPublicConstructor == null) {
+                                        firstPublicConstructor = member;
+                                    }
+                                }
+                            }
+                        }
+                        // let's try to put after last public method
+                        if (lastPublicMethod != null) {
+                            position = lastPublicMethod.getEndOffset();
+                        }
+                    }
+                } else if (enclClass == null) {
+                    enclClass = path.getEnclosingClass();
+                }
+            }
+        } else {
+            enclClass = null;
+        }
+        if (CsmKindUtilities.isOffsetable(enclClass)) {
+            declFile = ((CsmOffsetable)enclClass).getContainingFile();
+        } else {
+            position = 10;
+        }
+        CloneableEditorSupport classDeclEditor = CsmUtilities.findCloneableEditorSupport(declFile);
+        CloneableEditorSupport classDefEditor = CsmUtilities.findCloneableEditorSupport(defFile);
+        PositionRef startDeclPos = classDeclEditor.createPositionRef(position, Bias.Backward);
+        PositionRef endDeclPos = classDeclEditor.createPositionRef(position, Bias.Forward);
+        out[0] = new InsertInfo(classDeclEditor, position, startDeclPos, endDeclPos);
+        out[1] = new InsertInfo(classDeclEditor, position, startDeclPos, endDeclPos);
+        return out;
+    }
+    
+    public static void generateGettersAndSetters(CsmContext path, Collection<? extends CsmField> fields, boolean inlineMethods, GeneratorUtils.Kind type) {
+        CsmClass enclosingClass = Utilities.extractEnclosingClass(path);
+        if (enclosingClass == null) {
+            System.err.println("why enclosing class is null? " + path); // NOI18N
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+        if (fields.isEmpty()) {
+            System.err.println("nothing to encapsulate"); // NOI18N
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+        if (inlineMethods) {
+            InsertInfo[] ins = getInsertPositons(path, InsertPoint.DEFAULT);
+            final InsertInfo def = ins[0];
+            final StringBuilder result = new StringBuilder();
+            for (CsmField field : fields) {
+                if (type != GeneratorUtils.Kind.SETTERS_ONLY) {
+                    result.append("\n"); // NOI18N
+                    result.append(DeclarationGenerator.createGetter(field, computeGetterName(field), DeclarationGenerator.Kind.INLINE_DEFINITION));
+                }
+                if (type != GeneratorUtils.Kind.GETTERS_ONLY) {
+                    result.append("\n"); // NOI18N
+                    result.append(DeclarationGenerator.createSetter(field, computeSetterName(field), DeclarationGenerator.Kind.INLINE_DEFINITION));
+                }
+            }
+            final Document doc = path.getDocument();
+            Runnable update = new Runnable() {
+                public void run() {
+                    try {
+                        doc.insertString(def.dot, result.toString(), null);
+                        Reformat format = Reformat.get(doc);
+                        format.lock();
+                        try {
+                            int start = def.start.getOffset();
+                            int end = def.end.getOffset();
+                            format.reformat(start, end);
+                        } finally {
+                            format.unlock();
+                        }
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            };
+            if (doc instanceof BaseDocument) {
+                ((BaseDocument)doc).runAtomicAsUser(update);
+            } else {
+                update.run();
+            }
+        } else {
+            RefactoringSession session = RefactoringSession.create(getGetterSetterDisplayName(type));
+            EncapsulateFieldsRefactoring refactoring = new EncapsulateFieldsRefactoring(null, path);
+    //        ModificationResult mr = new ModificationResult(path.getFile().getProject());
+
+            Collection<EncapsulateFieldsRefactoring.EncapsulateFieldInfo> refFields = new ArrayList<EncapsulateFieldsRefactoring.EncapsulateFieldInfo>();
+            for (CsmField field : fields) {
+                String gName = (type != Kind.SETTERS_ONLY) ? computeGetterName(field) : null;
+                String sName = (type != Kind.GETTERS_ONLY) ? computeSetterName(field) : null;
+                refFields.add(new EncapsulateFieldsRefactoring.EncapsulateFieldInfo(field, gName, sName));
+    //            if (type != SETTERS_ONLY) {
+    //                if (inlineMethods) {
+    //                    String getter = DeclarationGenerator.createGetter(field, computeGetterName(field), DeclarationGenerator.Kind.INLINE_DEFINITION);
+    //                    ModificationResult.Difference diff = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, field, decl.start, decl.end, "", getter, "");
+    //                    mr.addDifference(decl.fo, diff);
+    //                } else {
+    //                    String getterDecl = DeclarationGenerator.createGetter(field, computeGetterName(field), DeclarationGenerator.Kind.DECLARATION);
+    //                    ModificationResult.Difference diffDecl = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, field, decl.start, decl.end, "", getterDecl, "");
+    //                    mr.addDifference(decl.fo, diffDecl);
+    //                    String getterDef = DeclarationGenerator.createGetter(field, computeGetterName(field), DeclarationGenerator.Kind.EXTERNAL_DEFINITION);
+    //                    ModificationResult.Difference diffDef = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, field, def.start, def.end, "", getterDef, "");
+    //                    mr.addDifference(def.fo, diffDef);
+    //                }
+    //            }
+    //            if (type != GETTERS_ONLY) {
+    //                if (inlineMethods) {
+    //                    String getter = DeclarationGenerator.createSetter(field, computeSetterName(field), DeclarationGenerator.Kind.INLINE_DEFINITION);
+    //                    ModificationResult.Difference diff = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, field, decl.start, decl.end, "", getter, "");
+    //                    mr.addDifference(decl.fo, diff);
+    //                } else {
+    //                    String getterDecl = DeclarationGenerator.createSetter(field, computeSetterName(field), DeclarationGenerator.Kind.DECLARATION);
+    //                    ModificationResult.Difference diffDecl = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, field, decl.start, decl.end, "", getterDecl, "");
+    //                    mr.addDifference(decl.fo, diffDecl);
+    //                    String getterDef = DeclarationGenerator.createSetter(field, computeSetterName(field), DeclarationGenerator.Kind.EXTERNAL_DEFINITION);
+    //                    ModificationResult.Difference diffDef = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, field, def.start, def.end, "", getterDef, "");
+    //                    mr.addDifference(def.fo, diffDef);
+    //                }
+    //            }
+            }
+            refactoring.setRefactorFields(refFields);
+            refactoring.setFieldModifiers(Collections.<CsmVisibility>emptySet());
+            refactoring.getContext().add(InsertPoint.DEFAULT);
+            refactoring.setMethodInline(false);
+            Problem problem = refactoring.preCheck();
+            if (problem != null && problem.isFatal()) {
+                // fatal problem
+                System.err.println("preCheck failed: not possible to refactor " + problem); // NOI18N
+                return;
+            }
+            problem = refactoring.prepare(session);
+            if (problem != null && problem.isFatal()) {
+                // fatal problem
+                System.err.println("prepare failed: not possible to refactor " + problem); // NOI18N
+                return;
+            }
+            session.doRefactoring(false);
+        }
+    }
+
     public static boolean hasGetter(CsmField field, Map<String, List<CsmMethod>> methods) {
         String getter = computeGetterName(field);
         List<CsmMethod> candidates = methods.get(getter);
         if (candidates != null) {
             CsmType type = field.getType();
             for (CsmMethod candidate : candidates) {
-                @SuppressWarnings("unchecked")
                 Collection<CsmParameter> parameters = candidate.getParameters();
-                if (getTypeKind(candidate.getReturnType()) == TypeKind.VOID && parameters.size() == 1 && isSameType(parameters.iterator().next().getType(), type)) {
+                if (parameters.isEmpty() && isSameType(candidate.getReturnType(), type)) {
                     return true;
                 }
             }
@@ -321,15 +520,16 @@ public class GeneratorUtils {
      * @param identifierString The identifer to strip.
      * @return The stripped identifier.
      */
-    private static String stripFieldPrefix(String identifierString) {
+    public static String stripFieldPrefix(String identifierString) {
         String stripped = identifierString;
         // remove usual C++ prefixes
-        if (identifierString.startsWith("m_")) { // NOI18N
+        if (stripped.startsWith("m_")) { // NOI18N
             stripped = identifierString.substring(2);
-        } else if (identifierString.length() > 1) {
-            if (identifierString.charAt(0) == 'p' && Character.isUpperCase(identifierString.charAt(1))) {
+        } 
+        if (stripped.length() > 1) {
+            if (stripped.charAt(0) == 'p' && Character.isUpperCase(stripped.charAt(1))) {
                 // this is like pointer "pValue"
-                stripped = identifierString.substring(1);
+                stripped = stripped.substring(1);
             }
         }
         return stripped;
@@ -376,26 +576,31 @@ public class GeneratorUtils {
         return pref.toString();
     }
 
-    private static enum TypeKind {
+    public static enum TypeKind {
         VOID,
         BOOLEAN,
         UNKNOWN
     };
     
-    private static TypeKind getTypeKind(CsmType type) {
-        if (CsmKindUtilities.isBuiltIn(type)) {
-            String text = type.getClassifierText().toString();
-            if ("void".equals(text)) { // NOI18N
-                return TypeKind.VOID;
-            } else if ("bool".equals(text) || "boolean".equals(text)) { // NOI18N
-                return TypeKind.BOOLEAN;
-            }
+    public static TypeKind getTypeKind(CsmType type) {
+        CharSequence text = type.getClassifierText();
+        if (CharSequenceKey.Comparator.compare("void", text) == 0) { // NOI18N
+            return TypeKind.VOID;
+        } else if (CharSequenceKey.Comparator.compare("bool", text) == 0 || // NOI18N
+                CharSequenceKey.Comparator.compare("boolean", text) == 0) { // NOI18N
+            return TypeKind.BOOLEAN;
         }
         return TypeKind.UNKNOWN;
     }
 
-    private static boolean isSameType(CsmType type1, CsmType type2) {
-        return type1.equals(type2);
+    public static boolean isSameType(CsmType type1, CsmType type2) {
+        if (type1.equals(type2)) {
+            return true;
+        } else if (type2 != null) {
+            return CharSequenceKey.Comparator.compare(type1.getCanonicalText(), type2.getCanonicalText()) == 0;
+        } else {
+            return false;
+        }
     }
 
     public static boolean hasSetter(CsmField field, Map<String, List<CsmMethod>> methods) {
@@ -404,7 +609,6 @@ public class GeneratorUtils {
         if (candidates != null) {
             CsmType type = field.getType();
             for (CsmMethod candidate : candidates) {
-                @SuppressWarnings("unchecked")
                 Collection<CsmParameter> parameters = candidate.getParameters();
                 if (getTypeKind(candidate.getReturnType()) == TypeKind.VOID && parameters.size() == 1 && isSameType(parameters.iterator().next().getType(), type)) {
                     return true;

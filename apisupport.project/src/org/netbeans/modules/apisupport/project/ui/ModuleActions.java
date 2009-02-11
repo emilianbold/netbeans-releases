@@ -44,6 +44,7 @@ package org.netbeans.modules.apisupport.project.ui;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -55,12 +56,14 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
+import javax.lang.model.element.TypeElement;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.apache.tools.ant.module.api.support.ActionUtils;
-import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.runner.JavaRunner;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
@@ -87,13 +90,19 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 public final class ModuleActions implements ActionProvider {
     static final String TEST_USERDIR_LOCK_PROP_NAME = "run.args.extra";    // NOI18N
     static final String TEST_USERDIR_LOCK_PROP_VALUE = "--test-userdir-lock-with-invalid-arg";    // NOI18N
-    
+
+    static final Set<String> bkgActions = new HashSet<String>(Arrays.asList(
+        COMMAND_RUN_SINGLE,
+        COMMAND_DEBUG_SINGLE
+    ));
+
     static Action[] getProjectActions(NbModuleProject project) {
         List<Action> actions = new ArrayList<Action>();
         actions.add(CommonProjectActions.newFileAction());
@@ -200,9 +209,11 @@ public final class ModuleActions implements ActionProvider {
         } else if (command.equals(COMMAND_COMPILE_SINGLE)) {
             return findSources(context) != null || findTestSources(context, false) != null;
         } else if (command.equals(COMMAND_TEST_SINGLE)) {
-            return findTestSourcesForSources(context) != null;
+            return findTestSourcesForSources(context) != null || findTestSources(context, false) != null;
         } else if (command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
             TestSources testSources = findTestSourcesForSources(context);
+            if (testSources == null)
+                    testSources = findTestSources(context, false);
             return testSources != null && testSources.sources.length == 1;
         } else if (command.equals(COMMAND_RUN_SINGLE)) {
             return findTestSources(context, false) != null;
@@ -276,6 +287,21 @@ public final class ModuleActions implements ActionProvider {
         }
         return null;
     }
+
+    private String getMainClass(Lookup context) {
+        FileObject[] files = ActionUtils.findSelectedFiles(context, null, ".java", true); // NOI18N
+        if (files.length == 1) {
+            FileObject f = files[0];
+            Collection<ElementHandle<TypeElement>> mcs = SourceUtils.getMainClasses(f);
+            if (mcs.size() > 0) {
+                ElementHandle<TypeElement> h = mcs.iterator().next();
+                String qname = h.getQualifiedName();
+                return qname;
+            }
+        }
+        return null;
+    }
+
     
     /** Find tests corresponding to selected sources.
      */
@@ -298,7 +324,7 @@ public final class ModuleActions implements ActionProvider {
         }
     }
     
-    public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
+    public void invokeAction(final String command, final Lookup context) throws IllegalArgumentException {
         if (ActionProvider.COMMAND_DELETE.equals(command)) {
             if (ModuleOperations.canRun(project)) {
                 DefaultProjectOperations.performDefaultDeleteOperation(project);
@@ -323,79 +349,108 @@ public final class ModuleActions implements ActionProvider {
         if (!verifySufficientlyNewHarness(project)) {
             return;
         }
-        Properties p = new Properties();
-        String[] targetNames;
-        if (command.equals(COMMAND_COMPILE_SINGLE)) {
-            FileObject[] files = findSources(context);
-            if (files != null) {
-                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, project.getSourceDirectory())); // NOI18N
-                targetNames = new String[] {"compile-single"}; // NOI18N
-            } else {
-                TestSources testSources = findTestSources(context, false);
-                p.setProperty("javac.includes", ActionUtils.antIncludesList(testSources.sources, testSources.sourceDirectory)); // NOI18N
-                p.setProperty("test.type", testSources.testType);
-                targetNames = new String[] {"compile-test-single"}; // NOI18N
-            }
-        } else if (command.equals(COMMAND_TEST_SINGLE)) {
-            TestSources testSources = findTestSourcesForSources(context);
-            targetNames = setupTestSingle(p, testSources);
-        } else if (command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
-            TestSources testSources = findTestSourcesForSources(context);
-            targetNames = setupDebugTestSingle(p, testSources);
-        } else if (command.equals(COMMAND_RUN_SINGLE)) {
-            TestSources testSources = findTestSources(context, false);
-            String enableQuickTest = project.evaluator().getProperty("quick.test.single"); // NOI18N
-            if (    Boolean.parseBoolean(enableQuickTest)
-                 && "unit".equals(testSources.testType) // NOI18N
-                 && !hasTestUnitDataDir()) { // NOI18N
-                if (bypassAntBuildScript(command, testSources.sources)) {
-                    return ;
+
+        Runnable runnable = new Runnable() {
+            public void run() {
+                Properties p = new Properties();
+                String[] targetNames;
+                if (command.equals(COMMAND_COMPILE_SINGLE)) {
+                    FileObject[] files = findSources(context);
+                    if (files != null) {
+                        p.setProperty("javac.includes", ActionUtils.antIncludesList(files, project.getSourceDirectory())); // NOI18N
+                        targetNames = new String[]{"compile-single"}; // NOI18N
+                    } else {
+                        TestSources testSources = findTestSources(context, false);
+                        p.setProperty("javac.includes", ActionUtils.antIncludesList(testSources.sources, testSources.sourceDirectory)); // NOI18N
+                        p.setProperty("test.type", testSources.testType);
+                        targetNames = new String[]{"compile-test-single"}; // NOI18N
+                    }
+                } else if (command.equals(COMMAND_TEST_SINGLE)) {
+                    TestSources testSources = findTestSourcesForSources(context);
+                    if (testSources == null) {
+                        testSources = findTestSources(context, false);
+
+                    }
+                    targetNames = setupTestSingle(p, testSources);
+                } else if (command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
+                    TestSources testSources = findTestSourcesForSources(context);
+                    if (testSources == null) {
+                        testSources = findTestSources(context, false);
+
+                    }
+                    targetNames = setupDebugTestSingle(p, testSources);
+                } else if (command.equals(COMMAND_RUN_SINGLE)) {
+                    TestSources testSources = findTestSources(context, false);
+//       TODO CoS     String enableQuickTest = project.evaluator().getProperty("quick.test.single"); // NOI18N
+//            if (    Boolean.parseBoolean(enableQuickTest)
+//                 && "unit".equals(testSources.testType) // NOI18N
+//                 && !hasTestUnitDataDir()) { // NOI18N
+//                if (bypassAntBuildScript(command, testSources.sources)) {
+//                    return ;
+//                }
+//            }
+                    String clazz = getMainClass(context);
+                    if (clazz == null) {
+                        NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(ModuleActions.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
+                        DialogDisplayer.getDefault().notify(nd);
+                        return;
+                    }
+                    targetNames = setupRunMain(p, testSources, context, clazz);
+                } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
+                    TestSources testSources = findTestSources(context, false);
+                    String clazz = getMainClass(context);
+                    if (clazz == null) {
+                        NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(ModuleActions.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
+                        DialogDisplayer.getDefault().notify(nd);
+                        return ;
+                    }
+                    targetNames = setupDebugMain(p, testSources, context, clazz);
+                } else if (command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX)) {
+                    FileObject[] files = findSources(context);
+                    String path = null;
+                    if (files != null) {
+                        path = FileUtil.getRelativePath(project.getSourceDirectory(), files[0]);
+                        assert path != null;
+                        assert path.endsWith(".java");
+                        targetNames = new String[]{"debug-fix-nb"}; // NOI18N
+                    } else {
+                        TestSources testSources = findTestSources(context, false);
+                        path = FileUtil.getRelativePath(testSources.sourceDirectory, testSources.sources[0]);
+                        p.setProperty("test.type", testSources.testType);
+                        assert path != null;
+                        assert path.endsWith(".java");
+                        targetNames = new String[]{"debug-fix-test-nb"}; // NOI18N
+                    }
+                    String clazzSlash = path.substring(0, path.length() - 5);
+                    p.setProperty("fix.class", clazzSlash); // NOI18N
+                } else if (command.equals(JavaProjectConstants.COMMAND_JAVADOC) && !project.supportsJavadoc()) {
+                    promptForPublicPackagesToDocument();
+                    return;
+                } else {
+                    if ((command.equals(ActionProvider.COMMAND_RUN) || command.equals(ActionProvider.COMMAND_DEBUG)) // #63652
+                            && project.getTestUserDirLockFile().isFile()) {
+                        // #141069: lock file exists, run with bogus option
+                        p.setProperty(TEST_USERDIR_LOCK_PROP_NAME, TEST_USERDIR_LOCK_PROP_VALUE);
+                    }
+
+                    targetNames = globalCommands.get(command);
+                    if (targetNames == null) {
+                        throw new IllegalArgumentException(command);
+                    }
+                }
+                try {
+                    ActionUtils.runTarget(findBuildXml(project), targetNames, p);
+                } catch (IOException e) {
+                    Util.err.notify(e);
                 }
             }
-            targetNames = setupTestSingle(p, testSources);
-        } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
-            TestSources testSources = findTestSources(context, false);
-            targetNames = setupDebugTestSingle(p, testSources);
-        } else if (command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX)) {
-            FileObject[] files = findSources(context);
-            String path = null;
-            if (files != null) {
-                path = FileUtil.getRelativePath(project.getSourceDirectory(), files[0]);
-                assert path != null;
-                assert path.endsWith(".java");
-                targetNames = new String[] {"debug-fix-nb"}; // NOI18N
-            } else {
-                TestSources testSources = findTestSources(context, false);
-                path = FileUtil.getRelativePath(testSources.sourceDirectory, testSources.sources[0]);
-                p.setProperty("test.type", testSources.testType);
-                assert path != null;
-                assert path.endsWith(".java");
-                targetNames = new String[] {"debug-fix-test-nb"}; // NOI18N
-            }
-            String clazzSlash = path.substring(0, path.length() - 5);
-            p.setProperty("fix.class", clazzSlash); // NOI18N
-        } else if (command.equals(JavaProjectConstants.COMMAND_JAVADOC) && !project.supportsJavadoc()) {
-            promptForPublicPackagesToDocument();
-            return;
-        } else {
-            if ((command.equals(ActionProvider.COMMAND_RUN) || command.equals(ActionProvider.COMMAND_DEBUG)) // #63652
-                    && project.getTestUserDirLockFile().isFile()) {
-                // #141069: lock file exists, run with bogus option
-                p.setProperty(TEST_USERDIR_LOCK_PROP_NAME,TEST_USERDIR_LOCK_PROP_VALUE);
-            }
-            
-            targetNames = globalCommands.get(command);
-            if (targetNames == null) {
-                throw new IllegalArgumentException(command);
-            }
-        }
-        try {
-            ActionUtils.runTarget(findBuildXml(project), targetNames, p);
-        } catch (IOException e) {
-            Util.err.notify(e);
-        }
+        };
+        if (bkgActions.contains(command)) {
+            RequestProcessor.getDefault().post(runnable);
+        } else
+            runnable.run();
     }
-    
+
     private void promptForPublicPackagesToDocument() {
         // #61372: warn the user, rather than disabling the action.
         if (UIUtil.showAcceptCancelDialog(
@@ -458,7 +513,17 @@ public final class ModuleActions implements ActionProvider {
         p.setProperty("test.type", testSources.testType); // NOI18N
         return new String[] {"test-single"}; // NOI18N
     }
-    
+
+    private String[] setupRunMain(Properties p, TestSources testSources, Lookup context, String mainClass) {
+        p.setProperty("main.class", mainClass);    // NOI18N
+        return  new String[] {"run-test-main"};    // NOI18N
+    }
+
+    private String[] setupDebugMain(Properties p, TestSources testSources, Lookup context, String mainClass) {
+        p.setProperty("main.class", mainClass);    // NOI18N
+        return  new String[] {"debug-test-main-nb"};    // NOI18N
+    }
+
     private String[] setupDebugTestSingle(Properties p, TestSources testSources) {
         String path = FileUtil.getRelativePath(testSources.sourceDirectory, testSources.sources[0]);
         // Convert foo/FooTest.java -> foo.FooTest

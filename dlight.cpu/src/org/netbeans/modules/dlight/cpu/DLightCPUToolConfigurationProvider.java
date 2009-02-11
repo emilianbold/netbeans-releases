@@ -9,23 +9,24 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import org.netbeans.modules.dlight.collector.stdout.api.CLIODCConfiguration;
-import org.netbeans.modules.dlight.collector.stdout.api.CLIOParser;
-import org.netbeans.modules.dlight.core.stack.model.FunctionMetric;
+import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
+import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
+import org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration;
+import org.netbeans.modules.dlight.collector.stdout.CLIOParser;
+import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.storage.SQLStackStorage;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.cpu.impl.CpuIndicatorConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
-import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
-import org.netbeans.modules.dlight.indicator.api.IndicatorMetadata;
-import org.netbeans.modules.dlight.tool.spi.DLightToolConfigurationProvider;
-import org.netbeans.modules.dlight.storage.api.DataRow;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata;
-import org.netbeans.modules.dlight.storage.api.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.tool.api.DLightToolConfiguration;
+import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.util.Util;
+import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
+
 
 /**
  *
@@ -33,7 +34,7 @@ import org.netbeans.modules.dlight.util.Util;
  */
 public final class DLightCPUToolConfigurationProvider implements DLightToolConfigurationProvider {
 
-  private static final boolean USE_DTRACE = Boolean.getBoolean("gizmo.cpu.dtrace");
+  private static final boolean USE_DTRACE = !Boolean.getBoolean("gizmo.cpu.sunstudio");
 
   public DLightToolConfiguration create() {
     final String toolName = "CPU Monitor";

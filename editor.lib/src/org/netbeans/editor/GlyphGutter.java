@@ -59,12 +59,14 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.awt.event.*;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.accessibility.*;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
@@ -94,6 +96,8 @@ import org.openide.util.WeakListeners;
  */
 
 public class GlyphGutter extends JComponent implements Annotations.AnnotationsListener, Accessible, SideBarFactory {
+
+    private static final Logger LOG = Logger.getLogger(GlyphGutter.class.getName());
 
     /** EditorUI which part this gutter is */
     private EditorUI editorUI;
@@ -286,11 +290,14 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         // properties is fired which must update this component although it is not visible anymore
         if (lineColoring == null)
             return;
-        
-        if (lineColoring.getBackColor() != null)
-            backgroundColor = lineColoring.getBackColor();
-        else
-            backgroundColor = defaultColoring.getBackColor();
+
+        backgroundColor = UIManager.getColor("NbEditorGlyphGutter.background"); //NOI18N
+        if( null == backgroundColor ) {
+            if (lineColoring.getBackColor() != null)
+                backgroundColor = lineColoring.getBackColor();
+            else
+                backgroundColor = defaultColoring.getBackColor();
+        }
 
         if (lineColoring.getForeColor() != null)
             foreColor = lineColoring.getForeColor();
@@ -634,37 +641,49 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
 
     /** Count the X position of the glyph on the line. */
     private int getXPosOfGlyph(int line) {
-        if (editorUI == null)
-            return 0;
-        int xPos = (showLineNumbers) ? getLineNumberWidth() : 0;
-        if (drawOverLineNumbers) {
-            xPos = getWidth() - glyphWidth;
-            if (cachedCountOfAnnos == -1 || cachedCountOfAnnosForLine != line) {
-                cachedCountOfAnnos = annos.getNumberOfAnnotations(line);
-                cachedCountOfAnnosForLine = line;
-            }
-            if (cachedCountOfAnnos > 1)
-                xPos -= glyphButtonWidth;
+        if (editorUI == null) {
+            return -1;
         }
-        return xPos;
+
+        if (cachedCountOfAnnos == -1 || cachedCountOfAnnosForLine != line) {
+            cachedCountOfAnnos = annos.getNumberOfAnnotations(line);
+            cachedCountOfAnnosForLine = line;
+        }
+
+        if (cachedCountOfAnnos > 0) {
+            int xPos = (showLineNumbers) ? getLineNumberWidth() : 0;
+            if (drawOverLineNumbers) {
+                xPos = getWidth() - glyphWidth;
+                if (cachedCountOfAnnos > 1) {
+                     xPos -= glyphButtonWidth;
+                }
+            }
+            return xPos;
+        } else {
+            return -1;
+        }
     }
 
     /** Check whether the mouse is over some glyph icon or not */
     private boolean isMouseOverGlyph(MouseEvent e) {
         int line = getLineFromMouseEvent(e);
-        if (e.getX() >= getXPosOfGlyph(line) && e.getX() <= getXPosOfGlyph(line)+glyphWidth)
+        int xPos = getXPosOfGlyph(line);
+        if (xPos != -1 && e.getX() >= xPos && e.getX() <= xPos + glyphWidth) {
             return true;
-        else
+        } else {
             return false;
+        }
     }
     
     /** Check whether the mouse is over the cycling button or not */
     private boolean isMouseOverCycleButton(MouseEvent e) {
         int line = getLineFromMouseEvent(e);
-        if (e.getX() >= getXPosOfGlyph(line)+glyphWidth && e.getX() <= getXPosOfGlyph(line)+glyphWidth+glyphButtonWidth)
+        int xPos = getXPosOfGlyph(line);
+        if (xPos != -1 && e.getX() >= xPos + glyphWidth && e.getX() <= xPos + glyphWidth + glyphButtonWidth) {
             return true;
-        else
+        } else {
             return false;
+        }
     }
 
     public JComponent createSideBar(JTextComponent target) {

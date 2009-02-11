@@ -140,8 +140,9 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
     @Override
     public String getShortDescription() {
         if(shortDesc == null) {
-            shortDesc = NbBundle.getMessage(Hk2InstanceNode.class, "LBL_ServerInstanceNodeDesc", 
-                    GlassfishInstance.GLASSFISH_SERVER_NAME, getAdminUrl());
+            shortDesc = NbBundle.getMessage(Hk2InstanceNode.class, "LBL_ServerInstanceNodeDesc",
+                    serverInstance.getServerDisplayName(),
+                    getAdminUrl());
         }
         return shortDesc;
     }
@@ -264,7 +265,7 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
     private String buildDisplayName() {
         Map<String, String> ip = getInstanceProperties();
         String dn = ip.get(GlassfishModule.DISPLAY_NAME_ATTR);
-        return dn != null ? dn : NbBundle.getMessage(Hk2InstanceNode.class, "TXT_GlassfishInstanceNode");
+        return dn != null ? dn : "Bogus display name"; // NOI18N NbBundle.getMessage(Hk2InstanceNode.class, "TXT_GlassfishPreludeInstanceNode");
     }
 
     public String getAdminUrl() {

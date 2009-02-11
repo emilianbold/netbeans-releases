@@ -47,7 +47,6 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
-import java.awt.Shape;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -135,7 +134,6 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
     private boolean enabled = false;
     
     protected List<Mark> visibleMarks = new ArrayList<Mark>();
-    private final TreeMap<Integer, PaintInfo> cache = new TreeMap<Integer, PaintInfo>();
     
     /** Paint operations */
     public static final int PAINT_NOOP             = 0;
@@ -249,132 +247,15 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
     protected void collectPaintInfos(
         View rootView, Fold fold, Map<Integer, PaintInfo> map, int level, int startIndex, int endIndex
     ) throws BadLocationException {
-        
-        for (int i = 0; i < fold.getFoldCount(); i++) {
-            Fold childFold = fold.getFold(i);
-// XXX: the same as below, plus #90931 was most likely caused by a wrong FoldManager implementation
-// and there have been fixes in both the codefolding infra and eg XmlFoldManager to prevent excessive
-// fold nesting.
-//            int startViewIndex = rootView.getViewIndex(childFold.getStartOffset(), Position.Bias.Forward);
-//            int endViewIndex = rootView.getViewIndex(childFold.getEndOffset(), Position.Bias.Forward);
-//            if (endViewIndex >= startIndex && startViewIndex <= endIndex && startViewIndex <= endViewIndex &&
-//                level < 20 // #90931 - prevent stack overflow by a max fold nesting level
-//            ) {
-                collectPaintInfos(rootView, childFold, map, level + 1, startIndex, endIndex);
-//            }
-        }
-        int foldStartOffset = fold.getStartOffset();
-        int foldEndOffset = fold.getEndOffset();
-        int docLength = rootView.getDocument().getLength();
-
-        if (foldEndOffset > docLength) {
-            return;
-        }
-
-        int startViewIndex = rootView.getViewIndex(foldStartOffset, Position.Bias.Forward);
-        int endViewIndex = rootView.getViewIndex(foldEndOffset, Position.Bias.Forward);
-
-        View view;
-        BaseTextUI textUI = (BaseTextUI) component.getUI();
-        Shape viewShape;
-        Rectangle viewRect;
-        int markY = -1;
-        int y = -1;
-
-        // PAINT_MARK
-// XXX: Always paint whole fold otherwise the caching algorithm will break. This
-// is not eficient either and could be quite bad when typing inside large folds (eg. in XMLs).
-// Perhaps the algorithm should iterate through the rows that need to be painted and
-// look at folds containing the row rather then going through folds and updating PaintInfos
-// for each row in each fold.
-//        if (startIndex <= startViewIndex) {
-            view = rootView.getView(startViewIndex);
-            viewShape = textUI.modelToView(component, view.getStartOffset());
-            if (viewShape != null) {
-                viewRect = viewShape.getBounds();
-                y = viewRect.y + viewRect.height;
-                boolean isSingleLineFold = startViewIndex == endViewIndex;
-                //emi: the check bellow seems to be redundant, fold.isCollaped determines isSingleLineFold to be true
-                if (fold.isCollapsed() || isSingleLineFold) {
-                    boolean foldedSinglePaint = fold.isCollapsed(); //parents end here too ?
-                    if (foldedSinglePaint) {
-                        //see if the parents ends on the same line and mark it as SINGLE_PAINT_MARK
-                        int off = fold.getEndOffset();
-                        int rowEnd = javax.swing.text.Utilities.getRowEnd(component, off);
-                        Fold parent = fold.getParent();
-                        while (parent != null && !FoldUtilities.isRootFold(parent)) {
-                            if (rowEnd != javax.swing.text.Utilities.getRowEnd(component, parent.getEndOffset())) {
-                                foldedSinglePaint = false;
-                                break;
-                            }
-                            parent = parent.getParent();
-                        }
-                    }
-                    boolean singleMarkKind = fold.isCollapsed() ? foldedSinglePaint : isSingleLineFold;
-                    map.put(viewRect.y, new CodeFoldingSideBar.PaintInfo((singleMarkKind ? SINGLE_PAINT_MARK : PAINT_MARK), level, viewRect.y, viewRect.height, fold.isCollapsed()));
-                    return;
-                }
-
-                markY = viewRect.y;
-                map.put(viewRect.y, new CodeFoldingSideBar.PaintInfo(PAINT_MARK, level, viewRect.y, viewRect.height, fold.isCollapsed()));
-            }
-//        }
-
-        //PAINT_LINE
-        if (level == 0) {
-            int loopStart = /*(startViewIndex < startIndex) ? startIndex :*/ startViewIndex + 1;
-            int loopEnd = /*(endViewIndex > endIndex) ? endIndex :*/ endViewIndex;
-            viewRect = null;
-            for (int i = loopStart; i <= loopEnd; i++) {
-                view = rootView.getView(i);
-                //viewShape = textUI.modelToView(component, view.getStartOffset());
-                if (view instanceof DrawEngineLineView && y > -1) {
-                    int h = (int) ((DrawEngineLineView) view).getLayoutMajorAxisPreferredSpan();
-                    viewRect = new Rectangle(0, y, 0, h);
-                    if (i < loopEnd && loopEnd > loopStart) {
-                        y += h;
-                    }
-                } else {
-                    viewShape = textUI.modelToView(component, view.getStartOffset());
-                    if (viewShape != null) {
-                        viewRect = viewShape.getBounds();
-                        if (i < loopEnd && loopEnd > loopStart) {
-                            y = viewRect.y + viewRect.height;
-                        }
-                    }
-                }
-                if (viewRect != null && !map.containsKey(viewRect.y)) {
-                    map.put(viewRect.y, new CodeFoldingSideBar.PaintInfo(PAINT_LINE, level, viewRect.y, viewRect.height));
-                }
-            }
-        }
-
-        //PAINT_END_MARK
-//        if (endViewIndex <= endIndex && endViewIndex >= startIndex) {
-            view = rootView.getView(endViewIndex);
-            //viewShape = textUI.modelToView(component, view.getStartOffset());
-            viewRect = null;
-            if (view instanceof DrawEngineLineView && y > -1 && level == 0) {
-                int h = (int) ((DrawEngineLineView) view).getLayoutMajorAxisPreferredSpan();
-                viewRect = new Rectangle(0, y, 0, h);
-                y += h;
-            } else {
-                viewShape = textUI.modelToView(component, view.getStartOffset());
-                if (viewShape != null) {
-                    viewRect = viewShape.getBounds();
-                    y = viewRect.y + viewRect.height;
-                }
-            }
-            if (viewRect != null && markY != viewRect.y) {
-                PaintInfo pi = map.get(viewRect.y);
-                if (pi == null || (pi.getPaintOperation() != PAINT_MARK && pi.getPaintOperation() != SINGLE_PAINT_MARK) || level >= pi.getInnerLevel()) {
-                    map.put(viewRect.y, new CodeFoldingSideBar.PaintInfo(PAINT_END_MARK, level, viewRect.y, viewRect.height));
-                }
-            }
-//        }
+        //never called
     }
 
-    protected List<? extends PaintInfo> getPaintInfo(int startPos, int endPos) throws BadLocationException {
+    protected List<? extends PaintInfo> getPaintInfo(Rectangle clip) throws BadLocationException {
+        javax.swing.plaf.TextUI textUI = component.getUI();
+        if (!(textUI instanceof BaseTextUI)) {
+            return Collections.<PaintInfo>emptyList();
+        }
+        BaseTextUI baseTextUI = (BaseTextUI)textUI;
         BaseDocument bdoc = Utilities.getDocument(component);
         if (bdoc == null) {
             return Collections.<PaintInfo>emptyList();
@@ -382,31 +263,45 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
 
         bdoc.readLock();
         try {
+            int startPos = baseTextUI.getPosFromY(clip.y);
+            int endPos = baseTextUI.viewToModel(component, Short.MAX_VALUE / 2, clip.y + clip.height);
+
+            startPos = Utilities.getRowStart(bdoc, startPos);
+            endPos = Utilities.getRowEnd(bdoc, endPos);
+            
             FoldHierarchy hierarchy = FoldHierarchy.get(component);
             hierarchy.lock();
             try {
                 View rootView = Utilities.getDocumentView(component);
                 if (rootView != null) {
-                    int startViewIndex = rootView.getViewIndex(startPos, Position.Bias.Forward);
-                    int endViewIndex = rootView.getViewIndex(endPos, Position.Bias.Forward);
+                    Object [] arr = getFoldList(hierarchy.getRootFold(), startPos, endPos);
+                    @SuppressWarnings("unchecked")
+                    List<? extends Fold> foldList = (List<? extends Fold>) arr[0];
+                    int idxOfFirstFoldStartingInsideClip = (Integer) arr[1];
 
-                    List foldList = getFoldList(hierarchy, startPos, endPos);
-                    for (int i = 0; i < foldList.size(); i++) {
-                        Fold fold = (Fold) foldList.get(i);
-
-                        Rectangle foldStart = component.modelToView(fold.getStartOffset());
-                        Rectangle foldEnd = component.modelToView(fold.getEndOffset());
-
-                        if (!cache.containsKey(foldStart.y) || !cache.containsKey(foldEnd.y)) {
-                            collectPaintInfos(rootView, fold, cache, 0, startViewIndex, endViewIndex);
+                    Map<Integer, PaintInfo> map = new TreeMap<Integer, PaintInfo>();
+                    // search backwards
+                    for(int i = idxOfFirstFoldStartingInsideClip - 1; i >= 0; i--) {
+                        Fold fold = foldList.get(i);
+                        if (!traverseBackwards(fold, bdoc, baseTextUI, startPos, endPos, 0, map)) {
+                            break;
                         }
                     }
 
-                    Rectangle viewStart = component.modelToView(rootView.getView(startViewIndex).getStartOffset());
-                    Rectangle viewEnd = component.modelToView(rootView.getView(endViewIndex).getStartOffset());
-                    Map<Integer, PaintInfo> map = cache.subMap(viewStart.y, viewEnd.y + 1);
+                    // search forward
+                    for(int i = idxOfFirstFoldStartingInsideClip; i < foldList.size(); i++) {
+                        Fold fold = foldList.get(i);
+                        if (!traverseForward(fold, bdoc, baseTextUI, startPos, endPos, 0, map)) {
+                            break;
+                        }
+                    }
 
-                    return new ArrayList<PaintInfo>(map.values());
+                    if (map.size() == 0 && foldList.size() > 0) {
+                        assert foldList.size() == 1;
+                        return Collections.singletonList(new PaintInfo(PAINT_LINE, 0, clip.y, clip.height));
+                    } else {
+                        return new ArrayList<PaintInfo>(map.values());
+                    }
                 } else {
                     return Collections.<PaintInfo>emptyList();
                 }
@@ -418,6 +313,117 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         }
     }
 
+    private boolean traverseForward(Fold f, BaseDocument doc, BaseTextUI btui, int lowerBoundary, int upperBoundary,int level,  Map<Integer, PaintInfo> infos) throws BadLocationException {
+//        System.out.println("~~~ traverseForward<" + lowerBoundary + ", " + upperBoundary
+//                + ">: fold=<" + f.getStartOffset() + ", " + f.getEndOffset() + "> "
+//                + (f.getStartOffset() > upperBoundary ? ", f.gSO > uB" : "")
+//                + ", level=" + level);
+        
+        if (f.getStartOffset() > upperBoundary) {
+            return false;
+        }
+
+        int lineStartOffset1 = Utilities.getRowStart(doc, f.getStartOffset());
+        int lineStartOffset2 = Utilities.getRowStart(doc, f.getEndOffset());
+        int y1 = btui.getYFromPos(lineStartOffset1);
+        int h = btui.getEditorUI().getLineHeight();
+
+        if (lineStartOffset1 == lineStartOffset2) {
+            // whole fold is on a single line
+            infos.put(lineStartOffset1, new PaintInfo(SINGLE_PAINT_MARK, level, y1, h, f.isCollapsed()));
+        } else {
+            // fold spans multiple lines
+            infos.put(lineStartOffset1, new PaintInfo(PAINT_MARK, level, y1, h, f.isCollapsed()));
+
+            if (!f.isCollapsed() && f.getEndOffset() <= upperBoundary) {
+                int y2 = btui.getYFromPos(lineStartOffset2);
+                infos.put(lineStartOffset2, new PaintInfo(PAINT_END_MARK, level, y2, h));
+            }
+        }
+
+        if (!f.isCollapsed()) {
+            Object [] arr = getFoldList(f, lowerBoundary, upperBoundary);
+            @SuppressWarnings("unchecked")
+            List<? extends Fold> foldList = (List<? extends Fold>) arr[0];
+            int idxOfFirstFoldStartingInsideClip = (Integer) arr[1];
+
+            // search backwards
+            for(int i = idxOfFirstFoldStartingInsideClip - 1; i >= 0; i--) {
+                Fold fold = foldList.get(i);
+                if (!traverseBackwards(fold, doc, btui, lowerBoundary, upperBoundary, level + 1, infos)) {
+                    break;
+                }
+            }
+
+            // search forward
+            for(int i = idxOfFirstFoldStartingInsideClip; i < foldList.size(); i++) {
+                Fold fold = foldList.get(i);
+                if (!traverseForward(fold, doc, btui, lowerBoundary, upperBoundary, level + 1, infos)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private boolean traverseBackwards(Fold f, BaseDocument doc, BaseTextUI btui, int lowerBoundary, int upperBoundary, int level, Map<Integer, PaintInfo> infos) throws BadLocationException {
+//        System.out.println("~~~ traverseBackwards<" + lowerBoundary + ", " + upperBoundary
+//                + ">: fold=<" + f.getStartOffset() + ", " + f.getEndOffset() + "> "
+//                + (f.getEndOffset() < lowerBoundary ? ", f.gEO < lB" : "")
+//                + ", level=" + level);
+
+        if (f.getEndOffset() < lowerBoundary) {
+            return false;
+        }
+
+        int lineStartOffset1 = Utilities.getRowStart(doc, f.getStartOffset());
+        int lineStartOffset2 = Utilities.getRowStart(doc, f.getEndOffset());
+        int h = btui.getEditorUI().getLineHeight();
+
+        if (lineStartOffset1 == lineStartOffset2) {
+            // whole fold is on a single line
+            int y1 = btui.getYFromPos(lineStartOffset1);
+            infos.put(lineStartOffset1, new PaintInfo(SINGLE_PAINT_MARK, level, y1, h, f.isCollapsed()));
+        } else {
+            // fold spans multiple lines
+            if (f.getStartOffset() >= upperBoundary) {
+                int y1 = btui.getYFromPos(lineStartOffset1);
+                infos.put(lineStartOffset1, new PaintInfo(PAINT_MARK, level, y1, h, f.isCollapsed()));
+            }
+
+            if (!f.isCollapsed() && f.getEndOffset() <= upperBoundary) {
+                int y2 = btui.getYFromPos(lineStartOffset2);
+                infos.put(lineStartOffset2, new PaintInfo(PAINT_END_MARK, level, y2, h));
+            }
+        }
+
+        if (!f.isCollapsed()) {
+            Object [] arr = getFoldList(f, lowerBoundary, upperBoundary);
+            @SuppressWarnings("unchecked")
+            List<? extends Fold> foldList = (List<? extends Fold>) arr[0];
+            int idxOfFirstFoldStartingInsideClip = (Integer) arr[1];
+
+            // search backwards
+            for(int i = idxOfFirstFoldStartingInsideClip - 1; i >= 0; i--) {
+                Fold fold = foldList.get(i);
+                if (!traverseBackwards(fold, doc, btui, lowerBoundary, upperBoundary, level + 1, infos)) {
+                    return false;
+                }
+            }
+
+            // search forward
+            for(int i = idxOfFirstFoldStartingInsideClip; i < foldList.size(); i++) {
+                Fold fold = foldList.get(i);
+                if (!traverseForward(fold, doc, btui, lowerBoundary, upperBoundary, level + 1, infos)) {
+                    break;
+                }
+            }
+        }
+
+        return true;
+    }
+    
     protected EditorUI getEditorUI(){
         return Utilities.getEditorUI(component);
     }
@@ -426,7 +432,7 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         return component.getDocument();
     }
 
-    
+
     private Fold getLastLineFold(FoldHierarchy hierarchy, int rowStart, int rowEnd){
         Fold fold = FoldUtilities.findNearestFold(hierarchy, rowStart);
         while (fold != null && fold.getStartOffset()<rowEnd){
@@ -503,34 +509,35 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         g.fillRect(clip.x, clip.y, clip.width, clip.height);
         g.setColor(coloring.getForeColor());
 
-        javax.swing.plaf.TextUI textUI = component.getUI(); 
-        if (!(textUI instanceof BaseTextUI)) return;
-        BaseTextUI baseTextUI = (BaseTextUI)textUI;
-        
         try {
-            int startPos = baseTextUI.getPosFromY(clip.y);
-            int endPos = baseTextUI.viewToModel(component, Short.MAX_VALUE / 2, clip.y + clip.height);
-        
-            List<? extends PaintInfo> ps = getPaintInfo(startPos, endPos);
+            List<? extends PaintInfo> ps = getPaintInfo(clip);
             Font defFont = coloring.getFont();
-            
+            int markSize = getMarkSize(g);
+            int halfMarkSize = markSize / 2;
+            int markX = (defFont.getSize() - markSize) / 2; // x position of mark rectangle
+            int plusGap = (int)Math.round(markSize / 3.8); // distance between mark rectangle vertical side and start/end of minus sign
+            int lineX = markX + halfMarkSize; // x position of the centre of mark
+
+            PaintInfo previousInfo = null;
             for(PaintInfo paintInfo : ps) {
-                if (paintInfo.getPaintOperation() == PAINT_NOOP && paintInfo.getInnerLevel() == 0) {
-                    //No painting for this view
-                    continue;
-                }
-                
                 boolean isFolded = paintInfo.isCollapsed();
                 int y = paintInfo.getPaintY();
                 int height = paintInfo.getPaintHeight();
-                int markSize = getMarkSize(g);
-                int halfMarkSize = markSize / 2;
-                int markX = (defFont.getSize() - markSize) / 2; // x position of mark rectangle
                 int markY = y + g.getFontMetrics(defFont).getDescent(); // y position of mark rectangle
-                int plusGap = (int)Math.round(markSize / 3.8); // distance between mark rectangle vertical side and start/end of minus sign
-                int lineX = markX + halfMarkSize; // x position of the centre of mark
-                
                 int paintOperation = paintInfo.getPaintOperation();
+
+                if (previousInfo == null) {
+                    if (paintInfo.getInnerLevel() > 0 || paintOperation == PAINT_END_MARK) {
+                        g.drawLine(lineX, clip.y, lineX, y);
+                    }
+                } else {
+                    if (previousInfo.getInnerLevel() > 0 ||
+                        (previousInfo.getPaintOperation() == PAINT_MARK && !previousInfo.isCollapsed()))
+                    {
+                        g.drawLine(lineX, previousInfo.getPaintY() + previousInfo.getPaintHeight(), lineX, y);
+                    }
+                }
+
                 if (paintOperation == PAINT_MARK || paintOperation == SINGLE_PAINT_MARK) {
                     g.drawRect(markX, markY, markSize, markSize);
                     g.drawLine(plusGap + markX, markY + halfMarkSize, markSize + markX - plusGap, markY + halfMarkSize);
@@ -559,30 +566,42 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                         g.drawLine(lineX, y + height / 2, lineX, y + height);
                     }
                 }
-                
+
+                previousInfo = paintInfo;
             }
+
+            if (previousInfo != null &&
+                (previousInfo.getInnerLevel() > 0 ||
+                 (previousInfo.getPaintOperation() == PAINT_MARK && !previousInfo.isCollapsed()))
+            ) {
+                g.drawLine(lineX, previousInfo.getPaintY() + previousInfo.getPaintHeight(), lineX, clip.y + clip.height);
+            }
+
         } catch (BadLocationException ble) {
             LOG.log(Level.WARNING, null, ble);
         }
     }
 
-    private List<? extends Fold> getFoldList(FoldHierarchy hierarchy, int start, int end) {
+    private static Object [] getFoldList(Fold parentFold, int start, int end) {
         List<Fold> ret = new ArrayList<Fold>();
 
-        Fold rootFold = hierarchy.getRootFold();
-        int index = FoldUtilities.findFoldEndIndex(rootFold, start);
-        int foldCount = rootFold.getFoldCount();
+        int index = FoldUtilities.findFoldEndIndex(parentFold, start);
+        int foldCount = parentFold.getFoldCount();
+        int idxOfFirstFoldStartingInside = -1;
         while (index < foldCount) {
-            Fold f = rootFold.getFold(index);
+            Fold f = parentFold.getFold(index);
             if (f.getStartOffset() <= end) {
                 ret.add(f);
             } else {
                 break; // no more relevant folds
             }
+            if (idxOfFirstFoldStartingInside == -1 && f.getStartOffset() >= start) {
+                idxOfFirstFoldStartingInside = ret.size() - 1;
+            }
             index++;
         }
 
-        return ret;
+        return new Object [] { ret, idxOfFirstFoldStartingInside != -1 ? idxOfFirstFoldStartingInside : ret.size() };
     }
 
     public class PaintInfo{
@@ -743,22 +762,6 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         }
 
         private void refresh() {
-            BaseDocument bdoc = Utilities.getDocument(component);
-            if (bdoc != null) {
-                bdoc.readLock();
-                try {
-                    FoldHierarchy hierarchy = FoldHierarchy.get(component);
-                    hierarchy.lock();
-                    try {
-                        cache.clear();
-                        visibleMarks.clear();
-                    } finally {
-                        hierarchy.unlock();
-                    }
-                } finally {
-                    bdoc.readUnlock();
-                }
-            }
             repaint();
         }
     } // End of Listener class

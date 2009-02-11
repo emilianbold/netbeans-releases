@@ -83,7 +83,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
 
     protected ClassEnumBase(String name, CsmFile file, AST ast) {
         super(file, getStartOffset(ast), getEndOffset(ast));
-        this.name = (name == null) ? CharSequenceKey.empty() : NameCache.getManager().getString(name);
+        this.name = (name == null) ? CharSequenceKey.empty() : NameCache.getManager().getString(CharSequenceKey.create(name));
     }
 
     protected static int getEndOffset(AST node) {
@@ -118,7 +118,6 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
                 }
                 CsmClassifier cls = ns.getProject().findClassifier(qn);
                 if (cls != null) {
-                    scope = (CsmScope) cls;
                     if (CsmKindUtilities.isClass(cls)) {
                         CsmClass container = (CsmClass) cls;
                         Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers(container,

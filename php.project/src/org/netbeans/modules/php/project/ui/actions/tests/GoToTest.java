@@ -46,6 +46,7 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpProjectUtils;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
+import org.netbeans.modules.php.project.util.PhpUnit;
 import org.netbeans.spi.gototest.TestLocator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -102,7 +103,7 @@ public class GoToTest implements TestLocator {
             return FileType.TESTED;
         } else if (CommandUtils.isUnderTests(project, fo, false)) {
             String name = fo.getNameExt();
-            if (!name.equals(PhpUnitConstants.TEST_FILE_SUFFIX) && name.endsWith(PhpUnitConstants.TEST_FILE_SUFFIX)) {
+            if (!name.equals(PhpUnit.TEST_FILE_SUFFIX) && name.endsWith(PhpUnit.TEST_FILE_SUFFIX)) {
                 return FileType.TEST;
             }
         }
@@ -118,7 +119,7 @@ public class GoToTest implements TestLocator {
         if (relSrcParentFolder != null) {
             for (FileObject fo : relSrcParentFolder.getChildren()) {
                 if (CommandUtils.isPhpFile(fo)
-                        && testFo.getNameExt().equals(fo.getName() + PhpUnitConstants.TEST_FILE_SUFFIX)) {
+                        && testFo.getNameExt().equals(fo.getName() + PhpUnit.TEST_FILE_SUFFIX)) {
                     return new LocationResult(fo, -1);
                 }
             }
@@ -127,7 +128,7 @@ public class GoToTest implements TestLocator {
         return new LocationResult(NbBundle.getMessage(GoToTest.class, "MSG_SrcNotFound", testFo.getName()));
     }
 
-    private LocationResult findTest(PhpProject project, FileObject srcFo) {
+    public static LocationResult findTest(PhpProject project, FileObject srcFo) {
         FileObject testFo = getTests(project).getFileObject(findRelativeTestFileName(project, srcFo));
         if (testFo == null) {
             return new LocationResult(NbBundle.getMessage(GoToTest.class, "MSG_TestNotFound", srcFo.getName()));
@@ -138,7 +139,7 @@ public class GoToTest implements TestLocator {
     static String findRelativeTestFileName(PhpProject project, FileObject srcFo) {
         String relativeSourcePath = FileUtil.getRelativePath(getSources(project), srcFo.getParent());
         assert relativeSourcePath != null : String.format("Relative path must be found for sources %s and folder %s", getSources(project), srcFo.getParent());
-        return relativeSourcePath + "/" + srcFo.getName() + PhpUnitConstants.TEST_FILE_SUFFIX; // NOI18N
+        return relativeSourcePath + "/" + srcFo.getName() + PhpUnit.TEST_FILE_SUFFIX; // NOI18N
     }
 
     private PhpProject findPhpProject(FileObject fo) {

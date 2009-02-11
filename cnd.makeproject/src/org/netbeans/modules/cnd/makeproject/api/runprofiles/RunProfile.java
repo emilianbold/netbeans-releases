@@ -847,7 +847,7 @@ public class RunProfile implements ConfigurationAuxObject {
         }
     }
     
-    private class EnvEditor extends PropertyEditorSupport implements ExPropertyEditor {
+    private static class EnvEditor extends PropertyEditorSupport implements ExPropertyEditor {
         private Env env;
         private PropertyEnv propenv;
         

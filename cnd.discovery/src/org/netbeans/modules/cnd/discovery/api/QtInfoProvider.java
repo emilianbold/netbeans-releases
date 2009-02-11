@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 
@@ -117,6 +118,14 @@ public abstract class QtInfoProvider {
                 }
                 if (qmakeConfiguration.isXmlEnabled().getValue()) {
                     list.add(baseDir + File.separator + "QtXml"); // NOI18N
+                }
+                String uiDir = qmakeConfiguration.getUiDir().getValue();
+                if (0 < uiDir.length()) {
+                    if (IpeUtils.isPathAbsolute(uiDir)) {
+                        list.add(uiDir);
+                    } else {
+                        list.add(conf.getBaseDir() + File.separator + uiDir);
+                    }
                 }
                 return list;
             } else {

@@ -279,6 +279,7 @@
                 </dependency>
             </module-dependencies>
             <public-packages>
+                <package>org.netbeans.modules.mobility.svgcore.api.snippets</package>
                 <package>org.netbeans.modules.mobility.svgcore.util</package>
             </public-packages>
         </data>

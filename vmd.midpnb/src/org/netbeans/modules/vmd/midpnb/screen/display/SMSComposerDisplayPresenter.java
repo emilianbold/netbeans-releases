@@ -165,6 +165,9 @@ public class SMSComposerDisplayPresenter extends DisplayableDisplayPresenter {
 
         void updateView() {
             final DesignComponent component = SMSComposerDisplayPresenter.this.getComponent();
+            if (component == null) {
+                return;
+            }
             component.getDocument().getTransactionManager().readAccess(new Runnable() {
 
                 public void run() {

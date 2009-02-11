@@ -36,14 +36,11 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.webstack.target;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.dlight.execution.api.DLightTarget;
-import org.netbeans.modules.dlight.execution.api.DLightTargetListener;
+import org.netbeans.modules.dlight.api.execution.DLightTarget;
+import org.netbeans.modules.dlight.api.execution.DLightTarget.DLightTargetExecutionService;
+import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -51,62 +48,50 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  * php source root installation
  * @author mt154047
  */
-public class DeploymentPlatformTarget implements DLightTarget {
+public final class DeploymentPlatformTarget extends DLightTarget {
 
-  private boolean isStarted = false;
-  private List<DLightTargetListener> listeners = Collections.synchronizedList(new ArrayList<DLightTargetListener>());
+    private boolean isStarted = false;
 
-  public DeploymentPlatformTarget() {
-  }
-
-  public void addTargetListener(DLightTargetListener listener) {
-    if (listener != null && !listeners.contains(listener)) {
-      listeners.add(listener);
+    public DeploymentPlatformTarget() {
+        super(new DeploymentPlatformTargetExecutionService());
     }
-  }
 
-  public void removeTargetListener(DLightTargetListener listener) {
-    if (listeners.contains(listener)) {
-      listeners.remove(listener);
+    private void start() {
+        //we will startdemon task, which will search for everything
+        //needed for WebStack
+        isStarted = true;
+        notifyListeners(DLightTarget.State.INIT, DLightTarget.State.RUNNING);
     }
-  }
 
-  public void start() {
-    //we will startdemon task, which will search for everything
-    //needed for WebStack
-    isStarted = true;
-    DLightTargetListener[] ls = listeners.toArray(new DLightTargetListener[0]);
-    for (DLightTargetListener l : ls) {
-      l.targetStarted(this);
+    private void terminate() {
+        //  throw new UnsupportedOperationException("Not supported yet.");
+        isStarted = false;
+        notifyListeners(DLightTarget.State.RUNNING, DLightTarget.State.TERMINATED);
     }
-  }
 
-  public void terminate() {
-    //  throw new UnsupportedOperationException("Not supported yet.");
-    isStarted = false;
-    DLightTargetListener[] ls = listeners.toArray(new DLightTargetListener[0]);
-    for (DLightTargetListener l : ls) {
-      l.targetFinished(this, 0);
+    public State getState() {
+        return isStarted ? State.RUNNING : State.TERMINATED;
     }
-  }
 
-  public State getState() {
-    return isStarted ? State.RUNNING : State.STOPPED;
-  }
+    public ExecutionEnvironment getExecEnv() {
+        String user_name = System.getProperty("dlight.webstack.user", "masha");
+        String host_name = System.getProperty("dlight.webstack.host", "localhost");
+        host_name = "129.159.126.238";
+        int port_number = Integer.valueOf(System.getProperty("dlight.webstack.port_number", "2222"));
+        // return new ExecutionEnvironment("masha", "129.159.126.238",  2222);
+        return new ExecutionEnvironment(user_name, host_name, port_number);
+    }
 
-  public boolean canBeSubstituted() {
-    return false;
-  }
+    private static final class DeploymentPlatformTargetExecutionService implements
+        DLightTargetExecutionService<DeploymentPlatformTarget> {
 
-  public void substitute(String cmd, String[] args) {
-    //throw new UnsupportedOperationException("Not supported yet.");
-  }
+            public void start(DeploymentPlatformTarget target, DLightTarget.ExecutionEnvVariablesProvider t) {
+            target.start();
+        }
 
-  public ExecutionEnvironment getExecEnv() {
-    String user_name = System.getProperty("dlight.webstack.user", "masha");
-    String host_name = System.getProperty("dlight.webstack.host", "localhost");
-    int port_number = Integer.valueOf(System.getProperty("dlight.webstack.port_number", "2222"));
-   // return new ExecutionEnvironment("masha", "129.159.126.238",  2222);
-     return new ExecutionEnvironment(user_name, host_name,  port_number);
-  }
+        public void terminate(DeploymentPlatformTarget target) {
+            target.terminate();
+        }
+    }
+
 }

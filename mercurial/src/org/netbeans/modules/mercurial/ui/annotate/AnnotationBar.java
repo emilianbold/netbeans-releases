@@ -443,10 +443,19 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     }
 
     private String getPreviousRevision(String revision) {
+        boolean orderedAsc = logs.length > 1 && logs[0].getRevisionAsLong() < logs[1].getRevisionAsLong(); // logs order type
         for(int i = 0; i < logs.length; i++) {
             if (logs[i].getRevision().equals(revision)) {
-                if (i > 0) {
-                    return logs[i - 1].getRevision();
+                if (orderedAsc) {
+                    // logs are ordered in an ascending order
+                    if (i > 0) {
+                        return logs[i - 1].getRevision();
+                    }
+                } else {
+                    // logs are ordered in a descending order
+                    if (i < logs.length - 1) {
+                        return logs[i + 1].getRevision();
+                    }
                 }
             }
         }

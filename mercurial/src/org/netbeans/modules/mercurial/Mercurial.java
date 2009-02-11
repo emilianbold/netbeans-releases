@@ -132,23 +132,12 @@ public class Mercurial {
 
 
     private void init() {
-        loadIniParserClassesWorkaround();
+        HgConfigFiles.getSysInstance();
         setDefaultPath();
         fileStatusCache = new FileStatusCache();
         mercurialAnnotator = new MercurialAnnotator();
         mercurialInterceptor = new MercurialInterceptor();
         checkVersion(); // Does the Hg check but postpones querying user until menu is activated
-    }
-
-    private void loadIniParserClassesWorkaround() {
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-        try {
-            // triggers ini4j initialization in call to loadSystemAndGlobalFile()
-            HgConfigFiles.getSysInstance();
-        } finally {
-            Thread.currentThread().setContextClassLoader(cl);
-        }
     }
 
     private void setDefaultPath() {
