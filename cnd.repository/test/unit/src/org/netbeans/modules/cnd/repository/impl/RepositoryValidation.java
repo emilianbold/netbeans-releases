@@ -50,7 +50,7 @@ public class RepositoryValidation extends RepositoryValidationBase {
     public void testRepository() throws Exception {
         List<String> args = find();
         assert args.size() > 0;
-        args.add("-fq"); //NOI18N
+        //args.add("-fq"); //NOI18N
 
         performTest(args.toArray(new String[]{}), nimi + ".out", nimi + ".err");
         assertNoExceptions();
