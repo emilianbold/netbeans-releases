@@ -260,7 +260,7 @@ public final class SearchBar extends JPanel {
                 }
             });
 
-        closeButton = new JButton(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/editor/resources/find_close.png"))); // NOI18N
+        closeButton = new JButton(ImageUtilities.loadImageIcon("org/netbeans/modules/editor/resources/find_close.png", false)); // NOI18N
         closeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 looseFocus();
@@ -269,7 +269,7 @@ public final class SearchBar extends JPanel {
         closeButton.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_CloseIncrementalSearchSidebar")); // NOI18N
         processButton(closeButton);
 
-        expandButton = new JButton(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/editor/resources/find_expand.png"))); // NOI18N
+        expandButton = new JButton(ImageUtilities.loadImageIcon("org/netbeans/modules/editor/resources/find_expand.png", false)); // NOI18N
         expandButton.setMnemonic(NbBundle.getMessage(SearchBar.class, "CTL_ExpandButton_Mnemonic").charAt(0)); // NOI18N
         processButton(expandButton);
         expandButton.addActionListener(new ActionListener() {
@@ -373,7 +373,7 @@ public final class SearchBar extends JPanel {
 
         // configure find next button
         findNextButton = new JButton(
-            new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/editor/resources/find_next.png"))); // NOI18N
+            ImageUtilities.loadImageIcon("org/netbeans/modules/editor/resources/find_next.png", false)); // NOI18N
         Mnemonics.setLocalizedText( findNextButton, NbBundle.getMessage(SearchBar.class, "CTL_FindNext")); // NOI18N
         findNextButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -383,7 +383,7 @@ public final class SearchBar extends JPanel {
 
         // configure find previous button
         findPreviousButton = new JButton(
-            new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/editor/resources/find_previous.png"))); // NOI18N
+            ImageUtilities.loadImageIcon("org/netbeans/modules/editor/resources/find_previous.png", false)); // NOI18N
         Mnemonics.setLocalizedText(findPreviousButton, NbBundle.getMessage(SearchBar.class, "CTL_FindPrevious")); // NOI18N
         findPreviousButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {

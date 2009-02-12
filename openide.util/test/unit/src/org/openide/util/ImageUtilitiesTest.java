@@ -168,11 +168,19 @@ public class ImageUtilitiesTest extends TestCase {
         str = ImageUtilities.getImageToolTip(result);
         expected = "";
         assertEquals("Tool tip text should be empty, but it is " + str, expected, str);
-        
-        Icon icon = ImageUtilities.image2Icon(result);
-        assertSame("Should be same instance", icon, result);
+    }
 
-        Image img = ImageUtilities.icon2Image(icon);
-        assertSame("Should be same instance", icon, img);
+    public void testConversions() {
+        Image image = ImageUtilities.loadImage("org/openide/util/testimage.png", false);
+        Icon icon = ImageUtilities.loadImageIcon("org/openide/util/testimage.png", false);
+
+        assertNotNull("Should not be null", icon);
+        assertNotNull("Should not be null", image);
+
+        Icon icon2 = ImageUtilities.image2Icon(image);
+        Image image2 = ImageUtilities.icon2Image(icon);
+
+        assertEquals("Should be same instance", icon, icon2);
+        assertEquals("Should be same instance", image, image2);
     }
 }

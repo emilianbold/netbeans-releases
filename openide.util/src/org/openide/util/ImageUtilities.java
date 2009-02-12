@@ -137,7 +137,20 @@ public final class ImageUtilities {
      */
     public static final Image loadImage(String resource, boolean localized) {
         return getIcon(resource, localized);
-    }    
+    }
+
+    /**
+     * Loads an icon based on resource path.
+     * Similar to {@link #loadImage(String, boolean)}, returns ImageIcon instead of Image.
+     * @param resource resource path of the icon (no initial slash)
+     * @param localized localized resource should be used
+     * @return ImageIcon or null, if the icon cannot be loaded.
+     * @since 7.22
+     */
+    public static final ImageIcon loadImageIcon(String resource, boolean localized) {
+        Image image = getIcon(resource, localized);
+        return (ImageIcon) image2Icon(image);
+    }
 
     /** This method merges two images into the new one. The second image is drawn
      * over the first one with its top-left corner at x, y. Images need not be of the same size.
@@ -175,16 +188,12 @@ public final class ImageUtilities {
     
     /**
      * Converts given image to an icon.
-     * <p><strong>Warning:</strong> do not use this method if your icon is intended
-     * to be used on an action which is not always enabled. Many look-and-feel
-     * implementations are incapable of graying out any {@link Icon} which is not
-     * actually an {@link ImageIcon}.
      * @param image to be converted
      * @return icon corresponding icon
      */    
     public static final Icon image2Icon(Image image) {
         if (image instanceof ToolTipImage) {
-            return (Icon) image;
+            return ((ToolTipImage) image).getIcon();
         } else {
             return new ImageIcon(image);
         }
@@ -196,8 +205,8 @@ public final class ImageUtilities {
      * @param icon {@link javax.swing.Icon} to be converted.
      */
     public static final Image icon2Image(Icon icon) {
-        if (icon instanceof ToolTipImage) {
-            return (Image) icon;
+        if (icon instanceof ImageIcon) {
+            return ((ImageIcon) icon).getImage();
         } else {
             ToolTipImage image = new ToolTipImage("", icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
             Graphics g = image.getGraphics();
@@ -694,6 +703,7 @@ public final class ImageUtilities {
      */
     private static class ToolTipImage extends BufferedImage implements Icon {
         final String toolTipText;
+        ImageIcon imageIcon;
 
         public static ToolTipImage createNew(String toolTipText, Image image) {
             ImageUtilities.ensureLoaded(image);
@@ -728,7 +738,13 @@ public final class ImageUtilities {
             super(image.getWidth(), image.getHeight(), image.getType());
             this.toolTipText = toolTipText;
         }
-        
+
+        synchronized ImageIcon getIcon() {
+            if (imageIcon == null) {
+                imageIcon = new ImageIcon(this);
+            }
+            return imageIcon;
+        }
 
         public int getIconHeight() {
             return super.getHeight();

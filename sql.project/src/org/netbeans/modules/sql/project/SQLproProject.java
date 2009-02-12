@@ -100,7 +100,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
  */
 public final class SQLproProject implements Project, AntProjectListener {
 
-    private static final Icon PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/sql/project/ui/resources/sqlproProjectIcon.gif")); // NOI18N
+    private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/sql/project/ui/resources/sqlproProjectIcon.gif", false); // NOI18N
     public static final String SOURCES_TYPE_ICANPRO = "BIZPRO";
     public static final String ARTIFACT_TYPE_JBI_ASA = "CAPS.asa";
 
