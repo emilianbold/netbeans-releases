@@ -429,13 +429,13 @@ public class CosChecker implements PrerequisitesChecker {
             if (config.getProperties() != null) {
                 for (Map.Entry entry : config.getProperties().entrySet()) {
                     //#158039
-                    if ("maven.surefire.debug".equals(entry.getKey())) {
+                    if ("maven.surefire.debug".equals(entry.getKey())) { //NOI18N
                         continue;
                     }
-                    if ("jpda.listen".equals(entry.getKey())) {
+                    if ("jpda.listen".equals(entry.getKey())) {//NOI18N
                         continue;
                     }
-                    if ("jpda.stopclass".equals(entry.getKey())) {
+                    if ("jpda.stopclass".equals(entry.getKey())) {//NOI18N
                         continue;
                     }
                     //TODO do these have preference to ones defined in surefire plugin?
