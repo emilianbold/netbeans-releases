@@ -45,14 +45,14 @@ import org.openide.WizardDescriptor;
  * 
  * @author npedapudi
  */
-public class JNDINameFinishPanel extends JNDINamePanel implements WizardDescriptor.FinishablePanel {
+public class JNDINameFinishPanelUI extends JNDINamePanel implements WizardDescriptor.FinishablePanel {
 
     /**
      * 
      */
     private static final long serialVersionUID = 1L;
 
-    public JNDINameFinishPanel(final String title) {
+    public JNDINameFinishPanelUI(final String title) {
         super(title);
 	}
 

@@ -36,30 +36,36 @@
  */
 package org.netbeans.modules.jdbcwizard.wizards;
 
-import org.openide.WizardDescriptor;
+
+import javax.swing.JPanel;
 
 
 /**
- * Extends JNDINameFinishPanel, implementing the interface WizardDescriptor.FinishPanel to allows
- * its containing wizard to enable the "Finish" button.
+ * Implements a two-list transfer panel with bulk add/remove capability.
  * 
- * @author npedapudi
+ * @author
  */
-public class JNDINameFinishPanel extends JNDINamePanel implements WizardDescriptor.FinishablePanel {
+public class JDBCWizardTransferPanelUI extends JPanel {
 
     /**
      * 
      */
     private static final long serialVersionUID = 1L;
 
-    public JNDINameFinishPanel(final String title) {
-        super(title);
-	}
-
     /**
-     * @return
+     * Creates a new instance of JDBCWizardTransferPanel using the given ListModels to initially
+     * populate the source and destination panels.
+     * 
+     * @param title String to be displayed as title of this panel
+     * @param dsList List of DatabaseModels used to populate datasource panel
+     * @param destColl Collection of selected DatabaseModels
+     * @param sourceOTD true if this panel displays available selections for source OTDs; false if
+     *            it displays available destination OTDs
      */
-    public boolean isFinishPanel() {
-        return true;
+    public JDBCWizardTransferPanelUI(final String title) {
+        if (title != null && title.trim().length() != 0) {
+            this.setName(title);
+        }
     }
+
 }
