@@ -41,6 +41,8 @@
 package org.netbeans.modules.refactoring.api;
 
 import java.util.EventObject;
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.Parameters;
 
 /** Progress event object.
  *
@@ -65,7 +67,7 @@ public final class ProgressEvent extends EventObject {
      * @param source Source of the event.
      * @param eventId ID of the event.
      */
-    public ProgressEvent(Object source, int eventId) {
+    public ProgressEvent(@NonNull Object source, int eventId) {
         this(source, eventId, 0, 0);
     }
 
@@ -76,8 +78,9 @@ public final class ProgressEvent extends EventObject {
      * is being processed.
      * @param count Number of steps that the processed opration consists of.
      */
-    public ProgressEvent(Object source, int eventId, int operationType, int count) {
+    public ProgressEvent(@NonNull Object source, int eventId, int operationType, int count) {
         super(source);
+        Parameters.notNull("source", source); // NOI18N
         this.eventId = eventId;
         this.operationType = operationType;
         this.count = count;
