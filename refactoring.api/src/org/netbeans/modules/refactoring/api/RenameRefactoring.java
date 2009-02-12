@@ -40,7 +40,10 @@
  */
 package org.netbeans.modules.refactoring.api;
 
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 
 /**
  * Refactoring used for renaming objects.
@@ -71,7 +74,7 @@ public final class RenameRefactoring extends AbstractRefactoring {
      * </table>
      * @param item put object to rename into Lookup instance.
      */
-    public RenameRefactoring(Lookup item) {
+    public RenameRefactoring(@NonNull Lookup item) {
         super(item);
     }
     
@@ -79,15 +82,17 @@ public final class RenameRefactoring extends AbstractRefactoring {
      * Getter for property newName
      * @return Value of property newName
      */
+    @CheckForNull
     public String getNewName() {
         return newName;
     }
     
     /**
-     * Setter for propety newName
+     * Setter for property newName
      * @param newName New value of property newName
      */
-    public void setNewName(String newName) {
+    public void setNewName(@NonNull String newName) {
+        Parameters.notNull("newName", newName); // NOI18N
         this.newName = newName;
     }
     
