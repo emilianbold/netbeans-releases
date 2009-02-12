@@ -82,7 +82,7 @@ class ServerChooserPanel implements WizardDescriptor.Panel, ChangeListener {
     }
 
     public boolean isValid() {
-        return getVisual().isValid();
+        return getVisual().hasValidData();
     }
 
     public void addChangeListener(ChangeListener l) {
