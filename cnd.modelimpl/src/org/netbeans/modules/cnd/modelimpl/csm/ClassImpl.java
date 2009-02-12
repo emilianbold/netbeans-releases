@@ -146,10 +146,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                             for (CsmTypedef typedef : typedefs.getTypesefs()) {
                                 // It could be important to register in project before add as member...
                                 ((FileImpl) getContainingFile()).getProjectImpl(true).registerDeclaration(typedef);
+                                addMember((MemberTypedef) typedef,!isRenderingLocalContext());
                                 if (typedefs.getEnclosingClassifier() != null){
                                     typedefs.getEnclosingClassifier().addEnclosingTypedef(typedef);
                                 }
-                                addMember((MemberTypedef) typedef,!isRenderingLocalContext());
                             }
                         }
                         renderVariableInClassifier(token, innerClass, null, null);
@@ -206,10 +206,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                                 for (CsmTypedef typedef : typedefs.getTypesefs()) {
                                     // It could be important to register in project before add as member...
                                     ((FileImpl) getContainingFile()).getProjectImpl(true).registerDeclaration(typedef);
+                                    addMember((MemberTypedef) typedef,!isRenderingLocalContext());
                                     if (typedefs.getEnclosingClassifier() != null) {
                                         typedefs.getEnclosingClassifier().addEnclosingTypedef(typedef);
                                     }
-                                    addMember((MemberTypedef) typedef,!isRenderingLocalContext());
                                 }
                                 break;
                             }
