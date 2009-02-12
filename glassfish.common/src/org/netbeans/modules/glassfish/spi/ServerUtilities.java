@@ -55,7 +55,6 @@ import java.util.regex.Pattern;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.common.wizards.ServerWizardIterator;
-import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 import org.openide.filesystems.FileObject;
