@@ -701,7 +701,7 @@ public final class ImageUtilities {
     /**
      * Image with tool tip text (for icons with badges)
      */
-    private static class ToolTipImage extends BufferedImage {
+    private static class ToolTipImage extends BufferedImage implements Icon {
         final String toolTipText;
         ImageIcon imageIcon;
 
@@ -744,6 +744,18 @@ public final class ImageUtilities {
                 imageIcon = new ImageIcon(this);
             }
             return imageIcon;
+        }
+
+        public int getIconHeight() {
+            return super.getHeight();
+        }
+
+        public int getIconWidth() {
+            return super.getWidth();
+        }
+
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            g.drawImage(this, x, y, null);
         }
     }
 }
