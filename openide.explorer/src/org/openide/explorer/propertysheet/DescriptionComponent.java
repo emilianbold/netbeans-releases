@@ -140,6 +140,7 @@ class DescriptionComponent extends JComponent implements ActionListener, MouseLi
                 toolbar.setFloatable (false);
                 toolbar.setLayout (new BorderLayout (0, 0));
                 toolbar.setBorder (BorderFactory.createEmptyBorder());
+                toolbar.setBorderPainted(false);
                 toolbar.add (btn);
             }
             btn.setFocusable(false);
