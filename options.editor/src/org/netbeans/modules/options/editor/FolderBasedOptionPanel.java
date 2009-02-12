@@ -44,14 +44,12 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
-import javax.swing.UIManager;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
@@ -61,9 +59,9 @@ import org.netbeans.spi.options.OptionsPanelController;
  *
  * @author Dusan Balek
  */
-public class FolderBasedOptionPanel extends JPanel implements ActionListener {
+public final class FolderBasedOptionPanel extends JPanel implements ActionListener {
     
-    private FolderBasedController controller;
+    private final FolderBasedController controller;
     
     /** Creates new form FolderBasedOptionPanel */
     FolderBasedOptionPanel(FolderBasedController controller) {
@@ -71,39 +69,33 @@ public class FolderBasedOptionPanel extends JPanel implements ActionListener {
 
         initComponents();
         
-//        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
-//            setOpaque( false );
-
-        DefaultComboBoxModel model = new DefaultComboBoxModel();
-        for (String mimeType : controller.getMimeTypes())
-            model.addElement(mimeType);
-        languageCombo.setModel(model);        
         ListCellRenderer renderer = new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 if (value instanceof String)
                     value = EditorSettings.getDefault().getLanguageName((String)value);
                 return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            }            
+            }
         };
         languageCombo.setRenderer(renderer);
         languageCombo.addActionListener(this);
 
-        // Pre-select a language
-        JTextComponent pane = EditorRegistry.lastFocusedComponent();
-        String preSelectMimeType = pane != null ? (String)pane.getDocument().getProperty("mimeType") : ""; // NOI18N
-        languageCombo.setSelectedItem(preSelectMimeType);
-        if (preSelectMimeType != languageCombo.getSelectedItem() && model.getSize() > 0)
-            languageCombo.setSelectedIndex(0);
+        update();
     }
 
     void update () {
+        DefaultComboBoxModel model = new DefaultComboBoxModel();
+        for (String mimeType : controller.getMimeTypes()) {
+            model.addElement(mimeType);
+        }
+        languageCombo.setModel(model);
+
         JTextComponent pane = EditorRegistry.lastFocusedComponent();
         String preSelectMimeType = pane != null ? (String)pane.getDocument().getProperty("mimeType") : ""; // NOI18N
         languageCombo.setSelectedItem(preSelectMimeType);
-        ComboBoxModel model = languageCombo.getModel();
-        if (!preSelectMimeType.equals (languageCombo.getSelectedItem()) && model.getSize() > 0)
+        if (!preSelectMimeType.equals (languageCombo.getSelectedItem()) && model.getSize() > 0) {
             languageCombo.setSelectedIndex(0);
+        }
     }
     
     /** This method is called from within the constructor to
