@@ -1540,6 +1540,20 @@ public class Term extends JComponent implements Accessible {
         
         scrolling_direction = direction;
     }
+
+    private static Boolean onMac = null;
+
+    private boolean onMac() {
+	if (onMac == null) {
+	    String osName = System.getProperty("os.name").toLowerCase();
+	    if (osName.startsWith("mac os x")) {
+		onMac = Boolean.TRUE;
+	    } else {
+		onMac = Boolean.FALSE;
+	    }
+	}
+	return onMac;
+    }
     
     
     /**
@@ -1688,7 +1702,7 @@ public class Term extends JComponent implements Accessible {
             }
             
         } );
-        
+
         screen.addKeyListener(new KeyListener() {
             
             // We consume all events so no additional side-effects take place.
@@ -1704,27 +1718,35 @@ public class Term extends JComponent implements Accessible {
             // a Return by capturing press/releases of VK_ENTER and
             // use a flag.
             boolean saw_return;
-            
-            public void keyTyped(KeyEvent e) {
-                char c = e.getKeyChar();
-                
-                if (debugKeys())
-                    System.out.println("term: keyTyped: " + e); // NOI18N
-                
+
+	    private void charTyped(char c, KeyEvent e) {
                 if (read_only)
                     return;
-                
+
                 if (c == 10 && saw_return) {
                     saw_return = false;
                     c = (char) 13;
                 }
-                
+
                 if (passOn && maybeConsume(e)) {
                     on_char(c);
                     possiblyScrollOnInput();
                 }
-                
+
                 hscrollReset(c);
+	    }
+            
+            public void keyTyped(KeyEvent e) {
+
+                char c = e.getKeyChar();
+                
+                if (debugKeys()) {
+                    System.out.printf("term: keyTyped: %s\n", e); // NOI18N
+                    System.out.printf("term: keyTyped: char '%c' %04x\n",// NOI18N
+			    c, (int) c);
+		}
+
+		charTyped(c, e);
             }
             
             public void keyPressed(KeyEvent e) {
@@ -1733,6 +1755,13 @@ public class Term extends JComponent implements Accessible {
                  */
                 
                 switch (e.getKeyCode()) {
+		    case KeyEvent.VK_ESCAPE:
+			if (onMac()) {
+			    // On a Mac AWT doesn't provide us with a keyTyped()
+			    // for VK_ESCAPE so we simulate it.
+			    charTyped(ESC, e);
+			}
+			break;
                     case KeyEvent.VK_COPY:
                         copyToClipboard();
                         break;

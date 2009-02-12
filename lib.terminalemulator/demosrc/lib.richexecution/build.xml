@@ -87,6 +87,11 @@
                 <os name="SunOS" arch="amd64"/>
             </or>
         </condition>
+        <condition property="platform" value="mac-intel">
+            <or>
+                <os name="Mac OS X" arch="i386"/>
+            </or>
+        </condition>
         <condition property="platform" value="linux-intel">
             <or>
                 <os name="Linux" arch="i386"/>
@@ -272,6 +277,8 @@
                    property="process_start.solaris-intel.available"/>
         <available file="${build.lib}/process_start-linux-intel"
                    property="process_start.linux-intel.available"/>
+        <available file="${build.lib}/process_start-mac-intel"
+                   property="process_start.mac-intel.available"/>
 
         <!-- copy for each platform -->
         <antcall target="copy-process_start">
@@ -282,6 +289,9 @@
         </antcall>
         <antcall target="copy-process_start">
             <param name="plat" value="linux-intel"/>
+        </antcall>
+        <antcall target="copy-process_start">
+            <param name="plat" value="mac-intel"/>
         </antcall>
      </target>
 
