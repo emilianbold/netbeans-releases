@@ -42,13 +42,16 @@
 package org.netbeans.beaninfo.editors;
 
 import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import java.io.IOException;
-import java.lang.ref.*;
+import java.io.File;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.StringTokenizer;
-import java.beans.*;
-import java.io.File;
-
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
@@ -315,7 +318,7 @@ class DataFolderPanel extends TopComponent implements
                 return;
             }
             if (arr.length == 1) {
-                if (!isValid ()) {
+                if (!isValidState()) {
                     setTargetFolder (null);
                     implSetDataFolder (null);
                     return ;
@@ -357,7 +360,7 @@ class DataFolderPanel extends TopComponent implements
                                             public void run () {
                                                 String text = packageName.getText ();
                                                 if (text != null) {
-                                                    if (isValid()) {
+                                                    if (isValidState()) {
                                                         setTargetFolder (text, false);
                                                         updatePropertyEditor();
                                                     }
@@ -386,7 +389,7 @@ class DataFolderPanel extends TopComponent implements
                                                 }
                                                 String text = packageName.getText ();
                                                 if (text != null) {
-                                                    if (isValid()) {
+                                                    if (isValidState()) {
                                                         setTargetFolder (text, true);
                                                         updatePropertyEditor();
                                                    }
@@ -414,7 +417,7 @@ class DataFolderPanel extends TopComponent implements
     * If the panel is valid, the "Next" (or "Finish") button will be enabled.
     * @return <code>true</code> if the user has entered satisfactory information
     */
-    public boolean isValid () {
+    private boolean isValidState () {
         String text = packageName.getText ();
         if (text.length () == 0) {
             Node[] arr = packagesPanel.getExplorerManager ().getSelectedNodes ();
@@ -579,7 +582,7 @@ class DataFolderPanel extends TopComponent implements
     * @exception IOException if the possible creation of the folder fails
     */
     private DataFolder getTargetFolder(boolean create) throws IOException {
-        if (create && isValid()) {
+        if (create && isValidState()) {
             FileSystem fs = system.get ();
             if (fs != null) {
                 DataFolder folder = DataFolder.findFolder (fs.getRoot ());
@@ -767,7 +770,7 @@ class DataFolderPanel extends TopComponent implements
     // bugfix #29401, correct notify all changes in data folders
     private void implSetDataFolder (DataFolder df) {
         if (editor != null) {
-            if (!isValid ()) {
+            if (!isValidState()) {
                 editor.setDataFolder (null);
             } else {
                 FileSystem fs = null;
@@ -819,7 +822,7 @@ class DataFolderPanel extends TopComponent implements
             // nothing to create
             createButton.setEnabled(false);
         } else {
-            createButton.setEnabled(isValid());
+            createButton.setEnabled(isValidState());
         }
     }
         
@@ -830,7 +833,7 @@ class DataFolderPanel extends TopComponent implements
      *           (and thus it should not be set)
      */
     private Object getPropertyValue() throws IllegalStateException {
-        if (isValid()) {
+        if (isValidState()) {
             try {
                 df = getTargetFolder(true);
                 return df;
