@@ -44,6 +44,7 @@ package org.netbeans.modules.tasklist.ui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
@@ -696,7 +697,7 @@ class TaskListTable extends JTable {
                     label.setIcon( getProperIcon( !tlm.isAscendingSort() ) );
                     label.setHorizontalTextPosition( SwingConstants.LEFT );
                 } else {
-                    label.setIcon( null );
+                    label.setIcon( NO_ICON );
                 }
             }
 
@@ -711,6 +712,20 @@ class TaskListTable extends JTable {
             }
         }
     }
+
+    private static final Icon NO_ICON = new Icon() {
+
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+        }
+
+        public int getIconWidth() {
+            return 1;
+        }
+
+        public int getIconHeight() {
+            return 1;
+        }
+    };
     
     private class PopupAction extends AbstractAction {
         public PopupAction() {
