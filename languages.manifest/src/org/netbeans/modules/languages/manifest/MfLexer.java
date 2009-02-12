@@ -82,7 +82,6 @@ class MfLexer implements Lexer<MfTokenId> {
                 );
                 input.backup (1);
                 state = 0;
-                System.out.println(input.readText () + ":" + state);
                 return info.tokenFactory ().createToken (MfTokenId.COMMENT);
             }
             if (i == ':')
@@ -104,14 +103,12 @@ class MfLexer implements Lexer<MfTokenId> {
             if (i != LexerInput.EOF)
                 input.backup (1);
             state = i == ':' ? 1 : 0;
-            System.out.println(input.readText () + ":" + state);
             if (input.readLength() == 0) return null;
             return info.tokenFactory ().createToken (MfTokenId.KEYWORD);
         }
         if (state == 1) {
             input.read ();
             state = 2;
-            System.out.println(input.readText () + ":" + state);
             return info.tokenFactory ().createToken (MfTokenId.OPERATOR);
         }
         int i = input.read ();
@@ -130,7 +127,6 @@ class MfLexer implements Lexer<MfTokenId> {
         if (i != LexerInput.EOF)
             input.backup (1);
         state = 0;
-        System.out.println(input.readText () + ":" + state);
         if (input.readLength() == 0) return null;
         return info.tokenFactory ().createToken (MfTokenId.IDENTIFIER);
     }
