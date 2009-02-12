@@ -463,8 +463,11 @@ public final class Utils {
      * @return <code>true</code> if folder is writable.
      */
     public static boolean isFolderWritable(File folder) {
-        assert folder.isDirectory() : "Not a directory: " + folder;
-
+        if (!folder.isDirectory()) {
+            // #157591
+            LOGGER.fine(String.format("%s is not a folder", folder));
+            return false;
+        }
         boolean windowsVista = isWindowsVista();
         LOGGER.fine("On Windows Vista: " + windowsVista);
 
