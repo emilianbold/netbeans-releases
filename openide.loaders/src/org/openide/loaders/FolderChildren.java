@@ -200,6 +200,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             FileObject pf = pair.primaryFile;
             obj = DataObject.find (pf);
             if (
+                obj.isValid() &&
                 pf.equals(obj.getPrimaryFile()) &&
                 (filter == null || filter.acceptDataObject (obj))
             ) {
