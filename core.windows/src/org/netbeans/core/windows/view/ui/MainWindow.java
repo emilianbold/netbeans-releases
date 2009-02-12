@@ -100,6 +100,8 @@ public final class MainWindow extends JFrame {
 
     /** Constructs main window. */
     public MainWindow() {
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
+            getRootPane().putClientProperty("apple.awt.brushMetalLook", Boolean.TRUE); //NOI18N
     }
     
     /** Overrides superclass method, adds help context to the new root pane. */
