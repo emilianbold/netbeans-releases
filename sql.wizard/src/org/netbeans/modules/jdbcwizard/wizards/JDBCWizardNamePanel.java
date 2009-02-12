@@ -66,6 +66,7 @@ public class JDBCWizardNamePanel implements WizardDescriptor.Panel {
     protected JTextField textField;
 
     protected String title;
+    private Component comp;
 
     /**
      * Create the wizard panel descriptor, using the given panel title, content panel
@@ -111,7 +112,10 @@ public class JDBCWizardNamePanel implements WizardDescriptor.Panel {
      * @see JDBCWizardPanel#getComponent
      */
     public Component getComponent() {
-        return new JDBCWizardNamePanelUI (this, owner, title);
+        if (comp == null) {
+            comp = new JDBCWizardNamePanelUI (this, owner, title);
+        }
+        return comp;
     }
 
     /**
