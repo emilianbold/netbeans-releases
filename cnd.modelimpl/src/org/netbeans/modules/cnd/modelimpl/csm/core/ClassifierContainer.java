@@ -79,11 +79,11 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
     public CsmClassifier getClassifier(CharSequence qualifiedName) {
         CsmClassifier result;
         qualifiedName = CharSequenceKey.create(qualifiedName);
-        if (fix_iz_151567 && qualifiedName.toString().indexOf("MixedClass1")>=0){
+        if (fix_iz_151567 && qualifiedName.toString().indexOf("MixedClass1")>=0){//NOI18N
             System.err.println("get classifier "+qualifiedName);
             StackTraceElement[] stack = new Exception().getStackTrace();
             for(StackTraceElement st : stack){
-                if (st.toString().indexOf("RepositoryValidationBase")>0){
+                if (st.toString().indexOf("RepositoryValidationBase")>0){//NOI18N
                     break;
                 }
                 System.err.println("\t"+st);
@@ -99,11 +99,11 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
     
     public boolean putClassifier(CsmClassifier decl) {
         CharSequence qn = decl.getQualifiedName();
-        if (fix_iz_151567 && qn.toString().indexOf("MixedClass1")>=0){
+        if (fix_iz_151567 && qn.toString().indexOf("MixedClass1")>=0){//NOI18N
             System.err.println("put classifier "+qn);
             StackTraceElement[] stack = new Exception().getStackTrace();
             for(StackTraceElement st : stack){
-                if (st.toString().indexOf("RepositoryValidationBase")>0){
+                if (st.toString().indexOf("RepositoryValidationBase")>0){//NOI18N
                     break;
                 }
                 System.err.println("\t"+st);
@@ -126,11 +126,11 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
     }
 
     public void removeClassifier(CsmDeclaration decl) {
-        if (fix_iz_151567 && decl.getQualifiedName().toString().indexOf("MixedClass1")>=0){
+        if (fix_iz_151567 && decl.getQualifiedName().toString().indexOf("MixedClass1")>=0){//NOI18N
             System.err.println("remove classifier "+decl.getQualifiedName());
             StackTraceElement[] stack = new Exception().getStackTrace();
             for(StackTraceElement st : stack){
-                if (st.toString().indexOf("RepositoryValidationBase")>0){
+                if (st.toString().indexOf("RepositoryValidationBase")>0){//NOI18N
                     break;
                 }
                 System.err.println("\t"+st);
