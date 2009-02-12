@@ -48,6 +48,8 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageActionFactory;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
+import org.netbeans.modules.php.project.util.PhpUnit;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -198,8 +200,12 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             actions.add(provider.getAction(ActionProvider.COMMAND_DEBUG));
             actions.add(provider.getAction(ActionProvider.COMMAND_TEST));
             actions.add(null);
-            actions.add(CoverageActionFactory.createCollectorAction(null, null));
-            actions.add(null);
+            PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
+            if (phpUnit != null && phpUnit.supportedVersionFound()) {
+                // code coverage seems to be supported in php unit 3.3.0+
+                actions.add(CoverageActionFactory.createCollectorAction(null, null));
+                actions.add(null);
+            }
             actions.add(CommonProjectActions.setProjectConfigurationAction());
             actions.add(null);
             actions.add(CommonProjectActions.setAsMainProjectAction());

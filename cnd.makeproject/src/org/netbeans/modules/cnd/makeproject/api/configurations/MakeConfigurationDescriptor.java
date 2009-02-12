@@ -207,10 +207,11 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             }
         }
 //        addSourceFilesFromFolders(sourceFileFolders, false, false, true);
-
-        while (sourceFileFolders.hasNext()) {
-            SourceFolderInfo sourceFolderInfo = sourceFileFolders.next();
-            addSourceFilesFromRoot(getLogicalFolders(), sourceFolderInfo.getFile(), false, true);
+        if (sourceFileFolders != null) {
+            while (sourceFileFolders.hasNext()) {
+                SourceFolderInfo sourceFolderInfo = sourceFileFolders.next();
+                addSourceFilesFromRoot(getLogicalFolders(), sourceFolderInfo.getFile(), false, true);
+            }
         }
         setModified(true);
     }

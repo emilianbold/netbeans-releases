@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.nativeexecution.util;
 
+import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupport;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.After;
@@ -48,7 +49,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ObservableAction;
+import org.netbeans.modules.nativeexecution.support.ObservableAction;
 
 /**
  *

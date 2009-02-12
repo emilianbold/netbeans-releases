@@ -31,7 +31,6 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import java.io.File;
 import java.io.IOException;
-import org.netbeans.api.project.Project;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.Enumeration;
@@ -48,7 +47,7 @@ import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.GrailsActionProvider;
-import org.netbeans.modules.groovy.support.api.GroovySettings;
+import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -58,13 +57,13 @@ public class CreateWarFileAction extends AbstractAction implements LineProcessor
 
     private static final Logger LOG = Logger.getLogger(CreateWarFileAction.class.getName());
 
-    private final Project prj;
+    private final GrailsProject prj;
 
     private final GrailsProjectConfig prjConfig;
 
     private final boolean autodeploy;
 
-    public CreateWarFileAction(Project prj) {
+    public CreateWarFileAction(GrailsProject prj) {
         super(NbBundle.getMessage(CreateWarFileAction.class, "LBL_CreateWarFile"));
         this.prj = prj;
         prjConfig = GrailsProjectConfig.forProject(prj);
@@ -72,6 +71,7 @@ public class CreateWarFileAction extends AbstractAction implements LineProcessor
 
     }
 
+    @Override
     public boolean isEnabled() {
         return true;
     }
@@ -89,17 +89,16 @@ public class CreateWarFileAction extends AbstractAction implements LineProcessor
         Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
                 GrailsActionProvider.COMMAND_WAR, GrailsProjectConfig.forProject(prj)); // NOI18N
 
-        ExecutionDescriptor descriptor = new ExecutionDescriptor()
-                .controllable(true).inputVisible(true).showProgress(true).frontWindow(true);
+        InputProcessorFactory factory = null;
         if (autodeploy) {
-            descriptor = descriptor.outProcessorFactory(new InputProcessorFactory() {
+            factory = new InputProcessorFactory() {
                 public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                     return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(CreateWarFileAction.this));
                 }
-            });
+            };
         }
-        descriptor = descriptor.postExecution(new RefreshProjectRunnable(prj));
-        descriptor = descriptor.optionsPath(GroovySettings.GROOVY_OPTIONS_CATEGORY);
+
+        ExecutionDescriptor descriptor = prj.getCommandSupport().getDescriptor(GrailsActionProvider.COMMAND_WAR, factory);
 
         ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
         service.run();

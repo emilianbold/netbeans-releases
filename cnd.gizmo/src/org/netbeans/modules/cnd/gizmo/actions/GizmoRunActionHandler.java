@@ -45,6 +45,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -56,7 +58,7 @@ import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler;
 import org.netbeans.modules.dlight.api.support.NativeExecutableTarget;
 import org.netbeans.modules.dlight.api.support.NativeExecutableTargetConfiguration;
-import org.netbeans.modules.nativeexecution.util.ExternalTerminalProvider;
+import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
 
@@ -78,13 +80,17 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
     }
 
     public void execute(InputOutput io) {
-        // TODO: InputOutput, execution environment, remote...
+        // TODO: use given InputOutput
         NativeExecutableTargetConfiguration targetConf = new NativeExecutableTargetConfiguration(
                 pae.getExecutable(),
                 pae.getProfile().getArgsArray(),
                 createMap(pae.getProfile().getEnvironment().getenvAsPairs()));
         MakeConfiguration conf = (MakeConfiguration) pae.getConfiguration();
-        targetConf.setHost(conf.getDevelopmentHost().getName());
+        String userAndHost = conf.getDevelopmentHost().getName();
+        if (!RemoteUtils.isLocalhost(userAndHost)) {
+            targetConf.setHost(RemoteUtils.getHostName(userAndHost));
+            targetConf.setUser(RemoteUtils.getUserName(userAndHost));
+        }
         targetConf.setWorkingDirectory(pae.getProfile().getRunDirectory());
         int consoleType = pae.getProfile().getConsoleType().getValue();
         if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
@@ -92,12 +98,11 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         }
         if (consoleType == RunProfile.CONSOLE_TYPE_EXTERNAL) {
             String termPath = pae.getProfile().getTerminalPath();
-            if (termPath == null) {
-                // do nothing
-            } else if (termPath.endsWith("gnome-terminal")) { // NOI18N
-                targetConf.useExternalTerminal(ExternalTerminalProvider.getTerminal("gnome-terminal")); // NOI18N
-            } else if (termPath.endsWith("xterm")) { // NOI18N
-                targetConf.useExternalTerminal(ExternalTerminalProvider.getTerminal("xterm")); // NOI18N
+            if (termPath != null) {
+                String termBaseName = IpeUtils.getBaseName(termPath);
+                if (ExternalTerminalProvider.getSupportedTerminalIDs().contains(termBaseName)) {
+                    targetConf.useExternalTerminal(ExternalTerminalProvider.getTerminal(termBaseName));
+                }
             }
         }
         NativeExecutableTarget target = new NativeExecutableTarget(targetConf);

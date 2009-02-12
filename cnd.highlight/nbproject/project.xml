@@ -311,6 +311,10 @@
                         <test/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.cnd.modelui</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.cnd.repository</code-name-base>
                         <compile-dependency/>
                     </test-dependency>

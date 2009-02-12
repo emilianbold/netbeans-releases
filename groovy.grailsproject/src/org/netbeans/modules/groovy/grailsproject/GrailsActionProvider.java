@@ -59,7 +59,7 @@ import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.actions.ConfigurationSupport;
-import org.netbeans.modules.groovy.grailsproject.actions.RefreshProjectRunnable;
+import org.netbeans.modules.groovy.grailsproject.commands.GrailsCommandSupport;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
@@ -87,14 +87,6 @@ public class GrailsActionProvider implements ActionProvider {
     public static final String COMMAND_STATS = "stats"; // NOI18N
     public static final String COMMAND_UPGRADE = "upgrade"; // NOI18N
     public static final String COMMAND_WAR = "war"; // NOI18N
-
-    private static final ExecutionDescriptor GRAILS_DESCRIPTOR = new ExecutionDescriptor()
-            .controllable(true).frontWindow(true).inputVisible(true)
-                .showProgress(true).optionsPath(GroovySettings.GROOVY_OPTIONS_CATEGORY);
-
-    private static final ExecutionDescriptor RUN_DESCRIPTOR = GRAILS_DESCRIPTOR.showSuspended(true);
-
-    private static final InputProcessorFactory ANSI_STRIPPING = new AnsiStrippingInputProcessorFactory();
 
     private static final Logger LOGGER = Logger.getLogger(GrailsActionProvider.class.getName());
 
@@ -144,7 +136,7 @@ public class GrailsActionProvider implements ActionProvider {
             LifecycleManager.getDefault().saveAll();
             executeRunAction(true);
         } else if (COMMAND_GRAILS_SHELL.equals(command)) {
-            executeShellAction();
+            executeSimpleAction("shell"); // NOI18N
         } else if (COMMAND_TEST.equals(command)) {
             executeSimpleAction("test-app"); // NOI18N
         } else if (COMMAND_CLEAN.equals(command)) {
@@ -167,14 +159,13 @@ public class GrailsActionProvider implements ActionProvider {
     private void executeRunAction() {
         executeRunAction(false);
     }
-    
+
     private void executeRunAction(final boolean debug) {
         final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
         if (serverState != null && serverState.isRunning()) {
             URL url = serverState.getRunningUrl();
-            GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
             if (url != null) {
-                showURL(url, debug, project);
+                GrailsCommandSupport.showURL(url, debug, project);
             }
             return;
         }
@@ -194,51 +185,10 @@ public class GrailsActionProvider implements ActionProvider {
 
         ProjectInformation inf = project.getLookup().lookup(ProjectInformation.class);
         String displayName = inf.getDisplayName() + " (run-app)"; // NOI18N
-        Runnable runnable = new Runnable() {
-            public void run() {
-                final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
-                if (serverState != null) {
-                    serverState.setProcess(null);
-                    serverState.setRunningUrl(null);
-                }
-            }
-        };
 
-        ExecutionDescriptor descriptor = RUN_DESCRIPTOR;
-        descriptor = descriptor.outProcessorFactory(new InputProcessorFactory() {
-            public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-                return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new ServerURLProcessor(project, debug)));
-            }
-        });
-        descriptor = descriptor.postExecution(runnable);
+        ExecutionDescriptor descriptor = project.getCommandSupport().getRunDescriptor();
 
         ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
-        service.run();
-    }
-
-    private void executeShellAction() {
-        String command = "shell"; // NOI18N
-
-        GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
-        File directory = FileUtil.toFile(config.getProject().getProjectDirectory());
-
-        // XXX this is workaround for jline bug (native access to console on windows) used by grails
-        Properties props = new Properties();
-        props.setProperty("jline.WindowsTerminal.directConsole", "false"); // NOI18N
-
-        GrailsRuntime.CommandDescriptor descriptor = GrailsRuntime.CommandDescriptor.forProject(
-                        command, directory, config, new String[] {}, props);
-        Callable<Process> callable = GrailsRuntime.getInstance().createCommand(descriptor);
-
-        ProjectInformation inf = project.getLookup().lookup(ProjectInformation.class);
-        String displayName = inf.getDisplayName() + " (shell)"; // NOI18N
-
-        InputProcessorFactory factory = new AnsiStrippingInputProcessorFactory();
-
-        ExecutionDescriptor execDescriptor = RUN_DESCRIPTOR.postExecution(
-                new RefreshProjectRunnable(project)).outProcessorFactory(ANSI_STRIPPING).errProcessorFactory(ANSI_STRIPPING);
-
-        ExecutionService service = ExecutionService.newService(callable, execDescriptor, displayName);
         service.run();
     }
 
@@ -249,117 +199,10 @@ public class GrailsActionProvider implements ActionProvider {
         Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
                 command, GrailsProjectConfig.forProject(project));
 
-        ExecutionDescriptor descriptor = GRAILS_DESCRIPTOR.postExecution(
-                new RefreshProjectRunnable(project));
+        ExecutionDescriptor descriptor = project.getCommandSupport().getDescriptor(command);
 
         ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
         service.run();
     }
 
-    private static final void showURL(URL url, boolean debug, GrailsProject project) {
-        boolean debuggerAvailable = WebClientToolsSessionStarterService.isAvailable();
-        
-        if (!debug || !debuggerAvailable) {
-            if (GrailsProjectConfig.forProject(project).getDisplayBrowser()) {
-                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-            }
-        } else {
-            FileObject webAppDir = project.getProjectDirectory().getFileObject(GrailsProjectFactory.WEB_APP_DIR);
-            GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
-            
-            String port = config.getPort();
-            String prefix = url.getProtocol() + "://" + url.getHost() + ":" + port + "/" + project.getProjectDirectory().getName();
-            String actualURL = url.toExternalForm();
-            
-            Lookup debugLookup;
-            if (!actualURL.startsWith(prefix)) {
-                LOGGER.warning("Could not construct URL mapper for JavaScript debugger.");
-                debugLookup = Lookups.fixed(project);
-            } else {
-                LocationMappersFactory factory = Lookup.getDefault().lookup(LocationMappersFactory.class);
-                
-                if (factory == null) {
-                    debugLookup = Lookups.fixed(project);
-                } else {
-                    try {
-                        URI prefixURI = new URI(prefix);
-
-                        JSToNbJSLocationMapper forwardMapper = factory.getJSToNbJSLocationMapper(webAppDir, prefixURI, null);
-                        NbJSToJSLocationMapper reverseMapper = factory.getNbJSToJSLocationMapper(webAppDir, prefixURI, null);
-
-                        debugLookup = Lookups.fixed(forwardMapper, reverseMapper, project);
-                    } catch (URISyntaxException ex) {
-                        LOGGER.log(Level.WARNING, "Server URI could not be constructed from displayed URL", ex);
-                        debugLookup = Lookups.fixed(project);
-                    }
-                }
-            }
-            
-            try {
-                URI launchURI = url.toURI();
-                HtmlBrowser.Factory browser = WebClientToolsProjectUtils.getFirefoxBrowser();
-
-                String browserString = config.getDebugBrowser();
-                if (browserString == null) {
-                    browserString = WebClientToolsProjectUtils.Browser.FIREFOX.name();
-                }
-                if (WebClientToolsProjectUtils.Browser.valueOf(browserString) == WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER) {
-                     browser = WebClientToolsProjectUtils.getInternetExplorerBrowser();
-                }
-                WebClientToolsSessionStarterService.startSession(launchURI, browser, debugLookup);
-            } catch (URISyntaxException ex) {
-                LOGGER.log(Level.SEVERE, "Unable to obtain URI for URL", ex);
-            } catch (WebClientToolsSessionException ex) {
-                LOGGER.log(Level.SEVERE, "Unexpected exception launching javascript debugger", ex);
-            }
-        }
-    }
-    
-    private static class ServerURLProcessor implements LineProcessor {
-
-        private final GrailsProject project;
-        private final boolean debug;
-
-        public ServerURLProcessor(GrailsProject project, boolean debug) {
-            this.project = project;
-            this.debug = debug;
-        }
-
-        public void processLine(String line) {
-            if (line.contains("Browse to http:/")) {
-                String urlString = line.substring(line.indexOf("http://"));
-
-                URL url;
-                try {
-                    url = new URL(urlString);
-                } catch (MalformedURLException ex) {
-                    LOGGER.log(Level.WARNING, "Could not start browser", ex);
-                    return;
-                }
-
-                GrailsServerState state = project.getLookup().lookup(GrailsServerState.class);
-                if (state != null) {
-                    state.setRunningUrl(url);
-                }
-
-                showURL(url, debug, project);
-            }
-        }
-
-        public void reset() {
-            // noop
-        }
-
-        public void close() {
-            // noop
-        }
-    }
-
-    private static class AnsiStrippingInputProcessorFactory implements InputProcessorFactory {
-
-        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-            return InputProcessors.ansiStripping(defaultProcessor);
-        }
-
-    }
 }

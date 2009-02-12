@@ -49,6 +49,7 @@ public class RepositoryValidationGoldens extends RepositoryValidationBase {
     @Override
     protected void setUp() throws Exception {
         System.setProperty("cnd.repository.hardrefs", Boolean.TRUE.toString()); //NOI18N
+        System.setProperty("cnd.fix.IZ151567", Boolean.TRUE.toString()); //NOI18N
         super.setUp();
     }
 
@@ -63,7 +64,7 @@ public class RepositoryValidationGoldens extends RepositoryValidationBase {
 
         List<String> args = find();
         assert args.size() > 0;
-        args.add("-fq"); //NOI18N
+        //args.add("-fq"); //NOI18N
         doTest(args.toArray(new String[]{}), streamOut, streamErr);
         assertNoExceptions();
     }

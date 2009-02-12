@@ -180,7 +180,8 @@ public final class I18nUtil {
     public static List<String> getRegExpItems() {
         if(regExpItems == null) {
             regExpItems = new ArrayList<String>(4);
-            regExpItems.add("(getString|getBundle)[:space:]*\\([:space:]*{hardString}|// *NOI18N"); // NOI18N
+            //XXX Only first array item taken into account when checking, rest are not used
+            regExpItems.add("(getString|getBundle)[:space:]*\\([:space:]*{hardString}|// *NOI18|getMessage[:space:]*\\(([:alnum:]|[:punct:]|[:space:])*,[:space:]*{hardString}"); // NOI18N
             regExpItems.add("(getString|getBundle)[:space:]*\\([:space:]*{hardString}"); // NOI18N
             regExpItems.add("// *NOI18N"); // NOI18N
             regExpItems.add("(getString|getBundle)[:space:]*\\([:space:]*|getMessage[:space:]*\\(([:alnum:]|[:punct:]|[:space:])*,[:space:]*{hardString}|// *NOI18N"); // NOI18N

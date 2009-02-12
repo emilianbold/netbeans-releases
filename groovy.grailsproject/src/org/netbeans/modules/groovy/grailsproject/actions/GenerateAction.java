@@ -43,7 +43,6 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.NodeAction;
-import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
@@ -52,7 +51,6 @@ import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
-import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -90,7 +88,7 @@ public abstract class GenerateAction extends NodeAction {
         }
 
         // replace slashes and cut off the extension
-        StringBuilder builder = new StringBuilder(relativePath.replace('/', '.'));
+        StringBuilder builder = new StringBuilder(relativePath.replace('/', '.')); // NOI18N
         builder.setLength(builder.length() - dataObject.getPrimaryFile().getNameExt().length());
         builder.append(dataObject.getPrimaryFile().getName());
 
@@ -100,10 +98,7 @@ public abstract class GenerateAction extends NodeAction {
         Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
                 command, GrailsProjectConfig.forProject(prj), builder.toString()); // NOI18N
 
-        ExecutionDescriptor descriptor = new ExecutionDescriptor()
-                .controllable(true).frontWindow(true).inputVisible(true).showProgress(true);
-        descriptor = descriptor.postExecution(new RefreshProjectRunnable(prj));
-        descriptor = descriptor.optionsPath(GroovySettings.GROOVY_OPTIONS_CATEGORY);
+        ExecutionDescriptor descriptor = prj.getCommandSupport().getDescriptor(command);
 
         ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
         service.run();
@@ -145,7 +140,7 @@ public abstract class GenerateAction extends NodeAction {
             return false;
         }
 
-        return FileUtil.isParentOf(domainDir, dataObject.getFolder().getPrimaryFile());
+        return FileUtil.isParentOf(domainDir, dataObject.getPrimaryFile());
     }
 }
 

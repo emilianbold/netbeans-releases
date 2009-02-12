@@ -116,6 +116,8 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     private String defaultLocalUrl = null;
     private String originalProjectName = null;
 
+    private volatile boolean readingDocumentRoots = false;
+
     public RunConfigurationPanel(String[] steps, SourcesFolderProvider sourcesFolderProvider, NewPhpProjectWizardIterator.WizardType wizardType) {
         this.sourcesFolderProvider = sourcesFolderProvider;
         this.steps = steps;
@@ -182,7 +184,20 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                 break;
         }
 
-        runAsLocalWeb.setLocalServerModel(getLocalServerModel());
+        MutableComboBoxModel localServerModel = getLocalServerModel();
+        if (localServerModel != null) {
+            runAsLocalWeb.setLocalServerModel(localServerModel);
+        } else {
+            runAsLocalWeb.setLocalServerModel(new LocalServer.ComboBoxModel(LocalServer.PENDING_LOCAL_SERVER));
+            readingDocumentRoots = true;
+            runAsLocalWeb.setCopyFilesState(false);
+            PhpEnvironment.get().readDocumentRoots(new PhpEnvironment.ReadDocumentRootsNotifier() {
+                public void finished(List<DocumentRoot> documentRoots) {
+                    initLocalServerModel(documentRoots);
+                }
+            });
+            fireChangeEvent();
+        }
         runAsLocalWeb.setCopyFiles(getCopyFiles());
 
         runAsRemoteWeb.setUploadDirectory(getUploadDirectory());
@@ -218,21 +233,22 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private MutableComboBoxModel getLocalServerModel() {
-        MutableComboBoxModel model = (MutableComboBoxModel) descriptor.getProperty(COPY_SRC_TARGETS);
-        if (model != null) {
-            return model;
-        }
+        return (MutableComboBoxModel) descriptor.getProperty(COPY_SRC_TARGETS);
+    }
 
-        List<DocumentRoot> copyToFolderRoots = PhpEnvironment.get().getDocumentRoots();
-        int size = copyToFolderRoots.size();
+    void initLocalServerModel(List<DocumentRoot> documentRoots) {
+        int size = documentRoots.size();
         List<LocalServer> localServers = new ArrayList<LocalServer>(size);
-        for (DocumentRoot root : copyToFolderRoots) {
+        for (DocumentRoot root : documentRoots) {
             String srcRoot = new File(root.getDocumentRoot(), sourcesFolderProvider.getSourcesFolderName()).getAbsolutePath();
             LocalServer ls = new LocalServer(null, root.getUrl(), root.getDocumentRoot(), srcRoot, true);
             localServers.add(ls);
         }
 
-        return new LocalServer.ComboBoxModel(localServers.toArray(new LocalServer[size]));
+        runAsLocalWeb.setLocalServerModel(new LocalServer.ComboBoxModel(localServers.toArray(new LocalServer[size])));
+        runAsLocalWeb.setCopyFilesState(true);
+        readingDocumentRoots = false;
+        fireChangeEvent();
     }
 
     private boolean getCopyFiles() {
@@ -288,6 +304,10 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         String indexFile = null;
         switch (getRunAsType()) {
             case LOCAL:
+                if (readingDocumentRoots) {
+                    descriptor.putProperty(VALID, false);
+                    return false;
+                }
                 error = validateRunAsLocalWeb();
                 indexFile = runAsLocalWeb.getIndexFile();
                 break;

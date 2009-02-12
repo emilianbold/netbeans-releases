@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.csm.container;
 
 import java.io.File;
@@ -62,34 +61,36 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
  * @author Alexander Simon
  */
 public class FriendTestCase extends TraceModelTestBase {
-    
+
+    private static final boolean TRACE = false;
+
     public FriendTestCase(String testName) {
         super(testName);
     }
-    
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        //log("CndFriendTestCase.setUp started.");
-        //log("Test "+getName()+  " started");
+    //log("CndFriendTestCase.setUp started.");
+    //log("Test "+getName()+  " started");
     }
-    
+
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
     }
-    
+
     public void testFriend() throws Exception {
         performTest("friend.cc"); // NOI18N
     }
-    
+
     @Override
     protected void performTest(String source) throws Exception {
         File testFile = getDataFile(source);
-        assertTrue("File not found "+testFile.getAbsolutePath(),testFile.exists()); // NOI18N
+        assertTrue("File not found " + testFile.getAbsolutePath(), testFile.exists()); // NOI18N
         performModelTest(testFile, System.out, System.err);
         checkFriend();
-        for(FileImpl file : getProject().getAllFileImpls()){
+        for (FileImpl file : getProject().getAllFileImpls()) {
             file.markReparseNeeded(true);
             file.scheduleParsing(true);
         }
@@ -97,44 +98,44 @@ public class FriendTestCase extends TraceModelTestBase {
         getProject().onFileRemoved(testFile);
         checkEmpty();
     }
-    
+
     private void checkEmpty() {
         ProjectBase project = getProject();
         assertNotNull("Project must be valid", project); // NOI18N
-        assertTrue("Should be 0 declarations in project", project.findDeclarationsByPrefix("").size()==0); // NOI18N
-        assertTrue("Should be 0 declarations in global namespace", project.getGlobalNamespace().getDeclarations().size()==0); // NOI18N
-        assertTrue("Should be 0 definitions in global namespace", project.getGlobalNamespace().getDefinitions().size()==0); // NOI18N
-        assertTrue("Should be 0 namespaces in global namespace", project.getGlobalNamespace().getNestedNamespaces().size()==0); // NOI18N
+        assertTrue("Should be 0 declarations in project", project.findDeclarationsByPrefix("").size() == 0); // NOI18N
+        assertTrue("Should be 0 declarations in global namespace", project.getGlobalNamespace().getDeclarations().size() == 0); // NOI18N
+        assertTrue("Should be 0 definitions in global namespace", project.getGlobalNamespace().getDefinitions().size() == 0); // NOI18N
+        assertTrue("Should be 0 namespaces in global namespace", project.getGlobalNamespace().getNestedNamespaces().size() == 0); // NOI18N
     }
-    
-    private String getClassName(Class cls){
+
+    private String getClassName(Class cls) {
         String s = cls.getName();
-        return s.substring(s.lastIndexOf('.')+1);
+        return s.substring(s.lastIndexOf('.') + 1);
     }
-    
+
     private void checkFriend() {
         ProjectBase project = getProject();
         assertNotNull("Project must be valid", project); // NOI18N
-        CsmClass clsB = (CsmClass)project.findClassifier("B"); // NOI18N
+        CsmClass clsB = (CsmClass) project.findClassifier("B"); // NOI18N
         assertNotNull("Class B not found", clsB); // NOI18N
         Collection<CsmFriend> friends = clsB.getFriends();
-        assertTrue("Should be 5 friends in class B", friends.size()==5); // NOI18N
+        assertTrue("Should be 5 friends in class B", friends.size() == 5); // NOI18N
         CsmFriendClass friendA2 = null;
         CsmFriendFunction friendMoo2 = null;
         CsmFriendFunction friendMoo = null;
         CsmFriendFunction friendSoo = null;
-        CsmFriendFunction friendSoo2= null;
-        for(CsmFriend friend : friends){
-            if ("A2".equals(friend.getName().toString())){ // NOI18N
+        CsmFriendFunction friendSoo2 = null;
+        for (CsmFriend friend : friends) {
+            if ("A2".equals(friend.getName().toString())) { // NOI18N
                 friendA2 = (CsmFriendClass) friend;
-            } else if ("moo2".equals(friend.getName().toString())){ // NOI18N
-                friendMoo2 =  (CsmFriendFunction) friend;
-            } else if ("moo".equals(friend.getName().toString())){ // NOI18N
-                friendMoo =  (CsmFriendFunction) friend;
-            } else if ("soo".equals(friend.getName().toString())){ // NOI18N
-                friendSoo =  (CsmFriendFunction) friend;
-            } else if ("soo2".equals(friend.getName().toString())){ // NOI18N
-                friendSoo2 =  (CsmFriendFunction) friend;
+            } else if ("moo2".equals(friend.getName().toString())) { // NOI18N
+                friendMoo2 = (CsmFriendFunction) friend;
+            } else if ("moo".equals(friend.getName().toString())) { // NOI18N
+                friendMoo = (CsmFriendFunction) friend;
+            } else if ("soo".equals(friend.getName().toString())) { // NOI18N
+                friendSoo = (CsmFriendFunction) friend;
+            } else if ("soo2".equals(friend.getName().toString())) { // NOI18N
+                friendSoo2 = (CsmFriendFunction) friend;
             }
         }
         assertNotNull("Friend class declaration A2 not found", friendA2); // NOI18N
@@ -142,7 +143,7 @@ public class FriendTestCase extends TraceModelTestBase {
         assertNotNull("Friend method declaration moo not found", friendMoo); // NOI18N
         assertNotNull("Friend method declaration soo not found", friendSoo); // NOI18N
         assertNotNull("Friend method declaration soo2 not found", friendSoo2); // NOI18N
-        
+
         CsmClass clsA2 = friendA2.getReferencedClass();
         assertNotNull("Referenced class A2 for friend not found", clsA2); // NOI18N
         CsmFunction funMoo2 = friendMoo2.getReferencedFunction();
@@ -153,82 +154,84 @@ public class FriendTestCase extends TraceModelTestBase {
         assertNotNull("Referenced function soo for friend not found", funSoo); // NOI18N
         CsmFunction funSoo2 = friendSoo2.getReferencedFunction();
         assertNotNull("Referenced function soo2 for friend not found", funSoo); // NOI18N
-        
+
         Collection<CsmFriend> list = FriendResolverImpl.getDefault().findFriends(clsA2);
-        assertTrue("Should be 1 friend declaration for class A2", list.size()==1); // NOI18N
-        assertTrue("Friend declaration for class A2 has wrong instance", list.iterator().next()==friendA2); // NOI18N
+        assertTrue("Should be 1 friend declaration for class A2", list.size() == 1); // NOI18N
+        assertTrue("Friend declaration for class A2 has wrong instance", list.iterator().next() == friendA2); // NOI18N
         list = FriendResolverImpl.getDefault().findFriends(funMoo2);
-        assertTrue("Should be 1 friend declaration for function moo2", list.size()==1); // NOI18N
-        assertTrue("Friend declaration for function moo2 has wrong instance", list.iterator().next()==friendMoo2); // NOI18N
+        assertTrue("Should be 1 friend declaration for function moo2", list.size() == 1); // NOI18N
+        assertTrue("Friend declaration for function moo2 has wrong instance", list.iterator().next() == friendMoo2); // NOI18N
         list = FriendResolverImpl.getDefault().findFriends(funMoo);
-        assertTrue("Should be 1 friend declaration for function moo", list.size()==1); // NOI18N
-        assertTrue("Friend declaration for function moo has wrong instance", list.iterator().next()==friendMoo); // NOI18N
+        assertTrue("Should be 1 friend declaration for function moo", list.size() == 1); // NOI18N
+        assertTrue("Friend declaration for function moo has wrong instance", list.iterator().next() == friendMoo); // NOI18N
         list = FriendResolverImpl.getDefault().findFriends(funSoo);
-        assertTrue("Should be 1 friend declaration for function moo", list.size()==1); // NOI18N
-        assertTrue("Friend declaration for function soo has wrong instance", list.iterator().next()==friendSoo);
-        
+        assertTrue("Should be 1 friend declaration for function moo", list.size() == 1); // NOI18N
+        assertTrue("Friend declaration for function soo has wrong instance", list.iterator().next() == friendSoo);
+
         Collection<CsmOffsetableDeclaration> declarations = project.findDeclarationsByPrefix("");
         Set<String> set = new HashSet<String>();
-        for(CsmOffsetableDeclaration decl : declarations){
+        for (CsmOffsetableDeclaration decl : declarations) {
             String uName = decl.getUniqueName().toString();
-            System.out.println(uName + " \t" + getClassName(decl.getClass())); // NOI18N
-            if ("F:moo2(int)".equals(uName)){
-                assertTrue("moo2(int) is not friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB)); // NOI18N
-            } else if ("f:moo(int)".equals(uName)){ // NOI18N
-                assertTrue("moo(int) is not friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB)); // NOI18N
-            }  else if ("S:S2".equals(uName)){ // NOI18N
-                assertFalse("S2 is friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB)); // NOI18N
-            } else if ("F:S2::soo()".equals(uName)){ // NOI18N
-                assertTrue("S2::soo() is not friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB)); // NOI18N
-            } else if ("f:S2::soo2()".equals(uName)){ // NOI18N
-                assertTrue("S2::soo2() is not friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB)); // NOI18N
-            } else if ("F:S2::soo3()".equals(uName)){ // NOI18N
-                assertTrue("S2::soo3() is not friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB)); // NOI18N
-            } else if ("C:A2".equals(uName)){ // NOI18N
-                assertTrue("A2 is not friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB)); // NOI18N
-            } else if ("F:A2::foo()".equals(uName)){ // NOI18N
-                assertTrue("A2::foo() is not friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB)); // NOI18N
-            } else if ("f:A2::foo()".equals(uName)){ // NOI18N
-                assertTrue("A2::foo() is not friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB)); // NOI18N
-            } else if ("F:ccStyle()".equals(uName)){ // NOI18N
-                assertFalse("ccStyle() is friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB)); // NOI18N
-            } else if ("C:B".equals(uName)){ // NOI18N
-                assertFalse("B is friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB)); // NOI18N
-            } else if ("t:B::xxx".equals(uName)){ // NOI18N
-                assertFalse("B::xxx is friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB)); // NOI18N
-            } else if ("r:B::A2".equals(uName)){ // NOI18N
-                assertFalse("B::A2 is friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB)); // NOI18N
-            } else if ("F:B::boo()".equals(uName)){ // NOI18N
-                assertFalse("B::boo() is friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB)); // NOI18N
-            } else if ("f:moo2(int)".equals(uName)){ // NOI18N
-                assertTrue("moo2(int) is not friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB)); // NOI18N
-            } else if ("F:moo(int)".equals(uName)){ // NOI18N
-                assertTrue("moo(int) is friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB)); // NOI18N
-            } else if ("f:S2::soo()".equals(uName)){ // NOI18N
-                assertTrue("S2::soo() is not friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB)); // NOI18N
-            } else if ("F:S2::soo2()".equals(uName)){ // NOI18N
-                assertTrue("S2::soo2() is not friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB)); // NOI18N
-            } else if ("f:ccStyle(int)".equals(uName)){ // NOI18N
-                assertFalse("ccStyle(int) is friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB)); // NOI18N
+            if (TRACE) {
+                System.out.println(uName + " \t" + getClassName(decl.getClass())); // NOI18N
+            }
+            if ("F:moo2(int)".equals(uName)) {
+                assertTrue("moo2(int) is not friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
+            } else if ("f:moo(int)".equals(uName)) { // NOI18N
+                assertTrue("moo(int) is not friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
+            } else if ("S:S2".equals(uName)) { // NOI18N
+                assertFalse("S2 is friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
+            } else if ("F:S2::soo()".equals(uName)) { // NOI18N
+                assertTrue("S2::soo() is not friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
+            } else if ("f:S2::soo2()".equals(uName)) { // NOI18N
+                assertTrue("S2::soo2() is not friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
+            } else if ("F:S2::soo3()".equals(uName)) { // NOI18N
+                assertTrue("S2::soo3() is not friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
+            } else if ("C:A2".equals(uName)) { // NOI18N
+                assertTrue("A2 is not friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
+            } else if ("F:A2::foo()".equals(uName)) { // NOI18N
+                assertTrue("A2::foo() is not friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
+            } else if ("f:A2::foo()".equals(uName)) { // NOI18N
+                assertTrue("A2::foo() is not friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
+            } else if ("F:ccStyle()".equals(uName)) { // NOI18N
+                assertFalse("ccStyle() is friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
+            } else if ("C:B".equals(uName)) { // NOI18N
+                assertFalse("B is friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
+            } else if ("t:B::xxx".equals(uName)) { // NOI18N
+                assertFalse("B::xxx is friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
+            } else if ("r:B::A2".equals(uName)) { // NOI18N
+                assertFalse("B::A2 is friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
+            } else if ("F:B::boo()".equals(uName)) { // NOI18N
+                assertFalse("B::boo() is friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
+            } else if ("f:moo2(int)".equals(uName)) { // NOI18N
+                assertTrue("moo2(int) is not friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
+            } else if ("F:moo(int)".equals(uName)) { // NOI18N
+                assertTrue("moo(int) is friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
+            } else if ("f:S2::soo()".equals(uName)) { // NOI18N
+                assertTrue("S2::soo() is not friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
+            } else if ("F:S2::soo2()".equals(uName)) { // NOI18N
+                assertTrue("S2::soo2() is not friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
+            } else if ("f:ccStyle(int)".equals(uName)) { // NOI18N
+                assertFalse("ccStyle(int) is friend B", FriendResolverImpl.getDefault().isFriend(decl, clsB)); // NOI18N
             } else {
-                assertTrue("Inexpected declaration "+uName, false); // NOI18N
+                assertTrue("Inexpected declaration " + uName, false); // NOI18N
             }
             assertFalse("Duplicated declaration ", set.contains(uName)); // NOI18N
             set.add(uName);
         }
-        assertTrue("Not all declaration found in project", set.size()==18); // NOI18N
+        assertTrue("Not all declaration found in project", set.size() == 18); // NOI18N
     }
-/*
-int moo2(int);                          //F:moo2(int)                    FunctionImpl
-int moo(int){return 0;}                 //f:moo(int)          FunctionDDImpl
-struct S2 {                             //S:S2                             ClassImpl
+    /*
+    int moo2(int);                          //F:moo2(int)                    FunctionImpl
+    int moo(int){return 0;}                 //f:moo(int)          FunctionDDImpl
+    struct S2 {                             //S:S2                             ClassImpl
     int soo();                          //F:S2::soo()                    MethodImpl
     int soo2(){return 0;} };            //f:S2::soo2() 	MethodDDImpl
-class A2{                               //C:A2                              ClassImpl
+    class A2{                               //C:A2                              ClassImpl
     int foo(); };                       //F:A2::foo()                    MethodImpl
-int A2::foo(){ return 0; }              //f:A2::foo() 	FunctionDefinitionImpl
-int ccStyle();                          //F:ccStyle()                    FunctionImpl
-class B{                                //C:B                               ClassImpl
+    int A2::foo(){ return 0; }              //f:A2::foo() 	FunctionDefinitionImpl
+    int ccStyle();                          //F:ccStyle()                    FunctionImpl
+    class B{                                //C:B                               ClassImpl
     typedef int xxx;                    //t:B::xxx                        ClassImpl$MemberTypedef
     friend class A2;                    //r:B::A2 	FriendClassImpl
     int boo();                          //F:B::boo()                     MethodImpl
@@ -236,6 +239,6 @@ class B{                                //C:B                               Clas
     friend int moo(int);                //F:moo(int)                     FriendFunctionImpl
     friend int S2::soo(){ return 0; }   //f:S2::soo() 	FriendFunctionDefinitionImpl
     friend int S2::soo2(); };           //F:S2::soo2()                   FriendFunctionImplEx
-int ccStyle(int){ return 0; }           //f:ccStyle(int) 	FunctionDDImpl
-*/
+    int ccStyle(int){ return 0; }           //f:ccStyle(int) 	FunctionDDImpl
+     */
 }

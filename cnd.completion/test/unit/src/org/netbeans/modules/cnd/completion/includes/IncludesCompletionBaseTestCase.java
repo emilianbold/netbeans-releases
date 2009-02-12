@@ -46,13 +46,13 @@ public class IncludesCompletionBaseTestCase extends CompletionBaseTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        System.setProperty("cnd.completion.includes.trace", "true");
+        //System.setProperty("cnd.completion.includes.trace", "true");
     }
     
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        System.setProperty("cnd.completion.includes.trace", "false");
+        //System.setProperty("cnd.completion.includes.trace", "false");
     } 
     
     @Override
