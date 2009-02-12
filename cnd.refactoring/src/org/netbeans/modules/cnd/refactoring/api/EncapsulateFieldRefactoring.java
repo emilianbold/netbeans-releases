@@ -70,7 +70,7 @@ public final class EncapsulateFieldRefactoring extends AbstractRefactoring {
         super(Lookups.fixed(field));
     }
     
-    public CsmField getSourceType() {
+    public CsmField getSourceField() {
         return getRefactoringSource().lookup(CsmField.class);
     }
     
