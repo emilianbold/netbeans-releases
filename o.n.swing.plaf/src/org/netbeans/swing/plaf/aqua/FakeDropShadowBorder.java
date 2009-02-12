@@ -64,11 +64,34 @@ public class FakeDropShadowBorder implements Border {
     private static final int LEFT = 7;
     private static final int RIGHT = 11;
 
-    public FakeDropShadowBorder() {
+    private final Insets insets;
+
+    private FakeDropShadowBorder( Insets insets ) {
+        this.insets = insets;
+    }
+
+    public static Border createDefault() {
+        return new FakeDropShadowBorder(new Insets(TOP, LEFT, BOTTOM, RIGHT));
+    }
+
+    public static Border createLeftBorder() {
+        return new FakeDropShadowBorder(new Insets(0, 0, BOTTOM, RIGHT));
+    }
+
+    public static Border createRightBorder() {
+        return new FakeDropShadowBorder(new Insets(0, LEFT, BOTTOM, 0));
+    }
+
+    public static Border createBottomBorder() {
+        return new FakeDropShadowBorder(new Insets(TOP, LEFT, 0, RIGHT));
+    }
+
+    public static Border createTopBorder() {
+        return new FakeDropShadowBorder(new Insets(0, LEFT, BOTTOM, RIGHT));
     }
     
     public Insets getBorderInsets(Component c) {
-        return new Insets(TOP, LEFT, BOTTOM, RIGHT);
+        return new Insets(insets.top, insets.left, insets.bottom, insets.right);
     }
    
     public void paintBorder(Component c, Graphics g, int x, int y, int w, int h) {
@@ -78,31 +101,52 @@ public class FakeDropShadowBorder implements Border {
 //        int yoff = b.getHeight();
 //        int topL = b.getWidth();
         gg.drawImage(b, x, y, null);
+
+        if( insets.right > 0 && insets.bottom > 0 ) {
+            b = getImage(downRight);
+            int xPos = x + w - b.getWidth();
+            if( insets.right == 0 )
+                xPos += RIGHT;
+            gg.drawImage(b, xPos, y + h - b.getHeight(), null);
+            int woff = b.getWidth();
+        }
+
+        if( insets.top > 0 && insets.right > 0 ) {
+            b = getImage(upRight);
+//            gg.drawImage( b, x + w - b.getWidth(), y, null);
+            int topR = b.getWidth();
+        }
+
+        int xoff = 0;
+        if( insets.left > 0 && insets.bottom > 0 ) {
+            b = getImage(downLeft);
+            int hoff = b.getHeight();
+            xoff = b.getWidth()-insets.left;
+            int xPos = x;
+            if( insets.left == 0 )
+                x -= LEFT;
+            gg.drawImage( b, x, y + h - b.getHeight(), null);
+        }
         
-        b = getImage(downRight);
-        gg.drawImage(b, x + w - b.getWidth(), y + h - b.getHeight(), null);
-        int woff = b.getWidth();
-        
-        b = getImage(upRight);
-//        gg.drawImage( b, x + w - b.getWidth(), y, null);
-        int topR = b.getWidth();
-        
-        b = getImage(downLeft);
-        int hoff = b.getHeight();
-        int xoff = b.getWidth()-LEFT;
-        gg.drawImage( b, x, y + h - b.getHeight(), null);
-        
-        b = getImage (leftEdge);
-        gg.drawImage(b, x, y+TOP, b.getWidth(), h-TOP-BOTTOM, null);
-        
-        b = getImage (rightEdge);
-        gg.drawImage(b, x + w - (b.getWidth()), y+TOP, b.getWidth(), h-TOP-BOTTOM, null);
-        
-        b = getImage (bottom);
-        gg.drawImage(b, x+LEFT+xoff, y + h - b.getHeight(), x+w-LEFT-RIGHT-xoff, b.getHeight(), null);
-        
-        b = getImage (top);
-        gg.drawImage(b, x+LEFT, y, x+w, b.getHeight()-LEFT-RIGHT, null);
+        if( insets.left > 0 ) {
+            b = getImage (leftEdge);
+            gg.drawImage(b, x, y+insets.top, b.getWidth(), h-insets.top-insets.bottom, null);
+        }
+
+        if( insets.right > 0 ) {
+            b = getImage (rightEdge);
+            gg.drawImage(b, x + w - (b.getWidth()), y+insets.top, b.getWidth(), h-insets.top-insets.bottom, null);
+        }
+
+        if( insets.bottom > 0 ) {
+            b = getImage (bottom);
+            gg.drawImage(b, x+insets.left+xoff, y + h - b.getHeight(), x+w-insets.left-insets.right-xoff, b.getHeight(), null);
+        }
+
+        if( insets.top > 0 ) {
+            b = getImage (top);
+            gg.drawImage(b, x+insets.left, y, x+w-insets.left-insets.right, b.getHeight(), null);
+        }
         
     }   
     
