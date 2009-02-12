@@ -47,7 +47,7 @@ package org.netbeans.modules.cnd.highlight.error;
 public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
 
     static {
-        System.setProperty("cnd.identifier.error.provider", "true");
+        //System.setProperty("cnd.identifier.error.provider", "true");
     }
 
     public UnresolvedIdentifierTest(String testName) {
