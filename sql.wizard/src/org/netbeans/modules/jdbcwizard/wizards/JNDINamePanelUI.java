@@ -25,7 +25,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * 
- * 	http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,32 +34,66 @@
  * limitations under the License.
  * 
  */
+
 package org.netbeans.modules.jdbcwizard.wizards;
 
-import org.openide.WizardDescriptor;
+import java.awt.FlowLayout;
+
+import javax.swing.SwingConstants;
+
+import org.openide.util.HelpCtx;
+
+import org.openide.util.NbBundle;
+
+
 
 
 /**
- * Extends JNDINameFinishPanel, implementing the interface WizardDescriptor.FinishPanel to allows
- * its containing wizard to enable the "Finish" button.
- * 
  * @author npedapudi
  */
-public class JNDINameFinishPanel extends JNDINamePanel implements WizardDescriptor.FinishablePanel {
+public class JNDINamePanelUI extends javax.swing.JPanel {
 
     /**
      * 
      */
     private static final long serialVersionUID = 1L;
 
-    public JNDINameFinishPanel(final String title) {
-        super(title);
-	}
+    /** Creates new form JNDINamePanel */
+    public JNDINamePanelUI(final String title) {
+        if (title != null && title.trim().length() != 0) {
+            this.setName(title);
+        }
+        this.initComponents();
+    }
+
+    /**
+     * intializes the components
+     */
+    private void initComponents() {
+        this.jLabel1 = new javax.swing.JLabel();
+        this.jTextField1 = new javax.swing.JTextField();
+        this.jTextField1.setText(JNDINamePanel.JNDI_DEFAULT_NAME);
+        this.jLabel1.setText(NbBundle.getMessage(JDBCWizardTablePanel.class,"LBL_JNDI_NAME"));
+		this.jLabel1.setHorizontalAlignment(SwingConstants.RIGHT);
+
+		this.setLayout(new FlowLayout());
+		this.add(jLabel1);
+		this.add(jTextField1);
+		//this.jTextField1.setPreferredSize(new Dimension((3*jLabel1.getWidth()),jLabel1.getHeight()));
+    }
 
     /**
      * @return
      */
-    public boolean isFinishPanel() {
-        return true;
+    public HelpCtx getHelp() {
+        // Show no Help button for this panel:
+       return new HelpCtx(JNDINamePanelUI.class);
     }
+
+    // Variables declaration - do not modify
+    javax.swing.JLabel jLabel1;
+
+    javax.swing.JTextField jTextField1;
+    // End of variables declaration
+
 }
