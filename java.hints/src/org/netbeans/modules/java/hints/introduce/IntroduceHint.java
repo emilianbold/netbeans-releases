@@ -55,6 +55,7 @@ import com.sun.source.tree.IfTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Scope;
@@ -87,6 +88,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -843,12 +845,19 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
     private static ExpressionTree expressionCopy(TreePath expression, WorkingCopy copy) throws IOException, BadLocationException {
         //hack: creating a copy of the expression:
+        String text = getExpressionText(copy, expression);
+        if (expression.getLeaf().getKind() == Kind.NEW_ARRAY) {
+            return copy.getTreeUtilities().parseVariableInitializer(text, new SourcePositions[1]);
+        }
+        return copy.getTreeUtilities().parseExpression(text, new SourcePositions[1]);
+    }
+
+    private static String getExpressionText(WorkingCopy copy, TreePath expression) throws BadLocationException, IOException {
         Document doc = copy.getDocument();
         int start = (int) copy.getTrees().getSourcePositions().getStartPosition(copy.getCompilationUnit(), expression.getLeaf());
         int end = (int) copy.getTrees().getSourcePositions().getEndPosition(copy.getCompilationUnit(), expression.getLeaf());
         String text = doc.getText(start, end - start);
-
-        return copy.getTreeUtilities().parseExpression(text, new SourcePositions[1]);
+        return text;
     }
 
     private static List<ExpressionTree> realArguments(final TreeMaker make, List<String> parameterNames) {
@@ -1298,7 +1307,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     ExpressionTree expressionCopy = expressionCopy(resolved, parameter);
                     ModifiersTree mods;
                     final TreeMaker make = parameter.getTreeMaker();
-
+                    
                     boolean expressionStatement = resolved.getParentPath().getLeaf().getKind() == Tree.Kind.EXPRESSION_STATEMENT;
 
                     switch (kind) {
@@ -1459,11 +1468,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     }
 
                     //hack: creating a copy of the expression:
-                    Document doc = parameter.getDocument();
-                    int start = (int) parameter.getTrees().getSourcePositions().getStartPosition(parameter.getCompilationUnit(), resolved.getLeaf());
-                    int end   = (int) parameter.getTrees().getSourcePositions().getEndPosition(parameter.getCompilationUnit(), resolved.getLeaf());
-                    String text = doc.getText(start, end - start);
-                    ExpressionTree expressionCopy = parameter.getTreeUtilities().parseExpression(text, new SourcePositions[1]);
+                    ExpressionTree expressionCopy = expressionCopy(resolved, parameter);
 
                     Set<Modifier> mods = declareFinal ? EnumSet.of(Modifier.FINAL) : EnumSet.noneOf(Modifier.class);
 
@@ -1524,6 +1529,11 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         }
 
                         List<StatementTree> nueStatements = new LinkedList<StatementTree>(statements.getStatements());
+
+                        if (expressionCopy.getKind() == Kind.NEW_ARRAY) {
+                            List<? extends ExpressionTree> initializers = ((NewArrayTree) expressionCopy).getInitializers();
+                            expressionCopy = make.NewArray(make.Type(((ArrayType)tm).getComponentType()), Collections.<ExpressionTree>emptyList(), initializers);
+                        }
 
                         nueStatements.add(index, make.ExpressionStatement(make.Assignment(make.Identifier(name), expressionCopy)));
 

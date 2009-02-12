@@ -154,7 +154,7 @@ public class ProfilesTrackerTest extends NbTestCase {
     public void testDisplayName() throws Exception {
         TestUtilities.createFile(BASE + "/text/plain/" + folder + "/ProfileA/abc.xml", contents);
         FileObject f = FileUtil.getConfigFile(BASE + "/text/plain/" + folder + "/ProfileA");
-        f.setAttribute("SystemFileSystem.localizingBundle", "org.netbeans.modules.editor.settings.storage.Bundle");
+        f.setAttribute("SystemFileSystem.localizingBundle", "org.netbeans.modules.editor.settings.storage.test.Bundle");
         
         ProfilesTracker pt = new ProfilesTracker(getLocator(settingsTypeId), new MimeTypesTracker(null, BASE));
         Set<String> profiles = pt.getProfilesDisplayNames();
