@@ -49,15 +49,11 @@ import java.util.Collection;
 import javax.swing.*;
 import javax.swing.ImageIcon;
 import javax.swing.border.EmptyBorder;
-import javax.swing.text.Position;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.*;
 import org.netbeans.modules.refactoring.api.*;
-import org.netbeans.modules.refactoring.api.impl.APIAccessor;
-import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringCustomUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
@@ -68,7 +64,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.LifecycleManager;
-import org.openide.awt.Actions;
 import org.openide.awt.Mnemonics;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
@@ -76,7 +71,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 /**
@@ -980,7 +974,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                     ((JDialog) d).setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
                     
                     handle.start(event.getCount());
-                    d.show();
+                    d.setVisible(true);
                 }
             });
         }
@@ -1001,7 +995,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     handle.finish();
-                    d.hide();
+                    d.setVisible(false);
                 }
             });
         }
