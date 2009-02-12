@@ -404,7 +404,10 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     
     private void updateCreatedFolder() {
         
-        FileObject root = ((SourceGroup)locationComboBox.getSelectedItem()).getRootFolder();
+        SourceGroup sg = (SourceGroup)locationComboBox.getSelectedItem();
+        if (sg == null) return;
+        FileObject root = sg.getRootFolder();
+        if (root == null) return;
             
         String folderName = folderTextField.getText().trim();
         String documentName = documentNameTextField.getText().trim();
