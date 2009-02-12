@@ -53,6 +53,7 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -81,7 +82,7 @@ import org.openide.util.Exceptions;
  *
  * @author Jan Becicka
  */
-public class UndoManager extends FileChangeAdapter implements DocumentListener, ChangeListener, PropertyChangeListener /*, GlobalPathRegistryListener */{
+public final class UndoManager extends FileChangeAdapter implements DocumentListener, ChangeListener, PropertyChangeListener /*, GlobalPathRegistryListener */{
     
     /** stack of undo items */
     private LinkedList<LinkedList<UndoItem>> undoList;
@@ -90,15 +91,15 @@ public class UndoManager extends FileChangeAdapter implements DocumentListener, 
     private LinkedList<LinkedList<UndoItem>> redoList;
 
     /** set of all CloneableEditorSupports */
-    private final HashSet<CloneableEditorSupport> allCES = new HashSet();
+    private final Set<CloneableEditorSupport> allCES = new HashSet<CloneableEditorSupport>();
     
-    private final HashMap<FileObject, CloneableEditorSupport> fileObjectToCES = new HashMap();
+    private final Map<FileObject, CloneableEditorSupport> fileObjectToCES = new HashMap<FileObject, CloneableEditorSupport>();
     
     /** map document -> CloneableEditorSupport */
-    private final HashMap<Document, CloneableEditorSupport> documentToCES = new HashMap();
+    private final Map<Document, CloneableEditorSupport> documentToCES = new HashMap<Document, CloneableEditorSupport>();
     
     /** map listener -> CloneableEditorSupport */ 
-    private final HashMap<InvalidationListener, Collection<? extends CloneableEditorSupport>> listenerToCES = new HashMap();
+    private final Map<InvalidationListener, Collection<? extends CloneableEditorSupport>> listenerToCES = new HashMap<InvalidationListener, Collection<? extends CloneableEditorSupport>>();
     private boolean listenersRegistered = false;
     
     public static final String PROP_STATE = "state"; //NOI18N
@@ -115,7 +116,7 @@ public class UndoManager extends FileChangeAdapter implements DocumentListener, 
     private ProgressListener progress;
     
     private static UndoManager instance;
-    private HashSet<Project> projects;
+    private Set<Project> projects;
 
 
     public static UndoManager getDefault() {
@@ -126,10 +127,10 @@ public class UndoManager extends FileChangeAdapter implements DocumentListener, 
     }
     /** Creates a new instance of UndoManager */
     private UndoManager() {
-        undoList = new LinkedList();
-        redoList = new LinkedList();
-        descriptionMap = new IdentityHashMap();
-        projects = new HashSet();
+        undoList = new LinkedList<LinkedList<UndoItem>>();
+        redoList = new LinkedList<LinkedList<UndoItem>>();
+        descriptionMap = new IdentityHashMap<LinkedList, String>();
+        projects = new HashSet<Project>();
     }
     
     private UndoManager(ProgressListener progress) {
@@ -213,7 +214,7 @@ public class UndoManager extends FileChangeAdapter implements DocumentListener, 
                 undoList.removeFirst();
                 Iterator undoIterator = undo.iterator();
                 UndoItem item;
-                redoList.addFirst(new LinkedList());
+                redoList.addFirst(new LinkedList<UndoItem>());
                 descriptionMap.put(redoList.getFirst(), descriptionMap.remove(undo));
                 while (undoIterator.hasNext()) {
                     fireProgressListenerStep();
@@ -245,7 +246,7 @@ public class UndoManager extends FileChangeAdapter implements DocumentListener, 
             try {
                 transactionStarted();
                 wasRedo = true;
-                LinkedList redo = redoList.getFirst();
+                LinkedList<UndoItem> redo = redoList.getFirst();
                 fireProgressListenerStart(1, redo.size());
                 redoList.removeFirst();
                 Iterator<UndoItem> redoIterator = redo.iterator();
@@ -286,17 +287,17 @@ public class UndoManager extends FileChangeAdapter implements DocumentListener, 
     }
     
     /** add new item to undo/redo list */
-    public void addItem(UndoItem item) {
+    private void addItem(UndoItem item) {
         if (wasUndo) {
-            LinkedList redo = this.redoList.getFirst();
+            LinkedList<UndoItem> redo = this.redoList.getFirst();
             redo.addFirst(item);
         } else {
             if (transactionStart) {
-                undoList.addFirst(new LinkedList());
+                undoList.addFirst(new LinkedList<UndoItem>());
                 descriptionMap.put(undoList.getFirst(), description);
                 transactionStart = false;
             }
-            LinkedList undo = this.undoList.getFirst();
+            LinkedList<UndoItem> undo = this.undoList.getFirst();
             undo.addFirst(item);
         }
         if (! (wasUndo || wasRedo)) 
@@ -603,7 +604,7 @@ public class UndoManager extends FileChangeAdapter implements DocumentListener, 
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
-            HashSet<Project> p = new HashSet(projects);
+            Set<Project> p = new HashSet<Project>(projects);
             p.removeAll(Arrays.asList((Project[])evt.getNewValue()));
             if (!p.isEmpty())
                 invalidate(null);
