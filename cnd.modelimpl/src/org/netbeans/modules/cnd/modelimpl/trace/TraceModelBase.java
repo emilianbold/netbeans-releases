@@ -237,7 +237,34 @@ public class TraceModelBase {
                     getSystemIncludes(), quoteIncludePaths, getSysMacros(),
                     macros, pathsRelCurFile);
         }
-        return model.addProject(np, np.getProjectDisplayName(), true);
+        ProjectBase out = model.addProject(np, np.getProjectDisplayName(), true);
+        waitProjectParsed(out, false);
+        return out;
+    }
+
+    protected final void waitProjectParsed(ProjectBase main, boolean trace) {
+        boolean wasWait = true;
+        while (wasWait) {
+            wasWait = waitParsed(main, trace);
+            if (main.getLibraries().size() > 0) {
+                if (trace) {
+                    System.err.println("checking libraries");
+                }
+                for (Iterator it = main.getLibraries().iterator(); it.hasNext();) {
+                    CsmProject lib = (CsmProject) it.next();
+                    if (trace) {
+                        System.err.println("checking library " + lib.getName());
+                    }
+                    wasWait |= waitParsed((ProjectBase) lib, trace);
+                }
+            }
+        }
+    }
+
+    private boolean waitParsed(ProjectBase project, boolean trace) {
+        boolean wasWait = false;
+        project.waitParse();
+        return wasWait;
     }
 
     protected List<String> getSystemIncludes() {
