@@ -75,6 +75,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
@@ -956,6 +957,18 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      * @see JPDADebugger#getCurrentThread
      */
     public void makeCurrent () {
+        if (SwingUtilities.isEventDispatchThread()) {
+            debugger.getRequestProcessor().post(new Runnable() {
+                public void run() {
+                    doMakeCurrent();
+                }
+            });
+        } else {
+            doMakeCurrent();
+        }
+    }
+
+    private void doMakeCurrent() {
         debugger.setCurrentThread (this);
         Session session = debugger.getSession();
         DebuggerManager manager = DebuggerManager.getDebuggerManager();
