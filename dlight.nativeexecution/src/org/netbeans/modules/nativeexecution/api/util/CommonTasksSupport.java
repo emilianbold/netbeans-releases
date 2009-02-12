@@ -117,16 +117,17 @@ public final class CommonTasksSupport {
         final String cmd = "/bin/scp -p -t " + dstFileName; // NOI18N
 
         ChangeListener processListener = new ChangeListener() {
+
             public void stateChanged(ChangeEvent e) {
                 final Object src = e.getSource();
-                
+
                 if (!(src instanceof NativeProcess)) {
                     return;
                 }
-                
-                final NativeProcess process = (NativeProcess)src;
+
+                final NativeProcess process = (NativeProcess) src;
                 final State newState = process.getState();
-                
+
                 if (newState == State.RUNNING) {
                     new CopyRoutine(
                             process.getOutputStream(),
@@ -151,7 +152,39 @@ public final class CommonTasksSupport {
                 });
 
         ExecutionService execService = ExecutionService.newService(
-                npb, descriptor, "scp " + cmd); // NOI18N
+                npb, descriptor, "Upload file " + srcFileName + // NOI18N
+                " to " + dstExecEnv.toString() + ":" + dstFileName); // NOI18N
+
+        return execService.run();
+    }
+
+    public static Future<Integer> rmFile(ExecutionEnvironment execEnv, String fname) {
+        NativeProcessBuilder npb =
+                new NativeProcessBuilder(execEnv, "/bin/rm"); // NOI18N
+        npb = npb.setArguments("-f", fname);
+        
+        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
+                InputOutput.NULL);
+        ExecutionService execService = ExecutionService.newService(
+                npb, descriptor, "Remove file " + fname); // NOI18N
+        return execService.run();
+    }
+
+    public static Future<Integer> rmDir(ExecutionEnvironment execEnv,
+            String dirname, boolean recursively) {
+        String cmd = recursively ? "/bin/rm" : "/bin/rmdir";
+
+        String[] args = recursively
+                ? new String[]{"-rf", dirname} : new String[]{"-f", dirname};
+
+        NativeProcessBuilder npb =
+                new NativeProcessBuilder(execEnv, cmd); // NOI18N
+        npb = npb.setArguments(args);
+
+        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
+                InputOutput.NULL);
+        ExecutionService execService = ExecutionService.newService(
+                npb, descriptor, "Remove directory " + dirname); // NOI18N
 
         return execService.run();
     }
