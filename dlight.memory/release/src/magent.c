@@ -78,7 +78,7 @@ static void control_reporting_first(int i) {
     MEMFUN_ADDR = dlsym(hndl, mem_fun_name);
 
     if(MEMFUN_ADDR == NULL) {
-        dbg_log("control_reporting_first: 1-st attempr failed \n", 0, 0, 0);
+        dbg_log("control_reporting_first: 1-st attempt failed \n", 0, 0, 0);
         hndl = dlopen("/usr/lib/libmalloc.so", RTLD_LAZY);
         if(hndl) {
             MEMFUN_ADDR = dlsym(hndl, mem_fun_name);
@@ -105,7 +105,11 @@ void
 __attribute__((constructor))
 init_function(void) {
     #if DEBUG
+    #if DEBUG > 1
+    logfile = stderr;
+    #else
     logfile = fopen("/tmp/magent.log", "wa");
+    #endif
     fprintf(logfile, "\n\n--------------------\n");
     #endif
 
