@@ -1546,7 +1546,7 @@ public class Term extends JComponent implements Accessible {
     private boolean onMac() {
 	if (onMac == null) {
 	    String osName = System.getProperty("os.name").toLowerCase();
-	    if (osName.startsWith("mac os x")) {
+	    if (osName.startsWith("mac os x")) { //NOI18N
 		onMac = Boolean.TRUE;
 	    } else {
 		onMac = Boolean.FALSE;
