@@ -186,11 +186,7 @@ public class GrailsActionProvider implements ActionProvider {
         ProjectInformation inf = project.getLookup().lookup(ProjectInformation.class);
         String displayName = inf.getDisplayName() + " (run-app)"; // NOI18N
 
-        ExecutionDescriptor descriptor = project.getCommandSupport().getRunDescriptor(new InputProcessorFactory() {
-            public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-                return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new ServerURLProcessor(project, debug)));
-            }
-        });
+        ExecutionDescriptor descriptor = project.getCommandSupport().getRunDescriptor();
 
         ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
         service.run();
@@ -209,43 +205,4 @@ public class GrailsActionProvider implements ActionProvider {
         service.run();
     }
 
-    private static class ServerURLProcessor implements LineProcessor {
-
-        private final GrailsProject project;
-        private final boolean debug;
-
-        public ServerURLProcessor(GrailsProject project, boolean debug) {
-            this.project = project;
-            this.debug = debug;
-        }
-
-        public void processLine(String line) {
-            if (line.contains("Browse to http:/")) {
-                String urlString = line.substring(line.indexOf("http://"));
-
-                URL url;
-                try {
-                    url = new URL(urlString);
-                } catch (MalformedURLException ex) {
-                    LOGGER.log(Level.WARNING, "Could not start browser", ex);
-                    return;
-                }
-
-                GrailsServerState state = project.getLookup().lookup(GrailsServerState.class);
-                if (state != null) {
-                    state.setRunningUrl(url);
-                }
-
-                GrailsCommandSupport.showURL(url, debug, project);
-            }
-        }
-
-        public void reset() {
-            // noop
-        }
-
-        public void close() {
-            // noop
-        }
-    }
 }
