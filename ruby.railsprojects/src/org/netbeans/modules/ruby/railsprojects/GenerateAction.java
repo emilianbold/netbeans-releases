@@ -187,7 +187,7 @@ public final class GenerateAction extends NodeAction {
 
         panel.setChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent e) {
-                    okButton.setEnabled(panel.isValid());
+                    okButton.setEnabled(panel.isDataValid());
                 }
             });
 
