@@ -376,5 +376,11 @@ public final class NativeProjectProvider {
         public boolean isExcluded() {
             return false;
         }
+
+        @Override
+        public String toString() {
+            return file.getAbsolutePath();
+        }
+
     }
 }
