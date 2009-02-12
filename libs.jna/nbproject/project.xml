@@ -49,6 +49,7 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>com.sun.tools.swdev.sunstudio</friend>
                 <friend>org.jruby</friend>
+                <friend>org.netbeans.modules.python.qshell</friend>
                 <friend>org.netbeans.core.nativeaccess</friend>
                 <package>com.sun.jna</package>
                 <package>com.sun.jna.ptr</package>
