@@ -28,14 +28,11 @@
 package org.netbeans.modules.languages.features;
 
 import java.awt.Color;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -71,17 +68,14 @@ import org.openide.util.RequestProcessor;
  */
 public class MarkOccurrencesSupport implements CaretListener {
 
-    private static Map<JTextComponent,WeakReference<MarkOccurrencesSupport>> 
-                                        editorToMOS = new WeakHashMap<JTextComponent,WeakReference<MarkOccurrencesSupport>> ();
     private JTextComponent              editor;
     private RequestProcessor.Task       parsingTask;
     private List<Highlight>             highlights;
     private List<LanguagesAnnotation>   annotations;
-    
-    
+
+
     public MarkOccurrencesSupport (JTextComponent editor) {
         this.editor = editor;
-        editorToMOS.put (editor, new WeakReference<MarkOccurrencesSupport> (this));
     }
 
     public void caretUpdate (final CaretEvent e) {
@@ -107,7 +101,7 @@ public class MarkOccurrencesSupport implements CaretListener {
             }
         }, 1000);
     }
-    
+
     private void refresh (int offset, ParserResult parserResult) {
         DatabaseContext root = parserResult.getSemanticStructure ();
         if (root == null) {
@@ -122,7 +116,7 @@ public class MarkOccurrencesSupport implements CaretListener {
         removeHighlights ();
         addHighlights (getUsages (item, parserResult.getRootNode ()));
     }
-    
+
     private void addHighlights (final List<ASTItem> ussages) {
         if (ussages.isEmpty ()) return;
         SwingUtilities.invokeLater (new Runnable () {
@@ -162,7 +156,7 @@ public class MarkOccurrencesSupport implements CaretListener {
             }
         });
     }
-    
+
     static List<ASTItem> getUsages (DatabaseItem item, ASTNode root) {
         List<ASTItem> result = new ArrayList<ASTItem> ();
         DatabaseDefinition definition = null;
@@ -170,7 +164,7 @@ public class MarkOccurrencesSupport implements CaretListener {
             definition = (DatabaseDefinition) item;
         else
             definition = ((DatabaseUsage) item).getDefinition ();
-        if (definition.getSourceFileUrl() == null) 
+        if (definition.getSourceFileUrl() == null)
             // It's a local definition
             result.add (root.findPath (definition.getOffset ()).getLeaf ());
         Iterator<DatabaseUsage> it = definition.getUsages ().iterator ();
@@ -180,11 +174,9 @@ public class MarkOccurrencesSupport implements CaretListener {
         }
         return result;
     }
-    
+
     static void removeHighlights (JTextComponent editor) {
-        WeakReference<MarkOccurrencesSupport> wr = editorToMOS.get (editor);
-        if (wr == null) return;
-        MarkOccurrencesSupport mos = wr.get ();
+        MarkOccurrencesSupport mos = (MarkOccurrencesSupport) editor.getClientProperty(MarkOccurrencesSupport.class);
         if (mos == null) return;
         mos.removeHighlights ();
     }
@@ -207,9 +199,9 @@ public class MarkOccurrencesSupport implements CaretListener {
             }
         });
     }
-            
+
     private static AttributeSet highlightAS = null;
-    
+
     private static AttributeSet getHighlightAS () {
         if (highlightAS == null) {
             SimpleAttributeSet as = new SimpleAttributeSet ();

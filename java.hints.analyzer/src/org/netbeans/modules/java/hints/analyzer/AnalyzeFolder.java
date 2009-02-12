@@ -61,6 +61,8 @@ import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 public final class AnalyzeFolder extends AbstractAction implements ContextAwareAction {
+    private static final String JAVADOC_ERROR_FOR_NONPUBLIC_PKGS = "availabilityfalse"; // NOI18N
+    private static final String JAVADOC_CREATE_FOR_NONPUBLIC_PKGS = "availabilitytrue"; // NOI18N
 
     private final boolean def;
     private final Lookup context;
@@ -96,10 +98,15 @@ public final class AnalyzeFolder extends AbstractAction implements ContextAwareA
                 String id = r.getId();
                 
                 if (r instanceof AbstractHint && !preferencesOverlay.containsKey(id)) {
-                    OverridePreferences prefs = new OverridePreferences(((AbstractHint) r).getPreferences(null));
+                    Preferences origPreferences = ((AbstractHint) r).getPreferences(null);
+                    OverridePreferences prefs = new OverridePreferences(origPreferences);
                     
                     preferencesOverlay.put(r.getId(),prefs);
-                    HintsSettings.setEnabled(prefs, SUPPORTED_IDS.contains(id));
+                    if (SUPPORTED_IDS.contains(id)) {
+                        HintsSettings.setEnabled(prefs, true);
+                        prefs.putBoolean(JAVADOC_ERROR_FOR_NONPUBLIC_PKGS, origPreferences.getBoolean(JAVADOC_ERROR_FOR_NONPUBLIC_PKGS, false));
+                        prefs.putBoolean(JAVADOC_CREATE_FOR_NONPUBLIC_PKGS, origPreferences.getBoolean(JAVADOC_CREATE_FOR_NONPUBLIC_PKGS, false));
+                    }
                     HintsSettings.setSeverity(prefs, HintSeverity.WARNING);
                 }
             }
