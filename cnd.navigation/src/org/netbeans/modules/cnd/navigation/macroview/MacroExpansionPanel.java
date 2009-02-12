@@ -237,8 +237,10 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
             FileObject file2 = CsmUtilities.getFileObject(doc2);
             if (file2 != null) {
                 JEditorPane ep = MacroExpansionViewUtils.getEditor(doc2);
-                int doc2CarretPosition = ep.getCaretPosition();
-                return doc2CarretPosition;
+                if(ep != null) {
+                    int doc2CarretPosition = ep.getCaretPosition();
+                    return doc2CarretPosition;
+                }
             }
         }
         return 0;
