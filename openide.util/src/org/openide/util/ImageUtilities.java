@@ -681,8 +681,8 @@ public final class ImageUtilities {
 
     /** Cleaning reference. */
     private static final class ActiveRef<T> extends SoftReference<Image> implements Runnable {
-        private Map<T,ActiveRef<T>> holder;
-        private T key;
+        private final Map<T,ActiveRef<T>> holder;
+        private final T key;
 
         public ActiveRef(Image o, Map<T,ActiveRef<T>> holder, T key) {
             super(o, Utilities.activeReferenceQueue());
