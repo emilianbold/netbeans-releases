@@ -45,7 +45,6 @@
  * "MyFontMetrics"
  * MyFontMetrics.java 1.5 01/07/10
  */
-
 package org.netbeans.lib.terminalemulator;
 
 import java.awt.*;
@@ -66,32 +65,36 @@ class MyFontMetrics {
      *
      * The reference counting stuff is explained with CacheFactory.
      */
-
     static class WidthCache {
-	byte [] cache = new byte[Character.MAX_VALUE+1];
-	int reference_count = 1;
 
-	public void up() {
-	    reference_count ++;
-	    if (reference_count == 1)
-		cache = new byte[Character.MAX_VALUE+1];
-	} 
+        byte[] cache = new byte[Character.MAX_VALUE + 1];
+        int reference_count = 1;
 
-	public void down() {
-	    if (reference_count == 0)
-		return;
-	    reference_count --;
-	    if (reference_count == 0)
-		cache = null;
-	}
+        public void up() {
+            reference_count++;
+            if (reference_count == 1) {
+                cache = new byte[Character.MAX_VALUE + 1];
+            }
+        }
 
-	public boolean isMultiCell() {
-	    return multiCell;
-	} 
-	public void setMultiCell(boolean multiCell) {
-	    this.multiCell = multiCell;
-	} 
-	private boolean multiCell = false;
+        public void down() {
+            if (reference_count == 0) {
+                return;
+            }
+            reference_count--;
+            if (reference_count == 0) {
+                cache = null;
+            }
+        }
+
+        public boolean isMultiCell() {
+            return multiCell;
+        }
+
+        public void setMultiCell(boolean multiCell) {
+            this.multiCell = multiCell;
+        }
+        private boolean multiCell = false;
     }
 
     /**
@@ -117,105 +120,106 @@ class MyFontMetrics {
      * mentioned above using a WeakHashMap doesn't help much because WidthCache's
      * are keyed by relatively persistent FontMetrics.
      */
+    private static final class CacheFactory {
+        private CacheFactory() {
+        }
 
-    private static class CacheFactory {
-	static synchronized WidthCache cacheForFontMetrics(FontMetrics fm) {
-	    WidthCache entry = (WidthCache) map.get(fm);
-	    if (entry == null) {
-		entry = new WidthCache();
-		map.put(fm, entry);
-	    } else {
-		entry.up();
-	    }
-	    return entry;
-	}
+        static synchronized WidthCache cacheForFontMetrics(FontMetrics fm) {
+            WidthCache entry = map.get(fm);
+            if (entry == null) {
+                entry = new WidthCache();
+                map.put(fm, entry);
+            } else {
+                entry.up();
+            }
+            return entry;
+        }
 
-	static synchronized void disposeBy(FontMetrics fm) {
-	    WidthCache entry = (WidthCache) map.get(fm);
-	    if (entry != null)
-		entry.down();
-	}
+        static synchronized void disposeBy(FontMetrics fm) {
+            WidthCache entry = map.get(fm);
+            if (entry != null) {
+                entry.down();
+            }
+        }
+        private static AbstractMap<FontMetrics, WidthCache> map = new HashMap<FontMetrics, WidthCache>();
 
-	private static AbstractMap map = new HashMap();
     }
-
 
     public MyFontMetrics(Component component, Font font) {
-	fm = component.getFontMetrics(font);
-	width = fm.charWidth('a');
-	height = fm.getHeight();
-	ascent = fm.getAscent();
-	leading = fm.getLeading();
+        fm = component.getFontMetrics(font);
+        width = fm.charWidth('a');
+        height = fm.getHeight();
+        ascent = fm.getAscent();
+        leading = fm.getLeading();
 
-	// HACK
-	// From all I can tell both xterm and DtTerm ignore the leading.
-	// Maybe X font's don't have a leading and Java sets it to one
-	// artificially? Because unless I do the below I get one extra pixel
-	// between my lines.
-	// 
-	// Some code takes the leading into account and some code doesn't.
-	// the following makes things match up, but if we ever undo this
-	// we'll have to go and adjust how everything is drawn (cursor,
-	// reverse-video attribute, underscore, bg stripe, selection etc.
+        // HACK
+        // From all I can tell both xterm and DtTerm ignore the leading.
+        // Maybe X font's don't have a leading and Java sets it to one
+        // artificially? Because unless I do the below I get one extra pixel
+        // between my lines.
+        //
+        // Some code takes the leading into account and some code doesn't.
+        // the following makes things match up, but if we ever undo this
+        // we'll have to go and adjust how everything is drawn (cursor,
+        // reverse-video attribute, underscore, bg stripe, selection etc.
 
-	height -= leading;
-	leading = 0;
+        height -= leading;
+        leading = 0;
 
-	cwidth_cache = CacheFactory.cacheForFontMetrics(fm);
+        cwidth_cache = CacheFactory.cacheForFontMetrics(fm);
     }
 
+    @Override
     protected void finalize() {
-	CacheFactory.disposeBy(fm);
+        CacheFactory.disposeBy(fm);
     }
-
-
     public int width;
     public int height;
     public int ascent;
     public int leading;
     public FontMetrics fm;
-
     private WidthCache cwidth_cache;
 
     public boolean isMultiCell() {
-	return cwidth_cache.isMultiCell();
-    } 
+        return cwidth_cache.isMultiCell();
+    }
 
     /*
      * Called 'wcwidth' for historical reasons. (see wcwidth(3) on unix.)
      * Return how many cells this character occupies.
      */
-
     public int wcwidth(char c) {
-	int cell_width = cwidth_cache.cache[c];	// how many cells wide
+        int cell_width = cwidth_cache.cache[c];	// how many cells wide
 
-	if (cell_width == 0) {
-	    // width not cached yet so figure it out
-	    int pixel_width = fm.charWidth(c);
+        if (cell_width == 0) {
+            // width not cached yet so figure it out
+            int pixel_width = fm.charWidth(c);
 
-	    if (pixel_width == width) {
-		cell_width = 1;
+            if (pixel_width == width) {
+                cell_width = 1;
 
-	    } else if (pixel_width == 0) { 
-		cell_width = 1;
+            } else if (pixel_width == 0) {
+                cell_width = 1;
 
-	    } else {
-		// round up pixel width to multiple of cell size
-		// then distill into a width in terms of cells.
-		int mod = pixel_width % width;
-		int rounded_width = pixel_width;
-		if (mod != 0)
-		    rounded_width = pixel_width + (width - mod);
-		cell_width = rounded_width/width;
-		if (cell_width == 0)
-		    cell_width = 1;
+            } else {
+                // round up pixel width to multiple of cell size
+                // then distill into a width in terms of cells.
+                int mod = pixel_width % width;
+                int rounded_width = pixel_width;
+                if (mod != 0) {
+                    rounded_width = pixel_width + (width - mod);
+                }
+                cell_width = rounded_width / width;
+                if (cell_width == 0) {
+                    cell_width = 1;
+                }
 
-		cwidth_cache.setMultiCell(true);
-	    }
+                cwidth_cache.setMultiCell(true);
+            }
 
-	    cwidth_cache.cache[c] = (byte) cell_width;
-	}
-	return cell_width;
+            cwidth_cache.cache[c] = (byte) cell_width;
+        }
+        return cell_width;
     }
 
     /*
@@ -223,6 +227,6 @@ class MyFontMetrics {
      * The actual work is done in wcwidth() itself.
      */
     void checkForMultiCell(char c) {
-	wcwidth(c);
+        wcwidth(c);
     }
 }
