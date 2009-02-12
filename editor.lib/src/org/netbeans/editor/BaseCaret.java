@@ -356,6 +356,10 @@ AtomicLockListener, FoldHierarchyListener {
     /** Called when UI is being installed into JTextComponent */
     public void install(JTextComponent c) {
         assert (SwingUtilities.isEventDispatchThread()); // must be done in AWT
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Installing to " + s2s(c)); //NOI18N
+        }
+        
         component = c;
         blinkVisible = true;
         
@@ -396,6 +400,10 @@ AtomicLockListener, FoldHierarchyListener {
 
     /** Called when UI is being removed from JTextComponent */
     public void deinstall(JTextComponent c) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Deinstalling from " + s2s(c)); //NOI18N
+        }
+        
         component = null; // invalidate
 
         // No idea why the sync is done the way how it is, but the locks must
@@ -995,6 +1003,10 @@ AtomicLockListener, FoldHierarchyListener {
      */
     
     public void setDot(int offset, Rectangle scrollRect, int scrollPolicy, boolean expandFold) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("setDot: offset=" + offset); //NOI18N
+        }
+        
         JTextComponent c = component;
         if (c != null) {
             BaseDocument doc = (BaseDocument)c.getDocument();
@@ -1080,6 +1092,10 @@ AtomicLockListener, FoldHierarchyListener {
      * @deprecated use #setDot(int) preceded by <code>JComponent.scrollRectToVisible()</code>.
      */
     public void moveDot(int offset, Rectangle scrollRect, int scrollPolicy) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("moveDot: offset=" + offset); //NOI18N
+        }
+
         JTextComponent c = component;
         if (c != null) {
             BaseDocument doc = (BaseDocument)c.getDocument();
@@ -1190,6 +1206,10 @@ AtomicLockListener, FoldHierarchyListener {
 
     // MouseListener methods
     public void mouseClicked(MouseEvent evt) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("mouseClicked: " + logMouseEvent(evt));
+        }
+        
         JTextComponent c = component;
         if (c != null) {
             if (SwingUtilities.isLeftMouseButton(evt)) {
@@ -1297,6 +1317,10 @@ AtomicLockListener, FoldHierarchyListener {
     }
     
     public void mousePressed(MouseEvent evt) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("mousePressed: " + logMouseEvent(evt));
+        }
+
         dndArmedEvent = null;
 
 	if (isDragPossible(evt) && mapDragOperationFromModifiers(evt) != TransferHandler.NONE) {
@@ -1309,8 +1333,12 @@ AtomicLockListener, FoldHierarchyListener {
     }
 
     public void mouseReleased(MouseEvent evt) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("mouseReleased: " + logMouseEvent(evt));
+        }
+
         if (dndArmedEvent != null){
-            mousePressedImpl(evt);        
+            mousePressedImpl(evt);
         }
         dndArmedEvent = null;
     }
@@ -1344,8 +1372,8 @@ AtomicLockListener, FoldHierarchyListener {
      */
     protected boolean isDragPossible(MouseEvent e) {
         JComponent comp = getEventComponent(e);
-        boolean possible =  (comp == null) ? true : (comp.getTransferHandler() != null);
-        if (possible){
+        boolean possible =  (comp == null) ? false : (comp.getTransferHandler() != null);
+        if (possible) {
             JTextComponent c = (JTextComponent) getEventComponent(e);
             if (c.getDragEnabled()) {
                 Caret caret = c.getCaret();
@@ -1377,6 +1405,10 @@ AtomicLockListener, FoldHierarchyListener {
     
     // MouseMotionListener methods
     public void mouseDragged(MouseEvent evt) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("mouseDragged: " + logMouseEvent(evt)); //NOI18N
+        }
+        
         if (dndArmedEvent != null){
             evt.consume();
             return;
@@ -1399,6 +1431,16 @@ AtomicLockListener, FoldHierarchyListener {
     }
 
     public void mouseMoved(MouseEvent evt) {
+    }
+
+    private static final String logMouseEvent(MouseEvent evt) {
+        return "x=" + evt.getX() + ", y=" + evt.getY() //NOI18N
+            + ", component=" + s2s(evt.getComponent()) //NOI18N
+            + ", source=" + s2s(evt.getSource()); //NOI18N
+    }
+
+    private static final String s2s(Object o) {
+        return o == null ? "null" : o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o)); //NOI18N
     }
 
     // PropertyChangeListener methods

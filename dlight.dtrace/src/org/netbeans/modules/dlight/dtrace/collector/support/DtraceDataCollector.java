@@ -50,7 +50,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
-import javax.swing.Action;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
@@ -78,12 +77,11 @@ import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.ObservableAction;
-import org.netbeans.modules.nativeexecution.api.ObservableActionListener;
-import org.netbeans.modules.nativeexecution.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.util.SolarisPrivilegesSupport;
+import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
@@ -236,8 +234,8 @@ public final class DtraceDataCollector
             File script = new File(localScriptPath);
             scriptPath = "/tmp/" + script.getName(); // NOI18N
 
-            Future<Integer> copyResult = CommonTasksSupport.copyLocalFile(
-                        execEnv, localScriptPath, scriptPath, 777, null);
+            Future<Integer> copyResult = CommonTasksSupport.uploadFile(
+                        localScriptPath, execEnv, scriptPath, 777, null);
             try {
                 copyResult.get();
             } catch (InterruptedException ex) {
@@ -296,12 +294,13 @@ public final class DtraceDataCollector
     private ValidationStatus doValidation(final DLightTarget target) {
         DLightLogger.assertNonUiThread();
 
+        final ExecutionEnvironment execEnv = target.getExecEnv();
         ValidationStatus result = null;
         boolean fileExists = false;
         boolean connected = true;
 
         try {
-            fileExists = HostInfoUtils.fileExists(target.getExecEnv(), command);
+            fileExists = HostInfoUtils.fileExists(execEnv, command);
         } catch (ConnectException ex) {
             connected = false;
         }
@@ -315,30 +314,21 @@ public final class DtraceDataCollector
                         command));
             }
         } else {
-            ObservableActionListener<Boolean> listener =
-                    new ObservableActionListener<Boolean>() {
+            ConnectionManager mgr = ConnectionManager.getInstance();
 
-                        public void actionCompleted(Action source, Boolean result) {
-                            DLightManager.getDefault().revalidateSessions();
-                        }
+            Runnable doOnConnect = new Runnable() {
 
-                        public void actionStarted(Action source) {
-                        }
-                    };
+                public void run() {
+                    DLightManager.getDefault().revalidateSessions();
+                }
+            };
 
-            final ConnectionManager mgr = ConnectionManager.getInstance();
-
-            ObservableAction<Boolean> connectAction =
-                    mgr.getConnectToAction(target.getExecEnv());
-
-            connectAction.addObservableActionListener(listener);
+            AsynchronousAction connectAction = mgr.getConnectToAction(execEnv, doOnConnect);
 
             result = ValidationStatus.unknownStatus(
                     loc("ValidationStatus.HostNotConnected"), // NOI18N
                     connectAction);
         }
-
-        ExecutionEnvironment execEnv = target.getExecEnv();
 
         if (!result.isValid()) {
             return result;
@@ -351,21 +341,15 @@ public final class DtraceDataCollector
 
         boolean status = sps.hasPrivileges(execEnv, requiredPrivilegesList);
 
-        ObservableAction<Boolean> requestPrivilegesAction =
-                sps.requestPrivilegesAction(execEnv, requiredPrivilegesList);
+        Runnable onPrivilegesGranted = new Runnable() {
 
-        ObservableActionListener al =
-                new ObservableActionListener<Boolean>() {
+            public void run() {
+                DLightManager.getDefault().revalidateSessions();
+            }
+        };
 
-                    public void actionCompleted(Action source, Boolean result) {
-                        DLightManager.getDefault().revalidateSessions();
-                    }
-
-                    public void actionStarted(Action source) {
-                    }
-                };
-
-        requestPrivilegesAction.addObservableActionListener(al);
+        AsynchronousAction requestPrivilegesAction = sps.requestPrivilegesAction(
+                execEnv, requiredPrivilegesList, onPrivilegesGranted);
 
         if (!status) {
             result = result.merge(ValidationStatus.unknownStatus(

@@ -41,6 +41,7 @@ package org.netbeans.modules.groovy.grailsproject.actions;
 
 import org.netbeans.modules.groovy.grailsproject.commands.*;
 import java.awt.event.ActionEvent;
+import java.net.URL;
 import java.util.concurrent.Callable;
 import javax.swing.AbstractAction;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
@@ -51,9 +52,8 @@ import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
+import org.netbeans.modules.groovy.grailsproject.GrailsServerState;
 import org.netbeans.modules.groovy.grailsproject.actions.ConfigurationSupport;
-import org.netbeans.modules.groovy.grailsproject.actions.RefreshProjectRunnable;
-import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.openide.util.NbBundle;
 
 /**
@@ -99,13 +99,9 @@ public class GrailsCommandAction extends AbstractAction {
         }
 
         Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
-                commandDescriptor.getGrailsCommand().getCommand(), GrailsProjectConfig.forProject(project), params); // NOI18N
+                commandDescriptor.getGrailsCommand().getCommand(), GrailsProjectConfig.forProject(project), params);
 
-        ExecutionDescriptor descriptor = new ExecutionDescriptor()
-                .controllable(true).inputVisible(true).showProgress(true).frontWindow(true);
-
-        descriptor = descriptor.postExecution(new RefreshProjectRunnable(project));
-        descriptor = descriptor.optionsPath(GroovySettings.GROOVY_OPTIONS_CATEGORY);
+        ExecutionDescriptor descriptor = project.getCommandSupport().getDescriptor(commandDescriptor.getGrailsCommand().getCommand());
 
         ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
         service.run();

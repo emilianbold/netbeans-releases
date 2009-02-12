@@ -55,7 +55,6 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
@@ -64,16 +63,11 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.modules.editor.settings.storage.spi.StorageReader;
 import org.netbeans.modules.editor.settings.storage.spi.StorageWriter;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
 import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.InputSource;
@@ -122,31 +116,32 @@ public class Utils {
         return defaultValue;
     }
 
-    private static final WeakHashMap<FileObject, Object []> bundleInfos = new WeakHashMap<FileObject, Object []>();
-    private static final FileChangeListener listener = new FileChangeAdapter() {
-        @Override
-        public void fileDeleted(FileEvent fe) {
-            synchronized (bundleInfos) {
-                bundleInfos.remove(fe.getFile());
-            }
-        }
-
-        @Override
-        public void fileAttributeChanged(FileAttributeEvent fe) {
-            if (fe.getName() != null && fe.getName().equals("SystemFileSystem.localizingBundle")) { //NOI18N
-                synchronized (bundleInfos) {
-                    bundleInfos.remove(fe.getFile());
-                }
-            }
-        }
-    };
-    private static final FileChangeListener weakListener = WeakListeners.create(FileChangeListener.class, listener, null);
+//    private static final WeakHashMap<FileObject, Object []> bundleInfos = new WeakHashMap<FileObject, Object []>();
+//    private static final FileChangeListener listener = new FileChangeAdapter() {
+//        @Override
+//        public void fileDeleted(FileEvent fe) {
+//            synchronized (bundleInfos) {
+//                bundleInfos.remove(fe.getFile());
+//            }
+//        }
+//
+//        @Override
+//        public void fileAttributeChanged(FileAttributeEvent fe) {
+//            if (fe.getName() != null && fe.getName().equals("SystemFileSystem.localizingBundle")) { //NOI18N
+//                synchronized (bundleInfos) {
+//                    bundleInfos.remove(fe.getFile());
+//                }
+//            }
+//        }
+//    };
+//    private static final FileChangeListener weakListener = WeakListeners.create(FileChangeListener.class, listener, null);
     private static Object [] findResourceBundle(FileObject fo, boolean silent) {
         assert fo != null : "FileObject can't be null"; //NOI18N
-        
-        synchronized (bundleInfos) {
-            Object [] bundleInfo = bundleInfos.get(fo);
-            if (bundleInfo == null) {
+
+        Object [] bundleInfo = null;
+//        synchronized (bundleInfos) {
+//            Object [] bundleInfo = bundleInfos.get(fo);
+//            if (bundleInfo == null) {
                 String bundleName = null;
                 Object attrValue = fo.getAttribute("SystemFileSystem.localizingBundle"); //NOI18N
                 if (attrValue instanceof String) {
@@ -171,13 +166,13 @@ public class Utils {
                    bundleInfo = new Object [] { bundleName, null }; 
                 }
 
-                bundleInfos.put(fo, bundleInfo);
-                fo.removeFileChangeListener(weakListener);
-                fo.addFileChangeListener(weakListener);
-            }
+//                bundleInfos.put(fo, bundleInfo);
+//                fo.removeFileChangeListener(weakListener);
+//                fo.addFileChangeListener(weakListener);
+//            }
 
             return bundleInfo;
-        }
+//        }
     }
     
     private static final Set<String> ALREADY_LOGGED = Collections.synchronizedSet(new HashSet<String>());

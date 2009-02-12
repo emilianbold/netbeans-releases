@@ -84,6 +84,8 @@ import org.openide.util.Utilities;
 // TODO more appropriate would be getDefault and forProject
 public final class GrailsRuntime {
 
+    public static final Set<String> KNOWN_RUN_COMMANDS = new HashSet<String>();
+
     private static final Logger LOGGER = Logger.getLogger(GrailsRuntime.class.getName());
 
     private static final Set<String> GUARDED_COMMANDS = new HashSet<String>();
@@ -97,7 +99,8 @@ public final class GrailsRuntime {
             }
         };
 
-        Collections.addAll(GUARDED_COMMANDS, "run-app", "shell"); //NOI18N
+        Collections.addAll(KNOWN_RUN_COMMANDS, "run-app", "run-app-https", "run-war"); // NOI18N
+        Collections.addAll(GUARDED_COMMANDS, "run-app", "run-app-https", "run-war", "shell"); //NOI18N
     }
 
     private static GrailsRuntime instance;
@@ -260,9 +263,7 @@ public final class GrailsRuntime {
     }
 
     private static void checkForServer(CommandDescriptor descriptor, Process process) {
-        if ("run-app".equals(descriptor.getName()) // NOI18N
-                || "run-app-https".equals(descriptor.getName()) // NOI18N
-                || "run-war".equals(descriptor.getName())) { // NOI18N
+        if (KNOWN_RUN_COMMANDS.contains(descriptor.getName())) { // NOI18N
             Project project = FileOwnerQuery.getOwner(
                     FileUtil.toFileObject(descriptor.getDirectory()));
             if (project != null) {
@@ -303,7 +304,8 @@ public final class GrailsRuntime {
          * @param arguments command arguments
          * @param props environment properties
          */
-        private CommandDescriptor(String name, File directory, GrailsProjectConfig config, String[] arguments, Properties props) {
+        private CommandDescriptor(String name, File directory, GrailsProjectConfig config,
+                String[] arguments, Properties props) {
             this.name = name;
             this.directory = directory;
             this.config = config;
@@ -350,7 +352,6 @@ public final class GrailsRuntime {
         public Properties getProps() {
             return new Properties(props);
         }
-
     }
 
     private static class GrailsCallable implements Callable<Process> {
@@ -401,6 +402,10 @@ public final class GrailsRuntime {
                     props.setProperty("server.port", port); // NOI18N
                 }
             }
+
+            // XXX this is workaround for jline bug (native access to console on windows) used by grails
+            props.setProperty("jline.WindowsTerminal.directConsole", "false"); // NOI18N
+
             String proxyString = getNetBeansHttpProxy(props);
 
             StringBuilder command = new StringBuilder();

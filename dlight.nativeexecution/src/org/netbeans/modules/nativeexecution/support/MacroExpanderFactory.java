@@ -43,7 +43,7 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 public final class MacroExpanderFactory {
 
@@ -186,11 +186,11 @@ public final class MacroExpanderFactory {
                 }
 
                 if ("isa".equals(str)) { // NOI18N
-                    return HostInfoUtils.getIsaInfo(execEnv); // NOI18N
+                    return HostInfoUtils.getIsaBits(execEnv); // NOI18N
                 }
 
                 if ("_isa".equals(str)) { // NOI18N
-                    return HostInfoUtils.getIsaInfo(execEnv).equals("64") ? "_64" : ""; // NOI18N
+                    return HostInfoUtils.getIsaBits(execEnv).equals("64") ? "_64" : ""; // NOI18N
                 }
 
                 if ("soext".equals(str)) { // NOI18N

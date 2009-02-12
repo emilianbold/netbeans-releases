@@ -46,6 +46,7 @@ import org.xml.sax.*;
 import org.openide.util.*;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import java.lang.ref.*;
 import java.io.*;
 import java.util.*;
 import java.net.*;
@@ -1868,7 +1869,7 @@ public class FileObjectTestHid extends TestBaseHid {
         }
         fsAssert ("After delete should be invalid",!fo1.isValid());
     }
-    public void testBigFileAndAsString() throws java.io.FileNotFoundException, IOException {
+    public void testBigFileAndAsString() throws Exception {
         checkSetUp();
 
         FileObject fo1 = getTestFile1 (root);
@@ -1896,6 +1897,9 @@ public class FileObjectTestHid extends TestBaseHid {
             for (int i = lines.size() - 1; i >= 0; i--) {
                 reverse.add(0, lines.get(i));
             }
+            Reference<Object> ref = new WeakReference<Object>(lines);
+            lines = null;
+            assertGC("The list of strings can be GCed", ref);
 
             ArrayList<String> all = new ArrayList<String>();
             for (String l : fo1.asLines("UTF-8")) {
@@ -1910,12 +1914,12 @@ public class FileObjectTestHid extends TestBaseHid {
                         // OK
                     } finally {
                         lock.releaseLock();
+                        if (tmp != null) {
+                            tmp.close();
+                        }
                     }
                 }
                 all.add(l);
-            }
-            if (tmp != null) {
-                tmp.close();
             }
             assertEquals("Some lines: ", 10, all.size());
             assertEquals("Generated same as read", all, fo1.asLines());
@@ -1924,7 +1928,33 @@ public class FileObjectTestHid extends TestBaseHid {
             fsAssert  ("Expected that FS provides InputStream ",fo1.getSize () == 0);
         }
 
+        final int[] finalizeCalled = { 0 };
+        Reference<Object> ref = new WeakReference<Object>(new Object() {
+            @Override
+            protected void finalize() throws Throwable {
+                synchronized (finalizeCalled) {
+                    finalizeCalled[0]++;
+                    finalizeCalled.notifyAll();
+                }
+            }
+        });
+        assertGC("Reference can disapper", ref);
+        synchronized (finalizeCalled) {
+            int cnt = 5;
+            while (cnt-- > 0 && finalizeCalled[0] == 0) {
+                finalizeCalled.wait();
+            }
+            assertEquals("Finalizers has been run", 1, finalizeCalled[0]);
+        }
+
+
+
+
         try {
+            OutputStream os = fo1.getOutputStream();
+            os.write("Ahoj".getBytes());
+            os.close();
+            
             FileLock lock = fo1.lock ();
             fo1.delete(lock);
         } catch (IOException iex) {

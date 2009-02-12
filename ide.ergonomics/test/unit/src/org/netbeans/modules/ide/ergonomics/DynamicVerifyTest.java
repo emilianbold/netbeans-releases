@@ -40,19 +40,12 @@
 package org.netbeans.modules.ide.ergonomics;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import junit.framework.Test;
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureManager;
-import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.project.ProjectFactory;
 import org.openide.util.Lookup;
 
@@ -72,6 +65,7 @@ public class DynamicVerifyTest extends NbTestCase {
             addTest(DynamicVerifyTest.class).
             addTest(ProjectTemplatesCheck.class).
             addTest(FilesAndAttributesCheck.class, "testGetAllTemplates", "testCheckAllTemplatesPretest").
+            addTest(DebuggerAttachTypesCheck.class, "testGetAllDebuggers").
             gui(false).
             clusters("ergonomics.*").
             clusters(".*").
@@ -82,6 +76,7 @@ public class DynamicVerifyTest extends NbTestCase {
             addTest(ProjectTemplatesCheck.class).
             addTest(AllClustersProcessedCheck.class).
             addTest(FilesAndAttributesCheck.class, "testCheckAllTemplatesReal").
+            addTest(DebuggerAttachTypesCheck.class, "testGetAllDebuggersReal").
             gui(false).
             clusters("ergonomics.*").
             clusters(".*").
@@ -169,26 +164,4 @@ public class DynamicVerifyTest extends NbTestCase {
         }
     }
 
-    public void testGetAllDebuggers() {
-       List<String> lazyDebuggers = new ArrayList<String>();
-       Iterator<? extends FeatureInfo> it = FeatureManager.features().iterator();
-       for (; it.hasNext(); ) {
-           FeatureInfo featureInfo = it.next();
-           if (featureInfo.getAttachTypeName() != null) {
-               lazyDebuggers.add(featureInfo.getAttachTypeName());
-           }
-       }
-       List<String> originalDebuggers = new ArrayList<String>();
-       for (Object o : DebuggerManager.getDebuggerManager().lookup(null, AttachType.class)) {
-            AttachType attachType = (AttachType) o;
-            if (attachType.getTypeDisplayName() != null) {
-                originalDebuggers.add(attachType.getTypeDisplayName());
-            }
-       }
-       Collections.sort(lazyDebuggers);
-       Collections.sort(originalDebuggers);
-//       boolean first = originalDebuggers.containsAll(lazyDebuggers);
-//       boolean second = lazyDebuggers.containsAll(originalDebuggers);
-       assertEquals("Lists differs!", lazyDebuggers, originalDebuggers);
-    }
 }

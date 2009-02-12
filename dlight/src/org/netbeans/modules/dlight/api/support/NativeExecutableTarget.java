@@ -56,11 +56,11 @@ import org.netbeans.modules.dlight.api.execution.SubstitutableTarget;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.util.ExternalTerminalProvider;
+import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
-import org.netbeans.modules.nativeexecution.util.ExternalTerminal;
+import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 
 /**
  * Wrapper of {@link @org-netbeans-modules-nativexecution@org/netbeans/modules/nativexecution/api/NativeTask.html}

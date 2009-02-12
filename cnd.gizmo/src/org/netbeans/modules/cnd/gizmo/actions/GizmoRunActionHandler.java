@@ -56,7 +56,7 @@ import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler;
 import org.netbeans.modules.dlight.api.support.NativeExecutableTarget;
 import org.netbeans.modules.dlight.api.support.NativeExecutableTargetConfiguration;
-import org.netbeans.modules.nativeexecution.util.ExternalTerminalProvider;
+import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
 

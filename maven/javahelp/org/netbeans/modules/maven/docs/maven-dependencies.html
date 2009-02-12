@@ -46,10 +46,45 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
         <h2>Managing Maven Project Dependencies</h2>
         <p> <small><a href="#seealso">See Also</a>&nbsp; </small></p>
 
+        <p>To make libraries and projects available to your project
+        during compilation, testing and execution you need to declare the
+        projects or libraries as dependencies.
+        You add a dependency by adding the coordinates of the artifact you want to declare as a dependency to the POM.
+        All Maven artifacts are defined by a unique coordinate that consists of a group identifier (groupId),
+        artifact identifier (artifactId) and version.
+        Adding a dependency to the POM is similar to adding libraries to the classpath in an Ant-based project.
+        </p>
 
-        Dependency Management
+        <p>You can add a dependency to a Maven project in the following ways:</p>
+        <ul>
+            <li><strong>Edit the POM in the editor.</strong> Open <tt>pom.xml</tt> in the XML editor and use
+            code completion to help add the dependency elements and artifact coordinates.</li>
+            <li><strong>Use the Add Library dialog.</strong>
+            Type or search for the artifact in the Add Library dialog and click OK.
+            When you click OK, the IDE adds the dependency elements and artifact coordinates to <tt>pom.xml</tt>.
+            <p>To open the Add Library dialog, right-click the
+            Libraries node in the Projects window and choose Add Library.
+            Alternatively, you can open the dialog by opening the Insert Code popup in <tt>pom.xml</tt>
+            (Ctrl-I) and choosing Add Dependency.
+            </p>
+            </li>
+        </ul>
 
-    Because a project is defined a unique coordinate which consists of a group identifier, artifact identifier, and version, projects can now use these coordinates to declare dependencies.
+        <p>When you add a dependency to the POM and save <tt>pom.xml</tt>,
+        the IDE adds the artifact to the list of libraries under the project's Libraries node.
+        To use a library in your project, a copy of the artifact needs to be in your local repository.
+        Artifacts not in your local repository are marked with a badge.</p>
+
+        <p>If an artifact is available in a remote repository,
+        the IDE will download the artifact and any transitive dependencies from the repository when you build the project.
+        If the missing artifact is not available in a remote repository ,
+        you can right-click the artifact node under the Libraries node and install the artifact manually.</p>
+        
+        <!--If your project depends on another project, that project-->
+
+
+
+
 
         <!--<p>Software library archives (JARs), build artifacts and dependencies
         that are used to build Maven projects are stored in repositories.

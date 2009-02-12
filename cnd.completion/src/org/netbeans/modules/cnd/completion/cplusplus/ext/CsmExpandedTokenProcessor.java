@@ -82,7 +82,7 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
             if (file != null) {
                 List<CsmReference> macros = CsmFileInfoQuery.getDefault().getMacroUsages(file);
                 if (macros != null) {
-                    CsmMacroExpansion.expand(doc, 0, doc.getLength());
+                    CsmMacroExpansion.expand(doc, 0, 0);
                     return new CsmExpandedTokenProcessor(doc, file, tp, offset, macros);
                 }
             }

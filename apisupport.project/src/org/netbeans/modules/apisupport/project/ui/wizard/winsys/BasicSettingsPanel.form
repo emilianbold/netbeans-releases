@@ -83,7 +83,9 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="cbSlidingNotAllowed">
       <Properties>
-        <Property name="text" type="java.lang.String" value="&amp;Sliding not allowed"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/wizard/winsys/Bundle.properties" key="CTL_SlidingNotAllowed" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
             <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -99,7 +101,9 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="cbClosingNotAllowed">
       <Properties>
-        <Property name="text" type="java.lang.String" value="&amp;Closing not allowed"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/wizard/winsys/Bundle.properties" key="CTL_ClosingNotAllowed" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
             <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -114,7 +118,9 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="cbUndockingNotAllowed">
       <Properties>
-        <Property name="text" type="java.lang.String" value="&amp;Undocking not allowed"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/wizard/winsys/Bundle.properties" key="CTL_UndockingNotAllowed" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
             <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -129,7 +135,9 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="cbDraggingNotAllowed">
       <Properties>
-        <Property name="text" type="java.lang.String" value="&amp;Dragging not allowed"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/wizard/winsys/Bundle.properties" key="CTL_DraggingNotAllowed" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
             <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -144,7 +152,9 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="cbMaximizationNotAllowed">
       <Properties>
-        <Property name="text" type="java.lang.String" value="&amp;Maximization not allowed"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/wizard/winsys/Bundle.properties" key="CTL_MaximizationNotAllowed" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
             <EmptyBorder bottom="0" left="0" right="0" top="0"/>

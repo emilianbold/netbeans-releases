@@ -52,7 +52,6 @@
 package org.netbeans.modules.cnd.api.model.services;
 
 import javax.swing.text.Document;
-import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionDocProvider;
 import org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionViewProvider;
 import org.openide.util.Lookup;

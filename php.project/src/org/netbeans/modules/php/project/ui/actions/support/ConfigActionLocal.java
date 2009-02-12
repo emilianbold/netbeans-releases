@@ -51,6 +51,7 @@ import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
 import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
@@ -62,6 +63,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -80,6 +82,24 @@ public class ConfigActionLocal extends ConfigAction {
         super(project);
         webRoot = ProjectPropertiesSupport.getWebRootDirectory(project);
         assert webRoot != null;
+    }
+
+    @Override
+    public boolean isValid(boolean indexFileNeeded) {
+        boolean valid = true;
+        if (indexFileNeeded && !isIndexFileValid(webRoot)) {
+            valid = false;
+        } if (RunAsValidator.validateWebFields(
+                ProjectPropertiesSupport.getUrl(project),
+                FileUtil.toFile(webRoot),
+                null,
+                ProjectPropertiesSupport.getArguments(project)) != null) {
+            valid = false;
+        }
+        if (!valid) {
+            showCustomizer();
+        }
+        return valid;
     }
 
     @Override

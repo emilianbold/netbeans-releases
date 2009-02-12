@@ -85,6 +85,11 @@ public class ConfigActionTest extends ConfigAction {
     }
 
     @Override
+    public boolean isValid(boolean indexFileNeeded) {
+        throw new IllegalStateException("Validation is not needed for tests");
+    }
+
+    @Override
     public boolean isDebugProjectEnabled() {
         throw new IllegalStateException("Debug project tests action is not supported");
     }
@@ -107,6 +112,11 @@ public class ConfigActionTest extends ConfigAction {
 
     @Override
     public void runProject() {
+        // first, let user select test directory
+        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, true);
+        if (testDirectory == null) {
+            return;
+        }
         PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
         if (!phpUnit.supportedVersionFound()) {
             int[] version = phpUnit.getVersion();

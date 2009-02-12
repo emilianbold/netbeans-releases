@@ -83,9 +83,14 @@ public final class UIDProviderIml implements UIDProvider {
                         new Exception("no deref object for uid[" + uid + "] of " + obj).printStackTrace(); // NOI18N
                     }
                 } else {
-                    final Class<? extends Object> derefClass = object.getClass();
-                    if (!derefClass.isAssignableFrom(obj.getClass())) {
-                        System.err.println("deref class " + derefClass + " is not super class of " + obj.getClass()); // NOI18N
+                    // commented because method isAssignableFrom() is too expensive
+                    // find alternative method for assertion
+                    //for example: under special trace flag
+                    if (false) {
+                        final Class<? extends Object> derefClass = object.getClass();
+                        if (!derefClass.isAssignableFrom(obj.getClass())) {
+                            System.err.println("deref class " + derefClass + " is not super class of " + obj.getClass()); // NOI18N
+                        }
                     }
                 }
             }

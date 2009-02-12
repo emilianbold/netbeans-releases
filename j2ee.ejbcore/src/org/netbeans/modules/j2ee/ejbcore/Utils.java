@@ -380,6 +380,19 @@ public class Utils {
 
     public static AntArtifact getAntArtifact(final EjbReference ejbReference) throws IOException {
         
+        Project project = getProject(ejbReference);
+        if (project == null) {
+            return null;
+        }
+        AntArtifact[] antArtifacts = AntArtifactQuery.findArtifactsByType(project, JavaProjectConstants.ARTIFACT_TYPE_JAR);
+        boolean hasArtifact = (antArtifacts != null && antArtifacts.length > 0);
+        
+        return hasArtifact ? antArtifacts[0] : null;
+        
+    }
+
+    public static Project getProject(final EjbReference ejbReference) throws IOException {
+
         MetadataModel<EjbJarMetadata> ejbReferenceMetadataModel = ejbReference.getEjbModule().getMetadataModel();
         FileObject ejbReferenceEjbClassFO = ejbReferenceMetadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
             public FileObject run(EjbJarMetadata metadata) throws Exception {
@@ -390,12 +403,7 @@ public class Utils {
         if (ejbReferenceEjbClassFO == null) {
             return null;
         }
-        Project project = FileOwnerQuery.getOwner(ejbReferenceEjbClassFO);
-        AntArtifact[] antArtifacts = AntArtifactQuery.findArtifactsByType(project, JavaProjectConstants.ARTIFACT_TYPE_JAR);
-        boolean hasArtifact = (antArtifacts != null && antArtifacts.length > 0);
-        
-        return hasArtifact ? antArtifacts[0] : null;
-        
+        return FileOwnerQuery.getOwner(ejbReferenceEjbClassFO);
     }
  
     /**
