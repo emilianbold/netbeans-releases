@@ -132,10 +132,10 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         
         locationComboBox.setModel( new DefaultComboBoxModel( folders ) );
         // Guess the group we want to create the file in
-        SourceGroup preselectedGroup = getPreselectedGroup( folders, preselectedFolder );        
-        locationComboBox.setSelectedItem( preselectedGroup );               
+        SourceGroup preselectedGroup = getPreselectedGroup( folders, preselectedFolder );
         // Create OS dependent relative name
         if (preselectedGroup != null) {
+            locationComboBox.setSelectedItem( preselectedGroup );
             folderTextField.setText( getRelativeNativeName( preselectedGroup.getRootFolder(), preselectedFolder ) );
         }
 
