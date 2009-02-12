@@ -38,7 +38,10 @@
  */
 package org.netbeans.modules.dlight.perfan.spi;
 
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.ConnectException;
+import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import java.util.ArrayList;
@@ -50,7 +53,10 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.ValidationListener;
@@ -60,6 +66,7 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.perfan.storage.impl.PerfanDataStorage;
+import org.netbeans.modules.dlight.perfan.util.SunStudioLocator;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
@@ -69,6 +76,7 @@ import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.windows.InputOutput;
@@ -89,10 +97,11 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
     private ValidationStatus validationStatus = ValidationStatus.initialStatus();
 //    private IndicatorsNotifyerTask indicatorsNotifyerTask;
     private PerfanDataStorage storage = null;
-    private String experimentDir = null;
-    private String collect = null;
+    private String experimentDir;
     private Future<Integer> collectTask = null;
     private ExecutionEnvironment execEnv = null;
+    private String collectCmd;
+    private String sproHome;
 
     SunStudioDataCollector(List<CollectedInfo> collectedInfoList) {
         this.collectedInfoList = Collections.synchronizedList(
@@ -131,11 +140,23 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
     }
 
     protected synchronized ValidationStatus doValidation(DLightTarget targetToValidate) {
-        String os = null;
-        final ExecutionEnvironment targetEnv = targetToValidate.getExecEnv();
-        
+        final String os;
+        execEnv = targetToValidate.getExecEnv();
+
         try {
-            os = HostInfoUtils.getOS(targetEnv);
+            os = HostInfoUtils.getOS(execEnv);
+
+            if (!"SunOS".equals(os)) {
+                return ValidationStatus.invalidStatus("SunStudioDataCollector works on SunOS only."); // NOI18N
+            }
+
+            sproHome = SunStudioLocator.getInstance().getSproHome(execEnv);
+            collectCmd = sproHome + "/bin/collect";
+
+            if (!HostInfoUtils.fileExists(execEnv, collectCmd)) {
+                return ValidationStatus.invalidStatus(collectCmd + " not found");
+            }
+
         } catch (ConnectException ex) {
             final ConnectionManager mgr = ConnectionManager.getInstance();
             Runnable onConnect = new Runnable() {
@@ -144,23 +165,14 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
                     DLightManager.getDefault().revalidateSessions();
                 }
             };
-            
-            AsynchronousAction connectAction = mgr.getConnectToAction(targetEnv, onConnect);
+
+            AsynchronousAction connectAction = mgr.getConnectToAction(execEnv, onConnect);
 
             return ValidationStatus.unknownStatus("Host is not connected...", // NOI18N
                     connectAction);
         }
 
-        if (!"SunOS".equals(os)) {
-            return ValidationStatus.invalidStatus("SunStudioDataCollector works on SunOS only."); // NOI18N
-        }
-
-        ValidationStatus result = null;
-
-        // TODO: files copying...????
-        result = ValidationStatus.validStatus();
-
-        return result;
+        return ValidationStatus.validStatus();
     }
 
     public void addValidationListener(ValidationListener listener) {
@@ -207,23 +219,37 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
     // Is called before target has been started
     public void init(DataStorage dataStorage, DLightTarget target) {
         if (!(dataStorage instanceof PerfanDataStorage)) {
-            throw new IllegalArgumentException("You can not use storage " + dataStorage + " for PerfanDataCollector!");
+            throw new IllegalArgumentException("You can not use storage " +
+                    dataStorage + " for PerfanDataCollector!");
         }
+
+        DLightLogger.assertTrue(execEnv.equals(target.getExecEnv()),
+                "Verification was performed against another execEnv"); // NOI18N
+
+        experimentDir = "/var/tmp/dlightExperiment.er";
 
         log.fine("Initialize perfan collector and storage for target " + target.toString());
         log.fine("Prepare PerfanDataCollector. Clean directory " + experimentDir);
 
-//        NativeTask rmTask = CommonTasksSupport.getRemoveDirectoryTask(
-//                target.getExecEnv(), experimentDir, true, null);
-//
-//        try {
-//            rmTask.invoke(true);
-//        } catch (Exception ex) {
-//        }
+        Future<Integer> rmFuture =
+                CommonTasksSupport.rmDir(execEnv, experimentDir, true);
 
+        Integer rmResult = null;
+
+        try {
+            rmResult = rmFuture.get();
+        } catch (InterruptedException ex) {
+        } catch (ExecutionException ex) {
+        }
+
+        if (rmResult == null || rmResult.intValue() != 0) {
+            log.info("SunStudioDataCollector: unable to delete directory " // NOI18N
+                    + execEnv.toString() + ":" + experimentDir); // NOI18N
+        }
+
+        // Init storage (i.e. er_print, actually)
         storage = (PerfanDataStorage) dataStorage;
-        storage.setCollector(this);
-
+        storage.init(execEnv, sproHome, experimentDir);
     }
 
     public ExecutionEnvironment getExecEnv() {
@@ -231,34 +257,36 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
     }
 
     private void targetStarted(DLightTarget target) {
-
         if (isAttachable()) {
             // i.e. should start separate process
-            execEnv = target.getExecEnv();
             AttachableTarget at = (AttachableTarget) target;
-            NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, collect);
-            npb = npb.setArguments("-P", "" + at.getPID(), "-o", experimentDir);
-            ExecutionDescriptor descr = new ExecutionDescriptor().inputOutput(InputOutput.NULL);
-            ExecutionService service = ExecutionService.newService(npb, descr, "collect");
+            NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, collectCmd);
+            npb = npb.setArguments("-P", "" + at.getPID(), "-o", experimentDir); // NOI18N
+            
+            ExecutionDescriptor descr = new ExecutionDescriptor();
+            descr = descr.errProcessorFactory(new StdErrRedirectorFactory());
+            descr = descr.outProcessorFactory(new StdErrRedirectorFactory());
+            descr = descr.inputOutput(InputOutput.NULL);
+
+            ExecutionService service = ExecutionService.newService(npb, descr, "collect"); // NOI18N
             collectTask = service.run();
-        } else {
-            execEnv = target.getExecEnv();
         }
     }
 
     private void targetFinished(DLightTarget target) {
-        log.fine("Stopping PerfanDataCollector: " + collect);
+        log.fine("Stopping PerfanDataCollector: " + collectCmd);
 
         if (isAttachable()) {
             // i.e. separate process
-            collectTask.cancel(true);
+            if (collectTask != null) {
+                collectTask.cancel(true);
+            }
         } else {
             // i.e. this means that exactly this collector finished
             // do nothing
         }
 
         collectTask = null;
-        execEnv = null;
 
 //    if (indicatorsNotifyerTask != null) {
 //      DLightGlobalTimer.getInstance().unregisterTimerTask(indicatorsNotifyerTask);
@@ -281,7 +309,7 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
     }
 
     public String getCmd() {
-        return collect;
+        return collectCmd;
     }
 
     public String[] getArgs() {
@@ -316,6 +344,31 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
             case STOPPED:
                 targetFinished(source);
                 return;
+        }
+    }
+
+    private static class StdErrRedirectorFactory
+            implements InputProcessorFactory {
+
+        public InputProcessor newInputProcessor(InputProcessor p) {
+            return InputProcessors.copying(new OutputStreamWriter(System.err) {
+
+                final StringBuilder sb = new StringBuilder();
+                final static String prefix = "!!!!! Collector !!!! : ";
+
+                @Override
+                public void write(char[] chars) throws IOException {
+                    sb.setLength(0);
+                    sb.append(prefix);
+                    for (int i = 0; i < chars.length; i++) {
+                        sb.append(chars[i]);
+                        if (i < chars.length - 1 && chars[i] == '\n') {
+                            sb.append(prefix);
+                        }
+                    }
+                    super.write(sb.toString().toCharArray());
+                }
+            });
         }
     }
 }
