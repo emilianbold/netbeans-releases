@@ -81,7 +81,9 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
         write(slice);
         write(slice);
         readAndCompare(slice);
-        strategy.printStatistics();
+        if (TRACE) {
+            strategy.printStatistics();
+        }
         if (strategy.getCacheSize() >= 10) {
             assertTrue("Write hit percentage should be ", strategy.getWriteHitPercentage() > 40);
             assertTrue("", strategy.getReadHitPercentage() > 90);
@@ -183,7 +185,9 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
         }
         proceed = false;
 
-        strategy.printStatistics();
+        if (TRACE) {
+            strategy.printStatistics();
+        }
         for (int i = 0; i < units.length; i++) {
             strategy.closeUnit(units[i]);
         }
