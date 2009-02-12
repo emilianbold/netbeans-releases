@@ -56,7 +56,6 @@ public class VerifyErgonomicsIDETest {
             addTest(PerClusterEnablementCheck.class).
             addTest(ProjectTemplatesCheck.class).
             addTest(AllClustersProcessedCheck.class).
-            addTest(EnableKitRefreshesLayersCheck.class).
             gui(false).
             clusters("ergonomics.*").
             clusters(".*")

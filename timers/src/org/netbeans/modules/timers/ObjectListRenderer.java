@@ -43,6 +43,7 @@ package org.netbeans.modules.timers;
 import java.awt.Component;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.logging.Level;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import org.openide.explorer.view.NodeRenderer;
@@ -78,10 +79,18 @@ final class ObjectListRenderer extends DefaultListCellRenderer {
         
         if (value instanceof DataObject) {
             DataObject obj = (DataObject)value;
-            if (obj.isValid()) {
-                value = obj.getNodeDelegate();
-            } else {
-                value = obj.getName();
+            for (;;) {
+                if (obj.isValid()) {
+                    try {
+                        value = obj.getNodeDelegate();
+                    } catch (IllegalStateException ex) {
+                        TimeComponentPanel.LOG.log(Level.INFO, "Object became invalid " + obj.getPrimaryFile(), ex);
+                        continue;
+                    }
+                } else {
+                    value = obj.getName();
+                }
+                break;
             }
         }
         
