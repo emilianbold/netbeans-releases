@@ -107,7 +107,8 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
      * 2) a container for int/string table for each unit's file names (a table per unit)
      * (stores units timestamps as well)
      */
-    private static UnitsCache unitNamesCache = new UnitsCache();  
+    private static UnitsCache unitNamesCache = null;
+    private static final Object initLock = new Object();
     
     private static boolean loaded = false;
     
@@ -344,6 +345,9 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
                 tr.printStackTrace();
             }
         } finally {
+            if (unitNamesCache == null) {
+                unitNamesCache = new UnitsCache();
+            }
             if (dis != null) {
                 try {
                     dis.close();
@@ -387,11 +391,16 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
     
     public static void startup(int newVersion) {
         version = newVersion;
-        if (!loaded) {
-            synchronized (unitNamesCache) {
+        init();
+    }
+
+    private static void init() {
+        boolean aLoaded = loaded;
+        if (!aLoaded) {
+            synchronized (initLock) {
                 if (!loaded) {
-                    loaded = true;
                     loadMasterIndex();
+                    loaded = true;
                 }
             }
         }

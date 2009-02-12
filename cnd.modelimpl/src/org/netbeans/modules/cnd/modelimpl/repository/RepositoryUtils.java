@@ -264,6 +264,10 @@ public final class RepositoryUtils {
         repository.cleanCaches();
     }
 
+    public static void debugClear() {
+        repository.debugClear();
+    }
+
     public static void closeUnit(CsmUID uid, Set<String> requiredUnits, boolean cleanRepository) {
         closeUnit(UIDtoKey(uid), requiredUnits, cleanRepository);
     }

@@ -73,12 +73,12 @@ public class TraceModelBase {
         Logger openideLogger = Logger.getLogger("org.openide.loaders"); // NOI18N
         // reduce log level to prevent unnecessary messages in tests
         openideLogger.setLevel(Level.SEVERE);
-        RepositoryUtils.cleanCashes();
         model = (ModelImpl) CsmModelAccessor.getModel(); // new ModelImpl(true);
         if (model == null) {
             model = new ModelImpl();
         }
         model.startup();
+        RepositoryUtils.cleanCashes();
         currentIncludePaths = quoteIncludePaths;
     }
 
@@ -93,6 +93,7 @@ public class TraceModelBase {
         model.shutdown();
         waitModelTasks();
         RepositoryUtils.cleanCashes();
+        RepositoryUtils.debugClear();
     }
 
     private void waitModelTasks() {

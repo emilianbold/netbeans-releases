@@ -41,12 +41,12 @@ public class RepositoryValidation extends RepositoryValidationBase {
     }
 
     protected @Override void setUp() throws Exception {
-        //System.setProperty("cnd.repository.hardrefs", Boolean.TRUE.toString()); //NOI18N
+        System.setProperty("cnd.repository.hardrefs", Boolean.FALSE.toString()); //NOI18N
         assertNotNull("This test can only be run from suite", RepositoryValidationGoldens.getGoldenDirectory()); //NOI18N
         System.setProperty(PROPERTY_GOLDEN_PATH, RepositoryValidationGoldens.getGoldenDirectory());
         super.setUp();
     }
-    
+
     public void testRepository() throws Exception {
         List<String> args = find();
         assert args.size() > 0;

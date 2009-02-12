@@ -347,7 +347,6 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
     }
 
     public void startup(int persistMechanismVersion) {
-        RepositoryTranslatorImpl.startup(persistMechanismVersion);
     }
 
     static private class RemovedPersistent implements Persistent {

@@ -64,11 +64,9 @@ public class Stats {
     public static final boolean isDebug = CndUtils.getBoolean("cnd.repository.use.dev", false); //NOI18N
     public static final boolean verbosePut = CndUtils.getBoolean("cnd.repository.verbose.put", false); //NOI18N
     public static final boolean validatePut = CndUtils.getBoolean("cnd.repository.validate.put", false); //NOI18N
-    public static final boolean validateKeys = CndUtils.getBoolean("cnd.repository.validate.keys", false); //NOI18N
     public static final boolean rememberKeys = CndUtils.getBoolean("cnd.repository.remember.keys", false); //NOI18N
     public static final boolean useNullWorkaround = CndUtils.getBoolean("cnd.repository.workaround.nulldata", false); //NOI18N
     
-    public static final boolean useHardRefRepository = CndUtils.getBoolean("cnd.repository.hardrefs", false); //NOI18N
     public static final boolean queueTiming = CndUtils.getBoolean("cnd.repository.queue.timing", false); //NOI18N
     public static final boolean queueTrace = CndUtils.getBoolean("cnd.repository.queue.trace", false); //NOI18N
     public static final boolean queueUseTicking = CndUtils.getBoolean("cnd.repository.queue.ticking", true); //NOI18N
