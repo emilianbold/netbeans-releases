@@ -455,7 +455,9 @@ public final class Splash {
 	 * number of steps.
 	 */
 	private void addToMaxSteps(int steps) {
-	    int max = maxSteps + steps;
+	    if( steps == 0 )
+            return;
+        int max = maxSteps + steps;
 	    int prog = progress / maxSteps * max;
 	    maxSteps = max;
 	    progress = prog;
