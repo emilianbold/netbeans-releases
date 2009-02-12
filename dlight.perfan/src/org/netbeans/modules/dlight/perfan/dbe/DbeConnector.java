@@ -46,19 +46,18 @@ import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.util.Locale;
 import java.util.concurrent.Future;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.modules.dlight.perfan.ipc.IPCException;
 import org.netbeans.modules.dlight.util.ExecUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
-import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
-import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.openide.util.Exceptions;
 
-public class DbeConnector implements Listener {
+public class DbeConnector implements ChangeListener {
 
     public final Object lock = new Object();
     private static final char[] hex = {
@@ -625,7 +624,7 @@ public class DbeConnector implements Listener {
 //    System.out.println("XXXXXXXXXX Idbe Error - Need restarting!");
 //    reconnect();
 //  }
-    public void processStateChanged(NativeProcess process, State oldState, State newState) {
+    public void stateChanged(ChangeEvent e) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 }

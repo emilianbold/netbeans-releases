@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -61,6 +62,7 @@ import org.openide.util.Utilities;
  * @author Tomas Mysik
  */
 public abstract class PhpEnvironment {
+    public static final DocumentRoot PENDING_DOCUMENT_ROOT = new DocumentRoot(NbBundle.getMessage(PhpEnvironment.class, "LBL_PleaseWait"), null, null, true);
     protected static final Logger LOGGER = Logger.getLogger(PhpEnvironment.class.getName());
 
     static final String HTDOCS = "htdocs"; //NOI18N
@@ -70,6 +72,8 @@ public abstract class PhpEnvironment {
         }
     };
     private static final PhpEnvironment UNKNOWN_PHP_ENVIRONMENT = new UnknownPhpEnvironment();
+
+    private static final RequestProcessor READ_DOCUMENT_ROOTS_THREAD = new RequestProcessor("Read document roots", 3); // NOI18N
 
     PhpEnvironment() {
     }
@@ -92,20 +96,35 @@ public abstract class PhpEnvironment {
     }
 
     /**
-     * Get the OS dependent {@link DocumentRoot roots} of document roots and their URLs for the given project name.
+     * Asynchronously get the OS dependent {@link DocumentRoot roots} of document roots and their URLs for the given project name.
+     * @param notifier code that is called after document roots are read.
      * @param projectName project name for which the directory in the document root is searched.
      *                    Can be <code>null</code> if it is not needed.
-     * @return list of {@link DocumentRoot roots} (can be empty).
+     * @return "pending" {@link DocumentRoot document root}, see {@link #PENDING_DOCUMENT_ROOT}.
      */
-    public abstract List<DocumentRoot> getDocumentRoots(String projectName);
+    public DocumentRoot readDocumentRoots(final ReadDocumentRootsNotifier notifier, final String projectName) {
+        assert notifier != null;
+        RequestProcessor.Task readDocumentRootsTask = READ_DOCUMENT_ROOTS_THREAD.create(new Runnable() {
+            public void run() {
+                List<DocumentRoot> documentRoots = getDocumentRoots(projectName);
+                assert documentRoots != null;
+                notifier.finished(documentRoots);
+            }
+        });
+        readDocumentRootsTask.schedule(0);
+        return PENDING_DOCUMENT_ROOT;
+    }
 
     /**
-     * Get the OS dependent {@link DocumentRoot roots} of document roots and their URLs.
-     * @return list of {@link DocumentRoot roots} (can be empty).
+     * Asynchronously get the OS dependent {@link DocumentRoot roots} of document roots and their URLs.
+     * @param notifier code that is called after document roots are read.
+     * @return "pending" {@link DocumentRoot document root}, see {@link #PENDING_DOCUMENT_ROOT}.
+     * @see #readDocumentRoots(ReadDocumentRootsNotifier, String)
      */
-    public List<DocumentRoot> getDocumentRoots() {
-        return getDocumentRoots(null);
+    public DocumentRoot readDocumentRoots(ReadDocumentRootsNotifier notifier) {
+        return readDocumentRoots(notifier, null);
     }
+
 
     /**
      * Get the list of all found PHP command line interpreters. The list can be empty.
@@ -149,6 +168,8 @@ public abstract class PhpEnvironment {
         // return the first one
         return allPhpUnits.get(0);
     }
+
+    protected abstract List<DocumentRoot> getDocumentRoots(String projectName);
 
     /**
      * Document root and its URL. It also contains flag whether this pair is preferred or not
@@ -299,5 +320,9 @@ public abstract class PhpEnvironment {
             }
         }
         return found;
+    }
+
+    public static interface ReadDocumentRootsNotifier {
+        void finished(final List<DocumentRoot> documentRoots);
     }
 }

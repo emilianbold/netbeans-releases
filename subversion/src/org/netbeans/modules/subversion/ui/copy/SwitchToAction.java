@@ -132,9 +132,7 @@ public class SwitchToAction extends ContextAction {
 
         final SwitchTo switchTo = new SwitchTo(repositoryRoot, interestingFile, hasChanges);
                 
-        if(switchTo.showDialog()) {
-            performSwitch(switchTo, rp, nodes, roots);
-        }
+        performSwitch(switchTo, rp, nodes, roots);
     }
 
     /**
@@ -145,6 +143,9 @@ public class SwitchToAction extends ContextAction {
      * @param roots
      */
     private void performSwitch(final SwitchTo switchTo, final RequestProcessor rp, final Node[] nodes, final File[] roots) {
+        if(!switchTo.showDialog()) {
+           return;
+        }
         rp.post(new Runnable() {
             public void run() {
                 if(!validateInput(roots[0], switchTo.getRepositoryFile())) {

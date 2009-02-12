@@ -63,7 +63,7 @@ public class RepositoryValidationGoldens extends RepositoryValidationBase {
 
         List<String> args = find();
         assert args.size() > 0;
-        args.add("-fq"); //NOI18N
+        //args.add("-fq"); //NOI18N
         doTest(args.toArray(new String[]{}), streamOut, streamErr);
         assertNoExceptions();
     }

@@ -215,6 +215,7 @@
                 <friend>org.netbeans.modules.scala.project</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.xtest</friend>
+                <friend>org.netbeans.modules.javacard</friend>
                 <package>org.netbeans.modules.java.api.common</package>
                 <package>org.netbeans.modules.java.api.common.ant</package>
                 <package>org.netbeans.modules.java.api.common.classpath</package>

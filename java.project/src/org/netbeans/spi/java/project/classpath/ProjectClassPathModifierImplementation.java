@@ -49,8 +49,11 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.java.project.classpath.ProjectClassPathModifierAccessor;
@@ -271,7 +274,38 @@ public abstract class ProjectClassPathModifierImplementation {
      * removing of an artifact from the classpath of the given type.
      */
     protected abstract boolean removeAntArtifacts (AntArtifact[] artifacts, URI[] artifactElements, SourceGroup sourceGroup, String type) throws IOException, UnsupportedOperationException;
-    
+
+
+    /**
+     * Adds projects as dependencies into project's classpath if the
+     * artifacts are not already on it. The default behaviour will behave as {@link ProjectClassPathModifierImplementation#addAntArtifacts(org.netbeans.api.project.ant.AntArtifact[], java.net.URI[], org.netbeans.api.project.SourceGroup, java.lang.String)}
+     * Other project types can override the behaviour.
+     * @param projects to be added
+     * (must be owned by the artifact and be relative to it)
+     * @param sourceGroup of type {@link org.netbeans.api.java.project.JavaProjectConstants#SOURCES_TYPE_JAVA}
+     * identifying the compilation unit to change
+     * @param type the type of the classpath the artifact should be added to,
+     * eg {@link org.netbeans.api.java.classpath.ClassPath#COMPILE}
+     * @return true in case the classpath was changed, (at least one artifact was added to the classpath),
+     * the value false is returned when all the artifacts are already included on the classpath.
+     * @exception IOException in case the project metadata cannot be changed
+     * @exception UnsupportedOperationException is thrown when the project does not support
+     * adding of an artifact to the classpath of the given type.
+     * @since org.netbeans.modules.java.project/1 1.24
+     */
+    protected boolean addProjects(Project[] projects, SourceGroup sg, String classPathType) throws IOException, UnsupportedOperationException {
+        List<AntArtifact> ants = new ArrayList<AntArtifact>();
+        List<URI> antUris = new ArrayList<URI>();
+        for (Project prj : projects) {
+            AntArtifact[] antArtifacts = AntArtifactQuery.findArtifactsByType(prj, JavaProjectConstants.ARTIFACT_TYPE_JAR);
+            for (AntArtifact aa : antArtifacts) {
+                ants.add(aa);
+                antUris.add(aa.getArtifactLocations()[0]);
+            }
+        }
+        return addAntArtifacts(ants.toArray(new AntArtifact[0]), antUris.toArray(new URI[0]), sg, classPathType);
+    }
+
     /**
      * Takes a classpath root and tries to figure the best way to reference that file for that particular project.
      * The possible actions include relativization of path, copying to sharable libraries folder etc.
@@ -322,6 +356,7 @@ public abstract class ProjectClassPathModifierImplementation {
         }
         return f;
     }
+
     
     private File copyFile(File file, FileObject newRoot) throws IOException {
         FileObject fo = FileUtil.toFileObject(file);
@@ -410,6 +445,11 @@ public abstract class ProjectClassPathModifierImplementation {
         public boolean addRoots (URI[] classPathRoots, ProjectClassPathModifierImplementation m, SourceGroup sourceGroup, String type) throws IOException, UnsupportedOperationException {
             assert m!= null;
             return m.addRoots (classPathRoots, sourceGroup, type);
-        }       
+        }
+
+        public boolean addProjects(Project[] projects, ProjectClassPathModifierImplementation pcmi, SourceGroup sg, String classPathType) throws IOException, UnsupportedOperationException {
+            assert pcmi != null;
+            return pcmi.addProjects(projects, sg, classPathType);
+        }
     }
 }

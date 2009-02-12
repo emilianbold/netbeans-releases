@@ -567,7 +567,7 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
     }
 
     public static void registerRunningTask (RequestProcessor.Task it) {
-        assert runningTask == null || runningTask.isFinished () : "Only once task can be running.";
+        assert runningTask == null || runningTask.isFinished () : "Only once task can be running. Already running : " + runningTask;
         runningTask = it;
     }
     
