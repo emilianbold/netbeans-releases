@@ -36,50 +36,31 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.model.impl;
 
-import java.io.IOException;
-import java.util.ArrayList;
+package org.netbeans.modules.php.project.spi;
+
 import java.util.Collection;
-import java.util.List;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.php.editor.model.ClassScope;
-import org.netbeans.modules.php.editor.model.Model;
-import org.netbeans.modules.php.editor.model.ModelFactory;
-import org.netbeans.modules.php.editor.model.FileScope;
-import org.netbeans.modules.php.project.spi.PhpStructureProvider;
-import org.netbeans.napi.gsfret.source.CompilationController;
-import org.netbeans.napi.gsfret.source.Phase;
-import org.netbeans.napi.gsfret.source.Source;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  *
  * @author Radek Matous
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.php.project.spi.PhpStructureProvider.class)
-public class PhpStructureProviderImpl implements PhpStructureProvider {
+public interface PhpUnitSupport {
+    /**
+     * Get the names of PHP classes from the given {@link FileObject file object}.
+     * @param fo {@link FileObject file object} to investigate.
+     * @return collection of class names, never <code>null</code>.
+     */
+    Collection<? extends String> getClassNames(final FileObject fo);
+    /**
+     * Collects files contating class name
+     * @param fo
+     * @param clsName
+     * @return collection of {@link FileObject file objects} containing the class
+     * with passed clsName, never <code>null</code>.
+     */
 
-    public Collection<? extends String> getClassNames(final FileObject fo) {
-        final List<String> retval = new ArrayList<String>();
-        Source source = Source.forFileObject(fo);
-        try {
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
-                public void run(CompilationController parameter) throws Exception {
-                    parameter.toPhase(Phase.RESOLVED);
-                    Model model = ModelFactory.getModel(parameter);
-                    FileScope fileScope = model.getFileScope();
-                    Collection<? extends ClassScope> allClasses = fileScope.getDeclaredClasses();
-                    for (ClassScope classScope : allClasses) {
-                        retval.add(classScope.getName());
-                    }
-                }
-                public void cancel() {}
-            }, true);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return retval;
-    }
+    Collection<? extends FileObject> filesForClassName(final FileObject fo,
+            final String clsName);
 }
