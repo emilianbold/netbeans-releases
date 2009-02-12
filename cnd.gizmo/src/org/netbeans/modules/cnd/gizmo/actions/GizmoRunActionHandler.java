@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -84,7 +85,11 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
                 pae.getProfile().getArgsArray(),
                 createMap(pae.getProfile().getEnvironment().getenvAsPairs()));
         MakeConfiguration conf = (MakeConfiguration) pae.getConfiguration();
-        targetConf.setHost(conf.getDevelopmentHost().getName());
+        String userAndHost = conf.getDevelopmentHost().getName();
+        if (!RemoteUtils.isLocalhost(userAndHost)) {
+            targetConf.setHost(RemoteUtils.getHostName(userAndHost));
+            targetConf.setUser(RemoteUtils.getUserName(userAndHost));
+        }
         targetConf.setWorkingDirectory(pae.getProfile().getRunDirectory());
         int consoleType = pae.getProfile().getConsoleType().getValue();
         if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
