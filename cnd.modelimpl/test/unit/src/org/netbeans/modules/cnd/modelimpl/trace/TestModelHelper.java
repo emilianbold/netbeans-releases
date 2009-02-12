@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.trace;
 
-import java.io.File;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;

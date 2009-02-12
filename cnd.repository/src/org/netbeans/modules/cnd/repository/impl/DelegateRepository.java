@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.repository.impl;
 
 import java.util.Set;
@@ -56,11 +55,11 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  *
  * @author Vladimir Voskresensky
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.repository.api.Repository.class)
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.repository.api.Repository.class)
 public final class DelegateRepository implements Repository {
-    
+
     private Repository delegate;
-    
+
     public DelegateRepository() {
     }
 
@@ -74,20 +73,20 @@ public final class DelegateRepository implements Repository {
 
     public Persistent get(Key key) {
         Persistent result = delegate.get(key);
-	if( result == null && Stats.useNullWorkaround ) {
-	    String keyClassName = key.getClass().getName();
-	    // repository is often asked for projects when theis persistence just does not exist
-	    if( ! keyClassName.endsWith(".ProjectKey") && ! keyClassName.endsWith(".OffsetableDeclarationKey") ) { // NOI18N
-		System.err.printf("NULL returned for key %s on attempt 1\n", key);
-		result = delegate.get(key);
-		System.err.printf("%s value returned for key %s on attempt 2\n", (result == null) ? "NULL" : "NON-NULL", key);
-	    }
-	}
-	return result;
+        if (result == null && Stats.useNullWorkaround) {
+            String keyClassName = key.getClass().getName();
+            // repository is often asked for projects when theis persistence just does not exist
+            if (!keyClassName.endsWith(".ProjectKey") && !keyClassName.endsWith(".OffsetableDeclarationKey")) { // NOI18N
+                System.err.printf("NULL returned for key %s on attempt 1\n", key);
+                result = delegate.get(key);
+                System.err.printf("%s value returned for key %s on attempt 2\n", (result == null) ? "NULL" : "NON-NULL", key);
+            }
+        }
+        return result;
     }
-    
+
     public Persistent tryGet(Key key) {
-	return delegate.tryGet(key);
+        return delegate.tryGet(key);
     }
 
     public void remove(Key key) {
@@ -105,15 +104,15 @@ public final class DelegateRepository implements Repository {
             aDelegate.shutdown();
         }
     }
-    
+
     public void openUnit(int unitId, String unitName) {
         delegate.openUnit(unitId, unitName);
     }
-    
+
     public void closeUnit(String unitName, boolean cleanRepository, Set<String> requiredUnits) {
         delegate.closeUnit(unitName, cleanRepository, requiredUnits);
     }
-    
+
     public void removeUnit(String unitName) {
         delegate.removeUnit(unitName);
     }
