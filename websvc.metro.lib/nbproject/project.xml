@@ -46,25 +46,7 @@ made subject to such option by the copyright holder.
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.websvc.metro.lib</code-name-base>
             <module-dependencies/>
-            <!--friend-packages/-->
             <public-packages/>
-            <!--
-            <class-path-extension>
-                <runtime-relative-path>ext/metro/webservices-api.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/metro/webservices-extra.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/metro/webservices-tools.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/metro/webservices-extra-api.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/metro/webservices-rt.jar</runtime-relative-path>
-            </class-path-extension>
-            -->
         </data>
     </configuration>
 </project>
