@@ -48,6 +48,7 @@ made subject to such option by the copyright holder.
             <module-dependencies/>
             <!--friend-packages/-->
             <public-packages/>
+            <!--
             <class-path-extension>
                 <runtime-relative-path>ext/metro/webservices-api.jar</runtime-relative-path>
             </class-path-extension>
@@ -63,6 +64,7 @@ made subject to such option by the copyright holder.
             <class-path-extension>
                 <runtime-relative-path>ext/metro/webservices-rt.jar</runtime-relative-path>
             </class-path-extension>
+            -->
         </data>
     </configuration>
 </project>
