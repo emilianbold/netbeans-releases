@@ -120,15 +120,15 @@ public class ServerChooserVisual extends javax.swing.JPanel {
             wizard.putProperty(AddServerInstanceWizard.PROP_SERVER, ((ServerAdapter)selectedItem).getServer());
         }
     }
-    
-    public boolean isValid() {
+
+    public boolean hasValidData() {
         boolean result = isServerValid() && isDisplayNameValid();
-        if (result)
+        if (result) {
             wizard.setErrorMessage(null);
-        
+        }
         return result;
     }
-    
+
     private boolean isServerValid() {
         boolean result = serverListBox.getSelectedValue() != null;
         if (!result)
