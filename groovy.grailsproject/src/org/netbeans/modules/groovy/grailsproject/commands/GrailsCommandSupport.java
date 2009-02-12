@@ -39,14 +39,13 @@
 
 package org.netbeans.modules.groovy.grailsproject.commands;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -77,7 +76,12 @@ import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionException;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.openide.awt.HtmlBrowser;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.InputOutput;
@@ -102,13 +106,9 @@ public final class GrailsCommandSupport {
 
     private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
 
-    private static final Set<String> CREATE_COMMANDS = new HashSet<String>(4);
-
-    static {
-        Collections.addAll(CREATE_COMMANDS, "create-app", "create-plugin"); // NOI18N
-    }
-
     private final GrailsProject project;
+
+    private PluginListener pluginListener;
 
     private List<GrailsCommand> commands;
 
@@ -180,19 +180,15 @@ public final class GrailsCommandSupport {
             }
         });
 
+        List<GrailsCommand> freshCommands = Collections.emptyList();
         ExecutionService service = ExecutionService.newService(callable, descriptor, "help"); // NOI18N
         Future<Integer> task = service.run();
         try {
             if (task.get().intValue() == 0) {
-                List<GrailsCommand> freshCommands = new ArrayList<GrailsCommand>();
+                freshCommands = new ArrayList<GrailsCommand>();
                 for (String command : lineProcessor.getCommands()) {
                     freshCommands.add(new GrailsCommand(command, null, command)); // NOI18N
                 }
-
-                synchronized (this) {
-                    this.commands = freshCommands;
-                }
-                return;
             }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
@@ -201,7 +197,14 @@ public final class GrailsCommandSupport {
         }
 
         synchronized (this) {
-            this.commands = Collections.emptyList();
+            if (pluginListener == null) {
+                pluginListener = new PluginListener();
+                File folder = FileUtil.toFile(project.getProjectDirectory());
+                // weakly referenced
+                FileUtil.addFileChangeListener(pluginListener, new File(folder, "plugins")); // NOI18N
+            }
+
+            this.commands = freshCommands;
         }
     }
 
@@ -282,7 +285,7 @@ public final class GrailsCommandSupport {
 
         public void processLine(String line) {
             Matcher matcher = COMMAND_PATTERN.matcher(line);
-            if (matcher.matches() && !CREATE_COMMANDS.contains(matcher.group(1))) {
+            if (matcher.matches()) {
                 commands.add(matcher.group(1));
             }
         }
@@ -324,6 +327,40 @@ public final class GrailsCommandSupport {
             }
             return InputProcessors.proxy(processors);
         }
+    }
 
+    private class PluginListener implements FileChangeListener {
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            // noop
+        }
+
+        public void fileChanged(FileEvent fe) {
+            changed();
+        }
+
+        public void fileDataCreated(FileEvent fe) {
+            changed();
+        }
+
+        public void fileDeleted(FileEvent fe) {
+            changed();
+        }
+
+        public void fileFolderCreated(FileEvent fe) {
+            changed();
+        }
+
+        public void fileRenamed(FileRenameEvent fe) {
+            changed();
+        }
+
+        private void changed() {
+            // FIXME check only script changes
+
+            synchronized (GrailsCommandSupport.this) {
+                commands = null;
+            }
+        }
     }
 }

@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.repository.disk;
 
 import java.util.ArrayList;
@@ -52,20 +51,22 @@ import org.openide.util.RequestProcessor;
  * @author Alexander Simon
  */
 public class MemoryCacheTest extends NbTestCase {
-    private static final int K = 1000;
-    private static final int M = K*K;
 
+    private static final boolean TRACE = false;
+    private static final int K = 1000;
+    private static final int M = K * K;
     private static final int NUMBER_OF_THREADS = 5;
+
     /** Creates a new instance of BaseTestCase */
     public MemoryCacheTest() {
         super("MemoryCacheTest");
     }
-    
+
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
     }
-    
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -75,18 +76,18 @@ public class MemoryCacheTest extends NbTestCase {
         MemoryCache cache = new MemoryCache();
         RequestProcessor processor = new RequestProcessor("processor", NUMBER_OF_THREADS);
         List<MyProcess> processes = new ArrayList<MyProcess>(NUMBER_OF_THREADS);
-        for (int i =0; i < NUMBER_OF_THREADS; i++) {
+        for (int i = 0; i < NUMBER_OF_THREADS; i++) {
             MyProcess process;
             if (i == 0) {
-                process = new MyProcess(cache, i, 5*M, 10*M, true);
+                process = new MyProcess(cache, i, 5 * M, 10 * M, true);
             } else {
-                process = new MyProcess(cache, i, 10*M, K, false);
-                
+                process = new MyProcess(cache, i, 10 * M, K, false);
+
             }
             processes.add(process);
             processor.post(process);
         }
-        while(true){
+        while (true) {
             Thread.sleep(100);
             boolean exit = true;
             for (MyProcess process : processes) {
@@ -98,7 +99,8 @@ public class MemoryCacheTest extends NbTestCase {
         }
     }
 
-    private static final class MyProcess implements Runnable{
+    private static final class MyProcess implements Runnable {
+
         private static final int CASES = 10;
         private final int max_loop;
         private final int max_key;
@@ -106,16 +108,20 @@ public class MemoryCacheTest extends NbTestCase {
         private final int process;
         private final boolean onlySoft;
         private boolean isFinished = false;
-        private MyProcess(MemoryCache cache, int process, int max_loop, int max_key, boolean onlySoft){
+
+        private MyProcess(MemoryCache cache, int process, int max_loop, int max_key, boolean onlySoft) {
             this.cache = cache;
             this.process = process;
             this.max_loop = max_loop;
             this.max_key = max_key;
             this.onlySoft = onlySoft;
         }
+
         public void run() {
-            System.out.println("Started "+process);
-            for(int i = 0; i < max_loop; i++){
+            if (TRACE) {
+                System.out.println("Started " + process);
+            }
+            for (int i = 0; i < max_loop; i++) {
                 int c;
                 if (onlySoft) {
                     c = 0;
@@ -124,10 +130,10 @@ public class MemoryCacheTest extends NbTestCase {
                 }
                 double d = Math.random();
                 int k = (int) (max_key * d);
-                switch (c%CASES) {
+                switch (c % CASES) {
                     case 0:
                         cache.put(new MyKey(k), new MyPersistent(d), false);
-                        if (onlySoft && (i % (50*K)) == 0){
+                        if (onlySoft && (i % (50 * K)) == 0) {
                             cache.clearSoftRefs();
                         }
                         break;
@@ -145,20 +151,27 @@ public class MemoryCacheTest extends NbTestCase {
                         break;
                 }
             }
-            System.out.println("Finished "+process);
+            if (TRACE) {
+                System.out.println("Finished " + process);
+            }
             isFinished = true;
         }
     }
-    
-    private static final class MyPersistent implements Persistent{
+
+    private static final class MyPersistent implements Persistent {
+
         private double d;
-        private MyPersistent(double d){
+
+        private MyPersistent(double d) {
             this.d = d;
         }
     }
+
     private static final class MyKey implements Key {
+
         int i;
-        private MyKey(int i){
+
+        private MyKey(int i) {
             this.i = i;
         }
 
@@ -173,9 +186,9 @@ public class MemoryCacheTest extends NbTestCase {
 
         @Override
         public boolean equals(Object obj) {
-            return ((MyKey)obj).i == i;
+            return ((MyKey) obj).i == i;
         }
-        
+
         public PersistentFactory getPersistentFactory() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
@@ -203,7 +216,5 @@ public class MemoryCacheTest extends NbTestCase {
         public int getSecondaryAt(int level) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-
     }
-    
 }

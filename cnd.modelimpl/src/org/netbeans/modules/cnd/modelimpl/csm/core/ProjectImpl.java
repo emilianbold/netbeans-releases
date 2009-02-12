@@ -107,8 +107,8 @@ public final class ProjectImpl extends ProjectBase {
             return;
         }
         if (TraceFlags.DEBUG) {
-            Diagnostic.trace("------------------------- onFileEditSTART " + buf.getFile().getName());
-        } // NOI18N
+            Diagnostic.trace("------------------------- onFileEditSTART " + buf.getFile().getName()); //NOI18N
+        }
         final FileImpl impl = createOrFindFileImpl(buf, nativeFile);
         if (impl != null) {
             impl.setBuffer(buf);
@@ -133,8 +133,8 @@ public final class ProjectImpl extends ProjectBase {
             return;
         }
         if (TraceFlags.DEBUG) {
-            Diagnostic.trace("------------------------- onFileEditEND " + buf.getFile().getName());
-        } // NOI18N
+            Diagnostic.trace("------------------------- onFileEditEND " + buf.getFile().getName()); //NOI18N
+        }
         FileImpl file = getFile(buf.getFile());
         if (file != null) {
             synchronized (editedFiles) {
@@ -168,8 +168,8 @@ public final class ProjectImpl extends ProjectBase {
             return;
         }
         if (TraceFlags.DEBUG) {
-            Diagnostic.trace("------------------------- onFilePropertyChanged " + nativeFile.getFile().getName());
-        } // NOI18N
+            Diagnostic.trace("------------------------- onFilePropertyChanged " + nativeFile.getFile().getName()); //NOI18N
+        }
         DeepReparsingUtils.reparseOnPropertyChanged(nativeFile, this);
     }
 

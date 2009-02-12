@@ -383,8 +383,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         if (!ProjectBase.canRegisterDeclaration(decl)) {
             if (TraceFlags.TRACE_REGISTRATION) {
-                traceRegistration("not registered decl " + decl + " UID " + UIDs.get(decl));
-            } //NOI18N
+                traceRegistration("not registered decl " + decl + " UID " + UIDs.get(decl)); //NOI18N
+            } 
             return false;
         }
 
@@ -399,15 +399,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     // don't register if the new one is weaker
                     if (cls.shouldBeReplaced(old)) {
                         if (TraceFlags.TRACE_REGISTRATION) {
-                            traceRegistration("not registered decl " + decl + " UID " + UIDs.get(decl));
-                        } //NOI18N
+                            traceRegistration("not registered decl " + decl + " UID " + UIDs.get(decl)); //NOI18N
+                        }
                         return false;
                     }
                     // remove the old one if the new one is stronger
                     if ((old instanceof ClassEnumBase) && ((ClassEnumBase) old).shouldBeReplaced(cls)) {
                         if (TraceFlags.TRACE_REGISTRATION) {
-                            System.err.println("disposing old decl " + old + " UID " + UIDs.get(decl));
-                        } //NOI18N
+                            System.err.println("disposing old decl " + old + " UID " + UIDs.get(decl)); //NOI18N
+                        } 
                         ((ClassEnumBase) old).dispose();
                     }
                 }
@@ -425,8 +425,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
 
         if (TraceFlags.TRACE_REGISTRATION) {
-            System.err.println("registered " + decl + " UID " + UIDs.get(decl));
-        } //NOI18N
+            System.err.println("registered " + decl + " UID " + UIDs.get(decl)); //NOI18N
+        }
         return true;
     }
 

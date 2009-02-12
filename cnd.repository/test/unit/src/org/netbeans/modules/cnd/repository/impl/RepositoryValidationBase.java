@@ -34,6 +34,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.junit.Manager;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.util.CsmTracer;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 
 /**
@@ -56,6 +59,19 @@ public class RepositoryValidationBase extends TraceModelTestBase {
 	String dataPath = getDataDir().getAbsolutePath().replaceAll("repository", "modelimpl"); //NOI18N
         String filePath = "common";
         return Manager.normalizeFile(new File(dataPath, filePath));
+    }
+
+    @Override
+    protected void postTest(String[] args, Object... params) {
+        for (CsmFile f : getTraceModel().getProject().getAllFiles()){
+            CsmTracer tracer = new CsmTracer(false);
+            FileImpl file = (FileImpl) f;
+            tracer.setDeep(true);
+            tracer.setDumpTemplateParameters(false);
+            tracer.setTestUniqueName(false);
+            tracer.dumpModel(file);
+        }
+        super.postTest(args, params);
     }
 
     protected static String getGoldenDirectory() {
