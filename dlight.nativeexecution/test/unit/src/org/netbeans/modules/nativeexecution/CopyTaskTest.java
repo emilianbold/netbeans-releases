@@ -47,7 +47,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.netbeans.modules.nativeexecution.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.openide.util.Exceptions;
 
 /**
@@ -76,7 +76,7 @@ public class CopyTaskTest {
     }
 
     /**
-     * Test of copyLocalFile method, of class CopyTask.
+     * Test of uploadFile method, of class CopyTask.
      */
     @Test
     public void testCopyTo() throws InterruptedException {
@@ -85,8 +85,9 @@ public class CopyTaskTest {
         String dstFileName = "/tmp/trg_x";
 
         CharArrayWriter err = new CharArrayWriter();
-        Future<Integer> fresult = CommonTasksSupport.copyLocalFile(new ExecutionEnvironment(),
+        Future<Integer> fresult = CommonTasksSupport.uploadFile(
                 srcFileName,
+                new ExecutionEnvironment(),
                 dstFileName, 777, err);
 
         if (fresult == null) {
@@ -136,8 +137,8 @@ public class CopyTaskTest {
 //        CopyTask task = null;
 //
 //        try {
-////        task = CopyTask.copyLocalFile(new ExecutionEnvironment("ak119685", "129.159.127.252", 22), srcFileName, dstFileName, 700, showProgress);
-//            task = CopyTask.copyLocalFile(new ExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
+////        task = CopyTask.uploadFile(new ExecutionEnvironment("ak119685", "129.159.127.252", 22), srcFileName, dstFileName, 700, showProgress);
+//            task = CopyTask.uploadFile(new ExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
 //
 //            try {
 //                result = task.get();
@@ -156,8 +157,8 @@ public class CopyTaskTest {
 //        CopyTask task = null;
 //
 //        try {
-////        task = CopyTask.copyLocalFile(new ExecutionEnvironment("ak119685", "129.159.127.252", 22), srcFileName, dstFileName, 700, showProgress);
-//            task = CopyTask.copyLocalFile(new ExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
+////        task = CopyTask.uploadFile(new ExecutionEnvironment("ak119685", "129.159.127.252", 22), srcFileName, dstFileName, 700, showProgress);
+//            task = CopyTask.uploadFile(new ExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
 //
 //            try {
 //                result = task.get();
@@ -209,8 +210,8 @@ public class CopyTaskTest {
 //        CopyTask task = null;
 //
 //        try {
-////        task = CopyTask.copyLocalFile(new ExecutionEnvironment("ak119685", "129.159.127.252", 22), srcFileName, dstFileName, 700, showProgress);
-//            task = CopyTask.copyLocalFile(new ExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
+////        task = CopyTask.uploadFile(new ExecutionEnvironment("ak119685", "129.159.127.252", 22), srcFileName, dstFileName, 700, showProgress);
+//            task = CopyTask.uploadFile(new ExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
 //
 //            try {
 //                result = task.get();
@@ -230,8 +231,8 @@ public class CopyTaskTest {
 //        CopyTask task = null;
 //
 //        try {
-////        task = CopyTask.copyLocalFile(new ExecutionEnvironment("ak119685", "129.159.127.252", 22), srcFileName, dstFileName, 700, showProgress);
-//            task = CopyTask.copyLocalFile(new ExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
+////        task = CopyTask.uploadFile(new ExecutionEnvironment("ak119685", "129.159.127.252", 22), srcFileName, dstFileName, 700, showProgress);
+//            task = CopyTask.uploadFile(new ExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
 //
 //            try {
 //                result = task.get();

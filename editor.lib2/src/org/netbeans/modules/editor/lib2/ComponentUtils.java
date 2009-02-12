@@ -99,6 +99,23 @@ public final class ComponentUtils {
 //        }
     }
 
+    public static void setStatusText(JTextComponent c, String text, int importance) {
+        // TODO: fix this, do not use reflection
+        try {
+            Object editorUI = getEditorUI(c);
+            Method getSbMethod = editorUI.getClass().getMethod("getStatusBar");
+            Object statusBar = getSbMethod.invoke(editorUI);
+            Method setTextMethod = statusBar.getClass().getMethod("setText", String.class, int.class);
+            setTextMethod.invoke(statusBar, text, importance);
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, e.getMessage(), e);
+        }
+//        StatusBar sb = getEditorUI(c).getStatusBar();
+//        if (sb != null) {
+//            sb.setText(StatusBar.CELL_MAIN, text);
+//        }
+    }
+
 //    public static void setStatusText(JTextComponent c, String text, Coloring extraColoring) {
 //        TextUI textUI = c.getUI();
 //        try {

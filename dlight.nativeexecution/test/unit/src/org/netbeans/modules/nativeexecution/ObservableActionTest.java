@@ -38,8 +38,8 @@
  */
 package org.netbeans.modules.nativeexecution;
 
-import org.netbeans.modules.nativeexecution.api.ObservableAction;
-import org.netbeans.modules.nativeexecution.api.ObservableActionListener;
+import org.netbeans.modules.nativeexecution.support.ObservableAction;
+import org.netbeans.modules.nativeexecution.support.ObservableActionListener;
 import javax.swing.Action;
 import org.junit.After;
 import org.junit.AfterClass;

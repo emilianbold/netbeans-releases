@@ -44,20 +44,14 @@ import java.lang.ref.WeakReference;
 import javax.swing.JComponent;
 import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.debugger.ui.Controller;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author gordonp
  */
+@AttachType.Registration(displayName="#CTL_URLAttachPanel_name")
 public class URLAttachType extends AttachType  {
-
     private Reference<URLAttachPanel> customizerRef = new WeakReference<URLAttachPanel>(null);
-
-    @Override
-    public String getTypeDisplayName() {
-        return NbBundle.getMessage(URLAttachType.class, "CTL_URLAttachPanel_name"); // NOI18N
-    }
 
     public JComponent getCustomizer () {
         URLAttachPanel panel = new URLAttachPanel ();

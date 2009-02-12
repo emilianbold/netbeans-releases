@@ -70,25 +70,18 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     private final CharSequence[] classOrNspNames;   
     private AST fixFakeRegistrationAst = null; // AST for fixing fake registrations
     
-    public FunctionImplEx(AST ast, CsmFile file, CsmScope scope) throws AstRendererException {
-        this(ast, file, scope, true);
-    }
-
-    public FunctionImplEx(AST ast, CsmFile file, CsmScope scope, boolean register, boolean likeVariable) throws AstRendererException {
-        this(ast, file, scope, register);
-        if(likeVariable) {
-            fixFakeRegistrationAst = ast;
-        }
-    }
-    
-    protected  FunctionImplEx(AST ast, CsmFile file, CsmScope scope, boolean register) throws AstRendererException {
-        super(ast, file, scope, false);
+    public FunctionImplEx(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
+        super(ast, file, scope, false, global);
         classOrNspNames = CastUtils.isCast(ast) ? CastUtils.getClassOrNspNames(ast) : initClassOrNspNames(ast);
         if (register) {
             registerInProject();
         }
     }
-    
+
+    public FunctionImplEx(AST ast, CsmFile file, CsmScope scope, AST fakeRegistrationAst, boolean register, boolean global) throws AstRendererException {
+        this(ast, file, scope, register, global);
+        fixFakeRegistrationAst = fakeRegistrationAst;
+    }
 
     /** @return either class or namespace */
     protected CsmObject findOwner(Resolver parent) {
@@ -199,7 +192,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                 }
             }                        
             try {
-                FunctionImpl fi = new FunctionImpl(fixFakeRegistrationAst, getContainingFile(), this.getScope());
+                FunctionImpl fi = new FunctionImpl(fixFakeRegistrationAst, getContainingFile(), this.getScope(), true, true);
                 fixFakeRegistrationAst = null;
                 ((FileImpl) getContainingFile()).addDeclaration(fi);
                 if (NamespaceImpl.isNamespaceScope(fi)) {

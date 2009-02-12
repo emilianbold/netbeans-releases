@@ -93,7 +93,9 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     }
     
     public void writeUID(CsmUID anUID, DataOutput aStream) throws IOException {
-        assert anUID == null || anUID instanceof SelfPersistent : anUID + ", " + anUID.getObject();
+        if (!(anUID == null || anUID instanceof SelfPersistent)) {
+            assert false : anUID + ", " + anUID.getObject();
+        }
         super.writeSelfPersistent((SelfPersistent)anUID, aStream);
     }
 
@@ -377,6 +379,10 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                 
             case UID_INCLUDE_UID:
                 anUID = new IncludeUID(aStream);
+                break;
+
+            case UID_PARAM_LIST_UID:
+                anUID = new ParamListUID(aStream);
                 break;
                 
             case UID_UNNAMED_OFFSETABLE_DECLARATION_UID:

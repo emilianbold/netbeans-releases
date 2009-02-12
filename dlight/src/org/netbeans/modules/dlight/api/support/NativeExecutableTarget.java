@@ -38,9 +38,9 @@
  */
 package org.netbeans.modules.dlight.api.support;
 
+import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
-import org.netbeans.modules.dlight.api.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -49,23 +49,24 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.dlight.api.execution.SubstitutableTarget;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.util.ExternalTerminalProvider;
+import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.dlight.util.Util;
-import org.netbeans.modules.nativeexecution.util.ExternalTerminal;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
+
 /**
  * Wrapper of {@link @org-netbeans-modules-nativexecution@org/netbeans/modules/nativexecution/api/NativeTask.html}
  *
  */
-public final class NativeExecutableTarget extends DLightTarget implements SubstitutableTarget, AttachableTarget, Listener {
+public final class NativeExecutableTarget extends DLightTarget implements SubstitutableTarget, AttachableTarget, ChangeListener {
 
     private static final Logger log =
             DLightLogger.getLogger(NativeExecutableTarget.class);
@@ -114,7 +115,15 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         return "Executable target: " + cmd; // NOI18N
     }
 
-    public void processStateChanged(NativeProcess process, NativeProcess.State oldState, NativeProcess.State newState) {
+    public void stateChanged(ChangeEvent e) {
+        final Object src = e.getSource();
+
+        if (!(src instanceof NativeProcess)) {
+            return;
+        }
+
+        final NativeProcess process = (NativeProcess) src;
+        final NativeProcess.State newState = process.getState();
         final DLightTarget.State prevState = state;
 
         switch (newState) {
@@ -179,7 +188,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         pb = pb.setWorkingDirectory(workingDirectory);
         pb = pb.addEnvironmentVariables(envs);
         pb = pb.useExternalTerminal(externalTerminal);
-        if (executionEnvProvider != null && executionEnvProvider.getExecutionEnv() != null){
+        if (executionEnvProvider != null && executionEnvProvider.getExecutionEnv() != null) {
             pb = pb.addEnvironmentVariables(executionEnvProvider.getExecutionEnv());
         }
         ExecutionDescriptor descr = new ExecutionDescriptor();

@@ -57,6 +57,7 @@ public class CompilerTest extends NbTestSuite {
         this.addTestSuite(ReadRegistryTestCase.class);
         this.addTestSuite(ValidateRegistryTestCase.class);
         this.addTestSuite(WriteRegistryTestCase.class);
+        this.addTestSuite(ScannerTestCase.class);
     }
 
     public static Test suite() {

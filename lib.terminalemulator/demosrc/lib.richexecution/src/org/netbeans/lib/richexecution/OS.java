@@ -74,21 +74,4 @@ public enum OS {
             return OS.OTHER;
         }
     }
-
-    public static String platform() {
-        String osName = System.getProperty("os.name").toLowerCase();
-        String osArch = System.getProperty("os.arch").toLowerCase();
-        System.out.printf("os.name: \'%s\' os.arch: '%s'\n", osName, osArch);
-        String platform = null;
-        if (osName.equals("sunos")) {
-            if (osArch.equals("sparc") || osArch.equals("sparcv9"))
-                platform = "solaris-sparc";
-            else if (osArch.equals("x86") || osArch.equals("amd64"))
-                platform = "solaris-intel";
-        } else if (osName.equals("linux")) {
-            if (osArch.equals("i386") || osArch.equals("amd64"))
-                platform = "linux-intel";
-        }
-        return platform;
-    }
 }

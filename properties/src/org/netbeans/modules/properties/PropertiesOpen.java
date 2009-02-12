@@ -289,7 +289,6 @@ public class PropertiesOpen extends CloneableOpenSupport
                     bep.saveEditorValue(false);
                 }
             }
-            throw new UnsupportedOperationException("saveEditorValues wrong behaviour");
         }
         while (en.hasMoreElements()) {
             Object o = en.nextElement();

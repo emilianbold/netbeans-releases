@@ -215,6 +215,7 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
 
     public static void shutdown() {
         storeMasterIndex();
+        StorageAllocator.getInstance().purgeCaches();
     }
     
     public static void loadUnitIndex(final String unitName){

@@ -47,7 +47,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.support.MacroExpanderFactory.MacroExpander;
-import org.netbeans.modules.nativeexecution.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.util.Exceptions;
 
 /**

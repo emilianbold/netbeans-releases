@@ -47,9 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
 import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
-import org.netbeans.modules.maven.embedder.writer.WriterUtils;
 import org.netbeans.modules.maven.model.Utilities;
-import org.netbeans.modules.maven.model.settings.Settings;
 import org.netbeans.modules.maven.model.settings.SettingsModel;
 import org.netbeans.modules.maven.model.settings.SettingsModelFactory;
 import org.netbeans.modules.xml.xam.ModelSource;
@@ -65,7 +63,10 @@ import org.openide.util.Lookup;
  * @author Milos Kleint
  */
 class MavenOptionController extends OptionsPanelController {
-    public static final String TEMPLATE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<settings xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" + "  xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd\">" + "</settings>";
+    public static final String TEMPLATE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + //NOI18N
+            "<settings xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" +//NOI18N
+            "  xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd\">" +//NOI18N
+            "</settings>";//NOI18N
     private SettingsPanel panel;
     private SettingsModel setts;
     private final List<PropertyChangeListener> listeners;
@@ -90,6 +91,7 @@ class MavenOptionController extends OptionsPanelController {
             File file = new File(mavenFolder, "settings.xml"); //NOI18N
             source = Utilities.createModelSourceForMissingFile(file, true, TEMPLATE, "text/xml"); //NOI18N
         }
+        assert source != null;
         return SettingsModelFactory.getDefault().getModel(source);
     }
     

@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.collector.stdout.spi;
 
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -47,7 +48,6 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
-import javax.swing.Action;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
@@ -73,12 +73,11 @@ import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.ObservableAction;
-import org.netbeans.modules.nativeexecution.api.ObservableActionListener;
-import org.netbeans.modules.nativeexecution.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.util.HostNotConnectedException;
+import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
@@ -281,10 +280,11 @@ public final class CLIODataCollector
         ValidationStatus result = null;
         boolean fileExists = false;
         boolean connected = true;
+        final ExecutionEnvironment execEnv = target.getExecEnv();
 
         try {
-            fileExists = HostInfoUtils.fileExists(target.getExecEnv(), command);
-        } catch (HostNotConnectedException ex) {
+            fileExists = HostInfoUtils.fileExists(execEnv, command);
+        } catch (ConnectException ex) {
             connected = false;
         }
 
@@ -297,19 +297,16 @@ public final class CLIODataCollector
                         command));
             }
         } else {
-            ObservableAction<Boolean> connectAction =
-                    ConnectionManager.getInstance().getConnectToAction(target.getExecEnv());
+            ConnectionManager mgr = ConnectionManager.getInstance();
 
-            connectAction.addObservableActionListener(
-                    new ObservableActionListener<Boolean>() {
+            Runnable doOnConnect = new Runnable() {
 
-                        public void actionCompleted(Action source, Boolean result) {
-                            DLightManager.getDefault().revalidateSessions();
-                        }
+                public void run() {
+                    DLightManager.getDefault().revalidateSessions();
+                }
+            };
 
-                        public void actionStarted(Action source) {
-                        }
-                    });
+            AsynchronousAction connectAction = mgr.getConnectToAction(execEnv, doOnConnect);
 
             result = ValidationStatus.unknownStatus(
                     loc("ValidationStatus.HostNotConnected"), // NOI18N

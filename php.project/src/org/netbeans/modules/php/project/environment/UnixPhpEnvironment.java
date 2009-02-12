@@ -55,7 +55,7 @@ final class UnixPhpEnvironment extends PhpEnvironment {
     }
 
     @Override
-    public List<DocumentRoot> getDocumentRoots(String projectName) {
+    protected List<DocumentRoot> getDocumentRoots(String projectName) {
         List<DocumentRoot> roots = new ArrayList<DocumentRoot>(2);
 
         // ~/public_html

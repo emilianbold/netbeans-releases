@@ -52,7 +52,7 @@ public class GuardTestBase  extends TraceModelTestBase {
     }
 
     protected void parse(String... fileNames) throws Exception {
-        performModelTest(tansformParameters(fileNames), System.out, System.err);
+        performModelTest(tansformParameters(fileNames), null, System.err);
     }
 
     protected String[] tansformParameters(String[] files) {

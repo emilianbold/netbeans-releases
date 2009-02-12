@@ -51,6 +51,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
@@ -68,7 +69,7 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
   private static final String SQL_QUERY_DELIMETER = ";";
   private static final Logger logger = DLightLogger.getLogger(H2DataStorage.class);
   private static boolean driverLoaded = false;
-  static private int dbIndex = 1;
+  private static final AtomicInteger dbIndex = new AtomicInteger();
   private SQLStackStorage stackStorage;
   private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
   private static final String url = "jdbc:h2:/tmp/dlight";
@@ -88,7 +89,7 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
   }
 
   H2DataStorage() {
-    this(url +  (dbIndex++));
+    this(url +  dbIndex.incrementAndGet());
   }
 
 

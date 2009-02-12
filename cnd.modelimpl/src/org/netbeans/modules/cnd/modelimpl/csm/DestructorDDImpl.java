@@ -52,7 +52,7 @@ import java.io.IOException;
 public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
 
     public DestructorDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility) throws AstRendererException {
-        super(ast, cls, visibility, true);
+        super(ast, cls, visibility, true, true);
     }
 
     @Override

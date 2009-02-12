@@ -207,10 +207,11 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             }
         }
 //        addSourceFilesFromFolders(sourceFileFolders, false, false, true);
-
-        while (sourceFileFolders.hasNext()) {
-            SourceFolderInfo sourceFolderInfo = sourceFileFolders.next();
-            addSourceFilesFromRoot(getLogicalFolders(), sourceFolderInfo.getFile(), false, true);
+        if (sourceFileFolders != null) {
+            while (sourceFileFolders.hasNext()) {
+                SourceFolderInfo sourceFolderInfo = sourceFileFolders.next();
+                addSourceFilesFromRoot(getLogicalFolders(), sourceFolderInfo.getFile(), false, true);
+            }
         }
         setModified(true);
     }
@@ -972,7 +973,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         addFiles(top, dir, null, filesAdded, true);
         getNativeProject().fireFilesAdded(filesAdded);
         if (attachListeners) {
-            top.attachListenersAndRefresh();
+            top.attachListeners();
         }
 
         addSourceRoot(dir.getPath());
@@ -991,7 +992,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         addFiles(top, dir, null, filesAdded, true);
         getNativeProject().fireFilesAdded(filesAdded);
         if (attachListeners) {
-            top.attachListenersAndRefresh();
+            top.attachListeners();
         }
         return top;
     }

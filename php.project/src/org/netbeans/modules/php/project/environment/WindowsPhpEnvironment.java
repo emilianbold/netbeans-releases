@@ -64,7 +64,7 @@ final class WindowsPhpEnvironment extends PhpEnvironment {
     }
 
     @Override
-    public List<DocumentRoot> getDocumentRoots(String projectName) {
+    protected List<DocumentRoot> getDocumentRoots(String projectName) {
         File[] fsRoots = File.listRoots();
         if (fsRoots == null) {
             // should not happen
