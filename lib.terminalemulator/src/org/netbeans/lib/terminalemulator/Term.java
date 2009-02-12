@@ -57,187 +57,186 @@ import java.util.LinkedList;
 import java.util.ListIterator;
 
 /**
-Term is a pure Java multi-purpose terminal emulator.
-<p>
-It has the following generic features:
-<ul>
-<li>All "dumb" operations. Basically putting characters on a screen and
-processing keyboard input.
-<li>ANSI mode "smart" operations. Cursor control etc.
-<li>Character attributes like color, reverse-video etc.
-<li>Selection service in character, word and line modes matching xterm
-with configurable word boundary detection.
-<li>History buffer.
-<li>Facilities to iterate through logical lines, to implement search for
-example.
-<li>Support for nested pickable regions in order to support hyperlinked
-views or more complex active text utilities.
-<li>Support for double-width Oriental characters.
-</ul>
-<p>
-<h2>Coordinate systems</h2>
-The following coordinate systems are used with Term.
-They are all cartesian and have their origin at the top left.
-All but the first are 0-origin.
-But they differ in all other respects:
-<dl>
-
-<dt>ANSI Screen coordinates
-<dd>
-Address only the visible portion of the screen.
-They are 1-origin and extend thru the width and height of the visible
-portion of the screen per getColumns() and getRows(). 
-<p>
-This is how an application (like 'vi' etc) views the screen.
-This coordinate system primarily comes into play in the cursor addressing
-directive, op_cm() and otherwise is not really used in the implementation.
-<p>
-
-<dt>Cell coordinates
-<dd>
-Each character usually takes one cell, and all placement on the screen
-is in terms of a grid of cells getColumns() wide This cellular nature
-is why fixed font is "required". In some locales some characters may
-be double-width.
-Japanese characters are like this, so they take up two cells.
-There are no double-height characters (that I know of).
-<p>
-Cursor motion is in cell coordinates, so to move past a Japanese character
-you need the cursor to move right twice. A cursor can also be placed on
-the second cell of a double-width character.
-<p>
-Note that this is strictly an internal coordinate system. For example
-Term.getCursorCol() and getCursorCoord() return buffer coordinates.
-<p>
-The main purpose of this coordinate system is to capture logical columns. 
-In the vertical direction sometimes it extends only the height of the
-screen and sometimes the height of the buffer.
-<p>
-
-<dt>Buffer coordinates ...
-<dd>
-... address the whole history character buffer.
-These are 0-origin and extend thru the width 
-of the screen per getColumns(), or more if horizontal scrolling is
-enabled, and the whole history, that is, getHistorySize()+getRows().
-<p>
-The BCoord class captures the value of such coordinates.
-It is more akin to the 'int offset' used in the Java text package
-as opposed to javax.swing.text.Position.
-<p> 
-If there are no double-width characters the buffer coords pretty much
-overlap with cell coords. If double-width characters are added then
-the buffer column and cell column will have a larger skew the more right
-you go.
-<p>
-<dt>Absolute coordinates ...
-<dd>
-... are like Buffer coordinates in the horizontal direction. 
-In the vertical direction their origin is the first line that was
-sent to the terminal. This line might have scrolled out of history and
-might no longer be in the buffer. In effect each line ever printed by 
-Term gets a unique Absolute row.
-<p>
-What good is this? The ActiveRegion mechanism maintains coordinates
-for its' boundaries. As text scrolls out of history buffer row coordinates
-have to shift and all ActiveRegions' coords need to be relocated. This
-can get expensive because as soon as the history buffer becomes full
-each newline will require a relocation. This is the approach that
-javax.swing.text.Position implements and it's justified there because
-no Swing component has a "history buffer".
-However, if you use absolute coordinates you'll never have to 
-relocate anything! Simple and effective.
-<p>
-Well almost. What happens when you reach Integer.MAX_VALUE? You wrap and
-that can confuse everything. What are the chances of this happening?
-Suppose term can process 4000 lines per second. A runaway process will
-produce Integer.MAX_VALUE lines in about 4 days. That's too close
-for comfort, so Term does detect the wrap and only then goes and 
-relocates stuff. This, however, causes a secondary problem with
-testability since no-one wants to wait 4 days for a single wrap.
-So what I've done is periodically set Term.modulo to something
-smaller and tested stuff.
-<p>
-I'm indebted to Alan Kostinsky for this bit of lateral thinking.
-</dl>
-
-
-<p>
-<h2>Modes of use</h2>
-There are three ways Term can be used.
-These modes aren't explicit they are just a convenient way of discussing
-functionality.
-<dl>
-<dt>Screen mode
-<dd>
-This represents the traditional terminal without a history buffer.
-Applications 
-running under the terminal assume they are dealing with a fixed size
-screen and interact with it in the screen coordinate system through 
-escape sequence (ANSI or otherwise). The most common application which
-uses terminals in this ways is the screen editor, like vi or emacs.
-<p>
-Term will convert keystrokes to an output stream and will process 
-characters in an input stream and render them unto the screen. 
-What and how these streams are connected to is up to the client of Term,
-since it is usually highly platform dependent. For example on unixes 
-the streams may be connected to partially-JNI-based "pty" streams.
-<p>
-This mode works correctly even if there is history and you see a
-scrollbar, just as it does under XTerm and it's derivatives.
-
-<p>
-<dt>Buffer/Interactive mode
-<dd>
-This is the primary facility that XTerm and other derivatives provide. The
-screen has a history buffer in the vertical dimension.
-<p>
-Because of limited history active regions can scroll out of history and
-while the coordinate invalidation problem is not addressed by absolute
-coordiantes sometimes we don't want stuff to wink out.
-<br>
-Which is why we have ...
-
-<p>
-<dt>Page mode
-<dd>
-It is possible to "anchor" a location in the buffer and prevent it 
-from going out of history. This can be helpful in having the
-client of Term make sure that crucial output doesn't get lost due to
-short-sighted history settings on the part of the user.
-<p>
-To use Term 
-in this mode you can use setText() or appendText() instead of
-connecting to Terms streams.
-This mode is called page mode because the most common use of it 
-would be as something akin to a hypertext browser.
-To that end
-Term supports nestable ActiveRegions and mapping of coordinates
-to regions. ActiveTerm puts all of this together in a comprehensive
-subclass.
-</dl>
-
-<p>
-<h2>What Term is not</h2>
-<ul>
-<li>
-While there is an internal Buffer class, and while it behaves like a
-document in that it can
-be implicitly "edited" and character attributes explicitly changed,
-Term is not a document editing widget.
-<p>
-<li>
-Term is also not a command line processor in the sense that a MS Windows
-console is. Its shuttling of keyboard events to an output stream and
-rendering of characters from the input stream unto the screen are completely
-independent activities.
-<p>
-This is due to Terms unix heritage where shells (ksh, bash etc) do their own
-cmdline and history editing, but if you're so inclined the LineDiscipline
-may be used for experimentation with indigenous cmdline processing.
-</ul>
+ * Term is a pure Java multi-purpose terminal emulator.
+ * <p>
+ * It has the following generic features:
+ * <ul>
+ *      <li>All "dumb" operations. Basically putting characters on a screen and
+ *      processing keyboard input.</li>
+ *      <li>ANSI mode "smart" operations. Cursor control etc.</li>
+ *      <li>Character attributes like color, reverse-video etc.</li>
+ *      <li>Selection service in character, word and line modes matching xterm
+ *      with configurable word boundary detection.</li>
+ *      <li>History buffer.</li>
+ *      <li>Facilities to iterate through logical lines, to implement search for
+ *      example.</li>
+ *      <li>Support for nested pickable regions in order to support hyperlinked
+ *      views or more complex active text utilities.</li>
+ *      <li>Support for double-width Oriental characters.</li>
+ * </ul>
+ * <p>
+ * <h2>Coordinate systems</h2>
+ * The following coordinate systems are used with Term.
+ * They are all cartesian and have their origin at the top left.
+ * All but the first are 0-origin.
+ * But they differ in all other respects:
+ * <dl>
+ *
+ * <dt>ANSI Screen coordinates
+ *      <dd>
+ *      Address only the visible portion of the screen.
+ *      They are 1-origin and extend thru the width and height of the visible
+ *      portion of the screen per getColumns() and getRows().
+ *      <p>
+ *      This is how an application (like 'vi' etc) views the screen.
+ *      This coordinate system primarily comes into play in the cursor addressing
+ *      directive, op_cm() and otherwise is not really used in the implementation.
+ * <p>
+ *
+ * <dt>Cell coordinates
+ *      <dd>
+ *      Each character usually takes one cell, and all placement on the screen
+ *      is in terms of a grid of cells getColumns() wide This cellular nature
+ *      is why fixed font is "required". In some locales some characters may
+ *       be double-width.
+ *      Japanese characters are like this, so they take up two cells.
+ *      There are no double-height characters (that I know of).
+ *      <p>
+ *      Cursor motion is in cell coordinates, so to move past a Japanese character
+ *      you need the cursor to move right twice. A cursor can also be placed on
+ *      the second cell of a double-width character.
+ *      <p>
+ *      Note that this is strictly an internal coordinate system. For example
+ *      Term.getCursorCol() and getCursorCoord() return buffer coordinates.
+ *      <p>
+ *      The main purpose of this coordinate system is to capture logical columns.
+ *      In the vertical direction sometimes it extends only the height of the
+ *      screen and sometimes the height of the buffer.
+ * <p>
+ *
+ * <dt>Buffer coordinates ...
+ *      <dd>
+ *      ... address the whole history character buffer.
+ *      These are 0-origin and extend thru the width
+ *      of the screen per getColumns(), or more if horizontal scrolling is
+ *      enabled, and the whole history, that is, getHistorySize()+getRows().
+ *      <p>
+ *      The BCoord class captures the value of such coordinates.
+ *      It is more akin to the 'int offset' used in the Java text package
+ *      as opposed to javax.swing.text.Position.
+ *      <p>
+ *      If there are no double-width characters the buffer coords pretty much
+ *      overlap with cell coords. If double-width characters are added then
+ *      the buffer column and cell column will have a larger skew the more right
+ *      you go.
+ * <p>
+ * <dt>Absolute coordinates ...
+ *      <dd>
+ *      ... are like Buffer coordinates in the horizontal direction.
+ *      In the vertical direction their origin is the first line that was
+ *      sent to the terminal. This line might have scrolled out of history and
+ *      might no longer be in the buffer. In effect each line ever printed by
+ *      Term gets a unique Absolute row.
+ *      <p>
+ *      What good is this? The ActiveRegion mechanism maintains coordinates
+ *      for its' boundaries. As text scrolls out of history buffer row coordinates
+ *      have to shift and all ActiveRegions' coords need to be relocated. This
+ *      can get expensive because as soon as the history buffer becomes full
+ *      each newline will require a relocation. This is the approach that
+ *      javax.swing.text.Position implements and it's justified there because
+ *      no Swing component has a "history buffer".
+ *      However, if you use absolute coordinates you'll never have to
+ *      relocate anything! Simple and effective.
+ *      <p>
+ *      Well almost. What happens when you reach Integer.MAX_VALUE? You wrap and
+ *      that can confuse everything. What are the chances of this happening?
+ *      Suppose term can process 4000 lines per second. A runaway process will
+ *      produce Integer.MAX_VALUE lines in about 4 days. That's too close
+ *      for comfort, so Term does detect the wrap and only then goes and
+ *      relocates stuff. This, however, causes a secondary problem with
+ *      testability since no-one wants to wait 4 days for a single wrap.
+ *      So what I've done is periodically set Term.modulo to something
+ *      smaller and tested stuff.
+ * <p>
+ * I'm indebted to Alan Kostinsky for this bit of lateral thinking.
+ * </dl>
+ *
+ *
+ * <p>
+ * <h2>Modes of use</h2>
+ * There are three ways Term can be used.
+ * These modes aren't explicit they are just a convenient way of discussing
+ * functionality.
+ * <dl>
+ * <dt>Screen mode
+ *      <dd>
+ *      This represents the traditional terminal without a history buffer.
+ *      Applications
+ *      running under the terminal assume they are dealing with a fixed size
+ *      screen and interact with it in the screen coordinate system through
+ *      escape sequence (ANSI or otherwise). The most common application which
+ *      uses terminals in this ways is the screen editor, like vi or emacs.
+ *      <p>
+ *      Term will convert keystrokes to an output stream and will process
+ *      characters in an input stream and render them unto the screen.
+ *      What and how these streams are connected to is up to the client of Term,
+ *      since it is usually highly platform dependent. For example on unixes
+ *      the streams may be connected to partially-JNI-based "pty" streams.
+ *      <p>
+ *      This mode works correctly even if there is history and you see a
+ *      scrollbar, just as it does under XTerm and it's derivatives.
+ *
+ * <p>
+ * <dt>Buffer/Interactive mode
+ *      <dd>
+ *      This is the primary facility that XTerm and other derivatives provide. The
+ *      screen has a history buffer in the vertical dimension.
+ *      <p>
+ *      Because of limited history active regions can scroll out of history and
+ *      while the coordinate invalidation problem is not addressed by absolute
+ *      coordiantes sometimes we don't want stuff to wink out.
+ *      <br>
+ *      Which is why we have ...
+ *
+ * <p>
+ * <dt>Page mode
+ *      <dd>
+ *      It is possible to "anchor" a location in the buffer and prevent it
+ *      from going out of history. This can be helpful in having the
+ *      client of Term make sure that crucial output doesn't get lost due to
+ *      short-sighted history settings on the part of the user.
+ *      <p>
+ *      To use Term
+ *      in this mode you can use setText() or appendText() instead of
+ *      connecting to Terms streams.
+ *      This mode is called page mode because the most common use of it
+ *      would be as something akin to a hypertext browser.
+ *      To that end
+ *      Term supports nestable ActiveRegions and mapping of coordinates
+ *      to regions. ActiveTerm puts all of this together in a comprehensive
+ *      subclass.
+ * </dl>
+ *
+ * <p>
+ * <h2>What Term is not</h2>
+ * <ul>
+ *      <li>
+ *      While there is an internal Buffer class, and while it behaves like a
+ *      document in that it can
+ *      be implicitly "edited" and character attributes explicitly changed,
+ *      Term is not a document editing widget.
+ *      <p>
+ *      <li>
+ *      Term is also not a command line processor in the sense that a MS Windows
+ *      console is. Its shuttling of keyboard events to an output stream and
+ *      rendering of characters from the input stream unto the screen are completely
+ *      independent activities.
+ *      <p>
+ *      This is due to Terms unix heritage where shells (ksh, bash etc) do their own
+ *      cmdline and history editing, but if you're so inclined the LineDiscipline
+ *      may be used for experimentation with indigenous cmdline processing.
+ * </ul>
  */
-
 public class Term extends JComponent implements Accessible {
 
     private State st = new State();
@@ -975,15 +974,15 @@ public class Term extends JComponent implements Accessible {
      * got wrapped twice. Suppose you're searching for "XXX" and you
      * began your search from the first 'x' on row 2.
      * <pre>
-    row |  columns |
-    ----+----------+
-    0	|0123456789|
-    1	|          |
-    2	|aaaaaxxxxx| wrap
-    3	|xxxxXXXxxx| wrap
-    4	|xxxxx     |
-    5	|	   |
-
+     *     row |  columns |
+     *     ----+----------+
+     *     0   |0123456789|
+     *     1   |          |
+     *     2   |aaaaaxxxxx| wrap
+     *     3   |xxxxXXXxxx| wrap
+     *     4   |xxxxx     |
+     *     5   |          |
+     *
      * </pre>
      * The visitor will be called with 'begin' pointing at the first 'x',
      * 'end' pointing at the last 'x' and 'text' containing the above line.
@@ -5023,67 +5022,67 @@ public class Term extends JComponent implements Accessible {
      * Accessibility for Term is tricky because it doesn't fit into the
      * roles delineated by Swing. The closest role is that of TEXT and that
      * is too bound to how JTextComponent works. To wit ...
-    <p>
-    <dl>
-    <dt>2D vs 1D coordinates
-    <dd>
-    Term has a 2D coordinate system while AccessibleText works with 1D
-    locations. So Term actually has code which translates between the two.
-    This code is not exactly efficient but only kicks in when assistive
-    technology latches on.
-    <br>
-    Line breaks ('\n's) count as characters! However we only count
-    logical line breaks ('\n's appearing in the input stream) as opposed to
-    wrapped lines!
-    <p>
-    The current implementation doesn't cache any of the mappings because
-    that would require a word per line extra storage for the cumulative
-    char count. The times actually we're pretty fast with a 4000 line
-    histroy.
-
-    <dt>WORDs and SENTENCEs
-    <dd>
-    For AccessibleText.get*Index() functions WORD uses the regular
-    Term WordDelineator. SENTENCE translates to just a line.
-
-    <dt>Character attributes
-    <dd>
-    Term uses the ANSI convention of character attributes so when
-    AccessibleText.getCharacterAttribute() is used a rough translation
-    is made as follows:
-    <ul>
-    <li> ANSI underscore -> StyleConstants.Underline
-    <li> ANSI bright/bold -> StyleConstants.Bold
-    <li> Non-black foreground color -> StyleConstants.Foreground
-    <li> Explicitly set background color -> StyleConstants.Background
-    </ul>
-    Font related information is always constant so it is not provided.
-
-    <dt>History
-    <dd>
-    Term has history and lines wink out. If buffer coordinates were
-    used to interact with accessibility, caretPosition and charCount
-    would be dancing around. Fortunately Term has absolute coordinates.
-    So positions returned via AccessibleText might eventually refer to
-    text that has gone by.
-
-    <dt>Caret and Mark vs Cursor and Selection
-    <dd>
-    While Term keeps the selection and cursor coordinates independent,
-    JTextComponent merges them and AccessibleText inherits this view.
-    With Term caretPosition is the position of the cursor and selection
-    ends will not neccessarily match with the caret position.
-    </dl>
-    <p>
-    Currently only notifications of ACCESSIBLE_CARET_PROPERTY and
-    ACCESSIBLE_TEXT_PROPERTY are fired and that always in pairs.
-    They are fired on the receipt of any character to be processed.
-    <p>
-    IMPORTANT: It is assumed that under assistive technology Term will be
-    used primarily as a continuous text output device or a readonly document.
-    Therefore ANSI cursor motion and text editing commands or anything that
-    mutates the text will completely invalidate all of AccessibleTexts
-    properties. (Perhaps an exception SHOULD be made for backspace)
+     * <p>
+     * <dl>
+     * <dt>2D vs 1D coordinates
+     * <dd>
+     *     Term has a 2D coordinate system while AccessibleText works with 1D
+     *     locations. So Term actually has code which translates between the two.
+     *     This code is not exactly efficient but only kicks in when assistive
+     *     technology latches on.
+     *     <br>
+     *     Line breaks ('\n's) count as characters! However we only count
+     *     logical line breaks ('\n's appearing in the input stream) as opposed to
+     *     wrapped lines!
+     *     <p>
+     *     The current implementation doesn't cache any of the mappings because
+     *     that would require a word per line extra storage for the cumulative
+     *     char count. The times actually we're pretty fast with a 4000 line
+     *     histroy.
+     *
+     * <dt>WORDs and SENTENCEs
+     * <dd>
+     *     For AccessibleText.get*Index() functions WORD uses the regular
+     *     Term WordDelineator. SENTENCE translates to just a line.
+     *
+     *     <dt>Character attributes
+     *     <dd>
+     *     Term uses the ANSI convention of character attributes so when
+     *     AccessibleText.getCharacterAttribute() is used a rough translation
+     *     is made as follows:
+     *     <ul>
+     *     <li> ANSI underscore -> StyleConstants.Underline
+     *     <li> ANSI bright/bold -> StyleConstants.Bold
+     *     <li> Non-black foreground color -> StyleConstants.Foreground
+     *     <li> Explicitly set background color -> StyleConstants.Background
+     *     </ul>
+     *     Font related information is always constant so it is not provided.
+     *
+     * <dt>History
+     * <dd>
+     *     Term has history and lines wink out. If buffer coordinates were
+     *     used to interact with accessibility, caretPosition and charCount
+     *     would be dancing around. Fortunately Term has absolute coordinates.
+     *     So positions returned via AccessibleText might eventually refer to
+     *     text that has gone by.
+     *
+     * <dt>Caret and Mark vs Cursor and Selection
+     * <dd>
+     *     While Term keeps the selection and cursor coordinates independent,
+     *     JTextComponent merges them and AccessibleText inherits this view.
+     *     With Term caretPosition is the position of the cursor and selection
+     *     ends will not neccessarily match with the caret position.
+     * </dl>
+     * <p>
+     * Currently only notifications of ACCESSIBLE_CARET_PROPERTY and
+     * ACCESSIBLE_TEXT_PROPERTY are fired and that always in pairs.
+     * They are fired on the receipt of any character to be processed.
+     * <p>
+     * IMPORTANT: It is assumed that under assistive technology Term will be
+     * used primarily as a continuous text output device or a readonly document.
+     * Therefore ANSI cursor motion and text editing commands or anything that
+     * mutates the text will completely invalidate all of AccessibleTexts
+     * properties. (Perhaps an exception SHOULD be made for backspace)
      */
     @Override
     public AccessibleContext getAccessibleContext() {
