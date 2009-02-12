@@ -33,6 +33,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import org.netbeans.junit.Manager;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
@@ -63,9 +65,12 @@ public class RepositoryValidationBase extends TraceModelTestBase {
 
     @Override
     protected void postTest(String[] args, Object... params) {
+        Map<CharSequence, FileImpl> map = new TreeMap<CharSequence, FileImpl>();
         for (CsmFile f : getTraceModel().getProject().getAllFiles()){
+            map.put(f.getAbsolutePath(), (FileImpl)f);
+        }
+        for (FileImpl file : map.values()){
             CsmTracer tracer = new CsmTracer(false);
-            FileImpl file = (FileImpl) f;
             tracer.setDeep(true);
             tracer.setDumpTemplateParameters(false);
             tracer.setTestUniqueName(false);
