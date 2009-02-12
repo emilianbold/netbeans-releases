@@ -98,25 +98,11 @@ if [ "$action" = "build" ]; then
 
     FAILED=`cat $RESULT | wc -l`
     if [ "$FAILED" -gt 0 ]; then
-        echo "No push. Failed tests in following modules:"
+        echo "Failed tests in following modules:"
         cat $RESULT
         exit 5
     fi
-
-    for i in 1 2 3 4 5; do
-       hg pull http://hg.netbeans.org/main || exit 5
-       if [ `hg heads --template '{node|short}\n' | wc -l` = 1 ]
-       then
-           hg up || exit 6
-       else
-           hg merge || exit 7
-           hg ci -u "$push_username"@netbeans.org -m 'Automated merge' || exit 8
-       fi
-       hg out http://hg.netbeans.org/main
-       hg in http://hg.netbeans.org/main
-       hg push https://"$push_username":"$push_password"@hg.netbeans.org/main && exit 0
-    done
-    exit 5
+    exit 0
 fi
 
 if [ "$action" = "sync" ]; then
