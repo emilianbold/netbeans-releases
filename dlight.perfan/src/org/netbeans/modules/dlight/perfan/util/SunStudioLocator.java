@@ -51,7 +51,7 @@ public final class SunStudioLocator {
     private SunStudioLocator() {
     }
     
-    public static SunStudioLocator getDefault() {
+    public static SunStudioLocator getInstance() {
         return DEFAULT;
     }
 
