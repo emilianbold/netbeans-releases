@@ -140,7 +140,12 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             ClassPath jdkCP = (ClassPath) properties.get ("jdksources");
             if ( (jdkCP == null) && (JavaPlatform.getDefault () != null) )
                 jdkCP = JavaPlatform.getDefault ().getSourceFolders ();
-            ClassPath additionalClassPath = getAdditionalClassPath(baseDir);
+            ClassPath additionalClassPath;
+            if (baseDir != null) {
+                additionalClassPath = getAdditionalClassPath(baseDir);
+            } else {
+                additionalClassPath = null;
+            }
             if (additionalClassPath != null) {
                 smartSteppingSourcePath = ClassPathSupport.createProxyClassPath (
                         new ClassPath[] {
@@ -158,7 +163,12 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             );
             originalSourcePath = smartSteppingSourcePath;
 
-            Set<String> disabledRoots = getDisabledSourceRoots(baseDir);
+            Set<String> disabledRoots;
+            if (baseDir != null) {
+                disabledRoots = getDisabledSourceRoots(baseDir);
+            } else {
+                disabledRoots = null;
+            }
             if (disabledRoots != null && !disabledRoots.isEmpty()) {
                 List<FileObject> enabledSourcePath = new ArrayList<FileObject>(
                         Arrays.asList(smartSteppingSourcePath.getRoots()));
