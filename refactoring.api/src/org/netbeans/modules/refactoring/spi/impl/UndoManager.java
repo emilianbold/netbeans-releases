@@ -55,8 +55,6 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
@@ -69,6 +67,7 @@ import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.ProgressListener;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.openide.LifecycleManager;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -82,7 +81,7 @@ import org.openide.util.Exceptions;
  *
  * @author Jan Becicka
  */
-public final class UndoManager extends FileChangeAdapter implements DocumentListener, ChangeListener, PropertyChangeListener /*, GlobalPathRegistryListener */{
+public final class UndoManager extends FileChangeAdapter implements DocumentListener, PropertyChangeListener /*, GlobalPathRegistryListener */{
     
     /** stack of undo items */
     private LinkedList<LinkedList<UndoItem>> undoList;
@@ -328,15 +327,14 @@ public final class UndoManager extends FileChangeAdapter implements DocumentList
         synchronized (allCES) {
             registerListeners();
         }
-        for (Iterator<? extends CloneableEditorSupport> it = ceSupports.iterator(); it.hasNext();) {
-            final CloneableEditorSupport ces = it.next();
+        for (final CloneableEditorSupport ces : ceSupports) {
             final Document d = ces.getDocument();
             if (d!=null) {
                 NbDocument.runAtomic((StyledDocument)d, new Runnable() {
                     public void run() {
                         synchronized(allCES) {
                             if (allCES.add(ces)) {
-                                ces.addChangeListener(UndoManager.this);
+                                ces.addPropertyChangeListener(UndoManager.this);
                                 d.addDocumentListener(UndoManager.this);
                                 documentToCES.put(d, ces);
                                 Object o = d.getProperty(Document.StreamDescriptionProperty);
@@ -354,7 +352,7 @@ public final class UndoManager extends FileChangeAdapter implements DocumentList
             } else {
                 synchronized(allCES) {
                     if (allCES.add(ces)) {
-                        ces.addChangeListener(UndoManager.this);
+                        ces.addPropertyChangeListener(UndoManager.this);
                     }
                 }
             }
@@ -425,7 +423,7 @@ public final class UndoManager extends FileChangeAdapter implements DocumentList
         // GlobalPathRegistry.getDefault().addGlobalPathRegistryListener(this);
         Util.addFileSystemsListener(this);
         for (CloneableEditorSupport ces:allCES) {
-            ces.addChangeListener(this);
+            ces.addPropertyChangeListener(this);
         }
         for (Document doc:documentToCES.keySet()) {
             doc.addDocumentListener(this);
@@ -441,7 +439,7 @@ public final class UndoManager extends FileChangeAdapter implements DocumentList
         //TODO: 
         //GlobalPathRegistry.getDefault().removeGlobalPathRegistryListener(this);
         for (CloneableEditorSupport ces:allCES) {
-            ces.removeChangeListener(this);
+            ces.removePropertyChangeListener(this);
         }
         for (Document doc:documentToCES.keySet()) {
             doc.removeDocumentListener(this);
@@ -496,6 +494,7 @@ public final class UndoManager extends FileChangeAdapter implements DocumentList
     
     // FileChangeAdapter ........................................................
     
+    @Override
     public void fileChanged(FileEvent fe) {   
         CloneableEditorSupport ces = fileObjectToCES.get(fe.getFile());
         if (ces!=null) {
@@ -503,10 +502,12 @@ public final class UndoManager extends FileChangeAdapter implements DocumentList
         }
     }
     
+    @Override
     public void fileDeleted(FileEvent fe) {
         fileChanged(fe);
     }
 
+    @Override
     public void fileRenamed(FileRenameEvent fe) {
         fileChanged(fe);
     }
@@ -524,9 +525,8 @@ public final class UndoManager extends FileChangeAdapter implements DocumentList
         invalidate(documentToCES.get(e.getDocument()));
     }
         
-    public void stateChanged(ChangeEvent e) {
+    private void documentStateChanged(CloneableEditorSupport ces) {
         synchronized (allCES) {
-            CloneableEditorSupport ces = (CloneableEditorSupport) e.getSource();
             Document d = ces.getDocument();
             for (Iterator it = documentToCES.entrySet().iterator(); it.hasNext();) {
                 Map.Entry en = (Map.Entry) it.next();
@@ -608,6 +608,8 @@ public final class UndoManager extends FileChangeAdapter implements DocumentList
             p.removeAll(Arrays.asList((Project[])evt.getNewValue()));
             if (!p.isEmpty())
                 invalidate(null);
+        } else if (EditorCookie.Observable.PROP_DOCUMENT.equals(evt.getPropertyName())) {
+            documentStateChanged((CloneableEditorSupport) evt.getSource());
         }
     }
 }
