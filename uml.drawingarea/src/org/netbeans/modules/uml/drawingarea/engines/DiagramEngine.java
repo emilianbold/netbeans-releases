@@ -41,7 +41,9 @@
 package org.netbeans.modules.uml.drawingarea.engines;
 import java.awt.BasicStroke;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -134,6 +136,8 @@ abstract public class DiagramEngine {
         this.scene=scene;
         mouseHoverAction = ActionFactory.createHoverAction(new UMLHoverProvider());
         sceneSelectAction = scene.createSelectAction();
+        scene.setMaximumSize(new Dimension(Integer.MAX_VALUE,Integer.MAX_VALUE));
+        scene.setMaximumBounds(new Rectangle (Integer.MIN_VALUE / 2, Integer.MIN_VALUE / 2, Integer.MAX_VALUE, Integer.MAX_VALUE));
     }
     
     public DesignerScene getScene()
