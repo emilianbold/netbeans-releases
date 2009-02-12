@@ -516,20 +516,21 @@ public class Utilities {
     throws IOException {
         Document result = null;
         if (modelSourceDataObject != null && modelSourceDataObject.isValid()) {
-            EditorCookie ec = (EditorCookie)
-            modelSourceDataObject.getCookie(EditorCookie.class);
+            EditorCookie ec = modelSourceDataObject.getCookie(EditorCookie.class);
             assert ec != null : "Data object "+modelSourceDataObject.getPrimaryFile().getPath()+" has no editor cookies.";
-            Document doc = null;
-            try {
-                doc = ec.openDocument();
-            } catch (UserQuestionException uce) {
-                // this exception is thrown if the document is to large
-                // lets just confirm that it is ok
-                uce.confirmed();
-                doc = ec.openDocument();
+            if (ec != null) {
+                Document doc = null;
+                try {
+                    doc = ec.openDocument();
+                } catch (UserQuestionException uce) {
+                    // this exception is thrown if the document is to large
+                    // lets just confirm that it is ok
+                    uce.confirmed();
+                    doc = ec.openDocument();
+                }
+                assert(doc instanceof BaseDocument);
+                result = doc;
             }
-            assert(doc instanceof BaseDocument);
-            result = doc;
         }
         return result;
     }
