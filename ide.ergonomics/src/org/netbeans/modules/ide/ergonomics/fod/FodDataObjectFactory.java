@@ -147,6 +147,10 @@ public class FodDataObjectFactory implements DataObject.Factory {
         }
 
         private void delegate(boolean open) {
+            if (dialog != null) {
+                return;
+            }
+
             if (EventQueue.isDispatchThread()) {
                 handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(FodDataObjectFactory.class, "MSG_Opening_File", fo.getPath()));
                 Frame[] arr = JFrame.getFrames();
