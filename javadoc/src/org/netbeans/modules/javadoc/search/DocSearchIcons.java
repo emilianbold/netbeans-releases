@@ -45,8 +45,8 @@ import java.util.EnumSet;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.swing.Icon;
-import org.netbeans.api.java.source.UiUtils;
 
+import org.netbeans.api.java.source.ui.ElementIcons;
 import org.openide.util.ImageUtilities;
 
 /** <DESCRIPTION>
@@ -79,17 +79,17 @@ final class DocSearchIcons extends Object {
             final EnumSet<Modifier> modsSt = EnumSet.of(Modifier.PUBLIC, Modifier.STATIC);
             icons[ ICON_NOTRESOLVED ] = ImageUtilities.loadImageIcon("org/netbeans/modules/javadoc/resources/pending.gif", false); // NOI18N
             icons[ ICON_PACKAGE ] = ImageUtilities.loadImageIcon("org/netbeans/modules/javadoc/comments/resources/package.gif", false); // NOI18N                                    
-            icons[ ICON_CLASS ] = UiUtils.getElementIcon(ElementKind.CLASS, mods);
-            icons[ ICON_INTERFACE ] = UiUtils.getElementIcon(ElementKind.INTERFACE, mods);
-            icons[ ICON_ENUM ] = UiUtils.getElementIcon(ElementKind.ENUM, mods);
-            icons[ ICON_ANNTYPE ] = UiUtils.getElementIcon(ElementKind.ANNOTATION_TYPE, mods);
+            icons[ ICON_CLASS ] = ElementIcons.getElementIcon(ElementKind.CLASS, mods);
+            icons[ ICON_INTERFACE ] = ElementIcons.getElementIcon(ElementKind.INTERFACE, mods);
+            icons[ ICON_ENUM ] = ElementIcons.getElementIcon(ElementKind.ENUM, mods);
+            icons[ ICON_ANNTYPE ] = ElementIcons.getElementIcon(ElementKind.ANNOTATION_TYPE, mods);
             icons[ ICON_EXCEPTION ] = ImageUtilities.loadImageIcon("org/netbeans/modules/javadoc/resources/exception.gif", false); // NOI18N
             icons[ ICON_ERROR ] = ImageUtilities.loadImageIcon("org/netbeans/modules/javadoc/resources/error.gif", false); // NOI18N
-            icons[ ICON_CONSTRUCTOR ] = UiUtils.getElementIcon(ElementKind.CONSTRUCTOR, mods);
-            icons[ ICON_METHOD ] = UiUtils.getElementIcon(ElementKind.METHOD, mods);
-            icons[ ICON_METHOD_ST ] = UiUtils.getElementIcon(ElementKind.METHOD, modsSt);
-            icons[ ICON_VARIABLE ] = UiUtils.getElementIcon(ElementKind.FIELD, mods);
-            icons[ ICON_VARIABLE_ST ] = UiUtils.getElementIcon(ElementKind.FIELD, modsSt);
+            icons[ ICON_CONSTRUCTOR ] = ElementIcons.getElementIcon(ElementKind.CONSTRUCTOR, mods);
+            icons[ ICON_METHOD ] = ElementIcons.getElementIcon(ElementKind.METHOD, mods);
+            icons[ ICON_METHOD_ST ] = ElementIcons.getElementIcon(ElementKind.METHOD, modsSt);
+            icons[ ICON_VARIABLE ] = ElementIcons.getElementIcon(ElementKind.FIELD, mods);
+            icons[ ICON_VARIABLE_ST ] = ElementIcons.getElementIcon(ElementKind.FIELD, modsSt);
             icons[ ICON_NOT_FOUND ] = ImageUtilities.loadImageIcon("org/netbeans/modules/javadoc/resources/notFound.gif", false); // NOI18N
             icons[ ICON_WAIT ] = ImageUtilities.loadImageIcon("org/netbeans/modules/javadoc/resources/wait.png", false); // NOI18N
         }
