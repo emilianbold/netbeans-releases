@@ -165,7 +165,9 @@ NodeActionsProviderFilter, TableModel, Constants {
                                 f = frames[0];
                             }
                         } catch (AbsentInformationException aiex) {}
-                        cm = new ContendedMonitor (contended, f, debugger);
+                        if (f != null) {
+                            cm = new ContendedMonitor (contended, f, debugger);
+                        }
                     }
                     if (ownedMonitors != null && ownedMonitors.size() > 0 &&
                          ( ((contended != null) && (from < 2) && (to > 1)) ||

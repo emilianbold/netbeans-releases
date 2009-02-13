@@ -42,7 +42,9 @@ int process(long pid, int msqid) {
             fprintf(stderr, "Communication with process %d has been lost (3)\n", pid);
             return -4;
         }
-        printf("%ld\n", buf.heap_used);
+        dbg_log("%ld\n", buf.heap_used, 0, 0);
+        fprintf(stdout, "%ld\n", buf.heap_used);
+        fflush(stdout);
         sleep(1);
     }
 }

@@ -68,8 +68,11 @@ public class GlassfishWizardProvider implements ServerWizardProvider {
     }
 
     private GlassfishWizardProvider(GlassfishInstanceProvider gip) {
+        assert null != gip;
         this.gip = gip;
     }
+
+    private GlassfishWizardProvider() { }
 
     // ------------------------------------------------------------------------
     // ServerWizardProvider interface implementation

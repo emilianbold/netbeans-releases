@@ -350,8 +350,12 @@ public final class ServerRegistry implements java.io.Serializable {
         }
 
         checkInstanceAlreadyExists(url);
-        if (!addInstanceImpl(url, username, password, displayName, withoutUI, initialproperties)) {
-            throw new InstanceCreationException(NbBundle.getMessage(ServerRegistry.class, "MSG_FailedToCreateInstance", displayName));
+        try {
+            addInstanceImpl(url, username, password, displayName, withoutUI, initialproperties);
+        } catch (InstanceCreationException ice) {
+            InstanceCreationException e = new InstanceCreationException(NbBundle.getMessage(ServerRegistry.class, "MSG_FailedToCreateInstance", displayName));
+            e.initCause(ice);
+            throw e;
         }
     }
 
@@ -403,10 +407,10 @@ public final class ServerRegistry implements java.io.Serializable {
      * @return <code>true</code> if the server instance was created successfully,
      *             <code>false</code> otherwise.
      */
-    private synchronized boolean addInstanceImpl(String url, String username,
-            String password, String displayName, boolean withoutUI, Map<String, String> initialProperties) {
+    private synchronized void addInstanceImpl(String url, String username,
+            String password, String displayName, boolean withoutUI, Map<String, String> initialProperties) throws InstanceCreationException {
         if (instancesMap().containsKey(url)) {
-            return false;
+            throw new InstanceCreationException("already exists");
         }
 
         Map<String, String> properties = cleanInitialProperties(initialProperties);
@@ -436,7 +440,7 @@ public final class ServerRegistry implements java.io.Serializable {
                     // FIXME this shouldn't be called in synchronized block
                     if (manager != null) {
                         fireInstanceListeners(url, true);
-                        return true;
+                        return; //  true;
                     } else {
                         removeInstanceFromFile(url);
                         instancesMap().remove(url);
@@ -450,7 +454,7 @@ public final class ServerRegistry implements java.io.Serializable {
                 LOGGER.log(Level.INFO, null, e);
             }
         }
-        return false;
+        throw new InstanceCreationException("no handlers");
     }
 
     private Map<String, String> cleanInitialProperties(Map<String, String> initialProperties) {
@@ -467,14 +471,18 @@ public final class ServerRegistry implements java.io.Serializable {
         return properties;
     }
 
-    public void addInstance(FileObject fo) {
+    private void addInstance(FileObject fo) {
         String url = (String) fo.getAttribute(URL_ATTR);
         String username = (String) fo.getAttribute(USERNAME_ATTR);
         String password = (String) fo.getAttribute(PASSWORD_ATTR);
         String displayName = (String) fo.getAttribute(InstanceProperties.DISPLAY_NAME_ATTR);
         String withoutUI = (String) fo.getAttribute(InstanceProperties.REGISTERED_WITHOUT_UI);
         boolean withoutUIFlag = withoutUI == null ? false : Boolean.valueOf(withoutUI);
-        addInstanceImpl(url, username, password, displayName, withoutUIFlag, null);
+        try {
+            addInstanceImpl(url, username, password, displayName, withoutUIFlag, null);
+        } catch (InstanceCreationException ice) {
+            // yes... we are ignoring this.. because that
+        }
     }
 
     public Collection getInstances(InstanceListener il) {
