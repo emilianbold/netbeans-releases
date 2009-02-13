@@ -55,6 +55,7 @@ import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
@@ -108,7 +109,8 @@ public class NbmsInDownloadedTabTest extends NbmAdvancedTestCase {
             assertTrue (info.getUpdateElement () + " doesn't have any broken dependencies.", info.getBrokenDependencies ().isEmpty ());
         }
     }
-    
+
+    @RandomlyFails // NB-Core-Build #2131
     public void testRequiresDependency () throws IOException {
         String content = generateInfo (NbmAdvancedTestCase.generateModuleElementWithRequires ("o.n.m.requiresA", "1.0", "tokenA"));
         File requiresA = generateNBM ("o.n.m.requiresA", content);
@@ -119,7 +121,6 @@ public class NbmsInDownloadedTabTest extends NbmAdvancedTestCase {
                 "test",
                 new File[] { requiresA, providesA }).getUpdateUnits (UpdateManager.TYPE.MODULE);
         assertNotNull ("Update units found.", units);
-        assertFalse ("Update units are not empty.", units.isEmpty ());
         assertEquals ("Two units.", 2, units.size ());
         
         Collection<UpdateElement> toInstall = new HashSet<UpdateElement> (units.size ());

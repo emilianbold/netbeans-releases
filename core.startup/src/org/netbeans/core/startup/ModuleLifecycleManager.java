@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,45 +34,57 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.python.debugger.actions;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.netbeans.modules.python.debugger.config.NetBeansFrontend;
-import org.openide.util.NbBundle;
-import org.openide.util.ImageUtilities;
+package org.netbeans.core.startup;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.CLIHandler;
+import org.netbeans.TopSecurityManager;
+import org.netbeans.core.startup.layers.SessionManager;
+import org.openide.LifecycleManager;
+import org.openide.util.Exceptions;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Action which shows PythonDebugging Console component.
- * @author Jean-Yves Mengant
+ * Rudimentary manager useful for non-GUI platform applications.
+ * Superseded by NbTopManager.NbLifecycleManager.
+ * @see #158525
  */
-public class PythonDebugConsoleAction extends AbstractAction {
+@ServiceProvider(service=LifecycleManager.class)
+public class ModuleLifecycleManager extends LifecycleManager {
 
-  public static String ICON_PATH = "org/netbeans/modules/python/debugger/actions/bugicon.gif";
+    public void saveAll() {
+        // XXX #77210 would make it possible for some objects to be saved here
+    }
 
-  public PythonDebugConsoleAction() {
-    super(NbBundle.getMessage(PythonDebugConsoleAction.class, "CTL_PythonDebugConsoleAction"));
-    putValue(SMALL_ICON, ImageUtilities.loadImageIcon(ICON_PATH, true));
-  }
+    private final AtomicBoolean exiting = new AtomicBoolean(false);
+    public void exit() {
+        if (exiting.getAndSet(true)) {
+            return;
+        }
+        // Simplified version of NbTopManager.doExit.
+        if (Main.getModuleSystem().shutDown(new Runnable() {
+            public void run() {
+                try {
+                    CLIHandler.stopServer();
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable t) {
+                    Exceptions.printStackTrace(t);
+                }
+            }
+        })) {
+            try {
+                SessionManager.getDefault().close();
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t) {
+                Exceptions.printStackTrace(t);
+            }
+            TopSecurityManager.exit(0);
+        }
+    }
 
-  public void actionPerformed(ActionEvent evt) {
-//        PythonConsoleTopComponent win = PythonConsoleTopComponent.findInstance();
-//        if (win.nTerm() > 1)
-//            win.newTab();
-//        else{
-//            win.open();
-//        }
-//        win.requestActive();
-    // first check for correct initializations
-    // of IDE frontend module
-    NetBeansFrontend.initCheck();
-    openPythonDebuggingWindow();
-  }
-
-  private void openPythonDebuggingWindow() {
-    JpyDbgView jv = JpyDbgView.getCurrentView();
-    jv.openPythonDebuggingWindow(null, true);
-  }
 }
