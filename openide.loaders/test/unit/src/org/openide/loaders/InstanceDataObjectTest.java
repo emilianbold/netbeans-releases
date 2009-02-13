@@ -190,25 +190,18 @@ public class InstanceDataObjectTest extends NbTestCase {
             // XXX I don't know whether the firing of event should be 
             // synch or not. Anyway giving a chance to instance data object
             // that it needs not to be sych.
-            org.openide.util.RequestProcessor.getDefault().post(new java.lang.Runnable() {
-
-                                                                    public void run() {
-                                                                        try {
-                                                                            final org.openide.filesystems.FileObject primary = ido.getPrimaryFile();
-
-                                                                            java.lang.System.err.println("Deleting file=" +
-                                                                                                         primary);
-                                                                            primary.delete();
-                                                                        }
-                                                                        catch (java.io.IOException ioe) {
-                                                                            Exceptions.printStackTrace(ioe);
-                                                                            l.exception = ioe;
-                                                                        }
-                                                                    }
-
-                                                                    {
-                                                                    }
-                                                                });
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        FileObject primary = ido.getPrimaryFile();
+                        System.err.println("Deleting file=" + primary);
+                        primary.delete();
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                        l.exception = ioe;
+                    }
+                }
+            });
         
             System.err.println("Waiting for the event with 30 sec timeout");
             ido.wait(30000);
