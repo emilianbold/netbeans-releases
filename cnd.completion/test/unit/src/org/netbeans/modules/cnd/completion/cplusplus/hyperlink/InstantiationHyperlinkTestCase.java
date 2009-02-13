@@ -68,5 +68,10 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         // IZ144869 : fixed instantiation of class forward declaration
         performTest("iz146697.cc", 41, 20, "iz146697.cc", 34, 5);
     }
-    
+
+    public void test153986() throws Exception {
+        // MYSTL case of IZ#153986: code completion of iterators and of the [] operator
+        performTest("iz153986.cc", 18, 15, "iz153986.cc", 9, 9);
+        performTest("iz153986.cc", 18, 30, "iz153986.cc", 4, 9);
+    }
 }
