@@ -73,7 +73,7 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
-    <folder name="Loaders">
+    <!--<folder name="Loaders">
         <folder name="text">
             <folder name="sh">
                 <folder name="Actions">
@@ -136,4 +136,5 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    -->
 </filesystem>
