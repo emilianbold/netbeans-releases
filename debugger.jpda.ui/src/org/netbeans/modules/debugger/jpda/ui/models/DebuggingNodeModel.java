@@ -203,8 +203,17 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         }
         if (node instanceof CallStackFrame) {
             CallStackFrame f = (CallStackFrame) node;
-            CallStackFrame currentFrame = debugger.getCurrentCallStackFrame();
-            if (f.equals(currentFrame)) {
+            boolean isCurrent;
+            try {
+                isCurrent = (Boolean) f.getClass().getMethod("isCurrent").invoke(f);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+                isCurrent = false;
+            }
+            // Do not call JDI in AWT
+            //CallStackFrame currentFrame = debugger.getCurrentCallStackFrame();
+            //if (f.equals(currentFrame)) {
+            if (isCurrent) {
                 return BoldVariablesTableModelFilterFirst.toHTML(
                         CallStackNodeModel.getCSFName(null, f, showPackageNames),
                         true, false, c);

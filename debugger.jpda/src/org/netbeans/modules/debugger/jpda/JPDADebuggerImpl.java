@@ -320,6 +320,28 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     /**
+     * Returns current stack frame or null.
+     *
+     * @return current stack frame or null
+     */
+    public CallStackFrame getCurrentCallStackFrameOrNull () {
+        CallStackFrame csf = null;
+        synchronized (currentThreadAndFrameLock) {
+            if (currentCallStackFrame != null) {
+                try {
+                    if (!currentCallStackFrame.getThread().isSuspended()) {
+                        currentCallStackFrame = null;
+                    }
+                } catch (InvalidStackFrameException isfex) {
+                    currentCallStackFrame = null;
+                }
+                csf = currentCallStackFrame;
+            }
+        }
+        return csf;
+    }
+
+    /**
      * Evaluates given expression in the current context.
      *
      * @param expression a expression to be evaluated
