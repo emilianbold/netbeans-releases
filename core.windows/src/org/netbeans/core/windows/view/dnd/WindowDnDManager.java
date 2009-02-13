@@ -468,7 +468,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             return droppable;
         }
         
-        if( Switches.isTopComponentUndockingEnabled() ) {
+        if( Switches.isTopComponentUndockingEnabled() && Switches.isUndockingEnabled(transfer) ) {
             droppable = findFloatingFrameDroppable(floatingFrames, location, kind, transfer);
             if(droppable != null) {
                 return droppable;
@@ -501,7 +501,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
 
         Point p = new Point(location);
         SwingUtilities.convertPointFromScreen(p, mainWindow.getContentPane());
-        if( Switches.isTopComponentSlidingEnabled() ) {
+        if( Switches.isTopComponentSlidingEnabled() && Switches.isSlidingEnabled(transfer) ) {
             if (lastSlideDroppable != null) {
                 if (lastSlideDroppable.isWithinSlide(p)) {
                     return lastSlideDroppable;
@@ -955,7 +955,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                     = windowDnDManager.isInMainWindowDroppable(location, windowDnDManager.draggedKind, windowDnDManager.startingTransfer);
             boolean isInFrameDroppable
                     = isInFloatingFrameDroppable(windowDnDManager.getFloatingFrames(), location, windowDnDManager.draggedKind, windowDnDManager.startingTransfer)
-                    && Switches.isTopComponentUndockingEnabled();
+                    && Switches.isTopComponentUndockingEnabled() && Switches.isUndockingEnabled(windowDnDManager.startingTransfer);
             boolean isAroundCenterPanel
                     = isAroundCenterPanel(location);
             boolean shouldPaintFakeWindow = false;
@@ -996,7 +996,8 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                 topComponentDragSupport.setSuccessCursor(false);
             } else if(isInFreeArea(location, fakeWindow)
             && getFreeAreaDroppable(location).canDrop(windowDnDManager.startingTransfer, location)
-                    && Switches.isTopComponentUndockingEnabled()) {
+                    && Switches.isTopComponentUndockingEnabled()
+                     && Switches.isUndockingEnabled(windowDnDManager.startingTransfer)) {
                 topComponentDragSupport.setSuccessCursor(true);
                 // paint fake window during move over free area
 //                shouldPaintFakeWindow = true;

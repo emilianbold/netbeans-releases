@@ -112,7 +112,7 @@ public final class ActionsManager {
     private Vector                  listener = new Vector ();
     private HashMap                 listeners = new HashMap ();
     private HashMap                 actionProviders;
-    private Object                  actionProvidersLock = new Object();
+    private final Object            actionProvidersLock = new Object();
     private MyActionListener        actionListener = new MyActionListener ();
     private Lookup                  lookup;
     private boolean                 doiingDo = false;
@@ -126,17 +126,6 @@ public final class ActionsManager {
      */
     ActionsManager (Lookup lookup) {
         this.lookup = lookup;
-        
-        if (lookup instanceof Lookup.MetaInf) {
-            // listen on module install/uninstall notifications
-            ((Lookup.MetaInf)lookup).addClearCacheListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    synchronized (actionProvidersLock) {
-                        actionProviders = null;
-                    }
-                }
-            });
-        }
     }
     
     
@@ -315,12 +304,12 @@ public final class ActionsManager {
         String propertyName, 
         ActionsManagerListener l
     ) {
-        Vector listener = (Vector) listeners.get (propertyName);
-        if (listener == null) {
-            listener = new Vector ();
-            listeners.put (propertyName, listener);
+        Vector ls = (Vector) listeners.get (propertyName);
+        if (ls == null) {
+            ls = new Vector ();
+            listeners.put (propertyName, ls);
         }
-        listener.addElement (l);
+        ls.addElement (l);
     }
 
     /** 
@@ -333,10 +322,10 @@ public final class ActionsManager {
         String propertyName, 
         ActionsManagerListener l
     ) {
-        Vector listener = (Vector) listeners.get (propertyName);
-        if (listener == null) return;
-        listener.removeElement (l);
-        if (listener.size () == 0)
+        Vector ls = (Vector) listeners.get (propertyName);
+        if (ls == null) return;
+        ls.removeElement (l);
+        if (ls.size () == 0)
             listeners.remove (propertyName);
     }
 
@@ -426,15 +415,30 @@ public final class ActionsManager {
         p.addActionsProviderListener (actionListener);
     }
     
-    private void initActionImpls () {
-        actionProviders = new HashMap ();
-        for (ActionsProvider ap : lookup.lookup(null, ActionsProvider.class)) {
-            Iterator ii = ap.getActions ().iterator ();
-            while (ii.hasNext ())
-                registerActionsProvider (ii.next (), ap);
+    private void registerActionsProviders(List<? extends ActionsProvider> aps) {
+        synchronized (aps) {
+            for (ActionsProvider ap : aps) {
+                Iterator ii = ap.getActions ().iterator ();
+                while (ii.hasNext ())
+                    registerActionsProvider (ii.next (), ap);
+            }
         }
     }
-    
+
+    private void initActionImpls () {
+        actionProviders = new HashMap ();
+        final List<? extends ActionsProvider> aps = lookup.lookup(null, ActionsProvider.class);
+        ((Customizer) aps).addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    synchronized (actionProvidersLock) {
+                        actionProviders.clear();
+                        registerActionsProviders(aps);
+                    }
+                }
+        });
+        registerActionsProviders(aps);
+    }
+
     private boolean listerersLoaded = false;
     private List lazyListeners;
     

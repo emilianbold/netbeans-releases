@@ -644,7 +644,7 @@ TestSupport.prototype = {
             paramLength = 0;
         }
         var req;
-        if(path.indexOf('http:') != -1)
+        if( ts.isURL(path) )
             req = path;
         else
             req = baseURL+escape(path);
@@ -700,6 +700,10 @@ TestSupport.prototype = {
             c = this.xhr.delete_(req);
         }
         ts.updateContent(c);
+    },
+
+    isURL : function (url) {
+        return url.length > 7 && url.substring(0, 4) == "http";
     },
     
     createIFrameForUrl : function (url) {
@@ -807,7 +811,7 @@ TestSupport.prototype = {
                 var rawContent = content;
                 this.updatepage('result', this.createTabs(tableContent, rawContent, showRaw));
                 if(showRaw) {
-                    if(content.length > 7 && content.substring(0, 7) == "http://")
+                    if( ts.isURL(content) )
                         this.currentValidUrl = content;
                     if(this.currentMethod == 'GET' && this.currentMimeType == 'text/html') {
                         this.updatepage('rawContent', '');

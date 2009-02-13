@@ -53,6 +53,7 @@ import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 
@@ -60,6 +61,11 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
  *
  * @author mkuchtiak
  */
+@ProjectServiceProvider(service=WebServiceNotifier.class, projectType={
+    "org-netbeans-modules-web-project",
+    "org-netbeans-modules-j2ee-ejbjarproject",
+    "org-netbeans-modules-j2ee-clientproject"
+})
 public class ProjectWebServiceNotifier implements WebServiceNotifier {
     private static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; //NOI18N
     

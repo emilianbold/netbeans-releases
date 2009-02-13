@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.dlight.management.api;
 
-import org.netbeans.modules.dlight.management.api.ExecutionContext;
 
 /**
  *

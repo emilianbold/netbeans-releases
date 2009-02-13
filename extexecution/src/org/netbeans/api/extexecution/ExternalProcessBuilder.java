@@ -51,6 +51,8 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.CheckReturnValue;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.NbPreferences;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -68,7 +70,7 @@ import org.openide.util.Utilities;
 public final class ExternalProcessBuilder implements Callable<Process> {
 
     private static final Logger LOGGER = Logger.getLogger(ExternalProcessBuilder.class.getName());
-    
+
     // FIXME: get rid of those proxy constants as soon as some NB Proxy API is available
     private static final String USE_PROXY_AUTHENTICATION = "useProxyAuthentication"; // NOI18N
 
@@ -94,7 +96,7 @@ public final class ExternalProcessBuilder implements Callable<Process> {
      *
      * @param executable executable to run
      */
-    public ExternalProcessBuilder(String executable) {
+    public ExternalProcessBuilder(@NonNull String executable) {
         this(new BuilderData(executable));
     }
 
@@ -122,7 +124,9 @@ public final class ExternalProcessBuilder implements Callable<Process> {
      * @param workingDirectory working directory
      * @return new builder with configured working directory
      */
-    public ExternalProcessBuilder workingDirectory(File workingDirectory) {
+    @NonNull
+    @CheckReturnValue
+    public ExternalProcessBuilder workingDirectory(@NonNull File workingDirectory) {
         Parameters.notNull("workingDirectory", workingDirectory);
 
         BuilderData builder = new BuilderData(this);
@@ -144,6 +148,8 @@ public final class ExternalProcessBuilder implements Callable<Process> {
      *             redirected to standard output
      * @return new builder with configured error stream redirection
      */
+    @NonNull
+    @CheckReturnValue
     public ExternalProcessBuilder redirectErrorStream(boolean redirectErrorStream) {
         BuilderData builder = new BuilderData(this);
         return new ExternalProcessBuilder(builder.redirectErrorStream(redirectErrorStream));
@@ -163,7 +169,9 @@ public final class ExternalProcessBuilder implements Callable<Process> {
      * @param path path to add to <code>PATH</code> variable
      * @return new builder with additional path in <code>PATH</code> variable
      */
-    public ExternalProcessBuilder prependPath(File path) {
+    @NonNull
+    @CheckReturnValue
+    public ExternalProcessBuilder prependPath(@NonNull File path) {
         Parameters.notNull("path", path);
 
         BuilderData builder = new BuilderData(this);
@@ -187,7 +195,9 @@ public final class ExternalProcessBuilder implements Callable<Process> {
      * @param argument command argument to add
      * @return new builder with additional argument for the command
      */
-    public ExternalProcessBuilder addArgument(String argument) {
+    @NonNull
+    @CheckReturnValue
+    public ExternalProcessBuilder addArgument(@NonNull String argument) {
         Parameters.notNull("argument", argument);
 
         BuilderData builder = new BuilderData(this);
@@ -207,7 +217,9 @@ public final class ExternalProcessBuilder implements Callable<Process> {
      * @return new builder with additional environment variable for the command
      * @see #call()
      */
-    public ExternalProcessBuilder addEnvironmentVariable(String name, String value) {
+    @NonNull
+    @CheckReturnValue
+    public ExternalProcessBuilder addEnvironmentVariable(@NonNull String name, @NonNull String value) {
         Parameters.notNull("name", name);
         Parameters.notNull("value", value);
 
@@ -241,7 +253,9 @@ public final class ExternalProcessBuilder implements Callable<Process> {
      * </ol>
      * @return the new {@link Process} based on the properties configured
      *             in this builder
+     * @throws IOException if the process could not be created
      */
+    @NonNull
     public Process call() throws IOException {
         List<String> commandL = new ArrayList<String>();
 

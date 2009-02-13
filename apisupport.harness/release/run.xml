@@ -102,10 +102,10 @@ made subject to such option by the copyright holder.
 
     <target name="-prepare-as-platform" depends="-init" if="app.name">
         <property name="disabled.modules" value=""/>
-        <fail message="Platform cluster is not present in cluster.path: '${cluster.path}'">
+        <fail message="Platform cluster is not present in cluster.path: '${cluster.path.final}'">
             <condition>
                 <not>
-                    <matches string="${cluster.path}" pattern="[\\/]platform[0-9]*([;:]|$)"/>
+                    <matches string="${cluster.path.final}" pattern="[\\/]platform[0-9]*([;:]|$)"/>
                 </not>
             </condition>
         </fail>

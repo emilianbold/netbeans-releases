@@ -40,12 +40,18 @@
  */
 package org.netbeans.modules.cnd.refactoring.hints.infrastructure;
 
+import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
-import org.netbeans.modules.cnd.refactoring.codegen.CsmContext;
+import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 
 /**
  * based on org.netbeans.modules.java.hints.errors.Utilities
@@ -57,6 +63,20 @@ public class Utilities {
     private static final String DEFAULT_NAME = "name"; // NOI18N
 
     public Utilities() {
+    }
+    
+    public static CsmClass extractEnclosingClass(CsmContext editorContext) {
+        if (editorContext == null) {
+            return null;
+        }
+        CsmClass cls = editorContext.getEnclosingClass();
+        if (cls == null) {
+            CsmFunction fun = editorContext.getEnclosingFunction();
+            if (fun != null && CsmKindUtilities.isMethod(fun)) {
+                cls = ((CsmMethod) CsmBaseUtilities.getFunctionDeclaration(fun)).getContainingClass();
+            }
+        }
+        return cls;
     }
 
     public static String guessName(CsmContext info) {
@@ -102,10 +122,10 @@ public class Utilities {
     }
 
     private static String guessLiteralName(String str) {
-        StringBuffer sb = new StringBuffer();
         if (str.length() == 0) {
             return DEFAULT_NAME;
         }
+        StringBuilder sb = new StringBuilder();
         char first = str.charAt(0);
         if (Character.isJavaIdentifierStart(str.charAt(0))) {
             sb.append(first);

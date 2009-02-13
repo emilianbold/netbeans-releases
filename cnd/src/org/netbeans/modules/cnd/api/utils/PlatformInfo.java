@@ -134,7 +134,7 @@ public final class PlatformInfo {
         if (list.isEmpty()) {
             return "";
         }
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
 
         for (String dir : list) {
             buf.append(dir);

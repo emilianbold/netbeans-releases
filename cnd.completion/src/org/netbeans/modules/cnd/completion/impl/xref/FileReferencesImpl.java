@@ -272,6 +272,7 @@ public class FileReferencesImpl extends CsmFileReferences  {
                     derefToken = null;
                     break;
                 case __ATTRIBUTE__:
+                case __ATTRIBUTE:
                 case _DECLSPEC:
                 case __DECLSPEC:
                 case ASM:

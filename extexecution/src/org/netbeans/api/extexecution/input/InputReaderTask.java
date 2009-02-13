@@ -44,6 +44,8 @@ package org.netbeans.api.extexecution.input;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.util.Cancellable;
 import org.openide.util.Parameters;
 
@@ -125,7 +127,8 @@ public final class InputReaderTask implements Runnable, Cancellable {
      * @param processor processor consuming the data, may be <code>null</code>
      * @return task handling the read process
      */
-    public static InputReaderTask newTask(InputReader reader, InputProcessor processor) {
+    @NonNull
+    public static InputReaderTask newTask(@NonNull InputReader reader, @NullAllowed InputProcessor processor) {
         Parameters.notNull("reader", reader);
 
         return new InputReaderTask(reader, processor, false);
@@ -142,7 +145,8 @@ public final class InputReaderTask implements Runnable, Cancellable {
      * @param processor processor consuming the data, may be <code>null</code>
      * @return task handling the read process
      */
-    public static InputReaderTask newDrainingTask(InputReader reader, InputProcessor processor) {
+    @NonNull
+    public static InputReaderTask newDrainingTask(@NonNull InputReader reader, @NullAllowed InputProcessor processor) {
         Parameters.notNull("reader", reader);
 
         return new InputReaderTask(reader, processor, true);

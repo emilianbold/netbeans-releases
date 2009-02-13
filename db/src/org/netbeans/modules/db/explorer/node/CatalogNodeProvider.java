@@ -105,9 +105,9 @@ public class CatalogNodeProvider extends NodeProvider {
                                 if (catalog.getName() != null || oneCatalog) {
 
                                     boolean use = true;
-                                    if (defaultCatalog != null) {
-                                        use = defaultCatalog.equals(catalog.getName());
-                                    }
+                                    //if (defaultCatalog != null) {
+                                    //    use = defaultCatalog.equals(catalog.getName());
+                                    //}
 
                                     if (use) {
                                         MetadataElementHandle<Catalog> catalogHandle = MetadataElementHandle.create(catalog);

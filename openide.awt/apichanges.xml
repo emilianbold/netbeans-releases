@@ -47,6 +47,25 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="StatusTextImportance">
+        <api name="awt"/>
+        <summary>Allow messages to show in the main status line permanently.</summary>
+        <version major="7" minor="5"/>
+        <date day="6" month="1" year="2009"/>
+        <author login="saubrecht"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+        Because of merging of editor's status line with main window's status line
+        it is necessary to define the 'importance' of messages being displayed in the
+        main status line. Messages with higher importance will replace messages
+        with lower importance. These important messages will stay permanently visible
+        until explicitly cleared or replaced (as opposed to current implementation
+        when all status line messages are removed after some time) or when handle
+        object associated with these messages gets garbage-collected.
+        </description>
+        <class package="org.openide.awt" name="StatusDisplayer"/>
+        <issue number="156357"/>
+    </change>
     <change id="Actions.MenuText">
         <api name="awt"/>
         <summary>Actions can have "menuText" and "popupText" properties</summary>

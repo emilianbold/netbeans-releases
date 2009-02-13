@@ -1,0 +1,100 @@
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+
+Contributor(s):
+
+Portions Copyrighted 2009 Sun Microsystems, Inc.
+-->
+<html>
+    <head>
+        <title>Working with the Maven POM</title>
+        <link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+    <body>
+        <h2>Working with the Maven POM</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small></p>
+        <p>The Project Object Model (POM) is the basic unit of work in Maven.
+        The POM is descibed in the <tt>pom.xml</tt> XML file and contains project and configuration details,
+        such as the artifact coordinates, project dependencies and build profiles that Maven uses to execute goals and build the project.</p>
+        <p>For more information about POM elements, see the following pages on the Maven site:</p>
+        
+        <p>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://maven.apache.org/guides/introduction/introduction-to-the-pom.html">
+        <param name="text" value="<html><u>Introduction to the POM</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+        </object>
+        </p>
+
+        <p>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://maven.apache.org/ref/2.0.8/maven-model/maven.html">
+        <param name="text" value="<html><u>POM Reference</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+        </object>
+        </p>
+
+        <p>When you use the New Project wizard to create an artifact, 
+        the IDE automatically generates <tt>pom.xml</tt> and adds the artifact details.
+        Open <tt>pom.xml</tt> in the XML editor to edit the file.
+        The following features are available in the XML editor to help you edit <tt>pom.xml</tt>.
+        </p>
+        <ul>
+            <li><strong>Code completion.</strong> The IDE's code completion can help you add and modify elements.
+            The code completion hints offered in the editor are based on the contents of the repository.</li>
+            <li><strong>Insert Code.</strong> The IDE can generate XML elements for you based on the
+            details you specify in a dialog box.
+            When you right-click in the editor window (Ctrl-I), a popup menu appears where you can choose to add a
+            dependency, plugin or profile or exclude a dependency.
+            A dialog box opens enabling you to specify the details about the code you want the IDE to insert.
+            </li>
+        </ul>
+
+
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/maven/maven-about.html">About Working with Maven</a></dd>
+    <dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/xml/xml_edit.html">Editing an XML Document</a></dd>
+    <dd><a href="maven-dependencies.html">Managing Maven Project Dependencies</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

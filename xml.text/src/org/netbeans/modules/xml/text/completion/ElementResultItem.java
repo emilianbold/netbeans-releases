@@ -43,9 +43,16 @@ package org.netbeans.modules.xml.text.completion;
 
 import java.awt.Color;
 
+import java.beans.BeanInfo;
+import java.net.URL;
+import javax.swing.Action;
 import org.netbeans.modules.xml.api.model.*;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Caret;
+import org.netbeans.spi.editor.completion.CompletionDocumentation;
+import org.netbeans.spi.editor.completion.CompletionResultSet;
+import org.netbeans.spi.editor.completion.CompletionTask;
+import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 
 /**
  * Represent element name (or its part for namespace prefix).
@@ -60,15 +67,18 @@ class ElementResultItem extends XMLResultItem {
     private final boolean startElement;
     
     private final boolean empty;
+    private GrammarResult res;
     
     /**
      * Create a start element result item.
      */
     public ElementResultItem(GrammarResult res){
         super(res.getNodeName());
+        this.res = res;
         foreground = Color.blue;
         startElement = true;
         empty = res.isEmptyElement();
+        icon = res.getIcon(BeanInfo.ICON_COLOR_16x16);
     }
     
     /**
@@ -101,6 +111,51 @@ class ElementResultItem extends XMLResultItem {
         }
     }
     
+    @Override
+    public CompletionTask createDocumentationTask() {
+        return new CompletionTask() {
+            public void query(CompletionResultSet resultSet) {
+                if (res != null && res.getDescription() != null) {
+                    resultSet.setDocumentation(new Docum(res.getDescription()));
+    
+                }
+                resultSet.finish();
+            }
+            public void refresh(CompletionResultSet resultSet) {
+                if (res != null && res.getDescription() != null) {
+                    resultSet.setDocumentation(new Docum(res.getDescription()));
+                }
+                resultSet.finish();
+            }
+            public void cancel() {}
+        };
+    }
+
+    private class Docum implements CompletionDocumentation {
+        private String doc;
+
+        private Docum(String doc) {
+            this.doc = doc;
+        }
+
+        public String getText() {
+            return doc;
+        }
+
+        public URL getURL() {
+            return null;
+        }
+
+        public CompletionDocumentation resolveLink(String link) {
+            return null;
+        }
+
+        public Action getGotoSourceAction() {
+            return null;
+        }
+
+    }
+
     
     /**
      * If called with <code>SHIFT_MASK</code> modified it createa a start tag and

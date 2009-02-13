@@ -231,10 +231,10 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * Takes AnnotateLines and shows them.
      */
     public void annotationLines(File file, List<AnnotateLine> annotateLines) {
-        List<AnnotateLine> lines = new LinkedList<AnnotateLine>(annotateLines);
+        final List<AnnotateLine> lines = new LinkedList<AnnotateLine>(annotateLines);
         int lineCount = lines.size();
         /** 0 based line numbers => 1 based line numbers*/
-        int ann2editorPermutation[] = new int[lineCount];
+        final int ann2editorPermutation[] = new int[lineCount];
         for (int i = 0; i< lineCount; i++) {
             ann2editorPermutation[i] = i+1;
         }
@@ -297,27 +297,26 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             }
         }
 
-        try {
-            doc.atomicLock();
-            StyledDocument sd = (StyledDocument) doc;
-            Iterator<AnnotateLine> it = lines.iterator();
-            elementAnnotations = Collections.synchronizedMap(new HashMap<Element, AnnotateLine>(lines.size()));
-            while (it.hasNext()) {
-                AnnotateLine line = it.next();
-                int lineNum = ann2editorPermutation[line.getLineNum() -1];
-                try {
-                    int lineOffset = NbDocument.findLineOffset(sd, lineNum -1);
-                    Element element = sd.getParagraphElement(lineOffset);
-                    elementAnnotations.put(element, line);
-                } catch (IndexOutOfBoundsException ex) {
-                    // TODO how could I get line behind document end?
-                    // furtunately user does not spot it
-                    Subversion.LOG.log(Level.INFO, null, ex);
+        doc.runAtomic(new Runnable() {
+            public void run() {
+                StyledDocument sd = (StyledDocument) doc;
+                Iterator<AnnotateLine> it = lines.iterator();
+                elementAnnotations = Collections.synchronizedMap(new HashMap<Element, AnnotateLine>(lines.size()));
+                while (it.hasNext()) {
+                    AnnotateLine line = it.next();
+                    int lineNum = ann2editorPermutation[line.getLineNum() -1];
+                    try {
+                        int lineOffset = NbDocument.findLineOffset(sd, lineNum -1);
+                        Element element = sd.getParagraphElement(lineOffset);
+                        elementAnnotations.put(element, line);
+                    } catch (IndexOutOfBoundsException ex) {
+                        // TODO how could I get line behind document end?
+                        // furtunately user does not spot it
+                        Subversion.LOG.log(Level.INFO, null, ex);
+                    }
                 }
             }
-        } finally {
-            doc.atomicUnlock();
-        }
+        });
 
         // lazy listener registration
         caret.addChangeListener(this);

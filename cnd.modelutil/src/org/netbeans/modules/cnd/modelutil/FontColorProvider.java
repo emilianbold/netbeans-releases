@@ -52,13 +52,17 @@ public interface FontColorProvider {
 
         PREPROCESSOR_DIRECTIVE("preprocessor"), // NOI18N
         INACTIVE_CODE("cc-highlighting-inactive"), // NOI18N
-        USER_MACRO("cc-highlighting-macros"), // NOI18N
+        //Macro Defined in Code
+        DEFINED_MACRO("cc-highlighting-macros"), // NOI18N
+        //Predefined Macros (compiler and compile time)
         SYSTEM_MACRO("cc-highlighting-macros-system"), // NOI18N
+        //Macro Defined in Project (in comand line -D)
+        USER_MACRO("cc-highlighting-macros-user"), // NOI18N
         CLASS_FIELD("cc-highlighting-class-fields"), // NOI18N
         MARK_OCCURENCES("cc-highlighting-mark-occurrences"), // NOI18N
         TYPEDEF("cc-highlighting-typedefs"), // NOI18N
         UNUSED_VARIABLES("cc-highlighting-unused-variables"); // NOI18N
-        
+
         private final String resourceName;
 
         Entity(String resourceName) {

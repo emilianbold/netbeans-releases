@@ -43,9 +43,6 @@ package org.netbeans.modules.registration;
 
 import org.netbeans.modules.servicetag.RegistrationData;
 import org.netbeans.modules.servicetag.ServiceTag;
-import java.awt.Frame;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -63,13 +60,14 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.reglib.BrowserSupport;
 import org.netbeans.modules.reglib.NbConnectionSupport;
 import org.netbeans.modules.reglib.NbServiceTagSupport;
 import org.netbeans.modules.reglib.StatusData;
 import org.openide.awt.HtmlBrowser;
-import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.SharedClassObject;
 import org.openide.windows.WindowManager;
@@ -187,6 +185,19 @@ class NbConnection {
      * 
      */
     private static void checkProductRegistrationStatus () {
+        //#140203: If autoupdate is set to never chack update status do not try
+        //to query registration status.
+        //We use this because we do not want to introduce separate option
+        //to disable registration status check.
+        //Main reason for disabling this is to avoid network communication.
+        String AU_PREF_NODE = "org/netbeans/modules/autoupdate"; // NOI18N
+        Preferences auPref = NbPreferences.root().node(AU_PREF_NODE);
+
+        int period = auPref.getInt("period", 2);
+        if (period == 5) {
+            return;
+        }
+
         RegistrationData regData = null;
         try {
             regData = NbServiceTagSupport.getRegistrationData();

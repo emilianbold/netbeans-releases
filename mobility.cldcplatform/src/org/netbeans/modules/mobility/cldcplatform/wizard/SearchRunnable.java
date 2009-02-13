@@ -69,7 +69,7 @@ public class SearchRunnable implements Runnable {
     protected volatile boolean stop = false;
     protected Notifier notifier;
     private Set<File> roots;
-    protected SearchPanel panel;
+    SearchPanel panel;
     protected ProgressHandle progress;
     private int maxLevel;
     private Collection<? extends CustomCLDCPlatformConfigurator> customConfigurators;

@@ -22,7 +22,8 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- * The Original Software is NetBeans.
+ * The Original Softwa
+ re is NetBeans.
  * The Initial Developer of the Original Software is Sun Microsystems, Inc.
  * Portions created by Sun Microsystems, Inc. are Copyright (C) 2005
  * All Rights Reserved.

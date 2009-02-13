@@ -416,6 +416,17 @@ public class ProjectUtilities {
             String[][] projectPackagesDescr) {
         // TODO: projectPackagesDescr[1] should only contain packages from subprojects, currently contains also toplevel project packages
         if (FILTER_PROJECT_ONLY.equals(predefinedInstrFilter)) {
+            return new SimpleFilter(PROFILE_PROJECT_CLASSES_STRING, SimpleFilter.SIMPLE_FILTER_INCLUSIVE, computeProjectOnlyInstrumentationFilter(project, false, projectPackagesDescr));
+        } else if (FILTER_PROJECT_SUBPROJECTS_ONLY.equals(predefinedInstrFilter)) {
+            return new SimpleFilter(PROFILE_PROJECT_SUBPROJECT_CLASSES_STRING, SimpleFilter.SIMPLE_FILTER_INCLUSIVE, computeProjectOnlyInstrumentationFilter(project, true, projectPackagesDescr));
+        }
+
+        return null;
+    }
+
+    public static String computeProjectOnlyInstrumentationFilter(Project project, boolean useSubprojects,
+            String[][] projectPackagesDescr) {
+        if (!useSubprojects) {
             computeProjectPackages(project, false, projectPackagesDescr);
 
             StringBuffer projectPackages = new StringBuffer();
@@ -425,9 +436,8 @@ public class ProjectUtilities {
                         : (projectPackagesDescr[0][i] + ". ")); //NOI18N
             }
 
-            return new SimpleFilter(PROFILE_PROJECT_CLASSES_STRING, SimpleFilter.SIMPLE_FILTER_INCLUSIVE,
-                    projectPackages.toString().trim());
-        } else if (FILTER_PROJECT_SUBPROJECTS_ONLY.equals(predefinedInstrFilter)) {
+            return projectPackages.toString().trim();
+        } else {
             computeProjectPackages(project, true, projectPackagesDescr);
 
             StringBuffer projectPackages = new StringBuffer();
@@ -437,11 +447,12 @@ public class ProjectUtilities {
                         : (projectPackagesDescr[1][i] + ". ")); //NOI18N // TODO: default packages need to be processed also for subprojects!!!
             }
 
-            return new SimpleFilter(PROFILE_PROJECT_SUBPROJECT_CLASSES_STRING, SimpleFilter.SIMPLE_FILTER_INCLUSIVE,
-                    projectPackages.toString().trim());
+            return projectPackages.toString().trim();
         }
+    }
 
-        return null;
+    public static boolean isIncludeSubprojects(SimpleFilter filter) {
+        return FILTER_PROJECT_SUBPROJECTS_ONLY.equals(filter);
     }
 
     public static String getDefaultPackageClassNames(Project project) {
@@ -460,7 +471,7 @@ public class ProjectUtilities {
             throw new IllegalArgumentException("Storage must be a non-null String[2][] array"); // NOI18N
         }
 
-        if (storage[0] == null) {
+        if (storage[0] == null || storage[0].length == 0) {
             Collection<String> packages1 = new ArrayList<String>();
 
             for (FileObject root : getSourceRoots(project, false)) {
@@ -470,7 +481,7 @@ public class ProjectUtilities {
             storage[0] = packages1.toArray(new String[0]);
         }
 
-        if (subprojects && (storage[1] == null)) {
+        if (subprojects && (storage[1] == null || storage[1].length == 0)) {
             FileObject[] srcRoots2 = getSourceRoots(project, true); // TODO: should be computed based on already known srcRoots1
             ArrayList<String> packages2 = new ArrayList<String>();
 

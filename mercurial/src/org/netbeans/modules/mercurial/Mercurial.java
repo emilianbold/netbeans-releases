@@ -65,7 +65,12 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.NbBundle;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
+import org.netbeans.modules.mercurial.hooks.spi.HgHook;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.Utilities;
 
 /**
@@ -73,7 +78,7 @@ import org.openide.util.Utilities;
  *
  * @author Maros Sandor
  */
-public class Mercurial {
+public class Mercurial implements LookupListener {
     public static final int HG_FETCH_20_REVISIONS = 20;
     public static final int HG_FETCH_50_REVISIONS = 50;
     public static final int HG_FETCH_ALL_REVISIONS = -1;
@@ -127,29 +132,28 @@ public class Mercurial {
     private boolean checkedVersion;
     private boolean gotVersion;
 
+    private Result<? extends HgHook> hooksResult;
+
     private Mercurial() {
     }
 
 
     private void init() {
-        loadIniParserClassesWorkaround();
+        HgConfigFiles.getSysInstance();
         setDefaultPath();
         fileStatusCache = new FileStatusCache();
         mercurialAnnotator = new MercurialAnnotator();
         mercurialInterceptor = new MercurialInterceptor();
         checkVersion(); // Does the Hg check but postpones querying user until menu is activated
+
+        hooksResult = (Result<? extends HgHook>) Lookup.getDefault().lookupResult(HgHook.class);
+        hooksResult.addLookupListener(this);
     }
 
-    private void loadIniParserClassesWorkaround() {
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-        try {
-            // triggers ini4j initialization in call to loadSystemAndGlobalFile()
-            HgConfigFiles.getSysInstance();
-        } finally {
-            Thread.currentThread().setContextClassLoader(cl);
-        }
+    public void resultChanged(LookupEvent ev) {
+        hooksResult = (Result<? extends HgHook>) Lookup.getDefault().lookupResult(HgHook.class);
     }
+
 
     private void setDefaultPath() {
         // Set default executable location for mercurial on mac
@@ -519,4 +523,17 @@ public class Mercurial {
     public Boolean isRefreshScheduled(File file) {
         return mercurialInterceptor.isRefreshScheduled(file);
     }
+
+
+    public List<HgHook> getHooks() {
+        List<HgHook> ret = new ArrayList<HgHook>();
+        Collection<? extends HgHook> hooks = hooksResult.allInstances();
+        if (hooks.size() > 0) {
+            for (HgHook hook : hooks) {
+                ret.add(hook);
+            }
+        }
+        return ret;
+    }
+
 }

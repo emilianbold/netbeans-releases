@@ -61,9 +61,7 @@ made subject to such option by the copyright holder.
             <xsl:if test="/jaxws:jax-ws/jaxws:services/jaxws:service">
                 <xsl:if test="count(/jaxws:jax-ws/jaxws:services/jaxws:service[not(jaxws:wsdl-url)]) > 0">
                     <target name="wsgen-init" depends="init, -do-compile">
-                        <mkdir dir="${{build.generated.dir}}/wsgen/service"/>
-                        <mkdir dir="${{build.generated.dir}}/wsgen/service/resources/"/>
-                        <mkdir dir="${{build.generated.dir}}/wsgen/binaries"/>
+                        <mkdir dir="${{build.generated.sources.dir}}/jax-ws/resources/"/>
                         <mkdir dir="${{build.classes.dir}}"/>
                         <taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
                             <classpath path="${{java.home}}/../lib/tools.jar:${{build.classes.dir}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
@@ -78,9 +76,9 @@ made subject to such option by the copyright holder.
                             <xsl:choose>
                                 <xsl:when test="$jaxwsversion='jaxws21lib'">
                                     <wsgen
-                                        sourcedestdir="${{build.generated.dir}}/wsgen/service"
-                                        resourcedestdir="${{build.generated.dir}}/wsgen/service/resources/"
-                                        destdir="${{build.generated.dir}}/wsgen/binaries"
+                                        sourcedestdir="${{build.generated.sources.dir}}/jax-ws"
+                                        resourcedestdir="${{build.generated.sources.dir}}/jax-ws/resources/"
+                                        destdir="${{build.generated.sources.dir}}/jax-ws"
                                         xendorsed = "true"
                                         keep="true"
                                         genwsdl="true"
@@ -90,9 +88,9 @@ made subject to such option by the copyright holder.
                                 </xsl:when>
                                 <xsl:otherwise>
                                     <wsgen
-                                        sourcedestdir="${{build.generated.dir}}/wsgen/service"
-                                        resourcedestdir="${{build.generated.dir}}/wsgen/service/resources/"
-                                        destdir="${{build.generated.dir}}/wsgen/binaries"
+                                        sourcedestdir="${{build.generated.sources.dir}}/jax-ws"
+                                        resourcedestdir="${{build.generated.sources.dir}}/jax-ws/resources/"
+                                        destdir="${{build.generated.sources.dir}}/jax-ws"
                                         keep="true"
                                         genwsdl="true"
                                         sei="{$seiclass}">
@@ -111,7 +109,7 @@ made subject to such option by the copyright holder.
                                 <xsl:text>wsgen-</xsl:text><xsl:value-of select="@name"/>
                             </xsl:for-each>
                         </xsl:attribute>
-                        <webproject2:javac srcdir="${{build.generated.dir}}/wsgen/service" classpath="${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
+                        <webproject2:javac srcdir="${{build.generated.sources.dir}}/jax-ws" classpath="${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
                     </target>
                 </xsl:if>
             </xsl:if>
@@ -125,12 +123,11 @@ made subject to such option by the copyright holder.
                 </xsl:variable>
                 <target name="wsimport-init" depends="init">
                     <xsl:if test="/jaxws:jax-ws/jaxws:clients/jaxws:client">
-                        <mkdir dir="${{build.generated.dir}}/wsimport/client"/>
+                        <mkdir dir="${{build.generated.sources.dir}}/jax-ws"/>
                     </xsl:if>
                     <xsl:if test="/jaxws:jax-ws/jaxws:services/jaxws:service/jaxws:wsdl-url">
-                        <mkdir dir="${{build.generated.dir}}/wsimport/service"/>
+                        <mkdir dir="${{build.generated.sources.dir}}/jax-ws"/>
                     </xsl:if>
-                    <mkdir dir="${{build.generated.dir}}/wsimport/binaries"/>
                     <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
                         <classpath path="${{java.home}}/../lib/tools.jar:${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}"/>
                     </taskdef>
@@ -152,10 +149,10 @@ made subject to such option by the copyright holder.
                     <condition property="wsimport-client-{$wsname}.notRequired">
                         <xsl:choose>
                             <xsl:when test="jaxws:package-name">
-                                <available file="${{build.generated.dir}}/wsimport/client/{$package_path}/{$wsname}.java"/>
+                                <available file="${{build.generated.sources.dir}}/jax-ws/{$package_path}/{$wsname}.java"/>
                             </xsl:when>
                             <xsl:otherwise>
-                                <available file="${{build.generated.dir}}/wsimport/client/dummy" type="dir"/>
+                                <available file="${{build.generated.sources.dir}}/jax-ws/dummy" type="dir"/>
                             </xsl:otherwise>
                         </xsl:choose>
                     </condition>
@@ -174,7 +171,7 @@ made subject to such option by the copyright holder.
                     </xsl:call-template>
                 </target>
                 <target name="wsimport-client-clean-{$wsname}" depends="-init-project">
-                    <delete dir="${{build.generated.dir}}/wsimport/client/{$package_path}"/>
+                    <delete dir="${{build.generated.sources.dir}}/jax-ws/{$package_path}"/>
                 </target>
             </xsl:for-each>
             <!-- END: wsimport target for client -->
@@ -190,7 +187,7 @@ made subject to such option by the copyright holder.
                     <xsl:variable name="catalog" select = "jaxws:catalog-file"/>
                     <target name="wsimport-service-check-{$wsname}" depends="wsimport-init">
                         <condition property="wsimport-service-{$wsname}.notRequired">
-                            <available file="${{build.generated.dir}}/wsimport/service/{$package_path}/{$service_name}.java"/>
+                            <available file="${{build.generated.sources.dir}}/jax-ws/{$package_path}/{$service_name}.java"/>
                         </condition>
                     </target>
                     <target name="wsimport-service-{$wsname}" depends="wsimport-init,wsimport-service-check-{$wsname}" unless="wsimport-service-{$wsname}.notRequired">
@@ -210,13 +207,13 @@ made subject to such option by the copyright holder.
                         </copy>
                     </target>
                     <target name="wsimport-service-clean-{$wsname}" depends="-init-project">
-                        <delete dir="${{build.generated.dir}}/wsimport/service/{$package_path}"/>
+                        <delete dir="${{build.generated.sources.dir}}/jax-ws/{$package_path}"/>
                     </target>
                 </xsl:if>
             </xsl:for-each>
             <!-- wsimport target for service -->
 
-            <!-- wsimport-client-generate and wsimport-client-compile targets -->
+            <!-- wsimport-client-generate, wsimport-service-generate targets -->
             <xsl:if test="/jaxws:jax-ws/jaxws:clients/jaxws:client">
                 <target name="wsimport-client-generate">
                     <xsl:attribute name="depends">
@@ -225,12 +222,6 @@ made subject to such option by the copyright holder.
                             <xsl:text>wsimport-client-</xsl:text><xsl:value-of select="@name"/>
                         </xsl:for-each>
                     </xsl:attribute>
-                </target>
-                <target name="wsimport-client-compile" depends="-pre-pre-compile">
-                    <webproject2:javac srcdir="${{build.generated.dir}}/wsimport/client" classpath="${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
-                    <copy todir="${{build.classes.dir}}">
-                        <fileset dir="${{build.generated.dir}}/wsimport/binaries" includes="**/*.xml"/>
-                    </copy>
                 </target>
             </xsl:if>
             <xsl:if test="/jaxws:jax-ws/jaxws:services/jaxws:service/jaxws:wsdl-url">
@@ -248,11 +239,8 @@ made subject to such option by the copyright holder.
                         </xsl:for-each>
                     </xsl:attribute>
                 </target>
-                <target name="wsimport-service-compile" depends="-pre-pre-compile">
-                    <webproject2:javac srcdir="${{build.generated.dir}}/wsimport/service" classpath="${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
-                </target>
             </xsl:if>
-            <!-- END: wsimport-client-generate and wsimport-client-compile targets -->
+            <!-- END: wsimport-client-generate, wsimport-service-generate targets -->
         </project>
     </xsl:template>
 
@@ -269,18 +257,8 @@ made subject to such option by the copyright holder.
             <xsl:if test="$forceReplace">
                 <xsl:attribute name="package"><xsl:value-of select="$packageName"/></xsl:attribute>
             </xsl:if>
-            <xsl:variable name="wsType">
-                <xsl:choose>
-                    <xsl:when test="$isService">
-                        <xsl:text>service</xsl:text>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:text>client</xsl:text>
-                    </xsl:otherwise>
-                </xsl:choose>
-            </xsl:variable>
-            <xsl:attribute name="sourcedestdir">${build.generated.dir}/wsimport/<xsl:value-of select="$wsType"/></xsl:attribute>
-            <xsl:attribute name="destdir">${build.generated.dir}/wsimport/binaries</xsl:attribute>
+            <xsl:attribute name="sourcedestdir">${build.generated.sources.dir}/jax-ws</xsl:attribute>
+            <xsl:attribute name="destdir">${build.generated.sources.dir}/jax-ws</xsl:attribute>
             <xsl:variable name="wsDir">
                 <xsl:choose>
                     <xsl:when test="$isService">

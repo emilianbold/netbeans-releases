@@ -290,7 +290,7 @@ function main() {
     DBGPORT=${DBGPORT-5858}
 
     DEFS="${DEFS} -Dnetbeans.dirs=${nbdist}:${cnddist}"
-    DEFS="${DEFS} -Dnetbeans.home=${nbdist}/platform9"
+    DEFS="${DEFS} -Dnetbeans.home=${nbdist}/platform10"
     DEFS="${DEFS} -Dnetbeans.user=/tmp/${USER}/cnd-userdir"
     #DEFS="${DEFS} -Dcnd.modelimpl.trace=true"
     #DEFS="${DEFS} -Dparser.cache=true"

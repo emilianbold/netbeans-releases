@@ -88,7 +88,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -138,26 +137,32 @@ public class SaasUtil {
     }
     
     public static <T> T loadJaxbObject(InputStream in, Class<T> type, boolean includeAware) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(type.getPackage().getName());
-        Unmarshaller unmarshaller = jc.createUnmarshaller();
-        Object o;
-        //TODO fix claspath: http://www.jroller.com/navanee/entry/unsupportedoperationexception_this_parser_does_not
-        includeAware = false;
-        if (includeAware) {
-            SAXSource ss = getSAXSourceWithXIncludeEnabled(in);
-            o = unmarshaller.unmarshal(ss);
-        } else {
-            o = unmarshaller.unmarshal(in);
-        }
-        
-        if (type.equals(o.getClass())) {
-            return type.cast(o);
-        } else if (o instanceof JAXBElement) {
-            JAXBElement e = (JAXBElement) o;
-            return type.cast(e.getValue());
-        }
+        ClassLoader orig = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(SaasUtil.class.getClassLoader());
+        try {
+            JAXBContext jc = JAXBContext.newInstance(type.getPackage().getName());
+            Unmarshaller unmarshaller = jc.createUnmarshaller();
+            Object o;
+            //TODO fix claspath: http://www.jroller.com/navanee/entry/unsupportedoperationexception_this_parser_does_not
+            includeAware = false;
+            if (includeAware) {
+                SAXSource ss = getSAXSourceWithXIncludeEnabled(in);
+                o = unmarshaller.unmarshal(ss);
+            } else {
+                o = unmarshaller.unmarshal(in);
+            }
 
-        throw new IllegalArgumentException("Expect: " + type.getName() + " get: " + o.getClass().getName());
+            if (type.equals(o.getClass())) {
+                return type.cast(o);
+            } else if (o instanceof JAXBElement) {
+                JAXBElement e = (JAXBElement) o;
+                return type.cast(e.getValue());
+            }
+
+            throw new IllegalArgumentException("Expect: " + type.getName() + " get: " + o.getClass().getName());
+        } finally {
+          Thread.currentThread().setContextClassLoader(orig);
+        }
     }
 
     public static SAXSource getSAXSourceWithXIncludeEnabled(InputStream in) {
@@ -208,29 +213,41 @@ public class SaasUtil {
     public static final QName QNAME_SAAS_SERVICES = new QName(Saas.NS_SAAS, "saas-services");
     
     public static void saveSaasGroup(SaasGroup saasGroup, OutputStream output) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Group.class.getPackage().getName());
-        Marshaller marshaller = jc.createMarshaller();
-        JAXBElement<Group> jbe = new JAXBElement<Group>(QNAME_GROUP, Group.class, saasGroup.getDelegate());
-        marshaller.marshal(jbe, output);
+        ClassLoader orig = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(SaasUtil.class.getClassLoader());
+        try {
+            JAXBContext jc = JAXBContext.newInstance(Group.class.getPackage().getName());
+            Marshaller marshaller = jc.createMarshaller();
+            JAXBElement<Group> jbe = new JAXBElement<Group>(QNAME_GROUP, Group.class, saasGroup.getDelegate());
+            marshaller.marshal(jbe, output);
+        } finally {
+          Thread.currentThread().setContextClassLoader(orig);
+        }
     }
 
     public static void saveSaas(Saas saas, FileObject file) throws IOException, JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(SaasServices.class.getPackage().getName());
-        Marshaller marshaller = jc.createMarshaller();
-        JAXBElement<SaasServices> jbe = new JAXBElement<SaasServices>(QNAME_SAAS_SERVICES, SaasServices.class, saas.getDelegate());
-        OutputStream out = null;
-        FileLock lock = null;
+        ClassLoader orig = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(SaasUtil.class.getClassLoader());
         try {
-            lock = file.lock();
-            out = file.getOutputStream(lock);
-            marshaller.marshal(jbe, out);
+            JAXBContext jc = JAXBContext.newInstance(SaasServices.class.getPackage().getName());
+            Marshaller marshaller = jc.createMarshaller();
+            JAXBElement<SaasServices> jbe = new JAXBElement<SaasServices>(QNAME_SAAS_SERVICES, SaasServices.class, saas.getDelegate());
+            OutputStream out = null;
+            FileLock lock = null;
+            try {
+                lock = file.lock();
+                out = file.getOutputStream(lock);
+                marshaller.marshal(jbe, out);
+            } finally {
+                if (out != null) {
+                    out.close();
+                }
+                if (lock != null) {
+                    lock.releaseLock();
+                }
+            }
         } finally {
-            if (out != null) {
-                out.close();
-            }
-            if (lock != null) {
-                lock.releaseLock();
-            }
+          Thread.currentThread().setContextClassLoader(orig);
         }
     }
     

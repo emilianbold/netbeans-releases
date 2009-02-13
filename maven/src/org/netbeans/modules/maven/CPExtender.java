@@ -52,6 +52,9 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.project.MavenProject;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
@@ -255,7 +258,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
     }
     
     static Pattern DEFAULT = Pattern.compile("(.+)[/]{1}(.+)[/]{1}(.+)[/]{1}(.+)\\.pom"); //NOI18N
-    static Pattern LEGACY = Pattern.compile("(.+)[/]{1}poms[/]{1}([a-zA-Z\\-_]+)[\\-]{1}([0-9]{1}.+)\\.pom"); //NOI18N
+    static Pattern LEGACY = Pattern.compile("(.+)[/]{1}poms[/]{1}([a-zA-Z0-9_]+[a-zA-Z\\-_]+)[\\-]{1}([0-9]{1}.+)\\.pom"); //NOI18N
     /**
      * @returns [0] type - default/legacy
      *          [1] repo root
@@ -346,7 +349,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
     public boolean addLibraries(final Library[] libraries, SourceGroup grp, String type) throws IOException {
         final Boolean[] added = new Boolean[1];
         added[0] = libraries.length > 0;
-        String scope = ClassPath.EXECUTE.equals(type) ? "runtime" : null; //NOI18N
+        String scope = ClassPath.EXECUTE.equals(type) ? Artifact.SCOPE_RUNTIME : null; //NOI18N
         //figure if we deal with test or regular sources.
         String name = grp.getName();
         if (MavenSourcesImpl.NAME_TESTSOURCE.equals(name)) {
@@ -384,7 +387,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
     public boolean addRoots(final URL[] urls, SourceGroup grp, String type) throws IOException {
         final Boolean[] added = new Boolean[1];
         added[0] = urls.length > 0;
-        String scope = ClassPath.EXECUTE.equals(type) ? "runtime" : null;//NOI18N
+        String scope = ClassPath.EXECUTE.equals(type) ? Artifact.SCOPE_RUNTIME : null;//NOI18N
         //figure if we deal with test or regular sources.
         String name = grp.getName();
         if (MavenSourcesImpl.NAME_TESTSOURCE.equals(name)) {
@@ -419,20 +422,71 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
         }
         return added[0];
     }
-    
+
+    @Override
+    protected boolean addProjects(final Project[] projects, SourceGroup sg, String classPathType) throws IOException, UnsupportedOperationException {
+        final Boolean[] added = new Boolean[2];
+
+        added[0] = false;
+        added[1] = false;
+        String scope = ClassPath.EXECUTE.equals(classPathType) ? Artifact.SCOPE_RUNTIME : null;//NOI18N
+        //figure if we deal with test or regular sources.
+        String name = sg.getName();
+        if (MavenSourcesImpl.NAME_TESTSOURCE.equals(name)) {
+            scope = "test"; //NOI18N
+        }
+        final String fScope = scope;
+        ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+            public void performOperation(POMModel model) {
+                Set<Artifact> arts = project.getOriginalMavenProject().getArtifacts();
+                for (Project prj: projects) {
+                    NbMavenProject nbprj = prj.getLookup().lookup(NbMavenProject.class);
+                    if (nbprj != null) {
+                        MavenProject mp = nbprj.getMavenProject();
+                        String id = mp.getArtifact().getId();
+                        for (Artifact a : arts) {
+                            if (a.getId().equals(id)) {
+                                //already there..
+                                continue;
+                            }
+                        }
+                        Dependency dependency = ModelUtils.checkModelDependency(model, mp.getGroupId(), mp.getArtifactId(), true);
+                        dependency.setVersion(mp.getVersion());
+                        if (fScope != null) {
+                            dependency.setScope(fScope);
+                        }
+                        added[0] = true;
+                    } else {
+                        // unsupported usecase, not a maven project
+                        added[1] = true;
+                    }
+                }
+            }
+        };
+        FileObject pom = project.getProjectDirectory().getFileObject(POM_XML);//NOI18N
+        org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
+        if (added[1]) {
+            //throw late to prevent the pom model to go bust eventually
+            throw new UnsupportedOperationException("Attempting to add a non-Maven project dependency to a Maven project, not supported."); //NOI18N
+        }
+
+        return added[0];
+
+    }
+
     public boolean removeRoots(URL[] arg0, SourceGroup arg1, String arg2) throws IOException,
                                                                                     UnsupportedOperationException {
-        throw new UnsupportedOperationException("Not supported yet.");//NOI18N
+        throw new UnsupportedOperationException("Removing binary dependencies is not supported by Maven projects.");
     }
     
     public boolean addAntArtifacts(AntArtifact[] arg0, URI[] arg1,
-                                      SourceGroup arg2, String arg3) throws IOException {
-        throw new IOException("Cannot add Ant based projects as subprojecs to Maven projects.");//NOI18N
+                                      SourceGroup arg2, String arg3) throws IOException, UnsupportedOperationException {
+        throw new UnsupportedOperationException("Cannot add Ant based projects as subprojects to Maven projects.");//NOI18N
     }
     
     public boolean removeAntArtifacts(AntArtifact[] arg0, URI[] arg1,
-                                         SourceGroup arg2, String arg3) throws IOException {
-        return false;
+                                         SourceGroup arg2, String arg3) throws IOException, UnsupportedOperationException {
+        throw new UnsupportedOperationException("Cannot remove Ant based projects as subprojects from Maven projects.");//NOI18N
     }
     
     private void addJarToPrivateRepo(FileObject file, POMModel mdl, String[] dep) throws IOException {

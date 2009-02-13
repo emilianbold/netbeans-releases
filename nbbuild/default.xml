@@ -121,7 +121,7 @@ made subject to such option by the copyright holder.
     <getmodulename name="module.name" root="${nb_all}"/>
     
     <property name="cluster.dir.fallback" value="extra" />
-    <setcluster name="cluster.dir" module="${module.name}" defaultLocation="${cluster.dir.fallback}"/>
+    <setcluster name="cluster.dir" module="${module.name}" defaultLocation="${cluster.dir.fallback}" clusterName="module.cluster.name"/>
 
     <property name="cluster" location="${netbeans.dest.dir}/${cluster.dir}"/> <!-- #59872 -->
 
@@ -141,7 +141,7 @@ made subject to such option by the copyright holder.
             <dirset dir="${netbeans.dest.dir}" includesfile="${nb_all}/ide/launcher/netbeans.clusters"/>
         </path>
     </pathconvert>
-    <convertclusterpath from="${cluster.path.evaluated}" to="cluster.path" id="cluster.path.id"/>
+    <convertclusterpath from="${cluster.path.evaluated}" to="cluster.path.final" id="cluster.path.id"/>
   </target>
   
 </project>

@@ -41,6 +41,10 @@
 
 package org.netbeans.spi.project.ui.support;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import org.netbeans.api.project.Project;
 
 /**
@@ -76,6 +80,8 @@ public interface NodeFactory {
      * annotation to register NodeFactory instances.
      * @since org.netbeans.modules.projectuiapi 1.33
      */
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ElementType.TYPE, ElementType.METHOD})
     public @interface Registration {
         /**
          * token(s) denoting one or more project types, eg. org-netbeans-modules-maven or org-netbeans-modules-java-j2seproject

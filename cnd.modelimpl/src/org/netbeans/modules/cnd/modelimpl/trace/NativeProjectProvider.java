@@ -184,7 +184,7 @@ public final class NativeProjectProvider {
         }
 
         public String getProjectDisplayName() {
-            return getProjectRoot();
+            return "DummyProject"; // NOI18N
         }
 
         public List<NativeFileItem> getAllFiles() {
@@ -376,5 +376,11 @@ public final class NativeProjectProvider {
         public boolean isExcluded() {
             return false;
         }
+
+        @Override
+        public String toString() {
+            return file.getAbsolutePath();
+        }
+
     }
 }

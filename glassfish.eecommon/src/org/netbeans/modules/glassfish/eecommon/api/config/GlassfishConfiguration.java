@@ -294,7 +294,8 @@ public abstract class GlassfishConfiguration implements
         "GlassFishV1",
         "J2EE",
         "JavaEEPlusSIP",
-        "gfv3"
+        "gfv3",
+        "gfv3ee6"
     };
 
     protected ASDDVersion getTargetAppServerVersion() {

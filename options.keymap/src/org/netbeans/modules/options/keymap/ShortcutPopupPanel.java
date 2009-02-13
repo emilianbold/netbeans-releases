@@ -71,7 +71,7 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
         initComponents();
         this.table = table;
         this.pm = pm;
-    }
+        }
 
     public void setRow(int row) {
         this.row = row;
@@ -135,6 +135,8 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
         list = new javax.swing.JList();
 
         jScrollPane1.setBorder(null);
+        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
         list.setModel(model);
         list.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {

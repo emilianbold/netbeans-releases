@@ -452,7 +452,12 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         assert SwingUtilities.isEventDispatchThread();
 
         if(tempFolder != null) {
-            Utils.deleteRecursively(tempFolder);
+            final File folderToDelete = tempFolder;
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    Utils.deleteRecursively(folderToDelete, Level.FINE);
+                }
+            });
         }
 
         if (fileObject != null) {
@@ -746,7 +751,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         if (mainFile == null) return null;
 
         if(tempFolder != null) {
-            Utils.deleteRecursively(tempFolder);
+            Utils.deleteRecursively(tempFolder, Level.FINE);
         }
         tempFolder = Utils.getTempFolder();
         tempFolder.deleteOnExit();

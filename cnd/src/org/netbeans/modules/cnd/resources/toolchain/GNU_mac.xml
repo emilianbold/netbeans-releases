@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="GNU" display="GNU Mac Compiler Collection" family="GNU"/>
+    <toolchain name="GNU" display="GNU Mac Compiler Collection" family="GNU" qmakespec="macx-g++"/>
     <platforms stringvalue="mac"/>
     <assembler>
         <version flags="-version xyz"/>

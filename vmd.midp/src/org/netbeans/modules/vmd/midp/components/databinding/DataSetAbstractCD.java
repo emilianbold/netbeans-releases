@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.vmd.midp.components.databinding;
 
+import java.util.ArrayList;
 import org.netbeans.modules.vmd.midp.components.*;
 import java.util.Arrays;
 import java.util.List;
@@ -50,11 +51,16 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.api.properties.PropertiesPresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
 import org.netbeans.modules.vmd.midp.components.categories.DatabindingCategoryCD;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.inspector.controllers.InspectorPositionControllerSupport;
-
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorInstanceName;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -62,7 +68,8 @@ import org.netbeans.modules.vmd.midp.inspector.controllers.InspectorPositionCont
  */
 public class DataSetAbstractCD extends ComponentDescriptor {
     
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/dataset_16.gif"; // NOI18N
+    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/dataset_16.png"; // NOI18N
+    public static final String LARGE_ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/dataset_32.png"; // NOI18N
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#DataSetAbstract"); //NOI18N
     
     public static final String PROP_READ_ONLY = "readOnly"; //NOI18N
@@ -86,6 +93,21 @@ public class DataSetAbstractCD extends ComponentDescriptor {
         return Arrays.asList(
             new PropertyDescriptor(PROP_READ_ONLY, MidpTypes.TYPEID_BOOLEAN, PropertyValue.createNull(), false, false, MidpVersionable.MIDP_2)
         );
+    }
+
+    @Override
+    protected void gatherPresenters(ArrayList<Presenter> presenters) {
+        DocumentSupport.removePresentersOfClass(presenters, PropertiesPresenter.class);
+        presenters.add(createPropertiesPresenter());
+        super.gatherPresenters(presenters);
+    }
+    
+    private static DefaultPropertiesPresenter createPropertiesPresenter() {
+        return new DefaultPropertiesPresenter()
+            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
+            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
+                .addProperty(NbBundle.getMessage(ClassCD.class, "DISP_Class_Instance_Name"), PropertyEditorInstanceName.createInstance(TYPEID), ClassCD.PROP_INSTANCE_NAME); // NOI18N
+                
     }
 
     @Override

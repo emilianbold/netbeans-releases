@@ -703,6 +703,10 @@ public class SVGComboBox extends SVGComponent implements
             }
         }
 
+
+        public void setText(String text){
+            super.setText(text);
+        }
     }
     
     private ComboBoxModel myModel;

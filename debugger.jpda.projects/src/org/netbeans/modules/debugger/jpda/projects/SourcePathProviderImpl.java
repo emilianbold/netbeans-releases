@@ -49,14 +49,22 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
+import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 
@@ -127,18 +135,52 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         
         // 2) get default allSourceRoots of source roots used for stepping
         if (properties != null) {
+            File baseDir = (File) properties.get("baseDir");
             smartSteppingSourcePath = (ClassPath) properties.get ("sourcepath");
             ClassPath jdkCP = (ClassPath) properties.get ("jdksources");
             if ( (jdkCP == null) && (JavaPlatform.getDefault () != null) )
                 jdkCP = JavaPlatform.getDefault ().getSourceFolders ();
-            originalSourcePath = jdkCP == null ? 
+            ClassPath additionalClassPath;
+            if (baseDir != null) {
+                additionalClassPath = getAdditionalClassPath(baseDir);
+            } else {
+                additionalClassPath = null;
+            }
+            if (additionalClassPath != null) {
+                smartSteppingSourcePath = ClassPathSupport.createProxyClassPath (
+                        new ClassPath[] {
+                            smartSteppingSourcePath,
+                            additionalClassPath
+                        });
+            }
+            smartSteppingSourcePath = jdkCP == null ?
                 smartSteppingSourcePath :
                 ClassPathSupport.createProxyClassPath (
                     new ClassPath[] {
                         jdkCP,
-                        smartSteppingSourcePath
+                        smartSteppingSourcePath,
                     }
             );
+            originalSourcePath = smartSteppingSourcePath;
+
+            Set<String> disabledRoots;
+            if (baseDir != null) {
+                disabledRoots = getDisabledSourceRoots(baseDir);
+            } else {
+                disabledRoots = null;
+            }
+            if (disabledRoots != null && !disabledRoots.isEmpty()) {
+                List<FileObject> enabledSourcePath = new ArrayList<FileObject>(
+                        Arrays.asList(smartSteppingSourcePath.getRoots()));
+                for (FileObject fo : new HashSet<FileObject>(enabledSourcePath)) {
+                    if (disabledRoots.contains(getRoot(fo))) {
+                        enabledSourcePath.remove(fo);
+                    }
+                }
+                smartSteppingSourcePath = ClassPathSupport.createClassPath(
+                        enabledSourcePath.toArray(new FileObject[0]));
+            }
+
             projectSourceRoots = getSourceRoots(originalSourcePath);
             Set<FileObject> preferredRoots = new HashSet<FileObject>();
             preferredRoots.addAll(Arrays.asList(originalSourcePath.getRoots()));
@@ -219,6 +261,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                     allSourceRoots.add(fo);
                 }
             }
+            // TODO: Add first main project's BOOT path, if not exist, then default platform and then the rest.
             JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
             for (int i = 0; i < platforms.length; i++) {
                 FileObject[] roots = platforms[i].getSourceFolders().getRoots ();
@@ -228,6 +271,10 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                         allSourceRoots.add(roots [j]);
                     }
                 }
+            }
+            List<FileObject> additional = getAdditionalRemoteClassPath();
+            if (additional != null) {
+                allSourceRoots.addAll(additional);
             }
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("SourcePathProviderImpl: GlobalPathRegistry roots = "+GlobalPathRegistry.getDefault().getSourceRoots()+")");
@@ -245,19 +292,21 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             projectSourceRoots = getSourceRoots(originalSourcePath);
 
             srcRootsToListenForArtifactsUpdates = new HashSet(allSourceRoots);
-            
-            int i, k = platforms.length;
-            for (i = 0; i < k; i++) {
-                FileObject[] roots = platforms [i].getSourceFolders ().
-                    getRoots ();
-                int j, jj = roots.length;
-                for (j = 0; j < jj; j++)
-                    allSourceRoots.remove (roots [j]);
+
+            Set<String> disabledRoots = getRemoteDisabledSourceRoots();
+            if (disabledRoots != null && !disabledRoots.isEmpty()) {
+                List<FileObject> enabledSourcePath = new ArrayList<FileObject>(
+                        Arrays.asList(smartSteppingSourcePath.getRoots()));
+                for (FileObject fo : new HashSet<FileObject>(enabledSourcePath)) {
+                    if (disabledRoots.contains(getRoot(fo))) {
+                        enabledSourcePath.remove(fo);
+                    }
+                }
+                smartSteppingSourcePath = ClassPathSupport.createClassPath(
+                        enabledSourcePath.toArray(new FileObject[0]));
+            } else {
+                smartSteppingSourcePath = originalSourcePath;
             }
-            smartSteppingSourcePath = ClassPathSupport.createClassPath (
-                allSourceRoots.toArray 
-                    (new FileObject [allSourceRoots.size()])
-            );
         }
         
         if (verbose) 
@@ -287,6 +336,71 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                 }
             });
         }
+    }
+
+    private ClassPath getAdditionalClassPath(File baseDir) {
+        try {
+            String root = baseDir.toURI().toURL().toExternalForm();
+            Properties sourcesProperties = Properties.getDefault ().getProperties ("debugger").getProperties ("sources");
+            List<String> additionalSourceRoots = (List<String>) sourcesProperties.
+                    getProperties("additional_source_roots").
+                    getMap("project", Collections.emptyMap()).
+                    get(root);
+            if (additionalSourceRoots == null || additionalSourceRoots.isEmpty()) {
+                return null;
+            }
+            List<FileObject> additionalSourcePath = new ArrayList<FileObject>(additionalSourceRoots.size());
+            for (String ar : additionalSourceRoots) {
+                FileObject fo = getFileObject(ar);
+                if (fo != null) {
+                    additionalSourcePath.add(fo);
+                }
+            }
+            return ClassPathSupport.createClassPath(
+                    additionalSourcePath.toArray(new FileObject[0]));
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+    }
+
+    private List<FileObject> getAdditionalRemoteClassPath() {
+        Properties sourcesProperties = Properties.getDefault ().getProperties ("debugger").getProperties ("sources");
+        List<String> additionalSourceRoots = (List<String>) sourcesProperties.
+                getProperties("additional_source_roots").
+                getCollection("src_roots", Collections.emptyList());
+        if (additionalSourceRoots == null || additionalSourceRoots.isEmpty()) {
+            return null;
+        }
+        List<FileObject> additionalSourcePath = new ArrayList<FileObject>(additionalSourceRoots.size());
+        for (String ar : additionalSourceRoots) {
+            FileObject fo = getFileObject(ar);
+            if (fo != null) {
+                additionalSourcePath.add(fo);
+            }
+        }
+        return additionalSourcePath;
+        //return ClassPathSupport.createClassPath(
+        //        additionalSourcePath.toArray(new FileObject[0]));
+    }
+
+    private Set<String> getDisabledSourceRoots(File baseDir) {
+        try {
+            String root = baseDir.toURI().toURL().toExternalForm();
+            Properties sourcesProperties = Properties.getDefault ().getProperties ("debugger").getProperties ("sources");
+            return (Set<String>) sourcesProperties.getProperties("source_roots").
+                getMap("project_disabled", Collections.emptyMap()).
+                get(root);
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+    }
+
+    private Set<String> getRemoteDisabledSourceRoots() {
+        Properties sourcesProperties = Properties.getDefault ().getProperties ("debugger").getProperties ("sources");
+        return (Set<String>) sourcesProperties.getProperties("source_roots").
+            getCollection("remote_disabled", Collections.emptySet());
     }
 
     /**
@@ -623,7 +737,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
     /**
      * Returns source root for given ClassPath root as String, or <code>null</code>.
      */
-    private static String getRoot(FileObject fileObject) {
+    static String getRoot(FileObject fileObject) {
         File f = null;
         String path = "";
         try {
@@ -825,7 +939,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         }
     }
     
-    private static final class FileObjectComparator implements Comparator<FileObject> {
+    static final class FileObjectComparator implements Comparator<FileObject> {
 
         public int compare(FileObject fo1, FileObject fo2) {
             String r1 = getRoot(fo1);

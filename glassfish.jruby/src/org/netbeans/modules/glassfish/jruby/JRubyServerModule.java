@@ -95,7 +95,7 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie, Recogn
     
     @Override
     public String toString() {
-        return "GlassFish v3 / JRuby Support"; // NOI18N
+        return "GlassFish v3 Prelude / JRuby Support"; // NOI18N
     }
     
     // ------------------------------------------------------------------------

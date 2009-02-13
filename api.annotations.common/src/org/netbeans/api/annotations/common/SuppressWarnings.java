@@ -55,7 +55,7 @@ import java.lang.annotation.Target;
 public @interface SuppressWarnings {
 
     /**
-     * The names of the warnings to supress.
+     * The names of the warnings to suppress.
      */
     String[] value() default {};
 

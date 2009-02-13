@@ -136,12 +136,22 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
     protected void storeToDataModel() {
         data.setOpened(cbOpenedOnStart.isSelected());
         data.setKeepPrefSize(cbKeepPrefSize.isSelected());
+        data.setClosingNotAllowed(cbClosingNotAllowed.isSelected());
+        data.setDraggingNotAllowed(cbDraggingNotAllowed.isSelected());
+        data.setMaximizationNotAllowed(cbMaximizationNotAllowed.isSelected());
+        data.setSlidingNotAllowed(cbSlidingNotAllowed.isSelected());
+        data.setUndockingNotAllowed(cbUndockingNotAllowed.isSelected());
         data.setMode((String)comMode.getSelectedItem());
     }
     
     protected void readFromDataModel() {
         cbOpenedOnStart.setSelected(data.isOpened());
         cbKeepPrefSize.setSelected(data.isKeepPrefSize());
+        cbClosingNotAllowed.setSelected(data.isClosingNotAllowed());
+        cbDraggingNotAllowed.setSelected(data.isDraggingNotAllowed());
+        cbMaximizationNotAllowed.setSelected(data.isMaximizationNotAllowed());
+        cbSlidingNotAllowed.setSelected(data.isSlidingNotAllowed());
+        cbUndockingNotAllowed.setSelected(data.isUndockingNotAllowed());
         if (data.getMode() != null) {
             comMode.setSelectedItem(data.getMode());
         } else {
@@ -176,6 +186,11 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
         comMode = new javax.swing.JComboBox();
         cbOpenedOnStart = new javax.swing.JCheckBox();
         cbKeepPrefSize = new javax.swing.JCheckBox();
+        cbSlidingNotAllowed = new javax.swing.JCheckBox();
+        cbClosingNotAllowed = new javax.swing.JCheckBox();
+        cbUndockingNotAllowed = new javax.swing.JCheckBox();
+        cbDraggingNotAllowed = new javax.swing.JCheckBox();
+        cbMaximizationNotAllowed = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -218,20 +233,79 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 0.1;
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
         add(cbKeepPrefSize, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbSlidingNotAllowed, org.openide.util.NbBundle.getMessage(BasicSettingsPanel.class, "CTL_SlidingNotAllowed")); // NOI18N
+        cbSlidingNotAllowed.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        cbSlidingNotAllowed.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
+        add(cbSlidingNotAllowed, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbClosingNotAllowed, org.openide.util.NbBundle.getMessage(BasicSettingsPanel.class, "CTL_ClosingNotAllowed")); // NOI18N
+        cbClosingNotAllowed.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
+        add(cbClosingNotAllowed, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbUndockingNotAllowed, org.openide.util.NbBundle.getMessage(BasicSettingsPanel.class, "CTL_UndockingNotAllowed")); // NOI18N
+        cbUndockingNotAllowed.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
+        add(cbUndockingNotAllowed, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbDraggingNotAllowed, org.openide.util.NbBundle.getMessage(BasicSettingsPanel.class, "CTL_DraggingNotAllowed")); // NOI18N
+        cbDraggingNotAllowed.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
+        add(cbDraggingNotAllowed, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbMaximizationNotAllowed, org.openide.util.NbBundle.getMessage(BasicSettingsPanel.class, "CTL_MaximizationNotAllowed")); // NOI18N
+        cbMaximizationNotAllowed.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
+        add(cbMaximizationNotAllowed, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 private void windowPosChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_windowPosChanged
     cbKeepPrefSize.setEnabled( !("editor".equals( comMode.getSelectedItem()) ) );
     if( !cbKeepPrefSize.isEnabled() )
         cbKeepPrefSize.setSelected( false );
+    cbSlidingNotAllowed.setEnabled( !("editor".equals( comMode.getSelectedItem()) ) );
+    if( !cbSlidingNotAllowed.isEnabled() )
+        cbSlidingNotAllowed.setSelected( false );
 }//GEN-LAST:event_windowPosChanged
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox cbClosingNotAllowed;
+    private javax.swing.JCheckBox cbDraggingNotAllowed;
     private javax.swing.JCheckBox cbKeepPrefSize;
+    private javax.swing.JCheckBox cbMaximizationNotAllowed;
     private javax.swing.JCheckBox cbOpenedOnStart;
+    private javax.swing.JCheckBox cbSlidingNotAllowed;
+    private javax.swing.JCheckBox cbUndockingNotAllowed;
     private javax.swing.JComboBox comMode;
     private javax.swing.JLabel lblMode;
     // End of variables declaration//GEN-END:variables

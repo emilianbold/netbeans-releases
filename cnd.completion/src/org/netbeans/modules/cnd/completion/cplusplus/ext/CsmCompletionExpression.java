@@ -647,7 +647,7 @@ public class CsmCompletionExpression {
             return "debugChars() !ERROR! offset=" + offset + " + len=" + len // NOI18N
                     + " > chars.length=" + chars.length; // NOI18N
         }
-        StringBuffer sb = new StringBuffer(len);
+        StringBuilder sb = new StringBuilder(len);
         int endOffset = offset + len;
         for (; offset < endOffset; offset++) {
             switch (chars[offset]) {

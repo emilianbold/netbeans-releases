@@ -41,83 +41,39 @@
 
 package org.netbeans.core.windows.view.ui;
 
-import java.awt.event.ActionEvent;
 import org.openide.awt.StatusDisplayer;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionListener;
 
 /** The status line component of the main window.
 *
 * @author Jaroslav Tulach, Jesse Glick
 */
 final class StatusLine extends JLabel implements ChangeListener, Runnable {
-    private static int SURVIVING_TIME = Integer.getInteger("org.openide.awt.StatusDisplayer.DISPLAY_TIME", 5000);
     
     private StatusDisplayer d = StatusDisplayer.getDefault();
-    
-    Object clearing;
-    
-    private class Updater implements ActionListener {
-        
-        private Object token;
-
-        private long startTime;
-        
-        private Timer controller;
-        
-        public Updater(Object token) {
-            this.token = token;
-        }
-        
-        public void schedule() {
-            controller = new Timer(SURVIVING_TIME, this);
-            controller.setDelay(100);
-            controller.start();
-        }
-        
-        public void actionPerformed(ActionEvent arg0) {
-            if (clearing == token) {
-                long t = System.currentTimeMillis();
-                if (startTime != 0L) {
-                    Color c = UIManager.getColor("Label.foreground");
-                    if (c != null) {
-                        int alpha = 256 * (int)(Math.max(0, t - startTime)) / 2000;
-                        StatusLine.this.setForeground(
-                                new Color(c.getRed(), c.getGreen(), c.getBlue(), 255 - Math.min(255, alpha)));
-                    }
-                }
-                else {
-                    startTime = t;
-                }
-                if (t > startTime + 2000) {
-                    controller.stop();
-                }
-            }
-            else {
-                controller.stop();
-            }
-        }
-    };
     
     /** Creates a new StatusLine */
     public StatusLine () {
     }
     
+    @Override
     public void addNotify() {
         super.addNotify();
         run();
         d.addChangeListener(this);
     }
     
+    @Override
     public void removeNotify() {
         super.removeNotify();
         d.removeChangeListener(this);
     }
     
+    @Override
     public void updateUI() {
         super.updateUI();
         Font f = UIManager.getFont ("controlFont"); //NOI18N
@@ -141,25 +97,19 @@ final class StatusLine extends JLabel implements ChangeListener, Runnable {
     */
     public void run () {
         String currentMsg = d.getStatusText ();
-        setForeground(UIManager.getColor("Label.foreground"));
         setText (currentMsg);
-        if (SURVIVING_TIME != 0) {
-            Object token = new Object();
-            clearing = token;
-            if (!"".equals(currentMsg)) {
-                new Updater(token).schedule();
-            }
-        }
     }
     
     /** #62967: Pref size so that status line is able to shrink as much as possible.
      */
+    @Override
     public Dimension getPreferredSize() {
         return new Dimension(100, super.getPreferredSize().height);
     }
     
     /** #62967: Minimum size so that status line is able to shrink as much as possible.
      */
+    @Override
     public Dimension getMinimumSize() {
         return new Dimension(0, super.getMinimumSize().height);
     }

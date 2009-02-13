@@ -130,7 +130,7 @@
     <folder name="Services">
         <!-- Recognize text/x-iep+xml -->
         <folder name="MIMEResolver">
-            <file name="org-netbeans-modules-iep-editor-mime-resolver.xml" url="mime-resolver.xml">
+            <file name="org-netbeans-modules-iep-editor-mime-resolver.xml" url="iep-mime-resolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.editor.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/iep/editor/eventProcess.png"/>
                 <attr name="position" intvalue="888"/>

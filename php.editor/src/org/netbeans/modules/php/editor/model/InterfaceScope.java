@@ -39,9 +39,6 @@
 
 package org.netbeans.modules.php.editor.model;
 
-import java.util.List;
-import org.netbeans.modules.gsf.api.NameKind;
-
 /**
  * @author Radek Matous
  */

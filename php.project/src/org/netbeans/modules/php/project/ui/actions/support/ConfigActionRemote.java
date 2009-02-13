@@ -41,8 +41,10 @@ package org.netbeans.modules.php.project.ui.actions.support;
 
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.ui.actions.UploadCommand;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -53,28 +55,50 @@ import org.openide.util.Lookup;
  */
 public class ConfigActionRemote extends ConfigActionLocal {
 
-    @Override
-    public void runProject(PhpProject project) {
-        eventuallyUploadFiles(project);
-        super.runProject(project);
+    protected ConfigActionRemote(PhpProject project) {
+        super(project);
     }
 
     @Override
-    public void debugProject(PhpProject project) {
-        eventuallyUploadFiles(project);
-        super.debugProject(project);
+    public boolean isValid(boolean indexFileNeeded) {
+        boolean valid = super.isValid(indexFileNeeded);
+        if (!valid) {
+            return false;
+        }
+        String remoteConnection = ProjectPropertiesSupport.getRemoteConnection(project);
+        if (remoteConnection == null || RemoteConnections.get().remoteConfigurationForName(remoteConnection) == null) {
+            valid = false;
+        } else if (RunAsValidator.validateUploadDirectory(ProjectPropertiesSupport.getRemoteDirectory(project), true) != null) {
+            valid = false;
+        }
+        if (!valid) {
+            showCustomizer();
+        }
+        return valid;
     }
 
     @Override
-    protected void preShowUrl(PhpProject project, Lookup context) {
-        eventuallyUploadFiles(project, CommandUtils.filesForSelectedNodes());
+    public void runProject() {
+        eventuallyUploadFiles();
+        super.runProject();
     }
 
-    private void eventuallyUploadFiles(PhpProject project) {
-        eventuallyUploadFiles(project, (FileObject[]) null);
+    @Override
+    public void debugProject() {
+        eventuallyUploadFiles();
+        super.debugProject();
     }
 
-    private void eventuallyUploadFiles(PhpProject project, FileObject... preselectedFiles) {
+    @Override
+    protected void preShowUrl(Lookup context) {
+        eventuallyUploadFiles(CommandUtils.filesForSelectedNodes());
+    }
+
+    private void eventuallyUploadFiles() {
+        eventuallyUploadFiles((FileObject[]) null);
+    }
+
+    private void eventuallyUploadFiles(FileObject... preselectedFiles) {
         UploadCommand uploadCommand = (UploadCommand) CommandUtils.getCommand(project, UploadCommand.ID);
         if (!uploadCommand.isActionEnabled(null)) {
             return;

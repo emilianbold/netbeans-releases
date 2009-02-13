@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.refactoring.api.ui;
 
 import org.netbeans.modules.cnd.refactoring.actions.ChangeParametersAction;
-import org.netbeans.modules.cnd.refactoring.actions.EncapsulateFieldAction;
+import org.netbeans.modules.cnd.refactoring.actions.EncapsulateFieldsAction;
 import org.openide.util.ContextAwareAction;
 
 /**
@@ -68,7 +68,7 @@ public final class CsmRefactoringActionsFactory {
      * @return an instance of EncapsulateFieldsAction
      */
     public static ContextAwareAction encapsulateFieldsAction() {
-        return EncapsulateFieldAction.findObject(EncapsulateFieldAction.class, true);
+        return EncapsulateFieldsAction.findObject(EncapsulateFieldsAction.class, true);
     }
     
     /**

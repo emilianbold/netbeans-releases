@@ -62,6 +62,26 @@ public class PythonAstUtilsTest extends PythonTestBase {
         assertEquals("[self, section]", PythonAstUtils.getParameters(def).toString());
     }
 
+        public void testDecorators() throws Exception {
+        String relFilePath = "testfiles/staticmethods.py";
+
+        CompilationInfo info = getInfo(relFilePath);
+        PythonTree root = PythonAstUtils.getRoot(info);
+        List<PythonTree> nodes = getAllNodes(root);
+        int count = 0;
+        for (PythonTree node : nodes) {
+            if (node instanceof FunctionDef) {
+                boolean result=PythonAstUtils.isStaticMethod(node);
+                /** Three function in the relFilePath [False, True, True]**/
+                if (count==0)
+                    assertEquals(result, false);
+                if (count>1)
+                    assertEquals(result, true);
+                count += 1;
+            }
+        }
+    }
+
     public void testStress() throws Exception {
         List<FileObject> files = findJythonFiles();
 

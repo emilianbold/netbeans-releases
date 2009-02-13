@@ -40,6 +40,8 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMESupport;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ExtensionList;
 
 /**
@@ -47,15 +49,17 @@ import org.openide.loaders.ExtensionList;
  * @author Vladimir Voskresensky
  */
 public class CsmIncludeCompletionQuery {
-    private static final Collection<String> EXCLUDED_DIR_NAMES = Arrays.asList(new String[] {
-        "CVS", ".hg", "nbproject", "SCCS", "SunWS_cache"}); // NOI18N
+
+    private static final Collection<String> EXCLUDED_DIR_NAMES = Arrays.asList(new String[]{
+                "CVS", ".hg", "nbproject", "SCCS", "SunWS_cache"}); // NOI18N
     private Map<String, CsmIncludeCompletionItem> results;
     private final CsmFile file;
+
     public CsmIncludeCompletionQuery(CsmFile file) {
         this.file = file;
     }
-    
-    public Collection<CsmIncludeCompletionItem> query( BaseDocument doc, String childSubDir, int substitutionOffset, Boolean usrInclude, boolean showAll) {
+
+    public Collection<CsmIncludeCompletionItem> query(BaseDocument doc, String childSubDir, int substitutionOffset, Boolean usrInclude, boolean showAll) {
         results = new HashMap<String, CsmIncludeCompletionItem>(100);
         CsmFile docFile = this.file;
         if (docFile == null) {
@@ -67,9 +71,9 @@ public class CsmIncludeCompletionQuery {
         File fileChildSubDir = new File(childSubDir);
         if (fileChildSubDir.isAbsolute()) {
             // special handling for absolute paths...
-            addFolderItems("", 
-                    "", 
-                    childSubDir, true, (usrInclude != null ? usrInclude : false), 
+            addFolderItems("",
+                    "",
+                    childSubDir, true, (usrInclude != null ? usrInclude : false),
                     true, substitutionOffset);
             return results.values();
         }
@@ -115,12 +119,12 @@ public class CsmIncludeCompletionQuery {
         }
         return results.values();
     }
-    
+
     private void addFolderItems(String parentFolder, String parentFolderPresentation,
             String childSubDir, boolean highPriority, boolean system, boolean filtered, int substitutionOffset) {
-        File dir = new File (parentFolder, childSubDir);
+        File dir = new File(parentFolder, childSubDir);
         if (dir != null && dir.exists()) {
-            File[] list = filtered ?  dir.listFiles(new HeadersFileFilter()) : dir.listFiles(new DefFileFilter());
+            File[] list = filtered ? dir.listFiles(new HeadersFileFilter()) : dir.listFiles(new DefFileFilter());
             if (list != null) {
                 String relFileName;
                 for (File curFile : list) {
@@ -133,7 +137,7 @@ public class CsmIncludeCompletionQuery {
                     }
                 }
             }
-        }        
+        }
     }
 
     private void addParentFolder(int substitutionOffset, String childSubDir, boolean system) {
@@ -153,15 +157,16 @@ public class CsmIncludeCompletionQuery {
             return CsmFileInfoQuery.getDefault().getUserIncludePaths(file);
         }
     }
-    
+
     private static final class DefFileFilter implements FileFilter {
 
         public boolean accept(File pathname) {
             return !specialFile(pathname);
         }
     }
-    
+
     private static final class HeadersFileFilter implements FileFilter {
+
         private final ExtensionList exts;
 
         protected HeadersFileFilter() {
@@ -172,11 +177,18 @@ public class CsmIncludeCompletionQuery {
         }
 
         public boolean accept(File pathname) {
-            return !specialFile(pathname) && 
-                    (exts.isRegistered(pathname.getName()) || pathname.isDirectory());
+            return !specialFile(pathname) &&
+                    (exts.isRegistered(pathname.getName()) || pathname.isDirectory() || isHeaderFileWoExt(pathname));
         }
-    }    
-    
+    }
+
+    private static boolean isHeaderFileWoExt(File pathname) {
+        if (FileUtil.getExtension(pathname.getName()).length() == 0) {
+            return MIMENames.HEADER_MIME_TYPE.equals(MIMESupport.getFileMIMEType(pathname));
+        }
+        return false;
+    }
+
     private static boolean specialFile(File file) {
         String name = file.getName();
         if (name.startsWith(".")) { // NOI18N

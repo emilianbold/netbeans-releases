@@ -1,0 +1,31 @@
+==>Renamed
+package renameClass;
+
+public class Renamed {
+
+    Renamed r;
+
+    public Renamed() {
+    }
+    
+    public <T extends Renamed> void method() {
+        
+    }
+}
+Created file:
+==>Renamed.java
+package renameClass;
+
+public class Renamed {
+
+    Renamed r;
+
+    public Renamed() {
+    }
+    
+    public <T extends Renamed> void method() {
+        
+    }
+}
+Deleted file:
+/space/nb-hg/jet-main/refactoring.java/build/test/qa-functional/data/projects/RefactoringTest/src/renameClass/Rename.java

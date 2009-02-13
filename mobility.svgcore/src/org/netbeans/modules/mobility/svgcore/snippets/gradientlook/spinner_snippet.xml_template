@@ -1,0 +1,71 @@
+<g id="%%COMPONENT_ID%%"  transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)">
+	<!-- Metadata information. Please don't edit. -->
+        <text display="none">type=spinner</text>
+        <rect x="0" y="-5" rx="5" ry="5" width="44" height="30" fill="none" stroke="rgb(255,165,0)"                       stroke-width="2" visibility="hidden">
+            <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%.focusin" fill="freeze" to="visible"/>
+            <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%.focusout" fill="freeze" to="hidden"/>
+        </rect>
+        <rect id="_12" transform="matrix(1.2035432,0.0,0.0,1.0,-7.234642,0.0)"   x="5.0" y="0.0" rx="2" ry="2" width="33" height="20" fill="none" stroke="rgb(73,46,55)" stroke-width="1.5"/>
+        <g id="%%COMPONENT_ID%%_editor" >		<!-- this editor is SVGTextField component -->		<!-- metadata definition-->
+            <text display="none">type=editor</text>
+            <text display="none">editable=false</text>
+            <text display="none">enabled=true</text>
+            <g>
+                <text id="%%COMPONENT_ID%%_editor_text" x="0.75" y="16.0" font-size="16">                      0</text>                     <!-- Metadata information. Please don't edit. -->
+                <text display="none">type=text</text>
+            </g>
+            <rect visibility="hidden" x="5.0" y="0" width="33" height="20"/>
+        </g>
+        <g>	    	<!-- Metadata information. Please don't edit. -->
+            <text display="none">type=up_button</text>
+             <image width="334" height="125" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAVIAAAB9CAYAAADwWOu4AAAACXBIWXMAAC4jAAAuIwF4pT92AAAA
+            GXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAxNJREFUeNrs3U9r03Acx/H8Sp+K
+            iAd1IDKYAxUV9SIeBPEwLz4uL3oQQcSLqIioUMQx8N/JB7MmTtgEmW3TfIYh6+t1EIRkhxzefL9J
+            2paqo2ZPBTBQZc+R/S3xBEQ1i2rrk0UUENSOIRVQQEyDkIooIKhBSEUUENN2MS0iCpDFdCSiAGFs
+            RRQgm0pHLhHAfIuGzJFpFOAIVnsRBei+4lvtAUJCCtDSrO19ZK0HMJECCCmAkAKsiH/dDhVSABMp
+            gJACCCmAkAIgpABCCiCkAEIKgJACCCmAkAIIKQBCCiCkAEIKIKQACCnA/zGuKj8iCmAiBRBSACEF
+            WFnjxi1SABMpgJACCCmAkAIgpAD98MkmABMpgJACCCmAkAIgpAB9GVe1p/YAJlIAIQUQUgAhBUBI
+            AYQUYIjGjS8tAchCWvnRJgCrPYCQAgx5tW+s9gAmUoBeJ1I/NQJgIgXodyJ1ixTARAogpAADX+3t
+            9gAmUgAhBRjwal9XtasAYCIF6HEi9ckmgDCkjc0eIJ1IlRQgm0ir4ioAZBOpe6QAWUhrqz1AFlKb
+            PUAW0qa22gNkE6mn9gBhSE2kAOlEKqQAUUhrH20CyELaeP0JIJ1IrfYAUUirauoqACQhndrsAbKQ
+            Nh42AYQhra32AFFIvUcKYLUH6DukLgJAFlIv5AOEIXWPFMBECtBzSE2kAGFIvUcKkIXUNQAIQ+r9
+            J4AwpNNdVwEgCmkxkQJkIfXUHiALab3rqT1ANpH60hKANKRWe4C2Tpy+UA6H1EdEAdKJ1D1SgCik
+            J9culZ9fP9jvAbqG9Pc/Te2lfIBFTp27WmaGtPbFJQCd/anrj+3X1nuAGc6s3yhzV/uDg75/fimm
+            AEsa//U/Kz7AIWc3bpVWq/2Bb5MXplKAfWubt8tyE+n+SV8mz8UUoKWZpd35+ExMgZV2/uKd0ua4
+            uQftvH8qpsBqRvTy3dL22IUHbr97IqbAyli/cq8se07rEz69fSyowLG2cW2rdDlvqZMmbx6JKXDs
+            bF6/X5LzO588efVQVIHhxvPmg3JUf+uXAAMANjzXcWAvxG4AAAAASUVORK5CYII="
+            transform="matrix(0.0479265,0.0,0.0,0.077841274,22.5,0.12756675)" id="_21" >
+            </image>
+            <rect   id="%%COMPONENT_ID%%_up_button" x="22.25" y="0.0" rx="2" ry="2" width="16" height="10" fill="none" stroke="rgb(73,46,55)" stroke-width="1">
+                <animate id="%%COMPONENT_ID%%_up_button_pressed" attributeName="stroke" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="red"/>
+                <animate id="%%COMPONENT_ID%%_up_button_realeased" attributeName="stroke" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(73,46,55)"/>
+            </rect>
+        </g>
+        <g>	    	<!-- Metadata information. Please don't edit. -->
+            <text display="none">type=down_button</text>
+            <image width="334" height="125" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAVIAAAB9CAYAAADwWOu4AAAACXBIWXMAAC4jAAAuIwF4pT92AAAA
+            GXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAxNJREFUeNrs3U9r03Acx/H8Sp+K
+            iAd1IDKYAxUV9SIeBPEwLz4uL3oQQcSLqIioUMQx8N/JB7MmTtgEmW3TfIYh6+t1EIRkhxzefL9J
+            2paqo2ZPBTBQZc+R/S3xBEQ1i2rrk0UUENSOIRVQQEyDkIooIKhBSEUUENN2MS0iCpDFdCSiAGFs
+            RRQgm0pHLhHAfIuGzJFpFOAIVnsRBei+4lvtAUJCCtDSrO19ZK0HMJECCCmAkAKsiH/dDhVSABMp
+            gJACCCmAkAIgpABCCiCkAEIKgJACCCmAkAIIKQBCCiCkAEIKIKQACCnA/zGuKj8iCmAiBRBSACEF
+            WFnjxi1SABMpgJACCCmAkAIgpAD98MkmABMpgJACCCmAkAIgpAB9GVe1p/YAJlIAIQUQUgAhBUBI
+            AYQUYIjGjS8tAchCWvnRJgCrPYCQAgx5tW+s9gAmUoBeJ1I/NQJgIgXodyJ1ixTARAogpAADX+3t
+            9gAmUgAhBRjwal9XtasAYCIF6HEi9ckmgDCkjc0eIJ1IlRQgm0ir4ioAZBOpe6QAWUhrqz1AFlKb
+            PUAW0qa22gNkE6mn9gBhSE2kAOlEKqQAUUhrH20CyELaeP0JIJ1IrfYAUUirauoqACQhndrsAbKQ
+            Nh42AYQhra32AFFIvUcKYLUH6DukLgJAFlIv5AOEIXWPFMBECtBzSE2kAGFIvUcKkIXUNQAIQ+r9
+            J4AwpNNdVwEgCmkxkQJkIfXUHiALab3rqT1ANpH60hKANKRWe4C2Tpy+UA6H1EdEAdKJ1D1SgCik
+            J9culZ9fP9jvAbqG9Pc/Te2lfIBFTp27WmaGtPbFJQCd/anrj+3X1nuAGc6s3yhzV/uDg75/fimm
+            AEsa//U/Kz7AIWc3bpVWq/2Bb5MXplKAfWubt8tyE+n+SV8mz8UUoKWZpd35+ExMgZV2/uKd0ua4
+            uQftvH8qpsBqRvTy3dL22IUHbr97IqbAyli/cq8se07rEz69fSyowLG2cW2rdDlvqZMmbx6JKXDs
+            bF6/X5LzO588efVQVIHhxvPmg3JUf+uXAAMANjzXcWAvxG4AAAAASUVORK5CYII="
+            transform="matrix(0.0479265,0.0,0.0,0.07219512,22.337624,10.5)" id="_20" >
+            </image>
+            <rect id="%%COMPONENT_ID%%_down_button" rx="2" ry="2" x="22.25" y="10.0" width="16" height="10" fill="none" stroke="rgb(73,46,55)" stroke-width="1">
+                <animate id="%%COMPONENT_ID%%_down_button_pressed" attributeName="stroke" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="red"/>
+                <animate id="%%COMPONENT_ID%%_down_button_realeased" attributeName="stroke" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(73,46,55)"/>
+            </rect>
+        </g>
+        <polygon transform="translate(29.0,6.0)" id="_1"   points="0,0 2,0 1,-2" fill="blue" stroke="rgb(73,46,55)" stroke-width="2"/>
+        <polygon transform="translate(29.0,14.0)" id="_0"   points="0,0 2,0 1,2" fill="blue" stroke="rgb(73,46,55)" stroke-width="2"/>
+    </g>

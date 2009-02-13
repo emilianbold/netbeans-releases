@@ -60,7 +60,7 @@ class JNAPty extends Pty {
     }
 
     private String strerror(int errno) {
-        return PtyLibrary.INSTANCE.strerror(errno);
+        return CLibrary.INSTANCE.strerror(errno);
     }
 
 
@@ -70,8 +70,8 @@ class JNAPty extends Pty {
     public void masterTIOCSWINSZ(int rows, int cols, int height, int width) {
         if (master_fd == null)
             return;
-        PtyLibrary.WinSize winsize = new PtyLibrary.WinSize(rows, cols, height, width);
-        PtyLibrary.INSTANCE.ioctl(Util.getFd(master_fd), PtyLibrary.TIOCSWINSZ, winsize);
+        CLibrary.WinSize winsize = new CLibrary.WinSize(rows, cols, height, width);
+        CLibrary.INSTANCE.ioctl(Util.getFd(master_fd), CLibrary.INSTANCE.TIOCSWINSZ(), winsize);
     }
 
     /**
@@ -80,9 +80,10 @@ class JNAPty extends Pty {
     public void slaveTIOCSWINSZ(int rows, int cols, int height, int width) {
         if (slave_fd == null)
             return;
-        PtyLibrary.WinSize winsize = new PtyLibrary.WinSize(rows, cols, height, width);
-        PtyLibrary.INSTANCE.ioctl(Util.getFd(slave_fd), PtyLibrary.TIOCSWINSZ, winsize);
+        CLibrary.WinSize winsize = new CLibrary.WinSize(rows, cols, height, width);
+        CLibrary.INSTANCE.ioctl(Util.getFd(slave_fd), CLibrary.INSTANCE.TIOCSWINSZ(), winsize);
     }
+
 
     /**
      * {@inheritDoc}
@@ -97,32 +98,36 @@ class JNAPty extends Pty {
 	    //	getpt()/grantpt()/unlockpt()/pts_name(),
 	    // is supported on Solaris and linux, except that Solaris doesn't
 	    // define getpt(). So we do our own:
-	    if (OS.get() == OS.SOLARIS || OS.get() == OS.MACOS) {
-		mfd = PtyLibrary.INSTANCE.open("/dev/ptmx", PtyLibrary.O_RDWR);
+	    if (OS.get() == OS.SOLARIS) {
+		mfd = CLibrary.INSTANCE.open("/dev/ptmx", CLibrary.INSTANCE.O_RDWR());
 		if (mfd == -1)
 		    throw new PtyException("open(\"/dev/ptmx\") failed -- " + strerror(Native.getLastError()));
+	    } else if (OS.get() == OS.MACOS) {
+		mfd = CLibrary.INSTANCE.posix_openpt(CLibrary.INSTANCE.O_RDWR());
+		if (mfd == -1)
+		    throw new PtyException("posix_openpt() failed -- " + strerror(Native.getLastError()));
 	    } else {
-		mfd = PtyLibrary.INSTANCE.getpt();
+		mfd = CLibrary.INSTANCE.getpt();
 		if (mfd == -1)
 		    throw new PtyException("getpt() failed -- " + strerror(Native.getLastError()));
 	    }
 	    System.out.printf("Pty.setup(): getpt() returns %d\n", mfd);
 
-	    if (PtyLibrary.INSTANCE.grantpt(mfd) == -1) {
+	    if (CLibrary.INSTANCE.grantpt(mfd) == -1) {
 		throw new PtyException("grantpt() failed -- " + strerror(Native.getLastError()));
 	    }
 
-	    if (PtyLibrary.INSTANCE.unlockpt(mfd) == -1) {
+	    if (CLibrary.INSTANCE.unlockpt(mfd) == -1) {
 		throw new PtyException("unlockpt() failed -- " + strerror(Native.getLastError()));
 	    }
 
 	    // SHOULD mutex access to ptsname()s return value.
 	    // Or use the _r version
 
-	    slave_name = PtyLibrary.INSTANCE.ptsname(mfd);
+	    slave_name = CLibrary.INSTANCE.ptsname(mfd);
 	    System.out.printf("Pty.setup(): ptsname() returns '%s'\n", slave_name);
 
-	    sfd = PtyLibrary.INSTANCE.open(slave_name, PtyLibrary.O_RDWR);
+	    sfd = CLibrary.INSTANCE.open(slave_name, CLibrary.INSTANCE.O_RDWR());
 	    if (sfd == -1) {
 		throw new PtyException("open(\"" + slave_name + "\") failed -- " + strerror(Native.getLastError()));
 	    }
@@ -131,39 +136,39 @@ class JNAPty extends Pty {
                 if (OS.get() == OS.SOLARIS) {
 
                     // pseudo-terminal hardware emulation module
-                    if (PtyLibrary.INSTANCE.ioctl(sfd, PtyLibrary.I_PUSH, "ptem") == -1) {
+                    if (CLibrary.INSTANCE.ioctl(sfd, CLibrary.INSTANCE.I_PUSH(), "ptem") == -1) {
                         throw new PtyException("ioctl(\"" + slave_name + "\", I_PUSH, \"ptem\") failed -- " + strerror(Native.getLastError()));
                     }
 
                     // standard terminal line discipline
-                    if (PtyLibrary.INSTANCE.ioctl(sfd, PtyLibrary.I_PUSH, "ldterm") == -1) {
+                    if (CLibrary.INSTANCE.ioctl(sfd, CLibrary.INSTANCE.I_PUSH(), "ldterm") == -1) {
                         throw new PtyException("ioctl(\"" + slave_name + "\", I_PUSH, \"ldterm\") failed -- " + strerror(Native.getLastError()));
                     }
 
                     // not sure but both xterm and DtTerm do it
-                    if (PtyLibrary.INSTANCE.ioctl(sfd, PtyLibrary.I_PUSH, "ttcompat") == -1) {
+                    if (CLibrary.INSTANCE.ioctl(sfd, CLibrary.INSTANCE.I_PUSH(), "ttcompat") == -1) {
                         throw new PtyException("ioctl(\"" + slave_name + "\", I_PUSH, \"ttcompact\") failed -- " + strerror(Native.getLastError()));
                     }
                 }
             } else {
                 if (OS.get() == OS.LINUX) {
-                    PtyLibrary.Termios termios = new PtyLibrary.Termios();
+                    CLibrary.Termios termios = new CLibrary.Termios();
 
                     // check existing settings
                     // If we don't do this tcssetattr() will return EINVAL.
-                    if (PtyLibrary.INSTANCE.tcgetattr(sfd, termios) == -1) {
+                    if (CLibrary.INSTANCE.tcgetattr(sfd, termios) == -1) {
                         throw new PtyException("tcgetattr(\"" + slave_name + "\", <termios>) failed -- " + strerror(Native.getLastError()));
                     }
 
                     // System.out.printf("tcgetattr() gives %s\n", termios);
 
                     // initialize values relevant for raw mode
-                    PtyLibrary.INSTANCE.cfmakeraw(termios);
+                    CLibrary.INSTANCE.cfmakeraw(termios);
 
                     // System.out.printf("cfmakeraw() gives %s\n", termios);
 
                     // apply them
-                    if (PtyLibrary.INSTANCE.tcsetattr(sfd, PtyLibrary.TCSANOW, termios) == -1) {
+                    if (CLibrary.INSTANCE.tcsetattr(sfd, CLibrary.INSTANCE.TCSANOW(), termios) == -1) {
                         throw new PtyException("tcsetattr(\"" + slave_name + "\", TCSANOW, <termios>) failed -- " + strerror(Native.getLastError()));
                     }
                 }
@@ -174,8 +179,8 @@ class JNAPty extends Pty {
 	    Util.assignFd(sfd, slave_fd);
 
 	} catch (PtyException x) {
-	    PtyLibrary.INSTANCE.close(mfd);
-	    PtyLibrary.INSTANCE.close(sfd);
+	    CLibrary.INSTANCE.close(mfd);
+	    CLibrary.INSTANCE.close(sfd);
             throw x;
 	}
     }

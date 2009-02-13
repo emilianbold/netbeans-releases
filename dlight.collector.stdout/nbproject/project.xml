@@ -11,27 +11,11 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.dlight.management</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.dlight.spi</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
                         <implementation-version/>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.dlight.util</code-name-base>
+                    <code-name-base>org.netbeans.modules.dlight.management</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -47,15 +31,45 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.dlight.util</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.extexecution</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.13</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.io</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.14</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency/>
                 </dependency>
             </module-dependencies>
-            <public-packages>
-                <package>org.netbeans.dlight.collector.stdout.api</package>
-            </public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.dlight.cpu</friend>
+                <friend>org.netbeans.modules.dlight.fops</friend>
+                <friend>org.netbeans.modules.dlight.memory</friend>
+                <friend>org.netbeans.modules.dlight.sync</friend>
+                <friend>org.netbeans.modules.dlight.webstack</friend>
+                <package>org.netbeans.modules.dlight.collector.stdout</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

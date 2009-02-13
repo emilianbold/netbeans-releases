@@ -541,6 +541,10 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
 
         // bugfix #40834, remove all exceptions to notify when close a dialog
         if (source == NotifyDescriptor.OK_OPTION || source == NotifyDescriptor.CLOSED_OPTION || source == NotifyDescriptor.CANCEL_OPTION) {
+            LogRecord rec = new LogRecord(Level.CONFIG, "NotifyExcPanel:  close");// NOI18N
+            rec.setParameters(null);
+            //log changes in NotifyPanel - dialog is closed - forget previous params
+            Logger.getLogger("org.netbeans.ui.NotifyExcPanel").log(rec);// NOI18N
             try {
                 exceptions.removeAll();
             //Fixed bug #9435, call of setVisible(false) replaced by call of dispose()

@@ -95,7 +95,7 @@ public class MonitorProgressObject implements ProgressObject, OperationStateList
     }
 
     public void cancel() throws OperationUnsupportedException {
-        throw new OperationUnsupportedException("GFV3: Cancel not supported yet.");
+        throw new OperationUnsupportedException("Cancel not supported yet.");
     }
 
     public boolean isStopSupported() {
@@ -103,7 +103,7 @@ public class MonitorProgressObject implements ProgressObject, OperationStateList
     }
 
     public void stop() throws OperationUnsupportedException {
-        throw new OperationUnsupportedException("GFV3: Stop not supported yet.");
+        throw new OperationUnsupportedException("Stop not supported yet.");
     }
 
     /**

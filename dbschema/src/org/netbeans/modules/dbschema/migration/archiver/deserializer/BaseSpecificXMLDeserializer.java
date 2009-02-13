@@ -43,7 +43,6 @@
 //
 package org.netbeans.modules.dbschema.migration.archiver.deserializer;
 
-import java.lang.*;
 import java.lang.reflect.*;
 
 import org.xml.sax.*;
@@ -59,8 +58,8 @@ public  class BaseSpecificXMLDeserializer extends BaseXMLDeserializer
     protected   java.lang.Class ParameterSetMethod;
 
 //@olsen+MBO: used unsynchronized HashMap and ArrayListStack
-    protected   ArrayListStack StateStack;
-    protected   ArrayListStack ObjectStack;
+    ArrayListStack StateStack;
+    ArrayListStack ObjectStack;
     protected   java.util.HashMap ActiveAliasHash;
 /*
     protected   java.util.Stack StateStack;

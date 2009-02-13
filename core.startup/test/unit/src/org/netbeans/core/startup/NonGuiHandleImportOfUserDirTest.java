@@ -41,7 +41,10 @@
 
 package org.netbeans.core.startup;
 
+import java.awt.EventQueue;
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 
 /** Tests the behaviour of the import user dir "api".
@@ -53,21 +56,16 @@ public class NonGuiHandleImportOfUserDirTest extends NbTestCase {
     private boolean updaterInvoked;
     private Throwable toThrow;
 
-
-    public static void main(java.lang.String[] args) throws Throwable {
-        if (instance != null) {
-            // ok this is invoked from the test by the core-launcher
-            instance.nowDoTheInstall ();
-            return;
-        } else {
-            // initial start
-            junit.textui.TestRunner.run(new junit.framework.TestSuite (NonGuiHandleImportOfUserDirTest.class));
-        }
+    /** invoked from the test by the core-launcher */
+    public static void main(String[] args) throws Throwable {
+        instance.nowDoTheInstall();
     }
+
     public NonGuiHandleImportOfUserDirTest (String name) {
         super(name);
     }
 
+    @Override
     protected void setUp () throws Exception {
         clearWorkDir ();
         CLIOptions.clearForTests ();
@@ -84,15 +82,16 @@ public class NonGuiHandleImportOfUserDirTest extends NbTestCase {
         System.setProperty ("netbeans.importclass", NonGuiHandleImportOfUserDirTest.class.getName ());
         
         instance = this;
+        Logger.getLogger(Main.class.getName()).setLevel(Level.OFF);
     }
     
+    @Override
     protected void tearDown () throws Exception {
         instance = null;
     }
     
-    
     private void nowDoTheInstall () throws Throwable {
-        assertTrue ("Called from AWT thread", javax.swing.SwingUtilities.isEventDispatchThread ());
+        assertTrue("Called from AWT thread", EventQueue.isDispatchThread());
         if (toThrow != null) {
             Throwable t = toThrow;
             toThrow = null;

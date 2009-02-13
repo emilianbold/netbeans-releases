@@ -43,22 +43,22 @@ package org.openidex.search;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import org.openide.loaders.DataObject;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author  Marian Petras
  */
-class CompoundSearchIterator implements Iterator<DataObject> {
+class CompoundSearchIterator implements Iterator<FileObject> {
 
     /** */
     private final SearchInfo[] elements;
     /** */
     private int elementIndex;
     /** */
-    private Iterator<DataObject> elementIterator;
+    private Iterator<FileObject> elementIterator;
     /** */
-    private DataObject nextObject;
+    private FileObject nextObject;
     /** */
     private boolean upToDate;
 
@@ -80,7 +80,7 @@ class CompoundSearchIterator implements Iterator<DataObject> {
             upToDate = true;                //hasNext() returns always false
         } else {
             this.elements = elements;
-            elementIterator = elements[elementIndex = 0].objectsToSearch();
+            elementIterator = Utils.getFileObjectsIterator(elements[elementIndex = 0]);
             upToDate = false;
         }
     }
@@ -96,7 +96,7 @@ class CompoundSearchIterator implements Iterator<DataObject> {
 
     /**
      */
-    public DataObject next() {
+    public FileObject next() {
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
@@ -117,7 +117,7 @@ class CompoundSearchIterator implements Iterator<DataObject> {
                 break;
             }
             
-            elementIterator = elements[elementIndex].objectsToSearch();
+            elementIterator = Utils.getFileObjectsIterator(elements[elementIndex]);
         }
         
         if (elementIndex < elements.length) {

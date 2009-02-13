@@ -198,6 +198,7 @@ public class BackoutAction extends ContextAction {
                                 NbBundle.getMessage(BackoutAction.class,
                                 "MSG_BACKOUT_DONE")); // NOI18N
                     logger.output(""); // NOI18N
+                    Mercurial.getInstance().versionedFilesChanged();
                 }
             }
         };

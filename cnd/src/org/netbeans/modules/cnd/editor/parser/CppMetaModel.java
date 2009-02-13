@@ -69,7 +69,10 @@ public class CppMetaModel implements PropertyChangeListener {
 
     private Collection<ParsingListener> listeners = new ConcurrentLinkedQueue<ParsingListener>();
 
-    private static CppMetaModel instance;
+    private static CppMetaModel instance = new CppMetaModel();
+    static {
+        TopComponent.getRegistry().addPropertyChangeListener(instance);
+    }
 
     private static RequestProcessor cppParserRP;
 
@@ -80,12 +83,7 @@ public class CppMetaModel implements PropertyChangeListener {
     }
 
     public static CppMetaModel getDefault() {
-	if (instance == null) {
-	    instance = new CppMetaModel();
-            TopComponent.getRegistry().addPropertyChangeListener(instance);
-
-	}
-	return instance;
+    	return instance;
     }
 
     public void propertyChange(PropertyChangeEvent evt) {

@@ -1,0 +1,152 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--       
+ *     Copyright © 2009 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Options Window: Miscellaneous: JavaScript</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="stylesheet" type="text/css">
+    </head>
+    <body>
+        <h2>Options Window: Miscellaneous: JavaScript</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+
+        <p>You use this panel to configure settings that effect the way the IDE provides support
+            for JavaScript when coding or debugging applications.</p>
+
+        <p>You can access this panel by choosing Tools &gt; Options from the main menu,
+            clicking the Miscellaneous category and then clicking the JavaScript tab.</p>
+
+        <p>You can specify the following settings:</p>
+
+        <ul>
+            <li><a href="#targeted">Targeted Browsers</a></li>
+            <li><a href="#jsVersion">JavaScript Version</a></li>
+            <li><a href="#debugger">JavaScript Debugger</a></li>
+            <li><a href="#ffProfile">Firefox Profile Location</a></li>
+        </ul>
+
+        <a name="targeted"></a>
+        <h3>Targeted Browsers</h3>
+
+        <p>This setting allows you to specify which browsers you intend your applications to
+            work with. By default, the IDE supports all listed browsers. But if for example
+            you have no intention of making your applications work on Internet Explorer 5.5, you
+            can change the Targeted Browsers setting to reflect that.</p>
+
+        <p>To specify a targeted browser, select a browser and corresponding version from the
+            available options. Browsers include:</p>
+
+        <ul>
+            <li>FireFox/Mozilla</li>
+            <li>Internet Explorer</li>
+            <li>Safari</li>
+            <li>Opera</li>
+        </ul>
+
+        <p>The IDE uses this setting to provide warnings and documentation contained in code
+            completion. For example, trailing commas in initializer lists can cause problems on
+            Internet Explorer. If you are not targeting Internet Explorer, no warnings will
+            display. Similarly, if you try to use a JavaScript method that is unavailable on
+            one or more of your targeted browsers, the IDE notifies you by displaying a warning
+            in the editor. In code completion, a strikethrough line displays on items that are
+            not supported by <em>all</em> browers in your target list.</p>
+
+
+        <a name="jsVersion"></a>
+        <h3>JavaScript Version</h3>
+
+        <p>This setting allows you to specify which version of the JavaScript language you want
+            the IDE to treate your sources as. For example, in newer versions of JavaScript you
+            can use the <code>let</code> keyword in assignments. In older versions of JavaScript
+            this would be an error (or, depending on the context, a variable name).</p>
+
+        <p>To specify a JavaScript version, select an option from the dropdown list. Available
+            versions include 1.0 to 1.6.</p>
+
+        <p>This setting can be useful in cases where you have specific files for which you want
+            to use new language features. Or, you may be using JavaScript for server-side logic
+            and need to specify the language version.</p>
+
+        <a name="debugger"></a>
+        <h3>Debugger</h3>
+
+        <p>You can configure settings for the JavaScript debugger based on the following options:</p>
+
+        <ul>
+            <li><strong>Suspend on Debugger Keyword</strong>: Prompt the debugger to suspend by
+                inserting the <code>debugger;</code> statement into your JavaScript code.</li>
+
+            <li><strong>Suspend on Errors</strong>: Prompt the debugger to suspend when encountering
+                any JavaScript errors.</li>
+
+            <li><strong>Suspend on Exceptions</strong>: Prompt the debugger to suspend when encountering
+                any JavaScript exceptions. For Internet Explorer, the debugger suspends as it would for
+                a breakpoint, but with a status of <code>EXCEPTION</code>. The actual message for the
+                exception is shown in the Console for the current debugging session. For Firefox, exceptions
+                are listed in the Local Variables window, detailing the output message beneath the Values
+                column.</li>
+
+            <li><strong>Suspend on First Line</strong>: Prompt the debugger to suspend on the first
+                line of a file included in a debugging session. For IE users, the debugger stops on the
+                first JavaScript statement to be executed at runtime. For FireFox users, it stops on the
+                first line of JavaScript code.</li>
+
+            <li><strong>Show Constants</strong>: Specify whether to display constants and their values
+                in the Local Variables window (When enabled, constant values can clutter the window.)</li>
+
+            <li><strong>Show Functions</strong>: Specify whether to list functions in the Value column of
+                the Local Variables window (When enabled, functions can clutter the window.)</li>
+
+            <li><strong>Ignore Query Strings</strong>: Specify whether to ignore URL query strings for
+                breakpoints. For example, when enabled, if a breakpoint is set on a line in
+                <code>http://www.foo.com</code>, the debugger will suspend in the event that the requested
+                URL is <code>http://www.foo.com?search=34</code>. This option can be useful if query
+                strings are dynamically added.</li>
+        </ul>
+
+        <ul class="note">
+            <li>For more information on the JavaScript debugger, see:
+            
+                <br><br>
+                <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.netbeans.org/kb/docs/web/js-debugger-ug.html">
+                    <param name="text" value="<html><u>JavaScript Debugger User's Guide (Web document)</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object></li>
+        </ul> 
+
+        <a name="ffProfile"></a>
+        <h3>Firefox Profile Location</h3>
+
+        <p>You can specify which Firefox profile to use for JavaScript debugging. If left blank, the
+            browser's default profile is used. When using the JavaScript debugger for the first time,
+            the module will then install the NetBeans Firebug extension (an extension to Firebug add-on)
+            to that profile.</p>
+
+        <p>To specify a Firefox profile, either enter the full path to the profile file into the text field,
+            or click the Browse button and navigate to the file on your computer.</p>
+
+        <p>Specifying a profile for the debugger can be useful for avoiding compatibility issues with 
+            future versions of Firefox. The current NetBeans Firefox extension is compatible with Firebug
+            1.2. If you have a Firebug version greater than 1.2 installed to your default Firefox profile,
+            and if the JavaScript debugger does not behave as expected, you can simply create another Firefox
+            profile and the IDE will install FireBug 1.2 and other required files into this profile without
+            affecting your default one.</p>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/configure/configure_options.html">Using the Options Window</a></dd>
+            <dd><a href="../webbrowser/default.html">Changing the Default Web Browser</a></dd>
+        </dl>
+        
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small>
+    </body>
+</html>

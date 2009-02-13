@@ -49,6 +49,12 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testFriendTemplateFun() throws Exception {
+        // IZ#157359: IDE highlights protected field as wrong
+        super.performTest("iz157359.cc", 15, 15, "iz157359.cc", 8, 3);
+        super.performTest("iz157359.cc", 15, 25, "iz157359.cc", 8, 3);
+    }
+
     public void testIZ143611_using_inherited_spec_field() throws Exception {
         performTest("iz143611_inherited_spec_field.cc", 21, 15, "iz143611_inherited_spec_field.cc", 7, 5); // param_t
         performTest("iz143611_inherited_spec_field.cc", 26, 15, "iz143611_inherited_spec_field.cc", 11, 5); // param_int

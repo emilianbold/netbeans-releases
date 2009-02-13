@@ -90,7 +90,7 @@ NodeActionsProvider {
     private JPDADebugger            debugger;
     private Vector<ModelListener>   listeners = new Vector<ModelListener>();
     // set of filters
-    private Set<String>             filters = new HashSet<String>();
+    private Set<String>             filters = new LinkedHashSet<String>();
     private Set<String>             enabledFilters = new HashSet<String>();
     private Set<String>             enabledSourceRoots = new HashSet<String>();
     private Set<String>             disabledSourceRoots = new HashSet<String>();
@@ -503,7 +503,7 @@ NodeActionsProvider {
                             return true;
                         }
                         try {
-                            return FileUtil.isArchiveFile(file.toURL());
+                            return FileUtil.isArchiveFile(file.toURI().toURL());
                         } catch (MalformedURLException ex) {
                             Exceptions.printStackTrace(ex);
                             return false;
@@ -517,7 +517,7 @@ NodeActionsProvider {
             if (state == JFileChooser.APPROVE_OPTION) {
                 File zipOrDir = newSourceFileChooser.getSelectedFile();
                 try {
-                    if (!zipOrDir.isDirectory() && !FileUtil.isArchiveFile(zipOrDir.toURL())) {
+                    if (!zipOrDir.isDirectory() && !FileUtil.isArchiveFile(zipOrDir.toURI().toURL())) {
                         return ;
                     }
                     String d = zipOrDir.getCanonicalPath();

@@ -48,16 +48,15 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 
 /**
  *
  * @author  Marian Petras
  */
-class SimpleSearchIterator implements Iterator<DataObject> {
+class SimpleSearchIterator implements Iterator<FileObject> {
 
     /** current enumeration of children */
-    private Enumeration<DataObject> childrenEnum;
+    private Enumeration<? extends FileObject> childrenEnum;
     /**
      * filters to be applied on the current enumeration of children
      * ({@link #childrenEnum})
@@ -70,8 +69,8 @@ class SimpleSearchIterator implements Iterator<DataObject> {
     /** */
     private final boolean recursive;
     /** stack of the ancestor folders' children enumerations */
-    private final List<Enumeration<DataObject>> enums
-            = new ArrayList<Enumeration<DataObject>>();            //unsynced stack
+    private final List<Enumeration<? extends FileObject>> enums
+            = new ArrayList<Enumeration<? extends FileObject>>();            //unsynced stack
     /**
      * stack of filter lists to be applied on children of the ancestor folders
      * ({@link #enums})
@@ -84,14 +83,14 @@ class SimpleSearchIterator implements Iterator<DataObject> {
      * <code>DataObject</code> to be returned the next time method
      * {@link #next()} is called
      */
-    private DataObject nextObject;
+    private FileObject nextObject;
 
     /**
      */
     SimpleSearchIterator(DataFolder folder,
                          boolean recursive,
                          List<FileObjectFilter> filters) {
-        this.childrenEnum = folder.children(false);
+        this.childrenEnum = folder.getPrimaryFile().getChildren(false);
         this.recursive = recursive;
         this.filters = (filters != null) ? new ArrayList<FileObjectFilter>(filters)
                                          : null;
@@ -108,7 +107,7 @@ class SimpleSearchIterator implements Iterator<DataObject> {
 
     /** 
      */
-    public DataObject next() {
+    public FileObject next() {
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
@@ -124,8 +123,7 @@ class SimpleSearchIterator implements Iterator<DataObject> {
         assert childrenEnum != null;
         do {
             if (childrenEnum.hasMoreElements()) {
-                DataObject dataObject = childrenEnum.nextElement();
-                FileObject file = dataObject.getPrimaryFile();
+                FileObject file = childrenEnum.nextElement();
                 if (file.isFolder()) {
                     if (!recursive) {
                         continue;
@@ -147,13 +145,13 @@ class SimpleSearchIterator implements Iterator<DataObject> {
                         filterLists.add(null);
                     }
                     enums.add(childrenEnum);
-                    childrenEnum = ((DataFolder) dataObject).children(false);
+                    childrenEnum = file.getChildren(false);
                 } else {
                     if ((filters != null) && !checkFileFilters(file)) {
                         continue;
                     }
                     
-                    nextObject = dataObject;
+                    nextObject = file;
                     break;
                 }
             } else {

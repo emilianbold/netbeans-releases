@@ -52,11 +52,24 @@ made subject to such option by the copyright holder.
         <typedef name="pathfileset" classname="org.netbeans.nbbuild.PathFileSet"
                  classpath="${harness.dir}/tasks.jar"/>
         <property name="harness.taskdefs.done" value="true"/>
+
+        <fail message="When using cluster.path property, remove netbeans.dest.dir, enabled.clusters and disabled.clusters properties from platform config, they would be ignored.">
+            <condition>
+                <and>
+                    <isset property="cluster.path.evaluated"/>
+                    <or>
+                        <isset property="netbeans.dest.dir"/>
+                        <isset property="enabled.clusters"/>
+                        <isset property="disabled.clusters"/>
+                    </or>
+                </and>
+            </condition>
+        </fail>
     </target>
 
     <target name="-convert-old-project" unless="cluster.path.evaluated">
         <!-- netbeans.dest.dir -> cluster.path.id translation for pre-7.0 modules -->
-        <fail unless="netbeans.dest.dir" message="Either 'cluster.path.evaluated' or 'netbeans.dest.dir' property must be set."/>
+        <fail unless="netbeans.dest.dir" message="Either cluster.path/cluster.path.evaluated properties or netbeans.dest.dir must be set."/>
 
         <pathconvert property="old.project.update.tracking">
             <fileset dir="${netbeans.dest.dir}" includes="**/update_tracking/*.xml"/>
@@ -97,12 +110,12 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="-init" depends="-taskdefs,-convert-old-project">
-        <convertclusterpath from="${cluster.path.evaluated}" to="cluster.path" id="cluster.path.id"/>
+        <convertclusterpath from="${cluster.path.evaluated}" to="cluster.path.final" id="cluster.path.id"/>
         <property file="nbproject/private/private.properties"/>
         <property file="nbproject/project.properties"/>
         <sortsuitemodules unsortedmodules="${modules}" sortedmodulesproperty="modules.sorted"/>
         <property name="cluster" location="build/cluster"/>
-        <echo level="verbose">Suite in ${basedir} with clusters ${cluster.path}, build cluster ${cluster}, and sorted modules ${modules.sorted}</echo>
+        <echo level="verbose">Suite in ${basedir} with clusters ${cluster.path.final}, build cluster ${cluster}, and sorted modules ${modules.sorted}</echo>
         <!-- synchronize with SuiteProject -->
         <property name="disabled.modules" value=""/>
         <property name="enabled.clusters" value=""/>

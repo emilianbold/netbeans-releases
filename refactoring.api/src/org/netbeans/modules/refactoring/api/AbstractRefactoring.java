@@ -47,6 +47,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.refactoring.api.impl.APIAccessor;
 import org.netbeans.modules.refactoring.api.impl.ProgressSupport;
@@ -69,6 +71,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.impl.RefactoringPanel;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.lookup.InstanceContent;
 
 
@@ -120,6 +123,7 @@ public abstract class AbstractRefactoring {
     Lookup refactoringSource;
     
     protected AbstractRefactoring(Lookup refactoringSource) {
+        Parameters.notNull("refactoringSource", refactoringSource); // NOI18N
         this.refactoringSource = refactoringSource;
     }
     
@@ -171,6 +175,7 @@ public abstract class AbstractRefactoring {
      * @return Chain of problems encountered or <code>null</code> if no problems
      * were found.
      */
+    @CheckForNull
     public final Problem preCheck() {
 //        //workaround for #68803
 //        if (!(this instanceof WhereUsedQuery)) {
@@ -192,7 +197,9 @@ public abstract class AbstractRefactoring {
      * @return Chain of problems encountered or <code>null</code> in no problems
      * were found.
      */
-    public final Problem prepare(RefactoringSession session) {
+    @CheckForNull
+    public final Problem prepare(@NonNull RefactoringSession session) {
+        Parameters.notNull("session", session); // NOI18N
         long time = System.currentTimeMillis();
 
         Problem p = null;
@@ -215,8 +222,9 @@ public abstract class AbstractRefactoring {
     
     /**
      * Checks if this refactoring has correctly set all parameters.
-     * @return Returns instancef Problem or null
+     * @return Returns instance of Problem or null
      */
+    @CheckForNull
     public final Problem checkParameters() {
 //        //workaround for #68803
 //        if (this instanceof WhereUsedQuery) {
@@ -240,6 +248,7 @@ public abstract class AbstractRefactoring {
      * If you want complete check of parameters, use #checkParameters()
      * @return Returns instance of Problem or null
      */
+    @CheckForNull
     public final Problem fastCheckParameters() {
         // Do not set classpath - use default merged class path
         // #57558
@@ -257,7 +266,8 @@ public abstract class AbstractRefactoring {
      * @param listener The listener to register.
      *
      */
-    public final synchronized void addProgressListener(ProgressListener listener) {
+    public final synchronized void addProgressListener(@NonNull ProgressListener listener) {
+        Parameters.notNull("listener", listener); // NOI18N
         if (progressSupport == null ) {
             progressSupport = new ProgressSupport();
         }
@@ -280,7 +290,8 @@ public abstract class AbstractRefactoring {
      * @param listener The listener to remove.
      *
      */
-    public final synchronized void removeProgressListener(ProgressListener listener) {
+    public final synchronized void removeProgressListener(@NonNull ProgressListener listener) {
+        Parameters.notNull("listener", listener); // NOI18N
         if (progressSupport != null ) {
             progressSupport.removeProgressListener(listener); 
         }
@@ -302,6 +313,7 @@ public abstract class AbstractRefactoring {
      * @see Context
      * @return context in which the refactoring was invoked.
      */
+    @NonNull
     public final Context getContext() {
         if (this.scope == null) {
             this.scope=new Context(new InstanceContent());
@@ -313,6 +325,7 @@ public abstract class AbstractRefactoring {
      * Object being refactored
      * @return 
      */
+    @NonNull
     public final Lookup getRefactoringSource() {
         return refactoringSource;
     }

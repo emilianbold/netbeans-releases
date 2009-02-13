@@ -47,22 +47,28 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 
 /**
  * A dummy class that is added to model in the case
  * there is a forward class declaration that does not refer to a class
  * @author Vladimir Kvashin
  */
-public class ForwardClass extends ClassImpl {
+public final class ForwardClass extends ClassImpl {
 
-    protected ForwardClass(String name, CsmFile file, AST ast) {
-        super(ast, file);
+    private ForwardClass(String name, CsmFile file, AST ast) {
+        super(name, ast, file);
+    }
+
+    public static boolean isForwardClass(CsmDeclaration cls) {
+        return cls instanceof ForwardClass;
     }
 
     public static ForwardClass create(String name, CsmFile file, AST ast, CsmScope scope, boolean registerInProject) {
@@ -72,6 +78,8 @@ public class ForwardClass extends ClassImpl {
             fwd.initScope(scope, ast);
             if(registerInProject) {
                 fwd.register(scope, false);
+            } else {
+                Utils.setSelfUID(fwd);
             }
             return fwd;
         }

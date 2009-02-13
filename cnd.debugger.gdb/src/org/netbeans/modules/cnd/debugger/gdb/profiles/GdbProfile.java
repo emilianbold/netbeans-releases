@@ -58,6 +58,7 @@ import org.openide.nodes.PropertySupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.settings.CppSettings;
@@ -97,7 +98,11 @@ public class GdbProfile implements ConfigurationAuxObject {
     
     public void initialize() {
         if (gdb_command == null) {
-            gdb_command = CppSettings.getDefault().getGdbName();
+            if (GdbDebugger.isUnitTest()) {
+                gdb_command = "gdb"; // NOI18N
+            } else {
+                gdb_command = CppSettings.getDefault().getGdbName();
+            }
         }
     }
 

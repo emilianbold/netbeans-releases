@@ -175,7 +175,11 @@ public class SelectImpl extends CsmSelect {
                                "::" + // NOI18N
                                implName.strPrefix;
                     }
-                    res.addAll(namespace.findUidsByPrefix(from));
+                    // possible suffix after name is ' ', '(', '<'.
+                    // all chars are contained in the Portable Character Set.
+                    // using next char for segment works for any encodins.
+                    res.addAll(namespace.findUidsRange(from, from+">")); // NOI18N
+                    //res.addAll(namespace.findUidsByPrefix(from));
                 }
                 if (implName.allowEmptyName) {
                     res.addAll(namespace.getUnnamedUids());

@@ -68,14 +68,14 @@ public class FollowUp extends JPanel {
     private FollowUp(ImportProject importer, NativeProject project) {
         initComponents();
         Map<Step,State> map = importer.getImportResult();
-        showState(map.get(Step.Project), projectCreated);
-        showState(map.get(Step.Configure), configureDone);
-        showState(map.get(Step.MakeClean), makeClean);
-        showState(map.get(Step.Make), make);
+        showState(Step.Project, map.get(Step.Project), projectCreated);
+        showState(Step.Configure, map.get(Step.Configure), configureDone);
+        showState(Step.MakeClean, map.get(Step.MakeClean), makeClean);
+        showState(Step.Make, map.get(Step.Make), make);
         showCodeAssistanceState(map, project);
     }
 
-    private void showState(State state, JLabel label){
+    private void showState(Step step, State state, JLabel label){
         if (state == null) {
             label.setVisible(false);
             return;
@@ -84,6 +84,20 @@ public class FollowUp extends JPanel {
             case Successful:
                 break;
             case Fail:
+                switch (step){
+                    case Project:
+                        label.setText(getString("ProjectCreatedFailedText")); // NOI18N
+                        break;
+                    case Configure:
+                        label.setText(getString("ConfigureFailedText")); // NOI18N
+                        break;
+                    case MakeClean:
+                        label.setText(getString("MakeCleanFailedText")); // NOI18N
+                        break;
+                    case Make:
+                        label.setText(getString("MakeFailedText")); // NOI18N
+                        break;
+                }
                 label.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/discovery/wizard/resources/error.png"))); // NOI18N
                 break;
             case Skiped:
@@ -99,6 +113,7 @@ public class FollowUp extends JPanel {
             //State model = map.get(Step.DiscoveryModel);
             //State excluded = map.get(Step.FixExcluded);
             //State macros = map.get(Step.FixMacros);
+            codeAssistance.setText(getString("CodeAssistanceFailedText")); // NOI18N
             codeAssistance.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/discovery/wizard/resources/error.png"))); // NOI18N
         }
     }

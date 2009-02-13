@@ -139,13 +139,6 @@ done
 # Process arguments given on the command line.
 parse_args "$@"
 
-#enabling heap dump on OOME
-jargs="$jargs -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=\"${userdir}/var/log/heapdump.hprof\""
-
-jargs_without_clusters="$jargs"
-jargs="-Dnetbeans.dirs=\"${clusters}\" $jargs_without_clusters"
-
-
 #
 # check JDK
 #
@@ -178,6 +171,14 @@ if [ ! -x "${jdkhome}/bin/java" ] ; then
     echo "Cannot find java. Please use the --jdkhome switch." >&2
     exit 2
 fi
+
+# if heap dump on OOME is supported enable it
+if "${jdkhome}/bin/java" -XX:+HeapDumpOnOutOfMemoryError > /dev/null ; then
+   jargs="$jargs -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=\"${userdir}/var/log/heapdump.hprof\""
+fi
+
+jargs_without_clusters="$jargs"
+jargs="-Dnetbeans.dirs=\"${clusters}\" $jargs_without_clusters"
 
 jdkhome=`absolutize_path "$jdkhome"`
 

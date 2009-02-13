@@ -55,6 +55,7 @@ public class CustomersConverter {
             items = new ArrayList<CustomerConverter>();
         }
         if (entities != null) {
+            items.clear();
             for (Customer entity : entities) {
                 items.add(new CustomerConverter(entity, uri, expandLevel, true));
             }

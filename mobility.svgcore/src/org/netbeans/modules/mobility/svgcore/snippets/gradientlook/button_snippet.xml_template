@@ -1,0 +1,41 @@
+   <g transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)" id="%%COMPONENT_ID%%">
+        <image width="334" height="125" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAVIAAAB9CAYAAADwWOu4AAAACXBIWXMAAC4jAAAuIwF4pT92AAAA
+            GXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAxNJREFUeNrs3U9r03Acx/H8Sp+K
+            iAd1IDKYAxUV9SIeBPEwLz4uL3oQQcSLqIioUMQx8N/JB7MmTtgEmW3TfIYh6+t1EIRkhxzefL9J
+            2paqo2ZPBTBQZc+R/S3xBEQ1i2rrk0UUENSOIRVQQEyDkIooIKhBSEUUENN2MS0iCpDFdCSiAGFs
+            RRQgm0pHLhHAfIuGzJFpFOAIVnsRBei+4lvtAUJCCtDSrO19ZK0HMJECCCmAkAKsiH/dDhVSABMp
+            gJACCCmAkAIgpABCCiCkAEIKgJACCCmAkAIIKQBCCiCkAEIKIKQACCnA/zGuKj8iCmAiBRBSACEF
+            WFnjxi1SABMpgJACCCmAkAIgpAD98MkmABMpgJACCCmAkAIgpAB9GVe1p/YAJlIAIQUQUgAhBUBI
+            AYQUYIjGjS8tAchCWvnRJgCrPYCQAgx5tW+s9gAmUoBeJ1I/NQJgIgXodyJ1ixTARAogpAADX+3t
+            9gAmUgAhBRjwal9XtasAYCIF6HEi9ckmgDCkjc0eIJ1IlRQgm0ir4ioAZBOpe6QAWUhrqz1AFlKb
+            PUAW0qa22gNkE6mn9gBhSE2kAOlEKqQAUUhrH20CyELaeP0JIJ1IrfYAUUirauoqACQhndrsAbKQ
+            Nh42AYQhra32AFFIvUcKYLUH6DukLgJAFlIv5AOEIXWPFMBECtBzSE2kAGFIvUcKkIXUNQAIQ+r9
+            J4AwpNNdVwEgCmkxkQJkIfXUHiALab3rqT1ANpH60hKANKRWe4C2Tpy+UA6H1EdEAdKJ1D1SgCik
+            J9culZ9fP9jvAbqG9Pc/Te2lfIBFTp27WmaGtPbFJQCd/anrj+3X1nuAGc6s3yhzV/uDg75/fimm
+            AEsa//U/Kz7AIWc3bpVWq/2Bb5MXplKAfWubt8tyE+n+SV8mz8UUoKWZpd35+ExMgZV2/uKd0ua4
+            uQftvH8qpsBqRvTy3dL22IUHbr97IqbAyli/cq8se07rEz69fSyowLG2cW2rdDlvqZMmbx6JKXDs
+            bF6/X5LzO588efVQVIHhxvPmg3JUf+uXAAMANjzXcWAvxG4AAAAASUVORK5CYII="
+            transform="matrix(0.24,0.0,0.0,0.24,0.0,0.0)" id="_20" >
+        </image>
+        <rect transform=""  id="_102" x="0.0" y="0.0" rx="5" ry="5"  width="80" height="30" fill="none" stroke="rgb(73,46,55)" stroke-width="1.5">   
+        </rect>
+        <g>
+            <text display="none">type=body</text>
+            <rect id="%%COMPONENT_ID%%_body" x="0.0" y="0.0" rx="5" ry="5"  width="80" height="30" fill="none" stroke="rgb(255,165,0)" stroke-width="0">
+                
+                <animate attributeName="stroke-width" attributeType="XML" begin="%%COMPONENT_ID%%.focusin" dur="0.25s" fill="freeze" to="2"/>
+                <animate attributeName="stroke-width" attributeType="XML" begin="%%COMPONENT_ID%%.focusout" dur="0.25s" fill="freeze" to="0"/>	            <!-- The third and fourth animation elements are used for animate button : on press, on release -->
+                <animate id="%%COMPONENT_ID%%_body_pressed" attributeName="stroke" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="red"/>
+                <animate id="%%COMPONENT_ID%%_body_released" attributeName="stroke" attributeType="XML" begin="indefinite" dur="0.25s"  fill="freeze" to="rgb(255,165,0)"/>
+            </rect>
+        </g>
+        <g>
+            <text id="%%COMPONENT_ID%%_stext" x="27.999992" y="20.0" fill="black" font-size="15">		OK</text>
+            <text display="none">type=shadow_text</text>
+        </g>
+        <g>
+            <text id="%%COMPONENT_ID%%_text" x="23" y="21" fill="none" font-size="18">		OK</text>
+            <text display="none">type=text</text>
+        </g>
+        </g>
+

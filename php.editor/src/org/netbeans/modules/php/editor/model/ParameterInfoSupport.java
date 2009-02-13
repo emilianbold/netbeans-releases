@@ -100,7 +100,7 @@ public class ParameterInfoSupport {
         return retval;
     }
     private ParameterInfo parametersTokenImpl() {
-        ModelScope modelScope = modelVisitor.getModelScope();
+        FileScope modelScope = modelVisitor.getModelScope();
         VariableScope nearestVariableScope = modelVisitor.getNearestVariableScope(offset);
 
         if (modelScope == null || nearestVariableScope == null) {

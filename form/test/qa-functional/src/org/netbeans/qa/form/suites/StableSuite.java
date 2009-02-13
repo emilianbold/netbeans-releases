@@ -66,10 +66,10 @@ public class StableSuite extends TestCase {
                 "testAddingBeans",
                 "testRemovingBeans")
 
-                .addTest (AddBeanFormsTest.class,
-                "testCompileBeanClasses",
-                "testAddingBeanFormWithVisualBeanSuperclass",
-                "testAddingBeanFormWithNonVisualBeanSuperclass")
+//                .addTest (AddBeanFormsTest.class,
+//                "testCompileBeanClasses",
+//                "testAddingBeanFormWithVisualBeanSuperclass",
+//                "testAddingBeanFormWithNonVisualBeanSuperclass")
                 
                 .addTest(actionsTest.class,
                 "testDummy",

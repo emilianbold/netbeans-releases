@@ -55,6 +55,7 @@ import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.filters.OrFilter;
 import org.netbeans.installer.product.filters.ProductFilter;
 import org.netbeans.installer.product.filters.RegistryFilter;
+import org.netbeans.installer.utils.BrowserUtils;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.ResourceUtils;
@@ -83,6 +84,8 @@ import org.netbeans.installer.wizard.components.panels.JdkLocationPanel;
 import org.netbeans.installer.wizard.containers.SwingContainer;
 import static java.lang.Integer.parseInt;
 import org.netbeans.installer.utils.helper.swing.NbiDirectoryChooser;
+import org.netbeans.installer.utils.helper.swing.NbiTextPane;
+import org.netbeans.installer.wizard.components.actions.netbeans.NbRegistrationAction;
 
 /**
  *
@@ -327,7 +330,7 @@ public class GlassFishPanel extends DestinationPanel {
         private NbiLabel jdkLocationLabel;
         private NbiComboBox jdkLocationComboBox;
         private NbiButton browseButton;
-        private NbiLabel statusLabel;
+        private NbiTextPane statusLabel;
         
         private NbiTextField jdkLocationField;
         
@@ -377,11 +380,14 @@ public class GlassFishPanel extends DestinationPanel {
                         JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY));
                 final Version maxVersion = Version.getVersion(jdkLocationPanel.getProperty(
                         JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY));
-                
+                statusLabel.setContentType("text/html");
                 statusLabel.setText(StringUtils.format(
                         jdkLocationPanel.getProperty(JdkLocationPanel.ERROR_NOTHING_FOUND_PROPERTY),
                         minVersion.toJdkStyle(),
-                        minVersion.toJdkStyle()));
+                        maxVersion.toJdkStyle(),
+                        jdkLocationPanel.getProperty(JdkLocationPanel.JAVA_DOWNLOAD_PAGE_PROPERTY)));
+
+                statusLabel.addHyperlinkListener(BrowserUtils.createHyperlinkListener());
             } else {
                 statusLabel.clearText();
                 statusLabel.setVisible(false);
@@ -768,7 +774,7 @@ public class GlassFishPanel extends DestinationPanel {
             });
             
             // statusLabel //////////////////////////////////////////////////////////
-            statusLabel = new NbiLabel();
+            statusLabel = new NbiTextPane();
             
             // fileChooser //////////////////////////////////////////////////////////
             fileChooser = new NbiDirectoryChooser();

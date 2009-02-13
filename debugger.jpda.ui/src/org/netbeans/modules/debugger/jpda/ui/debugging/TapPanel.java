@@ -64,6 +64,9 @@ public final class TapPanel extends javax.swing.JPanel {
      */
     public TapPanel() {
         setLayout (new TrivialLayout ());
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+            setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+        }
     }
 
     private static WeakReference<Adap> adapRef = null;

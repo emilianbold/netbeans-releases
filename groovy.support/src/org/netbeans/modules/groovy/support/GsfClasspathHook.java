@@ -41,8 +41,8 @@ package org.netbeans.modules.groovy.support;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.support.spi.GroovyFeature;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.openide.util.Lookup;
 
 /**
  * Temporary solution to have GSF indexing enabled on projects with only
@@ -52,11 +52,12 @@ import org.openide.util.Lookup;
  * 
  * @author Martin Adamek
  */
+@ProjectServiceProvider(service=ProjectOpenedHook.class, projectType="org-netbeans-modules-java-j2seproject")
 public class GsfClasspathHook extends ProjectOpenedHook {
 
     private final Project project;
     
-    public GsfClasspathHook(Project project, Lookup baseContext) {
+    public GsfClasspathHook(Project project) {
         this.project = project;
     }
     

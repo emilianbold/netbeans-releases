@@ -72,6 +72,9 @@ import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
+import org.netbeans.modules.maven.model.ModelOperation;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.execution.ExecutorTask;
@@ -108,53 +111,46 @@ public class ArchetypeWizardUtils {
 
         Archetype arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0-SNAPSHOT"); //NOI18N
-        arch.setRepository("http://snapshots.repository.codehaus.org"); //NOI18N
+        arch.setVersion("1.0"); //NOI18N
         arch.setArtifactId("webapp-jee5"); //NOI18N
         WEB_APP_ARCHS[0] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0-SNAPSHOT"); //NOI18N
-        arch.setRepository("http://snapshots.repository.codehaus.org"); //NOI18N
+        arch.setVersion("1.0"); //NOI18N
         arch.setArtifactId("webapp-j2ee14"); //NOI18N
         WEB_APP_ARCHS[1] = arch;
 
         EJB_ARCHS = new Archetype[2];
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0-SNAPSHOT"); //NOI18N
-        arch.setRepository("http://snapshots.repository.codehaus.org"); //NOI18N
+        arch.setVersion("1.0"); //NOI18N
         arch.setArtifactId("ejb-jee5"); //NOI18N
         EJB_ARCHS[0] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0-SNAPSHOT"); //NOI18N
-        arch.setRepository("http://snapshots.repository.codehaus.org"); //NOI18N
+        arch.setVersion("1.0"); //NOI18N
         arch.setArtifactId("ejb-j2ee14"); //NOI18N
         EJB_ARCHS[1] = arch;
 
         EAR_ARCHS = new Archetype[2];
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0-SNAPSHOT"); //NOI18N
-        arch.setRepository("http://snapshots.repository.codehaus.org"); //NOI18N
+        arch.setVersion("1.0"); //NOI18N
         arch.setArtifactId("ear-jee5"); //NOI18N
         EAR_ARCHS[0] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0-SNAPSHOT"); //NOI18N
-        arch.setRepository("http://snapshots.repository.codehaus.org"); //NOI18N
+        arch.setVersion("1.0"); //NOI18N
         arch.setArtifactId("ear-j2ee14"); //NOI18N
         EAR_ARCHS[1] = arch;
 
         EA_ARCH = new Archetype();
         EA_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        EA_ARCH.setVersion("1.0-SNAPSHOT"); //NOI18N
-        EA_ARCH.setRepository("http://snapshots.repository.codehaus.org"); //NOI18N
-        EA_ARCH.setArtifactId("ea-root"); //NOI18N
+        EA_ARCH.setVersion("1.0"); //NOI18N
+        EA_ARCH.setArtifactId("pom-root"); //NOI18N
     }
 
 
@@ -193,6 +189,10 @@ public class ArchetypeWizardUtils {
         config.setInteractive(false);
         props.setProperty("archetype.interactive", "false");//NOI18N
         config.setProperties(props);
+        //#136853 make sure to get the latest snapshot always..
+        if (arch.getVersion().contains("SNAPSHOT")) { //NOI18N
+            config.setUpdateSnapshots(true);
+        }
 
         config.setTaskDisplayName(NbBundle.getMessage(ArchetypeWizardUtils.class, "RUN_Maven"));
         // setup executor now..
@@ -287,6 +287,8 @@ public class ArchetypeWizardUtils {
                     progressCounter += 3;
                 }
                 addEARDeps((File)wiz.getProperty("ear_projdir"), ejb_vi, web_vi, progressCounter);
+                updateProjectName(rootFile,
+                        NbBundle.getMessage(ArchetypeWizardUtils.class, "TXT_EAProjectName", vi.getArtifactId()));
                 return openProjects(handle, rootFile, progressCounter);
             } else {
                 // other wizards, just one archetype
@@ -393,6 +395,18 @@ public class ArchetypeWizardUtils {
                     webVi.getArtifactId(), webVi.getVersion(), webVi.getType(), null, null, false);
         }
         progressCounter++;
+    }
+
+    private static void updateProjectName (final File projDir, final String newName) {
+        FileObject pomFO = FileUtil.toFileObject(new File(projDir, "pom.xml"));
+        if (pomFO != null) {
+            ModelOperation<POMModel> op = new ModelOperation<POMModel> () {
+                public void performOperation(POMModel model) {
+                    model.getProject().setName(newName);
+                }
+            };
+            Utilities.performPOMModelOperations(pomFO, Collections.singletonList(op));
+        }
     }
 
 }

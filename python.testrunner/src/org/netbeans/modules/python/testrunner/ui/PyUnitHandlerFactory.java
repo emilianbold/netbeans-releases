@@ -157,9 +157,8 @@ public class PyUnitHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(TestType.PY_UNIT.toString(), session);
+            Testcase testcase = new Testcase(matcher.group(2), TestType.PY_UNIT.name(), session);
             testcase.setTimeMillis(toMillis(matcher.group(1)));
-            testcase.setName(matcher.group(2));
             testcase.setClassName(matcher.group(3));
             testcase.setTrouble(new Trouble(false));
             String message = matcher.group(4).replace("%BR%", "\n");
@@ -204,10 +203,9 @@ public class PyUnitHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(TestType.PY_UNIT.name(), session);
+            Testcase testcase = new Testcase(matcher.group(2), TestType.PY_UNIT.name(), session);
             testcase.setTimeMillis(toMillis(matcher.group(1)));
             testcase.setClassName(matcher.group(3));
-            testcase.setName(matcher.group(2));
             testcase.setTrouble(new Trouble(true));
             testcase.getTrouble().setStackTrace(getStackTrace(matcher.group(4).replace("%BR%", "\n"), matcher.group(5)));
             session.addTestCase(testcase);
@@ -260,8 +258,7 @@ public class PyUnitHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(TestType.PY_UNIT.name(), session);
-            testcase.setName(matcher.group(2));
+            Testcase testcase = new Testcase(matcher.group(2), TestType.PY_UNIT.name(), session);
             testcase.setTimeMillis(toMillis(matcher.group(1)));
             testcase.setClassName(matcher.group(3));
             session.addTestCase(testcase);

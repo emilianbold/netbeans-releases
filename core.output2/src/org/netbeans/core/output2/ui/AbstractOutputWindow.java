@@ -119,8 +119,16 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
                 popupMenu.show(AbstractOutputWindow.this, evt.getX(), evt.getY());
             }
         });
+
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) {
+            setBackground(UIManager.getColor("NbExplorerView.background"));
+            setOpaque(true);
+            toolbar.setBackground(UIManager.getColor("NbExplorerView.background"));
+            pane.setBackground(UIManager.getColor("NbExplorerView.background"));
+            pane.setOpaque(true);
+        }
     }
-    
+
     public void propertyChange(PropertyChangeEvent pce) {
         if (TabbedPaneFactory.PROP_CLOSE.equals(pce.getPropertyName())) {
             AbstractOutputTab tab = (AbstractOutputTab) pce.getNewValue();
@@ -138,7 +146,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
         Component focusOwner =
                 KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
         boolean hadFocus = hasFocus() || isAncestorOf(focusOwner);
-        
+
         synchronized (getTreeLock()) {
             if (c instanceof AbstractOutputTab) {
                 AbstractOutputTab aop = getInternalTab();

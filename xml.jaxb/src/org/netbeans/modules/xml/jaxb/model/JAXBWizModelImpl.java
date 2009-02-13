@@ -37,6 +37,7 @@ import org.netbeans.modules.xml.jaxb.cfg.schema.Schema;
 import org.netbeans.modules.xml.jaxb.cfg.schema.Schemas;
 import org.netbeans.modules.xml.jaxb.model.events.JAXBWizEventImpl;
 import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -46,6 +47,11 @@ import org.openide.util.Exceptions;
  *
  * @author gpatil
  */
+@ProjectServiceProvider(service=JAXBWizModel.class, projectType={
+    "org-netbeans-modules-java-j2seproject",
+    "org-netbeans-modules-web-project",
+    "org-netbeans-modules-j2ee-ejbjarproject"
+})
 public class JAXBWizModelImpl implements JAXBWizModel {
     private List<JAXBWizEventListener> listeners = null;
     private Project project;

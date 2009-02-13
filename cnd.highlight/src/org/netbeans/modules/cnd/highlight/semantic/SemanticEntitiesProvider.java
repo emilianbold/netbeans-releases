@@ -110,7 +110,7 @@ public class SemanticEntitiesProvider {
     }
 
     private SemanticEntity getMacros(){
-        return new AbstractSemanticEntity(FontColorProvider.Entity.USER_MACRO) {
+        return new AbstractSemanticEntity(FontColorProvider.Entity.DEFINED_MACRO) {
             public String getName() {
                 return "macros"; // NOI18N
             }
@@ -120,13 +120,27 @@ public class SemanticEntitiesProvider {
             @Override
             public AttributeSet getAttributes(CsmOffsetable obj) {
                 CsmMacro macro = (CsmMacro) ((CsmReference) obj).getReferencedObject();
-                return macro == null || !macro.isSystem() ? color : sysMacroColors;
+                if (macro == null){
+                    return color;
+                }
+                switch(macro.getKind()){
+                    case USER_SPECIFIED:
+                        return userMacroColors;
+                    case COMPILER_PREDEFINED:
+                    case POSITION_PREDEFINED:
+                        return sysMacroColors;
+                    case DEFINED:
+                    default:
+                        return color;
+                }
             }
             protected AttributeSet sysMacroColors;
+            protected AttributeSet userMacroColors;
             @Override
             public void updateFontColors(FontColorProvider provider) {
                 super.updateFontColors(provider);
                 sysMacroColors = getFontColor(provider, FontColorProvider.Entity.SYSTEM_MACRO); // NOI18N
+                userMacroColors = getFontColor(provider, FontColorProvider.Entity.USER_MACRO); // NOI18N
             }
         };
     }
@@ -232,8 +246,9 @@ public class SemanticEntitiesProvider {
 
     // Singleton
     private static class Instantiator {
-
         static SemanticEntitiesProvider instance = new SemanticEntitiesProvider();
+        private Instantiator() {
+        }
     }
 
     public static SemanticEntitiesProvider instance() {

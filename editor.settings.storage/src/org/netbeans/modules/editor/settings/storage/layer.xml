@@ -58,11 +58,25 @@ made subject to such option by the copyright holder.
     <folder name="xml">
         <folder name="entities">
             <folder name="NetBeans">
+                <!-- Font & Colors Setting files -->
+                <file name="DTD_Editor_Fonts_and_Colors_settings_1_0" url="nbres:/org/netbeans/modules/editor/settings/storage/fontscolors/EditorFontsColors-1_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Editor Fonts and Colors settings 1.0//EN"/>
+                    </file>
                 <file name="DTD_Editor_Fonts_and_Colors_settings_1_1" url="nbres:/org/netbeans/modules/editor/settings/storage/fontscolors/EditorFontsColors-1_1.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN"/>
                 </file>
+
+                <!-- Keybindings Setting files -->
+                <file name="DTD_Editor_KeyBindings_settings_1_0" url="nbres:/org/netbeans/modules/editor/settings/storage/keybindings/EditorKeyBindings-1_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Editor KeyBindings settings 1.0//EN"/>
+                </file>
                 <file name="DTD_Editor_KeyBindings_settings_1_1" url="nbres:/org/netbeans/modules/editor/settings/storage/keybindings/EditorKeyBindings-1_1.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Editor KeyBindings settings 1.1//EN"/>
+                </file>
+                
+                <!-- Preferences Setting files -->
+                <file name="DTD_Editor_Properties_settings_1_0" url="nbres:/org/netbeans/modules/editor/settings/storage/preferences/EditorProperties-1_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Editor Properties settings 1.0//EN"/>
                 </file>
                 <file name="DTD_Editor_Preferences_1_0" url="nbres:/org/netbeans/modules/editor/settings/storage/preferences/EditorPreferences-1_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Editor Preferences 1.0//EN"/>

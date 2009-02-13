@@ -103,6 +103,10 @@ public abstract class EJBProblemFinder {
 
             boolean isEjb = false;
             Project prj = FileOwnerQuery.getOwner(file);
+            //#156889: Add check for null.
+            if (prj == null) {
+                return;
+            }
             J2eeModuleProvider provider = (J2eeModuleProvider) prj.getLookup().lookup(J2eeModuleProvider.class);
             if (provider != null && J2eeModule.EJB.equals(provider.getJ2eeModule().getModuleType())) {
                 isEjb = true;

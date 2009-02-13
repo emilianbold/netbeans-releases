@@ -42,6 +42,7 @@ package org.netbeans.modules.xml.text.completion;
 
 import java.awt.Color;
 
+import java.beans.BeanInfo;
 import org.netbeans.modules.xml.api.model.*;
 
 
@@ -67,6 +68,7 @@ class ValueResultItem extends XMLResultItem {
         foreground = Color.magenta;
         selectionForeground = Color.magenta.darker();
         replacementText = res.getNodeValue();
+        icon = res.getIcon(BeanInfo.ICON_COLOR_16x16);
     }
 
     @Override

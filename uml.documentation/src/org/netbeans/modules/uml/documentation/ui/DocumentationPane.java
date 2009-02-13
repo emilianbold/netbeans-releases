@@ -63,6 +63,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.UndoableEditEvent;
@@ -176,6 +177,11 @@ public class DocumentationPane extends JPanel
     public HTMLEditorKit getEditorKit()
     {
         return htmlKit;
+    }
+
+    @Override
+    public String getName() {
+        return super.getName();
     }
     
     
@@ -392,31 +398,58 @@ public class DocumentationPane extends JPanel
     }
     
     
-    public synchronized void setDocumentText(String sText)
+    public void setDocumentText(final String sText)
     {
-        getTextPane().getDocument().removeDocumentListener(this);
-        getTextPane().getDocument().removeUndoableEditListener(undoableEditListner);
-        
-        getTextPane().removeAll();
-        getTextPane().setText(sText);
-        getTextPane().getDocument().addDocumentListener(this);
-        getTextPane().getDocument().addUndoableEditListener(undoableEditListner);
-        getTextPane().setCaretPosition(0);
-        Cursor textCur = Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR);
-        getEditorKit().setDefaultCursor(textCur);
-        purgeUndos();
-        
-        setEnabled(true);
+        //this method works with components and may be blocked (block) repainting of a component
+        if(SwingUtilities.isEventDispatchThread())
+        {
+            setDoc(sText);
+        }
+        else
+        {
+            try
+            {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                public void run() {
+                    setDoc(sText);
+                }
+            });
+            }
+            catch(InterruptedException e)
+            {
+            }
+            catch(java.lang.reflect.InvocationTargetException ie)
+            {
+            }
+        }
     }
-    
-    
+
+    private  synchronized void setDoc(String sText)
+    {
+        synchronized(this)
+        {
+            getTextPane().getDocument().removeDocumentListener(this);
+            getTextPane().getDocument().removeUndoableEditListener(undoableEditListner);
+
+            getTextPane().removeAll();
+            getTextPane().setText(sText);
+            getTextPane().getDocument().addDocumentListener(this);
+            getTextPane().getDocument().addUndoableEditListener(undoableEditListner);
+            getTextPane().setCaretPosition(0);
+            Cursor textCur = Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR);
+            getEditorKit().setDefaultCursor(textCur);
+            purgeUndos();
+
+            setEnabled(true);
+        }
+    }
+    @Override
     public void setEnabled(boolean enable)
     {
         if (!enable && getTextPane().isEditable())
         {
             getTextPane().getDocument().removeDocumentListener(this);
             getTextPane().getDocument().removeUndoableEditListener(undoableEditListner);
-//            getTextPane().setText("");
         }
         
         getTextPane().setEditable(enable);
@@ -578,6 +611,7 @@ public class DocumentationPane extends JPanel
             setToolTipText(NbBundle.getMessage(DocumentationPane.class, "IDS_FONTCOLOR"));
         }
         
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             getTextPane().requestFocus();

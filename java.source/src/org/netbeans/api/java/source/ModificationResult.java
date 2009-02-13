@@ -53,6 +53,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.source.ModificationResult.CreateChange;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
@@ -107,7 +109,7 @@ public final class ModificationResult {
      * @throws org.netbeans.modules.parsing.spi.ParseException
      * @since 0.42
      */
-    public static ModificationResult runModificationTask(final Collection<Source> sources, final UserTask task) throws ParseException {
+    public static @NonNull ModificationResult runModificationTask(final @NonNull Collection<Source> sources, final @NonNull UserTask task) throws ParseException {
         final ModificationResult result = new ModificationResult(sources);
         final JavacParser[] theParser = new JavacParser[1];
         ParserManager.parse(sources, new UserTask() {
@@ -156,15 +158,15 @@ public final class ModificationResult {
         return result;
     }
     
-    public Set<? extends FileObject> getModifiedFileObjects() {
+    public @NonNull Set<? extends FileObject> getModifiedFileObjects() {
         return diffs.keySet();
     }
     
-    public List<? extends Difference> getDifferences(FileObject fo) {
+    public List<? extends Difference> getDifferences(@NonNull FileObject fo) {
         return diffs.get(fo);
     }
     
-    public Set<File> getNewFiles() {
+    public @NonNull Set<File> getNewFiles() {
         Set<File> newFiles = new HashSet<File>();
         for (List<Difference> ds:diffs.values()) {
             for (Difference d: ds) {
@@ -416,7 +418,7 @@ public final class ModificationResult {
      * @throws  IllegalArgumentException if the provided {@link FileObject} is not
      *                                   modified in this {@link ModificationResult}
      */
-    public String getResultingSource(FileObject fileObject) throws IOException, IllegalArgumentException {
+    public @NonNull String getResultingSource(@NonNull FileObject fileObject) throws IOException, IllegalArgumentException {
         Parameters.notNull("fileObject", fileObject);
 
         if (!getModifiedFileObjects().contains(fileObject)) {
@@ -435,17 +437,17 @@ public final class ModificationResult {
      * @return borders in target document
      * @since 0.37
      */
-    public int[] getSpan(Object tag) {
+    public @NullUnknown int[] getSpan(@NonNull Object tag) {
         return tag2Span.get(tag);
     }
     
     public static class Difference {
-        Kind kind;
-        PositionRef startPos;
-        PositionRef endPos;
-        String oldText;
-        String newText;
-        String description;
+              Kind kind;
+        final PositionRef startPos;
+        final PositionRef endPos;
+              String oldText;
+              String newText;
+        final String description;
         private boolean excluded;
         private boolean ignoreGuards = false;
 
@@ -463,23 +465,23 @@ public final class ModificationResult {
             this(kind, startPos, endPos, oldText, newText, null);
         }
         
-        public Kind getKind() {
+        public @NonNull Kind getKind() {
             return kind;
         }
         
-        public PositionRef getStartPosition() {
+        public @NonNull PositionRef getStartPosition() {
             return startPos;
         }
         
-        public PositionRef getEndPosition() {
+        public @NonNull PositionRef getEndPosition() {
             return endPos;
         }
         
-        public String getOldText() {
+        public @NonNull String getOldText() {
             return oldText;
         }
         
-        public String getNewText() {
+        public @NonNull String getNewText() {
             return newText;
         }
         

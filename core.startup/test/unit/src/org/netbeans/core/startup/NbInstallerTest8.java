@@ -41,6 +41,7 @@
 
 package org.netbeans.core.startup;
 
+import org.netbeans.SetupHid;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

@@ -30,7 +30,6 @@ package org.netbeans.modules.cnd.qnavigator.navigator;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
-import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.openide.util.NbPreferences;
@@ -43,30 +42,24 @@ public class CsmFileFilter {
     
     public CsmFileFilter(){
         Preferences ps = NbPreferences.forModule(CsmFileFilter.class);
-        showForwardFunctionDeclarations = ps.getBoolean("ShowForwardFunctionDeclarations", showForwardFunctionDeclarations); // NOI18N
-        showMacro = ps.getBoolean("ShowMacro", showMacro); // NOI18N
-        showInclude = ps.getBoolean("ShowInclude", showInclude); // NOI18N
-        showTypedef = ps.getBoolean("ShowTypedef", showTypedef); // NOI18N
-        showVariable = ps.getBoolean("ShowVariable", showVariable); // NOI18N
-        showUsing = ps.getBoolean("ShowMacro", showUsing); // NOI18N
         sortByName = SortMode.valueOf(ps.get("SortByName", sortByName.name())); // NOI18N
-        groupByKind = ps.getBoolean("groupByKind", groupByKind); // NOI18N
-        expandAll = ps.getBoolean("expandAll", expandAll); // NOI18N
     }
 
     public boolean isApplicable(CsmOffsetable object){
-       if (!isShowForwardFunctionDeclarations() && CsmKindUtilities.isFunctionDeclaration((CsmObject) object)) {
+       if (!isShowForwardFunctionDeclarations() && CsmKindUtilities.isFunctionDeclaration(object)) {
             CsmFunctionDefinition def = ((CsmFunction) object).getDefinition();
             if (def != null && !def.equals(object) && !CsmKindUtilities.isMethod(def)) {
                 return !object.getContainingFile().equals(def.getContainingFile());
             }
-       } else if (!isShowTypedef() && CsmKindUtilities.isTypedef((CsmObject) object)) {
+       } else if (!isShowForwardClassDeclarations() && CsmKindUtilities.isClassForwardDeclaration(object)) {
            return false;
-       } else if (!isShowVariable() && CsmKindUtilities.isGlobalVariable((CsmObject) object)) {
+       } else if (!isShowTypedef() && CsmKindUtilities.isTypedef(object)) {
+           return false;
+       } else if (!isShowVariable() && CsmKindUtilities.isVariable(object) && !CsmKindUtilities.isClassMember(object)) {
            return false;
        } else if (!isShowUsing() &&
-                 (CsmKindUtilities.isUsing((CsmObject) object) ||
-                  CsmKindUtilities.isNamespaceAlias((CsmObject) object))) {
+                 (CsmKindUtilities.isUsing(object) ||
+                  CsmKindUtilities.isNamespaceAlias(object))) {
            return false;
        }
         return true;
@@ -79,63 +72,59 @@ public class CsmFileFilter {
     }
     
     public boolean isShowInclude() {
-        return showInclude;
+        return showInclude.isSelected();
     }
 
     public void setShowInclude(boolean showInclude) {
-        this.showInclude = showInclude;
-        Preferences ps = NbPreferences.forModule(CsmFileFilter.class);
-        ps.putBoolean("ShowInclude", showMacro); // NOI18N
+        this.showInclude.setSelected(showInclude);
     }
 
     public boolean isShowMacro() {
-        return showMacro;
+        return showMacro.isSelected();
     }
 
     public void setShowMacro(boolean showMacro) {
-        this.showMacro = showMacro;
-        Preferences ps = NbPreferences.forModule(CsmFileFilter.class);
-        ps.putBoolean("ShowMacro", showMacro); // NOI18N
+        this.showMacro.setSelected(showMacro);
     }
 
     public boolean isShowForwardFunctionDeclarations() {
-        return showForwardFunctionDeclarations;
+        return showForwardFunctionDeclarations.isSelected();
     }
 
     public void setShowForwardFunctionDeclarations(boolean showForwardFunctionDeclarations) {
-        this.showForwardFunctionDeclarations = showForwardFunctionDeclarations;
-        Preferences ps = NbPreferences.forModule(CsmFileFilter.class);
-        ps.putBoolean("ShowForwardFunctionDeclarations", showForwardFunctionDeclarations); // NOI18N
+        this.showForwardFunctionDeclarations.setSelected(showForwardFunctionDeclarations);
+    }
+
+    public boolean isShowForwardClassDeclarations() {
+        return showForwardClassDeclarations.isSelected();
+    }
+
+    public void setShowForwardClassDeclarations(boolean showForwardClassDeclarations) {
+        this.showForwardClassDeclarations.setSelected(showForwardClassDeclarations);
     }
 
     public boolean isShowTypedef() {
-        return showTypedef;
+        return showTypedef.isSelected();
     }
 
     public void setShowTypedef(boolean showTypedef) {
-        this.showTypedef = showTypedef;
-        Preferences ps = NbPreferences.forModule(CsmFileFilter.class);
-        ps.putBoolean("ShowTypedef", showTypedef); // NOI18N
+        this.showTypedef.setSelected(showTypedef);
     }
 
     public boolean isShowVariable() {
-        return showVariable;
+        return showVariable.isSelected();
     }
 
     public void setShowVariable(boolean showVariable) {
-        this.showVariable = showVariable;
-        Preferences ps = NbPreferences.forModule(CsmFileFilter.class);
-        ps.putBoolean("ShowVariable", showVariable); // NOI18N
+        this.showVariable.setSelected(showVariable);
     }
 
     public boolean isShowUsing() {
-        return showUsing;
+        return showUsing.isSelected();
     }
 
     public void setShowUsing(boolean showUsing) {
-        this.showUsing = showUsing;
-        Preferences ps = NbPreferences.forModule(CsmFileFilter.class);
-        ps.putBoolean("ShowUsing", showUsing); // NOI18N
+        this.showUsing.setSelected(showUsing);
     }
 
     public SortMode getSortMode() {
@@ -149,34 +138,50 @@ public class CsmFileFilter {
     }
 
     public boolean isGroupByKind() {
-        return groupByKind;
+        return groupByKind.isSelected();
     }
 
     public void setGroupByKind(boolean groupKind) {
-        this.groupByKind = groupKind;
-        Preferences ps = NbPreferences.forModule(CsmFileFilter.class);
-        ps.putBoolean("groupByKind", groupByKind); // NOI18N
+        this.groupByKind.setSelected(groupKind);
     }
 
     public boolean isExpandAll() {
-        return expandAll;
+        return expandAll.isSelected();
     }
 
     public void setExpandAll(boolean expandAll) {
-        this.expandAll = expandAll;
-        Preferences ps = NbPreferences.forModule(CsmFileFilter.class);
-        ps.putBoolean("expandAll", expandAll); // NOI18N
+        this.expandAll.setSelected(expandAll);
     }
 
-    private boolean showInclude = true;
-    private boolean showMacro = true;
-    private boolean showForwardFunctionDeclarations = false;
-    private boolean showTypedef = true;
-    private boolean showVariable = true;
-    private boolean showUsing = true;
+    private BooleanFilter showForwardClassDeclarations = new BooleanFilter("ShowForwardClassDeclarations", true); // NOI18N
+    private BooleanFilter showForwardFunctionDeclarations = new BooleanFilter("ShowForwardFunctionDeclarations", false); // NOI18N
+    private BooleanFilter showInclude = new BooleanFilter("ShowInclude", true); // NOI18N
+    private BooleanFilter showMacro = new BooleanFilter("ShowMacro", true); // NOI18N;
+    private BooleanFilter showTypedef = new BooleanFilter("ShowTypedef", true); // NOI18N
+    private BooleanFilter showVariable = new BooleanFilter("ShowVariable", true); // NOI18N
+    private BooleanFilter showUsing = new BooleanFilter("ShowUsing", true); // NOI18N
     private SortMode sortByName = SortMode.Name;
-    private boolean groupByKind = false;
-    private boolean expandAll = true;
+    private BooleanFilter groupByKind = new BooleanFilter("groupByKind", false); // NOI18N
+    private BooleanFilter expandAll = new BooleanFilter("expandAll", true); // NOI18N
 
     public enum SortMode { Name, Offset }
+
+    private static final class BooleanFilter {
+        private boolean value;
+        private final String name;
+        private BooleanFilter(String name, boolean defauilt){
+            this.name = name;
+            this.value = getPreferences().getBoolean(name, defauilt);
+        }
+        public boolean isSelected(){
+            return value;
+        }
+        public void setSelected(boolean value){
+            this.value = value;
+            getPreferences().putBoolean(name, value);
+        }
+        private Preferences getPreferences(){
+            return NbPreferences.forModule(CsmFileFilter.class);
+        }
+    }
 }

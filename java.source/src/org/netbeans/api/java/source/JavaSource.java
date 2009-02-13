@@ -61,6 +61,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoTask;
@@ -174,7 +177,7 @@ public final class JavaSource {
      * @return a new {@link JavaSource}
      * @throws {@link IllegalArgumentException} if fileObject or cpInfo is null        
      */
-    public static JavaSource create(final ClasspathInfo cpInfo, final FileObject... files) throws IllegalArgumentException {
+    public static @NullUnknown JavaSource create(final @NonNull ClasspathInfo cpInfo, final @NonNull FileObject... files) throws IllegalArgumentException {
         if (files == null || cpInfo == null) {
             throw new IllegalArgumentException ();
         }
@@ -189,7 +192,7 @@ public final class JavaSource {
      * @return a new {@link JavaSource}
      * @throws {@link IllegalArgumentException} if fileObject or cpInfo is null
      */
-    public static JavaSource create(final ClasspathInfo cpInfo, final Collection<? extends FileObject> files) throws IllegalArgumentException {
+    public static @NullUnknown JavaSource create(final @NonNull ClasspathInfo cpInfo, final @NonNull Collection<? extends FileObject> files) throws IllegalArgumentException {
         if (files == null) {
             throw new IllegalArgumentException ();
         }    
@@ -212,7 +215,7 @@ public final class JavaSource {
      * @return {@link JavaSource} or null
      * @throws {@link IllegalArgumentException} if fileObject is null
      */
-    public static JavaSource forFileObject(FileObject fileObject) throws IllegalArgumentException {
+    public static @CheckForNull JavaSource forFileObject(@NonNull FileObject fileObject) throws IllegalArgumentException {
         if (fileObject == null) {
             throw new IllegalArgumentException ("fileObject == null");  //NOI18N
         }
@@ -291,7 +294,7 @@ public final class JavaSource {
      * @return {@link JavaSource} or null
      * @throws {@link IllegalArgumentException} if doc is null
      */
-    public static JavaSource forDocument(Document doc) throws IllegalArgumentException {
+    public static @CheckForNull JavaSource forDocument(@NonNull Document doc) throws IllegalArgumentException {
         if (doc == null) {
             throw new IllegalArgumentException ("doc == null");  //NOI18N
         }
@@ -369,7 +372,7 @@ public final class JavaSource {
      * </p>
      * </div>
      */
-    public void runUserActionTask( final Task<CompilationController> task, final boolean shared) throws IOException {
+    public void runUserActionTask( final @NonNull Task<CompilationController> task, final boolean shared) throws IOException {
         runUserActionTaskImpl(task, shared);
     }
     
@@ -562,7 +565,7 @@ public final class JavaSource {
      * @throws IOException encapsulating the exception thrown by {@link CancellableTasks#run}
      * @since 0.12
      */
-    public Future<Void> runWhenScanFinished (final Task<CompilationController> task, final boolean shared) throws IOException {
+    public @NonNull Future<Void> runWhenScanFinished (final @NonNull Task<CompilationController> task, final boolean shared) throws IOException {
         Parameters.notNull("task", task);
         if (sources.isEmpty()) {
             try {
@@ -619,7 +622,7 @@ public final class JavaSource {
      * @see Task for information about implementation requirements
      * @param task The task which.
      */    
-    public ModificationResult runModificationTask(final Task<WorkingCopy> task) throws IOException {        
+    public @NonNull ModificationResult runModificationTask(final @NonNull Task<WorkingCopy> task) throws IOException {
         if (task == null) {
             throw new IllegalArgumentException ("Task cannot be null");     //NOI18N
         }        
@@ -695,7 +698,7 @@ public final class JavaSource {
      * {@link JavaSource}
      * @return {@link ClasspathInfo}, never returns null.
      */
-    public ClasspathInfo getClasspathInfo() {
+    public @NonNull ClasspathInfo getClasspathInfo() {
         synchronized (this) {
             if (this.cachedCpInfo != null) {
                 return this.cachedCpInfo;
@@ -718,7 +721,7 @@ public final class JavaSource {
      * Returns unmodifiable {@link Collection} of {@link FileObject}s used by this {@link JavaSource}
      * @return the {@link FileObject}s
      */
-    public Collection<FileObject> getFileObjects() {
+    public @NonNull Collection<FileObject> getFileObjects() {
         return files;
     }
     private static class JavaSourceAccessorImpl extends JavaSourceAccessor {

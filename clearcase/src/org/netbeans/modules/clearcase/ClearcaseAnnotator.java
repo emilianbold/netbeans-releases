@@ -153,7 +153,8 @@ public class ClearcaseAnnotator extends VCSAnnotator {
 
     public void refresh() {
         String string = ClearcaseModuleConfig.getLabelsFormat();
-        if (string != null && !string.trim().equals("")) {            
+        if (string != null && !string.trim().equals("")) {
+            string = Utils.skipUnsupportedVariables(string, new String[] {"{" + ANNOTATION_STATUS + "}", "{" + ANNOTATION_VERSION + "}", "{" + ANNOTATION_RULE + "}", "{mime_type}" });     // NOI18N
             string = string.replaceAll("\\{" + ANNOTATION_STATUS  + "\\}", "\\{0\\}");           // NOI18N    
             string = string.replaceAll("\\{" + ANNOTATION_VERSION + "\\}", "\\{1\\}");           // NOI18N
             string = string.replaceAll("\\{" + ANNOTATION_RULE    + "\\}", "\\{2\\}");           // NOI18N

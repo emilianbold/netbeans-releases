@@ -41,6 +41,7 @@
 
 package org.netbeans.core.startup;
 
+import org.netbeans.MockEvents;
 import java.io.File;
 import java.util.Collections;
 import org.netbeans.Module;
@@ -51,7 +52,7 @@ import org.openide.filesystems.FileUtil;
  * Broken into pieces to ensure each runs in its own VM.
  * @author Jesse Glick
  */
-public class NbInstallerTest5 extends SetupHid {
+public class NbInstallerTest5 extends NbInstallerTestBase {
 
     public NbInstallerTest5(String name) {
         super(name);
@@ -65,8 +66,8 @@ public class NbInstallerTest5 extends SetupHid {
         Main.getModuleSystem (); // init module system
         System.err.println("Module Info->"+org.openide.util.Lookup.getDefault()
                 .lookup(org.openide.modules.ModuleInfo.class)); // TEMP
-        final FakeEvents ev = new FakeEvents();
-        org.netbeans.core.startup.NbInstaller installer = new org.netbeans.core.startup.NbInstaller(ev);
+        final MockEvents ev = new MockEvents();
+        NbInstaller installer = new NbInstaller(ev);
         ModuleManager mgr = new ModuleManager(installer, ev);
         installer.registerManager(mgr);
         mgr.mutexPrivileged().enterWriteAccess();

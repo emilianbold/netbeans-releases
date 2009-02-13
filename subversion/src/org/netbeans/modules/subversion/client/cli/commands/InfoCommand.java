@@ -150,6 +150,10 @@ public class InfoCommand extends SvnCommand {
         for (int i = 0; i < output.size(); i++) {
 
             String outputLine = output.get(i);
+            if(outputLine == null || outputLine.trim().equals("")) {
+                continue;
+            }
+            
             if(outputLine.startsWith("Path:")) {
                 if(map != null) {
                     infos.add(new Info(map));            
@@ -157,9 +161,6 @@ public class InfoCommand extends SvnCommand {
                 map = new HashMap<String, String>();
             }
             
-            if(outputLine == null || outputLine.trim().equals("")) {
-                continue;
-            }
             int idx = outputLine.indexOf(':');            
             String info = outputLine.substring(0, idx);
             if (info.startsWith(INFO_LOCK_COMMENT)) {
@@ -174,7 +175,9 @@ public class InfoCommand extends SvnCommand {
             String infoValue = outputLine.substring(idx + 1);
             map.put(info, infoValue.trim());                                
         }
-        infos.add(new Info(map));        
+        if(map != null) {
+            infos.add(new Info(map));
+        }
         return infos.toArray(new Info[infos.size()]);
     }
     

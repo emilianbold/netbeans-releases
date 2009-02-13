@@ -80,6 +80,19 @@ public interface Profiler {
      *          the server.
      */
     ProfilerServerSettings getSettings(String serverInstanceID);
+
+    /**
+     * This method is used from the Runtime tab to obtain settings for starting
+     * the server. It displays dialog and let the user choose required mode
+     * (direct/dynamic attach) and other settings for the server startup.
+     *
+     * @param   serverInstanceID ID of the server instance that is going to be started
+     * @param   verbose Whether to show the informational dialog
+     *
+     * @return  required settings or <code>null</code> if user cancelled starting
+     *          the server.
+     */
+    ProfilerServerSettings getSettings(String serverInstanceID, boolean verbose);
     
     /**
      * Returns state of Profiler agent instance started from the IDE. It detects 

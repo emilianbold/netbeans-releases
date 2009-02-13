@@ -298,9 +298,7 @@ public final class CompilerFlags {
 
     /** Get Basic Options Sun */
     public String getBasicOptionsSun() {
-        StringBuffer basicOptions;
-
-        basicOptions = new StringBuffer(64);
+        StringBuilder basicOptions = new StringBuilder(64);
 
         if (optionSource == OptionSource.SIMPLE) {
             if (simpleDebug) {
@@ -332,9 +330,7 @@ public final class CompilerFlags {
 
     /** Get Basic Options GNU */
     public String getBasicOptionsGNU() {
-        StringBuffer basicOptions;
-
-        basicOptions = new StringBuffer(64);
+        StringBuilder basicOptions = new StringBuilder(64);
 
         if (optionSource == OptionSource.SIMPLE) {
             if (simpleDebug) {

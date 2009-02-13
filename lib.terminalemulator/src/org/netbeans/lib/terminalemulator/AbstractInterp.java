@@ -95,7 +95,7 @@ public abstract class AbstractInterp implements Interp {
 	    action[c].new_state = new_state;
 	}
 
-	public Action getAction(char c) {
+	Action getAction(char c) {
 	    if ((int) c > 127)
 		return action_regular;
 	    return action[c];
@@ -122,7 +122,6 @@ public abstract class AbstractInterp implements Interp {
     } 
 
     public void reset() {
-	;
     } 
 
     /*

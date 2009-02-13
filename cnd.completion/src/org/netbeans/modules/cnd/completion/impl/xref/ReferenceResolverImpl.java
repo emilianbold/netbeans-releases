@@ -43,13 +43,11 @@ package org.netbeans.modules.cnd.completion.impl.xref;
 
 import java.io.IOException;
 import javax.swing.JEditorPane;
-import javax.swing.text.Caret;
+import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.cookies.EditorCookie;
@@ -96,7 +94,6 @@ public class ReferenceResolverImpl extends CsmReferenceResolver {
             if (panes != null && panes.length>0) {
                 //System.err.printf("caret: %d, %d, %d\n",panes[0].getCaretPosition(), panes[0].getSelectionStart(), panes[0].getSelectionEnd());
                 int offset = panes[0].getSelectionStart();
-                CsmFile file = CsmUtilities.getCsmFile(activatedNode,false);
                 StyledDocument doc = null;
                 try {
                     try {
@@ -108,14 +105,26 @@ public class ReferenceResolverImpl extends CsmReferenceResolver {
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);
                 }
-                if (file != null && (doc instanceof BaseDocument)) {
-                    return ReferencesSupport.createReferenceImpl(file, (BaseDocument)doc, offset);
-                }
+                return findReferenceInDoc(doc, offset);
             }
         }
         return null;
     }
     
+    @Override
+    public CsmReference findReference(Document doc, int offset) {
+        return findReferenceInDoc(doc, offset);
+    }
+
+    private CsmReference findReferenceInDoc(Document doc, int offset) {
+        if (doc instanceof BaseDocument) {
+            CsmFile file = CsmUtilities.getCsmFile(doc, false);
+            if (file != null) {
+                return ReferencesSupport.createReferenceImpl(file, (BaseDocument) doc, offset);
+            }
+        }
+        return null;
+    }
 
     @Override
     public Scope fastCheckScope(CsmReference ref) {

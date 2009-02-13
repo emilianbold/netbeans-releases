@@ -53,14 +53,16 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.websvc.core.ServiceNodesProvider;
 import org.netbeans.modules.websvc.core.WsWsdlCookie;
+import org.netbeans.modules.websvc.project.api.WebService;
+import org.netbeans.modules.websvc.project.api.WebServiceData;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.DialogDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -133,6 +135,7 @@ public class JaxWsExplorerPanel extends JPanel implements ExplorerManager.Provid
         return manager;
     }
     
+    @Override
     public void addNotify() {
         super.addNotify();
         manager.addPropertyChangeListener(this);
@@ -140,26 +143,25 @@ public class JaxWsExplorerPanel extends JPanel implements ExplorerManager.Provid
         Children rootChildren = new Children.Array();
         AbstractNode explorerClientRoot = new AbstractNode(rootChildren);
         List<Node> projectNodeList = new ArrayList<Node>();
-        for (int i=0;i<projects.length;i++) {
-            LogicalViewProvider logicalProvider = (LogicalViewProvider)projects[i].getLookup().lookup(LogicalViewProvider.class);
+        for (Project prj : projects) {
+            LogicalViewProvider logicalProvider = (LogicalViewProvider)prj.getLookup().lookup(LogicalViewProvider.class);
             if (logicalProvider!=null) {
                 Node rootNode = logicalProvider.createLogicalView();
-                Collection<? extends ServiceNodesProvider> serviceNodesProviders = Lookup.getDefault().lookupAll(ServiceNodesProvider.class);
-                for(ServiceNodesProvider provider : serviceNodesProviders){
-                    //ServiceNodesCreator creator = provider.getServiceNodesCreator(projects[i]);
-                    if(provider != null){
-                        Node[] serviceNodes = provider.getServiceNodes(projects[i]);
-                        if(serviceNodes != null){
-                            Children children = new Children.Array();
-                            for (int j=0;j<serviceNodes.length;j++) {
-                                serviceNodes[j] = new ServiceNode(serviceNodes[j]);
-                            }
-                            children.add(serviceNodes);
-                            projectNodeList.add(new ProjectNode(children, rootNode));
+                WebServiceData wsData = WebServiceData.getWebServiceData(prj);
+                if (wsData != null && wsData.getServiceProviders().size() > 0) {
+                    List<WebService> webServices = wsData.getServiceProviders();
+                    if (webServices.size() > 0) {
+                        Children children = new Children.Array();
+                        Node[] serviceNodes = new Node[webServices.size()];
+                        int i = 0;
+                        for (WebService service : webServices) {
+                            serviceNodes[i++] = new ServiceNode(service.createNode());
                         }
+                        children.add(serviceNodes);
+                        projectNodeList.add(new ProjectNode(children, rootNode));
                     }
                 }
-                // this is a hook for other services (Axis) to be accessible    
+                // this is a hook for other services (Axis) to be accessible
                 Children projectChildren = rootNode.getChildren();
                 if (projectChildren.getNodesCount() > 0) {
                     Node[] projectSubnodes = projectChildren.getNodes();
@@ -190,6 +192,7 @@ public class JaxWsExplorerPanel extends JPanel implements ExplorerManager.Provid
         descriptor.setValid(false);
     }
     
+    @Override
     public void removeNotify() {
         manager.removePropertyChangeListener(this);
         super.removeNotify();
@@ -240,26 +243,16 @@ public class JaxWsExplorerPanel extends JPanel implements ExplorerManager.Provid
             return rootNode.getOpenedIcon(type);
         }
     }
-    
-    private class ServiceNode extends AbstractNode implements WsWsdlCookie{
-        
+
+    private class ServiceNode extends FilterNode implements WsWsdlCookie {
+
         private Node serviceNode;
-        
+
         ServiceNode(Node serviceNode) {
-            super(Children.LEAF);
+            super(serviceNode);
             this.serviceNode=serviceNode;
-            setName(serviceNode.getDisplayName());
-            getCookieSet().add(this);
         }
-        
-        public Image getIcon(int type) {
-            return serviceNode.getIcon(type);
-        }
-        
-        public Image getOpenedIcon(int type) {
-            return serviceNode.getOpenedIcon(type);
-        }
-        
+
         public String getWsdlURL() {
             WsWsdlCookie cookie = serviceNode.getLookup().lookup(WsWsdlCookie.class);
             if (cookie != null) {
@@ -273,6 +266,6 @@ public class JaxWsExplorerPanel extends JPanel implements ExplorerManager.Provid
             }
             return null;
         }
-        
+
     }
 }

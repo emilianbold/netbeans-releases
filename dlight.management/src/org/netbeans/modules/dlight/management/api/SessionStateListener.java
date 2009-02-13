@@ -42,7 +42,7 @@ package org.netbeans.modules.dlight.management.api;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 
 /**
- * Listen for {@link org.netbeans.dlight.core.model.DLightSession} state changes
+ * Listen for {@link org.netbeans.modules.dlight.core.model.DLightSession} state changes
  */
 public interface SessionStateListener {
   /**

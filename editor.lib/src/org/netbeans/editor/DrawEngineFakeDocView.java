@@ -42,9 +42,6 @@
 package org.netbeans.editor;
 
 import javax.swing.text.Element;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.View;
-import javax.swing.text.ViewFactory;
 import org.netbeans.api.editor.fold.Fold;
 
 /**
@@ -53,7 +50,7 @@ import org.netbeans.api.editor.fold.Fold;
  *
  * @author Martin Roskanin
  */
-public class DrawEngineFakeDocView extends DrawEngineDocView{
+class DrawEngineFakeDocView extends DrawEngineDocView{
 
         private boolean useCollapsing = true;
         private int fakeStartOffset;
@@ -69,18 +66,22 @@ public class DrawEngineFakeDocView extends DrawEngineDocView{
             
         }
  
+        @Override
         public int getStartOffset(){
             return fakeStartOffset;
         }
         
+        @Override
         public int getEndOffset(){
             return fakeEndOffset;
         }
         
+        @Override
         protected Fold nextCollapsedFold() {
             return null; // simulate no collapsed folds
         }
         
+        @Override
         protected void attachListeners(){
         }
     

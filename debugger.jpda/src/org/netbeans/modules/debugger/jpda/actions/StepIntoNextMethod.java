@@ -135,7 +135,9 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
         try {
             if (!t.isSuspended()) {
                 // Can not step when it's not suspended.
-                smartLogger.finer("Can not step into next method! Thread "+t+" not suspended!");
+                if (smartLogger.isLoggable(Level.FINER)) {
+                    smartLogger.finer("Can not step into next method! Thread "+t+" not suspended!");
+                }
                 return ;
             }
             JPDAThread resumeThread = setStepRequest (StepRequest.STEP_INTO);
@@ -143,7 +145,9 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
                        t.getMethodName () + ':' +
                        t.getLineNumber (null);
             depth = t.getStackDepth();
-            logger.fine("JDI Request (action step into next method): " + stepRequest);
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("JDI Request (action step into next method): " + stepRequest);
+            }
             if (stepRequest == null) return ;
             ((JPDAThreadImpl) t).setInStep(true, stepRequest);
             if (resumeThread == null) {

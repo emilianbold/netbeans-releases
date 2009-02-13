@@ -171,6 +171,17 @@ public class GlassFishUtils {
         
         return results.getErrorCode() != ExecutionResults.TIMEOUT_ERRORCODE;
     }
+
+    public static boolean stopDerby(File location) throws IOException {
+        String executable = getAsadmin(location).getAbsolutePath();
+
+        ExecutionResults results = SystemUtils.executeCommand(location,
+                executable,
+                STOP_DATABASE_COMMAND
+                );
+
+        return results.getErrorCode() != ExecutionResults.TIMEOUT_ERRORCODE;
+    }
     
     public static File createPasswordFile(String adminPassword, File location) throws IOException {    
         return createPasswordFile(adminPassword,DEFAULT_MASTER_PASSWORD,location);

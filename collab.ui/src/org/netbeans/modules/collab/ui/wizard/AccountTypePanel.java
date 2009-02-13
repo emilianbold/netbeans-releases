@@ -244,11 +244,7 @@ public class AccountTypePanel extends WizardPanelBase {
         gridBagConstraints.weightx = 1.0;
         add(jPanel1, gridBagConstraints);
 
-        messageLbl.setForeground(new java.awt.Color(255, 51, 0));
         org.openide.awt.Mnemonics.setLocalizedText(messageLbl, " ");
-        messageLbl.setMaximumSize(new java.awt.Dimension(2147483647, 15));
-        messageLbl.setMinimumSize(new java.awt.Dimension(61, 35));
-        messageLbl.setPreferredSize(new java.awt.Dimension(644, 15));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;

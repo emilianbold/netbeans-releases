@@ -839,7 +839,7 @@ public class AntProjectHelperTest extends NbTestCase {
         ProjectLibraryProvider.FIRE_CHANGES_SYNCH = true;
         // Checking read against schema, and that we stick with the last known good load:
         assertEquals("initial name correct", "somename", currentName());
-        String content = TestFileUtils.readFile(projdir.getFileObject("nbproject/project.xml"));
+        String content = projdir.getFileObject("nbproject/project.xml").asText("UTF-8");
         String bogus = "<references xmlns='http://www.netbeans.org/ns/ant-project-references/2'><bogus/></references>\n";
         AntProjectHelper.QUIETLY_SWALLOW_XML_LOAD_ERRORS = true;
         try {
@@ -865,7 +865,7 @@ public class AntProjectHelperTest extends NbTestCase {
         }
         h.removeConfigurationFragment("references", "http://www.netbeans.org/ns/ant-project-references/2", true);
         ProjectManager.getDefault().saveProject(p);
-        content = TestFileUtils.readFile(projdir.getFileObject("nbproject/project.xml"));
+        content = projdir.getFileObject("nbproject/project.xml").asText("UTF-8");
         assertTrue(content, content.contains("newername"));
         assertFalse(content, content.contains("bogus"));
     }

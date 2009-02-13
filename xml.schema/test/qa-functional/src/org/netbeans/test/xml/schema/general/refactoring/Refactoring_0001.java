@@ -173,7 +173,7 @@ public class Refactoring_0001 extends Refactoring
       {
       }
 
-      Sleep( 2000 );
+      Sleep( 5000 );
 
       SelectItemInColumn( xml, 1, ITEM_ORIGINAL_NAME );
 

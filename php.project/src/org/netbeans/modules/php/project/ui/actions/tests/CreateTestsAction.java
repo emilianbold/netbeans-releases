@@ -77,7 +77,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
-import org.openide.windows.InputOutput;
 
 /**
  * Action for creating new PHP Unit tests.
@@ -93,7 +92,7 @@ public final class CreateTestsAction extends NodeAction {
     private static final String INCLUDE_PATH_PART = "\"%s\".PATH_SEPARATOR."; // NOI18N
 
     private static final ExecutionDescriptor EXECUTION_DESCRIPTOR
-            = new ExecutionDescriptor().controllable(false).frontWindow(false).inputOutput(InputOutput.NULL);
+            = new ExecutionDescriptor().controllable(false).frontWindow(false);
     private static final RequestProcessor RP = new RequestProcessor("Generate PHP Unit tests", 1); // NOI18N
     static final Queue<Runnable> RUNNABLES = new ConcurrentLinkedQueue<Runnable>();
     private static final RequestProcessor.Task TASK = RP.create(new Runnable() {
@@ -259,12 +258,9 @@ public final class CreateTestsAction extends NodeAction {
         }
 
         // test does not exist yet
-        Future<Integer> result = generateSkeleton(phpUnit, sourceFo, parent, PhpUnitConstants.PARAM_SKELETON);
+        String paramSkeleton = phpUnit.supportedVersionFound() ? PhpUnit.PARAM_SKELETON : PhpUnit.PARAM_SKELETON_OLD;
+        Future<Integer> result = generateSkeleton(phpUnit, sourceFo, parent, paramSkeleton);
         try {
-            if (result.get() != 0) {
-                // "compatibility mode"
-                result = generateSkeleton(phpUnit, sourceFo, parent, PhpUnitConstants.PARAM_SKELETON_OLD);
-            }
             if (result.get() != 0) {
                 // test not generated
                 failed.add(sourceFo);
@@ -288,12 +284,13 @@ public final class CreateTestsAction extends NodeAction {
                 .addArgument(paramSkeleton)
                 .addArgument(sourceFo.getName())
                 .addArgument(sourceFo.getNameExt());
-        ExecutionService service = ExecutionService.newService(externalProcessBuilder, EXECUTION_DESCRIPTOR, null);
+        ExecutionService service = ExecutionService.newService(externalProcessBuilder, EXECUTION_DESCRIPTOR,
+                String.format("%s %s %s %s", phpUnit.getProgram(), paramSkeleton, sourceFo.getName(), sourceFo.getNameExt())); // NOI18N
         return service.run();
     }
 
     private File getGeneratedFile(FileObject source, File parent) {
-        return new File(parent, source.getName() + PhpUnitConstants.TEST_FILE_SUFFIX);
+        return new File(parent, source.getName() + PhpUnit.TEST_FILE_SUFFIX);
     }
 
     private File getTestDirectory(PhpProject phpProject) {

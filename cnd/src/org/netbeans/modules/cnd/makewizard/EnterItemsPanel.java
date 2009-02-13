@@ -625,7 +625,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 
 		    while (iter.hasNext()) {
 			ListItem item = (ListItem) iter.next();
-			StringBuffer buf = new StringBuffer(256);
+			StringBuilder buf = new StringBuilder(256);
 
 			buf.append(item.getName());
 			buf.append(File.separator);

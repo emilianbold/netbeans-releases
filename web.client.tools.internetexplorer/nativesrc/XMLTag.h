@@ -50,6 +50,11 @@ public:
         this->name = name;
     }
 
+    XMLTag(tstring name, tstring value) {
+        this->name = name;
+        this->value = value;
+    }
+
     XMLTag() {
     }
 
@@ -63,7 +68,11 @@ public:
         _itot_s(value, buffer, 32, 10);
         attributes.insert(pair<tstring, tstring>(name, buffer));
     }
-    XMLTag &addChildTag(tstring name);
+
+    XMLTag &addChildTag(const tstring name);
+    XMLTag &addChildTag(const tstring name, const tstring value);
+    XMLTag &addChildTag(const tstring name, int value);
+
     void setName(tstring name) {
         this->name = name;
     }

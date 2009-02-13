@@ -87,7 +87,7 @@ public class DebugUtils {
         if (relativePath.endsWith(".groovy")) { // NOI18N
             relativePath = relativePath.substring(0, relativePath.length() - 7);
         }
-        return relativePath.replace('/', '.');
+        return relativePath.replace('/', '.') + "*";
     }
 
     public static String getJspName(String url) {

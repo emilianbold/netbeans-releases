@@ -41,6 +41,8 @@
 
 package org.netbeans.core.startup;
 
+import org.netbeans.SetupHid;
+import org.netbeans.MockEvents;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Collections;
@@ -79,15 +81,11 @@ public class ModuleFormatSatisfiedTest extends SetupHid {
         os.close ();
     }
     
-    /**  */
     public void testTryToInstallTheModule () throws Exception {
         Main.getModuleSystem (); // init module system
         
-        
-        
-        
-        final FakeEvents ev = new FakeEvents();
-        org.netbeans.core.startup.NbInstaller installer = new org.netbeans.core.startup.NbInstaller(ev);
+        final MockEvents ev = new MockEvents();
+        NbInstaller installer = new NbInstaller(ev);
         ModuleManager mgr = new ModuleManager(installer, ev);
         installer.registerManager(mgr);
         mgr.mutexPrivileged().enterWriteAccess();
@@ -103,7 +101,6 @@ public class ModuleFormatSatisfiedTest extends SetupHid {
         }
     }
 
-    
     static void addOpenideModules (ModuleManager mgr) throws Exception {
         ClassLoader l = SetupHid.class.getClassLoader();
         String openide =
@@ -119,6 +116,5 @@ public class ModuleFormatSatisfiedTest extends SetupHid {
         Manifest mani = new Manifest (new java.io.ByteArrayInputStream (openide.getBytes ()));
         mgr.enable(mgr.createFixed(mani, null, l));
      }
-
     
 }

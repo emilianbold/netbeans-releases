@@ -88,8 +88,6 @@ public final class CodeTemplateParameterImpl {
     
     private Collection<CodeTemplateParameter> slaves;
     
-    private Collection<CodeTemplateParameter> slavesUnmodifiable;
-    
     private String name;
     
     private Map<String, String> hints;
@@ -460,7 +458,6 @@ public final class CodeTemplateParameterImpl {
     private void addSlave(CodeTemplateParameter slave) {
         if (slaves == null) {
             slaves = new ArrayList<CodeTemplateParameter>(2);
-            slavesUnmodifiable = Collections.unmodifiableCollection(slaves);
         }
         slaves.add(slave);
     }

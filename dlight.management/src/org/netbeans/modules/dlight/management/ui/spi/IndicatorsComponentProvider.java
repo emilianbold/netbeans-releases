@@ -58,7 +58,8 @@ public final class IndicatorsComponentProvider {
     return instance;
   }
 
-  public IndicatorComponent getIndicatorComponent() {
-    return Lookup.getDefault().lookup(IndicatorComponent.class);
+  public IndicatorComponentDelegator getIndicatorComponentListener() {
+    IndicatorComponentDelegator factory = Lookup.getDefault().lookup(IndicatorComponentDelegator.class);
+    return factory;
   }
 }

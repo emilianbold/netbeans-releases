@@ -89,6 +89,7 @@ import org.python.antlr.PythonTree;
 import org.python.antlr.ast.ClassDef;
 import org.python.antlr.ast.FunctionDef;
 import org.python.antlr.ast.Import;
+import org.python.antlr.ast.ImportFrom;
 import org.python.antlr.ast.alias;
 import org.python.antlr.base.expr;
 
@@ -105,7 +106,6 @@ import org.python.antlr.base.expr;
 public class PythonCodeCompleter implements CodeCompletionHandler {
     private static ImageIcon keywordIcon;
     private boolean caseSensitive;
-
     // http://docs.python.org/ref/strings.html
     private static final String[] STRING_ESCAPES =
             new String[]{
@@ -1303,6 +1303,7 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
 
             if (/*type == null && */lhs != null) {
                 boolean found = false;
+                boolean alreadyImported = false;
                 // See if it's an attempt to use a library, but we failed to import it
                 // such as "sys.x" - access x in the sys module
 
@@ -1321,6 +1322,7 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
 
                                         // Yes, imported symbol
                                         moduleName = at.getInternalName();
+                                        alreadyImported = true;
                                         moduleCompletion = true;
                                         break;
                                     } else if (at.getInternalName().equals(lhs)) {
@@ -1330,6 +1332,41 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
                                             moduleCompletion = false;
                                         } else {
                                             moduleName = at.getInternalName();
+                                            alreadyImported = true;
+                                            moduleCompletion = true;
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    List<ImportFrom> importsFrom = symbolTable.getImportsFrom();
+                    if (importsFrom != null && importsFrom.size() > 0) {
+                        for (ImportFrom imp : importsFrom) {
+                            List<alias> names = imp.getInternalNames();
+                            if (names != null) {
+                                for (alias at : names) {
+                                    String internalName = at.getInternalName();
+                                    if (Character.isUpperCase(internalName.charAt(0))) {
+                                        continue;
+                                    }
+                                    if (at.getInternalAsname() != null && at.getInternalAsname().equals(lhs)) {
+                                        addSpecifyTypeItem = false;
+
+                                        // Yes, imported symbol
+                                        moduleName = imp.getInternalModule() + "." + internalName; // NOI18N
+                                        alreadyImported = true;
+                                        moduleCompletion = true;
+                                        break;
+                                    } else if (internalName.equals(lhs)) {
+                                        addSpecifyTypeItem = false;
+
+                                        if (at.getInternalAsname() != null) {
+                                            moduleCompletion = false;
+                                        } else {
+                                            moduleName = imp.getInternalModule() + "." + internalName; // NOI18N
+                                            alreadyImported = true;
                                             moduleCompletion = true;
                                         }
                                         break;
@@ -1356,7 +1393,9 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
                             for (IndexedElement element : symbols) {
                                 PythonCompletionItem item = createItem(element, request);
                                 item.setSmart(true);
-                                item.setAddImport(lhs);
+                                if (!alreadyImported) {
+                                    item.setAddImport(lhs);
+                                }
                                 proposals.add(item);
                             }
                         }
@@ -2176,7 +2215,6 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
             formatter.name(kind, false);
             return formatter.getText();
         }
-
 //        @Override
 //        public String getCustomInsertTemplate() {
 //            String[] params = method.getParams();

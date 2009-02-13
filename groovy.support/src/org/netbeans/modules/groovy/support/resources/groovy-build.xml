@@ -9,15 +9,26 @@
             <attribute default="${includes}" name="includes"/>
             <attribute default="${excludes}" name="excludes"/>
             <attribute default="${javac.debug}" name="debug"/>
-            <attribute default="" name="sourcepath"/>
+            <attribute default="/does/not/exist" name="sourcepath"/>
+            <attribute default="/does/not/exist" name="gensrcdir"/>
             <element name="customize" optional="true"/>
             <sequential>
                 <taskdef name="groovyc" classpath="${javac.classpath}" classname="org.codehaus.groovy.ant.Groovyc"/>
                 <groovyc destdir="@{destdir}" encoding="${source.encoding}" excludes="@{excludes}" includes="@{includes}" sourcepath="@{sourcepath}" srcdir="@{srcdir}">
+                    <src>
+                        <dirset dir="@{gensrcdir}" erroronmissingdir="false">
+                            <include name="*"/>
+                        </dirset>
+                    </src>
                     <classpath>
                         <path path="@{classpath}"/>
                     </classpath>
                     <javac debug="@{debug}" deprecation="${javac.deprecation}" destdir="@{destdir}" encoding="${source.encoding}" excludes="@{excludes}" includeantruntime="false" includes="@{includes}" source="${javac.source}" sourcepath="@{sourcepath}" srcdir="@{srcdir}" target="${javac.target}">
+                        <src>
+                            <dirset dir="@{gensrcdir}" erroronmissingdir="false">
+                                <include name="*"/>
+                            </dirset>
+                        </src>
                         <compilerarg line="${javac.compilerargs} ${javac.compilerargs.jaxws}"/>
                         <customize/>
                     </javac>

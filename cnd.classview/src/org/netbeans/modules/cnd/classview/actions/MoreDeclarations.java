@@ -121,7 +121,7 @@ public class MoreDeclarations extends AbstractAction implements Presenter.Popup 
         action.actionPerformed(null);
     }
     
-    private class ItemWrapper implements Comparable<ItemWrapper>{
+    private static class ItemWrapper implements Comparable<ItemWrapper>{
         private CharSequence name;
         private CsmOffsetableDeclaration decl;
         private ItemWrapper(CsmOffsetableDeclaration decl){

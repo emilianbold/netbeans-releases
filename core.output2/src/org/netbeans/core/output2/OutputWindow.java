@@ -79,6 +79,8 @@ public class OutputWindow extends AbstractOutputWindow {
     static OutputWindow DEFAULT = null;
     public static final String ICON_RESOURCE =
         "org/netbeans/core/resources/frames/output.png"; // NOI18N
+
+    private static final boolean AQUA = "Aqua".equals(UIManager.getLookAndFeel().getID());
         
     private MouseListener activateListener = new MouseAdapter() {
         @Override
@@ -179,6 +181,10 @@ public class OutputWindow extends AbstractOutputWindow {
         return getDisplayName();
     }
 
+    void changeFontSizeBy(int amt, OutputTab tab) {
+        controller.changeFontSizes(tab, this, amt);
+    }
+
     Controller getController() {
         return controller;
     }
@@ -202,6 +208,10 @@ public class OutputWindow extends AbstractOutputWindow {
     
     @Override
     public void paintComponent (Graphics g) {
+        if( AQUA ) {
+            g.setColor(getBackground());
+            g.fillRect(0, 0, getWidth(), getHeight());
+        }
         super.paintComponent (g);
         if (hasFocus()) {
             Insets ins = getInsets();

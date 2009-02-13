@@ -80,6 +80,8 @@ public class BeanRunConfig implements RunConfig {
     private String actionName;
     private FileObject selectedFO;
     private MavenProject mp;
+    private RunConfig preexecution;
+    private String preactionname;
     
     /** Creates a new instance of BeanRunConfig */
     public BeanRunConfig() {
@@ -335,6 +337,26 @@ public class BeanRunConfig implements RunConfig {
 
     public void setFileObject(FileObject selectedFile) {
         this.selectedFO = selectedFile;
+    }
+
+    public RunConfig getPreExecution() {
+        if (parent != null && preexecution == null) {
+            return parent.getPreExecution();
+        }
+        return preexecution;
+    }
+
+    public void setPreExecution(RunConfig config) {
+        preexecution = config;
+    }
+
+    public void setPreExecutionActionName(String preactionname) {
+        this.preactionname = preactionname;
+    }
+
+    public String getPreExecutionActionName() {
+        //not worth inheriting I guess.
+        return preactionname;
     }
 }
 

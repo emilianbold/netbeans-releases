@@ -43,10 +43,17 @@
 
 IXMLDOMDocument *XMLTag::m_pXMLDOM;
 
+/**
+ * createXMLDOM creates the xml representation of a XML tree
+ *
+ * pXMLTag - (in) the xml node being added
+ * pXMLDOMNode - (out) TBD (smart pointer to an <IXMLDOMNode>)
+ * return value: TBD (XMLTag)
+ */
 IXMLDOMElement *XMLTag::createXMLDOM(XMLTag *pXMLTag, IXMLDOMNode *pXMLDOMNode) {
-    tstring response;
     USES_CONVERSION;
     CComPtr<IXMLDOMElement> spXMLDOMElement;
+
     HRESULT hr = m_pXMLDOM->createElement(T2BSTR(pXMLTag->name.c_str()), &spXMLDOMElement);
     map<tstring, tstring>::iterator iter = pXMLTag->attributes.begin();
     while(iter != pXMLTag->attributes.end()) {
@@ -55,17 +62,29 @@ IXMLDOMElement *XMLTag::createXMLDOM(XMLTag *pXMLTag, IXMLDOMNode *pXMLDOMNode) 
         ++iter;
     }
 
-    if(pXMLTag->value.length() > 0) {
-        spXMLDOMElement->put_text(T2BSTR(pXMLTag->value.c_str()));
-    }
-
     if(pXMLTag->childTags.size() > 0) {
+        // node with child tags
         list<XMLTag *>::iterator tagIter = pXMLTag->childTags.begin();
         while(tagIter != pXMLTag->childTags.end()) {
             createXMLDOM(*tagIter, spXMLDOMElement);
             ++tagIter;
         }
     }
+    else if (pXMLTag->value.length() > 0) {
+        // node with a text value rather than child tags. Handle by
+        // creating a Text (rather than element) dom node for just the text
+        // and add as a child tag to the tag it belongs to
+        // <foo>bar</foo> for example would result in an IXMLDOMElement node
+        // named foo with a child IXMLDOMText node named bar.
+        CComPtr<IXMLDOMText> spXMLDOMText;
+        HRESULT hr = m_pXMLDOM->createTextNode(
+            T2BSTR(pXMLTag->value.c_str()), &spXMLDOMText);
+        spXMLDOMText->put_text(T2BSTR(pXMLTag->value.c_str()));
+
+        CComPtr<IXMLDOMNode> spNewXMLDOMa;
+        spXMLDOMElement->appendChild(spXMLDOMText, &spNewXMLDOMa);
+    }
+
     CComPtr<IXMLDOMNode> spNewXMLDOM;
     pXMLDOMNode->appendChild(spXMLDOMElement, &spNewXMLDOM);
     return spXMLDOMElement.Detach();
@@ -105,8 +124,31 @@ tstring XMLTag::toString() {
     return (TCHAR *)(xmlBstrString);
 }
 
-XMLTag &XMLTag::addChildTag(tstring name) {
+XMLTag &XMLTag::addChildTag(const tstring name) {
     XMLTag *pXMLlTag = new XMLTag(name);
     childTags.push_back(pXMLlTag);
     return *pXMLlTag;
+}
+
+/**
+ * Adds a child tag to an XML Tag, with a text value
+ * eg: parameters name=bar, value=baz for existing element foo would result
+ * in XML such as: <foo><bar>baz</bar></foo>
+ */
+XMLTag &XMLTag::addChildTag(const tstring name, const tstring value) {
+    XMLTag *pXMLlTag = new XMLTag(name, value);
+    childTags.push_back(pXMLlTag);
+    return *pXMLlTag;
+}
+
+/**
+ * Adds a child xml tag to this xml tag. The text value here is
+ * specified as an int for programmer convenience
+ * eg: parameters name=bar, value=12 for existing element foo would result
+ * in XML such as: <foo><bar>12</bar></foo>
+ */
+XMLTag &XMLTag::addChildTag(const tstring name, int value) {
+    TCHAR buffer[32];
+    _itot_s(value, buffer, 32, 10);
+    return addChildTag(name, buffer);
 }

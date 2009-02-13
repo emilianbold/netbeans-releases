@@ -452,6 +452,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
                 updatePackages();
             }
             updateText();
+            fireChange();
         }
         else if ( packageComboBox == e.getSource() ) {
             updateText();

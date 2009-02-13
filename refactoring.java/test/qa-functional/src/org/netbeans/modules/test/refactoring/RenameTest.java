@@ -36,17 +36,15 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.test.refactoring;
 
+import java.io.File;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.test.refactoring.actions.RenamePopupAction;
-import org.netbeans.modules.test.refactoring.operators.FindUsagesResultOperator;
+import org.netbeans.modules.test.refactoring.actions.UndoAction;
 import org.netbeans.modules.test.refactoring.operators.RenameOperator;
 
 /**
@@ -59,36 +57,127 @@ public class RenameTest extends ModifyingRefactoring {
         super(name);
     }
 
-    public void testRenameClass() {       
-        String fileName = "Rename";        
-        openSourceFile("renameClass", fileName);        
-        EditorOperator editor = new EditorOperator(fileName);
-        editor.setCaretPosition(3, 17);
+    public void testRenameClass() {
+        performRename("Rename", "renameClass", "Renamed", 3, 17);        
+    }
+
+    public void testRenamePackage() {
+        performRename("RenamePkg", "renamePkg", "renamedPkg", 6, 12);        
+    }
+
+    public void testRenameMethod() {
+        performRename("RenameMethod", "renameClass", "renamedMethod", 5, 18);        
+    }
+
+    public void testRenameGenerics() {
+        performRename("RenameGenerics","renameClass","A",3,30);
+    }
+
+    public void testRenameVariable() {
+        performRename("RenameLocalVariable","renameClass","renamed",6,16);
+    }
+    
+    public void testRenameParameter() {
+        performRename("RenameParameter","renameClass","renamned",5,34);
+    }
+
+    public void testRenameCtor() {
+        performRename("RenameCtor","renameClass","RenamedCtor",5,34);
+    }
+
+    public void testRenameUndo() {
+        String className = "RenameUndo";
+        openSourceFile("renameUndo", className);
+        EditorOperator editor = new EditorOperator(className);
+        editor.setCaretPosition(1, 17);
         new RenamePopupAction().perform(editor);
+        RenameOperator ro = new RenameOperator();
+        ro.getNewName().typeText("renamedPackage");
+        ro.getRefactor().push();
         new EventTool().waitNoEvent(1000);
-        RenameOperator ro = new  RenameOperator();
+
+        editor.setCaretPosition(3, 16);
+        new RenamePopupAction().perform(editor);
+        ro = new RenameOperator();
+        ro.getNewName().typeText("renamedClass");
+        ro.getRefactor().push();
         new EventTool().waitNoEvent(1000);
-        ro.getNewName().typeText("Renamed");
-        ro.getPreview().push();        
-        new EventTool().waitNoEvent(1000);                
-        FindUsagesResultOperator result = FindUsagesResultOperator.getPreview();
-        result.test(result.getSource(), 0, 0);
+
+        new UndoAction().perform(null); //undo rename class
+        new EventTool().waitNoEvent(1000);
+
+        editor.setCaretPosition(3, 26);
+        new RenamePopupAction().perform(editor);
+        ro = new RenameOperator();
+        ro.getNewName().typeText("Z");
+        ro.getRefactor().push();
+        new EventTool().waitNoEvent(1000);
         
-        JButtonOperator jbo = new JButtonOperator(result.getRefresh());
-        jbo.pushNoBlock();
-        new EventTool().waitNoEvent(1000);                
-        //result.test(result.getJToolbar(), 0, 0);
-        
+        new UndoAction().perform(null); //undo rename generics
+        new EventTool().waitNoEvent(1000);
+
+        editor.setCaretPosition(5, 15);
+        new RenamePopupAction().perform(editor);
+        ro = new RenameOperator();
+        ro.getNewName().typeText("RenamedInner");
+        ro.getRefactor().push();
+        new EventTool().waitNoEvent(1000);
+
+        new UndoAction().perform(null); //undo rename inner class
+        new EventTool().waitNoEvent(1000);
+
+        editor.setCaretPosition(8, 20);
+        new RenamePopupAction().perform(editor);
+        ro = new RenameOperator();
+        ro.getNewName().typeText("renamedMethod");
+        ro.getRefactor().push();
+        new EventTool().waitNoEvent(1000);
+
+        new UndoAction().perform(null); //undo rename method
+        new EventTool().waitNoEvent(1000);
+
+        editor.setCaretPosition(11, 27);
+        new RenamePopupAction().perform(editor);
+        ro = new RenameOperator();
+        ro.getNewName().typeText("renamedParam");
+        ro.getRefactor().push();
+        new EventTool().waitNoEvent(1000);
+
+        new UndoAction().perform(null); //undo rename param
+        new EventTool().waitNoEvent(1000);
+
+        editor.setCaretPosition(17, 19);
+        new RenamePopupAction().perform(editor);
+        ro = new RenameOperator();
+        ro.getNewName().typeText("renamedLocal");
+        ro.getRefactor().push();
+        new EventTool().waitNoEvent(1000);
+
+        new UndoAction().perform(null); //undo rename variable
+        new EventTool().waitNoEvent(1000);
+
+        new UndoAction().perform(null); //undo rename pacakge
+        new EventTool().waitNoEvent(1000);
+
+        ref(new File(getDataDir(),"projects/RefactoringTest/src/renameUndo/RenameUndo.java".replace('/', File.separatorChar)));
 
     }
-    
-    public static void main(String[] args) {
-        TestRunner.run(RenameTest.class);        
-    }
-    
+
+
     public static Test suite() {
-      return NbModuleSuite.create(
-              NbModuleSuite.createConfiguration(RenameTest.class).enableModules(".*").clusters(".*"));
-   }
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(RenameTest.class).enableModules(".*").clusters(".*"));
+    }
 
+    private void performRename(String className,String pkgName, String newName, int row, int col) {
+        openSourceFile(pkgName, className);
+        EditorOperator editor = new EditorOperator(className);
+        editor.setCaretPosition(row, col);
+        new RenamePopupAction().perform(editor);
+        RenameOperator ro = new RenameOperator();
+        ro.getNewName().typeText(newName);
+        ro.getPreview().push();
+        dumpRefactoringResults();
+    }
+    
 }

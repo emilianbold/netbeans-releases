@@ -46,6 +46,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.Set;
 
+import org.netbeans.modules.cnd.support.ReadOnlySupport;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -70,6 +71,7 @@ public abstract class CndDataObject extends MultiDataObject {
     /** Serial version number */
     static final long serialVersionUID = -6788084224129713370L;
     private Reference<CppEditorSupport> cppEditorSupport;
+    private ReadOnlySupportImpl readOnlySupport = new ReadOnlySupportImpl(false);
     private BinaryExecSupport binaryExecSupport;
 
     public CndDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
@@ -88,7 +90,7 @@ public abstract class CndDataObject extends MultiDataObject {
      */
     protected void init() {
 	CookieSet cookies = getCookieSet();
-	//cookies.add(new CppEditorSupport(primary.getDataObject()));
+        cookies.add(readOnlySupport);
         cookies.add(CppEditorSupport.class, new CookieSet.Factory() {
             public <T extends Cookie> T createCookie(Class<T> klass) {
                 return klass.cast(createCppEditorSupport());
@@ -208,4 +210,21 @@ public abstract class CndDataObject extends MultiDataObject {
 	}
 	return true;
     }
+
+    private static final class ReadOnlySupportImpl implements ReadOnlySupport, Node.Cookie {
+        private boolean isReadOnly;
+
+        public ReadOnlySupportImpl(boolean isReadOnly) {
+            this.isReadOnly = isReadOnly;
+        }
+
+        public boolean isReadOnly() {
+            return isReadOnly;
+        }
+
+        public void setReadOnly(boolean readOnly) {
+            this.isReadOnly = readOnly;
+        }
+    }
+
 }

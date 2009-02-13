@@ -218,7 +218,7 @@ public final class OperationContainerImpl<Support> {
                     // adds affectedEager into list of elements for the operation
                     OperationInfo<Support> i = add (eagerEl.getUpdateUnit (), eagerEl);
                     if (i != null) {
-                        affectedEagers.add (i);
+                        affectedEagers.add (i);                    
                     }
                 }
             }

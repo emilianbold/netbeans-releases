@@ -73,6 +73,7 @@ import org.openide.util.Utilities;
  */
 public class DwarfSource implements SourceFileProperties{
     private static final boolean FULL_TRACE = Boolean.getBoolean("cnd.dwarfdiscovery.trace.read.source"); // NOI18N
+    private static final boolean CUT_LOCALHOST_NET_ADRESS = Boolean.getBoolean("cnd.dwarfdiscovery.cut.localhost.net.adress"); // NOI18N
     private static boolean ourGatherMacros = true;
     private static boolean ourGatherIncludes = true;
     private static final String CYG_DRIVE_UNIX = "/cygdrive/"; // NOI18N
@@ -218,7 +219,7 @@ public class DwarfSource implements SourceFileProperties{
                 }
             }
             if (FULL_TRACE) {System.out.println("\t"+fileName);} // NOI18N
-        } else if (Utilities.isUnix()) {
+        } else if (CUT_LOCALHOST_NET_ADRESS && Utilities.isUnix()) {
             if (fileName.startsWith("/net/")){ // NOI18N
                 try {
                     InetAddress addr = InetAddress.getLocalHost();

@@ -170,7 +170,7 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
         getOKButton().setEnabled(true);              
     }    
 
-    private void setErrorText(String txt) {
+    void setErrorText(String txt) {
         CreateCopyPanel panel = getCreateCopyPanel();
         panel.invalidValuesLabel.setVisible(true);
         panel.invalidValuesLabel.setText(txt);

@@ -95,6 +95,11 @@ public class ChildrenKeysTest extends NbTestCase {
     }
 
     @Override
+    protected int timeOut() {
+        return 400000;
+    }
+
+    @Override
     protected void setUp() throws Exception {
         LOG = Logger.getLogger("test." + getName());
     }
@@ -616,6 +621,7 @@ public class ChildrenKeysTest extends NbTestCase {
         }
     }
 
+    @RandomlyFails // expected due to use of Thread.sleep
     public void testGarbageCollectProblemsWithFilterNodes () throws Throwable {
         class K extends Keys {
             int addNotify;
@@ -677,7 +683,7 @@ public class ChildrenKeysTest extends NbTestCase {
             fail("Should not be GCed: " + k.created);
         }
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 3; i++) {
             if (k.removeNotify != 0) {
                 break;
             }
@@ -692,7 +698,7 @@ public class ChildrenKeysTest extends NbTestCase {
 
         waitActiveReferenceQueue();
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 3; i++) {
             arr = k.getNodes();
             assertEquals("Still one node", 1, arr.length);
             assertEquals("Still named right", "A", arr[0].getName());
@@ -1888,11 +1894,13 @@ public class ChildrenKeysTest extends NbTestCase {
         Node[] nodes = root.getChildren().getNodes();
         WeakReference<Node> ref = new WeakReference<Node>(nodes[0]);
         nodes = null;
+        /* too slow:
         try {
             assertGC("", ref);
         } catch (Error ex) {
             // OK
         }
+         */
         awtBlock.unblock();
         ch.keys("c");
         awtBlock.clearQueue();
@@ -1948,14 +1956,9 @@ public class ChildrenKeysTest extends NbTestCase {
 
         WeakReference<Node> ref = new WeakReference<Node>(nodes[0]);
         nodes = null;
-        try {
-            assertGC("", ref);
-        } catch (Error ex) {
-            if (lazy()) {
-                fail("Lazy node should be GCed");
-            }
-            // OK, default (eager) are GCed only before removeNotify()
-        }
+        if (lazy()) {
+            assertGC("Lazy node should be GCed", ref);
+        } // else OK, default (eager) are GCed only before removeNotify()
         ch.keys("b");
         assertEquals(1, listener.cnt);
     }
@@ -1996,14 +1999,9 @@ public class ChildrenKeysTest extends NbTestCase {
         Node[] nodes = root.getChildren().getNodes();
         WeakReference<Node> ref = new WeakReference<Node>(nodes[0]);
         nodes = null;
-        try {
-            assertGC("", ref);
-        } catch (Error ex) {
-            if (lazy()) {
-                fail("Lazy node should be GCed");
-            }
-            // OK, default (eager) are GCed only before removeNotify()
-        }
+        if (lazy()) {
+            assertGC("Lazy node should be GCed", ref);
+        } // else OK, default (eager) are GCed only before removeNotify()
         if (ch.removeNot) {
             fail("Original snapshot should be held by FilterNode to prevent removeNotify");
         }

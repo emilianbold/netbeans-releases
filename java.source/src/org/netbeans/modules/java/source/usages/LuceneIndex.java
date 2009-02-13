@@ -871,7 +871,7 @@ class LuceneIndex extends Index {
     public synchronized void clear () throws IOException {
         checkPreconditions();
         this.rootPkgCache = null;
-        this.close ();
+        this.close (false);
         try {
             final String[] content = this.directory.list();
             boolean dirty = false;
@@ -914,20 +914,27 @@ class LuceneIndex extends Index {
             }
         } finally {
             //Need to recreate directory, see issue: #148374
+            this.close(true);
             this.directory = FSDirectory.getDirectory(refCacheRoot, NoLockFactory.getNoLockFactory());      //Locking controlled by rwlock
             closed = false;
         }
     }
+
+    public void close () throws IOException {
+        close(true);
+    }
         
-    public synchronized void close () throws IOException {
+    public synchronized void close (boolean closeDir) throws IOException {
         try {
             if (this.reader != null) {
                 this.reader.close();
                 this.reader = null;
             }
         } finally {
-           this.directory.close();
-           this.closed = true;
+            if (closeDir) {
+                this.directory.close();
+                this.closed = true;
+            }
         }
     }
     

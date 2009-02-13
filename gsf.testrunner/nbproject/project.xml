@@ -161,8 +161,9 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.ruby.testrunner</friend>
+                <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.python.testrunner</friend>
+                <friend>org.netbeans.modules.ruby.testrunner</friend>
                 <package>org.netbeans.modules.gsf.testrunner.api</package>
             </friend-packages>
         </data>

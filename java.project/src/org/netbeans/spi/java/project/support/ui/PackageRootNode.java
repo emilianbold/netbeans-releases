@@ -91,6 +91,7 @@ import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openidex.search.SearchInfo;
 import org.openidex.search.SearchInfoFactory;
+import org.openidex.search.Utils;
 
 /** Node displaying a packages in given SourceGroup
  * @author Petr Hrebejk
@@ -449,7 +450,7 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
         return new AlwaysSearchableSearchInfo(i);
     }    
     
-    private static final class AlwaysSearchableSearchInfo implements SearchInfo {
+    private static final class AlwaysSearchableSearchInfo implements SearchInfo.Files {
         
         private final SearchInfo delegate;
         
@@ -464,7 +465,10 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
         public Iterator<DataObject> objectsToSearch() {
             return delegate.objectsToSearch();
         }
+
+        public Iterator<FileObject> filesToSearch() {
+            return Utils.getFileObjectsIterator(delegate);
+        }
         
     }
-    
 }

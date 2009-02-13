@@ -42,11 +42,18 @@
 package org.netbeans.modules.java.api.common.project.ui;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
+import java.io.CharConversionException;
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.MissingResourceException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -60,11 +67,17 @@ import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
+import org.openide.xml.XMLUtil;
 
 /**
  * Java sources node factory.
@@ -83,37 +96,60 @@ public final class JavaSourceNodeFactory implements NodeFactory {
     private static class SourcesNodeList implements NodeList<SourceGroupKey>, ChangeListener {
         
         private final Project project;
-        
+        private final File genSrcDir;
+        private final FileChangeListener genSrcDirListener;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
-        
+
         public SourcesNodeList(Project proj) {
             project = proj;
+            genSrcDirListener = new FileChangeAdapter() {
+                public @Override void fileFolderCreated(FileEvent fe) {
+                    stateChanged(null);
+                }
+                public @Override void fileDeleted(FileEvent fe) {
+                    stateChanged(null);
+                }
+                public @Override void fileRenamed(FileRenameEvent fe) {
+                    stateChanged(null);
+                }
+            };
+            File d = FileUtil.toFile(proj.getProjectDirectory());
+            // XXX hardcodes the value of ${build.generated.sources.dir}, since we have no access to evaluator
+            genSrcDir = d != null ? new File(d, "build/generated-sources") : null;
         }
         
         public List<SourceGroupKey> keys() {
             if (this.project.getProjectDirectory() == null || !this.project.getProjectDirectory().isValid()) {
                 return Collections.<SourceGroupKey>emptyList();
             }
-            Sources sources = getSources();
-            SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-            
-            List<SourceGroupKey> result =  new ArrayList<SourceGroupKey>(groups.length);
-            for( int i = 0; i < groups.length; i++ ) {
-                result.add(new SourceGroupKey(groups[i]));
+            List<SourceGroupKey> result =  new ArrayList<SourceGroupKey>();
+            for (SourceGroup group : getSources().getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                result.add(new SourceGroupKey(group, true));
+            }
+            FileObject genSrc = FileUtil.toFileObject(genSrcDir);
+            if (genSrc != null) {
+                for (final FileObject child : genSrc.getChildren()) {
+                    if (!child.isFolder()) {
+                        continue;
+                    }
+                    result.add(new SourceGroupKey(new GeneratedSourceGroup(child), false));
+                }
             }
             return result;
         }
         
         public void addChangeListener(ChangeListener l) {
             changeSupport.addChangeListener(l);
+            FileUtil.addFileChangeListener(genSrcDirListener, genSrcDir);
         }
         
         public void removeChangeListener(ChangeListener l) {
             changeSupport.removeChangeListener(l);
+            FileUtil.removeFileChangeListener(genSrcDirListener, genSrcDir);
         }
         
         public Node node(SourceGroupKey key) {
-            return new PackageViewFilterNode(key.group, project);
+            return new PackageViewFilterNode(key, project);
         }
         
         public void addNotify() {
@@ -137,17 +173,19 @@ public final class JavaSourceNodeFactory implements NodeFactory {
         private Sources getSources() {
             return ProjectUtils.getSources(project);
         }
-        
+
     }
     
     private static class SourceGroupKey {
         
         public final SourceGroup group;
         public final FileObject fileObject;
+        public final boolean trueSource;
         
-        SourceGroupKey(SourceGroup group) {
+        SourceGroupKey(SourceGroup group, boolean trueSource) {
             this.group = group;
             this.fileObject = group.getRootFolder();
+            this.trueSource = trueSource;
         }
         
         @Override
@@ -182,35 +220,93 @@ public final class JavaSourceNodeFactory implements NodeFactory {
         
     }
     
-    /** Yet another cool filter node just to add properties action
+    private static class GeneratedSourceGroup implements SourceGroup {
+
+        private final FileObject child;
+
+        GeneratedSourceGroup(FileObject child) {
+            this.child = child;
+        }
+
+        public FileObject getRootFolder() {
+            return child;
+        }
+
+        public String getName() {
+            return child.getNameExt();
+        }
+
+        public String getDisplayName() {
+            try {
+                // Modules can provide dedicated localizable labels for well-known root names.
+                return NbBundle.getBundle("org.netbeans.modules.java.api.common.project.ui.gensrc-" + getName()).getString("label");
+            } catch (MissingResourceException x) {
+                // Fallback, including for user-defined root names.
+                return NbBundle.getMessage(JavaSourceNodeFactory.class, "JavaSourceNodeFactory.gensrc", getName());
+            }
+        }
+
+        public Icon getIcon(boolean opened) {
+            return null;
+        }
+
+        public boolean contains(FileObject file) throws IllegalArgumentException {
+            return true;
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {}
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {}
+
+    }
+
+    /**
+     * Adjusts some display characteristics of source group root node.
      */
     private static class PackageViewFilterNode extends FilterNode {
         
         private final String nodeName;
         private final Project project;
+        private final boolean trueSource;
         
-        Action[] actions;
-        
-        public PackageViewFilterNode(SourceGroup sourceGroup, Project project) {
-            super(PackageView.createPackageView(sourceGroup));
+        public PackageViewFilterNode(SourceGroupKey sourceGroupKey, Project project) {
+            super(PackageView.createPackageView(sourceGroupKey.group));
             this.project = project;
             this.nodeName = "Sources";
+            trueSource = sourceGroupKey.trueSource;
         }
         
-        
-        public Action[] getActions(boolean context) {
-            if (!context) {
-                if (actions == null) {
-                    Action superActions[] = super.getActions(context);
-                    actions = new Action[superActions.length + 2];
-                    System.arraycopy(superActions, 0, actions, 0, superActions.length);
-                    actions[superActions.length] = null;
-                    actions[superActions.length + 1] = new PreselectPropertiesAction(project, nodeName);
-                }
-                return actions;
+        public @Override Action[] getActions(boolean context) {
+            List<Action> actions = new ArrayList<Action>(Arrays.asList(super.getActions(context)));
+            if (trueSource) {
+                actions.add(null);
+                actions.add(new PreselectPropertiesAction(project, nodeName));
             } else {
-                return super.getActions(context);
+                // Just take out "New File..." as this would be misleading.
+                Iterator<Action> scan = actions.iterator();
+                while (scan.hasNext()) {
+                    Action a = scan.next();
+                    if (a != null && a.getClass().getName().equals("org.netbeans.modules.project.ui.actions.NewFile$WithSubMenu")) { // NOI18N
+                        scan.remove();
+                    }
+                }
             }
+            return actions.toArray(new Action[actions.size()]);
+        }
+
+        public @Override String getHtmlDisplayName() {
+            if (trueSource) {
+                return super.getHtmlDisplayName();
+            }
+            String htmlName = getOriginal().getHtmlDisplayName();
+            if (htmlName == null) {
+                try {
+                    htmlName = XMLUtil.toElementContent(super.getDisplayName());
+                } catch (CharConversionException x) {
+                    return null; // never mind
+                }
+            }
+            return "<font color='!controlShadow'>" + htmlName + "</font>"; // NOI18N
         }
         
     }

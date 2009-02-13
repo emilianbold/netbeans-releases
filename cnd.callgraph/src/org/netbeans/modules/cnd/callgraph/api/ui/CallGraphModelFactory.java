@@ -55,6 +55,13 @@ public abstract class CallGraphModelFactory {
 
     public abstract CallModel getModel(Node[] activatedNodes);
     public abstract CallGraphUI getUI(CallModel model);
+
+    /**
+     * method is called from EDT and must be fast
+     * @param activatedNodes
+     * @return
+     */
+    public abstract boolean isCallGraphAvailiable(Node[] activatedNodes);
     
     public static CallGraphModelFactory getDefault() {
         return DEFAULT;
@@ -87,6 +94,16 @@ public abstract class CallGraphModelFactory {
                 }
             }
             return null;
+        }
+
+        @Override
+        public boolean isCallGraphAvailiable(Node[] activatedNodes) {
+            for (CallGraphModelFactory resolver : res.allInstances()) {
+                if (resolver.isCallGraphAvailiable(activatedNodes)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
     }    

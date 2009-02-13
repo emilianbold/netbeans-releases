@@ -44,8 +44,10 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.Icon;
@@ -191,7 +193,7 @@ public class FeatureProjectFactory implements ProjectFactory {
         Data d = new Data(projectDirectory, false);
 
         for (FeatureInfo info : FeatureManager.features()) {
-            if (!info.isEnabled() && info.isProject(d)) {
+            if (!info.isEnabled() && (info.isProject(d) == 1)) {
                 return true;
             }
         }
@@ -201,12 +203,32 @@ public class FeatureProjectFactory implements ProjectFactory {
     public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
         Data d = new Data(projectDirectory, true);
         
+        FeatureInfo lead = null;
+        List<FeatureInfo> additional = new ArrayList<FeatureInfo>();
+        int notEnabled = 0;
         for (FeatureInfo info : FeatureManager.features()) {
-            if (!info.isEnabled() && info.isProject(d)) {
-                return new FeatureNonProject(projectDirectory, info, state);
+            switch (info.isProject(d)) {
+                case 0: break;
+                case 1:
+                    lead = info;
+                    if (!info.isEnabled()) {
+                        notEnabled++;
+                    }
+                break;
+                case 2:
+                    additional.add(info);
+                    if (!info.isEnabled()) {
+                        notEnabled++;
+                    }
+                    break;
+                default: assert false;
             }
         }
-        return null;
+        if (lead == null || notEnabled == 0) {
+            return null;
+        }
+
+        return new FeatureNonProject(projectDirectory, lead, state, additional);
     }
 
     public void saveProject(Project project) throws IOException, ClassCastException {
@@ -217,14 +239,19 @@ public class FeatureProjectFactory implements ProjectFactory {
     implements Project, ChangeListener {
         private final FeatureDelegate delegate;
         private final FeatureInfo info;
+        private final FeatureInfo[] additional;
         private final Lookup lookup;
         private ProjectState state;
         private boolean success = false;
         private final ChangeListener weakL;
 
-        public FeatureNonProject(FileObject dir, FeatureInfo info, ProjectState state) {
+        public FeatureNonProject(
+            FileObject dir, FeatureInfo info,
+            ProjectState state, List<FeatureInfo> additional
+        ) {
             this.delegate = new FeatureDelegate(dir, this);
             this.info = info;
+            this.additional = additional.toArray(new FeatureInfo[0]);
             this.lookup = Lookups.proxy(delegate);
             this.state = state;
             this.weakL = WeakListeners.change(this, FeatureManager.getInstance());
@@ -258,7 +285,11 @@ public class FeatureProjectFactory implements ProjectFactory {
             }
         }
         final void switchToReal() {
-            ProjectState s = state;
+            ProjectState s = null;
+            synchronized (this) {
+                s = state;
+                state = null;
+            }
             if (s != null) {
                 try {
                     s.notifyDeleted();
@@ -267,7 +298,6 @@ public class FeatureProjectFactory implements ProjectFactory {
                         throw new IllegalStateException("New project shall be found! " + p); // NOI18N
                     }
                     delegate.associate(p);
-                    state = null;
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -305,7 +335,7 @@ public class FeatureProjectFactory implements ProjectFactory {
 
             public void run() {
                 FeatureManager.logUI("ERGO_PROJECT_OPEN", info.clusterName);
-                FindComponentModules findModules = new FindComponentModules(info);
+                FindComponentModules findModules = new FindComponentModules(info, additional);
                 Collection<UpdateElement> toInstall = findModules.getModulesForInstall ();
                 Collection<UpdateElement> toEnable = findModules.getModulesForEnable ();
                 if (toInstall != null && ! toInstall.isEmpty ()) {
@@ -315,6 +345,8 @@ public class FeatureProjectFactory implements ProjectFactory {
                 } else if (toEnable != null && ! toEnable.isEmpty ()) {
                     ModulesActivator enabler = new ModulesActivator (toEnable, findModules);
                     enabler.getEnableTask ().waitFinished ();
+                    success = true;
+                } else if (toEnable == null || toInstall == null) {
                     success = true;
                 } else if (toEnable.isEmpty() && toInstall.isEmpty()) {
                     success = true;

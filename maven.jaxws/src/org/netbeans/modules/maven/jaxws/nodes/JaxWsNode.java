@@ -571,7 +571,6 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
      */
     public String getTesterPageURL() {
         WSStackUtils stackUtils = new WSStackUtils(project);
-        boolean isJsr109Supported = stackUtils.isJsr109Supported();
         if (ServerType.GLASSFISH == stackUtils.getServerType() || ServerType.GLASSFISH_V3 == stackUtils.getServerType() ) {
             return getWebServiceURL() + "?Tester"; //NOI18N
         } else {
@@ -617,7 +616,7 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
     private FileObject getLocalWsdl() {
         JAXWSLightSupport jaxWsSupport = JAXWSLightSupport.getJAXWSLightSupport(implBeanClass);
         if (jaxWsSupport != null) {
-            FileObject localWsdlocalFolder = jaxWsSupport.getLocalWsdlFolder(false);
+            FileObject localWsdlocalFolder = jaxWsSupport.getWsdlFolder(false);
             if (localWsdlocalFolder!=null) {
                 String relativePath = service.getLocalWsdl();
                 if (relativePath != null) {
@@ -911,10 +910,33 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
                             }
 
                             if (!newServiceName[0].equals(oldServiceName)) {
-                                service.setServiceName(newServiceName[0]);
-                                fireDisplayNameChange(oldServiceName, newServiceName[0]);
-                                fireNameChange(oldServiceName, newServiceName[0]);
-                                fireShortDescriptionChange();
+                                FileObject implBean = getImplBean();
+                                if (getImplBean() != null) { // check if service wasn't removed already
+                                    service.setServiceName(newServiceName[0]);
+                                    fireDisplayNameChange(oldServiceName, newServiceName[0]);
+                                    fireNameChange(oldServiceName, newServiceName[0]);
+                                    fireShortDescriptionChange();
+
+                                    // replace nonJSR109 entries
+                                    if (!WSUtils.isJsr109Supported(project)) {
+                                        JAXWSLightSupport jaxWsSupport = JAXWSLightSupport.getJAXWSLightSupport(implBean);
+                                        FileObject ddFolder = jaxWsSupport.getDeploymentDescriptorFolder();
+                                        if (ddFolder != null) {
+                                            try {
+                                                WSUtils.replaceSunJaxWsEntries(ddFolder, oldServiceName, newServiceName[0]);
+                                            } catch (IOException ex) {
+                                                Logger.getLogger(JaxWsNode.class.getName()).log(Level.WARNING,
+                                                        "Cannot modify endpoint in sun-jaxws.xml file", ex); //NOI18N
+                                            }
+                                        }
+                                        try {
+                                            WSUtils.replaceServiceEntriesFromDD(project, oldServiceName, newServiceName[0]);
+                                        } catch (IOException ex) {
+                                            Logger.getLogger(JaxWsNode.class.getName()).log(Level.WARNING,
+                                                    "Cannot modify web.xml file", ex); //NOI18N
+                                        }
+                                    }
+                                }
                             }
 
                         }

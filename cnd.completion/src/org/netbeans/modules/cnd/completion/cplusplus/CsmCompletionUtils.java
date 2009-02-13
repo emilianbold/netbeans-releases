@@ -84,6 +84,9 @@ public class CsmCompletionUtils {
      * @return The mime type of a document opened in the component or <code>null</code>.
      */
     public static String getMimeType(JTextComponent component) {
+        if (component == null) {
+            return "";
+        }
         Document doc = component.getDocument();
         String mimeType = getMimeType(doc);
         if (mimeType == null) {
@@ -96,6 +99,9 @@ public class CsmCompletionUtils {
     }
 
     public static boolean isCaseSensitive(String mimeType) {
+        if (mimeType == null || mimeType.length() == 0) {
+            return false;
+        }
         Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
         return prefs.getBoolean(SimpleValueNames.COMPLETION_CASE_SENSITIVE, false);
     }

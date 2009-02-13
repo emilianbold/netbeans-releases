@@ -57,7 +57,7 @@ public class EAWizardPanel implements WizardDescriptor.Panel,
 
     public EAVisualPanel getComponent() {
         if (component == null) {
-            component = new EAVisualPanel();
+            component = new EAVisualPanel(this);
         }
         return component;
     }

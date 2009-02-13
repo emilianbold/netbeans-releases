@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.api.model.services;
 
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.openide.util.Lookup;
 
@@ -69,7 +70,9 @@ public abstract class CsmClassifierResolver {
         }
         return null;
     }
-    
+
+    public abstract boolean isForwardClass(CsmObject cls);
+
     protected CsmClassifierResolver() {
     }
     
@@ -124,5 +127,15 @@ public abstract class CsmClassifierResolver {
             }
             return super.findClassifierUsedInFile(qualifiedName, csmFile, classesOnly);
         }
+
+        @Override
+        public boolean isForwardClass(CsmObject cls) {
+            CsmClassifierResolver service = getService();
+            if (service != null) {
+                return service.isForwardClass(cls);
+            }
+            return false;
+        }
+
     }
 }

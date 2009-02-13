@@ -53,7 +53,6 @@ import java.awt.event.MouseListener;
 import java.util.Arrays;
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.ComponentUI;
@@ -70,6 +69,7 @@ import org.openide.util.Utilities;
 public class ToolbarTabDisplayerUI extends AbstractTabDisplayerUI {
     private JToolBar toolbar = null;
     private static final Border buttonBorder;
+    private static final boolean isMac = "Aqua".equals(UIManager.getLookAndFeel().getID());
     
     static {
         //Get the HIE requested button border via an ugly hack
@@ -106,6 +106,8 @@ public class ToolbarTabDisplayerUI extends AbstractTabDisplayerUI {
         toolbar.setLayout (new AutoGridLayout());
         toolbar.setFloatable (false);
         toolbar.setRollover( true );
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
+            toolbar.setBackground( UIManager.getColor("NbExplorerView.background") ); //NOI18N
         displayer.setLayout (new BorderLayout());
         displayer.add (toolbar, BorderLayout.CENTER);
         if (displayer.getModel() != null && displayer.getModel().size() > 0) {
@@ -256,9 +258,14 @@ public class ToolbarTabDisplayerUI extends AbstractTabDisplayerUI {
             addActionListener(this);
             setFont (displayer.getFont());
             setFocusable(false);
-            setBorder (buttonBorder);
-            setMargin(new Insets(0, 3, 0, 3));
+            if( isMac ) {
+                putClientProperty("JButton.buttonType", "square");
+            } else {
+                setBorder (buttonBorder);
+                setMargin(new Insets(0, 3, 0, 3));
+            }
             setRolloverEnabled( true );
+
         }
 
         public void addNotify() {
@@ -306,11 +313,12 @@ public class ToolbarTabDisplayerUI extends AbstractTabDisplayerUI {
             // as we cannot get the button small enough using the margin and border...
             if (Utilities.isMac()) {
                 // #67128 the -3 heuristics seems to cripple the buttons on macosx. it looks ok otherwise.
-                result.height -= 3; 
+                result.height -= 3;
+                result.width -= 5;
             } 
             return result;
         }
-        
+
         public void paintComponent (Graphics g) {
             super.paintComponent(g);
             String s = doGetText();
@@ -378,7 +386,9 @@ public class ToolbarTabDisplayerUI extends AbstractTabDisplayerUI {
             }
             return result;
         }
-    }    
+    }
+
+    private static final boolean isAqua = "Aqua".equals(UIManager.getLookAndFeel().getID());//NOI18N
     
     /**
      * Originally in org.netbeans.form.palette.CategorySelectPanel.
@@ -387,12 +397,12 @@ public class ToolbarTabDisplayerUI extends AbstractTabDisplayerUI {
      */
     static class AutoGridLayout implements LayoutManager {
 
-        private int h_margin_left = 2; // margin on the left
-        private int h_margin_right = 1; // margin on the right
-        private int v_margin_top = 2; // margin at the top
-        private int v_margin_bottom = 3; // margin at the bottom
-        private int h_gap = 1; // horizontal gap between components
-        private int v_gap = 1; // vertical gap between components
+        private int h_margin_left = isAqua ? 0 : 2; // margin on the left
+        private int h_margin_right = isAqua ? 0 : 1; // margin on the right
+        private int v_margin_top = isAqua ? 0 : 2; // margin at the top
+        private int v_margin_bottom = isAqua ? 0 : 3; // margin at the bottom
+        private int h_gap = isAqua ? 0 : 1; // horizontal gap between components
+        private int v_gap = isAqua ? 0 : 1; // vertical gap between components
 
         public void addLayoutComponent(String name, Component comp) {
         }

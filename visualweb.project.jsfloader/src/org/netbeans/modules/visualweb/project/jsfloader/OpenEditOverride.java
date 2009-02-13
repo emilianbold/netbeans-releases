@@ -42,14 +42,13 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.netbeans.spi.project.LookupProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -59,8 +58,8 @@ import org.w3c.dom.NodeList;
  * 
  * @author quynguyen
  */
-@LookupProvider.Registration(projectType="org-netbeans-modules-web-project")
-public final class OpenEditOverride  implements LookupProvider {
+@ProjectServiceProvider(service=ProjectOpenedHook.class, projectType="org-netbeans-modules-web-project")
+public final class OpenEditOverride extends ProjectOpenedHook {
     // Taken from org.netbeans.modules.project.ui.ProjectUtilities
     private static final String OPEN_FILES_NS = "http://www.netbeans.org/ns/projectui-open-files/1"; // NOI18N
     private static final String OPEN_FILES_ELEMENT = "open-files"; // NOI18N
@@ -69,11 +68,6 @@ public final class OpenEditOverride  implements LookupProvider {
     static final String MULTIVIEW_ATTRIBUTE = "selected-multiview";
     
     private static WeakHashMap<Project, HashMap<FileObject,String>> multiViewsByProject = new WeakHashMap<Project, HashMap<FileObject,String>>();
-    
-    public Lookup createAdditionalLookup(Lookup baseContext) {
-        Project proj = baseContext.lookup(Project.class);
-        return Lookups.singleton(new ProjectOpenedHookImpl(proj));
-    }
     
     private static void multiViewChanged(Project fromProject, DataObject multiViewDO, String multiViewId) {
         HashMap<FileObject,String> projectMultiViews = multiViewsByProject.get(fromProject);
@@ -89,10 +83,9 @@ public final class OpenEditOverride  implements LookupProvider {
         multiViewsByProject.remove(proj);
     }
     
-    private static final class ProjectOpenedHookImpl extends ProjectOpenedHook {
         private WeakReference<Project> projectRef;
         
-        public ProjectOpenedHookImpl(Project project) {
+        public OpenEditOverride(Project project) {
             this.projectRef = new WeakReference<Project>(project);
         }
         
@@ -149,7 +142,6 @@ public final class OpenEditOverride  implements LookupProvider {
                 unregisterProject(project);
             }
         }
-    }
             
     static final class MultiViewDelegate implements MultiViewElement {
         private final MultiViewElement originalElement;

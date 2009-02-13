@@ -40,39 +40,67 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import antlr.collections.AST;
+import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
+import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
-import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
 /**
  *
  * @author eu155513
  */
 public final class TemplateDescriptor {
-    private final List<CsmTemplateParameter>templateParams;
+    private final Collection<CsmUID<CsmTemplateParameter>> templateParams;
     private final CharSequence templateSuffix;
     private final int inheritedTemplateParametersNumber;
 
-    public TemplateDescriptor(List<CsmTemplateParameter> templateParams, CharSequence templateSuffix) {
-        this.templateParams = templateParams;
+    public TemplateDescriptor(List<CsmTemplateParameter> templateParams, CharSequence templateSuffix, boolean global) {
+        register(templateParams, global);
+        this.templateParams = UIDCsmConverter.objectsToUIDs(templateParams);
         this.templateSuffix = templateSuffix;
         inheritedTemplateParametersNumber = 0;
     }
 
-    public TemplateDescriptor(List<CsmTemplateParameter> templateParams, CharSequence templateSuffix, int inheritedTemplateParametersNumber) {
-        this.templateParams = templateParams;
+    public TemplateDescriptor(List<CsmTemplateParameter> templateParams, CharSequence templateSuffix, int inheritedTemplateParametersNumber,boolean global) {
+        register(templateParams, global);
+        this.templateParams = UIDCsmConverter.objectsToUIDs(templateParams);
         this.templateSuffix = templateSuffix;
         this.inheritedTemplateParametersNumber = inheritedTemplateParametersNumber;
     }
-    
+
+    private void register(List<CsmTemplateParameter> templateParams, boolean global){
+        for (CsmTemplateParameter par : templateParams){
+            if (global) {
+                RepositoryUtils.put(par);
+            } else {
+                Utils.setSelfUID((CsmDeclaration)par);
+            }
+        }
+    }
+
     public List<CsmTemplateParameter> getTemplateParameters() {
-	return (templateParams != null) ? templateParams : Collections.<CsmTemplateParameter>emptyList();
+        if (templateParams != null) {
+            List<CsmTemplateParameter> res = new ArrayList<CsmTemplateParameter>();
+            for(CsmTemplateParameter par : UIDCsmConverter.UIDsToCsmObjects(templateParams)){
+                res.add(par);
+            }
+            return res;
+        }
+    	return Collections.<CsmTemplateParameter>emptyList();
     }
     
     public CharSequence getTemplateSuffix() {
@@ -91,7 +119,7 @@ public final class TemplateDescriptor {
         for( AST token = start; token != null; token = token.getNextSibling() ) {
             if (token.getType() == CPPTokenTypes.LITERAL_template) {
                     return new TemplateDescriptor(TemplateUtils.getTemplateParameters(token, file, scope),
-                            '<' + TemplateUtils.getClassSpecializationSuffix(token, null) + '>');
+                            '<' + TemplateUtils.getClassSpecializationSuffix(token, null) + '>', true);
             }
         }
         return null;
@@ -102,8 +130,15 @@ public final class TemplateDescriptor {
         return getTemplateSuffix().toString();
     }
 
+    public TemplateDescriptor(DataInput input) throws IOException {
+        this.templateParams = UIDObjectFactory.getDefaultFactory().readUIDCollection(new ArrayList<CsmUID<CsmTemplateParameter>>(), input);
+        this.templateSuffix = NameCache.getManager().getString(input.readUTF());
+        this.inheritedTemplateParametersNumber = input.readInt();
+    }
+
     public void write(DataOutput output) throws IOException {
-        PersistentUtils.writeTemplateParameters(templateParams, output);
+        UIDObjectFactory.getDefaultFactory().writeUIDCollection(templateParams, output, false);
         output.writeUTF(this.templateSuffix.toString());
+        output.writeInt(this.inheritedTemplateParametersNumber);
     }
 }

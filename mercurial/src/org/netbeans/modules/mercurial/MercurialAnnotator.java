@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.mercurial;
 
+import java.util.regex.Matcher;
 import org.netbeans.modules.mercurial.ui.clone.CloneAction;
 import org.netbeans.modules.mercurial.ui.clone.CloneExternalAction;
 import org.netbeans.modules.mercurial.ui.create.CreateAction;
@@ -169,8 +170,9 @@ public class MercurialAnnotator extends VCSAnnotator {
     public void refresh() {
         String string = HgModuleConfig.getDefault().getAnnotationFormat(); 
         if (string != null && !string.trim().equals("")) { // NOI18N
-            string = string.replaceAll("\\{status\\}",    "\\{0\\}");           // NOI18N
-            string = string.replaceAll("\\{folder\\}",    "\\{1\\}");           // NOI18N
+            string = Utils.skipUnsupportedVariables(string, new String[] {"{status}", "{folder}"});     // NOI18N
+            string = string.replaceAll("\\{status\\}", "\\{0\\}");                                      // NOI18N
+            string = string.replaceAll("\\{folder\\}", "\\{1\\}");                                      // NOI18N
             format = new MessageFormat(string);
             emptyFormat = format.format(new String[] {"", "", ""} , new StringBuffer(), null).toString().trim(); // NOI18N
         }

@@ -1818,13 +1818,25 @@ public class AstUtilities {
                         }
                         AstPath path = new AstPath(root, astOffset);
                         Iterator<Node> it = path.leafToRoot();
-                        // method names for shoulda tests need to be constructed from
-                        // should and context nodes, e.g.
-                        // context "An Instance" ...
-                        //  should "respond to :something" ... (the method name here is "An Instance should respond to :something"
-                        //      context "with a single element" ..
-                        //          should "return that" ... (the name here is "An Instance with a single element should return that")
+                        /*
+                         * method names for shoulda tests need to be constructed from
+                         * should and context nodes, e.g.
+                         * context "An Instance" ...
+                         *  should "respond to :something" ... (the method name here is "An Instance should respond to :something"
+                         *    context "with a single element" ..
+                         *        should "return that" ... (the name here is "An Instance with a single element should return that")
+                         *
+                         * the name for a should node without context uses the name of the tested class, e.g.
+                         * class QueueTest
+                         *  should "be empty" do ..
+                         *  end
+                         * end
+                         * => the method name is "Queue should be empty"
+                         */
                         List<String> shouldaMethodName = new ArrayList<String>();
+                        // for shoulda tests without a context, the class name
+                        // needs to be appended - see #151652 for details
+                        boolean appendClassName = true;
                         while (it.hasNext()) {
                             Node node = it.next();
                             if (node.nodeId == NodeType.FCALLNODE) {
@@ -1839,19 +1851,18 @@ public class AstUtilities {
                                     }
                                     return;
                                 // possibly a shoulda test
-                                } else if ("should".equals(fc.getName()) || "context".equals(fc.getName())) { //NOI18N
+                                } else if ("should".equals(fc.getName())) { //NOI18N
+                                    buildShouldaMethod(" should " + getNodeDesc(fc), shouldaMethodName, false);
+                                } else if ("context".equals(fc.getName())) { //NOI18N
                                     String desc = getNodeDesc(fc);
                                     if (desc != null) {
-                                        if ("should".equals(fc.getName())) { //NOI18N
-                                            desc = " should " + desc; //NOI18N
-                                        }
-                                        if (shouldaMethodName.isEmpty()) {
-                                            shouldaMethodName.add(desc);
-                                        } else {
-                                            shouldaMethodName.add(0, " " + desc); //NOI18N
-                                        }
+                                        appendClassName = false;
                                     }
+                                    buildShouldaMethod(desc, shouldaMethodName, true);
                                 }
+                            } else if (node.nodeId == NodeType.CLASSNODE && appendClassName) {
+                                String className = getClassNameForShoulda((IScopingNode) node);
+                                buildShouldaMethod(className, shouldaMethodName, false);
                             } else if (node.nodeId == NodeType.DEFNNODE || node.nodeId == NodeType.DEFSNODE) {
                                 result[0] = getName(node);
                                 return;
@@ -1862,7 +1873,7 @@ public class AstUtilities {
                             for (String each : shouldaMethodName) {
                                 sb.append(each);
                             }
-                            result[0] = sb.toString().trim();
+                            result[0] = removeLeadingWhiteSpace(sb.toString());
                         }
                     } catch (BadLocationException ex) {
                         Exceptions.printStackTrace(ex);
@@ -1876,6 +1887,36 @@ public class AstUtilities {
         return result[0];
     }
 
+    private static String removeLeadingWhiteSpace(String str) {
+        if (str.startsWith(" ")) { //NOI18N
+            return str.substring(1);
+        }
+        return str;
+    }
+
+    private static String getClassNameForShoulda(IScopingNode classNode) {
+        String testClassName = getClassOrModuleName(classNode);
+        if (testClassName != null && testClassName.indexOf("Test") != -1) { //NOI18N
+            return testClassName.substring(0, testClassName.indexOf("Test")); //NOI18N
+        }
+        return null;
+    }
+
+    private static void buildShouldaMethod(String desc, List<String> shouldaMethodName, boolean trim) {
+        if (desc == null) {
+            return;
+        }
+        // shoulda removes leading and trailing whitespaces for context nodes, but not
+        // for should nodes
+        if (trim) {
+            desc = desc.trim();
+        }
+        if (shouldaMethodName.isEmpty()) {
+            shouldaMethodName.add(desc);
+        } else {
+            shouldaMethodName.add(0, " " + desc); //NOI18N
+        }
+    }
     private static String getNodeDesc(FCallNode fc) {
         if (fc.getIterNode() == null) { // "it" without do/end: pending
             return null;

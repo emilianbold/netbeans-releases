@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -83,7 +82,14 @@ public final class Deployment {
     private static boolean alsoStartTargets = true;    //TODO - make it a property? is it really needed?
     
     private static Deployment instance = null;
-    
+
+    /**
+     * Deployment mode enumeration
+     */
+    public static enum Mode {
+        RUN, DEBUG, PROFILE;
+    }
+
     public static synchronized Deployment getDefault () {
         if (instance == null) {
             instance = new Deployment ();
@@ -94,6 +100,19 @@ public final class Deployment {
     private Deployment () {
     }
     
+    /*Deploys a web J2EE module to server.
+     * @param clientModuleUrl URL of module within a J2EE Application that 
+     * should be used as a client (can be null for standalone modules)
+     * <div class="nonnormative">
+     * <p>Note: if null for J2EE application the first web or client module will be used.</p>
+     * </div>
+     * @return complete URL to be displayed in browser (server part plus the client module and/or client part provided as a parameter)
+     * @deprecated Should use {@link Deployment#deploy(org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider, org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment.Mode, java.lang.String, java.lang.String, boolean) } instead
+     */
+    public String deploy (J2eeModuleProvider jmp, boolean debug, String clientModuleUrl, String clientUrlPart, boolean forceRedeploy) throws DeploymentException {
+        return deploy(jmp, debug ? Mode.DEBUG : Mode.RUN, clientModuleUrl, clientUrlPart, forceRedeploy, null);
+    }
+
     /** Deploys a web J2EE module to server.
      * @param clientModuleUrl URL of module within a J2EE Application that 
      * should be used as a client (can be null for standalone modules)
@@ -102,11 +121,18 @@ public final class Deployment {
      * </div>
      * @return complete URL to be displayed in browser (server part plus the client module and/or client part provided as a parameter)
      */
-    public String deploy (J2eeModuleProvider jmp, boolean debugmode, String clientModuleUrl, String clientUrlPart, boolean forceRedeploy) throws DeploymentException {
-        return deploy(jmp, debugmode, clientModuleUrl, clientUrlPart, forceRedeploy, null);
+    public String deploy (J2eeModuleProvider jmp, Mode mode, String clientModuleUrl, String clientUrlPart, boolean forceRedeploy) throws DeploymentException {
+        return deploy(jmp, mode, clientModuleUrl, clientUrlPart, forceRedeploy, null);
     }
-    
-    public String deploy (J2eeModuleProvider jmp, boolean debugmode, String clientModuleUrl, String clientUrlPart, boolean forceRedeploy, Logger logger) throws DeploymentException {
+
+    /**
+     * @deprecated Should use {@link Deployment#deploy(org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider, org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment.Mode, java.lang.String, java.lang.String, boolean, org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment.Logger) } instead
+     */
+    public String deploy (J2eeModuleProvider jmp, boolean debug, String clientModuleUrl, String clientUrlPart, boolean forceRedeploy, Logger logger) throws DeploymentException {
+        return deploy(jmp, debug ? Mode.DEBUG : Mode.RUN, clientModuleUrl, clientUrlPart, forceRedeploy, logger);
+    }
+
+    public String deploy (J2eeModuleProvider jmp, Mode mode, String clientModuleUrl, String clientUrlPart, boolean forceRedeploy, Logger logger) throws DeploymentException {
         
         DeploymentTargetImpl deploymentTarget = new DeploymentTargetImpl(jmp, clientModuleUrl);
         TargetModule[] modules = null;
@@ -151,8 +177,8 @@ public final class Deployment {
             boolean serverReady = false;
             TargetServer targetserver = new TargetServer(deploymentTarget);
 
-            if (alsoStartTargets || debugmode) {
-                targetserver.startTargets(debugmode, progress);
+            if (alsoStartTargets || mode != Mode.RUN) {
+                targetserver.startTargets(mode, progress);
             } else { //PENDING: how do we know whether target does not need to start when deploy only
                 server.getServerInstance().start(progress);
             }

@@ -101,27 +101,28 @@ public class EndToEndTest extends J2eeTestCase {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(EndToEndTest.class);
         conf = addServerTests(Server.GLASSFISH,conf,"testSetupStrutsProject","testCreateLoginPage","testCreateLoginBean",
                 "testCreateLoginAction","testCreateSecurityManager","testCreateForward","testCreateShopPage",
-                "testCreateLogoutPage","testCreateForwardInclude","testRunApplication");
+                "testCreateLogoutPage","testCreateForwardInclude", "testCreateAction", "testCreateException",
+                "testCreateActionFormBean", "testCreateActionFormBeanProperty", "testRunApplication");
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);
 
-        /*
-        return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(EndToEndTest.class)
-            .addTest("testSetupStrutsProject")
-            .addTest("testCreateLoginPage")
-            .addTest("testCreateLoginBean")
-            .addTest("testCreateLoginAction")
-            .addTest("testCreateSecurityManager")
-            .addTest("testCreateForward")
-            .addTest("testCreateShopPage")
-            .addTest("testCreateLogoutPage")
-            .addTest("testCreateForwardInclude")
-            .addTest("testRunApplication")
-            .enableModules(".*")
-            .clusters(".*")
-        );
-        */
+    /*
+    return NbModuleSuite.create(
+    NbModuleSuite.createConfiguration(EndToEndTest.class)
+    .addTest("testSetupStrutsProject")
+    .addTest("testCreateLoginPage")
+    .addTest("testCreateLoginBean")
+    .addTest("testCreateLoginAction")
+    .addTest("testCreateSecurityManager")
+    .addTest("testCreateForward")
+    .addTest("testCreateShopPage")
+    .addTest("testCreateLogoutPage")
+    .addTest("testCreateForwardInclude")
+    .addTest("testRunApplication")
+    .enableModules(".*")
+    .clusters(".*")
+    );
+     */
     }
 
     /** Called before every test case. */
@@ -212,8 +213,8 @@ public class EndToEndTest extends J2eeTestCase {
         // verify
         EditorOperator loginEditorOper = new EditorOperator("login.jsp");
         Properties properties = new Properties();
-        properties.load(this.getClass().getResourceAsStream("Bundle.properties"));
-        String sourceCode = properties.getProperty("LBL_STRUTS_WELCOME_PAGE");
+        properties.load(this.getClass().getResourceAsStream("EndToEndTest.properties"));
+        String sourceCode = properties.getProperty("login");
         // wait for text to be displayed
         loginEditorOper.txtEditorPane().waitText("JSP Page", -1);
         loginEditorOper.replace(loginEditorOper.getText(), sourceCode);
@@ -233,7 +234,7 @@ public class EndToEndTest extends J2eeTestCase {
         nameStepOper.finish();
         EditorOperator loginEditorOper = new EditorOperator("LoginForm.java");
         Properties properties = new Properties();
-        properties.load(this.getClass().getResourceAsStream("Bundle.properties"));
+        properties.load(this.getClass().getResourceAsStream("EndToEndTest.properties"));
         String sourceCode = properties.getProperty("LoginForm");
         loginEditorOper.replace(loginEditorOper.getText(), sourceCode);
         loginEditorOper.save();
@@ -253,7 +254,7 @@ public class EndToEndTest extends J2eeTestCase {
         nameStepOper.setObjectName("LoginVerifyAction");
         nameStepOper.setPackage("com.mycompany.eshop.struts.actions");
         JTextFieldOperator txtActionPath = new JTextFieldOperator(
-                (JTextField)new JLabelOperator(nameStepOper, "Action Path:").getLabelFor());
+                (JTextField) new JLabelOperator(nameStepOper, "Action Path:").getLabelFor());
         txtActionPath.setText("/Login/Verify");
         nameStepOper.next();
         // "ActionForm Bean, Parameter" page
@@ -264,9 +265,9 @@ public class EndToEndTest extends J2eeTestCase {
         actionBeanStepOper.finish();
         EditorOperator loginEditorOper = new EditorOperator("LoginVerifyAction.java");
         Properties properties = new Properties();
-        properties.load(this.getClass().getResourceAsStream("Bundle.properties"));
-        //String sourceCode = properties.getProperty("LoginVerifyAction");
-        //loginEditorOper.replace("return mapping.findForward(SUCCESS);", sourceCode);
+        properties.load(this.getClass().getResourceAsStream("EndToEndTest.properties"));
+        String sourceCode = properties.getProperty("LoginVerifyAction");
+        loginEditorOper.replace(loginEditorOper.getText(), sourceCode);
         loginEditorOper.save();
         EditorOperator strutsConfigEditor = new EditorOperator("struts-config.xml");
         String expected = "<action input=\"/login.jsp\" name=\"LoginForm\" path=\"/Login/Verify\" scope=\"request\" type=\"com.mycompany.eshop.struts.actions.LoginVerifyAction\"/>";
@@ -288,7 +289,7 @@ public class EndToEndTest extends J2eeTestCase {
         nfnlso.finish();
         EditorOperator editorOper = new EditorOperator("SecurityManager.java");
         Properties properties = new Properties();
-        properties.load(this.getClass().getResourceAsStream("Bundle.properties"));
+        properties.load(this.getClass().getResourceAsStream("EndToEndTest.properties"));
         String sourceCode = properties.getProperty("SecurityManager");
         editorOper.replace(editorOper.getText(), sourceCode);
         editorOper.save();
@@ -335,7 +336,7 @@ public class EndToEndTest extends J2eeTestCase {
         // verify
         EditorOperator editorOper = new EditorOperator("shop.jsp");
         Properties properties = new Properties();
-        properties.load(this.getClass().getResourceAsStream("Bundle.properties"));
+        properties.load(this.getClass().getResourceAsStream("EndToEndTest.properties"));
         String sourceCode = properties.getProperty("shop");
         // wait for text to be displayed
         editorOper.txtEditorPane().waitText("JSP Page", -1);
@@ -357,7 +358,7 @@ public class EndToEndTest extends J2eeTestCase {
         // verify
         EditorOperator editorOper = new EditorOperator("logout.jsp");
         Properties properties = new Properties();
-        properties.load(this.getClass().getResourceAsStream("Bundle.properties"));
+        properties.load(this.getClass().getResourceAsStream("EndToEndTest.properties"));
         String sourceCode = properties.getProperty("logout");
         // wait for text to be displayed
         editorOper.txtEditorPane().waitText("JSP Page", -1);
@@ -388,6 +389,99 @@ public class EndToEndTest extends J2eeTestCase {
         strutsConfigEditor.save();
     }
 
+    /** Call "Add Action" action in struts-config.xml and fill in the dialog values. */
+    public void testCreateAction() {
+        EditorOperator strutsConfigEditor = new EditorOperator("struts-config.xml");
+        ActionNoBlock addAction = new ActionNoBlock(null, "Struts|Add Action");
+        addAction.perform(strutsConfigEditor);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        NbDialogOperator addActionOper = new NbDialogOperator("Add Action");
+
+        JTextFieldOperator txtActionClass = new JTextFieldOperator(
+                (JTextField) new JLabelOperator(addActionOper, "Action Class:").getLabelFor());
+        txtActionClass.setText("com.mycompany.eshop.struts.forms.LoginForm");
+        JTextFieldOperator txtActionPath = new JTextFieldOperator(
+                (JTextField) new JLabelOperator(addActionOper, "Action Path:").getLabelFor());
+        txtActionPath.setText("/LoginForm");
+        new JRadioButtonOperator(addActionOper, "Input Action:").push();
+        new JButtonOperator(addActionOper, "Add").push();
+        String expected = "<action input=\"/Login/Verify\" name=\"LoginForm\" path=\"/LoginForm\" scope=\"session\" type=\"com.mycompany.eshop.struts.forms.LoginForm\"/>";
+        assertTrue("action record should be added to struts-config.xml.", strutsConfigEditor.getText().indexOf(expected) > -1);
+        strutsConfigEditor.save();
+    }
+
+    /** Call "Add Exception" action in struts-config.xml and fill in the dialog values. */
+    public void testCreateException() {
+        EditorOperator strutsConfigEditor = new EditorOperator("struts-config.xml");
+        ActionNoBlock addException = new ActionNoBlock(null, "Struts|Add Exception");
+        addException.perform(strutsConfigEditor);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        NbDialogOperator addExceptionOper = new NbDialogOperator("Add Exception");
+
+        JTextFieldOperator txtBundleKey = new JTextFieldOperator(
+                (JTextField) new JLabelOperator(addExceptionOper, "Bundle Key:").getLabelFor());
+        txtBundleKey.setText("exception");
+        new JButtonOperator(addExceptionOper, "Browse", 1).pushNoBlock();
+        NbDialogOperator browseOper = new NbDialogOperator("Browse Files");
+        new Node(new JTreeOperator(browseOper), "Web Pages|login.jsp").select();
+        new JButtonOperator(browseOper, "Select File").push();
+        new JButtonOperator(addExceptionOper, "Add").push();
+        String expected = "<exception key=\"exception\" path=\"/login.jsp\" type=\"java.lang.NumberFormatException\"/>";
+        assertTrue("exception record should be added to struts-config.xml.", strutsConfigEditor.getText().indexOf(expected) > -1);
+        strutsConfigEditor.save();
+    }
+
+    /** Call "Add ActionForm Bean" action in struts-config.xml and fill in the dialog values. */
+    public void testCreateActionFormBean() {
+        EditorOperator strutsConfigEditor = new EditorOperator("struts-config.xml");
+        ActionNoBlock addActionFormBean = new ActionNoBlock(null, "Struts|Add ActionForm Bean");
+        addActionFormBean.perform(strutsConfigEditor);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        NbDialogOperator addActionFormBeanOper = new NbDialogOperator("Add ActionForm Bean");
+
+        JTextFieldOperator txtActionFormBeanName = new JTextFieldOperator(
+                (JTextField) new JLabelOperator(addActionFormBeanOper, "ActionForm Bean Name:").getLabelFor());
+        txtActionFormBeanName.setText("ActionFormBean");
+        new JTextFieldOperator(addActionFormBeanOper, 1).setText("com.mycompany.eshop.struts.forms.LoginForm");
+        new JButtonOperator(addActionFormBeanOper, "Add").push();
+        String expected = "<form-bean name=\"ActionFormBean\" type=\"com.mycompany.eshop.struts.forms.LoginForm\"/>";
+        assertTrue("actionform bean record should be added to struts-config.xml.", strutsConfigEditor.getText().indexOf(expected) > -1);
+        strutsConfigEditor.save();
+    }
+
+    /** Call "Add ActionForm Bean Property" action in struts-config.xml and fill in the dialog values. */
+    public void testCreateActionFormBeanProperty() {
+        EditorOperator strutsConfigEditor = new EditorOperator("struts-config.xml");
+        ActionNoBlock addActionFormBeanProp = new ActionNoBlock(null, "Struts|Add ActionForm Bean Property");
+        addActionFormBeanProp.perform(strutsConfigEditor);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        NbDialogOperator addActionFormBeanPropOper = new NbDialogOperator("Add ActionForm Bean Property");
+
+        JTextFieldOperator txtPropertyName = new JTextFieldOperator(
+                (JTextField) new JLabelOperator(addActionFormBeanPropOper, "Property Name:").getLabelFor());
+        txtPropertyName.setText("property");
+        new JButtonOperator(addActionFormBeanPropOper, "Add").push();
+        String expected = "<form-property initial=\"\" name=\"property\" type=\"java.lang.String\"/>";
+        assertTrue("actionform bean property record should be added to struts-config.xml.", strutsConfigEditor.getText().indexOf(expected) > -1);
+        strutsConfigEditor.save();
+    }
+
     /** Run created application. */
     public void testRunApplication() {
         // not display browser on run
@@ -407,12 +501,12 @@ public class EndToEndTest extends J2eeTestCase {
             // "Run Project"
             String runProjectItem = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "LBL_RunAction_Name");
             new Action(null, runProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME));
-            waitText(PROJECT_NAME, 360000, "Struts Welcome Page");
+            waitText(PROJECT_NAME, 360000, "Login");
         } finally {
             // log messages from output
             getLog("RunOutput").print(new OutputTabOperator(PROJECT_NAME).getText());
             getLog("ServerLog").print(new OutputTabOperator("GlassFish").getText());
-          }
+        }
     }
 
     /** Opens URL connection and waits for given text. It thows TimeoutExpiredException

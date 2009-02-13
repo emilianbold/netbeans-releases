@@ -498,18 +498,6 @@ public class ClientBuilder {
             // 6. Add properties to drive new entry in build script -- DONE
             // 7. Add WS libraries to project build path -- DONE
             // 8. Force build script regeneration -- DONE
-
-            // Code Completion HACK to enable filesystems to fire events when new folder is created
-            // need to ask for children
-            FileObject projectDir = project.getProjectDirectory();
-            FileObject clientArtifactsFolder = projectDir.getFileObject("build/generated/wsclient"); //NOI18N
-            if (clientArtifactsFolder!=null) {
-                clientArtifactsFolder.getChildren(true);
-            } else {
-                try {
-                    FileUtil.createFolder(projectDir, "build/generated/wsclient"); //NOI18N
-                } catch (IOException ex) {}
-            }
             
             handle.progress(NbBundle.getMessage(ClientBuilder.class, "MSG_WizUpdatingBuildScript"), 65);
             Set features = handler.getWscompileFeatures();

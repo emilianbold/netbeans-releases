@@ -55,6 +55,7 @@ import org.netbeans.modules.ruby.rubyproject.PlatformChangeListener;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 
@@ -70,7 +71,7 @@ final class PlatformNode extends AbstractNode {
     private final Action[] actions;
 
     PlatformNode(final RubyBaseProject project) {
-        super(Children.LEAF);
+        super(Children.create(GemChildrenFactory.create(project), false));
         this.project = project;
         this.actions = new Action[] {
             new ChangePlatformAction(),
@@ -82,6 +83,7 @@ final class PlatformNode extends AbstractNode {
             public void platformChanged() {
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
+                        PlatformNode.this.setChildren(Children.create(GemChildrenFactory.create(project), false));
                         PlatformNode.this.fireDisplayNameChange(null, null);
                         PlatformNode.this.fireNameChange(null, null);
                     }

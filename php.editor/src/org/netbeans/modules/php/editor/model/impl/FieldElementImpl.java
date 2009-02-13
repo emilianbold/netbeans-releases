@@ -38,13 +38,16 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.model.FieldElement;
+import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
+import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
@@ -61,21 +64,21 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
     private String returnType;
     private String className;
 
-    FieldElementImpl(ScopeImpl inScope, String returnType, SingleFieldDeclarationInfo nodeInfo) {
+    FieldElementImpl(Scope inScope, String returnType, SingleFieldDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo, nodeInfo.getAccessModifiers(), null);
         this.returnType = returnType;
         assert inScope instanceof TypeScope;
         className = inScope.getName();
     }
 
-    FieldElementImpl(ScopeImpl inScope, String returnType, PhpDocTypeTagInfo nodeInfo) {
+    FieldElementImpl(Scope inScope, String returnType, PhpDocTypeTagInfo nodeInfo) {
         super(inScope, nodeInfo, nodeInfo.getAccessModifiers(), null);
         this.returnType = returnType;
         assert inScope instanceof TypeScope;
         className = inScope.getName();
     }
 
-    FieldElementImpl(ScopeImpl inScope, IndexedConstant indexedConstant) {
+    FieldElementImpl(Scope inScope, IndexedConstant indexedConstant) {
         super(inScope, indexedConstant, PhpKind.FIELD);
         String in = indexedConstant.getIn();
         if (in != null) {
@@ -85,7 +88,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         }
     }
 
-    private FieldElementImpl(ScopeImpl inScope, String name,
+    private FieldElementImpl(Scope inScope, String name,
             Union2<String/*url*/, FileObject> file, OffsetRange offsetRange,
             PhpModifiers modifiers, String returnType) {
         super(inScope, name, file, offsetRange, PhpKind.FIELD, modifiers);
@@ -104,9 +107,9 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         return new PhpModifiers(node.getModifier());
     }
 
-    public List<? extends TypeScope> getReturnTypes() {
+    public Collection<? extends TypeScope> getReturnTypes() {
         return (returnType != null && returnType.length() > 0) ?
-            CachedModelSupport.getTypes(returnType.split("\\|")[0], this) :
+            CachingSupport.getTypes(returnType.split("\\|")[0], this) :
             Collections.<TypeScopeImpl>emptyList();
 
     }
@@ -115,14 +118,14 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         return className+super.getNormalizedName();
     }
 
-    public List<? extends TypeScope> getTypes(int offset) {
+    public Collection<? extends TypeScope> getTypes(int offset) {
         AssignmentImpl assignment = findAssignment(offset);
         return (assignment != null) ? assignment.getTypes() : getReturnTypes();
     }
 
-    public List<? extends FieldAssignmentImpl> getAssignments() {
+    public Collection<? extends FieldAssignmentImpl> getAssignments() {
         return filter(getElements(), new ElementFilter() {
-            public boolean isAccepted(ModelElementImpl element) {
+            public boolean isAccepted(ModelElement element) {
                 return true;
             }
         });
@@ -130,9 +133,9 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
 
     public AssignmentImpl findAssignment(int offset) {
         FieldAssignmentImpl retval = null;
-        List<? extends FieldAssignmentImpl> assignments = getAssignments();
+        Collection<? extends FieldAssignmentImpl> assignments = getAssignments();
         if (assignments.size() == 1) {
-            retval = assignments.get(0);
+            retval = assignments.iterator().next();
         } else {
             for (FieldAssignmentImpl assignmentImpl : assignments) {
                 if (assignmentImpl.getBlockRange().containsInclusive(offset)) {

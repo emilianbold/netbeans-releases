@@ -42,7 +42,9 @@
 package org.openidex.search;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
@@ -80,9 +82,10 @@ public class CompoundSearchInfoTest extends NbTestCase {
     }
     
     public void testEmptyList() {
-        SearchInfo searchInfo = new CompoundSearchInfo(new SearchInfo[0]);
+        SearchInfo.Files searchInfo = new CompoundSearchInfo(new SearchInfo[0]);
         assertFalse(searchInfo.canSearch());
         assertFalse(searchInfo.objectsToSearch().hasNext());
+        assertFalse(searchInfo.filesToSearch().hasNext());
     }
     
     public void testOneItemList() throws IOException {
@@ -98,44 +101,69 @@ public class CompoundSearchInfoTest extends NbTestCase {
         
         SearchInfo refSearchInfo;
         SearchInfo testSearchInfo;
-        boolean refCanSearch;
-        boolean testCanSearch;
         Iterator refIt;
         Iterator testIt;
-        int testIterationsCount;
-        
+
+        Set testSet = new HashSet();
         
         refSearchInfo = new SimpleSearchInfo(folder, false, null);
         testSearchInfo = new CompoundSearchInfo(new SearchInfo[] {refSearchInfo});
         assertTrue(testSearchInfo.canSearch());
         
-        refIt = refSearchInfo.objectsToSearch();
-        testIt = testSearchInfo.objectsToSearch();
-        for (testIterationsCount = 0;;testIterationsCount++) {
-            boolean refHasNext = refIt.hasNext();
-            boolean testHasNext = testIt.hasNext();
-            assertEquals(refHasNext, testHasNext);
-
-            if (!refHasNext) {
-                break;
-            }
-
-            Object refObj = refIt.next();
-            Object testObj = testIt.next();
-            assertSame(refObj, testObj);
+        for(testIt = testSearchInfo.objectsToSearch(); testIt.hasNext();){
+            testSet.add(testIt.next());
         }
-        assertEquals(3, testIterationsCount);
-        
-        
+        refIt = refSearchInfo.objectsToSearch();
+        while (refIt.hasNext()) {
+            assertTrue(testSet.remove(refIt.next()));
+        }
+        assertTrue(testSet.isEmpty());
+
         refSearchInfo = new SimpleSearchInfo(folder, false, null) {
             public boolean canSearch() {
                 return false;
             }
         };
         testSearchInfo = new CompoundSearchInfo(new SearchInfo[] {refSearchInfo});
-        refCanSearch = refSearchInfo.canSearch();
-        testCanSearch = testSearchInfo.canSearch();
-        assertEquals(refCanSearch, testCanSearch);
+        assertEquals(refSearchInfo.canSearch(), testSearchInfo.canSearch());
+    }
+
+    public void testOneItemFilesList() throws IOException {
+        FileSystem fs = FileUtil.createMemoryFileSystem();
+        FileObject fsRoot = fs.getRoot();
+
+        FileObject dir = fsRoot.createFolder("dir");
+        dir.createData("a", DummyDataLoader.dummyExt);
+        dir.createData("b", DummyDataLoader.dummyExt);
+        dir.createData("c", DummyDataLoader.dummyExt);
+        DataFolder folder = DataFolder.findFolder(dir);
+
+        SearchInfo.Files refSearchInfo;
+        SearchInfo.Files testSearchInfo;
+        Iterator refIt;
+        Iterator testIt;
+        Set testSet = new HashSet();
+
+        refSearchInfo = new SimpleSearchInfo(folder, false, null);
+        testSearchInfo = new CompoundSearchInfo(new SearchInfo[] {refSearchInfo});
+        assertTrue(testSearchInfo.canSearch());
+
+        for(testIt = testSearchInfo.filesToSearch(); testIt.hasNext();){
+            testSet.add(testIt.next());
+        }
+        refIt = refSearchInfo.filesToSearch();
+        while (refIt.hasNext()) {
+            assertTrue(testSet.remove(refIt.next()));
+        }
+        assertTrue(testSet.isEmpty());
+
+        refSearchInfo = new SimpleSearchInfo(folder, false, null) {
+            public boolean canSearch() {
+                return false;
+            }
+        };
+        testSearchInfo = new CompoundSearchInfo(new SearchInfo[] {refSearchInfo});
+        assertEquals(refSearchInfo.canSearch(), testSearchInfo.canSearch());
     }
     
     public void testMultipleItemsList() throws IOException {
@@ -158,8 +186,6 @@ public class CompoundSearchInfoTest extends NbTestCase {
         SearchInfo testSearchInfo;
         Iterator refIt;
         Iterator testIt;
-        int testIterationsCount;
-        
         
         refSearchInfo1 = new SimpleSearchInfo(folder1, false, null);
         refSearchInfo2 = new SimpleSearchInfo(folder2, false, null);
@@ -167,24 +193,21 @@ public class CompoundSearchInfoTest extends NbTestCase {
                                                                   refSearchInfo2});
         assertTrue(testSearchInfo.canSearch());
         
-        testIterationsCount = 0;
-        testIt = testSearchInfo.objectsToSearch();
+
+        Set testSet = new HashSet();
+        for(testIt = testSearchInfo.objectsToSearch(); testIt.hasNext();){
+            testSet.add(testIt.next());
+        }
         refIt = refSearchInfo1.objectsToSearch();
         while (refIt.hasNext()) {
-            assertTrue(testIt.hasNext());
-            assertSame(refIt.next(), testIt.next());
-            testIterationsCount++;
+            assertTrue(testSet.remove(refIt.next()));
         }
-        assertTrue(testIt.hasNext());
         refIt = refSearchInfo2.objectsToSearch();
         while (refIt.hasNext()) {
-            assertTrue(testIt.hasNext());
-            assertSame(refIt.next(), testIt.next());
-            testIterationsCount++;
+            assertTrue(testSet.remove(refIt.next()));
         }
-        assertFalse(testIt.hasNext());
-        assertEquals(5, testIterationsCount);
         
+        assertTrue(testSet.isEmpty());
         
         refSearchInfo1 = new SimpleSearchInfo(folder1, false, null);
         refSearchInfo2 = new SimpleSearchInfo(folder2, false, null) {
@@ -196,16 +219,15 @@ public class CompoundSearchInfoTest extends NbTestCase {
                                                                   refSearchInfo2});
         assertTrue(testSearchInfo.canSearch());
         
-        testIterationsCount = 0;
-        testIt = testSearchInfo.objectsToSearch();
+        testSet.clear();
+        for(testIt = testSearchInfo.objectsToSearch(); testIt.hasNext();){
+            testSet.add(testIt.next());
+        }
         refIt = refSearchInfo1.objectsToSearch();
         while (refIt.hasNext()) {
-            assertTrue(testIt.hasNext());
-            assertSame(refIt.next(), testIt.next());
-            testIterationsCount++;
+            assertTrue(testSet.remove(refIt.next()));
         }
-        assertFalse(testIt.hasNext());
-        assertEquals(3, testIterationsCount);
+        assertTrue(testSet.isEmpty());
         
         
         refSearchInfo1 = new SimpleSearchInfo(folder1, false, null) {
@@ -218,16 +240,15 @@ public class CompoundSearchInfoTest extends NbTestCase {
                                                                   refSearchInfo2});
         assertTrue(testSearchInfo.canSearch());
         
-        testIterationsCount = 0;
-        testIt = testSearchInfo.objectsToSearch();
+        testSet.clear();
+        for(testIt = testSearchInfo.objectsToSearch(); testIt.hasNext();){
+            testSet.add(testIt.next());
+        }
         refIt = refSearchInfo2.objectsToSearch();
         while (refIt.hasNext()) {
-            assertTrue(testIt.hasNext());
-            assertSame(refIt.next(), testIt.next());
-            testIterationsCount++;
+            assertTrue(testSet.remove(refIt.next()));
         }
-        assertFalse(testIt.hasNext());
-        assertEquals(2, testIterationsCount);
+        assertTrue(testSet.isEmpty());
         
         
         refSearchInfo1 = new SimpleSearchInfo(folder1, false, null) {
@@ -244,5 +265,105 @@ public class CompoundSearchInfoTest extends NbTestCase {
                                                                   refSearchInfo2});
         assertFalse(testSearchInfo.canSearch());
     }
-    
+
+    public void testMultipleItemsFilesList() throws IOException {
+        FileSystem fs = FileUtil.createMemoryFileSystem();
+        FileObject fsRoot = fs.getRoot();
+
+        FileObject dir1 = fsRoot.createFolder("dir1");
+        dir1.createData("1a", DummyDataLoader.dummyExt);
+        dir1.createData("1b", DummyDataLoader.dummyExt);
+        dir1.createData("1c", DummyDataLoader.dummyExt);
+        DataFolder folder1 = DataFolder.findFolder(dir1);
+
+        FileObject dir2 = fsRoot.createFolder("dir2");
+        dir2.createData("2a", DummyDataLoader.dummyExt);
+        dir2.createData("2b", DummyDataLoader.dummyExt);
+        DataFolder folder2 = DataFolder.findFolder(dir2);
+
+
+        SearchInfo.Files refSearchInfo1, refSearchInfo2;
+        SearchInfo.Files testSearchInfo;
+        Iterator refIt;
+        Iterator testIt;
+
+        refSearchInfo1 = new SimpleSearchInfo(folder1, false, null);
+        refSearchInfo2 = new SimpleSearchInfo(folder2, false, null);
+        testSearchInfo = new CompoundSearchInfo(new SearchInfo[] {refSearchInfo1,
+                                                                  refSearchInfo2});
+        assertTrue(testSearchInfo.canSearch());
+
+        Set testSet = new HashSet();
+        for(testIt = testSearchInfo.filesToSearch(); testIt.hasNext();){
+            testSet.add(testIt.next());
+        }
+
+        refIt = refSearchInfo1.filesToSearch();
+        while (refIt.hasNext()) {
+            assertTrue(testSet.remove(refIt.next()));
+        }
+        refIt = refSearchInfo2.filesToSearch();
+        while (refIt.hasNext()) {
+            assertTrue(testSet.remove(refIt.next()));
+        }
+        assertTrue(testSet.isEmpty());
+
+
+        refSearchInfo1 = new SimpleSearchInfo(folder1, false, null);
+        refSearchInfo2 = new SimpleSearchInfo(folder2, false, null) {
+            public boolean canSearch() {
+                return false;
+            }
+        };
+        testSearchInfo = new CompoundSearchInfo(new SearchInfo[] {refSearchInfo1,
+                                                                  refSearchInfo2});
+        assertTrue(testSearchInfo.canSearch());
+
+        testSet.clear();
+        for(testIt = testSearchInfo.filesToSearch(); testIt.hasNext();){
+            testSet.add(testIt.next());
+        }
+
+        refIt = refSearchInfo1.filesToSearch();
+        while (refIt.hasNext()) {
+            assertTrue(testSet.remove(refIt.next()));
+        }
+        assertTrue(testSet.isEmpty());
+
+
+        refSearchInfo1 = new SimpleSearchInfo(folder1, false, null) {
+            public boolean canSearch() {
+                return false;
+            }
+        };
+        refSearchInfo2 = new SimpleSearchInfo(folder2, false, null);
+        testSearchInfo = new CompoundSearchInfo(new SearchInfo[] {refSearchInfo1,
+                                                                  refSearchInfo2});
+        assertTrue(testSearchInfo.canSearch());
+
+        testSet.clear();
+        for(testIt = testSearchInfo.filesToSearch(); testIt.hasNext();){
+            testSet.add(testIt.next());
+        }
+        refIt = refSearchInfo2.filesToSearch();
+        while (refIt.hasNext()) {
+            assertTrue(testSet.remove(refIt.next()));
+        }
+        assertTrue(testSet.isEmpty());
+
+
+        refSearchInfo1 = new SimpleSearchInfo(folder1, false, null) {
+            public boolean canSearch() {
+                return false;
+            }
+        };
+        refSearchInfo2 = new SimpleSearchInfo(folder2, false, null) {
+            public boolean canSearch() {
+                return false;
+            }
+        };
+        testSearchInfo = new CompoundSearchInfo(new SearchInfo[] {refSearchInfo1,
+                                                                  refSearchInfo2});
+        assertFalse(testSearchInfo.canSearch());
+   }
 }

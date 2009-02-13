@@ -43,6 +43,8 @@ package org.netbeans.api.java.source;
 
 
 import java.io.IOException;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.JavacParserResult;
@@ -75,7 +77,7 @@ public class CompilationController extends CompilationInfo {
      * is not a result of java parsing.
      * @since 0.42
      */
-    public static CompilationController get (final Parser.Result result) {
+    public static @NullUnknown CompilationController get (final @NonNull Parser.Result result) {
         Parameters.notNull("result", result);   //NOI18N
         CompilationController info = null;
         if (result instanceof JavacParserResult) {
@@ -100,7 +102,7 @@ public class CompilationController extends CompilationInfo {
      *         reached using this method
      * @throws IOException when the file cannot be red
      */    
-    public JavaSource.Phase toPhase(JavaSource.Phase phase ) throws IOException {
+    public @NonNull JavaSource.Phase toPhase(@NonNull JavaSource.Phase phase ) throws IOException {
         return impl.toPhase (phase);
     }
     

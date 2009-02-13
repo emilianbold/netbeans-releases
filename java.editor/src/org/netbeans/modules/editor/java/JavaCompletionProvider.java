@@ -436,8 +436,6 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 final TreeUtilities tu = controller.getTreeUtilities();
                                 final TypeElement enclClass = scope.getEnclosingClass();
                                 final boolean isStatic = enclClass != null ? (tu.isStaticContext(scope) || (env.getPath().getLeaf().getKind() == Tree.Kind.BLOCK && ((BlockTree)env.getPath().getLeaf()).isStatic())) : false;
-                                final Collection<? extends Element> illegalForwardRefs = env.getForwardReferences();
-                                final ExecutableElement method = scope.getEnclosingMethod();
                                 ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                                     public boolean accept(Element e, TypeMirror t) {
                                         switch (e.getKind()) {
@@ -467,8 +465,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                             toolTip = new MethodParamsTipPaintComponent(params, types.length, component);
                         startPos = (int)sourcePositions.getEndPosition(env.getRoot(), mi.getMethodSelect());
                         String text = controller.getText().substring(startPos, offset);
-                        anchorOffset = startPos + controller.getSnapshot().getOriginalOffset(text.indexOf('(')); //NOI18N
-                        toolTipOffset = startPos + controller.getSnapshot().getOriginalOffset(text.lastIndexOf(',')); //NOI18N
+                        int idx = text.indexOf('('); //NOI18N
+                        anchorOffset = idx < 0 ? startPos : startPos + controller.getSnapshot().getOriginalOffset(idx);
+                        idx = text.lastIndexOf(','); //NOI18N
+                        toolTipOffset = idx < 0 ? startPos : startPos + controller.getSnapshot().getOriginalOffset(idx);
                         if (toolTipOffset < anchorOffset)
                             toolTipOffset = anchorOffset;
                         return;
@@ -506,8 +506,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                             pos = (int)sourcePositions.getStartPosition(root, path.getLeaf());
                         }
                         String text = controller.getText().substring(pos, offset);
-                        anchorOffset = pos + controller.getSnapshot().getOriginalOffset(text.indexOf('(')); //NOI18N
-                        toolTipOffset = pos + controller.getSnapshot().getOriginalOffset(text.lastIndexOf(',')); //NOI18N
+                        int idx = text.indexOf('('); //NOI18N
+                        anchorOffset = idx < 0 ? pos : pos + controller.getSnapshot().getOriginalOffset(idx);
+                        idx = text.lastIndexOf(','); //NOI18N
+                        toolTipOffset = idx < 0 ? pos : pos + controller.getSnapshot().getOriginalOffset(idx);
                         if (toolTipOffset < anchorOffset)
                             toolTipOffset = anchorOffset;
                         return;

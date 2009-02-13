@@ -318,6 +318,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         for (ClassPath cp : changedCp) {
             Set<URL> rootsToChange = classPath2Roots.get(cp);
 
+            synchronized (rootsToChange) {
+                rootsToChange = new HashSet<URL>(rootsToChange);
+            }
+            
             if (rootsToChange != null) {
                 for (URL root : rootsToChange) {
                     List<URL> oldDeps = this.deps.get(root);
@@ -378,7 +382,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         // submitted and GlobalSourcePath is actually changing.
         return notInitialized || this.noSubmited > 0 || !GlobalSourcePath.getDefault().isFinished();
     }
-    
+
     public synchronized void waitScanFinished () throws InterruptedException {
         while (isScanInProgress()) {
             this.wait(1000);
@@ -726,8 +730,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             classPath2Roots.put(cp, roots = new HashSet<URL>());
             ClassPathRootsListener.getDefault().addClassPathRootsListener(cp, kind != ClasspathInfo.PathKind.SOURCE, RepositoryUpdater.this);
         }
-        
-        roots.add(root);
+
+        synchronized (roots) {
+            roots.add(root);
+        }
     }
     
     
@@ -2680,8 +2686,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 URL currentFile = file.toURI().toURL();
                 List<File> toRebuild = depsToRecompile != null ? new LinkedList<File>() : null;
                 
-                updateFile(currentFile, root, !isJava(FileObjects.getExtension(file.getName())), toRebuild); 
-                
+                updateFile(currentFile, root, !isJava(FileObjects.getExtension(file.getName())), toRebuild);
+
                 if (depsToRecompile != null) {
                     depsToRecompile.put(root, toRebuild);
                 }

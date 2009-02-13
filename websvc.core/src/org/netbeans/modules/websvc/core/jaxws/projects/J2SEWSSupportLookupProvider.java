@@ -57,6 +57,8 @@ import org.openide.util.lookup.Lookups;
  *
  * @author mkuchtiak
  */
+// XXX could probably be converted to use @ProjectServiceProvider instead
+// (would need to do some refactoring first)
 @LookupProvider.Registration(projectType="org-netbeans-modules-java-j2seproject")
 public class J2SEWSSupportLookupProvider implements LookupProvider {
     
@@ -86,10 +88,6 @@ public class J2SEWSSupportLookupProvider implements LookupProvider {
         return Lookups.fixed(new Object[] {
             jaxWsClientSupportApi,
             jaxRpcClientSupportApi,
-            new J2SEProjectWSClientSupportProvider(),
-            new JaxWsArtifactsClassPathProvider(project),
-            new J2SEJAXWSVersionProvider(project),
-            new JaxWsSourceForBinaryQueryImpl(project, false),
             openHook});
     }
 }

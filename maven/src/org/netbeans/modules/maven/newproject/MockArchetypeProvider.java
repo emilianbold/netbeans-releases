@@ -65,13 +65,6 @@ public class MockArchetypeProvider implements ArchetypeProvider {
         simple.setName(org.openide.util.NbBundle.getMessage(MockArchetypeProvider.class, "LBL_Maven_Quickstart_Archetype"));
         simple.setDescription(org.openide.util.NbBundle.getMessage(MockArchetypeProvider.class, "HINT_MavenQuickStart"));
         toRet.add(simple);
-        simple = new Archetype(false);
-        simple.setArtifactId("maven-archetype-webapp"); //NOI18N
-        simple.setGroupId("org.apache.maven.archetypes"); //NOI18N
-        simple.setVersion("1.0"); //NOI18N
-        simple.setName(org.openide.util.NbBundle.getMessage(MockArchetypeProvider.class, "LBL_Webapp_Archetype"));
-        simple.setDescription(org.openide.util.NbBundle.getMessage(MockArchetypeProvider.class, "HINT_Webapp_Archetype"));
-        toRet.add(simple);
         return toRet;
     }
     

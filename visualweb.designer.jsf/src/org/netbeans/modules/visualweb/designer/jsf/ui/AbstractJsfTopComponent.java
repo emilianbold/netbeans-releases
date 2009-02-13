@@ -99,15 +99,15 @@ public abstract class AbstractJsfTopComponent extends TopComponent implements Cl
     // and ExplorerActionsImpl.java files
 
     /** copy action performer */
-    protected final transient CopyCutActionPerformer copyActionPerformer =
+    final transient CopyCutActionPerformer copyActionPerformer =
         new CopyCutActionPerformer(true);
 
     /** cut action performer */
-    protected final transient CopyCutActionPerformer cutActionPerformer =
+    final transient CopyCutActionPerformer cutActionPerformer =
         new CopyCutActionPerformer(false);
 
     /** delete action performer */
-    protected final transient DeleteActionPerformer deleteActionPerformer =
+    final transient DeleteActionPerformer deleteActionPerformer =
         new DeleteActionPerformer();
 
     /** Paste action performer. */

@@ -43,11 +43,15 @@
 package org.netbeans.modules.websvc.wsitconf.spi;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.autoupdate.InstallSupport;
+import org.netbeans.api.autoupdate.OperationContainer;
+import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.api.autoupdate.UpdateManager;
+import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -138,6 +142,13 @@ public abstract class WsitProvider {
 
     public boolean addMetroLibrary() {
 
+        List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
+        for (UpdateUnit unit : units) {
+            System.out.println("------------------------------------");
+            System.out.println("Code name: " + unit.getCodeName());
+            System.out.println("tostring: " + unit.toString());
+        }
+        
         Library[] jaxwsLibs = new Library[] {LibraryManager.getDefault().getLibrary("jaxws21")};
         Library metroLib = LibraryManager.getDefault().getLibrary("metro"); //NOI18N
         if (metroLib != null) {
@@ -147,6 +158,8 @@ public abstract class WsitProvider {
                     ProjectClassPathModifier.removeLibraries(jaxwsLibs, sourceGroups[0].getRootFolder(), ClassPath.COMPILE);
                     return ProjectClassPathModifier.addLibraries(new Library[] {metroLib}, sourceGroups[0].getRootFolder(), ClassPath.COMPILE);
                 }
+
+                
             } catch (IOException e) {
                 //NOOP
             }

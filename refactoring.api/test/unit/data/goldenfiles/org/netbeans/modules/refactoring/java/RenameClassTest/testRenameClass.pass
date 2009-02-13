@@ -18,7 +18,7 @@ Rename file Foo.java
 File was deleted
 
 
-defaultpkg.newName
+defaultpkg.newName.java
 --------------------
 package defaultpkg;
 

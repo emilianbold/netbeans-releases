@@ -2828,13 +2828,16 @@ widthcheck:  {
      */
     public static List<? extends Action> actionsForPath(String path) {
         List<Action> actions = new ArrayList<Action>();
-        for (Object item : Lookups.forPath(path).lookupAll(Object.class)) {
-            if (item instanceof Action) {
-                actions.add((Action) item);
-            } else if (item instanceof JSeparator) {
+        for (Lookup.Item<Object> item : Lookups.forPath(path).lookupResult(Object.class).allItems()) {
+            if (Action.class.isAssignableFrom(item.getType())) {
+                Object instance = item.getInstance();
+                if (instance != null) {
+                    actions.add((Action) instance);
+                }
+            } else if (JSeparator.class.isAssignableFrom(item.getType())) {
                 actions.add(null);
             } else {
-                Logger.getLogger(Utilities.class.getName()).warning("Unrecognized object of " + item.getClass() + " found in actions path " + path);
+                Logger.getLogger(Utilities.class.getName()).warning("Unrecognized object of " + item.getType() + " found in actions path " + path);
             }
         }
         return actions;

@@ -154,7 +154,7 @@ public final class StdLibFlags {
 
 
     public String getSysLibFlags(int toolset, int os, boolean is64Bit, TargetData t) {
-	StringBuffer buf = new StringBuffer(1024);
+	StringBuilder buf = new StringBuilder(1024);
 
 	if (getLinkType() == StdLibFlags.DYNAMIC_LINK_TYPE) {
 	    if (toolset == MakefileData.SUN_TOOLSET_TYPE) {

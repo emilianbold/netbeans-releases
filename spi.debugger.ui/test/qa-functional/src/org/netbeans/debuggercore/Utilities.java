@@ -462,6 +462,16 @@ public class Utilities {
         return false;
     }
 
+    public static String getConsoleLastLineText() {
+        OutputTabOperator op = new OutputTabOperator(debuggerConsoleTitle);
+        int n =op.getLineCount();
+        if (n > 0)
+            return op.getLine(n-1);
+        return "!EMPTY!";
+
+
+    }
+
     public static int checkConsoleForNumberOfOccurrences(String text, int startLine) {
         OutputTabOperator op = new OutputTabOperator(debuggerConsoleTitle);
         int number = 0;

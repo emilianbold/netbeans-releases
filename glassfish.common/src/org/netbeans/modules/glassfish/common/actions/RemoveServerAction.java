@@ -40,6 +40,7 @@
 package org.netbeans.modules.glassfish.common.actions;
 
 import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.openide.DialogDisplayer;
@@ -81,7 +82,8 @@ public class RemoveServerAction extends NodeAction {
         GlassfishModule commonSupport = node.getLookup().lookup(GlassfishModule.class);
         if(commonSupport != null) {
             String uri = commonSupport.getInstanceProperties().get(GlassfishModule.URL_ATTR);
-            si = ServerUtilities.getServerInstance(uri);
+            GlassfishInstanceProvider gip = commonSupport.getInstanceProvider();
+            si = gip.getInstance(uri);
         }
         return si;
     }

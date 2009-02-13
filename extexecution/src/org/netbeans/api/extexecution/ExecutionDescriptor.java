@@ -40,6 +40,9 @@
 package org.netbeans.api.extexecution;
 
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckReturnValue;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.openide.windows.InputOutput;
@@ -59,7 +62,7 @@ import org.openide.windows.InputOutput;
 public final class ExecutionDescriptor {
 
     // TODO provide constants for common descriptors (are there any?)
-    
+
     private final Runnable preExecution;
 
     private final Runnable postExecution;
@@ -136,7 +139,9 @@ public final class ExecutionDescriptor {
      * @param io custom input output, <code>null</code> allowed
      * @return new descriptor with configured custom io
      */
-    public ExecutionDescriptor inputOutput(InputOutput io) {
+    @NonNull
+    @CheckReturnValue
+    public ExecutionDescriptor inputOutput(@NullAllowed InputOutput io) {
         DescriptorData data = new DescriptorData(this);
         return new ExecutionDescriptor(data.inputOutput(io));
     }
@@ -161,6 +166,8 @@ public final class ExecutionDescriptor {
      * @param controllable controllable flag
      * @return new descriptor with configured controllable flag
      */
+    @NonNull
+    @CheckReturnValue
     public ExecutionDescriptor controllable(boolean controllable) {
         DescriptorData data = new DescriptorData(this);
         return new ExecutionDescriptor(data.controllable(controllable));
@@ -183,6 +190,8 @@ public final class ExecutionDescriptor {
      * @param frontWindow front window flag
      * @return new descriptor with configured front window flag
      */
+    @NonNull
+    @CheckReturnValue
     public ExecutionDescriptor frontWindow(boolean frontWindow) {
         DescriptorData data = new DescriptorData(this);
         return new ExecutionDescriptor(data.frontWindow(frontWindow));
@@ -204,6 +213,8 @@ public final class ExecutionDescriptor {
      * @param inputVisible input visible flag
      * @return new descriptor with configured input visible flag
      */
+    @NonNull
+    @CheckReturnValue
     public ExecutionDescriptor inputVisible(boolean inputVisible) {
         DescriptorData data = new DescriptorData(this);
         return new ExecutionDescriptor(data.inputVisible(inputVisible));
@@ -225,6 +236,8 @@ public final class ExecutionDescriptor {
      * @param showProgress show progress flag
      * @return new descriptor with configured show progress flag
      */
+    @NonNull
+    @CheckReturnValue
     public ExecutionDescriptor showProgress(boolean showProgress) {
         DescriptorData data = new DescriptorData(this);
         return new ExecutionDescriptor(data.showProgress(showProgress));
@@ -247,6 +260,8 @@ public final class ExecutionDescriptor {
      * @param showSuspended show suspended flag
      * @return new descriptor with configured show suspended flag
      */
+    @NonNull
+    @CheckReturnValue
     public ExecutionDescriptor showSuspended(boolean showSuspended) {
         DescriptorData data = new DescriptorData(this);
         return new ExecutionDescriptor(data.showSuspended(showSuspended));
@@ -267,6 +282,8 @@ public final class ExecutionDescriptor {
      *             standard output
      * @see #outProcessorFactory(org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory)
      */
+    @NonNull
+    @CheckReturnValue
     public ExecutionDescriptor outLineBased(boolean outLineBased) {
         DescriptorData data = new DescriptorData(this);
         return new ExecutionDescriptor(data.outLineBased(outLineBased));
@@ -287,6 +304,8 @@ public final class ExecutionDescriptor {
      *             standard error output
      * @see #errProcessorFactory(org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory)
      */
+    @NonNull
+    @CheckReturnValue
     public ExecutionDescriptor errLineBased(boolean errLineBased) {
         DescriptorData data = new DescriptorData(this);
         return new ExecutionDescriptor(data.errLineBased(errLineBased));
@@ -319,7 +338,9 @@ public final class ExecutionDescriptor {
      * @return new descriptor with configured factory for additional
      *             processor to use for standard output
      */
-    public ExecutionDescriptor outProcessorFactory(InputProcessorFactory outProcessorFactory) {
+    @NonNull
+    @CheckReturnValue
+    public ExecutionDescriptor outProcessorFactory(@NullAllowed InputProcessorFactory outProcessorFactory) {
         DescriptorData data = new DescriptorData(this);
         return new ExecutionDescriptor(data.outProcessorFactory(outProcessorFactory));
     }
@@ -351,7 +372,9 @@ public final class ExecutionDescriptor {
      * @return new descriptor with configured factory for additional
      *             processor to use for standard error output
      */
-    public ExecutionDescriptor errProcessorFactory(InputProcessorFactory errProcessorFactory) {
+    @NonNull
+    @CheckReturnValue
+    public ExecutionDescriptor errProcessorFactory(@NullAllowed InputProcessorFactory errProcessorFactory) {
         DescriptorData data = new DescriptorData(this);
         return new ExecutionDescriptor(data.errProcessorFactory(errProcessorFactory));
     }
@@ -380,7 +403,9 @@ public final class ExecutionDescriptor {
      * @return new descriptor with configured factory for converter for
      *             standard output
      */
-    public ExecutionDescriptor outConvertorFactory(LineConvertorFactory convertorFactory) {
+    @NonNull
+    @CheckReturnValue
+    public ExecutionDescriptor outConvertorFactory(@NullAllowed LineConvertorFactory convertorFactory) {
         DescriptorData data = new DescriptorData(this);
         return new ExecutionDescriptor(data.outConvertorFactory(convertorFactory));
     }
@@ -409,7 +434,9 @@ public final class ExecutionDescriptor {
      * @return new descriptor with configured factory for converter for
      *             standard error output
      */
-    public ExecutionDescriptor errConvertorFactory(LineConvertorFactory convertorFactory) {
+    @NonNull
+    @CheckReturnValue
+    public ExecutionDescriptor errConvertorFactory(@NullAllowed LineConvertorFactory convertorFactory) {
         DescriptorData data = new DescriptorData(this);
         return new ExecutionDescriptor(data.errConvertorFactory(convertorFactory));
     }
@@ -431,7 +458,9 @@ public final class ExecutionDescriptor {
      * @param preExecution pre execution runnable, <code>null</code> allowed
      * @return new descriptor with configured pre execution runnable
      */
-    public ExecutionDescriptor preExecution(Runnable preExecution) {
+    @NonNull
+    @CheckReturnValue
+    public ExecutionDescriptor preExecution(@NullAllowed Runnable preExecution) {
         DescriptorData data = new DescriptorData(this);
         return new ExecutionDescriptor(data.preExecution(preExecution));
     }
@@ -453,7 +482,9 @@ public final class ExecutionDescriptor {
      * @param postExecution post execution runnable, <code>null</code> allowed
      * @return new descriptor with configured post execution runnable
      */
-    public ExecutionDescriptor postExecution(Runnable postExecution) {
+    @NonNull
+    @CheckReturnValue
+    public ExecutionDescriptor postExecution(@NullAllowed Runnable postExecution) {
         DescriptorData data = new DescriptorData(this);
         return new ExecutionDescriptor(data.postExecution(postExecution));
     }
@@ -475,7 +506,9 @@ public final class ExecutionDescriptor {
      * @param rerunCondition rerun condition, <code>null</code> allowed
      * @return new descriptor with configured rerun condition
      */
-    public ExecutionDescriptor rerunCondition(ExecutionDescriptor.RerunCondition rerunCondition) {
+    @NonNull
+    @CheckReturnValue
+    public ExecutionDescriptor rerunCondition(@NullAllowed ExecutionDescriptor.RerunCondition rerunCondition) {
         DescriptorData data = new DescriptorData(this);
         return new ExecutionDescriptor(data.rerunCondition(rerunCondition));
     }
@@ -504,7 +537,9 @@ public final class ExecutionDescriptor {
      * @param optionsPath options path, <code>null</code> allowed
      * @return this descriptor with configured options path
      */
-    public ExecutionDescriptor optionsPath(String optionsPath) {
+    @NonNull
+    @CheckReturnValue
+    public ExecutionDescriptor optionsPath(@NullAllowed String optionsPath) {
         DescriptorData data = new DescriptorData(this);
         return new ExecutionDescriptor(data.optionsPath(optionsPath));
     }
@@ -523,14 +558,14 @@ public final class ExecutionDescriptor {
          *
          * @param listener listener that will listen for changes in rerun possibility
          */
-        void addChangeListener(ChangeListener listener);
+        void addChangeListener(@NonNull ChangeListener listener);
 
         /**
          * Removes previously registered listener.
          *
          * @param listener listener to remove
          */
-        void removeChangeListener(ChangeListener listener);
+        void removeChangeListener(@NonNull ChangeListener listener);
 
         /**
          * Returns <code>true</code> if it is possible to execute the action again.
@@ -553,7 +588,8 @@ public final class ExecutionDescriptor {
          *             infrastructure that is printing chars to the output window
          * @return new input processor
          */
-        InputProcessor newInputProcessor(InputProcessor defaultProcessor);
+        @NonNull
+        InputProcessor newInputProcessor(@NonNull InputProcessor defaultProcessor);
 
     }
 
@@ -567,6 +603,7 @@ public final class ExecutionDescriptor {
          *
          * @return new line convertor
          */
+        @NonNull
         LineConvertor newLineConvertor();
 
     }

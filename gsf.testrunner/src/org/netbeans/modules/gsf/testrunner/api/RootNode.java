@@ -56,8 +56,6 @@ import org.openide.util.actions.SystemAction;
  */
 final class RootNode extends AbstractNode {
 
-    /** */
-    static final String name = "Test results root node";               //NOI18N
 
     /** constant meaning "information about passed tests not displayed" */
     static final int ALL_PASSED_ABSENT = 0;
@@ -92,7 +90,7 @@ final class RootNode extends AbstractNode {
         this.session = session;
         this.filtered = filtered;
         children = (RootNodeChildren) getChildren();
-        setName(name);   //used by tree cell renderer to recognize the root node
+        setName(NbBundle.getMessage(RootNode.class, "MSG_RunningTests"));
 
         setIconBaseWithExtension(
                 "org/netbeans/modules/gsf/testrunner/resources/empty.gif");     //NOI18N
@@ -172,6 +170,10 @@ final class RootNode extends AbstractNode {
         pending += report.getPending();
         detectedPassedTests += report.getDetectedPassedTests();
         elapsedTimeMillis += report.getElapsedTimeMillis();
+    }
+
+    float getPassedPercentage() {
+        return (float) detectedPassedTests / totalTests * 100;
     }
 
     /**

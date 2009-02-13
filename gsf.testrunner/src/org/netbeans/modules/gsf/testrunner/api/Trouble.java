@@ -8,10 +8,7 @@ import org.openide.util.Parameters;
 public final class Trouble {
 
     private boolean error;
-    private String message;
-    private String exceptionClsName;
     private String[] stackTrace;
-    private Trouble nestedTrouble;
     private ComparisonFailure comparisonFailure;
 
     public Trouble(boolean error) {
@@ -32,34 +29,6 @@ public final class Trouble {
     }
 
     /**
-     * @return the message
-     */
-    public String getMessage() {
-        return message;
-    }
-
-    /**
-     * @param message the message to set
-     */
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    /**
-     * @return the exceptionClsName
-     */
-    public String getExceptionClsName() {
-        return exceptionClsName;
-    }
-
-    /**
-     * @param exceptionClsName the exceptionClsName to set
-     */
-    public void setExceptionClsName(String exceptionClsName) {
-        this.exceptionClsName = exceptionClsName;
-    }
-
-    /**
      * @return the stackTrace
      */
     public String[] getStackTrace() {
@@ -67,24 +36,11 @@ public final class Trouble {
     }
 
     /**
-     * @param stackTrace the stackTrace to set
+     * @param stackTrace the stackTrace for the failure. The first
+     * item in the array is treated as the failure message.
      */
     public void setStackTrace(String[] stackTrace) {
         this.stackTrace = stackTrace;
-    }
-
-    /**
-     * @return the nestedTrouble
-     */
-    public Trouble getNestedTrouble() {
-        return nestedTrouble;
-    }
-
-    /**
-     * @param nestedTrouble the nestedTrouble to set
-     */
-    public void setNestedTrouble(Trouble nestedTrouble) {
-        this.nestedTrouble = nestedTrouble;
     }
 
     /**

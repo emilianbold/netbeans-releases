@@ -64,6 +64,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
@@ -735,7 +736,7 @@ public final class CsmProjectContentResolver {
                 CsmNamespaceDefinition nsd = (CsmNamespaceDefinition) decl;
                 if (nsd.getQualifiedName().equals(ns.getQualifiedName())) {
                     out.addAll(nsd.getScopeElements());
-                } else if (ns.getQualifiedName().toString().startsWith(nsd.getQualifiedName().toString())) {
+                } else if (CharSequenceUtilities.startsWith(ns.getQualifiedName(), nsd.getQualifiedName())) {
                     getFileLocalIncludeNamespaceMembersFromNested(ns.getQualifiedName(), nsd, out);
                 }
             }

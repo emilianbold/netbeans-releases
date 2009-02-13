@@ -80,7 +80,7 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
  */
 /**
  * Shows Search History results in a JList.
- * 
+ *
  * @author Maros Sandor
  */
 class SummaryView implements MouseListener, ComponentListener, MouseMotionListener, DiffSetupSource {
@@ -88,7 +88,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
     private static final String SUMMARY_REVERT_PROPERTY = "Summary-Revert-";
 
     private final SearchHistoryPanel master;
-    
+
     private JList       resultsList;
     private JScrollPane scrollPane;
 
@@ -119,7 +119,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             public void actionPerformed(ActionEvent e) {
                 onPopup(org.netbeans.modules.versioning.util.Utils.getPositionForPopup(resultsList));
             }
-        });        
+        });
     }
 
     public void componentResized(ComponentEvent e) {
@@ -139,7 +139,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
     public void componentShown(ComponentEvent e) {
         // not interested
     }
-    
+
     private List expandResults(List<RepositoryRevision> results) {
         ArrayList newResults = new ArrayList(results.size());
         for (RepositoryRevision repositoryRevision : results) {
@@ -213,13 +213,13 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         if (nodes.length == 0) {
             return master.getSetups(results.toArray(new RepositoryRevision[results.size()]), new RepositoryRevision.Event[0]);
         }
-    
+
         Set<RepositoryRevision.Event> events = new HashSet<RepositoryRevision.Event>();
         Set<RepositoryRevision> revisions = new HashSet<RepositoryRevision>();
 
         int [] sel = resultsList.getSelectedIndices();
         for (int i : sel) {
-            Object revCon = dispResults.get(i);            
+            Object revCon = dispResults.get(i);
             if (revCon instanceof RepositoryRevision) {
                 revisions.add((RepositoryRevision) revCon);
             } else {
@@ -245,7 +245,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
     private void onPopup(MouseEvent e) {
         onPopup(e.getPoint());
     }
-    
+
     private void onPopup(Point p) {
         int [] sel = resultsList.getSelectedIndices();
         if (sel.length == 0) {
@@ -259,19 +259,19 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 //        if(isMixedSelection(dispResults, selection)) return;
 
         JPopupMenu menu = new JPopupMenu();
-        
+
         String previousRevision = null;
         RepositoryRevision container = null;
         List<RepositoryRevision.Event> drevList;
         Object revCon = dispResults.get(selection[0]);
-        
-        
-        boolean noExDeletedExistingFiles = true;        
+
+
+        boolean noExDeletedExistingFiles = true;
         boolean revisionSelected;
-        boolean missingFile = false;        
+        boolean missingFile = false;
         boolean oneRevisionMultiselected = true;
         boolean deleted = false;
-        
+
         if (revCon instanceof RepositoryRevision) {
             revisionSelected = true;
             container = (RepositoryRevision) dispResults.get(selection[0]);
@@ -290,22 +290,22 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 RepositoryRevision.Event event = (RepositoryRevision.Event) dispResults.get(selection[i]);
                 drevList.add(event);
                 File file = event.getFile();
-                
+
                 if(!deleted && file != null && !file.exists() && event.getChangedPath().getAction() == 'D') {
                     deleted = true;
                 }
                 if(!missingFile && event.getFile() == null) {
                     missingFile = true;
                 }
-                if(oneRevisionMultiselected && i > 0 && 
+                if(oneRevisionMultiselected && i > 0 &&
                    drevList.get(0).getLogInfoHeader().getLog().getRevision().getNumber() != drevList.get(0).getLogInfoHeader().getLog().getRevision().getNumber())
                 {
                     oneRevisionMultiselected = false;
-                }                
+                }
                 if(file != null && file.exists() && event.getChangedPath().getAction() == 'D') {
                     noExDeletedExistingFiles = false;
-                }                        
-            }                
+                }
+            }
             container = drevList.get(0).getLogInfoHeader();
         }
         final RepositoryRevision.Event[] drev = drevList.toArray(new RepositoryRevision.Event[drevList.size()]);
@@ -313,9 +313,9 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
         final boolean rollbackToEnabled = !deleted && !missingFile && !revisionSelected && oneRevisionMultiselected;
         final boolean rollbackChangeEnabled = !missingFile && oneRevisionMultiselected && (drev.length == 0 || noExDeletedExistingFiles); // drev.length == 0 => the whole revision was selected
-        final boolean viewEnabled = selection.length == 1 && !revisionSelected && drev[0].getFile() != null && drev[0].getFile().exists() &&  !drev[0].getFile().isDirectory();
+        final boolean viewEnabled = selection.length == 1 && !revisionSelected && drev[0].getFile() != null && !drev[0].getFile().isDirectory() && drev[0].getChangedPath().getAction() != 'D';
         final boolean diffToPrevEnabled = selection.length == 1;
-        
+
         if (revision > 1) {
             menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPrevious", previousRevision)) { // NOI18N
                 {
@@ -329,7 +329,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
         menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackChange")) { // NOI18N
             {
-                setEnabled(rollbackChangeEnabled); 
+                setEnabled(rollbackChangeEnabled);
             }
             public void actionPerformed(ActionEvent e) {
                 revertModifications(selection);
@@ -338,12 +338,12 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
         if (!revisionSelected) {
             menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackTo", revision)) { // NOI18N
-                {                    
+                {
                     setEnabled(rollbackToEnabled);
                 }
                 public void actionPerformed(ActionEvent e) {
                     RequestProcessor.getDefault().post(new Runnable() {
-                        public void run() {                            
+                        public void run() {
                             rollback(drev);
                         }
                     });
@@ -373,8 +373,8 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
      */
     static void rollback(RepositoryRevision.Event event) {
         rollback(new RepositoryRevision.Event[ ]{event});
-    }    
-    
+    }
+
     /**
      * Overwrites local file with this revision.
      *
@@ -387,20 +387,20 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         SvnProgressSupport support = new SvnProgressSupport() {
             public void perform() {
                 for(RepositoryRevision.Event event : events) {
-                    rollback(event, this);   
-                }                
+                    rollback(event, this);
+                }
             }
         };
         support.start(rp, repository, NbBundle.getMessage(SummaryView.class, "MSG_Rollback_Progress")); // NOI18N
     }
 
-    private static void rollback(RepositoryRevision.Event event, SvnProgressSupport progress) {        
-        File file = event.getFile();                
+    private static void rollback(RepositoryRevision.Event event, SvnProgressSupport progress) {
+        File file = event.getFile();
         if(event.getChangedPath().getAction() == 'D') {
             // it was deleted, lets delete it again
             if(file.exists()) {
                 try {
-                    SvnClient client = Subversion.getInstance().getClient(false);                    
+                    SvnClient client = Subversion.getInstance().getClient(false);
                     client.remove(new File[]{file}, true);
                 } catch (SVNClientException ex) {
                     Subversion.LOG.log(Level.SEVERE, null, ex);
@@ -410,14 +410,16 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             return;
         }
         File parent = file.getParentFile();
-        parent.mkdirs();                
-        try {         
-            File oldFile = VersionsCache.getInstance().getFileRevision(event.getFile(), Long.toString(event.getLogInfoHeader().getLog().getRevision().getNumber()));
+        parent.mkdirs();
+        try {
+            SVNUrl repoUrl = event.getLogInfoHeader().getRepositoryRootUrl();
+            SVNUrl fileUrl = repoUrl.appendPath(event.getChangedPath().getPath());
+            File oldFile = VersionsCache.getInstance().getFileRevision(repoUrl, fileUrl, Long.toString(event.getLogInfoHeader().getLog().getRevision().getNumber()), event.getFile().getName());
             for (int i = 1; i < 7; i++) {
                 if (file.delete()) break;
                 try { Thread.sleep(i * 34); } catch (InterruptedException e) { }
             }
-            FileUtil.copyFile(FileUtil.toFileObject(oldFile), FileUtil.toFileObject(parent), file.getName(), "");                
+            FileUtil.copyFile(FileUtil.toFileObject(oldFile), FileUtil.toFileObject(parent), file.getName(), "");
         } catch (IOException e) {
             Subversion.LOG.log(Level.SEVERE, null, e);
         }
@@ -440,11 +442,11 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
     static void revert(final SearchHistoryPanel master, final RepositoryRevision [] revisions, final RepositoryRevision.Event [] events) {
         SVNUrl url;
         try {
-            url = master.getSearchRepositoryRootUrl();        
+            url = master.getSearchRepositoryRootUrl();
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);                
+            SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
-        }                   
+        }
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(url);
         SvnProgressSupport support = new SvnProgressSupport() {
             public void perform() {
@@ -457,11 +459,11 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
     private static void revertImpl(SearchHistoryPanel master, RepositoryRevision[] revisions, RepositoryRevision.Event[] events, SvnProgressSupport progress) {
         SVNUrl url;
         try {
-            url = master.getSearchRepositoryRootUrl();        
+            url = master.getSearchRepositoryRootUrl();
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);                
-            return;            
-        }                           
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+            return;
+        }
         final RepositoryFile repositoryFile = new RepositoryFile(url, url, SVNRevision.HEAD);
         for (RepositoryRevision revision : revisions) {
             RevertModifications.RevisionInterval revisionInterval = new RevertModifications.RevisionInterval(revision.getLog().getRevision());
@@ -470,7 +472,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         }
         for (RepositoryRevision.Event event : events) {
             if (event.getFile() == null) continue;
-            RevertModifications.RevisionInterval revisionInterval = new RevertModifications.RevisionInterval(event.getLogInfoHeader().getLog().getRevision());            
+            RevertModifications.RevisionInterval revisionInterval = new RevertModifications.RevisionInterval(event.getLogInfoHeader().getLog().getRevision());
             final Context ctx = new Context(event.getFile());
             RevertModificationsAction.performRevert(revisionInterval, false, ctx, progress);
         }
@@ -482,9 +484,11 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             RepositoryRevision.Event drev = (RepositoryRevision.Event) o;
             File originFile = drev.getFile();
             String rev = drev.getLogInfoHeader().getLog().getRevision().toString();
+            SVNUrl repoUrl = drev.getLogInfoHeader().getRepositoryRootUrl();
+            SVNUrl fileUrl = repoUrl.appendPath(drev.getChangedPath().getPath());
             File file = null;
             try {
-                file = VersionsCache.getInstance().getFileRevision(originFile, rev);
+                file = VersionsCache.getInstance().getFileRevision(repoUrl, fileUrl, rev, originFile.getName());
             } catch (IOException e) {
                 Subversion.LOG.log(Level.SEVERE, null, e);
                 return;
@@ -518,7 +522,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             return dispResults.get(index);
         }
     }
-    
+
     private class SummaryCellRenderer extends JPanel implements ListCellRenderer {
 
         private static final String FIELDS_SEPARATOR = "        "; // NOI18N
@@ -530,15 +534,15 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         private Style indentStyle;
         private Style noindentStyle;
         private Style hiliteStyle;
-        
+
         private Color selectionBackground;
         private Color selectionForeground;
-        
+
         private JTextPane textPane = new JTextPane();
         private JPanel    actionsPane = new JPanel();
-        
+
         private DateFormat defaultFormat;
-        
+
         private int             index;
         private HyperlinkLabel  diffLink;
         private HyperlinkLabel  revertLink;
@@ -546,7 +550,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         public SummaryCellRenderer() {
             selectionBackground = new JList().getSelectionBackground();
             selectionForeground = new JList().getSelectionForeground();
-            
+
             selectedStyle = textPane.addStyle("selected", null); // NOI18N
             StyleConstants.setForeground(selectedStyle, selectionForeground); // NOI18N
             StyleConstants.setBackground(selectedStyle, selectionBackground); // NOI18N
@@ -565,28 +569,28 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             if (c != null) StyleConstants.setBackground(hiliteStyle, c);
             c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Foreground);
             if (c != null) StyleConstants.setForeground(hiliteStyle, c);
-            
+
             setLayout(new BorderLayout());
             add(textPane);
             add(actionsPane, BorderLayout.PAGE_END);
             actionsPane.setLayout(new FlowLayout(FlowLayout.TRAILING, 2, 5));
-            
+
             diffLink = new HyperlinkLabel();
             diffLink.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
             actionsPane.add(diffLink);
 
             revertLink = new HyperlinkLabel();
             actionsPane.add(revertLink);
-            
+
             textPane.setBorder(null);
         }
-        
+
         public Color darker(Color c) {
-            return new Color(Math.max((int)(c.getRed() * DARKEN_FACTOR), 0), 
+            return new Color(Math.max((int)(c.getRed() * DARKEN_FACTOR), 0),
                  Math.max((int)(c.getGreen() * DARKEN_FACTOR), 0),
                  Math.max((int)(c.getBlue() * DARKEN_FACTOR), 0));
         }
-        
+
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if (value instanceof RepositoryRevision) {
                 renderContainer(list, (RepositoryRevision) value, index, isSelected);
@@ -603,7 +607,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             Style style;
             Color backgroundColor;
             Color foregroundColor;
-            
+
             if (isSelected) {
                 foregroundColor = selectionForeground;
                 backgroundColor = selectionBackground;
@@ -611,14 +615,14 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             } else {
                 foregroundColor = UIManager.getColor("List.foreground"); // NOI18N
                 backgroundColor = UIManager.getColor("List.background"); // NOI18N
-                backgroundColor = darker(backgroundColor); 
+                backgroundColor = darker(backgroundColor);
                 style = normalStyle;
             }
             textPane.setBackground(backgroundColor);
             actionsPane.setBackground(backgroundColor);
-            
+
             this.index = index;
-                        
+
             try {
                 sd.remove(0, sd.getLength());
                 sd.setParagraphAttributes(0, sd.getLength(), noindentStyle, false);
@@ -635,7 +639,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 sd.insertString(sd.getLength(), "\n", null);
 
                 sd.insertString(sd.getLength(), commitMessage, null);
-                
+
                 if (message != null && !isSelected) {
                     int idx = commitMessage.indexOf(message);
                     if (idx != -1) {
@@ -644,13 +648,13 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                         sd.setCharacterAttributes(doclen - len + idx, message.length(), hiliteStyle, false);
                     }
                 }
-                                
+
                 resizePane(commitMessage, list.getFontMetrics(list.getFont()));
                 sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, false);
             } catch (BadLocationException e) {
                 Subversion.LOG.log(Level.SEVERE, null, e);
             }
-            
+
             actionsPane.setVisible(true);
             diffLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Diff"), foregroundColor, backgroundColor);
             revertLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Revert"), foregroundColor, backgroundColor); // NOI18N
@@ -662,7 +666,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
             Color backgroundColor;
             Color foregroundColor;
-            
+
             if (isSelected) {
                 foregroundColor = selectionForeground;
                 backgroundColor = selectionBackground;
@@ -674,20 +678,20 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             }
             textPane.setBackground(backgroundColor);
             actionsPane.setVisible(false);
-            
+
             this.index = -1;
             try {
                 sd.remove(0, sd.getLength());
                 sd.setParagraphAttributes(0, sd.getLength(), indentStyle, false);
-                
+
                 sd.insertString(sd.getLength(), String.valueOf(dispRevision.getChangedPath().getAction()), null);
                 sd.insertString(sd.getLength(), FIELDS_SEPARATOR + dispRevision.getChangedPath().getPath(), null);
-                
+
                 sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, false);
                 resizePane(sd.getText(0, sd.getLength() - 1), list.getFontMetrics(list.getFont()));
             } catch (BadLocationException e) {
                 Subversion.LOG.log(Level.SEVERE, null, e);
-            }            
+            }
         }
 
         private void resizePane(String text, FontMetrics fm) {
@@ -695,7 +699,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 text = "";
             }
             int width = master.getWidth();
-            if (width > 0) {                
+            if (width > 0) {
                 Rectangle2D rect = fm.getStringBounds(text, textPane.getGraphics());
                 int nlc, i;
                 for (nlc = -1, i = 0; i != -1 ; i = text.indexOf('\n', i + 1), nlc++);
@@ -705,12 +709,12 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 textPane.setPreferredSize(new Dimension(width - 50, ph));
             }
         }
-        
+
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             if (index == -1) return;
             Rectangle apb = actionsPane.getBounds();
-            
+
             {
                 Rectangle bounds = diffLink.getBounds();
                 bounds.setBounds(bounds.x, bounds.y + apb.y, bounds.width, bounds.height);
@@ -722,7 +726,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             resultsList.putClientProperty(SUMMARY_REVERT_PROPERTY + index, bounds); // NOI18N
         }
     }
-    
+
     private static class HyperlinkLabel extends JLabel {
 
         public HyperlinkLabel() {

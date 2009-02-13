@@ -41,6 +41,7 @@ package org.netbeans.api.extexecution.input;
 
 import java.io.Closeable;
 import java.io.IOException;
+import org.netbeans.api.annotations.common.NullAllowed;
 
 /**
  * This interface represents abstraction for reading characters. It allows
@@ -63,7 +64,7 @@ public interface InputReader extends Closeable {
      * @return number of characters read
      * @throws IOException if any read or process error occurs
      */
-    int readInput(InputProcessor processor) throws IOException;
+    int readInput(@NullAllowed InputProcessor processor) throws IOException;
 
     /**
      * Closes the reader releasing the resources held by it.

@@ -128,7 +128,7 @@ public class ConsistencyVerifier {
                     regularMods.add(mod);
                 }
             } catch (Exception x) {
-                throw new IllegalArgumentException(x);
+                throw new IllegalArgumentException("Error parsing " + m.getMainAttributes().entrySet() + ": " + x, x);
             }
         }
         SortedMap<String,SortedSet<String>> problems = new TreeMap<String,SortedSet<String>>();

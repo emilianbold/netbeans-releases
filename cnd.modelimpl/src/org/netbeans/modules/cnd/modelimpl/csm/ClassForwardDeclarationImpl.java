@@ -184,7 +184,11 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
                 CharSequence[] newNameParts = new CharSequence[l.size()];
                 l.toArray(newNameParts);
                 nameParts = newNameParts;
-                RepositoryUtils.put(this);
+                if (registerInProject) {
+                    RepositoryUtils.put(this);
+                } else {
+                    Utils.setSelfUID(this);
+                }
             }
         }
         // create fake class we refer to
@@ -205,7 +209,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
     public void dispose() {
         // nobody disposes the fake forward class => we should take care of this
         CsmClass cls = getCsmClass();
-        if (cls instanceof ForwardClass) {
+        if (ForwardClass.isForwardClass(cls)) {
             ((ForwardClass) cls).dispose();
         }
         super.dispose();

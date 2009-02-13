@@ -53,6 +53,8 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
@@ -109,7 +111,7 @@ public class MakeConfiguration extends Configuration {
     private LinkerConfiguration linkerConfiguration;
     private ArchiverConfiguration archiverConfiguration;
     private PackagingConfiguration packagingConfiguration;
-    private RequiredProjectsConfiguration<LibraryItem> requiredProjectsConfiguration;
+    private RequiredProjectsConfiguration requiredProjectsConfiguration;
     private DebuggerChooserConfiguration debuggerChooserConfiguration;
     private QmakeConfiguration qmakeConfiguration;
     private boolean languagesDirty = true;
@@ -142,9 +144,9 @@ public class MakeConfiguration extends Configuration {
         linkerConfiguration = new LinkerConfiguration(this);
         archiverConfiguration = new ArchiverConfiguration(this);
         packagingConfiguration = new PackagingConfiguration(this);
-        requiredProjectsConfiguration = new RequiredProjectsConfiguration<LibraryItem>();
+        requiredProjectsConfiguration = new RequiredProjectsConfiguration();
         debuggerChooserConfiguration = new DebuggerChooserConfiguration();
-        qmakeConfiguration = new QmakeConfiguration();
+        qmakeConfiguration = new QmakeConfiguration(this);
 
         developmentHost.addPropertyChangeListener(compilerSet);
         developmentHost.addPropertyChangeListener(platform);
@@ -152,6 +154,7 @@ public class MakeConfiguration extends Configuration {
 
     public void setMakefileConfiguration(MakefileConfiguration makefileConfiguration) {
         this.makefileConfiguration = makefileConfiguration;
+        this.makefileConfiguration.setMakeConfiguration(this);
     }
 
     public MakefileConfiguration getMakefileConfiguration() {
@@ -241,7 +244,13 @@ public class MakeConfiguration extends Configuration {
     }
 
     public boolean isApplicationConfiguration() {
-        return getConfigurationType().getValue() == TYPE_APPLICATION;
+        switch (getConfigurationType().getValue()) {
+            case TYPE_APPLICATION:
+            case TYPE_QT_APPLICATION:
+                return true;
+            default:
+                return false;
+        }
     }
 
     public boolean isCompileConfiguration() {
@@ -249,7 +258,15 @@ public class MakeConfiguration extends Configuration {
     }
 
     public boolean isLibraryConfiguration() {
-        return getConfigurationType().getValue() == TYPE_DYNAMIC_LIB || getConfigurationType().getValue() == TYPE_STATIC_LIB;
+        switch (getConfigurationType().getValue()) {
+            case TYPE_DYNAMIC_LIB:
+            case TYPE_STATIC_LIB:
+            case TYPE_QT_DYNAMIC_LIB:
+            case TYPE_QT_STATIC_LIB:
+                return true;
+            default:
+                return false;
+        }
     }
 
     public boolean isLinkerConfiguration() {
@@ -261,7 +278,13 @@ public class MakeConfiguration extends Configuration {
     }
 
     public boolean isDynamicLibraryConfiguration() {
-        return getConfigurationType().getValue() == TYPE_DYNAMIC_LIB;
+        switch (getConfigurationType().getValue()) {
+            case TYPE_DYNAMIC_LIB:
+            case TYPE_QT_DYNAMIC_LIB:
+                return true;
+            default:
+                return false;
+        }
     }
 
     public boolean isArchiverConfiguration() {
@@ -313,6 +336,7 @@ public class MakeConfiguration extends Configuration {
 
     public void setLinkerConfiguration(LinkerConfiguration linkerConfiguration) {
         this.linkerConfiguration = linkerConfiguration;
+        this.linkerConfiguration.setMakeConfiguration(this);
     }
 
     public LinkerConfiguration getLinkerConfiguration() {
@@ -321,6 +345,7 @@ public class MakeConfiguration extends Configuration {
 
     public void setArchiverConfiguration(ArchiverConfiguration archiverConfiguration) {
         this.archiverConfiguration = archiverConfiguration;
+        this.archiverConfiguration.setMakeConfiguration(this);
     }
 
     public ArchiverConfiguration getArchiverConfiguration() {
@@ -329,6 +354,7 @@ public class MakeConfiguration extends Configuration {
 
     public void setPackagingConfiguration(PackagingConfiguration packagingConfiguration) {
         this.packagingConfiguration = packagingConfiguration;
+        this.packagingConfiguration.setMakeConfiguration(this);
     }
 
     public PackagingConfiguration getPackagingConfiguration() {
@@ -336,11 +362,11 @@ public class MakeConfiguration extends Configuration {
     }
 
     // LibrariesConfiguration
-    public RequiredProjectsConfiguration<LibraryItem> getRequiredProjectsConfiguration() {
+    public RequiredProjectsConfiguration getRequiredProjectsConfiguration() {
         return requiredProjectsConfiguration;
     }
 
-    public void setRequiredProjectsConfiguration(RequiredProjectsConfiguration<LibraryItem> requiredProjectsConfiguration) {
+    public void setRequiredProjectsConfiguration(RequiredProjectsConfiguration requiredProjectsConfiguration) {
         this.requiredProjectsConfiguration = requiredProjectsConfiguration;
     }
 
@@ -406,6 +432,10 @@ public class MakeConfiguration extends Configuration {
         return (Configuration) clone();
     }
 
+    /**
+     * Make a copy of configuration requested from Project Properties
+     * @return Copy of configuration
+     */
     public Configuration copy() {
         MakeConfiguration copy = new MakeConfiguration(getBaseDir(), getName(), getConfigurationType().getValue());
         copy.assign(this);
@@ -430,7 +460,9 @@ public class MakeConfiguration extends Configuration {
         return copy;
     }
 
-    // Cloning
+    /**
+     * Clone object
+     */
     @Override
     public Object clone() {
         MakeConfiguration clone = new MakeConfiguration(getBaseDir(), getName(), getConfigurationType().getValue(), getDevelopmentHost().getName());
@@ -457,7 +489,7 @@ public class MakeConfiguration extends Configuration {
         clone.setLinkerConfiguration(getLinkerConfiguration().clone());
         clone.setArchiverConfiguration(getArchiverConfiguration().clone());
         clone.setPackagingConfiguration(getPackagingConfiguration().clone());
-        clone.setRequiredProjectsConfiguration(getRequiredProjectsConfiguration().cloneConf());
+        clone.setRequiredProjectsConfiguration(getRequiredProjectsConfiguration().clone());
         clone.setDebuggerChooserConfiguration(getDebuggerChooserConfiguration().clone());
         clone.setQmakeConfiguration(getQmakeConfiguration().clone());
 
@@ -675,10 +707,9 @@ public class MakeConfiguration extends Configuration {
     public Set<Project> getSubProjects() {
         Set<Project> subProjects = new HashSet<Project>();
         LibrariesConfiguration librariesConfiguration = getLinkerConfiguration().getLibrariesConfiguration();
-        LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
-        for (int j = 0; j < libraryItems.length; j++) {
-            if (libraryItems[j] instanceof LibraryItem.ProjectItem) {
-                LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) libraryItems[j];
+        for (LibraryItem item : librariesConfiguration.getValue()) {
+            if (item instanceof LibraryItem.ProjectItem) {
+                LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) item;
                 Project project = projectItem.getProject(getBaseDir());
                 if (project != null) {
                     subProjects.add(project);
@@ -687,7 +718,7 @@ public class MakeConfiguration extends Configuration {
                 }
             }
         }
-        for (LibraryItem.ProjectItem libProject : getRequiredProjectsConfiguration().getRequiredProjectItemsAsArray()) {
+        for (LibraryItem.ProjectItem libProject : getRequiredProjectsConfiguration().getValue()) {
             Project project = libProject.getProject(getBaseDir());
             if (project != null) {
                 subProjects.add(project);
@@ -699,10 +730,9 @@ public class MakeConfiguration extends Configuration {
     public Set<String> getSubProjectLocations() {
         Set<String> subProjectLocations = new HashSet<String>();
         LibrariesConfiguration librariesConfiguration = getLinkerConfiguration().getLibrariesConfiguration();
-        LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
-        for (int j = 0; j < libraryItems.length; j++) {
-            if (libraryItems[j] instanceof LibraryItem.ProjectItem) {
-                LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) libraryItems[j];
+        for (LibraryItem item : librariesConfiguration.getValue()) {
+            if (item instanceof LibraryItem.ProjectItem) {
+                LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) item;
                 subProjectLocations.add(projectItem.getMakeArtifact().getProjectLocation());
             }
         }
@@ -712,10 +742,9 @@ public class MakeConfiguration extends Configuration {
     public Set<String> getSubProjectOutputLocations() {
         Set<String> subProjectOutputLocations = new HashSet<String>();
         LibrariesConfiguration librariesConfiguration = getLinkerConfiguration().getLibrariesConfiguration();
-        LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
-        for (int j = 0; j < libraryItems.length; j++) {
-            if (libraryItems[j] instanceof LibraryItem.ProjectItem) {
-                LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) libraryItems[j];
+        for (LibraryItem item : librariesConfiguration.getValue()) {
+            if (item instanceof LibraryItem.ProjectItem) {
+                LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) item;
                 String outputLocation = IpeUtils.getDirName(projectItem.getMakeArtifact().getOutput());
                 if (IpeUtils.isPathAbsolute(outputLocation)) {
                     subProjectOutputLocations.add(outputLocation);
@@ -736,7 +765,7 @@ public class MakeConfiguration extends Configuration {
         } else if (isMakefileConfiguration()) {
             output = getMakefileConfiguration().getOutput().getValue();
         } else if (isQmakeConfiguration()) {
-            output = getLinkerConfiguration().getOutputValue();
+            output = getQmakeConfiguration().getOutputValue();
         } else {
             assert false;
         }
@@ -757,7 +786,7 @@ public class MakeConfiguration extends Configuration {
     }
 
     public boolean hasDebugger() {
-        return DefaultProjectActionHandler.getInstance().getCustomDebugActionHandlerProvider(this) != null;
+        return ProjectActionSupport.getInstance().canHandle(this, ProjectActionEvent.Type.DEBUG);
     }
 
     public String expandMacros(String val) {

@@ -94,14 +94,18 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
 
     protected abstract boolean accept(DataObject object);
 
-    protected static String getDevelopmentHost(FileObject fileObject) {
-        Project project = findInOpenedProject(fileObject);
-
+    protected static String getDevelopmentHost(FileObject fileObject, Project project) {
+        if (project == null) {
+            project = findInOpenedProject(fileObject);
+        }
         String developmentHost = CompilerSetManager.getDefaultDevelopmentHost();
         if (project != null) {
             RemoteProject info = project.getLookup().lookup(RemoteProject.class);
             if (info != null) {
-                developmentHost = info.getDevelopmentHost();
+                String dh = info.getDevelopmentHost();
+                if (dh != null) {
+                    developmentHost = dh;
+                }
             }
         }
         return developmentHost;
@@ -125,18 +129,46 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return null;
     }
 
-    protected String getMakeCommand(Node node){
+    private Project findProject(Node node){
+        Node parent = node;
+        while (true) {
+            Project project = parent.getLookup().lookup(Project.class);
+            if (project != null){
+                return project;
+            }
+            Node p = parent.getParentNode();
+            if (p != null && p != parent){
+                parent = p;
+            } else {
+                return null;
+            }
+        }
+    }
+
+    protected String getMakeCommand(Node node, Project project){
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
-        Project project = findInOpenedProject(fileObject);
-        String makeCommand = null;
+        if (project == null) {
+            project = findProject(node);
+        }
+        if (project == null) {
+            project = findInOpenedProject(fileObject);
+        }
+        CompilerSet set = null;
         if (project != null) {
             ToolchainProject toolchain = project.getLookup().lookup(ToolchainProject.class);
             if (toolchain != null) {
-                Tool tool = toolchain.getCompilerSet().findTool(Tool.MakeTool);
-                if (tool != null) {
-                    makeCommand = tool.getPath();
-                }
+                set = toolchain.getCompilerSet();
+            }
+        }
+        if (set == null) {
+            set = CompilerSetManager.getDefault().getDefaultCompilerSet();
+        }
+        String makeCommand = null;
+        if (set != null) {
+            Tool tool = set.findTool(Tool.MakeTool);
+            if (tool != null) {
+                makeCommand = tool.getPath();
             }
         }
         if (makeCommand == null || makeCommand.length()==0) {
@@ -151,23 +183,9 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         File makefile = FileUtil.toFile(fileObject);
-
         // Build directory
         String bdir = mes.getBuildDirectory();
-        File buildDir;
-        if (bdir.length() == 0 || bdir.equals(".")) { // NOI18N
-            buildDir = makefile.getParentFile();
-        } else if (IpeUtils.isPathAbsolute(bdir)) {
-            buildDir = new File(bdir);
-        } else {
-            buildDir = new File(makefile.getParentFile(), bdir);
-        }
-        try {
-            buildDir = buildDir.getCanonicalFile();
-        }
-        catch (IOException ioe) {
-            // FIXUP
-        }
+        File buildDir = getAbsoluteBuildDir(bdir, makefile);
         return buildDir;
     }
 
@@ -290,5 +308,26 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
     @Override
     protected boolean asynchronous() {
         return false;
+    }
+
+    protected static File getAbsoluteBuildDir(String bdir, File startFile) {
+        File buildDir;
+        if (bdir.length() == 0 || bdir.equals(".")) { // NOI18N
+            buildDir = startFile.getParentFile();
+        } else if (IpeUtils.isPathAbsolute(bdir)) {
+            buildDir = new File(bdir);
+        } else {
+            buildDir = new File(startFile.getParentFile(), bdir);
+        }
+        // Canonical path not appropriate here.
+        // We must emulate command line behaviour hence absolute normalized path is more appropriate here.
+        // See IZ#157677:LiteSQL is not configurable in case of symlinks.
+        //try {
+        //    buildDir = buildDir.getCanonicalFile();
+        //} catch (IOException ioe) {
+        //    // FIXUP
+        //}
+        buildDir = FileUtil.normalizeFile(buildDir.getAbsoluteFile());
+        return buildDir;
     }
 }

@@ -67,6 +67,8 @@ import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataObject
 import org.netbeans.modules.hibernate.mapping.model.MyClass;
 import org.netbeans.modules.hibernate.util.CustomClassLoader;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
+import org.netbeans.spi.project.LookupProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -81,6 +83,11 @@ import org.openide.util.Exceptions;
  *
  * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
+@ProjectServiceProvider(service=HibernateEnvironment.class, projectType={
+    "org-netbeans-modules-maven",
+    "org-netbeans-modules-java-j2seproject",
+    "org-netbeans-modules-web-project"
+}, projectTypes=@LookupProvider.Registration.ProjectType(id="org-netbeans-modules-ant-freeform", position=700))
 public class HibernateEnvironmentImpl implements HibernateEnvironment {
 
     /** Handle to the current project to which this HibernateEnvironment is bound*/

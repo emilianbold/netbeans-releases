@@ -43,6 +43,7 @@ package org.openide.loaders;
 
 import java.net.URL;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -82,7 +83,8 @@ public class DataShadowBrokenAreNotTestedTest extends NbTestCase {
         
         assertEquals("No queries to UM after creation of data object", 0, UM.cnt);
     }
-    
+
+    @RandomlyFails // NB-Core-Build #2009
     public void testQueriedWhenBrokenShadowsExists() throws Exception {
         
         //

@@ -33,6 +33,8 @@ import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
  * @author Vitaly Bychkov
  */
 public abstract class NameGenerator {
+    NameGenerator() {
+    }
 
     abstract protected boolean isApplicable(TMapComponent component);
 

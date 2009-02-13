@@ -274,7 +274,14 @@ public class Annotator {
         if (lastMessageFormat == null || !taf.equals(lastAnnotationsFormat)) {
             for (;;) {  // executes at most 2 times
                 lastAnnotationsFormat = taf;
-                taf = taf.replaceAll("\\{revision}", "{0}").replaceAll("\\{status}", "{1}").replaceAll("\\{tag}", "{2}").replaceAll("\\{binary}", "{3}"); // NOI18N
+                taf = org.netbeans.modules.versioning.util.Utils.skipUnsupportedVariables(
+                        taf, 
+                        new String[] {"{status}", "{tag}", "{revision}", "{binary}" }   // NOI18N
+                );     
+                taf = taf.replaceAll("\\{revision}", "{0}").                            // NOI18N
+                          replaceAll("\\{status}", "{1}").                              // NOI18N
+                          replaceAll("\\{tag}", "{2}").                                 // NOI18N
+                          replaceAll("\\{binary}", "{3}");                              // NOI18N
                 try {
                     lastMessageFormat = new MessageFormat(taf);
                     lastEmptyAnnotation = lastMessageFormat.format(new Object [] { "", "", "", "" }); // NOI18N

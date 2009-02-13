@@ -52,6 +52,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.model.pom.Dependency;
 import org.openide.filesystems.FileObject;
 import javax.xml.namespace.QName;
 import org.apache.maven.project.MavenProject;
@@ -165,6 +166,12 @@ public final class MavenModelUtils {
         if (jaxWsVersion != null) {
             config.setSimpleParameter("target", jaxWsVersion); //NOI18N
         }
+        Dependency jsr181Dep = model.getFactory().createDependency();
+        jsr181Dep.setGroupId("javax.jws"); //NOI18N
+        jsr181Dep.setArtifactId("jsr181-api"); //NOI18N
+        jsr181Dep.setVersion("1.0-MR1"); //NOI18N
+        plugin.addDependency(jsr181Dep);
+        
         return plugin; 
     }
 

@@ -467,11 +467,6 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.a = 1.0-alpha-2
    it is very useful for this loader to be the system class loader - you can specify
    any class in your module by name.
   </p>
-  <p>
-   (More helpful information: <a
-   href="http://www.javageeks.com/Papers/ClassForName/ClassForName.pdf">Understanding
-   <code>Class.forName()</code></a>)
-  </p>
   <pre>
 <span class="type">ClassLoader</span> <span class="variable-name">l</span> = Thread.currentThread().getContextClassLoader();
 <span class="type">Class</span> <span class="variable-name">c</span> = l.loadClass(<span class="string">"some.module.Class"</span>);

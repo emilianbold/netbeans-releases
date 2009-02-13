@@ -147,46 +147,6 @@ public class DesignView_0001 extends DesignView {
       }
     }
 
-  // TODO : add constant for destination
-  // TODO : calculate point right way without constants
-  // 0 - top, 1 - elements
-  protected void DragSomething(
-      int iListIndex,
-      String sElementName,
-      int iDestination,
-      String sResult
-    )
-  {
-    TopComponentOperator top = new TopComponentOperator( SCHEMA_NAME_1 );
-    TopComponentOperator pal = new TopComponentOperator( "Palette" );
-    JListOperator list = new JListOperator( pal, iListIndex );
-
-    ListModel lmd = list.getModel( );
-    int iIndex = list.findItemIndex( sElementName );
-    list.selectItem( iIndex );
-    Point pt = list.getClickPoint( iIndex );
-
-    int[] yy = { 40, 60, 150, 90, 175, 200, 235 };
-
-    MouseRobotDriver m_mouseDriver = new MouseRobotDriver(new Timeout("", 500));
-    m_mouseDriver.moveMouse( list, pt.x, pt.y );
-    m_mouseDriver.pressMouse( InputEvent.BUTTON1_MASK, 0 );
-    m_mouseDriver.enterMouse( top );
-    m_mouseDriver.dragMouse( top, 50, yy[ iDestination ], InputEvent.BUTTON1_MASK, 0 );
-    m_mouseDriver.releaseMouse( InputEvent.BUTTON1_MASK, 0 );
-
-    Sleep( 1000 );
-
-    if( null != sResult )
-    {
-      // Check text box
-      JTextComponentOperator text = new JTextComponentOperator( MainWindowOperator.getDefault( ), 0 );
-      String sText = text.getText( );
-      if( !sText.equals( sResult ) )
-        fail( "Invalid new element name, expected \"" + sResult + "\", found \"" + sText + "\"" );
-    }
-  }
-
   public void DoDragAndDrop( )
   {
     startTest( );
@@ -201,24 +161,24 @@ public class DesignView_0001 extends DesignView {
     Sleep( 1000 );
 
     // Add elements
-    DragSomething( 0, "Element", 0, "newElement" );
-    DragSomething( 0, "Element", 1, "newElement1" );
+    DragSomething( SCHEMA_NAME_1, 0, "Element", 0, "newElement" );
+    DragSomething( SCHEMA_NAME_1, 0, "Element", 1, "newElement1" );
 
     // Add complex types
-    DragSomething( 1, "Complex Type", 0, "newComplexType" );
-    DragSomething( 1, "Complex Type", 2, "newComplexType1" );
+    DragSomething( SCHEMA_NAME_1, 1, "Complex Type", 0, "newComplexType" );
+    DragSomething( SCHEMA_NAME_1, 1, "Complex Type", 2, "newComplexType1" );
 
     // Add attributes
-    DragSomething( 0, "Attribute", 3, "newAttribute" );
-    DragSomething( 0, "Attribute", 4, "newAttribute" );
+    DragSomething( SCHEMA_NAME_1, 0, "Attribute", 3, "newAttribute" );
+    DragSomething( SCHEMA_NAME_1, 0, "Attribute", 4, "newAttribute" );
 
     // Add more CT
-    DragSomething( 1, "Complex Type", 2, "newComplexType2" );
+    DragSomething( SCHEMA_NAME_1, 1, "Complex Type", 2, "newComplexType2" );
 
     // Add all
-    DragSomething( 1, "All", 4, null );
-    DragSomething( 1, "Choice", 5, null );
-    DragSomething( 1, "Sequence", 6, null );
+    DragSomething( SCHEMA_NAME_1, 1, "All", 4, null );
+    DragSomething( SCHEMA_NAME_1, 1, "Choice", 5, null );
+    DragSomething( SCHEMA_NAME_1, 1, "Sequence", 6, null );
 
     String[] asIdeal =
     {

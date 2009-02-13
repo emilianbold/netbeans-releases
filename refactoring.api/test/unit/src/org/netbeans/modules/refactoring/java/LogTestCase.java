@@ -43,6 +43,7 @@ package org.netbeans.modules.refactoring.java;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.MockServices;
@@ -52,6 +53,7 @@ import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.openide.util.Exceptions;
 
 
 
@@ -147,8 +149,13 @@ public class LogTestCase extends NbTestCase {
         }
     }
     
-    public void prepareProject() {//default - override for another projects
-        classPathWorkDir=new File(getDataDir(), "projects.default.src".replace('.', File.separatorChar));
+    public void prepareProject() throws IOException {//default - override for another projects
+        String projectPath = "projects.default";
+        classPathWorkDir=new File(getDataDir(), (projectPath+".src").replace('.', File.separatorChar));
+        File projectFile  =  new File(getDataDir(),projectPath.replace('.', File.separatorChar));        
+        FileObject pFO = FileUtil.toFileObject(projectFile);
+        Project project = ProjectManager.getDefault().findProject(pFO);
+        OpenProjects.getDefault().open(new Project[]{project}, false);
     }
     
     public void log(String s) {

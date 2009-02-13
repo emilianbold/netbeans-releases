@@ -46,6 +46,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.openide.windows.OutputWriter;
@@ -78,7 +80,8 @@ public final class LineProcessors {
      * @param processors processor to which the actions will be ditributed
      * @return the processor acting as a proxy
      */
-    public static LineProcessor proxy(LineProcessor... processors) {
+    @NonNull
+    public static LineProcessor proxy(@NonNull LineProcessor... processors) {
         return new ProxyLineProcessor(processors);
     }
 
@@ -98,7 +101,8 @@ public final class LineProcessors {
      * @return the processor printing all lines passed for processing to
      *             the given output writer
      */
-    public static LineProcessor printing(OutputWriter out, boolean resetEnabled) {
+    @NonNull
+    public static LineProcessor printing(@NonNull OutputWriter out, boolean resetEnabled) {
         return printing(out, null, resetEnabled);
     }
 
@@ -115,14 +119,16 @@ public final class LineProcessors {
      * Returned processor is <i> not thread safe</i>.
      *
      * @param out where to print converted lines and characters
-     * @param convertor convertor converting the lines before printing
+     * @param convertor convertor converting the lines before printing,
+     *             may be <code>null</code>
      * @param resetEnabled determines whether the reset operation will work
      *             (will reset the writer if so)
      * @return the processor converting the lines with convertor and
      *             printing the result to the given output writer
      * @see LineConvertor
      */
-    public static LineProcessor printing(OutputWriter out, LineConvertor convertor, boolean resetEnabled) {
+    @NonNull
+    public static LineProcessor printing(@NonNull OutputWriter out, @NullAllowed LineConvertor convertor, boolean resetEnabled) {
         return new PrintingLineProcessor(out, convertor, resetEnabled);
     }
 
@@ -140,7 +146,8 @@ public final class LineProcessors {
      * @return the processor that will wait for the line matching the pattern,
      *             decreasing the latch when such line appears for the first time
      */
-    public static LineProcessor patternWaiting(Pattern pattern, CountDownLatch latch) {
+    @NonNull
+    public static LineProcessor patternWaiting(@NonNull Pattern pattern, @NonNull CountDownLatch latch) {
         return new WaitingLineProcessor(pattern, latch);
     }
 

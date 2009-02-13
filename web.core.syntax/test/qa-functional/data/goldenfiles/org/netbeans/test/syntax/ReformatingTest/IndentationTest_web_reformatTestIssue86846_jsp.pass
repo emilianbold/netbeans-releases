@@ -3,8 +3,8 @@
     void start() {
     }
 %>
-<% 
-if (start){
-start();
-}
+<%
+            if (start) {
+                start();
+            }
 %>

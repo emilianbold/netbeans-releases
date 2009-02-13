@@ -215,7 +215,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
         if(wsdlUrl == null) {
             wsdlUrl = FileUtil.toFileObject(FileUtil.normalizeFile(new File(filePath))).getURL().toExternalForm();
         }
-        FileObject localWsdlFolder = jaxWsSupport.getLocalWsdlFolder(true);
+        FileObject localWsdlFolder = jaxWsSupport.getWsdlFolder(true);
 
         boolean hasSrcFolder = false;
         File srcFile = new File (FileUtil.toFile(project.getProjectDirectory()),"src"); //NOI18N

@@ -38,37 +38,42 @@
  */
 package org.netbeans.modules.dlight.management.api;
 
-import org.netbeans.modules.dlight.management.api.impl.DataProvidersManager;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.dlight.dataprovider.api.DataModelScheme;
-import org.netbeans.modules.dlight.execution.api.DLightSessionReference;
-import org.netbeans.modules.dlight.execution.api.DLightTarget;
-import org.netbeans.modules.dlight.execution.api.impl.DLightToolkitManager;
-import org.netbeans.modules.dlight.indicator.api.Indicator;
-import org.netbeans.modules.dlight.indicator.api.impl.IndicatorAccessor;
-import org.netbeans.modules.dlight.indicator.api.impl.IndicatorActionListener;
-import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
+import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
+import org.netbeans.modules.dlight.api.execution.DLightTarget;
+import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler;
+import org.netbeans.modules.dlight.api.impl.DLightSessionHandlerAccessor;
+import org.netbeans.modules.dlight.api.impl.DLightSessionInternalReference;
+import org.netbeans.modules.dlight.api.impl.DLightToolkitManager;
+import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
+import org.netbeans.modules.dlight.management.api.impl.DataProvidersManager;
+import org.netbeans.modules.dlight.management.api.impl.VisualizerProvider;
 import org.netbeans.modules.dlight.management.ui.spi.IndicatorsComponentProvider;
+import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
+import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
+import org.netbeans.modules.dlight.spi.impl.IndicatorActionListener;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
-import org.netbeans.modules.dlight.management.api.impl.VisualizerFactory;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.dlight.visualizer.api.VisualizerConfiguration;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * D-Light manager 
  */
+@ServiceProvider(service=org.netbeans.modules.dlight.api.impl.DLightToolkitManager.class)
 public final class DLightManager implements DLightToolkitManager, IndicatorActionListener {
 
     private static final Logger log = DLightLogger.getLogger(DLightManager.class);
@@ -80,22 +85,26 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
      *
      */
     public DLightManager() {
-        this.addDLightSessionListener(IndicatorsComponentProvider.getInstance().getIndicatorComponent());
+        this.addDLightSessionListener(IndicatorsComponentProvider.getInstance().getIndicatorComponentListener());
     }
 
     public static DLightManager getDefault() {
         return (DLightManager) Lookup.getDefault().lookup(DLightToolkitManager.class);
     }
 
-    public DLightSession createSession(DLightTarget target, String configurationName) {
+    public DLightSession createNewSession(DLightTarget target, String configurationName) {
         // TODO: For now just create new session every time we set a target...
         DLightSession session = newSession(target, DLightConfigurationManager.getInstance().getConfigurationByName(configurationName));
         setActiveSession(session);
         return session;
     }
 
-    public DLightSession createSession(DLightTarget target) {
-        return createSession(target, DLightConfigurationManager.getInstance().getSelectedDLightConfiguration().getConfigurationName());
+    public DLightSessionHandler createSession(DLightTarget target, String configurationName) {
+        return DLightSessionHandlerAccessor.getDefault().create(createNewSession(target, configurationName));
+    }
+
+    public DLightSession createNewSession(DLightTarget target) {
+        return createNewSession(target, DLightConfigurationManager.getInstance().getSelectedDLightConfiguration().getConfigurationName());
     }
 
     public void closeSession(DLightSession session) {
@@ -147,20 +156,22 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         return sessions;
     }
 
-    public DLightSession setActiveSession(DLightSession session) {
+    public DLightSession setActiveSession(DLightSession newActiveSession) {
         DLightSession oldActiveSession = activeSession;
-        DLightSession newActiveSession = session;
-        activeSession = newActiveSession;
+        if (newActiveSession != oldActiveSession) {
 
-        if (oldActiveSession != null) {
-            oldActiveSession.setActive(false);
+            activeSession = newActiveSession;
+
+            if (oldActiveSession != null) {
+                oldActiveSession.setActive(false);
+            }
+
+            if (newActiveSession != null) {
+                newActiveSession.setActive(true);
+            }
+
+            notifySessionActivated(oldActiveSession, newActiveSession);
         }
-
-        if (newActiveSession != null) {
-            newActiveSession.setActive(true);
-        }
-
-        notifySessionActivated(oldActiveSession, newActiveSession);
 
         return activeSession;
     }
@@ -183,6 +194,9 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
     }
 
     public void addDLightSessionListener(DLightSessionListener listener) {
+        if (listener == null){
+            return;
+        }
         if (!sessionListeners.contains(listener)) {
             sessionListeners.add(listener);
 
@@ -198,7 +212,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         sessionListeners.remove(listener);
     }
 
-    public DLightSession newSession(DLightTarget target, DLightConfiguration configuration) {
+    private DLightSession newSession(DLightTarget target, DLightConfiguration configuration) {
         DLightSession session = new DLightSession();
         session.setExecutionContext(new ExecutionContext(target, configuration.getToolsSet()));
         sessions.add(session);
@@ -207,6 +221,10 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
             IndicatorAccessor.getDefault().addIndicatorActionListener(ind, this);
         }
         notifySessionAdded(session);
+        //should add existinhg listeners
+        for (DLightSessionListener sessionListener : sessionListeners){
+            sessionListener.sessionAdded(session);
+        }
         return session;
     }
 
@@ -229,7 +247,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
          *
          */
 
-        Collection<? extends VisualizerFactory> allVisualizerFactories = Lookup.getDefault().lookupAll(VisualizerFactory.class);
+        Collection<? extends VisualizerProvider> allVisualizerFactories = Lookup.getDefault().lookupAll(VisualizerProvider.class);
         Collection<? extends DataStorage> activeDataStorages = activeSession.getStorages();
 
 //        for (VisualizerFactory vf : allVisualizerFactories) {
@@ -243,7 +261,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
             if (!storage.hasData(configuration.getMetadata())) {
                 continue;
             }
-            List<? extends DataStorageType> dataStorageTypes = storage.getStorageTypes();
+            Collection<DataStorageType> dataStorageTypes = storage.getStorageTypes();
             for (DataStorageType dss : dataStorageTypes) {
                 // As DataStorage is already specialized, there is always only one
                 // returned DataSchema
@@ -254,7 +272,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
                     continue;
                 } else {
                     // Found! Can craete visualizer with this id for this dataProvider
-                    visualizer = VisualizerFactory.getInstance().createVisualizer(configuration, dataProvider);
+                    visualizer = VisualizerProvider.getInstance().createVisualizer(configuration, dataProvider);
                     if (visualizer instanceof SessionStateListener) {
                         activeSession.addSessionStateListener((SessionStateListener) visualizer);
                         ((SessionStateListener) visualizer).sessionStateChanged(activeSession, null, activeSession.getState());
@@ -266,14 +284,31 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
                 }
             }
         }
-//            }
-//        }
+        //there is one more changes to find VisualizerDataProvider without any storage attached
 
+        if (visualizer == null) {
+            VisualizerDataProvider dataProvider = DataProvidersManager.getInstance().getDataProviderFor(dataModel);
+
+            if (dataProvider == null) {
+                // no providers for this storage can be found nor created
+                log.info("Unable to find factory to create Visualizer with ID == " + configuration.getID());
+                return null;
+            } else {
+                // Found! Can craete visualizer with this id for this dataProvider
+                visualizer = VisualizerProvider.getInstance().createVisualizer(configuration, dataProvider);
+                if (visualizer instanceof SessionStateListener) {
+                    activeSession.addSessionStateListener((SessionStateListener) visualizer);
+                    ((SessionStateListener) visualizer).sessionStateChanged(activeSession, null, activeSession.getState());
+
+                }
+            }
+
+        }
         if (visualizer == null) {
             log.info("Unable to find factory to create Visualizer with ID == " + configuration.getID());
             return null;
-        }
 
+        }
         VisualizerContainer container = visualizer.getDefaultContainer();
         container.addVisualizer(toolName, visualizer);
         container.showup();
@@ -319,7 +354,8 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         return NbBundle.getMessage(DLightManager.class, key, param1);
     }
 
-    public void startSession(DLightSessionReference reference) {
+    public void startSession(DLightSessionHandler handler) {
+        DLightSessionInternalReference reference = DLightSessionHandlerAccessor.getDefault().getSessionReferenceImpl(handler);
         if (!(reference instanceof DLightSession)) {
             throw new IllegalArgumentException("Illegal Argument, reference you are trying to use " +
                     "to start D-Light session is invalid");//NOI18N
@@ -328,7 +364,9 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         startSession((DLightSession) reference);
     }
 
-    public void stopSession(DLightSessionReference reference) {
+    public void stopSession(DLightSessionHandler handler) {
+        DLightSessionInternalReference reference = DLightSessionHandlerAccessor.getDefault().getSessionReferenceImpl(handler);
+
         if (!(reference instanceof DLightSession)) {
             throw new IllegalArgumentException("Illegal Argument, reference you are trying to use " +
                     "to stop D-Light session is invalid");//NOI18N

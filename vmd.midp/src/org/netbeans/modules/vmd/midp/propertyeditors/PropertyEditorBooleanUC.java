@@ -94,7 +94,7 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
     public static PropertyEditorBooleanUC createInstance(TypeID parentTypeID, String rbLabel) {
         return new PropertyEditorBooleanUC(true, parentTypeID, rbLabel);
     }
-
+    
     @Override
     public void cleanUp(DesignComponent component) {
         super.cleanUp(component);

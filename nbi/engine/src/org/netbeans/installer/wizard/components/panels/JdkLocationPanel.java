@@ -112,6 +112,11 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
         
         setProperty(USEDBY_LABEL_PROPERTY,
                 DEFAULT_USEDBY_LABEL);
+
+        setProperty(JAVA_DOWNLOAD_PAGE_PROPERTY,
+                !SystemUtils.isMacOS() ?
+                    DEFAULT_JAVA_DOWNLOAD_PAGE :
+                    DEFAULT_JAVA_DOWNLOAD_PAGE_MAC);
     }
     
     @Override
@@ -675,6 +680,16 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     public static final String DEFAULT_VENDOR_JDK_ALLOWED =
             ResourceUtils.getString(JdkLocationPanel.class,
             "JLP.vendor.jdk.allowed");
+
+    public static final String JAVA_DOWNLOAD_PAGE_PROPERTY =
+            "java.download.page";
+
+    public static final String DEFAULT_JAVA_DOWNLOAD_PAGE =
+            ResourceUtils.getString(JdkLocationPanel.class,
+            "JLP.java.download.page");
+    public static final String DEFAULT_JAVA_DOWNLOAD_PAGE_MAC =
+            ResourceUtils.getString(JdkLocationPanel.class,
+            "JLP.java.download.page.mac");
     
     public static final String DEFAULT_USEDBY_LABEL =
             ResourceUtils.getString(JdkLocationPanel.class,

@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.actions;
 
 import java.io.File;
 import java.io.Writer;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.loaders.MakefileDataObject;
@@ -70,10 +71,10 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
     }
 
     protected void performAction(Node node, String target) {
-        performAction(node, target, null, null);
+        performAction(node, target, null, null, null);
     }
 
-    protected void performAction(Node node, String target, ExecutionListener listener, Writer outputListener) {
+    protected void performAction(Node node, String target, ExecutionListener listener, Writer outputListener, Project project) {
         if (MakeSettings.getDefault().getSaveAll()) {
             LifecycleManager.getDefault().saveAll();
         }
@@ -83,7 +84,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         // Build directory
         File buildDir = getBuildDirectory(node);
         // Executable
-        String executable = getMakeCommand(node);
+        String executable = getMakeCommand(node, project);
         // Arguments
         String arguments = "-f " + makefile.getName() + " " + target; // NOI18N
         // Tab Name
@@ -92,7 +93,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
             tabName += " " + target; // NOI18N
         } // NOI18N
 
-        String developmentHost = getDevelopmentHost(fileObject);
+        String developmentHost = getDevelopmentHost(fileObject, project);
         // Execute the makefile
         NativeExecutor nativeExecutor = new NativeExecutor(
                 developmentHost,

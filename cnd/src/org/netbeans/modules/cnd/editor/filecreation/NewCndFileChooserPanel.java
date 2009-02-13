@@ -54,15 +54,17 @@ import org.openide.util.NbBundle;
 public class NewCndFileChooserPanel extends CndPanel {
 
     private final MIMEExtensions es;
+    private final String defaultExt;
     
-    NewCndFileChooserPanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel, MIMEExtensions es) {
+    NewCndFileChooserPanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel, MIMEExtensions es, String defaultExt) {
         super(project, folders, bottomPanel);
         this.es = es;
+        this.defaultExt = defaultExt;
     }
 
     public Component getComponent() {
         if (gui == null) {
-            gui = new NewCndFileChooserPanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), es);
+            gui = new NewCndFileChooserPanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), es, defaultExt);
             gui.addChangeListener(this);
         }
         return gui;

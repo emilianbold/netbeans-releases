@@ -666,7 +666,8 @@ final class ModuleListParser {
      * <ol>
      * <li> ${nb_all} - location of NB sources (used only for netbeans.org modules)
      * <li> ${netbeans.dest.dir} - location of NB build (used only for NB.org modules)
-     * <li> ${cluster.path} - location of clusters to build against (used only for suite and standalone modules)
+     * <li> ${cluster.path.final} - location of clusters to build against,
+     * created from ${cluster.path} specified in platform.properties file (used only for suite and standalone modules)
      * <li> ${basedir} - directory of the project initiating the scan (most significant for standalone modules)
      * <li> ${suite.dir} - directory of the suite (used only for suite modules)
      * <li> ${nb.cluster.TOKEN} - list of module paths included in cluster TOKEN (comma-separated) (used only for netbeans.org modules)
@@ -686,7 +687,7 @@ final class ModuleListParser {
             // add extra clusters
             String suiteDirS = properties.get("suite.dir");
             boolean hasSuiteDir = suiteDirS != null && suiteDirS.length() > 0;
-            String clusterPath = properties.get("cluster.path");
+            String clusterPath = properties.get("cluster.path.final");
             File[] clusters = null;
 
             if (clusterPath != null) {

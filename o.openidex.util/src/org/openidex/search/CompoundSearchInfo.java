@@ -45,13 +45,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 
 /**
  *
  * @author  Marian Petras
  */
-class CompoundSearchInfo implements SearchInfo {
+class CompoundSearchInfo implements SearchInfo.Files {
 
     /** */
     private final SearchInfo[] elements;
@@ -88,8 +89,14 @@ class CompoundSearchInfo implements SearchInfo {
     /**
      */
     public Iterator<DataObject> objectsToSearch() {
+        return Utils.toDataObjectIterator(filesToSearch());
+    }
+
+    /**
+     */
+    public Iterator<FileObject> filesToSearch() {
         if (elements == null) {
-            return Collections.<DataObject>emptyList().iterator();
+            return Collections.<FileObject>emptyList().iterator();
         }
         
         List<SearchInfo> searchableElements = new ArrayList<SearchInfo>(elements.length);

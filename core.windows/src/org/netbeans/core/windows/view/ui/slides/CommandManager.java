@@ -218,6 +218,8 @@ final class CommandManager implements ActionListener {
                 if (actions == null) {
                     actions = tc.getActions();
                 }
+                if (actions == null || actions.length == 0 )
+                    return;
                 
                 showPopupMenu(
                     Utilities.actionsToPopup(actions, tc.getLookup()), tae.getMouseEvent().getPoint(), tae.getMouseEvent().getComponent());

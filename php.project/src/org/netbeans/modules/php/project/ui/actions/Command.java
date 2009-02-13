@@ -76,18 +76,13 @@ public abstract class Command {
         return project;
     }
 
-    /** eventually show the customizer */
-    protected boolean isRunConfigurationValid(boolean indexFileNeeded) {
-        return ProjectPropertiesSupport.isActiveConfigValid(project, indexFileNeeded, true);
-    }
-
     protected boolean isScriptSelected() {
         PhpProjectProperties.RunAsType runAs = ProjectPropertiesSupport.getRunAs(project);
         return PhpProjectProperties.RunAsType.SCRIPT.equals(runAs);
     }
 
     protected ConfigAction getConfigAction() {
-        return ConfigAction.get(ConfigAction.convert(ProjectPropertiesSupport.getRunAs(getProject())));
+        return ConfigAction.get(ConfigAction.convert(ProjectPropertiesSupport.getRunAs(project)), project);
     }
 
     protected boolean isTestFile(Lookup context) {

@@ -46,7 +46,6 @@ import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacroParameter;
-import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
@@ -164,14 +163,18 @@ public class ParameterListImpl<T, K> extends OffsetableIdentifiableBase<T> imple
 
     public ParameterListImpl(DataInput input) throws IOException {
         super(input);
-        this.parameters = UIDObjectFactory.getDefaultFactory().readUIDCollection(new ArrayList<CsmUID<K>>(), input);
+        ArrayList<CsmUID<K>> params = new ArrayList<CsmUID<K>>();
+        this.parameters = UIDObjectFactory.getDefaultFactory().readUIDCollection(params, input);
+        if (parameters == params) {
+            params.trimToSize();
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
     // help factory methods
-    public static <T, K extends CsmNamedElement> ParameterListImpl<T, K> create(CsmFile file, int start, int end, Collection<K> parameters) {
-        return new ParameterListImpl<T, K>(file, start, end, parameters);
-    }
+    //public static <T, K extends CsmNamedElement> ParameterListImpl<T, K> create(CsmFile file, int start, int end, Collection<K> parameters) {
+    //    return new ParameterListImpl<T, K>(file, start, end, parameters);
+    //}
 
     public static ParameterListImpl<CsmParameterList, CsmMacroParameter> create(CsmFile file, APTMacro macro) {
         return create(file, macro.getName(), macro.getParams());

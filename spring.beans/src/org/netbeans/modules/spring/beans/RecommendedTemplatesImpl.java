@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.spring.beans;
 
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 
 /**
@@ -57,8 +58,21 @@ public class RecommendedTemplatesImpl implements RecommendedTemplates {
 
     private final boolean web;
 
-    public RecommendedTemplatesImpl(boolean web) {
+    private RecommendedTemplatesImpl(boolean web) {
         this.web = web;
+    }
+
+    @ProjectServiceProvider(service=RecommendedTemplates.class, projectType="org-netbeans-modules-web-project")
+    public static RecommendedTemplates forWeb() {
+        return new RecommendedTemplatesImpl(true);
+    }
+
+    @ProjectServiceProvider(service=RecommendedTemplates.class, projectType={
+        "org-netbeans-modules-java-j2seproject",
+        "org-netbeans-modules-j2ee-ejbjarproject"
+    })
+    public static RecommendedTemplates forNonWeb() {
+        return new RecommendedTemplatesImpl(false);
     }
 
     public String[] getRecommendedTypes() {

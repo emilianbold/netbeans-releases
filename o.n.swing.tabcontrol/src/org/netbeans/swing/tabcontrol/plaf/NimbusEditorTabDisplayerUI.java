@@ -46,17 +46,21 @@
 
 package org.netbeans.swing.tabcontrol.plaf;
 
+import com.sun.java.swing.Painter;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.JComponent;
+import javax.swing.UIManager;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 
 import javax.swing.plaf.ComponentUI;
@@ -103,6 +107,26 @@ public final class NimbusEditorTabDisplayerUI extends BasicScrollingTabDisplayer
             prefHeight = fm.getHeight() + ins.top + ins.bottom + 12;
         }
         return new Dimension(displayer.getWidth(), prefHeight);
+    }
+    
+    protected void paintBackground(Graphics g) {
+        Painter painter;
+        if (displayer.isActive()) {
+            painter = (Painter) UIManager.get("TabbedPane:TabbedPaneTabArea[Enabled+MouseOver].backgroundPainter");
+        }
+        else {
+            painter = (Painter) UIManager.get("TabbedPane:TabbedPaneTabArea[Enabled].backgroundPainter");
+        }
+
+        Graphics2D g2d = (Graphics2D) g;
+        int w = displayer.getWidth();
+        int h = displayer.getHeight();
+        painter.paint(g2d, null, w, h);
+
+        Color c = (Color) UIManager.get("nimbusBorder");
+        g.setColor(c);
+        g.drawLine(0, h-5, 0, h);
+        g.drawLine(w-1, h-5, w-1, h);
     }
     
     protected void paintAfterTabs(Graphics g) {
@@ -169,7 +193,7 @@ public final class NimbusEditorTabDisplayerUI extends BasicScrollingTabDisplayer
     
     protected Rectangle getControlButtonsRectangle( Container parent ) {
         Component c = getControlButtons();
-        return new Rectangle( parent.getWidth()-c.getWidth()-4, 4, c.getWidth(), c.getHeight() );
+        return new Rectangle( parent.getWidth()-c.getWidth()-4, 2, c.getWidth(), c.getHeight() );
     }
 
     public Insets getTabAreaInsets() {

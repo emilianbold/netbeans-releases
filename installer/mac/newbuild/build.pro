@@ -25,12 +25,13 @@
     <property name="tomcat_location" value="${binary_cache_host}/tomcat/apache-tomcat-${tomcat.version}.zip"/> 
             
     <!-- GlassFish properties   -->   
-    <property name="glassfish.install.dir" value="${install.dir}/glassfish-v2ur2"/>
-    <property name="glassfish.version" value="v2ur2"/>
-    <!--<property name="glassfish_location" value="${gf_builds_host}/java/re/glassfish/9.1_02/promoted/fcs/latest/images/mac/glassfish-image-SNAPSHOT.jar"/>-->
-    <property name="glassfish_location"    value="file:${user.home}/releng/hudson/glassfish-image-v2ur2-b04.jar"/>
-    <!--<property name="glassfish_location_ml" value="${gf_builds_host}/java/re/glassfish/9.1_02/promoted/fcs/latest/l10n/mac/glassfish-image-SNAPSHOT-ml.jar"/>-->
-    <property name="glassfish_location_ml" value="file:${user.home}/releng/hudson/glassfish-image-v2ur2-b04-ml.jar"/>
+    <property name="glassfish.install.dir" value="${install.dir}/glassfish-v2.1"/>
+    <property name="glassfish.version" value="v2.1"/>
+    <property name="glassfish.display.version" value="V2.1"/>
+    <!--<property name="glassfish_location" value="${gf_builds_host}/java/re/glassfish_branch/9.1.1/promoted/fcs/b60e/images/mac/glassfish-image-SNAPSHOT.jar"/>-->
+    <property name="glassfish_location"    value="file:${user.home}/releng/hudson/glassfish-image-v2.1-b60e.jar"/>
+    <!--<property name="glassfish_location_ml" value="${gf_builds_host}/java/re/glassfish_branch/9.1.1/promoted/fcs/b60e/l10n/mac/glassfish-image-SNAPSHOT-ml.jar"/>-->
+    <property name="glassfish_location_ml" value="file:${user.home}/releng/hudson/glassfish-image-v2.1-b60e-ml.jar"/>
 
     <!-- GlassFish V3 properties   -->   
     <property name="glassfish.v3.build.type"      value="prelude"/>
@@ -60,8 +61,8 @@
     <!--property name="openesb_core_source" value="${openesb_builds_host}/kits/openesb/main/latest/CORE/jbi-core-installer.jar"/-->                  
 
     <!-- JavaFX Properties -->
-    <property name="javafx_location" value="${javafx_builds_host}/lastSuccessfulBuild/artifact/main/contrib/zips/javafx-cluster-mac.zip"/>
-    <property name="javafx_sdk_location" value="${javafx_builds_host}/lastSuccessfulBuild/artifact/main/contrib/zips/javafx-sdk-mac.zip"/>
+    <property name="javafx_location"     value="${javafx_builds_host}/lastSuccessfulBuild/artifact/zips/javafx-cluster-mac.zip"/>
+    <property name="javafx_sdk_location" value="${javafx_builds_host}/lastSuccessfulBuild/artifact/zips/javafx-sdk-mac.zip"/>
 
 
     <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         

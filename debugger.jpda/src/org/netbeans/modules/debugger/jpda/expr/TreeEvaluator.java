@@ -185,7 +185,7 @@ public class TreeEvaluator {
         } catch (NativeMethodException e) {
             throw new InvalidExpressionException (e.getLocalizedMessage());
         } catch (InvalidStackFrameException e) {
-            Exceptions.printStackTrace(e); // Should not occur
+            Exceptions.printStackTrace(Exceptions.attachMessage(e, "During evaluation of '"+expression.getExpression()+"'")); // Should not occur
             throw new InvalidExpressionException (NbBundle.getMessage(
                     JPDAThreadImpl.class, "MSG_NoCurrentContext"));
         } catch (UnsupportedOperationException e) {

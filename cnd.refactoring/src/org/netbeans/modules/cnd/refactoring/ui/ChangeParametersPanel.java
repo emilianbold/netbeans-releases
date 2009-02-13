@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.util.NbBundle;
@@ -106,8 +107,12 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     private static final String ACTION_INLINE_EDITOR = "invokeInlineEditor";  //NOI18N
 
     /** Creates new form ChangeMethodSignature */
-    public ChangeParametersPanel(CsmObject selectedObj, ChangeListener parent) {
-        this.selectedElement = selectedObj;
+    public ChangeParametersPanel(CsmObject selectedObj, CsmContext editorContext, ChangeListener parent) {
+        if (selectedObj == null) {
+            this.selectedElement = editorContext.getEnclosingFunction();
+        } else {
+            this.selectedElement = selectedObj;
+        }
         this.parent = parent;
         model = new ParamTableModel(columnNames, 0);
         initComponents();
@@ -118,7 +123,6 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         if (initialized) {
             return;
         }
-        @SuppressWarnings("unchecked")
         CsmFunction fun = ((CsmFunction) CsmRefactoringUtils.getReferencedElement(selectedElement)).getDeclaration();
         functionObj = fun;
         returnType = functionObj.getReturnType().getCanonicalText().toString();
@@ -491,6 +495,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                     model.addRow(parRep);
                 } else {
                     removable = Boolean.valueOf(model.isRemovable(originalIndex) && removable.booleanValue());
+                    // vector of objects
                     @SuppressWarnings("unchecked")
                     Vector<Object> data = (Vector<Object>) model.getDataVector().get(originalIndex);
                     data.set(4, removable);
@@ -592,8 +597,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         // generate parameters to the preview string
         @SuppressWarnings("unchecked")
         Vector<List<Object>> data = model.getDataVector();
-        @SuppressWarnings("unchecked")
-        List<Object>[] parameters = data.toArray(new List[0]);
+        List<?>[] parameters = data.toArray(new List[0]);
         if (parameters.length > 0) {
             int i;
             for (i = 0; i < parameters.length - 1; i++) {

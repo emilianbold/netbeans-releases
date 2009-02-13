@@ -219,7 +219,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         Node fileNode = openFile(beanFileName);
         waitAMoment();
 
-        new ActionNoBlock("Tools|Add To Palette...", null).performMenu(); // NOI18N
+        new ActionNoBlock("Tools|Add To Palette...", null).perform(); // NOI18N
         SelectPaletteCategoryOperator op = new SelectPaletteCategoryOperator();
         op.lstPaletteCategories().selectItem(SelectPaletteCategoryOperator.ITEM_BEANS);
         op.ok();

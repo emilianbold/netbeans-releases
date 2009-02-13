@@ -98,7 +98,7 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
 
         jScrollPane1.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
-        dataDisplayer.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        dataDisplayer.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         dataDisplayer.setEditable(false);
         jScrollPane1.setViewportView(dataDisplayer);
 
@@ -245,25 +245,40 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
         }
     }
 
-    private void loadPage(final URL url){
-        RequestProcessor.getDefault().post(new Runnable() {
+    private void loadPage(URL url) {
+        assert (EventQueue.isDispatchThread());
+        try {
+            dataDisplayer.setPage(getLoadingPageURL(url));
+        } catch (IOException ex) {
+            handleIOException(url, ex);
+        }
+        RequestProcessor.getDefault().post(new PageUploader(url));
+    }
+
+    private class PageUploader implements Runnable{
+
+        private URL localData = null;
+        private final URL url;
+
+        private PageUploader(URL url) {
+            this.url = url;
+        }
 
             public void run() {
-                if (EventQueue.isDispatchThread()){
-                    ReporterResultTopComponent.this.requestVisible();
-                }else{
-                    try {
-                        dataDisplayer.setPage(getLoadingPageURL(url));
-                        LOG.fine("Loading: " + url);        //NOI18N
-                        URL localData = uploadURL(url);
+                try {
+                    if (EventQueue.isDispatchThread()) {
+                        ReporterResultTopComponent.this.requestVisible();
                         dataDisplayer.setPage(localData);
+                    } else {
+                        LOG.fine("Loading: " + url);        //NOI18N
+                        localData = uploadURL(url);
                         EventQueue.invokeLater(this);
-                    } catch (IOException ex) {
-                        handleIOException(url, ex);
                     }
+                } catch (IOException ex) {
+                    handleIOException(url, ex);
                 }
             }
-        });
+        
     }
 
     private static URL uploadURL(URL url) throws IOException {
@@ -273,7 +288,7 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
         FileOutputStream fw = new FileOutputStream(tmpFile);
         try{
             URLConnection conn = url.openConnection();
-            conn.setReadTimeout(20000);
+            conn.setReadTimeout(200000);
             conn.setDoOutput(false);
             conn.setDoInput(true);
             conn.setRequestProperty("User-Agent", "NetBeans");      //NOI18N

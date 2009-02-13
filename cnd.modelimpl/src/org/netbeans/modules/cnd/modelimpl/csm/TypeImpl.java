@@ -77,7 +77,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
     CharSequence classifierText;
     private int parseCount;
 
-    final List<CsmType> instantiationParams = new ArrayList<CsmType>();
+    final ArrayList<CsmType> instantiationParams = new ArrayList<CsmType>();
 
     // FIX for lazy resolver calls
     CharSequence[] qname = null;
@@ -102,6 +102,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
                 this.classifierText = typeName;
             }
         }
+        instantiationParams.trimToSize();
     }
 
     // package-local - for facory only
@@ -131,6 +132,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
                 this.instantiationParams.addAll(ti.instantiationParams);
             }
         }
+        instantiationParams.trimToSize();
     }    
 
      /*TypeImpl(AST ast, CsmFile file, int pointerDepth, boolean reference, int arrayDepth) {
@@ -606,6 +608,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
 
         this.qname = PersistentUtils.readStrings(input, NameCache.getManager());
         PersistentUtils.readTypes(this.instantiationParams, input);
+        instantiationParams.trimToSize();
         this.classifierUID = UIDObjectFactory.getDefaultFactory().readUID(input);
     }
 

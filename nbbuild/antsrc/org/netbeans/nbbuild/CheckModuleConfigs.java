@@ -80,6 +80,11 @@ public final class CheckModuleConfigs extends Task {
     public void setNbroot(File f) {
         nbroot = f;
     }
+
+    private File masterProjectXml;
+    public void setMasterProjectXml(File masterProjectXml) {
+        this.masterProjectXml = masterProjectXml;
+    }
     
     public @Override void execute() throws BuildException {
         if (nbroot == null) {
@@ -88,7 +93,6 @@ public final class CheckModuleConfigs extends Task {
         File buildPropertiesFile = new File(nbroot, "nbbuild" + File.separatorChar + "build.properties");
         File clusterPropertiesFile = new File(nbroot, "nbbuild" + File.separatorChar + "cluster.properties");
         File goldenFile = new File(nbroot, "nbbuild" + File.separatorChar + "build" + File.separatorChar + "generated" + File.separatorChar + "moduleconfigs.txt");
-        File masterProjectXml = new File(nbroot, "ide" + File.separatorChar + "allmodules" + File.separatorChar + "nbproject" + File.separatorChar + "project.xml");
         @SuppressWarnings("unchecked")
         Map<String,String> properties = getProject().getProperties();
         Map<String,Set<String>> configs = loadModuleConfigs(properties, buildPropertiesFile);
@@ -110,28 +114,12 @@ public final class CheckModuleConfigs extends Task {
             throw new BuildException("Could not write to " + masterProjectXml, e, getLocation());
         }
         Set<String> s;
-        /* Apparently wanted now?
-        // Check that stable != daily-alpha-nbms:
-        s = new TreeSet((Set) configs.get("stable"));
-        s.retainAll((Set) configs.get("daily-alpha-nbms"));
-        if (!s.isEmpty()) {
-            log(buildPropertiesFile + ": warning: stable and daily-alpha-nbms configs overlap: " + s);
-        }
-        */
         /* This is not actually desired; just includes everything:
         // Check that sigtest <= javadoc:
         s = new TreeSet((Set) configs.get("sigtest"));
         s.removeAll((Set) configs.get("javadoc"));
         if (!s.isEmpty()) {
-            log(buildPropertiesFile + ": warning: sigtest config contains entries not in javadoc config: " + s);
-        }
-        */
-        /* This config is no more?
-        // Check that platform-javadoc <= javadoc:
-        s = new TreeSet((Set) configs.get("platform-javadoc"));
-        s.removeAll((Set) configs.get("javadoc"));
-        if (!s.isEmpty()) {
-            log(buildPropertiesFile + ": warning: platform-javadoc config contains entries not in javadoc config: " + s);
+            throw new BuildException(buildPropertiesFile + ": sigtest config contains entries not in javadoc config: " + s);
         }
         */
         // Check that javadoc <= stable + daily-alpha-nbms:
@@ -139,35 +127,19 @@ public final class CheckModuleConfigs extends Task {
         s.removeAll(configs.get("stable"));
         s.removeAll(configs.get("daily-alpha-nbms"));
         if (!s.isEmpty()) {
-            log(buildPropertiesFile + ": warning: javadoc config contains entries not in stable and daily-alpha-nbms configs: " + s);
+            throw new BuildException(buildPropertiesFile + ": javadoc config contains entries not in stable and daily-alpha-nbms configs: " + s);
         }
-        /*
-        // Check that platform-javadoc = javadoc where module in platform cluster:
-        Set/ *<String>* / platformJavadoc = (Set) configs.get("platform-javadoc");
-        Set/ *<String>* / platformClusterJavadoc = (Set) configs.get("javadoc");
-        platformClusterJavadoc.retainAll((Set) clusters.get("nb.cluster.platform"));
-        s = new TreeSet(platformJavadoc);
-        s.removeAll(platformClusterJavadoc);
-        if (!s.isEmpty()) {
-            log(buildPropertiesFile + ": warning: platform-javadoc config not equal to javadoc config for platform cluster modules: " + s);
-        }
-        s = new TreeSet(platformClusterJavadoc);
-        s.removeAll(platformJavadoc);
-        if (!s.isEmpty()) {
-            log(buildPropertiesFile + ": warning: platform-javadoc config not equal to javadoc config restricted to platform cluster modules: " + s);
-        }
-        */
         // Check that stable = modules in enumerated clusters:
         Set<String> stable = configs.get("all");
         s = new TreeSet<String>(stable);
         s.removeAll(allClusterModules);
         if (!s.isEmpty()) {
-            log(buildPropertiesFile + ": warning: 'all' config not equal to listed cluster modules: " + s);
+            throw new BuildException(buildPropertiesFile + ": 'all' config not equal to listed cluster modules: " + s);
         }
         s = new TreeSet<String>(allClusterModules);
         s.removeAll(stable);
         if (!s.isEmpty()) {
-            log(buildPropertiesFile + ": warning: 'all' config not equal to listed cluster modules: " + s);
+            throw new BuildException(buildPropertiesFile + ": 'all' config not equal to listed cluster modules: " + s);
         }
         // Check that platform = modules in platform cluster:
         Set<String> platform = configs.get("platform");
@@ -175,12 +147,12 @@ public final class CheckModuleConfigs extends Task {
         s = new TreeSet<String>(platform);
         s.removeAll(platformCluster);
         if (!s.isEmpty()) {
-            log(buildPropertiesFile + ": warning: platform config not equal to platform cluster modules: " + s);
+            throw new BuildException(buildPropertiesFile + ": platform config not equal to platform cluster modules: " + s);
         }
         s = new TreeSet<String>(platformCluster);
         s.removeAll(platform);
         if (!s.isEmpty()) {
-            log(buildPropertiesFile + ": warning: platform config not equal to platform cluster modules: " + s);
+            throw new BuildException(buildPropertiesFile + ": platform config not equal to platform cluster modules: " + s);
         }
     }
     
@@ -191,7 +163,7 @@ public final class CheckModuleConfigs extends Task {
             List sorted = new ArrayList(elements);
             Collections.sort(sorted);
             if (!sorted.equals(elements)) {
-                log("warning: unsorted list: " + elements);
+                throw new BuildException("unsorted list: " + elements);
             }
         }
         HashSet set = new HashSet(elements);
@@ -199,7 +171,7 @@ public final class CheckModuleConfigs extends Task {
             elements.remove(o);
         }
         if (!elements.isEmpty()) { // #147690
-            log("warning: duplicates found in " + what + ": " + elements);
+            throw new BuildException("duplicates found in " + what + ": " + elements);
         }
         return set;
     }
@@ -218,7 +190,7 @@ public final class CheckModuleConfigs extends Task {
             if (fixed != null) {
                 modules.addAll(split(fixed, false, fixedK));
             } else {
-                log(buildPropertiesFile + ": warning: have " + k + " but no " + fixedK, Project.MSG_WARN);
+                throw new BuildException(buildPropertiesFile + ": have " + k + " but no " + fixedK);
             }
             configs.put(config, modules);
         }
@@ -226,12 +198,11 @@ public final class CheckModuleConfigs extends Task {
     }
 
     private void writeModuleConfigs(File goldenFile, Map<String,Set<String>> configs, File buildPropertiesFile) throws IOException {
-        log("Writing moduleconfigs " + configs.keySet() + " from " + buildPropertiesFile + " to " + goldenFile);
+        log("Writing moduleconfigs " + configs.keySet() + " from " + buildPropertiesFile + " to " + goldenFile, Project.MSG_VERBOSE);
         goldenFile.getParentFile().mkdirs();
         Writer w = new FileWriter(goldenFile); // default encoding OK
         try {
             PrintWriter pw = new PrintWriter(w);
-            pw.println("# To update, run: ant -f nbbuild/build.xml check-module-configs");
             for (Map.Entry<String,Set<String>> entry : configs.entrySet()) {
                 String config = entry.getKey();
                 for (String module : entry.getValue()) {
@@ -248,15 +219,13 @@ public final class CheckModuleConfigs extends Task {
         String fullConfig = "clusters.config.full.list";
         String l = clusterProperties.get(fullConfig);
         if (l == null) {
-            log(clusterPropertiesFile + ": warning: no definition for clusters.config.full.list", Project.MSG_WARN);
-            return Collections.emptyMap();
+            throw new BuildException(clusterPropertiesFile + ": no definition for clusters.config.full.list");
         }
         Map<String,Set<String>> clusters = new TreeMap<String,Set<String>>();
         for (String cluster : split(l, false,fullConfig)) {
             l = clusterProperties.get(cluster);
             if (l == null) {
-                log(clusterPropertiesFile + ": warning: no definition for " + cluster, Project.MSG_WARN);
-                continue;
+                throw new BuildException(clusterPropertiesFile + ": no definition for " + cluster);
             }
             clusters.put(cluster, new TreeSet<String>(split(l, true,fullConfig)));
         }
@@ -264,6 +233,9 @@ public final class CheckModuleConfigs extends Task {
     }
 
     private void writeMasterProjectXml(File masterProjectXml, Set<String> allClusterModules) throws IOException, SAXException {
+        if (masterProjectXml == null) {
+            return;
+        }
         log("Writing module list  to " + masterProjectXml);
         Document doc = XMLUtil.parse(new InputSource(masterProjectXml.toURI().toString()), false, true, null, null);
         NodeList nl = doc.getElementsByTagName("subprojects");
@@ -278,7 +250,7 @@ public final class CheckModuleConfigs extends Task {
         sp.appendChild(doc.createComment(" To update, run: ant -f nbbuild/build.xml check-module-configs "));
         for (String module : allClusterModules) {
             if (new File(nbroot, (module + "/nbproject/project.xml").replace('/', File.separatorChar)).isFile()) {
-                Element e = doc.createElementNS("http://www.netbeans.org/ns/freeform-project/1", "project");
+                Element e = doc.createElementNS("http://www.netbeans.org/ns/freeform-project/2", "project");
                 String path = "../../" + module;
                 e.appendChild(doc.createTextNode(path.replaceFirst("^\\.\\./\\.\\./ide/", "../")));
                 sp.appendChild(e);
@@ -293,5 +265,5 @@ public final class CheckModuleConfigs extends Task {
             os.close();
         }
     }
-    
+
 }

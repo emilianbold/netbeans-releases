@@ -50,8 +50,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.DebuggerManager;
 
 import org.netbeans.modules.cnd.debugger.gdb.InvalidExpressionException;
 import org.netbeans.modules.cnd.debugger.gdb.Field;
@@ -573,11 +571,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
 
     protected final GdbDebugger getDebugger() {
         if (debugger == null) {
-            DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
-            if (currentEngine == null) {
-                return null;
-            }
-            debugger = currentEngine.lookupFirst(null, GdbDebugger.class);
+            debugger = GdbDebugger.getGdbDebugger();
         }
         return debugger;
     }
@@ -738,6 +732,10 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                         t = o.toString();
                     } else if (o instanceof Map) {
                         t = (String) ((Map) o).get("<name>"); // NOI18N
+			if (t == null) {
+			    log.warning("GdbDebugger.completeFieldDefinition: Missing <name> from map");
+			    return null; // FIXME (See IZ 157133)
+			}
                     } else if (isNumber(v)) {
                         t = "int"; // NOI18N - best guess (std::string drops an "int")
                     } else {

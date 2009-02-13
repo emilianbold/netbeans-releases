@@ -153,7 +153,7 @@ made subject to such option by the copyright holder.
              </folder>
 
             <folder name="sh">
-                <!-- Prevent languages.sh from creating data objects for shell files. See also Loaders/text/bat. -->
+                <!-- Prevent languages.sh from creating data objects for shell files. See also Loaders/text/sh. -->
                 <attr name="createDataObject" boolvalue="false"/>
             </folder>
             <folder name="bat">
@@ -188,8 +188,9 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="850"/>
             </file>
         </folder> <!-- JavaHelp -->
-
-        <folder name="CndToolChain">
+    </folder>	<!-- Services -->
+    <folder name="CND">
+        <folder name="ToolChain">
             <file name="SunStudio_8.xml" url="toolchain/SunStudio_8.xml">
                 <attr name="position" intvalue="1100"/>
                 <attr name="extends" stringvalue="SunStudio"/>
@@ -271,7 +272,7 @@ made subject to such option by the copyright holder.
                <attr name="position" intvalue="4000"/>
             </file>
         </folder>
-        <folder name="CndExtensions">
+        <folder name="Extensions">
             <file name="Header">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <attr name="position" intvalue="100"/>
@@ -297,7 +298,7 @@ made subject to such option by the copyright holder.
                 <attr name="mimeType" stringvalue="text/x-fortran"/>
             </file>
         </folder>
-    </folder>	<!-- Services -->
+    </folder>	<!-- CND -->
 
     <folder name="Templates">
         <folder name="cFiles">
@@ -870,7 +871,7 @@ made subject to such option by the copyright holder.
             </folder> <!-- x-make -->
             
             <folder name="sh">
-                <!-- We want our own ShellDataObjects for shell files. See also Editors/text/shell. -->
+                <!-- We want our own ShellDataObjects for shell files. See also Editors/text/sh. -->
                 <folder name="Factories">
                     <file name="org-netbeans-modules-cnd-loaders-ShellDataLoader.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>

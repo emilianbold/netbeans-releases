@@ -48,12 +48,14 @@ import org.openide.filesystems.FileObject;
 
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
 
 /** Provider object to locate web service client support for j2se project.
  *
  * @author Milan Kuchtiak
  */
+@ProjectServiceProvider(service=WebServicesClientSupportProvider.class, projectType="org-netbeans-modules-java-j2seproject")
 public class J2SEProjectWSClientSupportProvider implements WebServicesClientSupportProvider {
 
     public J2SEProjectWSClientSupportProvider () {

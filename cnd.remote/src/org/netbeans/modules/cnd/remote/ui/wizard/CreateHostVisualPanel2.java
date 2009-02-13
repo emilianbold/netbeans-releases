@@ -50,13 +50,15 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetReporter;
+import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 public final class CreateHostVisualPanel2 extends JPanel {
@@ -66,6 +68,7 @@ public final class CreateHostVisualPanel2 extends JPanel {
     public CreateHostVisualPanel2(ChangeListener listener) {
         wizardListener = listener;
         initComponents();
+
         textLoginName.setText(System.getProperty("user.name"));
         btDetails.setVisible(false);
 
@@ -132,8 +135,7 @@ public final class CreateHostVisualPanel2 extends JPanel {
         pbarStatusPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tpOutput = new javax.swing.JTextPane();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        jTextPane1 = new javax.swing.JTextPane();
+        jLabel3 = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.jLabel1.text")); // NOI18N
 
@@ -154,29 +156,16 @@ public final class CreateHostVisualPanel2 extends JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(btDetails, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.btDetails.text")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout pbarStatusPanelLayout = new org.jdesktop.layout.GroupLayout(pbarStatusPanel);
-        pbarStatusPanel.setLayout(pbarStatusPanelLayout);
-        pbarStatusPanelLayout.setHorizontalGroup(
-            pbarStatusPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 380, Short.MAX_VALUE)
-        );
-        pbarStatusPanelLayout.setVerticalGroup(
-            pbarStatusPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 18, Short.MAX_VALUE)
-        );
+        pbarStatusPanel.setMaximumSize(new java.awt.Dimension(2147483647, 10));
+        pbarStatusPanel.setMinimumSize(new java.awt.Dimension(100, 10));
+        pbarStatusPanel.setLayout(new java.awt.BorderLayout());
 
         tpOutput.setText(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.tpOutput.text")); // NOI18N
         tpOutput.setFocusable(false);
         tpOutput.setOpaque(false);
         jScrollPane1.setViewportView(tpOutput);
 
-        jScrollPane2.setBorder(null);
-
-        jTextPane1.setBorder(null);
-        jTextPane1.setText(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.jTextPane1.text")); // NOI18N
-        jTextPane1.setFocusable(false);
-        jTextPane1.setOpaque(false);
-        jScrollPane2.setViewportView(jTextPane1);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.jLabel3.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -185,29 +174,33 @@ public final class CreateHostVisualPanel2 extends JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(cbSavePassword)
-                    .add(layout.createSequentialGroup()
+                    .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jLabel2)
-                                    .add(jLabel1))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                    .add(textPassword)
-                                    .add(textLoginName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 204, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                            .add(btConnect, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 90, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .add(45, 45, 45)
-                        .add(btDetails))
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 268, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
-                    .add(pbarStatusPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, cbSavePassword)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                    .add(layout.createSequentialGroup()
+                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                            .add(jLabel2)
+                                            .add(jLabel1))
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                            .add(textPassword)
+                                            .add(textLoginName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 204, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                                    .add(btConnect, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 90, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .add(45, 45, 45)
+                                .add(btDetails))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE))
+                        .addContainerGap())
+                    .add(layout.createSequentialGroup()
+                        .add(pbarStatusPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jLabel3)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
@@ -225,14 +218,13 @@ public final class CreateHostVisualPanel2 extends JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 208, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(pbarStatusPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(pbarStatusPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 11, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(25, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void btConnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btConnectActionPerformed
-        final String entry = getLoginName() + '@' + hostname;
-        revalidateRecord(entry, getPassword(), cbSavePassword.isSelected());
+        revalidateRecord(getPassword(), cbSavePassword.isSelected());
     }//GEN-LAST:event_btConnectActionPerformed
 
     private void enableButtons(boolean enable) {
@@ -240,77 +232,106 @@ public final class CreateHostVisualPanel2 extends JPanel {
     }
 
     private ProgressHandle phandle;
-
-    String hostFound() {
+    
+    /* package-local */String hostFound() {
         return hostFound;
     }
 
     private String hostFound = null;
 
+    private String getHostKey() {
+        return getLoginName() + '@' + hostname;
+    }
 
-    private void revalidateRecord(final String entry, String password, boolean rememberPassword) {
-        final RemoteServerRecord record = (RemoteServerRecord) RemoteServerList.getInstance().get(entry);
-        if (!record.isOnline()) {
+    private void revalidateRecord(String password, boolean rememberPassword) {
+        final String hostKey = getHostKey();
+        final RemoteServerRecord record = (RemoteServerRecord) RemoteServerList.getInstance().get(hostKey);
+        final boolean alreadyOnline = record.isOnline();
+        enableButtons(false);
+        if (alreadyOnline) {
+            String message = NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgAlreadyConnected1");
+            message = String.format(message, hostKey);
+            tpOutput.setText(message);
+        } else {
             record.resetOfflineState(); // this is a do-over
-            enableButtons(false);
-            RemoteUserInfo userInfo = RemoteUserInfo.getUserInfo(entry, true);
+            RemoteUserInfo userInfo = RemoteUserInfo.getUserInfo(hostKey, true);
             userInfo.setPassword(password, rememberPassword);
-            phandle = ProgressHandleFactory.createHandle("");
-            pbarStatusPanel.removeAll();
-            pbarStatusPanel.add(ProgressHandleFactory.createProgressComponent(phandle), BorderLayout.CENTER);
-            pbarStatusPanel.setVisible(true);
-            phandle.start();
             tpOutput.setText("");
-            // move expensive operation out of EDT
-            RequestProcessor.getDefault().post(new Runnable() {
+        }
+        phandle = ProgressHandleFactory.createHandle(""); ////NOI18N
+        pbarStatusPanel.removeAll();
+        pbarStatusPanel.add(ProgressHandleFactory.createProgressComponent(phandle), BorderLayout.CENTER);
+        pbarStatusPanel.validate();
+        phandle.start();        
+        // move expensive operation out of EDT
+        RequestProcessor.getDefault().post(new Runnable() {
 
-                public void run() {
-                    record.init(null);
-                    if (record.isOnline()) {
-                        CompilerSetManager.writer = new Writer() {
-
-                            @Override
-                            public void write(char[] cbuf, int off, int len) throws IOException {
-                                final String value = new String(cbuf, off, len);
-                                try {
-                                    SwingUtilities.invokeAndWait(new Runnable() {
-
-                                        public void run() {
-                                            tpOutput.setText(tpOutput.getText() + value);
-                                        }
-                                    });
-                                } catch (InterruptedException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                } catch (InvocationTargetException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-                            }
-
-                            @Override
-                            public void flush() throws IOException {
-                            }
-
-                            @Override
-                            public void close() throws IOException {
-                            }
-
-                        };
-                        CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(entry);
-                        csm.initialize(false);
-                        hostFound = csm.getHost(); //TODO: no validations, pure cheat
-                        wizardListener.stateChanged(null);
+            public void run() {
+                if (!alreadyOnline) {
+                    addOuputTextInUiThread(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgConnectingTo",
+                            RemoteUtils.getHostName(hostKey)));
+                    record.init(null);                    
+                }
+                if (record.isOnline()) {
+                    if (!alreadyOnline) {
+                        addOuputTextInUiThread(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgDone") + '\n');
                     }
-                    phandle.finish();
-                    CompilerSetManager.writer = null;
-                    // back to EDT to work with Swing
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            pbarStatusPanel.setVisible(false);
-                            enableButtons(true);
+                    CompilerSetReporter.setWriter(new Writer() {
+
+                        @Override
+                        public void write(char[] cbuf, int off, int len) throws IOException {
+                            final String value = new String(cbuf, off, len);
+                            addOuputTextInUiThread(value);
+                        }
+
+                        @Override
+                        public void flush() throws IOException {
+                        }
+
+                        @Override
+                        public void close() throws IOException {
                         }
                     });
+                    CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(hostKey);
+                    csm.initialize(false);
+                    hostFound = csm.getHost(); //TODO: no validations, pure cheat
+                    wizardListener.stateChanged(null);
+                } else {
+                    addOuputTextInUiThread(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.ErrConn")
+                            + '\n' + record.getReason()); //NOI18N
                 }
-            });
+                phandle.finish();
+                CompilerSetReporter.setWriter(null);
+                // back to EDT to work with Swing
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        pbarStatusPanel.setVisible(false);
+                        enableButtons(true);
+                        if (alreadyOnline) {
+                            addOuputTextInUiThread('\n' + NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgAlreadyConnected2"));
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    private void addOuputTextInUiThread(final String value) {
+        Runnable r = new Runnable() {
+                public void run() {
+                    tpOutput.setText(tpOutput.getText() + value);
+                }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(r);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 
@@ -320,9 +341,8 @@ public final class CreateHostVisualPanel2 extends JPanel {
     private javax.swing.JCheckBox cbSavePassword;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTextPane jTextPane1;
     private javax.swing.JPanel pbarStatusPanel;
     private javax.swing.JTextField textLoginName;
     private javax.swing.JPasswordField textPassword;

@@ -229,9 +229,8 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
     }
 
     /**
-     * This method is used from the Runtime tab to obtain settings for starting
-     * the server. It displays dialog and let the user choose required mode
-     * (direct/dynamic attach) and other settings for the server startup.
+     * This method is a shortcut to call {@linkplain J2EEProfilerSPI#getSettings(java.lang.String, boolean) }
+     * in verbose mode
      *
      * @param   serverInstanceID ID of the server instance that is going to be started
      *
@@ -239,6 +238,21 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
      *          the server.
      */
     public ProfilerServerSettings getSettings(String serverInstanceID) {
+        return getSettings(serverInstanceID, true);
+    }
+
+    /**
+     * This method is used from the Runtime tab to obtain settings for starting
+     * the server. It displays dialog and let the user choose required mode
+     * (direct/dynamic attach) and other settings for the server startup.
+     *
+     * @param   serverInstanceID ID of the server instance that is going to be started
+     * @param   verbose Whether to show the informational dialog
+     *
+     * @return  required settings or <code>null</code> if user cancelled starting
+     *          the server.
+     */
+    public ProfilerServerSettings getSettings(String serverInstanceID, boolean verbose) {
         // obtain agent ID
         int agentID = J2EEProjectTypeProfiler.generateAgentID();
 
@@ -290,7 +304,7 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
 
         ProfilerServerSettings profilerServerSettings = new ProfilerServerSettings(agentJavaPlatform, jvmArgs, env);
 
-        if (ProfilerDialogs.notify(new NotifyDescriptor.Confirmation(MessageFormat.format(DIRECT_ATTACH_MSG,
+        if (verbose && ProfilerDialogs.notify(new NotifyDescriptor.Confirmation(MessageFormat.format(DIRECT_ATTACH_MSG,
                                                                                               new Object[] {
                                                                                                   agentJavaPlatform.getDisplayName(),
                                                                                                   "" + agentPort

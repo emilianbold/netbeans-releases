@@ -45,8 +45,13 @@ import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openidex.search.DataObjectSearchGroup;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
+import org.openidex.search.FileObjectSearchGroup;
+import org.openidex.search.SearchInfo;
 import org.openidex.search.SearchType;
 
 /**
@@ -54,7 +59,7 @@ import org.openidex.search.SearchType;
  * @author  Marian Petras
  * @author  kaktus
  */
-final class SpecialSearchGroup extends DataObjectSearchGroup {
+final class SpecialSearchGroup extends FileObjectSearchGroup {
 
     final BasicSearchCriteria basicCriteria;
     final boolean hasExtraSearchTypes;
@@ -86,11 +91,21 @@ final class SpecialSearchGroup extends DataObjectSearchGroup {
     @Override
     protected void prepareSearch(){
         searchItems = new LinkedList();
-        for (Iterator<DataObject> j = searchScope.getSearchInfo().objectsToSearch(); j.hasNext(); ) {
-            if (stopped) {
-                return;
+        SearchInfo sInfo = searchScope.getSearchInfo();
+        if (sInfo instanceof SearchInfo.Files){
+            for (Iterator j = ((SearchInfo.Files)sInfo).filesToSearch(); j.hasNext(); ) {
+                if (stopped) {
+                    return;
+                }
+                searchItems.add(j.next());
             }
-            searchItems.add(j.next());
+        } else {
+            for (Iterator<DataObject> j = sInfo.objectsToSearch(); j.hasNext(); ) {
+                if (stopped) {
+                    return;
+                }
+                searchItems.add(j.next());
+            }
         }
     }
 
@@ -102,7 +117,7 @@ final class SpecialSearchGroup extends DataObjectSearchGroup {
             if (stopped) {
                 return;
             }
-            processSearchObject(/*DataObject*/ searchItems.poll());
+            processSearchObject(searchItems.poll());
             notifyProgress(index++);
         }
     }
@@ -122,9 +137,20 @@ final class SpecialSearchGroup extends DataObjectSearchGroup {
     protected void processSearchObject(Object searchObject) {
         if (!hasExtraSearchTypes) {
             assert basicCriteria != null;
-            DataObject dataObj = (DataObject) searchObject;
-            if (basicCriteria.matches(dataObj)) {
-                notifyMatchingObjectFound(dataObj);
+            if (searchObject instanceof DataObject){
+                DataObject dataObj = (DataObject) searchObject;
+                if (basicCriteria.matches(dataObj)) {
+                    notifyMatchingObjectFound(dataObj);
+                }
+            } else if (searchObject instanceof FileObject){
+                FileObject fileObj = (FileObject) searchObject;
+                if (basicCriteria.matches(fileObj)) {
+                    try {
+                        notifyMatchingObjectFound(DataObject.find(fileObj));
+                    } catch (DataObjectNotFoundException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
             }
             return;
         }

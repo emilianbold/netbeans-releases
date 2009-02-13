@@ -41,7 +41,6 @@ package org.openide.filesystems.annotations;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectOutputStream;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -142,7 +141,10 @@ public final class LayerBuilder {
         if (originatingElement == null) {
             throw new IllegalArgumentException("Only applicable to builders with exactly one associated element");
         }
-        TypeMirror typeMirror = type != null ? processingEnv.getElementUtils().getTypeElement(type.getName().replace('$', '.')).asType() : null;
+        TypeMirror typeMirror = type != null ?
+            processingEnv.getTypeUtils().getDeclaredType(
+                processingEnv.getElementUtils().getTypeElement(type.getName().replace('$', '.'))) :
+            null;
         switch (originatingElement.getKind()) {
             case CLASS: {
                 String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) originatingElement).toString();

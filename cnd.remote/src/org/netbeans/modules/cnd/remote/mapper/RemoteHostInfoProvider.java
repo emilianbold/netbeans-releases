@@ -79,7 +79,7 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
 
         public synchronized PathMap getMapper() {
             if (mapper == null) {
-                mapper = RemotePathMap.getMapper(hkey);
+                mapper = RemotePathMap.getPathMap(hkey);
             }
             return mapper;
         }

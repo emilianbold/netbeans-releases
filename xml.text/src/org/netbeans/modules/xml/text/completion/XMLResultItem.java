@@ -283,7 +283,9 @@ class XMLResultItem implements CompletionItem {
         renderComponent.setForeground(defaultColor);
         renderComponent.setBackground(backgroundColor);
         renderComponent.setBounds(0, 0, width, height);
-        ((XMLCompletionResultItemPaintComponent)renderComponent).paintComponent(g);
+        XMLCompletionResultItemPaintComponent xmlComp = (XMLCompletionResultItemPaintComponent)renderComponent;
+        xmlComp.setIcon(icon);
+        xmlComp.paintComponent(g);
     }
     
 }

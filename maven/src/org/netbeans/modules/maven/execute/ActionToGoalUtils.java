@@ -38,13 +38,13 @@
  */
 package org.netbeans.modules.maven.execute;
 
+import java.io.File;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -58,6 +58,7 @@ import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
@@ -305,6 +306,14 @@ public final class ActionToGoalUtils {
                 ex.printStackTrace();
             }
         }
+    }
+
+    public static File resolveProjectEecutionBasedir(NetbeansActionMapping mapp, Project prj) {
+        File base = FileUtil.toFile(prj.getProjectDirectory());
+        if (mapp.getBasedir() != null) {
+            base = FileUtilities.resolveFilePath(base, mapp.getBasedir());
+        }
+        return base;
     }
 }
 

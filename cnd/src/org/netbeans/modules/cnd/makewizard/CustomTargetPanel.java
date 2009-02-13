@@ -298,7 +298,7 @@ public class CustomTargetPanel extends MakefileWizardPanel {
         }
 
         // Compute the strings for the action are and display them
-        StringBuffer depline = new StringBuffer(target.getName());
+        StringBuilder depline = new StringBuilder(target.getName());
         if (target.getName().equals("clean")) {				// NOI18N
             // This allows the user to add duplicate clean targets
             depline.append(":: ");					// NOI18N
@@ -323,7 +323,7 @@ public class CustomTargetPanel extends MakefileWizardPanel {
 
 
         ArrayList list = target.getActions();
-        StringBuffer action = new StringBuffer();
+        StringBuilder action = new StringBuilder();
         for (i = 0; i < list.size(); i++) {
             String line = list.get(i).toString();
             // XXX - Will the "\t" be needed when we get an indentation engine?

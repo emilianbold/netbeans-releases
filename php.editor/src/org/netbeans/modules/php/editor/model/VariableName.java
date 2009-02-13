@@ -39,13 +39,13 @@
 
 package org.netbeans.modules.php.editor.model;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * @author Radek Matous
  */
 public interface VariableName extends ModelElement {
-    List<? extends TypeScope> getTypes(int offset);
+    Collection<? extends TypeScope> getTypes(int offset);
     boolean representsThis();
     boolean isGloballyVisible();
 }

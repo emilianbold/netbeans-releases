@@ -203,7 +203,7 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
 
     @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("["); // NOI18N
 
         Iterator<Tfact> it = iterator();

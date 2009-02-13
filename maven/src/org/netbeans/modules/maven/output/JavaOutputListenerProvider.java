@@ -82,8 +82,9 @@ public class JavaOutputListenerProvider implements OutputProcessor {
                 String text = match.group(4);
                 visitor.setOutputListener(new CompileAnnotation(clazz, lineNum, 
                         text), text.indexOf("[deprecation]") < 0); //NOI18N
-                File clazzfile = new File(clazz + ".java"); //NOI18N
-                FileObject file = FileUtilities.toFileObject(FileUtil.normalizeFile(clazzfile));
+                File clazzfile = FileUtil.normalizeFile(new File(clazz + ".java")); //NOI18N
+                FileUtil.refreshFor(clazzfile);
+                FileObject file = FileUtil.toFileObject(clazzfile);
                 String newclazz = clazz;
                 if (file != null) {
                     Project prj = FileOwnerQuery.getOwner(file);

@@ -73,12 +73,55 @@ public class NetBeansUtils {
     /////////////////////////////////////////////////////////////////////////////////
     // Static
     public static void addCluster(File nbLocation, String clusterName) throws IOException {
+        addCluster(nbLocation, clusterName, null);
+    }
+
+    public static void addCluster(File nbLocation, String clusterName, String afterCluster) throws IOException {
+        LogManager.log(ErrorLevel.DEBUG, "Modifying netbeans.conf for NetBeans installed at " + nbLocation + " by adding cluster \""+ clusterName + "\"" + (afterCluster==null ? "" : " after cluster \"" + afterCluster + "\""));
         final File netbeansclusters = new File(nbLocation, NETBEANS_CLUSTERS);
+        touchLastModified(nbLocation, clusterName);
+        List<String> list = FileUtils.readStringList(netbeansclusters);
+        LogManager.log(ErrorLevel.DEBUG, "... initial list of clusters : ");
+        LogManager.indent();
+        LogManager.log(ErrorLevel.DEBUG, StringUtils.asString(list, SystemUtils.getLineSeparator()));
+        LogManager.unindent();
+        int length  = list.size();
+        for (int i=0;i<length;i++) {
+            String string = list.get(i);
+            if (string.equals(clusterName)) {
+                if(afterCluster!=null) {
+                    LogManager.log(ErrorLevel.DEBUG, "... after-cluster exist, removing from the list");
+                    list.remove(i);
+                    break;
+                } else {
+                    LogManager.log(ErrorLevel.DEBUG, "... requested cluster already exist, do nothing");
+                    return;
+                }
+            }
+        }
+
+        int index = 0;
+        for (String string : list) {
+            index++;
+            if (afterCluster != null && string.equals(afterCluster)) {
+                break;
+            }
+        }
+
+        list.add(index, clusterName);
+        LogManager.log(ErrorLevel.DEBUG, "... final list of clusters : ");
+        LogManager.indent();
+        LogManager.log(ErrorLevel.DEBUG, StringUtils.asString(list, SystemUtils.getLineSeparator()));
+        LogManager.unindent();
+        FileUtils.writeStringList(netbeansclusters, list);
+    }
+    
+    private static void touchLastModified(File nbLocation, String clusterName) {
         final File clusterFile = new File(nbLocation, clusterName);
         final File lastModified = new File(clusterFile, LAST_MODIFIED_MARKER);
         // Workaround to Issue #129288 (http://www.netbeans.org/issues/show_bug.cgi?id=129288)
         // Enabling clusters has no effect without removal userdir
-        // Touching of .lastModified file is done everytime when user requests to add the cluster - 
+        // Touching of .lastModified file is done everytime when user requests to add the cluster -
         // even though it is already in the netbeans.clusters
         if(FileUtils.exists(clusterFile)) {
             if(!FileUtils.exists(lastModified)) {
@@ -91,15 +134,6 @@ public class NetBeansUtils {
                 lastModified.setLastModified(new Date().getTime());
             }
         }
-        List<String> list = FileUtils.readStringList(netbeansclusters);
-        for (String string: list) {
-            if (string.equals(clusterName)) {
-                return;
-            }
-        }
-        list.add(clusterName);
-        
-        FileUtils.writeStringList(netbeansclusters, list);
     }
     
     public static void removeCluster(File nbLocation, String clusterName) throws IOException {
@@ -480,7 +514,7 @@ public class NetBeansUtils {
             return matcher.group(1);
         } else {
             throw new IOException(StringUtils.format(
-                    ERROR_CANNOT_GET_USERDIR_STRING, netbeansconf));
+                    ERROR_CANNOT_GET_JAVAHOME_STRING, netbeansconf));
         }
     }
     
@@ -790,6 +824,9 @@ public class NetBeansUtils {
     public static final String ERROR_CANNOT_GET_USERDIR_STRING =
             ResourceUtils.getString(NetBeansUtils.class,
             "NU.error.cannot.get.userdir");//NOI18N
+    public static final String ERROR_CANNOT_GET_JAVAHOME_STRING =
+            ResourceUtils.getString(NetBeansUtils.class,
+            "NU.error.cannot.get.javahome");//NOI18N
     
     public static final long K =
             1024; // NOMAGI

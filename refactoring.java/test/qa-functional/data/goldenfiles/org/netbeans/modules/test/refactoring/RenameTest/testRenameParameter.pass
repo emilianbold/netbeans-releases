@@ -1,0 +1,10 @@
+==>RenameParameter
+package renameClass;
+
+public class RenameParameter {
+
+    public void m(int a, String renamned) {
+        a = renamned.length();
+    }
+
+}

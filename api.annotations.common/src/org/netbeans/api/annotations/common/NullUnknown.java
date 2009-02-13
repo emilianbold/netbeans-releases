@@ -48,9 +48,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The annotated element might be null under certain circumstances.
- * The necessity of the non-null check depends on situations described
- * in the javadoc (so the non-null check is not required by default).
+ * The annotated element might be <code>null</code> under certain
+ * <i>defined</i> circumstances. The necessity of the non-null check depends
+ * on situations described in the javadoc (so the non-null check is
+ * not required by default).
+ * <p>
+ * Consider {@link java.util.Map#get(java.lang.Object)} as an example of
+ * such a method - depending on usage of the {@link java.util.Map}
+ * <code>null</code> may be legal or forbidden.
  *
  * @author Andrei Badea, Petr Hejl
  */

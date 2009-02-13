@@ -162,8 +162,8 @@ public class ParseXMLContentTest extends NbTestCase implements PropertyChangeLis
             ParseXMLContentTest.class.getResource("FeatureInfo3.xml"),
             ParseXMLContentTest.class.getResource("TestBundle3.properties")
         );
-        ic.add(info3);
         ic.add(info);
+        ic.add(info3);
         
         File dbp = new File(new File(getWorkDir(), "1st"), "dbproject");
         File db = new File(dbp, "project.properties");
@@ -201,7 +201,7 @@ public class ParseXMLContentTest extends NbTestCase implements PropertyChangeLis
         super.tearDown();
     }
 
-    public void testRecognizeUMLTooProject() throws Exception {
+    public void testRecognizeTwoFeaturesProject() throws Exception {
         assertFalse("Autoupdate is not enabled", au.isEnabled());
         assertFalse("Favorites is not enabled", fav.isEnabled());
 

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.groovy.editor.completion;
 
+import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,6 +55,7 @@ import org.netbeans.modules.groovy.editor.api.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.NameKind;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -105,7 +107,8 @@ public final class CompleteElementHandler {
         Set<AccessLevel> modifiedAccess = AccessLevel.update(access, source, node);
 
         Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
-        ClassNode typeNode = loadDefinition(node);
+        ClassDefinition definition = loadDefinition(node);
+        ClassNode typeNode = definition.getNode();
 
         Map<MethodSignature, ? extends CompletionItem> groovyItems = GroovyElementHandler.forCompilationInfo(info)
                 .getMethods(typeNode.getName(), prefix, anchor, leaf, access, nameOnly);
@@ -138,7 +141,7 @@ public final class CompleteElementHandler {
                 .getMethods(typeNode.getName(), prefix, anchor, nameOnly), result);
 
         fillSuggestions(DynamicElementHandler.forCompilationInfo(info)
-                .getMethods(source.getName(), typeNode.getName(), prefix, anchor, nameOnly), result);
+                .getMethods(source.getName(), typeNode.getName(), prefix, anchor, nameOnly, leaf, definition.getFileObject()), result);
 
         if (typeNode.getSuperClass() != null) {
             fillSuggestions(getMethodsInner(source, typeNode.getSuperClass(),
@@ -162,7 +165,8 @@ public final class CompleteElementHandler {
         boolean leaf = (level == 0);
 
         Map<FieldSignature, CompletionItem> result = new HashMap<FieldSignature, CompletionItem>();
-        ClassNode typeNode = loadDefinition(node);
+        ClassDefinition definition = loadDefinition(node);
+        ClassNode typeNode = definition.getNode();
 
         fillSuggestions(GroovyElementHandler.forCompilationInfo(info)
                 .getFields(typeNode.getName(), prefix, anchor, leaf), result);
@@ -176,7 +180,7 @@ public final class CompleteElementHandler {
                 .getFields(typeNode.getName(), prefix, anchor), result);
 
         fillSuggestions(DynamicElementHandler.forCompilationInfo(info)
-                .getFields(source.getName(), typeNode.getName(), prefix, anchor), result);
+                .getFields(source.getName(), typeNode.getName(), prefix, anchor, leaf, definition.getFileObject()), result);
 
         if (typeNode.getSuperClass() != null) {
             fillSuggestions(getFieldsInner(source, typeNode.getSuperClass(), prefix, anchor, level + 1), result);
@@ -192,24 +196,25 @@ public final class CompleteElementHandler {
         return result;
     }
 
-    private ClassNode loadDefinition(ClassNode node) {
+    private ClassDefinition loadDefinition(ClassNode node) {
         // FIXME index is broken when invoked on start
         GroovyIndex index = new GroovyIndex(info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
 
         if (index == null) {
-            return node;
+            return new ClassDefinition(node, null);
         }
 
         Set<IndexedClass> classes = index.getClasses(node.getName(), NameKind.EXACT_NAME, true, false, false);
 
         if (!classes.isEmpty()) {
-            ASTNode astNode = AstUtilities.getForeignNode(classes.iterator().next());
+            IndexedClass indexed = classes.iterator().next();
+            ASTNode astNode = AstUtilities.getForeignNode(indexed);
             if (astNode instanceof ClassNode) {
-                return (ClassNode) astNode;
+                return new ClassDefinition((ClassNode) astNode, indexed);
             }
         }
 
-        return node;
+        return new ClassDefinition(node, null);
     }
 
     private static <T> void fillSuggestions(Map<T, ? extends CompletionItem> input, Map<T, ? super CompletionItem> result) {
@@ -220,4 +225,23 @@ public final class CompleteElementHandler {
         }
     }
 
+    private static class ClassDefinition {
+
+        private final ClassNode node;
+
+        private final IndexedClass indexed;
+
+        public ClassDefinition(ClassNode node, IndexedClass indexed) {
+            this.node = node;
+            this.indexed = indexed;
+        }
+
+        public ClassNode getNode() {
+            return node;
+        }
+
+        public FileObject getFileObject() {
+            return indexed != null ? indexed.getFileObject() : null;
+        }
+    }
 }

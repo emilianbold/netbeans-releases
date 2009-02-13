@@ -46,6 +46,27 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="FileObject.asText">
+            <api name="filesystems"/>
+            <summary>Read files with asText(), asBytes() and asLines()</summary>
+            <version major="7" minor="21"/>
+            <date day="3" month="2" year="2009"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <a href="@TOP@/org/openide/filesystems/FileObject.html#asBytes()">
+                    asBytes()</a>,
+                    <a href="@TOP@/org/openide/filesystems/FileObject.html#asText(java.lang.String)">
+                    asText(encoding)</a>,
+                    and <a href="@TOP@/org/openide/filesystems/FileObject.html#asLines(java.lang.String)">
+                    asLines(encoding)</a> methods into
+                    <a href="@TOP@/org/openide/filesystems/FileObject.html">FileObject</a>
+                    to simplify reading of its content.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileObject"/>
+        </change>
         <change id="FileUtil.addFileChangeListener2">
             <api name="filesystems"/>
             <summary>Possibility to add FileChangeListeners on File (even not existing)</summary>

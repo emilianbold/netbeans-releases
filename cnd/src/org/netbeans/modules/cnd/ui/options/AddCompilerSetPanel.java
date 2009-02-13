@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
  * @author  thp
  */
         
-public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentListener {
+/*package-local*/ final class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentListener {
     private DialogDescriptor dialogDescriptor = null;
     private final CompilerSetManager csm;
     private final boolean local;
@@ -181,8 +181,9 @@ public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentL
             lbError.setText(getString("TOOLNAME_ALREADY_EXISTS"));
         }
 
-        if (dialogDescriptor != null)
+        if (dialogDescriptor != null) {
             dialogDescriptor.setValid(valid);
+        }
     }
     
     private void handleUpdate(DocumentEvent e) {

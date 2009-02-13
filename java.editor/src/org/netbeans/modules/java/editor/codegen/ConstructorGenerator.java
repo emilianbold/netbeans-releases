@@ -185,13 +185,21 @@ public class ConstructorGenerator implements CodeGenerator {
                         int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree)path.getLeaf(), caretOffset);
                         ArrayList<VariableElement> variableElements = new ArrayList<VariableElement>();
                         if (fieldHandles != null) {
-                            for (ElementHandle<? extends Element> elementHandle : fieldHandles)
-                                variableElements.add((VariableElement)elementHandle.resolve(copy));
+                            for (ElementHandle<? extends Element> elementHandle : fieldHandles) {
+                                VariableElement field = (VariableElement) elementHandle.resolve(copy);
+                                if (field == null)
+                                    return;
+                                variableElements.add(field);
+                            }
                         }
                         if (constrHandles != null && !constrHandles.isEmpty()) {
                             ArrayList<ExecutableElement> constrElements = new ArrayList<ExecutableElement>();
-                            for (ElementHandle<? extends Element> elementHandle : constrHandles)
-                                constrElements.add((ExecutableElement)elementHandle.resolve(copy));
+                            for (ElementHandle<? extends Element> elementHandle : constrHandles) {
+                                ExecutableElement constr = (ExecutableElement)elementHandle.resolve(copy);
+                                if (constr == null)
+                                    return;
+                                constrElements.add(constr);
+                            }
                             GeneratorUtils.generateConstructors(copy, path, variableElements, constrElements, idx);
                         } else {
                             GeneratorUtils.generateConstructor(copy, path, variableElements, constructorHandle != null ? (ExecutableElement)constructorHandle.resolve(copy) : null, idx);

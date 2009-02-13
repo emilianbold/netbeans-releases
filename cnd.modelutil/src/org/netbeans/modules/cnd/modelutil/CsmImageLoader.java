@@ -194,16 +194,25 @@ public class CsmImageLoader implements CsmImageName {
         } else if (kind == CsmDeclaration.Kind.NAMESPACE_ALIAS) {
             iconPath = NAMESPACE_ALIAS;
         } else if (kind == CsmDeclaration.Kind.ENUM) { 
-            if ((modifiers & CsmUtilities.ENUMERATOR) == 0)
+            if ((modifiers & CsmUtilities.ENUMERATOR) == 0) {
                 iconPath = ENUMERATION;
-            else
+            } else {
                 iconPath = ENUMERATOR;
+            }
         } else if (kind == CsmDeclaration.Kind.MACRO){
             iconPath = MACRO;
         } else if (kind == CsmDeclaration.Kind.CLASS) {
-            iconPath = CLASS;
+            if ((modifiers & CsmUtilities.FORWARD) == 0) {
+                iconPath = CLASS;
+            } else {
+                iconPath = CLASS_FORWARD;
+            }
         } else if (kind == CsmDeclaration.Kind.STRUCT) {
-            iconPath = STRUCT;
+            if ((modifiers & CsmUtilities.FORWARD) == 0) {
+                iconPath = STRUCT;
+            } else {
+                iconPath = STRUCT_FORWARD;
+            }
         } else if (kind == CsmDeclaration.Kind.UNION) {
             iconPath = UNION; 
         } else if (kind == CsmDeclaration.Kind.TYPEDEF) {
@@ -213,38 +222,28 @@ public class CsmImageLoader implements CsmImageName {
         } else if (kind == CsmDeclaration.Kind.VARIABLE || kind == CsmDeclaration.Kind.VARIABLE_DEFINITION ) {
             boolean isLocal = (modifiers & CsmUtilities.LOCAL) != 0;
             boolean isFileLocal = (modifiers & CsmUtilities.FILE_LOCAL) != 0;
-            boolean isGlobal = !(isLocal | isFileLocal);
             boolean isField = (modifiers & CsmUtilities.MEMBER) != 0;
+            boolean isGlobal = !(isLocal | isFileLocal | isField);
             boolean isStatic = (modifiers & CsmUtilities.STATIC) != 0;
             boolean isConst = (modifiers & CsmUtilities.CONST_MEMBER_BIT) != 0;
             boolean isExtern = (modifiers & CsmUtilities.EXTERN) != 0;
             if (isGlobal) {
-                iconPath = VARIABLE_GLOBAL;
-                if (isStatic) {
-                    if (isConst) {
-                        iconPath = VARIABLE_CONST_ST_GLOBAL;
+                if (isConst) {
+                    if (isExtern) {
+                        iconPath = VARIABLE_EX_GLOBAL;
                     } else {
-                        iconPath = VARIABLE_ST_GLOBAL;
+                        iconPath = VARIABLE_CONST_GLOBAL;
                     }
                 } else {
-                    if (isConst) {
-                        if (isExtern) {
-                            iconPath = VARIABLE_EX_GLOBAL;
-                        } else {
-                            iconPath = VARIABLE_CONST_GLOBAL;
-                        }
+                    if (isExtern) {
+                        iconPath = VARIABLE_EX_GLOBAL;
                     } else {
-                        if (isExtern) {
-                            iconPath = VARIABLE_EX_GLOBAL;
-                        } else {
-                            iconPath = VARIABLE_GLOBAL;
-                        }
+                        iconPath = VARIABLE_GLOBAL;
                     }
                 }
             }
 
             if (isLocal) {
-                iconPath = VARIABLE_LOCAL;
                 if (isStatic) {
                     if (isConst) {
                         iconPath = VARIABLE_CONST_ST_LOCAL;
@@ -261,19 +260,10 @@ public class CsmImageLoader implements CsmImageName {
             }
 
             if (isFileLocal) {
-                iconPath = VARIABLE_LOCAL;
-                if (isStatic) {
-                    if (isConst) {
-                        iconPath = VARIABLE_CONST_ST_FILE_LOCAL;
-                    } else {
-                        iconPath = VARIABLE_ST_FILE_LOCAL;
-                    }
+                if (isConst) {
+                    iconPath = VARIABLE_CONST_FILE_LOCAL;
                 } else {
-                    if (isConst) {
-                        iconPath = VARIABLE_CONST_FILE_LOCAL;
-                    } else {
-                        iconPath = VARIABLE_FILE_LOCAL;
-                    }
+                    iconPath = VARIABLE_FILE_LOCAL;
                 }
             }
 
@@ -314,6 +304,7 @@ public class CsmImageLoader implements CsmImageName {
             boolean isDestructor = (modifiers & CsmUtilities.DESTRUCTOR) != 0;
             boolean isOperator =  (modifiers & CsmUtilities.OPERATOR) != 0;
             boolean isStatic = (modifiers & CsmUtilities.STATIC) != 0;
+            boolean isFileLocal = (modifiers & CsmUtilities.FILE_LOCAL) != 0;
             int level = CsmUtilities.getLevel(modifiers);
             if (isGlobal) {
                 if (isOperator) {
@@ -325,7 +316,7 @@ public class CsmImageLoader implements CsmImageName {
                         iconPath = FUNCTION_GLOBAL;
                     }
                 }
-                if (isStatic) {
+                if (isFileLocal) {
                     if (isOperator) {
                         iconPath = OPERATOR_ST_GLOBAL;
                     } else {
@@ -364,7 +355,7 @@ public class CsmImageLoader implements CsmImageName {
                             }
                             break;
                     }
-                }else{
+                } else{
                     switch (level) {
                         case CsmUtilities.PRIVATE_LEVEL:
                             if (isOperator) {

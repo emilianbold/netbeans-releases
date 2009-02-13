@@ -46,6 +46,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.modules.extexecution.input.LineParsingHelper;
@@ -77,7 +79,8 @@ public final class InputProcessors {
      * @param lineProcessor processor consuming parsed lines
      * @return the processor converting characters to the whole lines
      */
-    public static InputProcessor bridge(LineProcessor lineProcessor) {
+    @NonNull
+    public static InputProcessor bridge(@NonNull LineProcessor lineProcessor) {
         return new Bridge(lineProcessor);
     }
 
@@ -92,7 +95,8 @@ public final class InputProcessors {
      * @param processors processor to which the actions will be ditributed
      * @return the processor acting as a proxy
      */
-    public static InputProcessor proxy(InputProcessor... processors) {
+    @NonNull
+    public static InputProcessor proxy(@NonNull InputProcessor... processors) {
         return new ProxyInputProcessor(processors);
     }
 
@@ -109,7 +113,8 @@ public final class InputProcessors {
      * @return the processor that writes every character passed for processing
      *             to the given writer
      */
-    public static InputProcessor copying(Writer writer) {
+    @NonNull
+    public static InputProcessor copying(@NonNull Writer writer) {
         return new CopyingInputProcessor(writer);
     }
 
@@ -129,7 +134,8 @@ public final class InputProcessors {
      * @return the processor printing all characters passed for processing to
      *             the given output writer
      */
-    public static InputProcessor printing(OutputWriter out, boolean resetEnabled) {
+    @NonNull
+    public static InputProcessor printing(@NonNull OutputWriter out, boolean resetEnabled) {
         return printing(out, null, resetEnabled);
     }
 
@@ -147,7 +153,7 @@ public final class InputProcessors {
      *
      * @param out where to print converted lines and characters
      * @param convertor convertor converting the <i>whole</i> lines
-     *             before printing
+     *             before printing, may be <code>null</code>
      * @param resetEnabled determines whether the reset operation will work
      *             (will reset the writer if so)
      * @return the processor converting the <i>whole</i> lines with convertor and
@@ -155,7 +161,8 @@ public final class InputProcessors {
      *             to the given output writer
      * @see LineConvertor
      */
-    public static InputProcessor printing(OutputWriter out, LineConvertor convertor, boolean resetEnabled) {
+    @NonNull
+    public static InputProcessor printing(@NonNull OutputWriter out, @NullAllowed LineConvertor convertor, boolean resetEnabled) {
         return new PrintingInputProcessor(out, convertor, resetEnabled);
     }
 
@@ -174,7 +181,8 @@ public final class InputProcessors {
      * @return the processor that strips any ansi escape sequences and passes
      *             the result to the delegate
      */
-    public static InputProcessor ansiStripping(InputProcessor delegate) {
+    @NonNull
+    public static InputProcessor ansiStripping(@NonNull InputProcessor delegate) {
         return new AnsiStrippingInputProcessor(delegate);
     }
 

@@ -62,7 +62,7 @@ import org.netbeans.modules.cnd.xref.impl.ReferenceSupportImpl;
  * some help methods to support CsmReference objects
  * @author Vladimir Voskresensky
  */
-public class CsmReferenceSupport {
+public final class CsmReferenceSupport {
     
     private static final ReferenceSupportImpl impl = new ReferenceSupportImpl();
     private CsmReferenceSupport() {

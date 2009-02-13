@@ -117,7 +117,9 @@ DbgpResponse *FeatureGetCommand::process(DbgpConnection *pDbgpConnection, map<ch
         result = pScriptDebugger->isFeatureSet(SUSPEND_ON_DEBUGGER_KEYWORD);
     }else if(feature == _T("ignoreQueryStrings")) {
         result = pScriptDebugger->isFeatureSet(IGNORE_QUERY_STRINGS);
-    }
+    }//else if( feature == _T("http_monitor")) {
+    //    result = pScriptDebugger->isFeatureSet(HTTP_MONITOR_ENABLED);
+    //}
     StandardDbgpResponse *pDbgpResponse = new StandardDbgpResponse(FEATURE_GET, argsMap.find('i')->second);
     pDbgpResponse->addAttribute(SUPPORTED, result ? 1 : 0);
     pDbgpResponse->addAttribute(FEATURE, feature);
@@ -134,8 +136,11 @@ DbgpResponse *FeatureSetCommand::process(DbgpConnection *pDbgpConnection, map<ch
     pDbgpResponse->addAttribute(SUCCESS, 0);
     pDbgpResponse->addAttribute(FEATURE, feature);
     if(pScriptDebugger != NULL) {
-        BOOL value = argsMap.find('v')->second == _T("true") ? TRUE : FALSE;
-        if(value) {
+        bool value = argsMap.find('v')->second == _T("true") ? true : false;
+        /*if (feature == _T("http_monitor")) {
+            pScriptDebugger->enableHttpMonitor(value);
+        } 
+        else*/ if (value) {
             if(feature == _T("showFunctions")) {
                 pScriptDebugger->setFeature(SHOW_FUNCTIONS);
             }else if(feature == _T("showConstants")) {

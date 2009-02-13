@@ -57,6 +57,7 @@ import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.Breakpoint.*;
 import org.netbeans.spi.debugger.ui.BreakpointType;
 import org.netbeans.spi.debugger.ui.Controller;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -134,10 +135,11 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
         return type;
     }
     
-    public Controller getController () {
+    Controller getController () {
         if (type != null) {
             Controller c = type.getController();
             if (c == null && customizer instanceof Controller) {
+                //Exceptions.printStackTrace(new IllegalStateException("FIXME: JComponent "+customizer+" must not implement Controller interface!"));
                 return (Controller) customizer;
             } else {
                 return c;
@@ -145,6 +147,11 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
         } else {
             return null;
         }
+    }
+
+    boolean isNoValidityController() {
+        // This controller must not be asked for isValid()
+        return type.getController() == null && customizer instanceof Controller;
     }
     
     

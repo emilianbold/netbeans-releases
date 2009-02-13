@@ -41,15 +41,12 @@
 package org.openide.explorer.view;
 
 import java.awt.BorderLayout;
-import java.awt.Dialog;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Comparator;
 import javax.swing.JPanel;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.swing.etable.ETableColumn;
 import org.netbeans.swing.etable.ETableColumnModel;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -141,8 +138,8 @@ public final class OutlineViewTest extends NbTestCase {
         etc.setNestedComparator (testComarator);
         view.expandNode (toExpand200_299);
 
-//        DialogDescriptor dd = new DialogDescriptor (component, "", true, null);
-//        Dialog d = DialogDisplayer.getDefault ().createDialog (dd);
+//        org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor (component, "", true, null);
+//        java.awt.Dialog d = org.openide.DialogDisplayer.getDefault ().createDialog (dd);
 //        d.setVisible (true);
 
         // should look like
@@ -164,8 +161,8 @@ public final class OutlineViewTest extends NbTestCase {
         etcm.setColumnSorted (etc, true, 1); // ascending order
         view.expandNode (toExpand0_99);
 
-//        DialogDescriptor dd = new DialogDescriptor (component, "", true, null);
-//        Dialog d = DialogDisplayer.getDefault ().createDialog (dd);
+//        org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor (component, "", true, null);
+//        java.awt.Dialog d = org.openide.DialogDisplayer.getDefault ().createDialog (dd);
 //        d.setVisible (true);
 
         // should look like
@@ -191,8 +188,8 @@ public final class OutlineViewTest extends NbTestCase {
         etcm.setColumnSorted (etc, false, 1); // descending order
         view.expandNode (toExpand200_299);
 
-//        DialogDescriptor dd = new DialogDescriptor (component, "", true, null);
-//        Dialog d = DialogDisplayer.getDefault ().createDialog (dd);
+//        org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor (component, "", true, null);
+//        java.awt.Dialog d = org.openide.DialogDisplayer.getDefault ().createDialog (dd);
 //        d.setVisible (true);
 
         // should look like
@@ -214,8 +211,8 @@ public final class OutlineViewTest extends NbTestCase {
         etc.setNestedComparator (testComarator);
         etcm.setColumnSorted (etc, true, 1); // ascending order
 
-//        DialogDescriptor dd = new DialogDescriptor (component, "", true, null);
-//        Dialog d = DialogDisplayer.getDefault ().createDialog (dd);
+//        org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor (component, "", true, null);
+//        java.awt.Dialog d = org.openide.DialogDisplayer.getDefault ().createDialog (dd);
 //        d.setVisible (true);
 
         view.expandNode (toExpand0_99);
@@ -243,9 +240,8 @@ public final class OutlineViewTest extends NbTestCase {
         private OutlineViewComponent (Node rootNode) {
             setLayout (new BorderLayout ());
             manager.setRootContext (rootNode);
-            Node[] nodes = rootNode.getChildren ().getNodes ();
 
-            Node.Property[] props = nodes[0].getPropertySets ()[0].getProperties ();
+            Node.Property[] props = rootNode.getPropertySets ()[0].getProperties ();
             view = new OutlineView ("test-outline-view-component");
             view.setProperties (props);
 

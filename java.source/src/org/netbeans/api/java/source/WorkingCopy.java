@@ -66,6 +66,9 @@ import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position.Bias;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.modules.java.source.parsing.JavacParserResult;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -135,7 +138,7 @@ public class WorkingCopy extends CompilationController {
      * is not a result of java parsing.
      * @since 0.42
      */
-    public static WorkingCopy get (final Parser.Result result) {
+    public static @NullUnknown WorkingCopy get (final @NonNull Parser.Result result) {
         Parameters.notNull("result", result); //NOI18N
         WorkingCopy copy = instance != null ? instance.get() : null;
         if (copy != null && result instanceof JavacParserResult) {
@@ -148,7 +151,7 @@ public class WorkingCopy extends CompilationController {
     }
 
     @Override
-    public JavaSource.Phase toPhase(JavaSource.Phase phase) throws IOException {
+    public @NonNull JavaSource.Phase toPhase(@NonNull JavaSource.Phase phase) throws IOException {
         //checkConfinement() called by super
         JavaSource.Phase result = super.toPhase(phase);
         
@@ -159,7 +162,7 @@ public class WorkingCopy extends CompilationController {
         return result;
     }        
     
-    public synchronized TreeMaker getTreeMaker() {
+    public synchronized @NonNull TreeMaker getTreeMaker() throws IllegalStateException {
         checkConfinement();
         if (treeMaker == null)
             throw new IllegalStateException("Cannot call getTreeMaker before toPhase.");
@@ -185,7 +188,7 @@ public class WorkingCopy extends CompilationController {
      *         method.
      * @see TreeMaker
      */
-    public synchronized void rewrite(Tree oldTree, Tree newTree) {
+    public synchronized void rewrite(@NullAllowed Tree oldTree, @NonNull Tree newTree) {
         checkConfinement();
         if (changes == null) {
             throw new IllegalStateException("Cannot call rewrite before toPhase.");
@@ -220,7 +223,7 @@ public class WorkingCopy extends CompilationController {
      * @throws java.lang.IllegalArgumentException when an attempt is made to replace non-comment text
      * @since 0.23
      */
-    public synchronized void rewriteInComment(int start, int length, String newText) throws IllegalArgumentException {
+    public synchronized void rewriteInComment(int start, int length, @NonNull String newText) throws IllegalArgumentException {
         checkConfinement();
         TokenSequence<JavaTokenId> ts = getTokenHierarchy().tokenSequence(JavaTokenId.language());
         
@@ -267,7 +270,7 @@ public class WorkingCopy extends CompilationController {
      * @param tag an {@code Object} used as tag
      * @since 0.37
      */
-    public synchronized void tag(Tree t, Object tag) {
+    public synchronized void tag(@NonNull Tree t, @NonNull Object tag) {
         tree2Tag.put(t, tag);
     }
     

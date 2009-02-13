@@ -349,6 +349,10 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                         <xsl:attribute name="name">debug</xsl:attribute>
                         <xsl:attribute name="default">${javac.debug}</xsl:attribute>
                     </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">gensrcdir</xsl:attribute>
+                        <xsl:attribute name="default">/does/not/exist</xsl:attribute>
+                    </attribute>
                     <element>
                         <xsl:attribute name="name">customize</xsl:attribute>
                         <xsl:attribute name="optional">true</xsl:attribute>
@@ -372,6 +376,11 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                                 <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
                             </xsl:if>
                             <xsl:attribute name="includeantruntime">false</xsl:attribute>
+                            <src>
+                                <dirset dir="@{{gensrcdir}}" erroronmissingdir="false">
+                                    <include name="*"/>
+                                </dirset>
+                            </src>
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
@@ -626,9 +635,8 @@ exists or setup the property manually. For example like this:
                         <classpath path="${{wscompile.classpath}}"/>
                     </taskdef>
                     <mkdir dir="${{classes.dir}}/META-INF/wsdl"/>
-                    <mkdir dir="${{build.generated.dir}}/wsclient"/>
-                    <mkdir dir="${{build.generated.dir}}/wsservice"/>
-                    <mkdir dir="${{build.generated.dir}}/wsbinary"/>
+                    <mkdir dir="${{build.generated.sources.dir}}/jax-rpc"/>
+                    <mkdir dir="${{build.generated.dir}}/jax-rpc-binaries"/>
                     <mkdir dir="${{meta.inf}}/wsdl"/>
                 </target>
             </xsl:if>
@@ -653,7 +661,7 @@ exists or setup the property manually. For example like this:
                                        verbose="true" 
                                        xPrintStackTrace="true" 
                                        xSerializable="true"
-                                       base="${{build.generated.dir}}/wsbinary"
+                                       base="${{build.generated.dir}}/jax-rpc-binaries"
                                        sourceBase="${{src.dir}}" 
                                        keep="true" 
                                        fork="true" />
@@ -665,7 +673,7 @@ exists or setup the property manually. For example like this:
                                 define="true"
                                 fork="true"
                                 keep="true"
-                                base="${{build.generated.dir}}/wsbinary"
+                                base="${{build.generated.dir}}/jax-rpc-binaries"
                                 xPrintStackTrace="true"
                                 verbose="true"
                                 nonClassDir="${{classes.dir}}/META-INF/wsdl"
@@ -673,7 +681,7 @@ exists or setup the property manually. For example like this:
                                 mapping="${{classes.dir}}/META-INF/${{{$wsname}.mapping}}"
                                 config="${{{$wsname}.config.name}}"
                                 features="${{wscompile.service.{$wsname}.features}}"
-                                sourceBase="${{build.generated.dir}}/wsservice">
+                                sourceBase="${{build.generated.sources.dir}}/jax-rpc">
                             </wscompile>
                         </target>
                     </xsl:otherwise>
@@ -704,7 +712,7 @@ exists or setup the property manually. For example like this:
                 <target name="{$wsclientname}-client-wscompile" depends="wscompile-init">
                     <property name="config_target" location="${{meta.inf}}/wsdl"/>
                     <copy file="${{meta.inf}}/wsdl/{$wsclientname}-config.xml"
-                          tofile="${{build.generated.dir}}/wsclient/wsdl/{$wsclientname}-config.xml" filtering="on">
+                          tofile="${{build.generated.sources.dir}}/jax-rpc/wsdl/{$wsclientname}-config.xml" filtering="on">
                         <filterset>
                             <!-- replace token with reference to WSDL file in source tree, not build tree, since the
                                  the file probably has not have been copied to the build tree yet. -->
@@ -721,10 +729,10 @@ exists or setup the property manually. For example like this:
                         client="{$useclient}" import="{$useimport}"
                         features="${{wscompile.client.{$wsclientname}.features}}"
                         base="${{classes.dir}}"
-                        sourceBase="${{build.generated.dir}}/wsclient"
+                        sourceBase="${{build.generated.sources.dir}}/jax-rpc"
                         classpath="${{wscompile.classpath}}:${{javac.classpath}}"
                         mapping="${{classes.dir}}/META-INF/{$wsclientname}-mapping.xml"
-                        config="${{build.generated.dir}}/wsclient/wsdl/{$wsclientname}-config.xml">
+                        config="${{build.generated.sources.dir}}/jax-rpc/wsdl/{$wsclientname}-config.xml">
                     </wscompile>
                 </target>
             </xsl:for-each>
@@ -740,9 +748,6 @@ exists or setup the property manually. For example like this:
                             <xsl:value-of select="ejbjarproject3:web-service-client-name"/><xsl:text>-client-wscompile</xsl:text>
                         </xsl:for-each>
                     </xsl:attribute>
-                </target>
-                <target name="web-service-client-compile" depends="web-service-client-generate">
-                    <ejbjarproject2:javac srcdir="${{build.generated.dir}}/wsclient" classpath="${{wscompile.classpath}}:${{javac.classpath}}" destdir="${{classes.dir}}"/>
                 </target>
             </xsl:if>
             
@@ -816,9 +821,9 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="-do-compile">
-                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile,-copy-meta-inf<xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-service-clients/ejbjarproject3:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile,-copy-meta-inf</xsl:attribute>
                 <xsl:attribute name="if">have.sources</xsl:attribute>
-                <ejbjarproject2:javac destdir="${{classes.dir}}"/>
+                <ejbjarproject2:javac destdir="${{classes.dir}}" gensrcdir="${{build.generated.sources.dir}}"/>
                 <copy todir="${{classes.dir}}">
                     <xsl:call-template name="createFilesets">
                         <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:source-roots"/>
@@ -859,9 +864,9 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="-do-compile-single">
-                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile<xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-service-clients/ejbjarproject3:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile</xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
-                <ejbjarproject2:javac includes="${{javac.includes}}" excludes=""/>
+                <ejbjarproject2:javac includes="${{javac.includes}}" excludes="" gensrcdir="${{build.generated.sources.dir}}"/>
             </target>
             
             <target name="-post-compile-single">
@@ -1138,6 +1143,11 @@ exists or setup the property manually. For example like this:
                         <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:source-roots"/>
                         <xsl:with-param name="includes2">**/*.java</xsl:with-param>
                     </xsl:call-template>
+                    <fileset>
+                        <xsl:attribute name="dir">${build.generated.sources.dir}</xsl:attribute>
+                        <xsl:attribute name="erroronmissingdir">false</xsl:attribute>
+                        <include name="**/*.java"/>
+                    </fileset>
                 </javadoc>
             </target>
             

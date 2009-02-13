@@ -56,7 +56,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  */
 public class CommentActionTest extends J2eeTestCase {
 
-    private static final Boolean GENERATE_GOLDEN_FILES = true;
+    private static final Boolean GENERATE_GOLDEN_FILES = false;
     private static final String PROJECT_DIR_NAME = "CommentTestProject";
     private static boolean firstRun = true;
 
@@ -88,7 +88,7 @@ public class CommentActionTest extends J2eeTestCase {
     }
 
     public void testHTMLSection() throws Exception {
-        doSectionTest("testHTML.html", 4, 10);
+        doSectionTest("testHTML.html", 7, 10);
     }
 
     public void testHTMLOneLine() throws Exception {
@@ -96,15 +96,15 @@ public class CommentActionTest extends J2eeTestCase {
     }
 
     public void testHTMLInsideOneLine() throws Exception {
-        doLineTest("testHTML.html", 10, 10);
+        doLineTest("testHTML.html", 8, 10);
     }
 
     public void testJSPSection() throws Exception {
-        doSectionTest("testJSP.jsp", 4, 10);
+        doSectionTest("testJSP.jsp", 3, 4);
     }
 
     public void testJSPOneLine() throws Exception {
-        doLineTest("testJSP.jsp", 8, 1);
+        doLineTest("testJSP.jsp", 10, 1);
     }
 
     public void testJSPInsideOneLine() throws Exception {
@@ -112,15 +112,15 @@ public class CommentActionTest extends J2eeTestCase {
     }
 
     public void testCSSSection() throws Exception {
-        doSectionTest("testCSS.css", 4, 10);
+        doSectionTest("testCSS.css", 20, 31);
     }
 
     public void testCSSOneLine() throws Exception {
-        doLineTest("testCSS.css", 8, 1);
+        doLineTest("testCSS.css", 24, 1);
     }
 
     public void testCSSInsideOneLine() throws Exception {
-        doLineTest("testCSS.css", 10, 10);
+        doLineTest("testCSS.css", 9, 10);
     }
 
     private void doSectionTest(String fileName, int beginLineNubmer, int endLineNumber) throws DataObjectNotFoundException {
@@ -129,6 +129,7 @@ public class CommentActionTest extends J2eeTestCase {
         op.pushKey(KeyEvent.VK_SLASH, InputEvent.CTRL_MASK);
         op.waitModified(true);
         ref(op.getText());
+        EditorOperator.closeDiscardAll();
     }
 
     private void doLineTest(String fileName, int lineNumber, int column) throws DataObjectNotFoundException {
@@ -137,6 +138,7 @@ public class CommentActionTest extends J2eeTestCase {
         op.pushKey(KeyEvent.VK_SLASH, InputEvent.CTRL_MASK);
         op.waitModified(true);
         ref(op.getText());
+        EditorOperator.closeDiscardAll();
     }
 
     private EditorOperator openFile(String fileName) throws DataObjectNotFoundException {

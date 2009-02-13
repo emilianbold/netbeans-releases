@@ -52,8 +52,8 @@ import org.xml.sax.*;
 
 import org.netbeans.modules.xml.catalog.spi.*;
 
-import org.apache.xml.resolver.tools.CatalogResolver;
-import org.apache.xml.resolver.CatalogManager;
+import org.apache.xml.resolver.tools.NbCatalogResolver;
+import org.apache.xml.resolver.NbCatalogManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -188,8 +188,8 @@ public final class Catalog
      */
     public Iterator getPublicIDs() {
         Object p = getPeer();
-        if (p instanceof org.apache.xml.resolver.tools.CatalogResolver) {
-            org.apache.xml.resolver.Catalog cat = ((org.apache.xml.resolver.tools.CatalogResolver) p).getCatalog();
+        if (p instanceof org.apache.xml.resolver.tools.NbCatalogResolver) {
+            org.apache.xml.resolver.Catalog cat = ((org.apache.xml.resolver.tools.NbCatalogResolver) p).getCatalog();
             return cat.getPublicIDs();
         }
         return null;
@@ -214,9 +214,9 @@ public final class Catalog
      */
     public String getSystemID(String publicId) {
         Object p = getPeer();
-        if (p instanceof org.apache.xml.resolver.tools.CatalogResolver)
+        if (p instanceof org.apache.xml.resolver.tools.NbCatalogResolver)
             try {
-                return ((org.apache.xml.resolver.tools.CatalogResolver) p).getCatalog().resolveSystem(publicId);
+                return ((org.apache.xml.resolver.tools.NbCatalogResolver) p).getCatalog().resolveSystem(publicId);
             } catch (java.net.MalformedURLException ex) {}
               catch (java.io.IOException ex) {}
         return null;
@@ -272,11 +272,11 @@ public final class Catalog
      */
     private EntityResolver createPeer(String location, boolean pref) {
         try {
-            CatalogManager manager = new CatalogManager(null);
+            NbCatalogManager manager = new NbCatalogManager(null);
             manager.setUseStaticCatalog(false);
             manager.setPreferPublic(pref);
 
-            CatalogResolver catalogResolver = new CatalogResolver(manager);
+            NbCatalogResolver catalogResolver = new NbCatalogResolver(manager);
             org.apache.xml.resolver.Catalog cat = catalogResolver.getCatalog();
             cat.parseCatalog(new URL(location));
             setShortDescription(NbBundle.getMessage(Catalog.class, "DESC_loaded"));
@@ -317,9 +317,9 @@ public final class Catalog
      */
     public String resolveURI(String name) {
         Object p = getPeer();
-        if (p instanceof org.apache.xml.resolver.tools.CatalogResolver)
+        if (p instanceof org.apache.xml.resolver.tools.NbCatalogResolver)
             try {
-                return ((org.apache.xml.resolver.tools.CatalogResolver) p).getCatalog().resolveURI(name);
+                return ((org.apache.xml.resolver.tools.NbCatalogResolver) p).getCatalog().resolveURI(name);
             } catch (java.net.MalformedURLException ex) {}
               catch (java.io.IOException ex) {}
         return null;
@@ -330,9 +330,9 @@ public final class Catalog
      */ 
     public String resolvePublic(String publicId) {
         Object p = getPeer();
-        if (p instanceof org.apache.xml.resolver.tools.CatalogResolver)
+        if (p instanceof org.apache.xml.resolver.tools.NbCatalogResolver)
             try {
-                return ((org.apache.xml.resolver.tools.CatalogResolver) p).getCatalog().resolvePublic(publicId,null);
+                return ((org.apache.xml.resolver.tools.NbCatalogResolver) p).getCatalog().resolvePublic(publicId,null);
             } catch (java.net.MalformedURLException ex) {}
               catch (java.io.IOException ex) {}
         return null;

@@ -372,7 +372,7 @@ public class TMapDataEditorSupport extends DataEditorSupport  implements
         });
     }
     
-    protected TMapEnv getEnv() {
+    TMapEnv getEnv() {
         return (TMapEnv) env;
     }
     

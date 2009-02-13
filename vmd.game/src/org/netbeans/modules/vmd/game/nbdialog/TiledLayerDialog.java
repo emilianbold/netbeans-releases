@@ -558,11 +558,11 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
     }
 
     private String getFieldLayerNameError() {
-        String illegalIdentifierName = NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelInvalidName.txt");
+        String illegalIdentifierName = NbBundle.getMessage(TiledLayerDialog.class, "TiledLayerDialog.labelInvalidName.txt");
         String errMsg = null;
         String layerName = this.fieldLayerName.getText();
         if (layerName.equals("")) {
-            errMsg = NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelEnterName.txt");
+            errMsg = NbBundle.getMessage(TiledLayerDialog.class, "TiledLayerDialog.labelEnterName.txt");
         } else if (!this.gameDesign.isComponentNameAvailable(layerName)) {
             errMsg = NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelNameExists.txt");
         } else if (!isValidJavaIdentifier(layerName)) {

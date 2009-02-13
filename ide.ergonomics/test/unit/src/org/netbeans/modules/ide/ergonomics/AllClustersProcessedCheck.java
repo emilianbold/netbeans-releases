@@ -59,7 +59,7 @@ public class AllClustersProcessedCheck extends NbTestCase {
         assertNotNull("Classloader found", l);
 
         StringBuilder sb = new StringBuilder();
-        for (String c : clusters.split(":")) {
+        for (String c : clusters.split(File.pathSeparator)) {
             String n = new File(c).getName().replaceFirst("[\\.0-9]+$", "");
             if (n.equals("platform")) {
                 continue;

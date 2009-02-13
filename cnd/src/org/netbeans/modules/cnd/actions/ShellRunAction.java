@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.actions;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -82,10 +83,10 @@ public class ShellRunAction extends AbstractExecutorRunAction {
 
 
     public static void performAction(Node node) {
-        performAction(node, null, null);
+        performAction(node, null, null, null);
     }
 
-    public static void performAction(Node node, ExecutionListener listener, Writer outputListener) {
+    public static void performAction(Node node, ExecutionListener listener, Writer outputListener, Project project) {
         ShellExecSupport bes = node.getCookie(ShellExecSupport.class);
         if (bes == null) {
             return;
@@ -104,29 +105,19 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         File shellFile = FileUtil.toFile(fileObject);
         // Build directory
         String bdir = bes.getRunDirectory();
-        File buildDir;
-        if (bdir.length() == 0 || bdir.equals(".")) { // NOI18N
-            buildDir = shellFile.getParentFile();
-        } else if (IpeUtils.isPathAbsolute(bdir)) {
-            buildDir = new File(bdir);
-        } else {
-            buildDir = new File(shellFile.getParentFile(), bdir);
-        }
-        try {
-            buildDir = buildDir.getCanonicalFile();
-        }
-        catch (IOException ioe) {
-            // FIXUP
-        }
+        File buildDir = getAbsoluteBuildDir(bdir, shellFile);
         // Tab Name
         String tabName = getString("RUN_LABEL", node.getName());
         
         String[] shellCommandAndArgs = bes.getShellCommandAndArgs(fileObject); // from inside shell file or properties
         String shellCommand = shellCommandAndArgs[0];
         String shellFilePath = IpeUtils.toRelativePath(buildDir.getPath(), shellFile.getPath()); // Absolute path to shell file
+        if (shellFilePath.equals(shellFile.getName())) {
+            shellFilePath = "."+File.separatorChar+shellFilePath; //NOI18N
+        }
         String[] args = bes.getArguments(); // from properties
 
-        String developmentHost = getDevelopmentHost(fileObject);
+        String developmentHost = getDevelopmentHost(fileObject, project);
         // Windows: The command is usually of the from "/bin/sh", but this
         // doesn't work here, so extract the 'sh' part and use that instead. 
         // FIXUP: This is not entirely correct though.

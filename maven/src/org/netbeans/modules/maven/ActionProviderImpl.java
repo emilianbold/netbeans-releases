@@ -108,6 +108,7 @@ public class ActionProviderImpl implements ActionProvider {
     private NbMavenProjectImpl project;
     private static String[] supported = new String[]{
         COMMAND_BUILD,
+        "build-with-dependencies", //NOI18N
         COMMAND_CLEAN,
         COMMAND_REBUILD,
         "javadoc", //NOI18N
@@ -193,6 +194,15 @@ public class ActionProviderImpl implements ActionProvider {
             Logger.getLogger(ActionProviderImpl.class.getName()).log(Level.INFO, "No handling for action:" + action + ". Ignoring."); //NOI18N
 
         } else {
+            if (rc instanceof BeanRunConfig) {
+                BeanRunConfig brc = (BeanRunConfig)rc;
+                if (brc.getPreExecutionActionName() != null) {
+                    RunConfig rc2 = ActionToGoalUtils.createRunConfig(brc.getPreExecutionActionName(), project, enhanced);
+                    if (rc2 != null) {
+                        brc.setPreExecution(rc2);
+                    }
+                }
+            }
             setupTaskName(action, rc, lookup);
             runGoal(lookup, rc, true);
         }
@@ -207,6 +217,11 @@ public class ActionProviderImpl implements ActionProvider {
         for (PrerequisitesChecker elem : res.allInstances()) {
             if (!elem.checkRunConfig(config)) {
                 return;
+            }
+            if (config.getPreExecution() != null) {
+                if (!elem.checkRunConfig(config.getPreExecution())) {
+                    return;
+                }
             }
         }
 
@@ -242,8 +257,15 @@ public class ActionProviderImpl implements ActionProvider {
                 RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById(RepositoryPreferences.LOCAL_REPO_ID);
                 if (info != null) {
                     List<Artifact> arts = new ArrayList<Artifact>();
-                    arts.add(project.getOriginalMavenProject().getArtifact());
-                    arts.addAll(project.getOriginalMavenProject().getDependencyArtifacts());
+                    Artifact prjArt = project.getOriginalMavenProject().getArtifact();
+                    if (prjArt != null) {
+                        arts.add(prjArt);
+                    }
+                    //#157572
+                    Set depArts = project.getOriginalMavenProject().getDependencyArtifacts();
+                    if (depArts != null) {
+                        arts.addAll(depArts);
+                    }
                     RepositoryIndexer.updateIndexWithArtifacts(info, arts);
                 }
             }

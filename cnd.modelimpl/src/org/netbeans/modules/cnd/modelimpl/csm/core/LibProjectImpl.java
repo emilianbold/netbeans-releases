@@ -159,6 +159,14 @@ public final class LibProjectImpl extends ProjectBase {
     protected void clearNativeFileContainer() {
     }
 
+    @Override
+    public boolean isStable(CsmFile skipFile) {
+        if (!isDisposing()) {
+            return !ParserQueue.instance().hasFiles(this, (FileImpl) skipFile);
+        }
+        return false;
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
     @Override

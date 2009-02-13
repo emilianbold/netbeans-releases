@@ -56,11 +56,17 @@ import org.netbeans.modules.websvc.api.jaxws.project.JAXWSVersionProvider;
 import org.netbeans.modules.websvc.core.WSStackUtils;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
  *
  * @author rico
  */
+@ProjectServiceProvider(service=JAXWSVersionProvider.class, projectType={
+    "org-netbeans-modules-web-project",
+    "org-netbeans-modules-j2ee-ejbjarproject",
+    "org-netbeans-modules-j2ee-clientproject"
+})
 public class JavaEEJAXWSVersionProvider implements JAXWSVersionProvider{
     
     private Project project;

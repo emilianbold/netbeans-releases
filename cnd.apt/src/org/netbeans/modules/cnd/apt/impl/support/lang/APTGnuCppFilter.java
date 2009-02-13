@@ -153,6 +153,7 @@ public class APTGnuCppFilter extends APTBaseLanguageFilter {
         filter("__w64", APTTokenTypes.LITERAL___w64); // NOI18N
         filter("__extension__", APTTokenTypes.LITERAL___extension__); // NOI18N
         filter("__attribute__", APTTokenTypes.LITERAL___attribute__); // NOI18N
+        filter("__attribute", APTTokenTypes.LITERAL___attribute); // NOI18N
         filter("__restrict", APTTokenTypes.LITERAL___restrict); // NOI18N
         filter("__complex__", APTTokenTypes.LITERAL___complex__); // NOI18N
         filter("__imag__", APTTokenTypes.LITERAL___imag); // NOI18N

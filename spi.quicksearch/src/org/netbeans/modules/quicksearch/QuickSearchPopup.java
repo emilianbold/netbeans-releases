@@ -68,7 +68,7 @@ import org.openide.util.TaskListener;
 public class QuickSearchPopup extends javax.swing.JPanel 
         implements ListDataListener, ActionListener, TaskListener, Runnable {
 
-    private QuickSearchComboBar comboBar;
+    private AbstractQuickSearchComboBar comboBar;
 
     private ResultsModel rModel;
 
@@ -93,7 +93,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
     private Task evalTask;
 
     /** Creates new form SilverPopup */
-    public QuickSearchPopup (QuickSearchComboBar comboBar) {
+    public QuickSearchPopup (AbstractQuickSearchComboBar comboBar) {
         this.comboBar = comboBar;
         initComponents();
         rModel = ResultsModel.getInstance();
@@ -374,7 +374,9 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
         Dimension cSize = comboBar.getSize();
         int width = getCategoryWidth() + getResultWidth() + 3;
         Point location = new Point(cSize.width - width - 1, comboBar.getBottomLineY() - 1);
-        location = SwingUtilities.convertPoint(comboBar, location, lPane);
+        if (SwingUtilities.getWindowAncestor(comboBar) != null) {
+            location = SwingUtilities.convertPoint(comboBar, location, lPane);
+        }
         result.setLocation(location);
 
         // hack to make jList.getpreferredSize work correctly

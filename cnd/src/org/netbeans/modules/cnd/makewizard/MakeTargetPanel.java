@@ -353,7 +353,7 @@ public class MakeTargetPanel extends MakefileWizardPanel
      *  target key.
      */
     private String getCommandDisplay(int key) {
-        StringBuffer buf = new StringBuffer(512);
+        StringBuilder buf = new StringBuilder(512);
         TargetData target;
         String[] dirs;
 

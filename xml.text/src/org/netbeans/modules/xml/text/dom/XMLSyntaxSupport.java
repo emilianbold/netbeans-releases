@@ -86,6 +86,10 @@ public class XMLSyntaxSupport {
         supportMap.put(doc, support);
         return support;
     }
+
+    public BaseDocument getDocument() {
+        return document;
+    }
     
     /**
      * Get token at given offet or previous one if at token boundary.
@@ -132,14 +136,15 @@ public class XMLSyntaxSupport {
         Token token = ts.token();
         //there are cases when this could be null
         //in which case use the next one.
-        if(token == null) {
-            if(next) {
-                ts.moveNext();
-            } else {
-                ts.movePrevious();
-            }
-            token = ts.token();
+        if(token == null)
+            ts.moveNext();
+
+        if(next) {
+            ts.moveNext();
+        } else {
+            ts.movePrevious();
         }
+        token = ts.token();
         return token;
     }
 
@@ -175,11 +180,9 @@ public class XMLSyntaxSupport {
                 case TEXT:
                 case DECLARATION:
                 case CDATA_SECTION:
-                case BLOCK_COMMENT: {
-                    return createElement(ts, token);
-                }
-
-                case TAG: {
+                case BLOCK_COMMENT:
+                case TAG:
+                case ERROR: {
                     return createElement(ts, token);
                 }
             }
@@ -280,6 +283,10 @@ public class XMLSyntaxSupport {
                     return new EndTag(this, token, start, end);
                 }
                 return new StartTag(this, token, start, end);
+            }
+
+            case ERROR: {
+                return new SyntaxElement.Error(this, token, start, end );
             }
         }
 

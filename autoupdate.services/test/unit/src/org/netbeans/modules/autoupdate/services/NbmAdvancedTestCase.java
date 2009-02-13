@@ -214,7 +214,7 @@ public class NbmAdvancedTestCase extends NbTestCase {
         OutputStream os = new FileOutputStream (res);
         os.write (s.getBytes ());
         os.close ();
-        return res.toURL ();
+        return res.toURI().toURL ();
     }
     
     @SuppressWarnings("unchecked")

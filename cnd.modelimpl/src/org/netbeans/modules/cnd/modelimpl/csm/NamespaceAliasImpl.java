@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import java.io.DataInput;
@@ -70,7 +69,7 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
 
     private CsmUID<CsmScope> scopeUID = null;
     
-    public NamespaceAliasImpl(AST ast, CsmFile file, CsmScope scope) {
+    public NamespaceAliasImpl(AST ast, CsmFile file, CsmScope scope, boolean global) {
         super(ast, file);
         _setScope(scope);
         rawName = createRawName(ast);
@@ -100,13 +99,14 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
             }
             namespace = QualifiedNameCache.getManager().getString(sb.toString());
         }
+        if (!global) {
+            Utils.setSelfUID(this);
+        }
     }
 
     private void _setScope(CsmScope scope) {
-        if ((scope instanceof CsmIdentifiable)) {
-            this.scopeUID = UIDCsmConverter.scopeToUID(scope);
-            assert (scopeUID != null || scope == null);
-        }
+        this.scopeUID = UIDCsmConverter.scopeToUID(scope);
+        assert (scopeUID != null || scope == null);
     }
 
     private synchronized CsmScope _getScope() {

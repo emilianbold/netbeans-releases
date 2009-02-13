@@ -65,13 +65,18 @@ public class ClassCode {
         
         protected String generateAccessCode() {
             DesignComponent component = getComponent();
-            boolean lazyInit = MidpTypes.getBoolean(component.readProperty(ClassCD.PROP_LAZY_INIT));
             String instanceName = MidpTypes.getString(component.readProperty(ClassCD.PROP_INSTANCE_NAME));
-            return lazyInit ? createGetterNameFromInstanceName(instanceName) + " ()" : instanceName; // NOI18N
+            return generateAccessCode(instanceName);
         }
         
         protected String generateDirectAccessCode() {
             return MidpTypes.getString(getComponent().readProperty(ClassCD.PROP_INSTANCE_NAME));
+        }
+
+        protected String generateAccessCode( String newName ){
+            DesignComponent component = getComponent();
+            boolean lazyInit = MidpTypes.getBoolean(component.readProperty(ClassCD.PROP_LAZY_INIT));
+            return lazyInit ? createGetterNameFromInstanceName(newName) + " ()" : newName; // NOI18N
         }
         
         protected String generateTypeCode() {

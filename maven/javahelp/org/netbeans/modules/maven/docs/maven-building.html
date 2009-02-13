@@ -1,0 +1,127 @@
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+
+Contributor(s):
+
+Portions Copyrighted 2009 Sun Microsystems, Inc.
+-->
+<html>
+    <head>
+        <title>Building a Maven Project</title>
+        <link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+    <body>
+        <h2>Building a Maven Project</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small></p>
+        <p>The Maven build lifecycle has defined phases with goals that are executed when building and distributing the project.
+        When you execute a goal, the Maven will also execute all the preceding goals in the build lifecycle.
+        You can invoke phase goals and plugin goals by mapping the goals to IDE actions, or you can 
+        create custom goals and invoke the goals individually.
+        When you execute a goal, the Maven output with the plugin and goal identifiers are displayed in the Output window.</p>
+
+        <p>You do not need to build the project or compile individual classes to run the project in the IDE.
+        By default, the IDE automatically compiles classes when you save them.
+        These incrementally compiled files are storeed in a cache in your user directory and are copied to your project's build folder
+        when you run or debug your project.</p>
+
+        <p>If you want to generate distributable files for the project, such as JAR files or WAR files, you need to build the project.
+        When you build a Maven project using the IDE's Build command, by default the IDE executes the plugin goals in the
+        <tt>install</tt> phase of the Maven lifecycle (builds the project and adds the artifact to the local repository).
+        </p>
+
+        <p><strong>To build the main project:</strong></p>
+        <ol>
+            <li>Choose Run &gt; Build Main Project (F11).
+            <p>The IDE displays the Maven output and any compilation errors in the Output window.
+            You can double-click any error to go to the location in the source code where the error occurred.</p>
+            </li>
+        </ol>
+        <p>You can modify the goals that are executed by the Build command and other IDE commands by
+        <a href="maven-settings.html">modifying Maven settings</a> in the project's Properties window.</p>
+
+
+        <p><strong>To build an individual project and its required projects:</strong></p>
+
+        <ol>
+            <li>Right-click the project's node in the Projects window and choose Build with Dependencies.
+            <p>The Build with Dependencies executes the <tt>reactor:make</tt> goal.</p>
+            </li>
+        </ol>
+        <p>You can modify the project dependencies by adding libraries in the Projects window or by editing
+        <tt>pom.xml</tt> in the editor.
+        </p>
+
+
+        <h3>Executing Maven Goals in the IDE</h3>
+        <p>Maven phases and goals can be mapped to the IDE actions that are available in the popup menu.
+        For example, by default the Build action in the IDE is mapped to the <tt>install</tt> phase in the Maven lifecycle.
+        When you right-click the project node and choose Build, the IDE executes the goals described in the <tt>install</tt> phase to
+        package the project and executes all the goals in the preceding phases in the build lifecycle.
+
+        <ul class="notes">
+            <li>You can modify the mapped Maven goals that are invoked by IDE actions by configuring actions
+            in the project's Properties window or in the Maven tab in the Options window.
+            For more, see <a href="maven_settings.html">Configuring Maven settings</a>.</li>
+        </ul>
+
+        <h3>Customizing the Build Process</h3>
+        <p>To customize the build for a Maven project you modify the POM to add or reconfigure plugins and dependencies.
+        You can use the code completion in the editor to help you when adding details to <tt>pom.xml</tt>.</p>
+
+        <ol>
+            <li>Open <tt>pom.xml</tt> in the XML editor.</li>
+            <li>Choose Source &gt; Insert Code (Ctrl-I) from the main menu and select Plugin from the popup menu
+            to open the Add New Plugin dialog box.</li>
+            <li>Type a query term to search for the plugin.</li>
+            <li>Select the plugin from the list of available plugins.</li>
+            <li>Select the goals that you want to be executed. Click OK.</li>
+        </ol>
+<p>When you click OK, the IDE adds the plugin description to <tt>pom.xml</tt> and the goals to run as part of the build process.
+
+</p>
+        If you add a plugin that is not in the local repository, This plugin will be automatically downloaded and used - including a specific version if you request it (the default is to use the latest available).
+
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/maven/maven-about.html">About Working with Maven</a></dd>
+    <dd><a href="maven_settings.html">Configuring Maven Settings</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

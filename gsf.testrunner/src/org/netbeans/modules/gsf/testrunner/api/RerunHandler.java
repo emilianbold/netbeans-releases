@@ -65,4 +65,11 @@ public interface RerunHandler {
      */
     void addChangeListener(ChangeListener listener);
 
+    /**
+     * Removes the given listener.
+     * 
+     * @param listener the listener to remove.
+     */
+    void removeChangeListener(ChangeListener listener);
+
 }

@@ -73,6 +73,7 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.core.api.support.classpath.ContainerClassPathModifier;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -174,17 +175,31 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         generateBeans(helper.getBeans(), helper.isGenerateFinderMethods(), 
                 helper.isFullyQualifiedTableNames(), helper.isRegenTablesAttrs(),
                 helper.getFetchType(), helper.getCollectionType(),
-                handle, progressPanel);
+                handle, progressPanel, helper.getProject());
     }
 
     // package private for tests
     void generateBeans(EntityClass[] entityClasses, boolean generateNamedQueries, 
             boolean fullyQualifiedTableNames, boolean regenTablesAttrs,
             FetchType fetchType, CollectionType collectionType,
-            ProgressContributor progressContributor, ProgressPanel panel) throws IOException {
+            ProgressContributor progressContributor, ProgressPanel panel, Project prj) throws IOException {
 
         int progressMax = entityClasses.length * 2;
         progressContributor.start(progressMax);
+        if (prj != null) {
+            ContainerClassPathModifier modifier = prj.getLookup().lookup(ContainerClassPathModifier.class);
+            if (modifier != null) {
+                progressContributor.progress(NbBundle.getMessage(JavaPersistenceGenerator.class, "LBL_Progress_Adding_Classpath"));
+                //TODO not project directory, but source root.
+                modifier.extendClasspath(prj.getProjectDirectory(),
+                        new String[] {
+                            ContainerClassPathModifier.API_ANNOTATION,
+                            ContainerClassPathModifier.API_PERSISTENCE,
+                            ContainerClassPathModifier.API_TRANSACTION
+                        });
+            }
+        }
+
         result = new Generator(entityClasses, generateNamedQueries, 
                 fullyQualifiedTableNames, regenTablesAttrs,
                 fetchType, collectionType,

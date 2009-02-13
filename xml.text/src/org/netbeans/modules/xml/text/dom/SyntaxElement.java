@@ -201,22 +201,18 @@ public abstract class SyntaxElement {
         }
         return false;
     }
-    
-    
-//    // Particular non-DOM syntax elements ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//
-//    /**
-//     * It may stop some DOM traversing.  //!!!
-//     */
-//    public static class Error extends SyntaxElement {
-//
-//        public Error( XMLSyntaxSupport support, TokenItem from, int to ) {
-//            super( support, from, to );
-//        }
-//
-//        public String toString() {
-//            return "Error" + super.toString();                                  // NOI18N
-//        }
-//    }
+        
+    /**
+     * It may stop some DOM traversing.  //!!!
+     */
+    public static class Error extends SyntaxElement {
+        public Error( XMLSyntaxSupport support, Token first, int start, int end ) {
+            super( support, first, start, end);
+        }
+
+        public String toString() {
+            return "Error" + super.toString();                                  // NOI18N
+        }
+    }
     
 }

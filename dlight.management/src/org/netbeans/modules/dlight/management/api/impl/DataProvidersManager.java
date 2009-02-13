@@ -36,15 +36,17 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.management.api.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Logger;
-import org.netbeans.modules.dlight.dataprovider.api.DataModelScheme;
+import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
+import org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProviderFactory;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.openide.util.Lookup;
 
@@ -58,38 +60,47 @@ import org.openide.util.Lookup;
  *
  * 
  */
-
 public final class DataProvidersManager {
-  private static DataProvidersManager instance = null;
-  
-  private Collection<? extends DataProvider> allDataProviders;
-  private Collection<DataProvider> activeDataProviders;
 
-  private static final Logger log = DLightLogger.getLogger(DataProvidersManager.class);
-  
-  private DataProvidersManager() {
-    allDataProviders = Lookup.getDefault().lookupAll(DataProvider.class);
-    activeDataProviders = new ArrayList<DataProvider>();
-    log.info(allDataProviders.size() + " data provider(s) found!"); // NOI18N
-  }
-  
-  public static DataProvidersManager getInstance() {
-    if (instance == null) {
-      instance = new DataProvidersManager();
+    private static DataProvidersManager instance = null;
+    private Collection<? extends VisualizerDataProviderFactory> allVisualizerDataProviders;
+    private Collection<VisualizerDataProvider> activeVisualizerDataProviders;
+    private static final Logger log = DLightLogger.getLogger(DataProvidersManager.class);
+
+    private DataProvidersManager() {
+        allVisualizerDataProviders = Lookup.getDefault().lookupAll(VisualizerDataProviderFactory.class);
+        activeVisualizerDataProviders = new ArrayList<VisualizerDataProvider>();
+        log.info(allVisualizerDataProviders.size() + " data provider(s) found!"); // NOI18N
     }
-    
-    return instance;
-  }
 
-  public DataProvider getDataProviderFor(DataStorageType dst, DataModelScheme dataModel) {
-    for (DataProvider provider : allDataProviders) {
-      if (provider.provides(dataModel) && provider.getSupportedDataStorageTypes().contains(dst)) {
-        DataProvider newProvider = provider.newInstance();
-        activeDataProviders.add(newProvider);
-        return newProvider;
-      }
-    } 
-    return null;   
-  }
-  
+    public static DataProvidersManager getInstance() {
+        if (instance == null) {
+            instance = new DataProvidersManager();
+        }
+
+        return instance;
+    }
+
+    public VisualizerDataProvider getDataProviderFor(DataModelScheme dataModel){
+        for (VisualizerDataProviderFactory providerFactory : allVisualizerDataProviders) {
+            if (providerFactory.provides(dataModel)) {
+                VisualizerDataProvider newProvider = providerFactory.create();
+                activeVisualizerDataProviders.add(newProvider);
+                return newProvider;
+            }
+        }
+        return null;
+    }
+
+    public DataProvider getDataProviderFor(DataStorageType dst, DataModelScheme dataModel) {
+        Collection<? extends DataProviderFactory> factories = Lookup.getDefault().lookupAll(DataProviderFactory.class);
+        for (DataProviderFactory providerFactory : factories) {
+            if (providerFactory.provides(dataModel) && providerFactory.getSupportedDataStorageTypes().contains(dst)) {
+                DataProvider newProvider = providerFactory.create();
+                activeVisualizerDataProviders.add(newProvider);
+                return newProvider;
+            }
+        }
+        return null;
+    }
 }

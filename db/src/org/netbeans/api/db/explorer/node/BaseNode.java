@@ -75,6 +75,10 @@ public abstract class BaseNode extends AbstractNode {
     protected static final String DRIVERDESC = "DriverURLDescription"; // NOI18N
     protected static final String SCHEMA = "Schema"; // NOI18N
     protected static final String SCHEMADESC = "SchemaDescription"; // NOI18N
+    protected static final String PROP_DEFSCHEMA = "DefaultSchema"; //NOI18N
+    protected static final String PROP_DEFSCHEMADESC = "DefaultSchema"; //NOI18N
+    protected static final String PROP_DEFCATALOG = "DefaultCatalog"; //NOI18N
+    protected static final String PROP_DEFCATALOGDESC = "DefaultCatalog"; //NOI18N
     protected static final String USER = "User"; // NOI18N
     protected static final String USERDESC = "UserDescription"; // NOI18N
     protected static final String REMEMBERPW = "RememberPassword"; // NOI18N
@@ -254,7 +258,7 @@ public abstract class BaseNode extends AbstractNode {
     /**
      * Updates the basic node properties.
      */
-    private void updateProperties() {
+    protected void updateProperties() {
         setName(getName());
         setDisplayName(getDisplayName());
         String iconBase = getIconBase();

@@ -79,7 +79,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-import org.openide.util.Utilities;
 
 /**
  * Top component which displays something.
@@ -100,6 +99,9 @@ final class TaskListTopComponent extends TopComponent {
     private TaskListTable table;
     private PropertyChangeListener changeListener;
     private TaskList.Listener tasksListener;
+
+    private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID());
+    private static final Color macBackground = UIManager.getColor("NbExplorerView.background");
     
     private TaskListTopComponent() {
         taskManager = TaskManagerImpl.getInstance();
@@ -121,6 +123,13 @@ final class TaskListTopComponent extends TopComponent {
                 maybePopup( e );
             }
         });
+        if( isMacLaf ) {
+            tableScroll.setBackground(macBackground);
+            tableScroll.getViewport().setBackground(macBackground);
+            toolbar.setBackground(macBackground);
+            statusBarPanel.setBackground(macBackground);
+        }
+
     }
     
     /** This method is called from within the constructor to
@@ -160,7 +169,7 @@ final class TaskListTopComponent extends TopComponent {
         tableHolderPanel.setLayout(tableHolderPanelLayout);
         tableHolderPanelLayout.setHorizontalGroup(
             tableHolderPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, tableScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, tableScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE)
         );
         tableHolderPanelLayout.setVerticalGroup(
             tableHolderPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -288,6 +297,8 @@ final class TaskListTopComponent extends TopComponent {
         
         if( null == model ) {
             table = new TaskListTable();
+            if( isMacLaf )
+                table.setBackground(macBackground);
             //later on the button in the toolbar will switch to the previously used table model
             model = new TaskListModel( taskManager.getTasks() );
             table.setModel( model );
@@ -300,6 +311,10 @@ final class TaskListTopComponent extends TopComponent {
                             if( null != background )
                                 tableScroll.getViewport().setBackground( background );
                             tableScroll.setBorder( BorderFactory.createEmptyBorder() );
+                            if( isMacLaf ) {
+                                table.setBackground(macBackground);
+                                tableScroll.getViewport().setBackground(macBackground);
+                            }
                         }
                     };
                     taskManager.getTasks().removeListener(tasksListener);
@@ -347,9 +362,13 @@ final class TaskListTopComponent extends TopComponent {
 
     private Component createNoTasksMessage() {
         JPanel panel = new JPanel( new BorderLayout() );
-        Color background = UIManager.getColor("TextArea.background"); //NOI18N
-        if( null != background )
-            panel.setBackground( background );
+        if( isMacLaf ) {
+            panel.setBackground(macBackground);
+        } else {
+            Color background = UIManager.getColor("TextArea.background"); //NOI18N
+            if( null != background )
+                panel.setBackground( background );
+        }
         JLabel msg = new JLabel( NbBundle.getMessage(TaskListTopComponent.class, "LBL_NoTasks" ) ); //NOI18N
         msg.setHorizontalAlignment(JLabel.CENTER);
         msg.setEnabled(false);

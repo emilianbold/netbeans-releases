@@ -233,7 +233,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
     private EditCookie getEditCookie() {
         try {
             FileObject wsdlFo =
-                    jaxWsSupport.getLocalWsdlFolder(false).getFileObject(client.getLocalWsdl());
+                    jaxWsSupport.getWsdlFolder(false).getFileObject(client.getLocalWsdl());
             assert wsdlFo!=null: "Cannot find local WSDL file"; //NOI18N
             if (wsdlFo!=null) {
                 DataObject dObj = DataObject.find(wsdlFo);
@@ -399,7 +399,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
     
     FileObject getLocalWsdl() {
         if (wsdlFileObject==null) {
-            FileObject localWsdlocalFolder = jaxWsSupport.getLocalWsdlFolder(false);
+            FileObject localWsdlocalFolder = jaxWsSupport.getWsdlFolder(false);
             if (localWsdlocalFolder!=null) {
                 String relativePath = client.getLocalWsdl();
                 if (relativePath != null) {
@@ -436,7 +436,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
                 updateNode();               
             } else {
                 // replace local wsdl with downloaded version
-                FileObject localWsdlFolder = jaxWsSupport.getLocalWsdlFolder(false);                
+                FileObject localWsdlFolder = jaxWsSupport.getWsdlFolder(false);
                 if (localWsdlFolder != null) {
                     String newWsdlUrl = result.getWsdlUrl();
                     boolean wsdlUrlChanged = false;

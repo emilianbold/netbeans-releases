@@ -168,7 +168,7 @@ public class KeyNode extends AbstractNode implements PropertyChangeListener {
     }
 
     /** Indicates if node can be renamed. Overrides superclass method.
-     * @returns true.
+     * @return true.
      */
     public final boolean canRename () {
         return true;

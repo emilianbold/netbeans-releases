@@ -98,7 +98,7 @@ made subject to such option by the copyright holder.
     attribute name contanis the name of the previous mode.
 -->
 <!ELEMENT previousMode       EMPTY >
-<!ATTLIST name
+<!ATTLIST previousMode
     name  CDATA
     index CDATA #IMPLIED
 >

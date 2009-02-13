@@ -41,7 +41,6 @@ package org.netbeans.modules.debugger.jpda.ui;
 
 import java.awt.AWTKeyStroke;
 import java.awt.BorderLayout;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
@@ -52,6 +51,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -71,7 +71,9 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.modules.debugger.jpda.ui.HistoryPanel.Item;
 import org.netbeans.modules.debugger.jpda.ui.models.WatchesNodeModel;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ColumnModel;
@@ -108,6 +110,10 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
     /** unique ID of <code>TopComponent</code> (singleton) */
     private static final String ID = "evaluator"; //NOI18N
+    private static final String PROP_RESULT_CHANGED = "resultChanged"; // NOI18N
+
+    private static CodeEvaluator defaultInstance = null;
+    private static PropertyChangeSupport pcs = new PropertyChangeSupport(new Integer(0)); // TODO
 
     private JEditorPane codePane;
     private HistoryPanel historyPanel;
@@ -115,12 +121,13 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     private DbgManagerListener dbgManagerListener;
     private EvaluatorModelListener viewModelListener;
     private PropertyChangeListener csfListener;
-    private ResultView resultView;
+    private TopComponent resultView;
     private static volatile CodeEvaluator currentEvaluator;
     private Variable result;
     private RequestProcessor.Task evalTask =
             new RequestProcessor("Debugger Evaluator", 1).  // NOI18N
             create(new EvaluateTask());
+
 
     /** Creates new form CodeEvaluator */
     public CodeEvaluator() {
@@ -128,7 +135,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         codePane = new JEditorPane();
         historyPanel = new HistoryPanel();
 
-        historyToggleButton.setMargin(new Insets(2,3,2,3));
+        historyToggleButton.setMargin(new Insets(2, 3, 2, 3));
         historyToggleButton.setFocusable(false);
         rightPanel.setPreferredSize(new Dimension(evaluateButton.getPreferredSize().width + 6, 0));
 
@@ -154,6 +161,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                 dbgManagerListener
         );
         checkDebuggerState();
+        defaultInstance = this;
     }
 
     public static synchronized CodeEvaluator getInstance() {
@@ -162,6 +170,36 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
             instance = new CodeEvaluator();
         }
         return instance;
+    }
+
+    public static ArrayList<Item> getHistory() {
+        return defaultInstance != null ? defaultInstance.historyPanel.getHistoryItems() : new ArrayList<Item>();
+    }
+
+    public static Variable getResult() {
+        return defaultInstance != null ? defaultInstance.result : null;
+    }
+
+    public static String getExpressionText() {
+        return defaultInstance != null ? defaultInstance.getExpression() : ""; // NOI18N
+    }
+
+    public static synchronized void addResultListener(PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(listener);
+    }
+
+    public static synchronized void removeResultListener(PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(listener);
+    }
+
+    private static void fireResultChange() {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                synchronized(CodeEvaluator.class) {
+                    pcs.firePropertyChange(PROP_RESULT_CHANGED, null, null);
+                }
+            }
+        });
     }
 
     private synchronized void checkDebuggerState() {
@@ -219,12 +257,21 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        historyToggleButton = new javax.swing.JToggleButton();
         editorScrollPane = new javax.swing.JScrollPane();
         separatorPanel = new javax.swing.JPanel();
         rightPanel = new javax.swing.JPanel();
         evaluateButton = new javax.swing.JButton();
-        historyToggleButton = new javax.swing.JToggleButton();
         emptyPanel = new javax.swing.JPanel();
+
+        historyToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/eval_history.png"))); // NOI18N
+        historyToggleButton.setText(org.openide.util.NbBundle.getMessage(CodeEvaluator.class, "CodeEvaluator.historyToggleButton.text")); // NOI18N
+        historyToggleButton.setToolTipText(org.openide.util.NbBundle.getMessage(CodeEvaluator.class, "HINT_Show_History")); // NOI18N
+        historyToggleButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                historyToggleButtonActionPerformed(evt);
+            }
+        });
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -264,21 +311,6 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
         rightPanel.add(evaluateButton, gridBagConstraints);
-
-        historyToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/eval_history.png"))); // NOI18N
-        historyToggleButton.setText(org.openide.util.NbBundle.getMessage(CodeEvaluator.class, "CodeEvaluator.historyToggleButton.text")); // NOI18N
-        historyToggleButton.setToolTipText(org.openide.util.NbBundle.getMessage(CodeEvaluator.class, "HINT_Show_History")); // NOI18N
-        historyToggleButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                historyToggleButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 0, 3);
-        rightPanel.add(historyToggleButton, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -363,9 +395,9 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         //DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(var.getValue()));
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if (result == null && resultView == null) {
-                    return ; // Ignore when nothing to display and nothing is initialized.
-                }
+//                if (result == null && resultView == null) { // [TODO]
+//                    return ; // Ignore when nothing to display and nothing is initialized.
+//                }
                 if (resultView == null) {
                     resultView = getResultViewInstance();
                 }
@@ -373,7 +405,8 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                     resultView.open();
                 }
                 resultView.requestActive();
-                viewModelListener.updateModel();
+                //viewModelListener.updateModel();
+                fireResultChange();
             }
         });
         // viewModelListener.updateModel();
@@ -382,7 +415,17 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     private void addResultToHistory(String expr, Variable result) {
         String type = result.getType();
         String value = result.getValue();
-        historyPanel.addItem(expr, type, value);
+        String toString = ""; // NOI18N
+        if (result instanceof ObjectVariable) {
+            try {
+                toString = ((ObjectVariable) result).getToStringValue ();
+            } catch (InvalidExpressionException ex) {
+            } finally {
+            }
+        } else {
+            toString = value;
+        }
+        historyPanel.addItem(expr, type, value, toString);
     }
 
     // KeyListener implementation ..........................................
@@ -446,13 +489,13 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         return new ResultView();
     }
 
-    private synchronized ResultView getResultViewInstance() {
+    private synchronized TopComponent getResultViewInstance() {
         /** unique ID of <code>TopComponent</code> (singleton) */
-        ResultView instance = (ResultView) WindowManager.getDefault().findTopComponent(ResultView.ID);
+        TopComponent instance = WindowManager.getDefault().findTopComponent("resultsView"); // NOI18N [TODO]
         if (instance == null) {
             instance = new ResultView();
         }
-        initResult(instance); // [TODO]
+        //initResult(instance); // [TODO]
         return instance;
     }
 
@@ -560,7 +603,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
 
         public EvaluatorModelListener(JComponent view) {
-            this.viewType = "LocalsView"; // NOI18N
+            this.viewType = "ResultView"; // NOI18N
             this.view = view;
             DebuggerManager.getDebuggerManager ().addDebuggerListener (
                 DebuggerManager.PROP_CURRENT_ENGINE,
@@ -591,7 +634,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 //                eval.setDebugger(debugger);
                 eval.checkDebuggerState();
             }
-            updateModel ();
+            //updateModel ();
         }
 
         public synchronized void updateModel () {

@@ -51,6 +51,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.project.ui.Utils;
+import org.netbeans.modules.php.project.util.PhpUnit;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -260,6 +261,14 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
         warning = Utils.validatePhpUnit(phpOptionsPanel.getPhpUnit());
         if (warning != null) {
             phpOptionsPanel.setWarning(warning);
+            return true;
+        }
+
+        PhpUnit.resetVersion();
+        PhpUnit phpUnit = new PhpUnit(phpOptionsPanel.getPhpUnit());
+        if (!phpUnit.supportedVersionFound()) {
+            phpOptionsPanel.setWarning(NbBundle.getMessage(
+                    PhpOptionsPanelController.class, "MSG_OldPhpUnit", PhpUnit.getVersions(phpUnit.getVersion())));
             return true;
         }
 

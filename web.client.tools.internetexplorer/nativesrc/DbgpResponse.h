@@ -64,6 +64,8 @@ static const tstring LINE_NO =          _T("lineno");
 static const tstring ID =               _T("id");
 static const tstring ENCODING =         _T("encoding");
 static const tstring BASE64 =           _T("base64");
+static const tstring HTTP =             _T("http");
+static const tstring HEADER =           _T("header");
 
 class DbgpResponse {
 public:
@@ -114,6 +116,56 @@ protected:
 };
 
 typedef StandardDbgpResponse DbgpMessage;
+
+// Class representing HTTP Header Message sent to Netbeans for HTTP monitor
+class HttpDbgpResponse : public DbgpResponse {
+public:
+    HttpDbgpResponse(){
+        tag.setName(HTTP);
+        headersTag = & tag.addChildTag(HEADER);
+    }
+
+    void setTagName(tstring tag){
+        this->tag = tag;
+    }
+
+    void setValue(tstring value){
+        tag.setValue(value);
+    }
+
+    void addChildTagWithValue(tstring name, tstring value) {
+        XMLTag childTag = tag.addChildTag(name, value);
+    }
+
+    void addChildTagWithValue(tstring name, long value) {
+        XMLTag childTag = tag.addChildTag(name, value);
+    }
+
+    void addAttribute(tstring name, tstring value) {
+        tag.addAttribute(name, value);
+    }
+
+    void addAttribute(tstring name, int value) {
+        tag.addAttribute(name, value);
+    }
+
+    void addHeader(const tstring name, const tstring value) {
+        XMLTag newHeaderTag = headersTag->addChildTag(name, value);
+    }
+
+    void addHeader(const tstring name, int value) {
+        XMLTag newHeaderTag = headersTag->addChildTag(name, value);
+    }
+
+    tstring toString(){
+        return tag.toString();
+    }
+
+protected:
+    DbgpResponseTag tag;
+	XMLTag *headersTag;
+};
+
 
 class DbgpWindowsMessage {
 public:

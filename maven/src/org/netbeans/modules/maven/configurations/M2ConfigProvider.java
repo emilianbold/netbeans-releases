@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.ProjectProfileHandler;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
@@ -222,6 +223,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
                 aux, 
                 ConfigurationProviderEnabler.ACTIVATED, active.getId());
         support.firePropertyChange(PROP_CONFIGURATION_ACTIVE, old, active);
+        NbMavenProject.fireMavenProjectReload(project);
     }
 
     private List<M2Configuration> createProfilesList() {

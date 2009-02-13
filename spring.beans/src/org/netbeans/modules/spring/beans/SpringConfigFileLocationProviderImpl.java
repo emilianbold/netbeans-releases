@@ -43,12 +43,18 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.spring.spi.beans.SpringConfigFileLocationProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Andrei Badea
  */
+@ProjectServiceProvider(service=SpringConfigFileLocationProvider.class, projectType={
+    "org-netbeans-modules-java-j2seproject",
+    "org-netbeans-modules-j2ee-ejbjarproject",
+    "org-netbeans-modules-web-project"
+})
 public class SpringConfigFileLocationProviderImpl implements SpringConfigFileLocationProvider {
 
     private final Project project;

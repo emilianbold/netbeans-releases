@@ -215,11 +215,13 @@ bool JvmLauncher::startInProcJvm(const char *mainClassName, std::list<std::strin
         bool init(list<string> options) {
             logMsg("JvmLauncher::Jvm::init()");
             logMsg("LoadLibrary(\"%s\")", jvmLauncher->javaDllPath.c_str());
-            PrepareDllPath prepare(jvmLauncher->javaBinPath.c_str());
-            hDll = LoadLibrary(jvmLauncher->javaDllPath.c_str());
-            if (!hDll) {
-                logErr(true, true, "Cannot load %s.", jvmLauncher->javaDllPath.c_str());
-                return false;
+            {
+                PrepareDllPath prepare(jvmLauncher->javaBinPath.c_str());
+                hDll = LoadLibrary(jvmLauncher->javaDllPath.c_str());
+                if (!hDll) {
+                    logErr(true, true, "Cannot load %s.", jvmLauncher->javaDllPath.c_str());
+                    return false;
+                }
             }
 
             CreateJavaVM createJavaVM = (CreateJavaVM) GetProcAddress(hDll, JNI_CREATEVM_FUNC);

@@ -40,7 +40,6 @@
  */
 package org.openide.explorer.view;
 
-import java.awt.AWTEvent;
 import java.awt.Component;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.ExplorerManager;
@@ -1626,6 +1625,7 @@ public abstract class TreeView extends JScrollPane {
         public void addNotify() {
             super.addNotify();
             ViewTooltips.register(this);
+            ViewUtil.adjustBackground( this );
         }
         
         @Override
@@ -1684,10 +1684,6 @@ public abstract class TreeView extends JScrollPane {
         @Override
         public void doLayout() {
             new GuardedActions(2, null);
-        }
-
-        private void doProcessEvent(AWTEvent e) {
-            super.processEvent(e);
         }
 
         private void guardedPaint(Graphics g) {

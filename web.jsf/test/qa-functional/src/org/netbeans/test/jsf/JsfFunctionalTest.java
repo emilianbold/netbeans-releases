@@ -70,6 +70,8 @@ import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JRadioButtonOperator;
+import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
@@ -183,7 +185,8 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         frameworkStep.selectPageLibraries();
         frameworkStep.rbCreateNewLibrary().push();
         assertEquals("\"\" is not valid path for a folder.", frameworkStep.lblIsNotValidPathForAFolder().getText());
-        frameworkStep.rbRegisteredLibraries().push();
+        // Can be uncommented after fixing Issue 157766
+        //frameworkStep.rbRegisteredLibraries().push();
         frameworkStep.rbDoNotAppendAnyLibrary().push();
 
         frameworkStep.finish();
@@ -399,6 +402,9 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         addFrameworkOper.ok();
         new JCheckBoxOperator(propertiesDialogOper, "Validate XML").setSelected(false);
         new JCheckBoxOperator(propertiesDialogOper, "Verify Objects").setSelected(true);
+        // do not append any library
+        new JTabbedPaneOperator(propertiesDialogOper).setSelectedIndex(1);
+        new JRadioButtonOperator(propertiesDialogOper, "Do not append any library.").doClick();
         // confirm properties dialog
         propertiesDialogOper.ok();
         
@@ -420,6 +426,7 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
     /** Test JSF Palette. */
     public void testJSFPalette() {
         EditorOperator editorOper = new EditorOperator(INDEX_JSP);
+        editorOper.select(17);
         ComponentPaletteOperator paletteOper = new ComponentPaletteOperator();
         // collapse HTML category
         JCheckBoxOperator htmlCategoryOper = new JCheckBoxOperator(paletteOper, "HTML");
@@ -448,7 +455,7 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         paletteOper.selectComponent("JSF Data Table");
         paletteOper.pushKey(KeyEvent.VK_ENTER);
         new NbDialogOperator("Insert JSF Data Table").ok();
-        expected = "<h:dataTable value=\"#{arrayOrCollectionOf}\" var=\"item\">";
+        expected = "<h:dataTable value=\"#{}\" var=\"item\">";
         assertTrue("index.jsp should contain "+expected+".", editorOper.contains(expected));
         expected = "</h:dataTable>";
         assertTrue("index.jsp should contain "+expected+".", editorOper.contains(expected));

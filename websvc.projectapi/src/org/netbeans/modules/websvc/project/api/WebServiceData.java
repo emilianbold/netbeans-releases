@@ -63,7 +63,8 @@ public final class WebServiceData {
      * @return WebServiceData instance that delegates to the WebServiceDataProvider in the project.
      */
     public static WebServiceData getWebServiceData(Project p) {
-        return new WebServiceData(p.getLookup().lookup(WebServiceDataProvider.class));
+        WebServiceDataProvider provider = p.getLookup().lookup(WebServiceDataProvider.class);
+        return p != null ? new WebServiceData(provider) : null;
     }
 
     private WebServiceData(WebServiceDataProvider wsProvider) {

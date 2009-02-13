@@ -308,7 +308,12 @@ public abstract class LFCustoms {
     //Enables lazy loading of defaults for the property sheet - since it's not actually shown on startup
     //anymore, no need to install its keys and values on startup
     protected static final String PROPERTYSHEET_BOOTSTRAP = "nb.propertysheet";
-    
+
+    /** For JSplitPane.VERTICAL_SPLIT */
+    protected static final String SPLIT_PANE_DIVIDER_SIZE_VERTICAL   = "Nb.SplitPane.dividerSize.vertical";
+    /** For JSplitPane.HORIZONTAL_SPLIT */
+    protected static final String SPLIT_PANE_DIVIDER_SIZE_HORIZONTAL = "Nb.SplitPane.dividerSize.horizontal";
+
     // keys used to store theme values in UIDefaults
     public static final String CONTROLFONT = "controlFont"; // NOI18N
     public static final String SYSTEMFONT = "systemFont"; //NOI18N

@@ -42,7 +42,6 @@ package org.netbeans.modules.maven.persistence;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
-import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.spi.customizer.ModelHandleUtils;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
@@ -53,6 +52,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -60,6 +60,8 @@ import org.openide.util.Exceptions;
  *
  * @author mkleint
  */
+@ProjectServiceProvider(service={ProjectClassPathModifierImplementation.class, ProjectClassPathExtender.class},
+projectType="org-netbeans-modules-maven")
 public class CPExtender extends ProjectClassPathModifierImplementation implements ProjectClassPathExtender {
     private static final String SL_15 = "1.5"; //NOI18N
     private Project project;

@@ -249,7 +249,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
      * Called from set () and propertyChanged.
      */
     final void update() {
-        if (debugger.getState() != GdbDebugger.State.NONE) {
+        if (debugger.getState() != GdbDebugger.State.EXITED) {
             setRequests();
         }
     }

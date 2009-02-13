@@ -91,7 +91,7 @@ public class JPAGenTest extends SourceTestSupport{
         EntityClass user = getUserEntity();
         
         generator.generateBeans(new EntityClass[]{user}, true, false, false, 
-                FetchType.DEFAULT, CollectionType.COLLECTION, getProgressContributor(), null);
+                FetchType.DEFAULT, CollectionType.COLLECTION, getProgressContributor(), null, null);
         assertEquals(1,generator.createdObjects().size());
         
         FileObject result = generator.createdObjects().iterator().next();
@@ -126,7 +126,7 @@ public class JPAGenTest extends SourceTestSupport{
         
         generator.generateBeans(new EntityClass[]{user, product}, true, 
                 false, false, FetchType.DEFAULT, CollectionType.COLLECTION,
-                getProgressContributor(), null);
+                getProgressContributor(), null, null);
         Set<FileObject> result = generator.createdObjects();
         assertEquals(2, result.size());
   
@@ -150,7 +150,7 @@ public class JPAGenTest extends SourceTestSupport{
         
         EntityClass[] beans = new DbSchemaEjbGenerator(genTables, schema).getBeans();
         
-        generator.generateBeans(beans, true, false, false, FetchType.DEFAULT, CollectionType.COLLECTION, getProgressContributor(), null);
+        generator.generateBeans(beans, true, false, false, FetchType.DEFAULT, CollectionType.COLLECTION, getProgressContributor(), null, null);
         Set<FileObject> result = generator.createdObjects();
         assertEquals(1, result.size());
         
@@ -171,7 +171,7 @@ public class JPAGenTest extends SourceTestSupport{
         
         EntityClass[] beans = new DbSchemaEjbGenerator(genTables, schema).getBeans();
         
-        generator.generateBeans(beans, true, false, false, FetchType.DEFAULT, CollectionType.COLLECTION, getProgressContributor(), null);
+        generator.generateBeans(beans, true, false, false, FetchType.DEFAULT, CollectionType.COLLECTION, getProgressContributor(), null, null);
         Set<FileObject> result = generator.createdObjects();
         assertEquals(3, result.size());
         

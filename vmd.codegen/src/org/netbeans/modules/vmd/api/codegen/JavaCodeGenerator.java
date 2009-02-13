@@ -85,6 +85,12 @@ public final class JavaCodeGenerator {
         });
     }
 
+    public void preUpdateCode (final StyledDocument document, 
+            final DesignDocument designDocument)
+    {
+        //org.openide.LifecycleManager.getDefault().saveAll();
+    }
+
     public void generateCode (final StyledDocument document, final DesignDocument designDocument) {
         final Collection<CodePresenter> presenters = DocumentSupport.gatherAllPresentersOfClass (designDocument, CodePresenter.class);
         try {

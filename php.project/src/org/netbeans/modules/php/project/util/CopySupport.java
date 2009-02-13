@@ -440,8 +440,7 @@ public abstract class CopySupport {
             String relativePath = relativePathForSource(source);
             File targetRoot = FileUtil.toFile(getConfig().getTarget());
             assert targetRoot != null;
-            File target = new File(targetRoot, relativePath);
-            return target;
+            return FileUtil.normalizeFile(new File(targetRoot, relativePath));
         }
 
         @Override

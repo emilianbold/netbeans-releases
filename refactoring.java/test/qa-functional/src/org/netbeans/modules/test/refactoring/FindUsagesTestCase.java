@@ -53,7 +53,7 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.modules.test.refactoring.actions.FindUsagesAction;
 import org.netbeans.modules.test.refactoring.operators.FindUsagesClassOperator;
-import org.netbeans.modules.test.refactoring.operators.FindUsagesResultOperator;
+import org.netbeans.modules.test.refactoring.operators.RefactoringResultOperator;
 
 /**
  *
@@ -121,7 +121,7 @@ public class FindUsagesTestCase extends RefactoringTestCase {
         findUsagesClassOperator.getFind().pushNoBlock();
         new EventTool().waitNoEvent(2000);
         if (browseChild) {
-            FindUsagesResultOperator test = new FindUsagesResultOperator();
+            RefactoringResultOperator test = new RefactoringResultOperator();
             JTree tree = test.getPreviewTree();
             TreeModel model = tree.getModel();
             Object root = model.getRoot();

@@ -41,8 +41,6 @@
 package org.netbeans.modules.cnd.refactoring.codegen.ui;
 
 import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +48,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.refactoring.codegen.ui.ElementNode.Description;
+import org.netbeans.modules.cnd.refactoring.support.DeclarationGenerator;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
@@ -61,12 +60,11 @@ import org.openide.util.NbPreferences;
  * @author  Petr Hrebejk, Dusan Balek
  * @author Vladimir Voskresensky
  */
-public class ElementSelectorPanel extends JPanel implements ExplorerManager.Provider, ActionListener {
+public class ElementSelectorPanel extends JPanel implements ExplorerManager.Provider {
 
     private final ExplorerManager manager = new ExplorerManager();
     private final CheckTreeView elementView;
     private final JCheckBox inline = new JCheckBox();
-    private static final String INLINE_PROPERTY = "inline_method"; // NOI18N
     private boolean inlineMethod;
     /** Creates new form ElementSelectorPanel */
     public ElementSelectorPanel(ElementNode.Description elementDescription, boolean singleSelection, boolean supportInline) {
@@ -77,8 +75,9 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
         add(elementView, BorderLayout.CENTER);
         if (supportInline) {
             Mnemonics.setLocalizedText(inline, NbBundle.getMessage(ElementSelectorPanel.class, "LBL_inline_implementation")); // NOI18N
-            inlineMethod = NbPreferences.forModule(ElementSelectorPanel.class).getBoolean(INLINE_PROPERTY, false);
+            inlineMethod = NbPreferences.forModule(DeclarationGenerator.class).getBoolean(DeclarationGenerator.INSERT_CODE_INLINE_PROPERTY, true);
             inline.setSelected(inlineMethod);
+            inline.setEnabled(false);
             add(inline, BorderLayout.SOUTH);
         } else {
             inlineMethod = false;
@@ -96,14 +95,9 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
         }
     }
 
-    public void actionPerformed(ActionEvent e) {
-        if (e != null && e.getSource() == inline) {
-            inlineMethod = inline.isSelected();
-            NbPreferences.forModule(ElementSelectorPanel.class).putBoolean(INLINE_PROPERTY, inlineMethod);
-        }
-    }
-
     public boolean isMethodInline() {
+        inlineMethod = inline.isSelected();
+        NbPreferences.forModule(DeclarationGenerator.class).putBoolean(DeclarationGenerator.INSERT_CODE_INLINE_PROPERTY, inlineMethod);
         return inlineMethod;
     }
 

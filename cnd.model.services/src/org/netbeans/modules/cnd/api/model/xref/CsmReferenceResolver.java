@@ -42,9 +42,8 @@
 package org.netbeans.modules.cnd.api.model.xref;
 
 import javax.swing.JEditorPane;
+import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
@@ -105,7 +104,14 @@ public abstract class CsmReferenceResolver {
         }
         return null;
     }   
-    
+
+    public CsmReference findReference(Document doc, int offset) {
+        CsmFile file = CsmUtilities.getCsmFile(doc, false);
+        if (file != null) {
+            return findReference(file, offset);
+        }
+        return null;
+    }
     /**
      * fast checks reference scope if possible
      * @param ref
@@ -148,7 +154,18 @@ public abstract class CsmReferenceResolver {
             }
             return null;
         }
-        
+
+        @Override
+        public CsmReference findReference(Document doc, int offset) {
+            for (CsmReferenceResolver resolver : res.allInstances()) {
+                CsmReference out = resolver.findReference(doc, offset);
+                if (out != null) {
+                    return out;
+                }
+            }
+            return null;
+        }
+
         @Override
         public Scope fastCheckScope(CsmReference ref) {
             for (CsmReferenceResolver resolver : res.allInstances()) {

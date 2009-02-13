@@ -76,9 +76,9 @@ implements PropertyChangeListener {
         putValue(Action.NAME, NbBundle.getMessage(ActionUtils.class,
         "LBL_CloseWindowAction")); //NOI18N
         if( WindowManagerImpl.getInstance().isEditorTopComponent(tc) ) {
-            setEnabled(Switches.isEditorTopComponentClosingEnabled());
+            setEnabled(Switches.isEditorTopComponentClosingEnabled() && Switches.isClosingEnabled(tc));
         } else {
-            setEnabled(Switches.isViewTopComponentClosingEnabled());
+            setEnabled(Switches.isViewTopComponentClosingEnabled() && Switches.isClosingEnabled(tc));
         }
     }
     
@@ -111,12 +111,14 @@ implements PropertyChangeListener {
     
     private void updateEnabled() {
         TopComponent activeTc = TopComponent.getRegistry().getActivated();
-        if( null == activeTc ) 
+        if( null == activeTc ) {
             setEnabled(false);
+            return;
+        }
         if( WindowManagerImpl.getInstance().isEditorTopComponent(activeTc) ) {
-            setEnabled( Switches.isEditorTopComponentClosingEnabled() );
+            setEnabled( Switches.isEditorTopComponentClosingEnabled() && Switches.isClosingEnabled(activeTc) );
         } else {
-            setEnabled( Switches.isViewTopComponentClosingEnabled() );
+            setEnabled( Switches.isViewTopComponentClosingEnabled() && Switches.isClosingEnabled(activeTc) );
         }
     }
     

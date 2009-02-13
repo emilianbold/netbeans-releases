@@ -67,12 +67,24 @@ public class CopyCommand extends SvnCommand {
     private File toFile;
     private String msg;
     private SVNRevision rev;
+    private boolean makeParents;
 
-    public CopyCommand(SVNUrl fromUrl, SVNUrl toUrl, String msg, SVNRevision rev) {        
+    public static final String MAKE_PARENTS_ARGUMENT = "--parents";
+
+    public CopyCommand(SVNUrl fromUrl, SVNUrl toUrl, String msg, SVNRevision rev) {
         this.fromUrl = fromUrl;
         this.toUrl = toUrl;
         this.msg = msg;
-        this.rev = rev;        
+        this.rev = rev;
+        type = CopyType.url2url;
+    }
+
+    public CopyCommand(SVNUrl fromUrl, SVNUrl toUrl, String msg, SVNRevision rev, boolean makeParents) {
+        this.fromUrl = fromUrl;
+        this.toUrl = toUrl;
+        this.msg = msg;
+        this.rev = rev;
+        this.makeParents = makeParents;
         type = CopyType.url2url;
     }
 
@@ -83,10 +95,18 @@ public class CopyCommand extends SvnCommand {
         type = CopyType.url2file;
     }
     
-    public CopyCommand(File fromFile, SVNUrl toUrl, String msg) {        
+    public CopyCommand(File fromFile, SVNUrl toUrl, String msg) {
         this.fromFile = fromFile;
-        this.toUrl = toUrl;        
-        this.msg = msg;        
+        this.toUrl = toUrl;
+        this.msg = msg;
+        type = CopyType.file2url;
+    }
+
+    public CopyCommand(File fromFile, SVNUrl toUrl, String msg, boolean makeParents) {
+        this.fromFile = fromFile;
+        this.toUrl = toUrl;
+        this.msg = msg;
+        this.makeParents = makeParents;
         type = CopyType.file2url;
     }
     
@@ -119,5 +139,8 @@ public class CopyCommand extends SvnCommand {
                 throw new IllegalStateException("Illegal copytype: " + type);                             
         }                
         arguments.addMessage(msg);
+        if (makeParents) {
+            arguments.add(MAKE_PARENTS_ARGUMENT);
+        }
     }    
 }

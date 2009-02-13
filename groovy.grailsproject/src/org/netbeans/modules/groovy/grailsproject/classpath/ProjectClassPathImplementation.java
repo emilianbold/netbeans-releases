@@ -43,26 +43,46 @@ package org.netbeans.modules.groovy.grailsproject.classpath;
 
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.net.MalformedURLException;
 import java.io.File;
 import java.net.URL;
+import org.netbeans.api.project.Project;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 
-final class ProjectClassPathImplementation implements ClassPathImplementation {
+final class ProjectClassPathImplementation implements ClassPathImplementation, FileChangeListener {
+
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
     private List<PathResourceImplementation> resources;
     private final File projectRoot;
 
-    public ProjectClassPathImplementation(FileObject projectRoot) {
+    private ProjectClassPathImplementation(FileObject projectRoot) {
         this.projectRoot = FileUtil.toFile(projectRoot);
     }
-    
+
+    public static ProjectClassPathImplementation forProject(Project project) {
+        ProjectClassPathImplementation impl = new ProjectClassPathImplementation(project.getProjectDirectory());
+
+        File pluginsDir = FileUtil.normalizeFile(new File(FileUtil.toFile(project.getProjectDirectory()), "plugins")); // NOI18N
+        File libDir = FileUtil.normalizeFile(new File(FileUtil.toFile(project.getProjectDirectory()), "lib")); // NOI18N
+
+        // it is weakly referenced
+        FileUtil.addFileChangeListener(impl, pluginsDir);
+        FileUtil.addFileChangeListener(impl, libDir);
+        return impl;
+    }
+
     public synchronized List<PathResourceImplementation> getResources() {
         if (this.resources == null) {
             this.resources = this.getPath();
@@ -86,7 +106,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
                 }
             }
         }
-        
+
         return Collections.unmodifiableList(result);
     }
 
@@ -118,9 +138,41 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
     }
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
     }
 
+    public void fileAttributeChanged(FileAttributeEvent fe) {
+        fireChange();
+    }
+
+    public void fileChanged(FileEvent fe) {
+        fireChange();
+    }
+
+    public void fileDataCreated(FileEvent fe) {
+        fireChange();
+    }
+
+    public void fileDeleted(FileEvent fe) {
+        fireChange();
+    }
+
+    public void fileFolderCreated(FileEvent fe) {
+        fireChange();
+    }
+
+    public void fileRenamed(FileRenameEvent fe) {
+        fireChange();
+    }
+
+    private void fireChange() {
+        synchronized (this) {
+            this.resources = null;
+        }
+        this.support.firePropertyChange(ClassPathImplementation.PROP_RESOURCES, null, null);
+    }
 }

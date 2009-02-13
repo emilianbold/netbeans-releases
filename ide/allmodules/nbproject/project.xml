@@ -43,15 +43,25 @@ made subject to such option by the copyright holder.
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.ant.freeform</type>
     <configuration>
-        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
+        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/2">
             <name>All NetBeans Modules</name>
+            <view>
+                <items/>
+                <context-menu>
+                    <action>
+                        <label>Regenerate Subproject List</label>
+                        <target>regenerate-project.xml</target>
+                    </action>
+                </context-menu>
+            </view>
             <subprojects>
-                <!-- To update, run: ant -f nbbuild/build.xml check-module-configs -->
+                <!-- To update, run target listed above -->
                 <project>../../ant.browsetask</project>
                 <project>../../ant.debugger</project>
                 <project>../../ant.freeform</project>
                 <project>../../ant.grammar</project>
                 <project>../../ant.kit</project>
+                <project>../../api.annotations.common</project>
                 <project>../../api.debugger</project>
                 <project>../../api.debugger.jpda</project>
                 <project>../../api.java</project>
@@ -166,7 +176,6 @@ made subject to such option by the copyright holder.
                 <project>../../editor.bracesmatching</project>
                 <project>../../editor.codetemplates</project>
                 <project>../../editor.completion</project>
-                <project>../../editor.deprecated.pre61completion</project>
                 <project>../../editor.deprecated.pre61settings</project>
                 <project>../../editor.errorstripe</project>
                 <project>../../editor.errorstripe.api</project>
@@ -208,6 +217,8 @@ made subject to such option by the copyright holder.
                 <project>../../groovy.support</project>
                 <project>../../gsf</project>
                 <project>../../gsf.api</project>
+                <project>../../gsf.codecoverage</project>
+                <project>../../gsf.testrunner</project>
                 <project>../../gsfpath.api</project>
                 <project>../../hibernate</project>
                 <project>../../hibernatelib</project>
@@ -221,6 +232,7 @@ made subject to such option by the copyright holder.
                 <project>../../i18n.form</project>
                 <project>../../ide.branding</project>
                 <project>../../ide.branding.kit</project>
+                <project>../../ide.ergonomics</project>
                 <project>../../ide.kit</project>
                 <project>../../identity.ant</project>
                 <project>../../identity.kit</project>
@@ -475,6 +487,7 @@ made subject to such option by the copyright holder.
                 <project>../../profiler.j2ee.weblogic</project>
                 <project>../../profiler.j2se</project>
                 <project>../../profiler.nbmodule</project>
+                <project>../../profiler.oql.language</project>
                 <project>../../profiler.projectsupport</project>
                 <project>../../profiler.selector.java</project>
                 <project>../../profiler.selector.spi</project>
@@ -498,6 +511,7 @@ made subject to such option by the copyright holder.
                 <project>../../registration</project>
                 <project>../../reglib</project>
                 <project>../../ruby</project>
+                <project>../../ruby.codecoverage</project>
                 <project>../../ruby.debugger</project>
                 <project>../../ruby.extrahints</project>
                 <project>../../ruby.help</project>
@@ -557,61 +571,6 @@ made subject to such option by the copyright holder.
                 <project>../../versioning.system.cvss</project>
                 <project>../../versioning.util</project>
                 <project>../../visdev.prefuse</project>
-                <project>../../visualweb.api.designer</project>
-                <project>../../visualweb.api.insync</project>
-                <project>../../visualweb.api.j2ee</project>
-                <project>../../visualweb.api.portlet.dd</project>
-                <project>../../visualweb.classloaderprovider</project>
-                <project>../../visualweb.complib</project>
-                <project>../../visualweb.complib.api</project>
-                <project>../../visualweb.dataconnectivity</project>
-                <project>../../visualweb.dataconnectivity.designtime</project>
-                <project>../../visualweb.dataprovider</project>
-                <project>../../visualweb.dataprovider.designtime</project>
-                <project>../../visualweb.designer</project>
-                <project>../../visualweb.designer.cssengine</project>
-                <project>../../visualweb.designer.html</project>
-                <project>../../visualweb.designer.jsf</project>
-                <project>../../visualweb.designer.markup</project>
-                <project>../../visualweb.designtime</project>
-                <project>../../visualweb.designtime.base</project>
-                <project>../../visualweb.designtime.idebridge</project>
-                <project>../../visualweb.designtimeext</project>
-                <project>../../visualweb.ejb</project>
-                <project>../../visualweb.errorhandler.client</project>
-                <project>../../visualweb.extension.openide</project>
-                <project>../../visualweb.extension.openide.loaders</project>
-                <project>../../visualweb.gravy</project>
-                <project>../../visualweb.insync</project>
-                <project>../../visualweb.j2ee14classloaderprovider</project>
-                <project>../../visualweb.j2ee15classloaderprovider</project>
-                <project>../../visualweb.jsfsupport</project>
-                <project>../../visualweb.jsfsupport.components</project>
-                <project>../../visualweb.jsfsupport.designtime</project>
-                <project>../../visualweb.jsfsupport.designtime_1_1</project>
-                <project>../../visualweb.jsfsupport.designtime_1_2</project>
-                <project>../../visualweb.kit</project>
-                <project>../../visualweb.libs.batik</project>
-                <project>../../visualweb.libs.jtidy</project>
-                <project>../../visualweb.navigation</project>
-                <project>../../visualweb.outline</project>
-                <project>../../visualweb.palette</project>
-                <project>../../visualweb.project.jsf</project>
-                <project>../../visualweb.project.jsfloader</project>
-                <project>../../visualweb.propertyeditors</project>
-                <project>../../visualweb.propertyeditors.api</project>
-                <project>../../visualweb.propertyeditors.resolver</project>
-                <project>../../visualweb.ravehelp.rave_nbpack</project>
-                <project>../../visualweb.rowset</project>
-                <project>../../visualweb.samples.bundled</project>
-                <project>../../visualweb.web.ui.appbase</project>
-                <project>../../visualweb.websvcmgr</project>
-                <project>../../visualweb.webui</project>
-                <project>../../visualweb.webui.designtime</project>
-                <project>../../visualweb.webui.jsf.defaulttheme</project>
-                <project>../../visualweb.webui.themes</project>
-                <project>../../visualweb.woodstock.webui.jsf</project>
-                <project>../../visualweb.xhtml</project>
                 <project>../../vmd.analyzer</project>
                 <project>../../vmd.codegen</project>
                 <project>../../vmd.components.midp</project>
@@ -645,13 +604,13 @@ made subject to such option by the copyright holder.
                 <project>../../web.core.syntax</project>
                 <project>../../web.debug</project>
                 <project>../../web.examples</project>
+                <project>../../web.fake</project>
                 <project>../../web.flyingsaucer</project>
                 <project>../../web.freeform</project>
                 <project>../../web.jsf</project>
                 <project>../../web.jsf.kit</project>
                 <project>../../web.jsf.navigation</project>
                 <project>../../web.jsf12</project>
-                <project>../../web.jsf12ri</project>
                 <project>../../web.jspparser</project>
                 <project>../../web.jstl11</project>
                 <project>../../web.kit</project>
@@ -672,6 +631,7 @@ made subject to such option by the copyright holder.
                 <project>../../websvc.jaxwsmodelapi</project>
                 <project>../../websvc.kit</project>
                 <project>../../websvc.manager</project>
+                <project>../../websvc.metro.lib</project>
                 <project>../../websvc.metro.samples</project>
                 <project>../../websvc.projectapi</project>
                 <project>../../websvc.rest</project>

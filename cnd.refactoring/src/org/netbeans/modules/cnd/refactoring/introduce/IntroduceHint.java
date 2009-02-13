@@ -60,7 +60,7 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpressionStatement;
-import org.netbeans.modules.cnd.refactoring.codegen.CsmContext;
+import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.hints.infrastructure.Utilities;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -309,11 +309,11 @@ public class IntroduceHint /*implements CancellableTask<CompilationInfo>*/ {
 //    }
 
     static List<ErrorDescription> computeError(CsmContext info, Map<IntroduceKind, Fix> fixesMap, Map<IntroduceKind, String> errorMessage, AtomicBoolean cancel) {
-        int start = info.getStartOffset();
-        int end = info.getEndOffset();
+//        int start = info.getStartOffset();
+//        int end = info.getEndOffset();
         List<ErrorDescription> hints = new LinkedList<ErrorDescription>();
-        List<Fix> fixes = new LinkedList<Fix>();
-        CsmObject resolved = validateSelection(info, start, end);
+//        List<Fix> fixes = new LinkedList<Fix>();
+//        CsmObject resolved = validateSelection(info, start, end);
 
 //        if (resolved != null) {
 //            TreePathHandle h = TreePathHandle.create(resolved, info);

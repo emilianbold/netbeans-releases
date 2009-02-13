@@ -1,0 +1,111 @@
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+
+Contributor(s):
+
+Portions Copyrighted 2009 Sun Microsystems, Inc.
+-->
+<html>
+    <head>
+        <title>Managing Maven Project Dependencies</title>
+        <link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+    <body>
+        <h2>Managing Maven Project Dependencies</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small></p>
+
+        <p>To make libraries and projects available to your project
+        during compilation, testing and execution you need to declare the
+        projects or libraries as dependencies.
+        All dependencies need to be available as artifacts in your local repository.</p>
+        
+        <p>You declare a dependency by adding the coordinates of the artifact you want to declare as a dependency to the POM.
+        All Maven artifacts are defined by a unique coordinate that consists of a group identifier (groupId),
+        artifact identifier (artifactId) and version.
+        Adding a dependency to the POM is similar to adding libraries to the classpath in an Ant-based project.
+        </p>
+
+        <p>You can add a dependency to a Maven project in the following ways:</p>
+        <ul>
+            <li><strong>Edit the POM in the editor.</strong> Open <tt>pom.xml</tt> in the XML editor and use
+            code completion to help add the dependency elements and artifact coordinates.</li>
+            <li><strong>Use the Add Library dialog.</strong>
+            Type or search for the artifact in the Add Library dialog and click OK.
+            When you click OK, the IDE adds the dependency elements and artifact coordinates to <tt>pom.xml</tt>.
+            <p>To open the Add Library dialog, right-click the
+            Libraries node in the Projects window and choose Add Library.
+            Alternatively, you can open the dialog by opening the Insert Code popup in <tt>pom.xml</tt>
+            (Ctrl-I) and choosing Add Dependency.
+            </p>
+            </li>
+        </ul>
+
+        <p>After you add a dependency to <tt>pom.xml</tt>,
+        a node for the artifact (&nbsp;<img src="img/DependencyIcon.png">&nbsp;)
+        appears under the project's Libraries node.
+        Artifacts that are not in your local repository are marked with a badge.
+        You need to have a copy of the artifact in your local repository if you
+        want to use it in your project.</p>
+        <ul class="notes">
+            <li>
+            If a required artifact is available in a remote repository,
+            Maven will automatically download the artifact and any transitive dependencies
+            from the repository when you build the project.
+            If the required artifact is not available in a remote repository ,
+            you can right-click the artifact node and install the artifact manually.
+            </li>
+        </ul>
+
+        
+        <p>If your project depends on another project, that project</p>
+
+
+
+        <!--In a Maven development environment, it is recommended that you store Maven software library JARs and
+        project artifacts in a local repository instead of in CVS.-->
+
+
+        
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/maven/maven-about.html">About Working with Maven</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

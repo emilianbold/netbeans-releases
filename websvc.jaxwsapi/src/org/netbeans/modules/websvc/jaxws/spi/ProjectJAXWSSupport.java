@@ -189,19 +189,6 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
             String finalServiceName = WSUtils.findProperServiceName(name, jaxWsModel);
             boolean serviceAdded=false;
             
-            // HACK to enable filesystems to fire events when new folder will be created
-            // need to ask for children           
-            FileObject projectDir = project.getProjectDirectory();
-            serviceArtifactsFolder = projectDir.getFileObject("build/generated/wsimport/service"); //NOI18N
-            if (serviceArtifactsFolder!=null) {
-                serviceArtifactsFolder.getChildren(true);
-            } else {
-                try {
-                    serviceArtifactsFolder = FileUtil.createFolder(projectDir, "build/generated/wsimport/service");
-                    if (serviceArtifactsFolder != null) serviceArtifactsFolder.getChildren(true);
-                } catch (IOException ex) {}
-            }
-            
             FileObject localWsdl=null;
             try {
                 // download resources to xml-resources

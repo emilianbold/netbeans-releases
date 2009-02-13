@@ -41,6 +41,11 @@
 
 package org.netbeans.spi.project;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.openide.util.Lookup;
 
 /**
@@ -71,5 +76,27 @@ public interface LookupMerger<T> {
      * @return object to be used instead of instances in the lookup
      */
     T merge(Lookup lookup);
+
+    /**
+     * Registers a lookup merger for some project types.
+     * The annotated class must be assignable to {@link LookupMerger} with a type parameter.
+     * @since org.netbeans.modules.projectapi/1 1.23
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ElementType.TYPE, ElementType.METHOD})
+    @interface Registration {
+
+        /**
+         * Token(s) denoting one or more project types, e.g. {@code "org-netbeans-modules-java-j2seproject"}
+         */
+        String[] projectType() default {};
+
+        /**
+         * Alternate registration of project types with positions.
+         * You must specify either this or {@link #projectType} (or both).
+         */
+        ProjectType[] projectTypes() default {};
+
+    }
 
 }

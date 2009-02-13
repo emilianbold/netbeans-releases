@@ -46,6 +46,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -137,6 +138,7 @@ public class LockForFileTest extends NbTestCase {
     /**
      * Test of finalize method, of class org.netbeans.modules.masterfs.filebasedfs.filelocks.FileLockImpl.
      */
+    @RandomlyFails // NB-Core-Build #2010
     public void testFinalize() throws Exception {
         testFinalizeImpl();
     }
@@ -155,6 +157,7 @@ public class LockForFileTest extends NbTestCase {
     /**
      * Test of releaseLock method, of class org.netbeans.modules.masterfs.filebasedfs.filelocks.FileLockImpl.
      */
+    @RandomlyFails // NB-Core-Build #2010
     public void testReleaseLockImpl() throws Exception {
         LockForFile lock = LockForFile.tryLock(testFile);
         assertFalse(lock.isHardLocked());
@@ -176,6 +179,7 @@ public class LockForFileTest extends NbTestCase {
     /**
      * Test of isValid method, of class org.netbeans.modules.masterfs.filebasedfs.filelocks.FileLockImpl.
      */
+    @RandomlyFails // NB-Core-Build #2010
     public void testIsValidImpl() throws Exception {
         LockForFile lock = LockForFile.tryLock(testFile);
         assertFalse(lock.isHardLocked());
@@ -208,6 +212,7 @@ public class LockForFileTest extends NbTestCase {
     /**
      * Test of finalize method, of class org.netbeans.modules.masterfs.filebasedfs.filelocks.FileLockImpl.
      */
+    @RandomlyFails // NB-Core-Build #2010
     public void testFinalizeImpl() throws Exception {
         LockForFile lock = LockForFile.tryLock(testFile);
         assertFalse(lock.isHardLocked());

@@ -42,20 +42,19 @@ package org.netbeans.modules.cnd.refactoring.plugins;
 
 import java.text.MessageFormat;
 import java.util.*;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.refactoring.api.ChangeParametersRefactoring;
 import org.netbeans.modules.cnd.refactoring.api.ChangeParametersRefactoring.ParameterInfo;
+import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
 import org.netbeans.modules.refactoring.api.*;
-import org.openide.filesystems.FileObject;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -78,10 +77,15 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
         super(refactoring);
         this.refactoring = refactoring;
     }
+//
+//    @Override
+//    protected Collection<CsmObject> getRefactoredObjects() {
+//        return referencedObjects;
+//    }
 
     @Override
-    protected Collection<CsmObject> getRefactoredObjects() {
-        return referencedObjects;
+    protected Collection<CsmFile> getRefactoredFiles() {
+        return Collections.emptySet();
     }
 
     @Override
@@ -131,6 +135,16 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
         return NbBundle.getMessage(ChangeParametersPlugin.class, key);
     }
 
+    private CsmObject getRefactoredCsmElement() {
+        CsmObject out = getStartReferenceObject();
+        if (out == null) {
+            CsmContext editorContext = getEditorContext();
+            if (editorContext != null) {
+                out = editorContext.getEnclosingFunction();
+            }
+        }
+        return out;
+    }
     /**
      * Returns list of problems. For the change method signature, there are two
      * possible warnings - if the method is overriden or if it overrides
@@ -143,13 +157,14 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
         Problem preCheckProblem = null;
         fireProgressListenerStart(RenameRefactoring.PRE_CHECK, 4);
         // check if resolved element
-        preCheckProblem = isResovledElement(getStartReferenceObject());
+        CsmObject refactoredCsmElement = getRefactoredCsmElement();
+        preCheckProblem = isResovledElement(refactoredCsmElement);
         fireProgressListenerStep();
         if (preCheckProblem != null) {
             return preCheckProblem;
         }
         // check if valid element
-        CsmObject directReferencedObject = CsmRefactoringUtils.getReferencedElement(getStartReferenceObject());
+        CsmObject directReferencedObject = CsmRefactoringUtils.getReferencedElement(refactoredCsmElement);
         // support only functions and not destructor
         if (!CsmKindUtilities.isFunction(directReferencedObject) || CsmKindUtilities.isDestructor(directReferencedObject)) {
             preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_ChangeParamsWrongType"));
@@ -157,7 +172,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
         }
         // create additional objects to resolve
         if (this.referencedObjects == null) {
-            initReferencedObjects();
+            initReferencedObjects(directReferencedObject);
             fireProgressListenerStep();
         }
         // check read-only elements
@@ -166,8 +181,8 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
         return preCheckProblem;
     }
 
-    private void initReferencedObjects() {
-        CsmObject referencedObject = CsmRefactoringUtils.getReferencedElement(getStartReferenceObject());
+    private void initReferencedObjects(CsmObject directReferencedObject) {
+        CsmObject referencedObject = CsmRefactoringUtils.getReferencedElement(directReferencedObject);
         if (referencedObject != null) {
             this.referencedObjects = new LinkedHashSet<CsmObject>();
             if (CsmKindUtilities.isMethod(referencedObject) && !CsmKindUtilities.isConstructor(referencedObject)) {
@@ -184,8 +199,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
     }
 
     @Override
-    protected void processRefactoredReferences(List<CsmReference> sortedRefs, FileObject fo, CloneableEditorSupport ces, ModificationResult mr) {
-        // not yet implemented
-    }
+    protected void processFile(CsmFile csmFile, ModificationResult mr) {
 
+    }
 }

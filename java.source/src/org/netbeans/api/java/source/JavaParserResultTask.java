@@ -39,7 +39,7 @@
 
 package org.netbeans.api.java.source;
 
-import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.openide.util.Parameters;
@@ -59,7 +59,7 @@ public abstract class JavaParserResultTask<T extends Parser.Result> extends Pars
      * Creates a new JavaParserResultTask
      * @param phase needed by the task.
      */
-    protected JavaParserResultTask (final JavaSource.Phase phase) {
+    protected JavaParserResultTask (final @NonNull JavaSource.Phase phase) {
         Parameters.notNull("phase", phase);
         this.phase = phase;
     }
@@ -68,7 +68,7 @@ public abstract class JavaParserResultTask<T extends Parser.Result> extends Pars
      * Returns the phase needed by task.
      * @return the pahse
      */
-    public final JavaSource.Phase getPhase () {
+    public final @NonNull JavaSource.Phase getPhase () {
         return this.phase;
     }
 

@@ -31,16 +31,16 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Arrays;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.utils.TestUtilities;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
-import org.tigris.subversion.svnclientadapter.SVNClientAdapterFactory;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNStatusKind;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
-import org.tigris.subversion.svnclientadapter.commandline.CmdLineClientAdapterFactory;
 
 /**
  *
@@ -95,7 +95,7 @@ public class TestKit {
             Process p = Runtime.getRuntime().exec(cmd);
             p.waitFor();   
         } else {
-            repoUrl = new SVNUrl("file:///" + repoDir.getAbsolutePath());
+            repoUrl = new SVNUrl(TestUtilities.formatFileURL(repoDir));
             list = getClient().getList(repoUrl, SVNRevision.HEAD, false);            
             if(list != null) {
                 for (ISVNDirEntry entry : list) {
@@ -114,13 +114,13 @@ public class TestKit {
     }
 
     static ISVNClientAdapter getClient() throws SVNClientException {        
-        CmdLineClientAdapterFactory.setup();
-        return SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);    
+        return SvnClientFactory.getInstance().createSvnClient();
     }
 
     public static void svnimport(File repoDir, File wc) throws SVNClientException, MalformedURLException {
-        ISVNClientAdapter client = getClient();        
-        SVNUrl repoUrl = new SVNUrl("file:///" + repoDir.getAbsolutePath());
+        ISVNClientAdapter client = getClient();
+        String url = TestUtilities.formatFileURL(repoDir);
+        SVNUrl repoUrl = new SVNUrl(url);
         client.mkdir(repoUrl.appendPath(wc.getName()), "msg");        
         client.checkout(repoUrl.appendPath(wc.getName()), wc, SVNRevision.HEAD, true);        
         File[] files = wc.listFiles();

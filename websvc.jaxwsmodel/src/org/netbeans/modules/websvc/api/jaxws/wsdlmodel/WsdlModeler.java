@@ -58,8 +58,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.xml.resolver.CatalogManager;
-import org.apache.xml.resolver.tools.CatalogResolver;
+import org.apache.xml.resolver.NbCatalogManager;
+import org.apache.xml.resolver.tools.NbCatalogResolver;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.xml.sax.EntityResolver;
@@ -150,7 +150,7 @@ public class WsdlModeler {
     }
 
     public void generateWsdlModel(WsdlModelListener listener, final WsdlErrorHandler errorHandler) {
-        RequestProcessor.Task task = RequestProcessor.getDefault().create(new Runnable() {
+        task = RequestProcessor.getDefault().create(new Runnable() {
 
             public void run() {
                 generateWsdlModel(errorHandler);
@@ -183,7 +183,14 @@ public class WsdlModeler {
     }
 
     private void generateWsdlModel() {
-        this.generateWsdlModel(new CatchFirstErrorHandler());
+        ClassLoader orig = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(com.sun.xml.stream.ZephyrParserFactory.class.getClassLoader());
+        try {
+            this.generateWsdlModel(new CatchFirstErrorHandler());
+        } finally {
+            Thread.currentThread().setContextClassLoader(orig);
+        }
+
     }
 
     private void generateWsdlModel(WsdlErrorHandler errorHandler) {
@@ -212,11 +219,11 @@ public class WsdlModeler {
                 options.defaultPackage = packageName;
             }
             if (catalog != null) {
-                CatalogManager manager = new CatalogManager(null);
+                NbCatalogManager manager = new NbCatalogManager(null);
                 manager.setCatalogFiles(catalog.toExternalForm());
                 manager.setUseStaticCatalog(false);
                 manager.setVerbosity(4);
-                entityResolver = new CatalogResolver(manager);
+                entityResolver = new NbCatalogResolver(manager);
                 options.entityResolver = entityResolver;
             }
 

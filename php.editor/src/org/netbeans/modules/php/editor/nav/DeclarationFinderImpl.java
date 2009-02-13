@@ -40,6 +40,7 @@ package org.netbeans.modules.php.editor.nav;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -237,7 +238,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             if (info.getFileObject() == declaration.getFileObject()) {
                 return retval;
             }
-            List<? extends ModelElement> alternativeDeclarations = underCaret.getAllDeclarations();
+            Collection<? extends ModelElement> alternativeDeclarations = underCaret.getAllDeclarations();
             if (alternativeDeclarations.size() > 1) {
                 if (alternativeDeclarations.size() > 0) {
                     retval = DeclarationLocation.NONE;

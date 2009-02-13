@@ -63,7 +63,7 @@ if [ $ERROR_CODE != 0 ]; then
     TEST_CODE=1;
 fi
 
-for TEST_SUITE in soa.kit xml.schema mobility.project ide.kit php.editor; do
+for TEST_SUITE in mobility.project j2ee.kit; do
     ant -f ${TEST_SUITE}/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.results.dir=$NB_ALL/nbbuild/build/test/results -Dcontinue.after.failing.tests=true -Dtest-qa-functional-sys-prop.com.sun.aas.installRoot=/space/glassfish -Dtest-qa-functional-sys-prop.http.port=8090 -Dtest-qa-functional-sys-prop.wtk.dir=/space test
     ERROR_CODE=$?
     if [ $ERROR_CODE != 0 ]; then
@@ -73,8 +73,6 @@ for TEST_SUITE in soa.kit xml.schema mobility.project ide.kit php.editor; do
 done
 # Init application server for tests
 #sh -x `dirname $0`/initAppserver.sh
-# visualweb UI validation tests
-#sh -x `dirname $0`/run-vw-sanity.sh
 # SOA (BPEL, XSLT) and XML UI validation tests
 #for i in 1 2 3; do
 #    ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-enterprise -Dxtest.instance.name="Enterprise tests" -Dxtest.no.cleanresults=true -Dnetbeans.dest.dir=$NB_ALL/nbbuild/test-netbeans runtests
@@ -186,6 +184,15 @@ ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Can't build UML modules"
+    exit $ERROR_CODE;
+fi
+
+#Build VisualWeb modules
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml rebuild-cluster -Drebuild.cluster.name=nb.cluster.visualweb -Dbuild.compiler.debuglevel=source,lines
+ERROR_CODE=$?
+
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Can't build VisualWeb modules"
     exit $ERROR_CODE;
 fi
 

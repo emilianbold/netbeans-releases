@@ -60,9 +60,7 @@
     mentioned are allowed.
     -->
     <container-limitation>
-        <ear-deploy/>
         <war-deploy/>
-        <ejbjar-deploy/>
     </container-limitation>
     
     <web-context-root>

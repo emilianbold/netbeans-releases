@@ -282,7 +282,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 new String[] {"javac.classpath", EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH }, // NOI18N
                 new String[] {"javac.test.classpath", EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH }, // NOI18N
                 new String[] {"debug.classpath", EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH }, // NOI18N
-                new String[] {"run.test.classpath", EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH }, true); // NOI18N
+                new String[] {"run.test.classpath", EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH }); // NOI18N
         ejbModule = new EjbJarProvider(this, helper, cpProvider);
         apiEjbJar = EjbJarFactory.createEjbJar(ejbModule);
         ejbJarWebServicesSupport = new EjbJarWebServicesSupport(this, helper, refHelper);
@@ -1022,6 +1022,9 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             }
             if (!props.containsKey(ProjectProperties.EXCLUDES)) {
                 props.setProperty(ProjectProperties.EXCLUDES, ""); // NOI18N
+            }
+            if (!props.containsKey("build.generated.sources.dir")) { // NOI18N
+                props.setProperty("build.generated.sources.dir", "${build.dir}/generated-sources"); // NOI18N
             }
             
 

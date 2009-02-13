@@ -65,20 +65,15 @@ public class CsmPreprocessorDirectiveCompletionProvider implements CompletionPro
         if (sup == null) {
             return 0;
         }
-        if (typedText.equals("#")) { //NOI18N
-            int dot = component.getCaretPosition();
+        int dot = component.getCaretPosition();
+        if (CompletionSupport.isPreprocessorDirectiveCompletionEnabled(component.getDocument(), dot)) {
             if (TRACE) {
-                System.err.println("offset " + dot); // NOI18N
+                System.err.println("preprocessor completion will be shown on " + dot); // NOI18N
             }
-            if (CompletionSupport.isPreprocessorDirectiveCompletionEnabled(component.getDocument(), dot)) {
-                if (TRACE) {
-                    System.err.println("preprocessor completion will be shown on " + dot); // NOI18N
-                }
-                return COMPLETION_QUERY_TYPE;
-            } else {
-                if (TRACE) {
-                    System.err.println("preprocessor completion will NOT be shown on " + dot); // NOI18N
-                }
+            return COMPLETION_QUERY_TYPE;
+        } else {
+            if (TRACE) {
+                System.err.println("preprocessor completion will NOT be shown on " + dot); // NOI18N
             }
         }
         return 0;

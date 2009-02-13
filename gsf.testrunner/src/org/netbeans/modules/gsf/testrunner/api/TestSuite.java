@@ -51,14 +51,25 @@ public final class TestSuite {
 
     public static final String ANONYMOUS_SUITE = new String();
 
+    /**
+     * The name of this suite.
+     */
     private final String name;
+    /**
+     * The test cases that this suite contains.
+     */
     private final List<Testcase> testcases = new ArrayList<Testcase>();
 
+    /**
+     * Constructs a new TestSuite.
+     * 
+     * @param name the name for the suite, e.g. WhatEverTest. May be null.
+     */
     public TestSuite(String name) {
         this.name = name;
     }
 
-    public void addTestcase(Testcase testcase) {
+    void addTestcase(Testcase testcase) {
         testcases.add(testcase);
     }
 
@@ -66,10 +77,17 @@ public final class TestSuite {
         return testcases;
     }
 
+    /**
+     * @return the name of this suite, may return <code>null</code>.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * @return the last test case of this suite or <code>null</code> if 
+     * the suite contains no test cases.
+     */
     public Testcase getLastTestCase() {
         return testcases.isEmpty() ? null : testcases.get(testcases.size() -1);
     }

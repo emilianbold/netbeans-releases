@@ -50,6 +50,7 @@ import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.DebugFileCommand;
 import org.netbeans.modules.php.project.ui.actions.DownloadCommand;
 import org.netbeans.modules.php.project.ui.actions.RunFileCommand;
+import org.netbeans.modules.php.project.ui.actions.RunTestCommand;
 import org.netbeans.modules.php.project.ui.actions.UploadCommand;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
@@ -58,14 +59,12 @@ import org.openide.actions.FindAction;
 import org.openide.actions.ToolsAction;
 import org.openide.actions.PasteAction;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -77,19 +76,21 @@ public class SrcNode extends FilterNode {
             "org/netbeans/modules/php/project/ui/resources/packageBadge.gif"); // NOI18N
     static final Image WEB_ROOT_BADGE = ImageUtilities.loadImage(
             "org/netbeans/modules/php/project/ui/resources/webRootBadge.gif"); // NOI18N
+    private final boolean isTest;
 
     /**
      * creates source root node based on specified DataFolder.
      * Uses specified name.
      */
-    SrcNode(PhpProject project, DataFolder folder, DataFilter filter, String name) {
-        this(project, new FilterNode(folder.getNodeDelegate(), folder.createNodeChildren(filter)), name);
+    SrcNode(PhpProject project, DataFolder folder, DataFilter filter, String name, boolean isTest) {
+        this(project, folder, new FilterNode(folder.getNodeDelegate(), folder.createNodeChildren(filter)), name, isTest);
     }
 
-    private SrcNode(PhpProject project, FilterNode node, String name) {
-        super(node, new FolderChildren(project, node));
+    private SrcNode(PhpProject project, DataFolder folder, FilterNode node, String name, boolean isTest) {
+        super(node, new FolderChildren(project, node, isTest));
         disableDelegation(DELEGATE_GET_DISPLAY_NAME | DELEGATE_SET_DISPLAY_NAME | DELEGATE_GET_SHORT_DESCRIPTION | DELEGATE_GET_ACTIONS);
         setDisplayName(name);
+        this.isTest = isTest;
     }
 
     @Override
@@ -124,25 +125,24 @@ public class SrcNode extends FilterNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        Action[] actions = new Action[]{
-            CommonProjectActions.newFileAction(),
-            null,
-            ProjectSensitiveActions.projectCommandAction(DownloadCommand.ID,
-            DownloadCommand.DISPLAY_NAME, null),
-            ProjectSensitiveActions.projectCommandAction(UploadCommand.ID,
-            UploadCommand.DISPLAY_NAME, null),
-            null,
-            SystemAction.get(FileSystemAction.class),
-            null,
-            SystemAction.get(FindAction.class),
-            null,
-            SystemAction.get(PasteAction.class),
-            null,
-            SystemAction.get(ToolsAction.class),
-            null,
-            CommonProjectActions.customizeProjectAction()
-        };
-        return actions;
+        List<Action> actions = new ArrayList<Action>();
+        actions.add(CommonProjectActions.newFileAction());
+        actions.add(null);
+        if (!isTest) {
+            actions.add(ProjectSensitiveActions.projectCommandAction(DownloadCommand.ID, DownloadCommand.DISPLAY_NAME, null));
+            actions.add(ProjectSensitiveActions.projectCommandAction(UploadCommand.ID, UploadCommand.DISPLAY_NAME, null));
+            actions.add(null);
+        }
+        actions.add(SystemAction.get(FileSystemAction.class));
+        actions.add(null);
+        actions.add(SystemAction.get(FindAction.class));
+        actions.add(null);
+        actions.add(SystemAction.get(PasteAction.class));
+        actions.add(null);
+        actions.add(SystemAction.get(ToolsAction.class));
+        actions.add(null);
+        actions.add(CommonProjectActions.customizeProjectAction());
+        return actions.toArray(new Action[actions.size()]);
     }
 
     static final Action[] COMMON_ACTIONS = new Action[]{
@@ -164,10 +164,12 @@ public class SrcNode extends FilterNode {
     private static class FolderChildren extends FilterNode.Children {
         // common actions for both PackageNode and ObjectNode (equals has to be the same)
         private final PhpProject project;
+        private final boolean isTest;
 
-        FolderChildren(PhpProject project, final Node originalNode) {
+        FolderChildren(PhpProject project, final Node originalNode, boolean isTest) {
             super(originalNode);
             this.project = project;
+            this.isTest = isTest;
         }
 
         @Override
@@ -179,31 +181,35 @@ public class SrcNode extends FilterNode {
         protected Node copyNode(final Node originalNode) {
             DataObject dobj = originalNode.getLookup().lookup(DataObject.class);
             return (dobj instanceof DataFolder)
-                    ? new PackageNode(project, originalNode)
-                    : new ObjectNode(originalNode);
+                    ? new PackageNode(project, originalNode, isTest)
+                    : new ObjectNode(originalNode, isTest);
         }
     }
 
     private static final class PackageNode extends FilterNode {
         private final PhpProject project;
+        private final boolean isTest;
 
-        public PackageNode(PhpProject project, final Node originalNode) {
-            super(originalNode, new FolderChildren(project, originalNode));
+        public PackageNode(PhpProject project, final Node originalNode, boolean isTest) {
+            super(originalNode, new FolderChildren(project, originalNode, isTest));
             this.project = project;
+            this.isTest = isTest;
         }
 
         @Override
         public Action[] getActions(boolean context) {
             List<Action> actions = new ArrayList<Action>();
             actions.addAll(Arrays.asList(getOriginal().getActions(context)));
-            int idx = actions.indexOf(SystemAction.get(PasteAction.class));
-            for (int i = 0; i < COMMON_ACTIONS.length; i++) {
-                if (idx >= 0 && idx + COMMON_ACTIONS.length < actions.size()) {
-                    //put on the proper place after paste
-                    actions.add(idx + i + 1, COMMON_ACTIONS[i]);
-                } else {
-                    //else put at the tail
-                    actions.add(COMMON_ACTIONS[i]);
+            if (!isTest) {
+                int idx = actions.indexOf(SystemAction.get(PasteAction.class));
+                for (int i = 0; i < COMMON_ACTIONS.length; i++) {
+                    if (idx >= 0 && idx + COMMON_ACTIONS.length < actions.size()) {
+                        //put on the proper place after paste
+                        actions.add(idx + i + 1, COMMON_ACTIONS[i]);
+                    } else {
+                        //else put at the tail
+                        actions.add(COMMON_ACTIONS[i]);
+                    }
                 }
             }
             return actions.toArray(new Action[actions.size()]);
@@ -232,10 +238,12 @@ public class SrcNode extends FilterNode {
 
     private static final class ObjectNode extends FilterNode {
         private final Node originalNode;
+        private final boolean isTest;
 
-        public ObjectNode(final Node originalNode) {
+        public ObjectNode(final Node originalNode, boolean isTest) {
             super(originalNode);
             this.originalNode = originalNode;
+            this.isTest = isTest;
         }
 
         @Override
@@ -268,21 +276,22 @@ public class SrcNode extends FilterNode {
         }
 
         private Action[] getCommonActions() {
-            Action[] toAdd = null;
+            List<Action> toAdd = new ArrayList<Action>();
             if (CommandUtils.isPhpOrHtmlFile(getFileObject())) {
                 // not available for multiple selected nodes => create new instance every time
-                toAdd = new Action[] {
-                    null,
-                    ProjectSensitiveActions.projectCommandAction(RunFileCommand.ID, RunFileCommand.DISPLAY_NAME, null),
-                    ProjectSensitiveActions.projectCommandAction(DebugFileCommand.ID, DebugFileCommand.DISPLAY_NAME, null),
-                };
-            } else {
-                toAdd = new Action[0];
+                toAdd.add(null);
+                toAdd.add(ProjectSensitiveActions.projectCommandAction(RunFileCommand.ID, RunFileCommand.DISPLAY_NAME, null));
+                toAdd.add(ProjectSensitiveActions.projectCommandAction(DebugFileCommand.ID, DebugFileCommand.DISPLAY_NAME, null));
+                if (!isTest) {
+                    toAdd.add(ProjectSensitiveActions.projectCommandAction(RunTestCommand.ID, RunTestCommand.DISPLAY_NAME, null));
+                }
             }
 
-            List<Action> actions = new ArrayList<Action>(COMMON_ACTIONS.length + toAdd.length);
-            actions.addAll(Arrays.asList(toAdd));
-            actions.addAll(Arrays.asList(COMMON_ACTIONS));
+            List<Action> actions = new ArrayList<Action>(COMMON_ACTIONS.length + toAdd.size());
+            actions.addAll(toAdd);
+            if (!isTest) {
+                actions.addAll(Arrays.asList(COMMON_ACTIONS));
+            }
 
             return actions.toArray(new Action[actions.size()]);
         }

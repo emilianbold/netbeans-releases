@@ -63,6 +63,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import org.netbeans.modules.glassfish.spi.AppDesc;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
@@ -224,7 +226,7 @@ public class CommandRunner extends BasicTask<OperationState> {
     }
     
     public Future<OperationState> deploy(File dir, String moduleName, String contextRoot)  {
-        return execute(new Commands.DeployCommand(dir.getAbsolutePath(), moduleName, 
+        return execute(new Commands.DeployCommand(dir, moduleName, 
                 contextRoot, computePreserveSessions(ip)));
     }
     
@@ -308,7 +310,7 @@ public class CommandRunner extends BasicTask<OperationState> {
 
             while(!httpSucceeded && retries-- > 0) {
                 try {
-                    Logger.getLogger("glassfish").log(Level.FINE, "V3 HTTP Command: " + commandUrl );
+                    Logger.getLogger("glassfish").log(Level.FINE, "HTTP Command: " + commandUrl );
 
                     conn = urlToConnectTo.openConnection();
                     if(conn instanceof HttpURLConnection) {
@@ -335,6 +337,9 @@ public class CommandRunner extends BasicTask<OperationState> {
 
                         // Establish the connection with the server
                         hconn.connect();
+                        // Send data to server if necessary
+                        handleSend(hconn);
+
                         int respCode = hconn.getResponseCode();
                         if(respCode == HttpURLConnection.HTTP_UNAUTHORIZED || 
                                 respCode == HttpURLConnection.HTTP_FORBIDDEN) {
@@ -349,9 +354,6 @@ public class CommandRunner extends BasicTask<OperationState> {
                             Logger.getLogger("glassfish").log(Level.FINE, 
                                     "  receiving response, code: " + respCode);
                         }
-
-                        // Send data to server if necessary
-                        handleSend(hconn);
 
                         // Process the response message
                         if(handleReceive(hconn)) {
@@ -401,12 +403,21 @@ public class CommandRunner extends BasicTask<OperationState> {
         return uri.toASCIIString();
     }
     
+
+    /*
+     * Note: this is based on reading the code of CLIRemoteCommand.java
+     * from the server's code repository... Since some asadmin commands
+     * need to send multiple files, the server assumes the input is a ZIP
+     * stream.
+     */
     private void handleSend(HttpURLConnection hconn) throws IOException {
         InputStream istream = serverCmd.getInputStream();
         if(istream != null) {
-            BufferedOutputStream ostream = null;
+            ZipOutputStream ostream = null;
             try {
-                ostream = new BufferedOutputStream(hconn.getOutputStream(), 1024);
+                ostream = new ZipOutputStream(new BufferedOutputStream(hconn.getOutputStream(), 1024));
+                ZipEntry e = new ZipEntry(serverCmd.getInputName());
+                ostream.putNextEntry(e);
                 byte buffer[] = new byte[1024];
                 while (true) {
                     int n = istream.read(buffer);
@@ -415,6 +426,7 @@ public class CommandRunner extends BasicTask<OperationState> {
                     }
                     ostream.write(buffer, 0, n);
                 }
+                ostream.closeEntry();
                 ostream.flush();
             } finally {
                 try {

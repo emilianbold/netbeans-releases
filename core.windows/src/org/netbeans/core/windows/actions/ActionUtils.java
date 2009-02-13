@@ -88,36 +88,38 @@ public abstract class ActionUtils {
             actions.add(new SaveDocumentAction(tc));
             actions.add(new CloneDocumentAction(tc));
             actions.add(null); // Separator
-            if( Switches.isEditorTopComponentClosingEnabled() ) {
+            if( Switches.isEditorTopComponentClosingEnabled() && Switches.isClosingEnabled(tc)) {
                 actions.add(new CloseWindowAction(tc));
             }
-            if( Switches.isTopComponentMaximizationEnabled() ) {
+            if( Switches.isTopComponentMaximizationEnabled() && Switches.isMaximizationEnabled(tc)) {
                 actions.add(new MaximizeWindowAction(tc));
             }
-            if( Switches.isTopComponentUndockingEnabled() ) {
+            if( Switches.isTopComponentUndockingEnabled() && Switches.isUndockingEnabled(tc)) {
                 actions.add(new UndockWindowAction(tc));
             }
         } else if (kind == Constants.MODE_KIND_VIEW) {
-            if( Switches.isViewTopComponentClosingEnabled() ) {
+            if( Switches.isViewTopComponentClosingEnabled() && Switches.isClosingEnabled(tc)) {
                 actions.add(new CloseWindowAction(tc));
             }
             // #82053: don't include maximize action for floating (separate) views
             if (mode.getState() == Constants.MODE_STATE_JOINED
-                    && Switches.isTopComponentMaximizationEnabled() ) {
+                    && Switches.isTopComponentMaximizationEnabled()
+                    && Switches.isMaximizationEnabled(tc)) {
                 actions.add(new MaximizeWindowAction(tc));
             }
-            if( Switches.isTopComponentUndockingEnabled() ) {
+            if( Switches.isTopComponentUndockingEnabled() && Switches.isUndockingEnabled(tc)) {
                 actions.add(new UndockWindowAction(tc));
             }
         } else if (kind == Constants.MODE_KIND_SLIDING) {
-            if( Switches.isViewTopComponentClosingEnabled() ) {
+            if( Switches.isViewTopComponentClosingEnabled() && Switches.isClosingEnabled(tc)) {
                 actions.add(new CloseWindowAction(tc));
             }
             if (mode.getState() == Constants.MODE_STATE_JOINED
-                    && Switches.isTopComponentMaximizationEnabled() ) {
+                    && Switches.isTopComponentMaximizationEnabled()
+                    && Switches.isMaximizationEnabled(tc)) {
                 actions.add(new MaximizeWindowAction(tc));
             }
-            if( Switches.isTopComponentUndockingEnabled() ) {
+            if( Switches.isTopComponentUndockingEnabled() && Switches.isUndockingEnabled(tc)) {
                 actions.add(new UndockWindowAction(tc));
             }
         }
@@ -180,6 +182,7 @@ public abstract class ActionUtils {
                 // -> how to get rid of the parameters passed to the action here then?
                 menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, InputEvent.CTRL_DOWN_MASK));
                 menuItem.addActionListener(this);
+                menuItem.setEnabled(isEnabled());
             }
             return menuItem;
         }
@@ -293,6 +296,8 @@ public abstract class ActionUtils {
             List<TopComponent> tcs = getOpened(activeTC);
 
             for(TopComponent tc: tcs) {
+                if( !Switches.isClosingEnabled(tc) )
+                    continue;
                 tc.putClientProperty("inCloseAll", Boolean.TRUE);
                 tc.close();
             }
@@ -300,6 +305,8 @@ public abstract class ActionUtils {
             TopComponent[] tcs = WindowManagerImpl.getInstance().getEditorTopComponents();
 
             for(TopComponent tc: tcs) {
+                if( !Switches.isClosingEnabled(tc) )
+                    continue;
                 tc.putClientProperty("inCloseAll", Boolean.TRUE);
                 tc.close();
             }
@@ -317,6 +324,8 @@ public abstract class ActionUtils {
             List<TopComponent> tcs = getOpened(tc);
 
             for(TopComponent curTC: tcs) {
+                if( !Switches.isClosingEnabled(curTC) )
+                    continue;
                 if (curTC != tc) {
                     curTC.putClientProperty("inCloseAll", Boolean.TRUE);
                     curTC.close();
@@ -326,6 +335,8 @@ public abstract class ActionUtils {
             TopComponent[] tcs = WindowManagerImpl.getInstance().getEditorTopComponents();
 
             for(TopComponent curTC: tcs) {
+                if( !Switches.isClosingEnabled(curTC) )
+                    continue;
                 if (curTC != tc) {
                     curTC.putClientProperty("inCloseAll", Boolean.TRUE);
                     curTC.close();

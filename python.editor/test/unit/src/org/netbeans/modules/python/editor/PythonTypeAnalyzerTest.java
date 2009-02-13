@@ -100,4 +100,16 @@ public class PythonTypeAnalyzerTest extends PythonTestBase {
 
         assertEquals("str", instance.getType("s"));
     }
+
+    public void testTypeExceptionVars1() throws Exception {
+        PythonTypeAnalyzer instance = getAnalyzer("testfiles/exceptas.py", "% ex.^e", true);
+
+        assertEquals("MyError", instance.getType("ex"));
+    }
+
+    public void testTypeExceptionVars2() throws Exception {
+        PythonTypeAnalyzer instance = getAnalyzer("testfiles/exceptas.py", "% ex2.^e", true);
+
+        assertEquals("MyError", instance.getType("ex2"));
+    }
 }

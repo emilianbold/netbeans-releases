@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.dbschema.migration.archiver.deserializer;
 
-import java.lang.*;
 import java.util.*;
 
 import java.lang.reflect.Field;
@@ -77,7 +76,7 @@ public  class XMLGraphDeserializer extends BaseSpecificXMLDeserializer implement
 //@olsen+MBO: used unsynchronized HashMap and ArrayListStack
     private  java.util.HashMap ObjectHash;
     private  ArrayListStack AttrNameStack;
-    public ArrayListStack RowTypeStack;
+    ArrayListStack RowTypeStack;
     private ArrayListStack RowCountStack;
 /*
     private  java.util.Hashtable ObjectHash;

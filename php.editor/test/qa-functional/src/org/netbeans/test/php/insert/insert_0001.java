@@ -133,6 +133,7 @@ public class insert_0001 extends insert
     jdGenerator.waitClosed( );
 
     // Check result
+    /*
     String[] asResult =
     {
       "class a",
@@ -142,6 +143,8 @@ public class insert_0001 extends insert
       "}"
     };
     CheckResult( eoPHP, asResult, -3 );
+    */
+    CheckFlex( eoPHP, "class a{function __construct(){}", false );
 
     endTest( );
   }

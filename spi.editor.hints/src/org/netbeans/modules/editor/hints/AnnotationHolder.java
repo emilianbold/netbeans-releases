@@ -1148,6 +1148,13 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
 
                         AnnotationHolder h = AnnotationHolder.getInstance(((DataObject) source).getPrimaryFile());
 
+                        if (h == null) {
+                            Logger.getLogger(AnnotationHolder.class.getName()).log(Level.INFO,
+                                    "File: " + ((DataObject) source).getPrimaryFile().getPath() + // NOI18N
+                                    "\nStartOffset: " + startOffset); // NOI18N
+                            return;
+                        }
+
                         synchronized (h) {
                             Position p = h.getPosition(lineNumber, false);
 

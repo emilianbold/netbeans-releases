@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileReferences.Visitor;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupter;
 import org.netbeans.modules.cnd.highlight.InterrupterImpl;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -109,7 +110,7 @@ public final class SemanticHighlighter extends HighlighterBase {
 
     static {
         String limit = System.getProperty("cnd.semantic.line.limit"); // NOI18N
-        int userInput = 4000;
+        int userInput = 5000;
         if (limit != null) {
             try {
                 userInput = Integer.parseInt(limit);
@@ -163,7 +164,7 @@ public final class SemanticHighlighter extends HighlighterBase {
     }
 
     private void update(BaseDocument doc, final Interrupter interrupter) {
-        boolean macroExpansionView = (doc.getProperty("macro-expansion-view-doc") != null); // NOI18N
+        boolean macroExpansionView = (doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) != null);
         PositionsBag newBag = new PositionsBag(doc);
         newBag.clear();
         final CsmFile csmFile = CsmUtilities.getCsmFile(doc, false);
@@ -232,7 +233,7 @@ public final class SemanticHighlighter extends HighlighterBase {
                             c.visit(ref, csmFile);
                         }
                     }
-                });
+                }, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE_AND_PREPROCESSOR);
                 // here we apply highlighting to discovered blocks
                 for (int i = 0; i < entities.size(); ++i) {
                     addHighlightsToBag(newBag, collectors.get(i).getReferences(), entities.get(i));

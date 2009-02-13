@@ -83,6 +83,7 @@ public final class ScreenManager {
     private       SVGImagePanel  m_imageContainer;
     private       Cursor         m_cursor;    
     private       boolean        m_showAllArea;
+    private       boolean        m_landscapeMode;
     private       boolean        m_showTooltip;
     private       boolean        m_highlightObject;
     private       short          m_changeTicker = 0;
@@ -91,6 +92,7 @@ public final class ScreenManager {
         m_sceneMgr        = sceneMgr;
         m_statusBar       = new SVGStatusBar();
         m_showAllArea     = false;
+        m_landscapeMode   = false;
         m_showTooltip     = true;
         m_highlightObject = true;
     }
@@ -211,7 +213,19 @@ public final class ScreenManager {
     public boolean getShowAllArea() {
         return m_showAllArea;
     }
-    
+
+    public void setLandscapeMode(boolean landscapeMode) {
+        if (landscapeMode != m_landscapeMode) {
+            m_landscapeMode = landscapeMode;
+            //refresh();
+            incrementChangeTicker();
+        }
+    }
+
+    public boolean isLandscapeMode() {
+        return m_landscapeMode;
+    }
+
     public boolean setShowTooltip(boolean showTooltip) {
         boolean oldValue = m_showTooltip;
         m_showTooltip = showTooltip;
@@ -292,7 +306,7 @@ public final class ScreenManager {
                                  (int) (rect.getHeight() * m_sceneMgr.m_zoomRatio));
             SVGImage svgImage = m_sceneMgr.getSVGImage();
             svgImage.setViewportWidth(size.width); 
-            svgImage.setViewportHeight(size.height);        
+            svgImage.setViewportHeight(size.height);
 
             if ( showAll) {
                 if (viewBoxRect != null) {

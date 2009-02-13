@@ -71,6 +71,10 @@ import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.jemmy.operators.Operator;
 import java.io.File;
+import org.netbeans.jemmy.drivers.input.MouseRobotDriver;
+import org.netbeans.jemmy.Timeout;
+import java.awt.event.InputEvent;
+import org.netbeans.jellytools.TopComponentOperator;
 
 /**
  *
@@ -814,5 +818,56 @@ public class GeneralXMLTest extends JellyTestCase {
       jbOk.push( );
       jdNew.waitClosed( );
     }
+
+  protected void TypeCode( EditorOperator edit, String code )
+  {
+    int iLimit = code.length( );
+    for( int i = 0; i < iLimit; i++ )
+    {
+      edit.typeKey( code.charAt( i ) );
+      Sleep( 100 );
+    }
+  }
+
+  // TODO : add constant for destination
+  // TODO : calculate point right way without constants
+  // 0 - top, 1 - elements
+  protected void DragSomething(
+      String sName,
+      int iListIndex,
+      String sElementName,
+      int iDestination,
+      String sResult
+    )
+  {
+    TopComponentOperator top = new TopComponentOperator( sName );
+    TopComponentOperator pal = new TopComponentOperator( "Palette" );
+    JListOperator list = new JListOperator( pal, iListIndex );
+
+    ListModel lmd = list.getModel( );
+    int iIndex = list.findItemIndex( sElementName );
+    list.selectItem( iIndex );
+    Point pt = list.getClickPoint( iIndex );
+
+    int[] yy = { 40, 60, 150, 90, 175, 200, 235 };
+
+    MouseRobotDriver m_mouseDriver = new MouseRobotDriver(new Timeout("", 500));
+    m_mouseDriver.moveMouse( list, pt.x, pt.y );
+    m_mouseDriver.pressMouse( InputEvent.BUTTON1_MASK, 0 );
+    m_mouseDriver.enterMouse( top );
+    m_mouseDriver.dragMouse( top, 50, yy[ iDestination ], InputEvent.BUTTON1_MASK, 0 );
+    m_mouseDriver.releaseMouse( InputEvent.BUTTON1_MASK, 0 );
+
+    Sleep( 1000 );
+
+    if( null != sResult )
+    {
+      // Check text box
+      JTextComponentOperator text = new JTextComponentOperator( MainWindowOperator.getDefault( ), 0 );
+      String sText = text.getText( );
+      if( !sText.equals( sResult ) )
+        fail( "Invalid new element name, expected \"" + sResult + "\", found \"" + sText + "\"" );
+    }
+  }
 
 }
