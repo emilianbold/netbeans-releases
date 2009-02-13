@@ -57,6 +57,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 
 import org.netbeans.modules.debugger.jpda.ui.SourcePath;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -66,14 +67,13 @@ import org.netbeans.modules.debugger.jpda.ui.SourcePath;
 */
 public class MakeCallerCurrentActionProvider extends JPDADebuggerAction {
     
-    private ContextProvider lookupProvider;
-
+    private RequestProcessor rp;
     
     public MakeCallerCurrentActionProvider (ContextProvider lookupProvider) {
         super (
             lookupProvider.lookupFirst(null, JPDADebugger.class)
         );
-        this.lookupProvider = lookupProvider;
+        rp = lookupProvider.lookupFirst(null, RequestProcessor.class);
         getDebuggerImpl ().addPropertyChangeListener 
             (JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME, this);
     }
@@ -87,27 +87,29 @@ public class MakeCallerCurrentActionProvider extends JPDADebuggerAction {
         if (t == null) return;
         int i = getCurrentCallStackFrameIndex (getDebuggerImpl ());
         if (i >= (t.getStackDepth () - 1)) return;
-        setCurrentCallStackFrameIndex (getDebuggerImpl (), ++i, lookupProvider);
+        setCurrentCallStackFrameIndex (getDebuggerImpl (), ++i);
     }
     
     protected void checkEnabled (int debuggerState) {
         if (debuggerState == getDebuggerImpl ().STATE_STOPPED) {
             JPDAThread t = getDebuggerImpl ().getCurrentThread ();
             if (t != null) {
-                int i = getCurrentCallStackFrameIndex (getDebuggerImpl ());
-                setEnabled (
-                    ActionsManager.ACTION_MAKE_CALLER_CURRENT,
-                    i < (t.getStackDepth () - 1)
-                );
+                checkEnabledLazySingleAction(debuggerState, rp);
                 return;
             }
         }
-        setEnabled (
-            ActionsManager.ACTION_MAKE_CALLER_CURRENT,
-            false
-        );
+        setEnabledSingleAction(false);
     }
-    
+
+    @Override
+    protected boolean checkEnabledLazyImpl(int debuggerState) {
+        int i = getCurrentCallStackFrameIndex (getDebuggerImpl ());
+        JPDAThread t = getDebuggerImpl ().getCurrentThread ();
+        if (t == null) return false;
+        return i < (t.getStackDepth () - 1);
+
+    }
+
     static int getCurrentCallStackFrameIndex (JPDADebugger debuggerImpl) {
         try {
             JPDAThread t = debuggerImpl.getCurrentThread ();
@@ -125,8 +127,7 @@ public class MakeCallerCurrentActionProvider extends JPDADebuggerAction {
     
     static void setCurrentCallStackFrameIndex (
         JPDADebugger debuggerImpl,
-        int index,
-        final ContextProvider lookupProvider
+        int index
     ) {
         try {
             JPDAThread t = debuggerImpl.getCurrentThread ();
