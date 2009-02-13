@@ -107,7 +107,7 @@ public class ServerWarningPanel extends javax.swing.JPanel {
         setFocusable(false);
         setLayout(new java.awt.GridBagLayout());
 
-        lblWarningMsgTop.setText("The server share.java.net is discontinuing service on April 20, 2009."); // NOI18N
+        lblWarningMsgTop.setText("Service for the share.java.net server will be discontinued as of April 20, 2009."); // NOI18N
         lblWarningMsgTop.setFocusable(false);
         lblWarningMsgTop.setRequestFocusEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -119,7 +119,7 @@ public class ServerWarningPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         add(lblWarningMsgTop, gridBagConstraints);
 
-        lblWarningMsgBottom.setText("For other options, visit the"); // NOI18N
+        lblWarningMsgBottom.setText("For other options, please visit the"); // NOI18N
         lblWarningMsgBottom.setFocusable(false);
         lblWarningMsgBottom.setRequestFocusEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -143,7 +143,7 @@ public class ServerWarningPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
         add(lblWarningMsgLink, gridBagConstraints);
 
-        chbWarning.setText("Do not show this warning dialog next time"); // NOI18N
+        chbWarning.setText("Show this warning dialog next time"); // NOI18N
         chbWarning.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         chbWarning.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {

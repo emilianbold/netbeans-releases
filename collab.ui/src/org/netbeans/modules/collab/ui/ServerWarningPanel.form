@@ -26,7 +26,7 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="lblWarningMsgTop">
       <Properties>
-        <Property name="text" type="java.lang.String" value="The server share.java.net is discontinuing service on April 20, 2009." noResource="true"/>
+        <Property name="text" type="java.lang.String" value="Service for the share.java.net server will be discontinued as of April 20, 2009." noResource="true"/>
         <Property name="focusable" type="boolean" value="false"/>
         <Property name="requestFocusEnabled" type="boolean" value="false"/>
       </Properties>
@@ -38,7 +38,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="lblWarningMsgBottom">
       <Properties>
-        <Property name="text" type="java.lang.String" value="For other options, visit the" noResource="true"/>
+        <Property name="text" type="java.lang.String" value="For other options, please visit the" noResource="true"/>
         <Property name="focusable" type="boolean" value="false"/>
         <Property name="requestFocusEnabled" type="boolean" value="false"/>
       </Properties>
@@ -63,7 +63,7 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="chbWarning">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Do not show this warning dialog next time" noResource="true"/>
+        <Property name="text" type="java.lang.String" value="Show this warning dialog next time" noResource="true"/>
         <Property name="horizontalAlignment" type="int" value="0"/>
       </Properties>
       <Events>
