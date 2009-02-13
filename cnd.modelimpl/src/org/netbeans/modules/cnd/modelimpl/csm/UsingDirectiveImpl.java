@@ -66,13 +66,16 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
     // TODO: don't store declaration here since the instance might change
     private CsmUID<CsmNamespace> referencedNamespaceUID = null;
     
-    public UsingDirectiveImpl(AST ast, CsmFile file) {
+    public UsingDirectiveImpl(AST ast, CsmFile file, boolean global) {
         super(ast, file);
         // TODO: here we override startOffset which is not good because startPosition is now wrong
         startOffset = ((CsmAST)ast.getFirstChild()).getOffset();
         rawName = AstUtil.getRawNameInChildren(ast);
         
         name = NameCache.getManager().getString(ast.getText());
+        if (!global) {
+            Utils.setSelfUID(this);
+        }
     }
     
     public CsmNamespace getReferencedNamespace() {

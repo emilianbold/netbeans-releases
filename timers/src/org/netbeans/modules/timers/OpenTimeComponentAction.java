@@ -54,7 +54,7 @@ public class OpenTimeComponentAction extends AbstractAction {
     
     public OpenTimeComponentAction() {
         super(NbBundle.getMessage(OpenTimeComponentAction.class, "CTL_OpenTimeComponentAction"));
-        putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(TimeComponent.ICON_PATH)));
+        putValue(SMALL_ICON, ImageUtilities.loadImageIcon(TimeComponent.ICON_PATH, false));
     }
     
     public void actionPerformed(ActionEvent evt) {

@@ -43,9 +43,12 @@ package org.netbeans.modules.mobility.svgcore.view.svg;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
+import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.netbeans.modules.mobility.svgcore.palette.SVGPaletteFactory;
 import org.netbeans.modules.xml.multiview.AbstractMultiViewElement;
 import org.openide.util.Lookup;
@@ -58,6 +61,7 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public final class SVGViewMultiViewElement extends AbstractMultiViewElement {
     private static final long serialVersionUID = 7526471457562007148L;        
+    private static final Logger LOG = Logger.getLogger(SVGViewMultiViewElement.class.getName());
     
     private transient SVGViewTopComponent svgView = null;
 
@@ -93,9 +97,14 @@ public final class SVGViewMultiViewElement extends AbstractMultiViewElement {
 
     public void componentOpened() {
         super.componentOpened();
-        getDataObject().getModel().attachToOpenedDocument();
-        if (svgView != null) {
-            svgView.componentOpened();
+        SVGFileModel svgModel = getDataObject().getModel();
+        if (svgModel.getModel() != null) {
+            svgModel.attachToOpenedDocument();
+            if (svgView != null) {
+                svgView.componentOpened();
+            }
+        } else {
+            LOG.log(Level.WARNING, "Can not attachToOpenedDocument. document model is not loaded.");
         }
     }
 

@@ -52,6 +52,7 @@
 package org.netbeans.modules.cnd.spi.model.services;
 
 import javax.swing.text.Document;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 
 /**
  * Service that provides macro expansions.
@@ -79,6 +80,18 @@ public interface CsmMacroExpansionDocProvider {
      * @return - expansion
      */
     public String expand(Document doc, int startOffset, int endOffset);
+
+    /**
+     * Macro expands content of the document.
+     * If we already knew file for document it's better to use this function, because it's faster.
+     *
+     * @param doc - document for macro expansion
+     * @param doc - file of the document
+     * @param startOffset - start offset for expansion
+     * @param endOffset - end offset for expansion
+     * @return - expansion
+     */
+    public String expand(Document doc, CsmFile file, int startOffset, int endOffset);
 
     /**
      * Transforms original offset to offset in expanded text.

@@ -62,7 +62,6 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst:///modules/ext/jaxws21/api/jsr181-api.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/api/jsr250-api.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/mimepull.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jaxws21/resolver.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/api/saaj-api.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/saaj-impl.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/sjsxp.jar!/</resource>

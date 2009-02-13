@@ -123,7 +123,7 @@ class SVGNavigatorTreeCellRenderer extends DefaultTreeCellRenderer {
     }
     
     private ImageIcon getImageIcon(String name, boolean error){
-        ImageIcon icon = new ImageIcon(ImageUtilities.loadImage(name));
+        ImageIcon icon = ImageUtilities.loadImageIcon(name, false);
         if(error)
             return new ImageIcon(ImageUtilities.mergeImages( icon.getImage(), ERROR_IMAGE, 15, 7 ));
         else

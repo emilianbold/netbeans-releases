@@ -44,6 +44,8 @@ import java.util.Set;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.WizardOperator;
+import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.actions.OutputWindowViewAction;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.junit.NbModuleSuite;
@@ -71,6 +73,10 @@ public class FromDBTest extends CRUDTest {
     }
 
     public void testFromDB() throws IOException {
+         // closing Tasks tab
+        new OutputWindowViewAction().performMenu();
+        new ActionNoBlock("Window|Tasks", null).performMenu();
+        new ActionNoBlock("Window|Close Window", null).performMenu();
         copyDBSchema();
         createPU();
         //RESTful Web Services from Database

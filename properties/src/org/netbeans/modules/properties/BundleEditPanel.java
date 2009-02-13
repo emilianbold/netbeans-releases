@@ -818,14 +818,12 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         private ImageIcon getSortIcon(boolean ascending) {
             if (ascending) {
                 if (iconSortAsc == null) {
-                    iconSortAsc = new ImageIcon(
-                            ImageUtilities.loadImage(SORT_ASC_ICON));
+                    iconSortAsc = ImageUtilities.loadImageIcon(SORT_ASC_ICON, false);
                 }
                 return iconSortAsc;
             } else {
                 if (iconSortDesc == null) {
-                    iconSortDesc = new ImageIcon(
-                            ImageUtilities.loadImage(SORT_DESC_ICON));
+                    iconSortDesc = ImageUtilities.loadImageIcon(SORT_DESC_ICON, false);
                 }
                 return iconSortDesc;
             }

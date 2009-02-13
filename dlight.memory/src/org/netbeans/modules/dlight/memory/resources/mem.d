@@ -49,14 +49,14 @@ BEGIN {
 
 /*---------- malloc ----------*/
 
-pid$1:libc:malloc:entry
+pid$1::malloc:entry
 / !self->inside /
 {
 	self->inside++;
 	ALLOC_ENTRY(arg0);
 }
 
-pid$1:libc:malloc:return
+pid$1::malloc:return
 / self->inside /
 {
 	ALLOC_EXIT(arg1);
@@ -65,14 +65,14 @@ pid$1:libc:malloc:return
 
 /*---------- calloc ----------*/
 
-pid$1:libc:calloc:entry
+pid$1::calloc:entry
 / !self->inside /
 {
 	self->inside++;
 	ALLOC_ENTRY(arg0 * arg1);
 }
 
-pid$1:libc:calloc:return
+pid$1::calloc:return
 / self->inside /
 {
 	ALLOC_EXIT(arg1);
@@ -81,14 +81,14 @@ pid$1:libc:calloc:return
 
 /*---------- memalign ----------*/
 
-pid$1:libc:memalign:entry
+pid$1::memalign:entry
 / !self->inside /
 {
 	self->inside++;
 	ALLOC_ENTRY(arg1);
 }
 
-pid$1:libc:memalign:return
+pid$1::memalign:return
 / self->inside /
 {
 	ALLOC_EXIT(arg1);
@@ -97,14 +97,14 @@ pid$1:libc:memalign:return
 
 /*---------- valloc ----------*/
 
-pid$1:libc:valloc:entry
+pid$1::valloc:entry
 / ! self->inside /
 {
 	self->inside++;
 	ALLOC_ENTRY(arg0);
 }
 
-pid$1:libc:valloc:return
+pid$1::valloc:return
 / self->inside /
 {
 	ALLOC_EXIT(arg1);
@@ -114,7 +114,7 @@ pid$1:libc:valloc:return
 
 /*---------- realloc ----------*/
 
-pid$1:libc:realloc:entry
+pid$1::realloc:entry
 / !self->inside /
 {
 	self->inside++;
@@ -122,7 +122,7 @@ pid$1:libc:realloc:entry
 	ALLOC_ENTRY(arg1); /* arg1 - size */
 }
 
-pid$1:libc:realloc:return
+pid$1::realloc:return
 / self->inside /
 {
 	ALLOC_EXIT(arg1); /* arg1 - address */
@@ -132,7 +132,7 @@ pid$1:libc:realloc:return
 /*---------- free ----------*/
 
 
-pid$1:libc:free:entry
+pid$1::free:entry
 {
 	FREE_ENTRY(arg0);
 }

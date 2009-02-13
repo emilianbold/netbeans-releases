@@ -100,13 +100,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     protected static final int LAST_USED_FLAG_INDEX = 3;
     private byte flags;
     
-    public FunctionImpl(AST ast, CsmFile file, CsmScope scope) throws AstRendererException {
-        this(ast, file, scope, true);
-    }
-    
     private static final boolean CHECK_SCOPE = false;
     
-    public FunctionImpl(AST ast, CsmFile file, CsmScope scope, boolean register) throws AstRendererException {
+    public FunctionImpl(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
         
         super(ast, file);
         assert !CHECK_SCOPE || (scope != null);
@@ -144,17 +140,20 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
 
         _setScope(scope);
-        
-        RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
-	
+
+        if (global){
+            RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
+        } else {
+            Utils.setSelfUID(this);
+        }
         boolean _const = initConst(ast);
         setFlags(FLAGS_CONST, _const);
         classTemplateSuffix = new StringBuilder();
-        templateDescriptor = createTemplateDescriptor(ast, this, (StringBuilder)classTemplateSuffix);
+        templateDescriptor = createTemplateDescriptor(ast, this, (StringBuilder)classTemplateSuffix, global);
         returnType = initReturnType(ast);
 
         // set parameters, do it in constructor to have final fields
-        this.parameterList = createParameterList(ast);
+        this.parameterList = createParameterList(ast, !global);
         if (this.parameterList == null || this.parameterList.isEmpty()) {
             setFlags(FLAGS_VOID_PARMLIST, isVoidParameter(ast));
         } else {
@@ -504,15 +503,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return null;
     }
 
-    private FunctionParameterListImpl createParameterList(AST funAST) {
-        return FunctionParameterListImpl.create(getContainingFile(), funAST, this);
+    private FunctionParameterListImpl createParameterList(AST funAST, boolean isLocal) {
+        return FunctionParameterListImpl.create(getContainingFile(), funAST, this, isLocal);
     }
     
-    private Collection<CsmParameter> initParameters(AST node) {
-        AST ast = findParameterNode(node);
-        return AstRenderer.renderParameters(ast, getContainingFile(), this);
-    }
-
     private boolean isVoidParameter(AST node) {
         AST ast = findParameterNode(node);
         return AstRenderer.isVoidParameter(ast);

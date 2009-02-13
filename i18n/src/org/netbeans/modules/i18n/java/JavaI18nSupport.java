@@ -168,7 +168,7 @@ public class JavaI18nSupport extends I18nSupport {
         
         i18nString.setComment(""); // NOI18N
         String text = decodeUnicodeSeq(hcString.getText());
-        i18nString.setKey(text.replace(' ', '_'));
+        i18nString.setKey(text.replace(' ', '_').toUpperCase());
         i18nString.setValue(text);
 
         // If generation of field is set and replace format doesn't include identifier argument replace it with the default with identifier.

@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 
 /**
  * A dummy class that is added to model in the case
@@ -77,6 +78,8 @@ public final class ForwardClass extends ClassImpl {
             fwd.initScope(scope, ast);
             if(registerInProject) {
                 fwd.register(scope, false);
+            } else {
+                Utils.setSelfUID(fwd);
             }
             return fwd;
         }

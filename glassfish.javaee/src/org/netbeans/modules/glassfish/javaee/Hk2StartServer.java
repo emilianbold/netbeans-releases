@@ -236,8 +236,15 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
     }
     
     public boolean isRunning() {
-        return Hk2PluginProperties.isRunning(ip.getProperty(GlassfishModule.HOSTNAME_ATTR),
-                ip.getProperty(InstanceProperties.HTTP_PORT_NUMBER));
+        GlassfishModule commonSupport = getCommonServerSupport();
+        if(commonSupport != null) {
+            GlassfishModule.ServerState s = commonSupport.getServerState();
+            return GlassfishModule.ServerState.RUNNING.equals(s) ||
+                    GlassfishModule.ServerState.RUNNING_JVM_DEBUG.equals(s);
+        } else {
+            return Hk2PluginProperties.isRunning(ip.getProperty(GlassfishModule.HOSTNAME_ATTR),
+                    ip.getProperty(InstanceProperties.HTTP_PORT_NUMBER));
+        }
     }
     
     public DeploymentStatus getDeploymentStatus() {

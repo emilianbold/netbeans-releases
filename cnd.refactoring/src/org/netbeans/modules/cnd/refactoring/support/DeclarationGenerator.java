@@ -61,7 +61,6 @@ public final class DeclarationGenerator {
 
     public static String createGetter(CsmField field, String gName, Kind kind) {
         StringBuilder out = new StringBuilder();
-        out.append("\n"); // NOI18N
         // type information is the first
         if (field.isStatic()) {
             out.append("static "); //NOI18N
@@ -78,7 +77,6 @@ public final class DeclarationGenerator {
         } else {
             out.append("{ ").append("return ").append(field.getName()).append(";}"); // NOI18N
         }
-        out.append("\n"); // NOI18N
         return out.toString();
     }
 

@@ -40,13 +40,9 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
-import java.awt.Color;
-import java.awt.Component;
 import java.io.File;
 import java.util.StringTokenizer;
 import java.util.Vector;
-import javax.swing.DefaultCellEditor;
-import javax.swing.JCheckBox;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
@@ -54,8 +50,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.SourceFileFilter;
@@ -151,8 +145,6 @@ public class SourceFilesPanel extends javax.swing.JPanel {
             setModel(new MyTableModel());
             // Left align table header
             ((DefaultTableCellRenderer) getTableHeader().getDefaultRenderer()).setHorizontalAlignment(SwingConstants.LEFT);
-            getColumnModel().getColumn(0).setPreferredWidth(95);
-            getColumnModel().getColumn(0).setMaxWidth(200);
 
             getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             getSelectionModel().addListSelectionListener(new TargetSelectionListener());
@@ -169,40 +161,36 @@ public class SourceFilesPanel extends javax.swing.JPanel {
             return false;
         }
 
-        @Override
-        public TableCellRenderer getCellRenderer(int row, int column) {
-            return new MyTableCellRenderer();
-        }
+//        @Override
+//        public TableCellRenderer getCellRenderer(int row, int column) {
+//            return new MyTableCellRenderer();
+//        }
 
-        @Override
-        public TableCellEditor getCellEditor(int row, int col) {
-            JCheckBox checkBox = new JCheckBox();
-            return new DefaultCellEditor(checkBox);
-        }
+//        @Override
+//        public TableCellEditor getCellEditor(int row, int col) {
+//            JCheckBox checkBox = new JCheckBox();
+//            return new DefaultCellEditor(checkBox);
+//        }
 
-        @Override
-        public void setValueAt(Object value, int row, int col) {
-            if (col == 0) {
-                FolderEntry fileEntry = data.elementAt(row);
-                fileEntry.setAddSubfoldersSelected(!fileEntry.isAddSubfoldersSelected());
-            }
-        }
+//        @Override
+//        public void setValueAt(Object value, int row, int col) {
+//            if (col == 0) {
+//                FolderEntry fileEntry = data.elementAt(row);
+//                fileEntry.setAddSubfoldersSelected(!fileEntry.isAddSubfoldersSelected());
+//            }
+//        }
     }
 
     class MyTableModel extends DefaultTableModel {
 
         @Override
         public String getColumnName(int col) {
-            if (col == 0) {
-                return " " + getString("TABLE_COLUMN_0_TXT"); // NOI18N
-            } else {
-                return " " + getString("TABLE_COLUMN_1_TXT"); // NOI18N
-            }
+            return " " + getString("TABLE_COLUMN_1_TXT"); // NOI18N
         }
 
         @Override
         public int getColumnCount() {
-            return 2;
+            return 1;
         }
 
         @Override
@@ -212,39 +200,30 @@ public class SourceFilesPanel extends javax.swing.JPanel {
 
         @Override
         public Object getValueAt(int row, int col) {
-            if (col == 0) {
-                return data.elementAt(row);
-            } else {
-                return data.elementAt(row).getFolderName();
-            }
+            return data.elementAt(row).getFolderName();
         }
 
         @Override
         public boolean isCellEditable(int row, int col) {
-            if (col == 0) {
-                return true;
-            } else {
-                return false;
-            }
+            return false;
         }
     }
 
-    class MyTableCellRenderer extends DefaultTableCellRenderer {
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object color, boolean isSelected, boolean hasFocus, int row, int col) {
-            if (col == 0) {
-                JCheckBox checkBox = new JCheckBox();
-                checkBox.setBackground(Color.WHITE);
-                checkBox.setSelected((data.elementAt(row)).isAddSubfoldersSelected());
-                //checkBox.setText(((FileEntry)data.elementAt(row)).getFile().getPath());
-                return checkBox;
-            } else {
-                return super.getTableCellRendererComponent(table, color, isSelected, hasFocus, row, col);
-            }
-        }
-    }
-
+//    class MyTableCellRenderer extends DefaultTableCellRenderer {
+//
+//        @Override
+//        public Component getTableCellRendererComponent(JTable table, Object color, boolean isSelected, boolean hasFocus, int row, int col) {
+//            if (col == 0) {
+//                JCheckBox checkBox = new JCheckBox();
+//                checkBox.setBackground(Color.WHITE);
+//                checkBox.setSelected((data.elementAt(row)).isAddSubfoldersSelected());
+//                //checkBox.setText(((FileEntry)data.elementAt(row)).getFile().getPath());
+//                return checkBox;
+//            } else {
+//                return super.getTableCellRendererComponent(table, color, isSelected, hasFocus, row, col);
+//            }
+//        }
+//    }
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

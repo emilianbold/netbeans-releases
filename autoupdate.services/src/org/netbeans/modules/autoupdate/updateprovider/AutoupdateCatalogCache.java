@@ -213,14 +213,16 @@ public class AutoupdateCatalogCache {
         int totalRead = 0;
         
         try {
-            os = new BufferedOutputStream(new FileOutputStream (temp));
-            while ((read = is.read ()) != -1) {
-                os.write (read);
+            os = new BufferedOutputStream(new FileOutputStream (temp));            
+            byte [] bytes = new byte [1024];
+            while ((read = is.read (bytes)) != -1) {
+                os.write (bytes, 0, read);
                 totalRead+=read;
             }
             is.close ();
             os.flush ();
             os.close ();
+            os = null;
             synchronized (this) {
                 if (cache.exists () && ! cache.delete ()) {
                     err.log (Level.INFO, "Cannot delete cache " + cache);
@@ -250,8 +252,10 @@ public class AutoupdateCatalogCache {
         } finally {
             try {
                 if (is != null) is.close ();
-                if (os != null) os.flush ();
-                if (os != null) os.close ();
+                if (os != null)  {
+                    os.flush ();
+                    os.close ();
+                }
             } catch (IOException ioe) {
                 err.log (Level.INFO, "Closing streams failed.", ioe);
             }

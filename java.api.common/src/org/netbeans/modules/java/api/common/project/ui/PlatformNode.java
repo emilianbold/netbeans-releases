@@ -215,7 +215,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
                     Icon openedIcon;
                     if ("jar".equals(roots[i].getURL().getProtocol())) { //NOI18N
                         file = FileUtil.getArchiveFile (roots[i]);
-                        icon = openedIcon = new ImageIcon (ImageUtilities.loadImage(ARCHIVE_ICON));
+                        icon = openedIcon = ImageUtilities.loadImageIcon(ARCHIVE_ICON, false);
                     }
                     else {
                         file = roots[i];

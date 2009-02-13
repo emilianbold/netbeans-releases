@@ -68,8 +68,12 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
     private void init(CsmScope scope, AST ast, boolean register) {
 	initScope(scope, ast);
         initQualifiedName(scope, ast);
-        RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
-        initEnumeratorList(ast);
+        if (register) {
+            RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
+        } else {
+            Utils.setSelfUID(this);
+        }
+        initEnumeratorList(ast, register);
         if (register) {
             register(scope, true);
         }
@@ -95,11 +99,11 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         return name;
     }
     
-    private void initEnumeratorList(AST ast){
+    private void initEnumeratorList(AST ast, boolean global){
         //enum A { a, b, c };
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             if( token.getType() == CPPTokenTypes.CSM_ENUMERATOR_LIST ) {
-                addList(token);
+                addList(token, global);
                 return;
             }
         }
@@ -107,23 +111,30 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         if( token != null) {
             //typedef enum { a1, b1, c1 } B;
             if (token.getType() == CPPTokenTypes.CSM_ENUMERATOR_LIST ) {
-                addList(token);
+                addList(token, global);
                 return;
             } else if (token.getType() == CPPTokenTypes.ID) {
                 token = token.getNextSibling();
                 //typedef enum C { a2, b2, c2 } D;
                 if( token != null && token.getType() == CPPTokenTypes.CSM_ENUMERATOR_LIST ) {
-                    addList(token);
+                    addList(token, global);
                     return;
                 }
             }
         }
     }
     
-    private void addList(AST token){
+    private void addList(AST token, boolean global){
         for( AST t = token.getFirstChild(); t != null; t = t.getNextSibling() ) {
             if( t.getType() == CPPTokenTypes.ID ) {
                 EnumeratorImpl ei = new EnumeratorImpl(t, this);
+                if (global) {
+                    RepositoryUtils.put(ei);
+                } else {
+                    Utils.setSelfUID(ei);
+                }
+                CsmUID<CsmEnumerator> uid = UIDCsmConverter.<CsmEnumerator>objectToUID(ei);
+                enumerators.add(uid);
             }
         }
     }
@@ -131,11 +142,6 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
     public Collection<CsmEnumerator> getEnumerators() {
         Collection<CsmEnumerator> out = UIDCsmConverter.UIDsToDeclarations(enumerators);
         return out;
-    }
-    
-    public void addEnumerator(CsmEnumerator enumerator) {
-        CsmUID<CsmEnumerator> uid = RepositoryUtils.put(enumerator);
-        enumerators.add(uid);
     }
     
     @SuppressWarnings("unchecked")

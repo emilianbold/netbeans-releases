@@ -109,7 +109,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         return CsmBaseUtilities.isValid(getContainingFile());
     }
 
-    protected TemplateDescriptor createTemplateDescriptor(AST node, CsmScope scope, StringBuilder classTemplateSuffix) {
+    protected TemplateDescriptor createTemplateDescriptor(AST node, CsmScope scope, StringBuilder classTemplateSuffix, boolean global) {
         boolean _template = false, specialization = false;
         switch(node.getType()) {
             case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION: 
@@ -209,7 +209,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
                 }
             }            
             return new TemplateDescriptor(
-                templateParams, templateSuffix, inheritedTemplateParametersNumber);
+                templateParams, templateSuffix, inheritedTemplateParametersNumber, global);
         }
         return null;
     }

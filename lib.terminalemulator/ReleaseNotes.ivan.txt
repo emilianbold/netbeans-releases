@@ -1,4 +1,5 @@
 ================================================================================
+<<<<<<< local
 nobugid (Options support and UI)
         - lib.termsupport.TermOptions contains options information for a Term.
         - lib.termsupport.TermOptionsPanel is a generic JPanel for viewing the
@@ -7,6 +8,37 @@ nobugid (Options support and UI)
           UI for options in NB under Tools->Options->Miscellaneous->Terminal.
         - TermApp (nbterm) has An Options context menu action and brings up an
           options dialog which is persisted in ~/.java/.userPrefs/nbterm.
+=======
+nobugid (Mac work)
+	- lib.richexecution
+	  - Introduced mac-intel as a platform in build.xml which now
+	    builds process_start-mac-intel.
+	  - OS.platform() returns "mac-intel" to match.
+	  - A viable process_start-mac-intel.zip created.
+	  - In process_start.c need to explicitly assign a controlling
+	    terminal using TIOCSCTTY.
+	    We do this only if TIOCSCTTY is defined which should make 
+	    the code platform neutral enough.
+	  - In JNAPty instead of getpt() or explicit opening of "/dev/ptmx"
+	    we use posix_openpt().
+	  - New class Platform.
+	    OS.platform replaced with Platform.platform().
+	  - Platform sensitive JNA LIbraries ...
+	    - PtyLibrary and ProcessLibrary interfaces merged into
+	      CLibrary class.
+	      CLibrary delegates to platform-specific Library's and
+	      initializes the constants according to Platform.
+	- lib.termsupport
+	  - In TermExecutor.MyTermListener verified that setting TIOCSWINSZ
+	    via the master works on the MAc.
+	- lib.terminalemulator
+	  - On the Mac VK_ESCAPE doesn't generate a keyTyped event() so
+	    need to simulate it using keyPressed().
+	    Introduced charTyped() to factor keyTyped() and keyPressed()
+	    processing.
+	    Introduced boolean onMac().
+
+>>>>>>> other
 ================================================================================
 nobugid (get working on Windows again)
 	- richexecution

@@ -81,7 +81,12 @@ import org.openide.util.Utilities;
  */
 public class CompilerSetManager {
 
-    private static enum State { 
+    // Legacy defines for CND 5.5 compiler set definitions
+    // used in DBX, so don't remove please!
+    public static final int SUN_COMPILER_SET = 0;
+    public static final int GNU_COMPILER_SET = 1;
+    
+    private static enum State {
         STATE_PENDING,
         STATE_COMPLETE,
         STATE_UNINITIALIZED

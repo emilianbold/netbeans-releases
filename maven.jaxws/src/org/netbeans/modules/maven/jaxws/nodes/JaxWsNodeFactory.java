@@ -52,7 +52,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.netbeans.modules.websvc.project.api.WebServiceData;
-import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.nodes.Node;
@@ -61,6 +60,7 @@ import org.openide.nodes.Node;
  *
  * @author Milan Kuchtiak
  */
+@NodeFactory.Registration(projectType="org-netbeans-modules-maven",position=85)
 public class JaxWsNodeFactory implements NodeFactory {
 
     /** Creates a new instance of WebServicesNodeFactory */

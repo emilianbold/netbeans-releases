@@ -68,7 +68,11 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
         // after rendering, but before calling initQualifiedName() and register()
 
         initScope(scope, ast);
-        RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
+        if (register) {
+            RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
+        } else {
+            Utils.setSelfUID(this);
+        }
         render(ast, !register);
 
         AST qIdToken = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);

@@ -95,9 +95,9 @@ public final class M2RepositoryBrowserTopComponent extends TopComponent implemen
         map.put("delete", ExplorerUtils.actionDelete(manager, true)); //NOI18N
         associateLookup(ExplorerUtils.createLookup(manager, map));
         pnlBrowse.add(btv, BorderLayout.CENTER);
-        btnIndex.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/maven/repository/refreshRepo.png"))); //NOI18N
-        btnAddRepo.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/maven/repository/AddRepo.png"))); //NOI18N
-        btnFind.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/maven/repository/FindInRepo.png"))); //NOI18N
+        btnIndex.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/repository/refreshRepo.png", false)); //NOI18N
+        btnAddRepo.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/repository/AddRepo.png", false)); //NOI18N
+        btnFind.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/repository/FindInRepo.png", false)); //NOI18N
         btnIndex.setText(null);
         btnAddRepo.setText(null);
         btnFind.setText(null);

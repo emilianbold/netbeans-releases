@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 
 /**
  * Implements both CsmFunction and CsmFunctionDefinition -
@@ -64,17 +63,18 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
     
     private final CsmCompoundStatement body;
 
-    public FunctionDDImpl(AST ast, CsmFile file, CsmScope scope) throws AstRendererException {
-        super(ast, file, scope, false);
+    public FunctionDDImpl(AST ast, CsmFile file, CsmScope scope, boolean global) throws AstRendererException {
+        super(ast, file, scope, false, global);
         body = AstRenderer.findCompoundStatement(ast, getContainingFile(), this);
         boolean assertionCondition = body != null;
         if (!assertionCondition) {
-            RepositoryUtils.hang(this);
             throw new AstRendererException((FileImpl)file, getStartOffset(),
                     "Null body in function definition."); // NOI18N
             //assert assertionCondition : "null body in function definition, line " + getStartPosition().getLine() + ":" + file.getAbsolutePath();
         }
-        registerInProject();
+        if (global) {
+            registerInProject();
+        }
     }
 
     @Override

@@ -302,7 +302,7 @@ public final class ParserQueue {
 
     private PriorityQueue<Entry> queue = new PriorityQueue<Entry>();
 
-    private State state;
+    private volatile State state;
     private final Object suspendLock = new Object();
 
     // do not need UIDs for ProjectBase in parsing data collection
