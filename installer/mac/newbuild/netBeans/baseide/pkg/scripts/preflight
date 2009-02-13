@@ -26,9 +26,9 @@ then
 fi
 . "$basename"/env.sh
 
-if [ -n "$NETBEANS_INSTALL_DIR" ] && [ -d "$NETBEANS_INSTALL_DIR" ]  ; then
-    rm -rf "$NETBEANS_INSTALL_DIR"
-fi
+#if [ -n "$NETBEANS_INSTALL_DIR" ] && [ -d "$NETBEANS_INSTALL_DIR" ]  ; then
+#    rm -rf "$NETBEANS_INSTALL_DIR"
+#fi
 
 if [ -d "/Library/Receipts/baseide.pkg" ] ; then
     rm -rf "/Library/Receipts/baseide.pkg"
