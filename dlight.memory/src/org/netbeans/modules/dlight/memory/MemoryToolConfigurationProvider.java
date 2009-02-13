@@ -79,7 +79,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
             Column timestampColumn = new Column("timestamp", Long.class, "Timestamp", null);
             Column kindColumn = new Column("kind", Integer.class, "Kind", null);
             Column sizeColumn = new Column("size", Integer.class, "Size", null);
-            Column addressColumn = new Column("address", Integer.class, "Address", null);
+            Column addressColumn = new Column("address", Long.class, "Address", null);
             Column stackColumn = new Column("stackid", Integer.class, "Stack ID", null);
 
             List<Column> columns = Arrays.asList(
