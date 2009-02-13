@@ -8,7 +8,6 @@
     <fontcolor name="label"/>
     <fontcolor default="operator" name="operator"/>
     <fontcolor name="character"/>
-    <fontcolor default="comment" name="line_comment"/>
     <fontcolor default="string" name="string"/>
     <fontcolor default="keyword" name="command"/>
     <fontcolor default="comment" name="comment"/>
