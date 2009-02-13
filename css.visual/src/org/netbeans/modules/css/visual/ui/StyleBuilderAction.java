@@ -58,7 +58,7 @@ public class StyleBuilderAction extends AbstractAction {
     
     public StyleBuilderAction() {
         super(NbBundle.getMessage(StyleBuilderAction.class, "CTL_CSSStyleBuilderAction"));
-        putValue(SMALL_ICON,new ImageIcon(ImageUtilities.loadImage(ICON_PATH, true)));
+        putValue(SMALL_ICON, ImageUtilities.loadImageIcon(ICON_PATH, true));
     }
     
     public void actionPerformed(ActionEvent evt) {

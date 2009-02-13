@@ -93,28 +93,35 @@ ListCellRenderer, ComboBoxEditor {
         
         Color oldColor = g.getColor ();
         Dimension size = getSize ();
-        if (isFocusOwner ())
+        if (isFocusOwner ()) {
             g.setColor (SystemColor.textHighlight);
-        else
+        } else {
             g.setColor (getBackground ());
+        }
         g.fillRect (0, 0, size.width, size.height);
-        int i = (size.height - SIZE) / 2;
-        if (value.color != null) {
-            g.setColor (Color.black);
-            g.drawRect (i, i, SIZE, SIZE);
-            g.setColor (value.color);
-            g.fillRect (i + 1, i + 1, SIZE - 1, SIZE - 1);
+
+        if (value != null) {
+            int i = (size.height - SIZE) / 2;
+            if (value.color != null) {
+                g.setColor (Color.black);
+                g.drawRect (i, i, SIZE, SIZE);
+                g.setColor (value.color);
+                g.fillRect (i + 1, i + 1, SIZE - 1, SIZE - 1);
+            }
+            if (value.text != null) {
+                if (isFocusOwner ()) {
+                    g.setColor (SystemColor.textHighlightText);
+                } else {
+                    g.setColor (getForeground ());
+                }
+                if (value.color != null) {
+                    g.drawString (value.text, i + SIZE + 5, i + SIZE);
+                } else {
+                    g.drawString (value.text, 5, i + SIZE);
+                }
+            }
         }
-        if (value.text != null) {
-            if (isFocusOwner ())
-                g.setColor (SystemColor.textHighlightText);
-            else
-                g.setColor (getForeground ());
-            if (value.color != null)
-                g.drawString (value.text, i + SIZE + 5, i + SIZE);
-            else
-                g.drawString (value.text, 5, i + SIZE);
-        }
+
         g.setColor (oldColor);
     }
 

@@ -416,7 +416,7 @@ public class CsmImageLoader implements CsmImageName {
     private static ImageIcon getCachedImageIcon(String iconPath) {
         ImageIcon icon = map.get(iconPath);
         if (icon == null) {
-            icon = new ImageIcon(ImageUtilities.loadImage(iconPath));
+            icon = ImageUtilities.loadImageIcon(iconPath, false);
             map.put(iconPath, icon);
         }
         return icon;

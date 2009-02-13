@@ -130,7 +130,7 @@ final class JavadocCompletionItem implements CompletionItem {
     }
     
     protected ImageIcon createIcon() {
-        return new ImageIcon(ImageUtilities.loadImage(iconPath));
+        return ImageUtilities.loadImageIcon(iconPath, false);
     }
     
     protected String getLeftHtmlText() {

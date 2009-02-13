@@ -121,8 +121,7 @@ public class RefreshAction extends NodeAction {
         private final ServerInstance instance;
         
         public OutputAction(ServerInstance instance) {
-            super(NbBundle.getMessage(DebugAction.class, "LBL_RefreshOutput"),
-                  new ImageIcon(ImageUtilities.loadImage(ICON)));
+            super(NbBundle.getMessage(DebugAction.class, "LBL_RefreshOutput"),ImageUtilities.loadImageIcon(ICON, false));
             putValue(SHORT_DESCRIPTION, NbBundle.getMessage(DebugAction.class, "LBL_RefreshOutputDesc"));
             this.instance = instance;
             

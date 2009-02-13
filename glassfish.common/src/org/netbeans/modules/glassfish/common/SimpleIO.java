@@ -193,8 +193,7 @@ public class SimpleIO {
                 "org/netbeans/modules/glassfish/common/resources/stop.png"; // NOI18N
         
         public CancelAction() {
-            super(NbBundle.getMessage(SimpleIO.class, "CTL_Cancel"), 
-                    new ImageIcon(ImageUtilities.loadImage(ICON)));
+            super(NbBundle.getMessage(SimpleIO.class, "CTL_Cancel"),ImageUtilities.loadImageIcon(ICON, false));
             putValue(SHORT_DESCRIPTION, 
                     NbBundle.getMessage(SimpleIO.class, "LBL_CancelDesc"));
         }

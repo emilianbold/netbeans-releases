@@ -72,11 +72,11 @@ public abstract class SQLCompletionItem implements CompletionItem {
     private static final String BOLD = "<b>"; // NOI18N
     private static final String BOLD_END = "</b>"; // NOI18N
 
-    private static final ImageIcon CATALOG_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/db/sql/editor/completion/resources/catalog.png")); // NOI18N
-    private static final ImageIcon SCHEMA_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/db/sql/editor/completion/resources/schema.png")); // NOI18N
-    private static final ImageIcon TABLE_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/db/sql/editor/completion/resources/table.png")); // NOI18N
-    private static final ImageIcon ALIAS_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/db/sql/editor/completion/resources/alias.png")); // NOI18N
-    private static final ImageIcon COLUMN_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/db/sql/editor/completion/resources/column.png")); // NOI18N
+    private static final ImageIcon CATALOG_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/db/sql/editor/completion/resources/catalog.png", false); // NOI18N
+    private static final ImageIcon SCHEMA_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/db/sql/editor/completion/resources/schema.png", false); // NOI18N
+    private static final ImageIcon TABLE_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/db/sql/editor/completion/resources/table.png", false); // NOI18N
+    private static final ImageIcon ALIAS_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/db/sql/editor/completion/resources/alias.png", false); // NOI18N
+    private static final ImageIcon COLUMN_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/db/sql/editor/completion/resources/column.png", false); // NOI18N
 
     private final SubstitutionHandler substHandler;
     private final String substText;

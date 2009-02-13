@@ -54,8 +54,6 @@ import javax.swing.*;
 import javax.swing.text.*;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
-import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.ext.ExtCaret;
 import org.netbeans.modules.diff.builtin.DiffPresenter;
 
 import org.openide.actions.CopyAction;
@@ -64,6 +62,7 @@ import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.ErrorManager;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.ImageUtilities;
 //import org.openide.windows.Workspace;
 //import org.openide.windows.Mode;
 
@@ -160,7 +159,7 @@ public class DiffPanel extends javax.swing.JPanel implements javax.swing.event.C
 
         commandPanel.setLayout(new java.awt.GridBagLayout());
 
-        prevButton.setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/prev.gif", true)));
+        prevButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/diff/builtin/visualizer/prev.gif", true));
         prevButton.setToolTipText(org.openide.util.NbBundle.getBundle(DiffPanel.class).getString("DiffComponent.prevButton.toolTipText"));
         prevButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -168,7 +167,7 @@ public class DiffPanel extends javax.swing.JPanel implements javax.swing.event.C
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         commandPanel.add(prevButton, gridBagConstraints);
 
-        nextButton.setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/next.gif", true)));
+        nextButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/diff/builtin/visualizer/next.gif", true));
         nextButton.setToolTipText(org.openide.util.NbBundle.getBundle(DiffPanel.class).getString("DiffComponent.nextButton.toolTipText"));
         nextButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();

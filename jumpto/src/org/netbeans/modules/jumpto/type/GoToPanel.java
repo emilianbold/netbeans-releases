@@ -78,8 +78,8 @@ import org.openide.util.NbBundle;
  */
 public class GoToPanel extends javax.swing.JPanel {
             
-    private static Icon WAIT_ICON = new ImageIcon( ImageUtilities.loadImage("org/netbeans/modules/jumpto/resources/wait.gif") ); // NOI18N
-    private static Icon WARN_ICON = new ImageIcon( ImageUtilities.loadImage("org/netbeans/modules/jumpto/resources/warning.png") ); // NOI18N
+    private static Icon WAIT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/jumpto/resources/wait.gif", false); // NOI18N
+    private static Icon WARN_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/jumpto/resources/warning.png", false); // NOI18N
         
     private static final int BRIGHTER_COLOR_COMPONENT = 10;
     private ContentProvider contentProvider;
