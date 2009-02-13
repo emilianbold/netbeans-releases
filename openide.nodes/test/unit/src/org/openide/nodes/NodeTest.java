@@ -144,19 +144,22 @@ public class NodeTest extends NbTestCase {
             }
         };
 
+        t1.setDaemon(true);
+        t2.setDaemon(true);
         t1.start();
         t2.start();
         for (int i = 0; i < 1000; i++) {
             try {
                 t1.join(10);
                 t2.join(10);
+                if (!t1.isAlive() && !t2.isAlive()) {
+                    return;
+                }
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
-        if (t1.isAlive() || t2.isAlive()) {
-            fail("It seems Node creation requires Children.MUTEX");
-        }
+        fail("It seems Node creation requires Children.MUTEX");
     }
 
     public void testPreferredAction() throws Exception {
