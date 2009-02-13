@@ -77,7 +77,7 @@ public class FindWizardPanel implements WizardDescriptor.FinishablePanel {
     }
     
     public boolean isValid() {
-        return component.isValid();
+        return component.isStateValid();
     }
     
     public void addChangeListener(final ChangeListener changeListener) {
