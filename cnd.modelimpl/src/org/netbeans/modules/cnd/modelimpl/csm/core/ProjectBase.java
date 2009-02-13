@@ -102,7 +102,7 @@ import org.openide.util.Cancellable;
  */
 public abstract class ProjectBase implements CsmProject, Persistent, SelfPersistent, CsmIdentifiable {
 
-    private transient boolean needParseOrphan;
+    private volatile boolean needParseOrphan;
 
     /** Creates a new instance of CsmProjectImpl */
     protected ProjectBase(ModelImpl model, Object platformProject, String name) {
@@ -805,7 +805,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return status;
     }
 
-    protected void onAddedToModelImpl(boolean isRestored) {
+    private void onAddedToModelImpl(boolean isRestored) {
 
         if (disposing) {
             return;
@@ -2378,7 +2378,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         Validating,
         Ready;
     }
-    private transient Status status;
+    private volatile Status status;
     /** The task that is run in a request processor during project initialization */
     private Cancellable initializationTask;
     /** The lock under which the initializationTask is set */
