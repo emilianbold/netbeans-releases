@@ -42,7 +42,7 @@ public class RepositoryValidation extends RepositoryValidationBase {
 
     protected @Override void setUp() throws Exception {
         System.setProperty("cnd.repository.hardrefs", Boolean.FALSE.toString()); //NOI18N
-        System.setProperty("cnd.fix.IZ151567", Boolean.TRUE.toString()); //NOI18N
+        System.setProperty("org.netbeans.modules.cnd.apt.level","OFF"); // NOI18N
         assertNotNull("This test can only be run from suite", RepositoryValidationGoldens.getGoldenDirectory()); //NOI18N
         System.setProperty(PROPERTY_GOLDEN_PATH, RepositoryValidationGoldens.getGoldenDirectory());
         super.setUp();
