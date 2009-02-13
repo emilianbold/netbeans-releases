@@ -173,9 +173,12 @@ public class HudsonSubversionSCM implements HudsonSCM {
     }
 
     public List<? extends HudsonJobChangeItem> parseChangeSet(Element changeSet) {
-        if (changeSet.getElementsByTagName("revision").getLength() == 0) {
-            // XXX clumsy. See https://stapler.dev.java.net/nonav/issues/show_bug.cgi?id=4 and accompanying discussion.
-            return null;
+        if (!"svn".equals(xpath("kind", changeSet))) {
+            // Either a different SCM, or old Hudson.
+            if (changeSet.getElementsByTagName("revision").getLength() == 0) {
+                // A different SCM. This clause could be deleted assuming 1.284.
+                return null;
+            }
         }
         class SubversionItem implements HudsonJobChangeItem {
             final Element xml;
