@@ -24,7 +24,7 @@ PLATFORM=GNU-Solaris-x86
 include src-Makefile.mk
 
 # Object Directory
-OBJECTDIR=build/Default/${PLATFORM}
+OBJECTDIR=build/Debug-1/${PLATFORM}
 
 # Object Files
 OBJECTFILES=
@@ -44,14 +44,14 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	cd . && gmake -f Makefile all
+	cd . && ${MAKE} DEBUG=1 all
 
 # Subprojects
 .build-subprojects:
 
 # Clean Targets
 .clean-conf:
-	cd . && gmake -f Makefile clean
+	cd . && ${MAKE} clean
 
 # Subprojects
 .clean-subprojects:
