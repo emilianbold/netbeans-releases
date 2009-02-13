@@ -471,7 +471,7 @@ public final class ServerRegistry implements java.io.Serializable {
         return properties;
     }
 
-    private void addInstance(FileObject fo) {
+    public void addInstance(FileObject fo) {
         String url = (String) fo.getAttribute(URL_ATTR);
         String username = (String) fo.getAttribute(USERNAME_ATTR);
         String password = (String) fo.getAttribute(PASSWORD_ATTR);
