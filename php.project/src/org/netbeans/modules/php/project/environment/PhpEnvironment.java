@@ -305,7 +305,7 @@ public abstract class PhpEnvironment {
     }
 
     // suitable for *nix as well as windows
-    private static List<String> findFileOnUsersPath(String filename) {
+    protected static List<String> findFileOnUsersPath(String filename) {
         String path = System.getenv("PATH"); // NOI18N
         if (path == null) {
             return Collections.<String>emptyList();

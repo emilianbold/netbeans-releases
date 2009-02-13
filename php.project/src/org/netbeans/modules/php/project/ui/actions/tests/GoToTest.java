@@ -90,7 +90,7 @@ public class GoToTest implements TestLocator {
             return findSource(project, fo);
         } else if (CommandUtils.isUnderSources(project, fo)) {
             return findTest(project, fo);
-        } 
+        }
         return null;
     }
 
@@ -123,12 +123,11 @@ public class GoToTest implements TestLocator {
                     if (clsName.endsWith(PhpUnit.TEST_CLASS_SUFFIX)) {
                         int lastIndexOf = clsName.lastIndexOf(PhpUnit.TEST_CLASS_SUFFIX);
                         assert lastIndexOf != -1;
-                        String srcClassName = clsName.substring(0,lastIndexOf);
-                        Collection<? extends FileObject> files =
-                                unitSupport.filesForClassName(testFo, srcClassName);
+                        String srcClassName = clsName.substring(0, lastIndexOf);
+                        Collection<? extends FileObject> files = unitSupport.filesForClassName(testFo, srcClassName);
                         for (FileObject fileObject : files) {
-                            if (CommandUtils.isPhpFile(fileObject) &&
-                                    FileUtil.isParentOf(sources, fileObject) ) {
+                            if (CommandUtils.isPhpFile(fileObject)
+                                    && FileUtil.isParentOf(sources, fileObject)) {
                                 return new LocationResult(files.iterator().next(), -1);
                             }
                         }
@@ -150,8 +149,8 @@ public class GoToTest implements TestLocator {
                     String testClsName = clsName + PhpUnit.TEST_CLASS_SUFFIX;
                     Collection<? extends FileObject> files = unitSupport.filesForClassName(srcFo, testClsName);
                         for (FileObject fileObject : files) {
-                            if (CommandUtils.isPhpFile(fileObject) &&
-                                    FileUtil.isParentOf(tests, fileObject) ) {
+                            if (CommandUtils.isPhpFile(fileObject)
+                                    && FileUtil.isParentOf(tests, fileObject)) {
                                 return new LocationResult(files.iterator().next(), -1);
                             }
                         }
@@ -159,12 +158,6 @@ public class GoToTest implements TestLocator {
             }
         }
         return new LocationResult(NbBundle.getMessage(GoToTest.class, "MSG_TestNotFound", srcFo.getName()));
-    }
-
-    static String findRelativeTestFileName(PhpProject project, FileObject srcFo) {
-        String relativeSourcePath = FileUtil.getRelativePath(getSources(project), srcFo.getParent());
-        assert relativeSourcePath != null : String.format("Relative path must be found for sources %s and folder %s", getSources(project), srcFo.getParent());
-        return relativeSourcePath + "/" + srcFo.getName() + PhpUnit.TEST_FILE_SUFFIX; // NOI18N
     }
 
     private PhpProject findPhpProject(FileObject fo) {
