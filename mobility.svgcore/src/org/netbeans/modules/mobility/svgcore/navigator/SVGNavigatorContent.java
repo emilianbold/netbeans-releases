@@ -174,10 +174,15 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
                         if ( cachedPanel == null) {
                             try {
                                 //cache the newly created panel
-                                panel = new NavigatorContentPanel(dObj);
-                                uiCache.put(dObj, new WeakReference(panel));
+                                if (dObj.getModel().getModel() != null) {
+                                    panel = new NavigatorContentPanel(dObj);
+                                    uiCache.put(dObj, new WeakReference(panel));
+                                } else {
+                                    showCannotNavigate();
+                                    return;
+                                }
                             } catch (Exception ex) {
-                                SceneManager.log(Level.SEVERE, "Navigator panel creation failed", ex); //NOI18N
+                                SceneManager.log(Level.WARNING, "Navigator panel creation failed", ex); //NOI18N
                                 showCannotNavigate();
                                 return;
                             }
