@@ -89,7 +89,7 @@ public class IDECommitValidationTest extends JellyTestCase {
         
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
             IDEValidation.class
-        ).clusters(".*").enableModules(".*");
+        ).clusters(".*").enableModules(".*").honorAutoloadEager(true);
 
         Set<String> allowedFiles = new HashSet<String>();
         InputStream is = IDECommitValidationTest.class.getResourceAsStream("allowed-file-writes.txt");
