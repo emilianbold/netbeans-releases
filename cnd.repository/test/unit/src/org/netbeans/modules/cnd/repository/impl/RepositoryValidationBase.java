@@ -30,6 +30,7 @@ package org.netbeans.modules.cnd.repository.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,6 +41,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -55,6 +57,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
     protected static final String modelimplName = "cnd.modelimpl";
     protected static final String moduleName = "cnd.repository";
     private static String goldenDirectory;
+    private long startTime;
 
     @Override
     protected File getTestCaseDataDir() {
@@ -64,7 +67,33 @@ public class RepositoryValidationBase extends TraceModelTestBase {
     }
 
     @Override
+    protected void doTest(String[] args, PrintStream streamOut, PrintStream streamErr, Object... params) throws Exception {
+        startTime = System.currentTimeMillis();
+        super.doTest(args, streamOut, streamErr, params);
+    }
+
+    @Override
     protected void postTest(String[] args, Object... params) {
+        if (System.currentTimeMillis() - startTime < 1000) {
+            System.err.println("-----Start Thread Dump-----");
+            for (Map.Entry<Thread, StackTraceElement[]> entry : Thread.getAllStackTraces().entrySet()) {
+                System.err.println(entry.getKey().getName());
+                for (StackTraceElement element : entry.getValue()) {
+                    System.err.println("\tat " + element.toString());
+                }
+                System.err.println();
+            }
+            System.err.println("-----End Thread Dump-----");
+        }
+        if (!getTraceModel().getProject().isStable(null)) {
+            while (!getTraceModel().getProject().isStable(null)) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
         Map<CharSequence, FileImpl> map = new TreeMap<CharSequence, FileImpl>();
         for (CsmFile f : getTraceModel().getProject().getAllFiles()){
             map.put(f.getAbsolutePath(), (FileImpl)f);

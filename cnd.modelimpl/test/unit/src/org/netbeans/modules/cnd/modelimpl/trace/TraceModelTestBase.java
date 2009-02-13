@@ -250,7 +250,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
                     goldenErrFileCopy = new File(workDir, goldenErrFileName + ".golden");
                     CndCoreTestUtils.copyToWorkDir(goldenErrFile, goldenErrFileCopy); // NOI18N
                     diffErrorFile = new File(workDir, goldenErrFileName + ".diff");
-                   CndCoreTestUtils.diff(error, goldenErrFile, diffErrorFile);
+                    CndCoreTestUtils.diff(error, goldenErrFile, diffErrorFile);
                 }
             } else {
                 // golden err.file doesn't exist => err.file should be empty
@@ -285,7 +285,10 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
             showDiff(diffOutputFile, buf);
             assertTrue(buf.toString(), outTheSame); // NOI18N
         } else {
-            assertTrue("OUTPUT and ERR are different, see content of folder " + workDir, false); // NOI18N
+            StringBuilder buf = new StringBuilder("ERR and OUTPUT are different, see content of folder " + workDir);
+            showDiff(diffErrorFile, buf);
+            showDiff(diffOutputFile, buf);
+            assertTrue(buf.toString(), false); // NOI18N
         }
     }
 
