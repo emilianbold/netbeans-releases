@@ -51,7 +51,6 @@ import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonJobImpl;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
@@ -79,10 +78,6 @@ public class ShowBuildConsole extends AbstractAction implements Runnable {
     }
 
     public void run() {
-        HudsonInstanceImpl instance = job.getLookup().lookup(HudsonInstanceImpl.class);
-        if (instance == null) {
-            return;
-        }
         Hyperlinker hyperlinker = new Hyperlinker(job);
         String name = job.getDisplayName() + " #" + buildNumber;
         LOG.log(Level.FINE, "{0} started", name);
