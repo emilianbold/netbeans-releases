@@ -120,7 +120,7 @@ class ErrorLabel extends JLabel {
     }
     
     protected Icon getErrorIcon() {
-        return new ImageIcon( ImageUtilities.loadImage("org/netbeans/modules/gsfret/source/resources/icons/error-glyph.gif") );
+        return ImageUtilities.loadImageIcon("org/netbeans/modules/gsfret/source/resources/icons/error-glyph.gif", false);
     }
     
     /**

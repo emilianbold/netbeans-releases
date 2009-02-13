@@ -13,13 +13,13 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 /*
  * 
- * Copyright 2005 Sun Microsystems, Inc.
+ * Copyright 2009 Sun Microsystems, Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ package org.netbeans.modules.jdbcwizard.wizards;
 
 import org.openide.WizardDescriptor;
 
-import javax.swing.event.ChangeListener;
 
 /**
  * Extends JNDINameFinishPanel, implementing the interface WizardDescriptor.FinishPanel to allows
@@ -56,38 +55,6 @@ public class JNDINameFinishPanel extends JNDINamePanel implements WizardDescript
     public JNDINameFinishPanel(final String title) {
         super(title);
 	}
-
-    public void addChangeListener(final ChangeListener l) {
-        super.addChangeListener(l);
-    }
-
-    /**
-     * @see org.openide.WizardDescriptor.Panel#isValid
-     */
-    public boolean isValid() {
-        return true;
-    }
-
-    /**
-     * @see JNDINameFinishPanel#readSettings
-     */
-    public void readSettings(final Object settings) {
-        super.readSettings(settings);
-    }
-
-    /**
-     * @see JNDINameFinishPanel#removeChangeListener
-     */
-    public void removeChangeListener(final ChangeListener l) {
-        super.removeChangeListener(l);
-    }
-
-    /**
-     * @see JNDINameFinishPanel#storeSettings
-     */
-    public void storeSettings(final Object settings) {
-        super.storeSettings(settings);
-    }
 
     /**
      * @return

@@ -407,7 +407,7 @@ public class UMLNewAction extends NodeAction
                      Mnemonics.setLocalizedText(item, label);
                      if (iconRes != null)
                      {
-                        ImageIcon icon = new ImageIcon(ImageUtilities.loadImage(iconRes));
+                        ImageIcon icon = ImageUtilities.loadImageIcon(iconRes, false);
                         item.setIcon(icon);
                      }
                      item.addActionListener(new SubActionListener(i, model));

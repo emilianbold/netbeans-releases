@@ -45,10 +45,10 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
     <body>
         <h2>Working with the Maven POM</h2>
         <p> <small><a href="#seealso">See Also</a>&nbsp; </small></p>
-        <p>The basic unit of work in Maven is the Project Object Model (POM) that is contained in <tt>pom.xml</tt>.
-        <tt>pom.xml</tt> contains information about the project and configuration details 
-        such as project dependencies and build profiles that Maven uses to execute goals and build the project.</p>
-        <p>For more details about POM elements, see the following pages on the Maven site:</p>
+        <p>The Project Object Model (POM) is the basic unit of work in Maven.
+        The POM is descibed in the <tt>pom.xml</tt> XML file and contains project and configuration details,
+        such as the artifact coordinates, project dependencies and build profiles that Maven uses to execute goals and build the project.</p>
+        <p>For more information about POM elements, see the following pages on the Maven site:</p>
         
         <p>
         <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
@@ -68,13 +68,28 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
         </object>
         </p>
 
-
-        <p>
+        <p>When you use the New Project wizard to create an artifact, 
+        the IDE automatically generates <tt>pom.xml</tt> and adds the artifact details.
+        Open <tt>pom.xml</tt> in the XML editor to edit the file.
+        The following features are available in the XML editor to help you edit <tt>pom.xml</tt>.
         </p>
-        
+        <ul>
+            <li><strong>Code completion.</strong> The IDE's code completion can help you add and modify elements.
+            The code completion hints offered in the editor are based on the contents of the repository.</li>
+            <li><strong>Insert Code.</strong> The IDE can generate XML elements for you based on the
+            details you specify in a dialog box.
+            When you right-click in the editor window (Ctrl-I), a popup menu appears where you can choose to add a
+            dependency, plugin or profile or exclude a dependency.
+            A dialog box opens enabling you to specify the details about the code you want the IDE to insert.
+            </li>
+        </ul>
+
+
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/maven/maven-about.html">About Working with Maven</a></dd>
+    <dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/xml/xml_edit.html">Editing an XML Document</a></dd>
+    <dd><a href="maven-dependencies.html">Managing Maven Project Dependencies</a></dd>
 </dl>
 <hr>
 <small><a href="../credits.html">Legal Notices</a></small>

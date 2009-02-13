@@ -239,16 +239,19 @@ public class StartTask extends BasicTask<OperationState> {
     private FileObject getJavaPlatformRoot(CommonServerSupport support) {
         FileObject retVal = null;
         String javaInstall = support.getInstanceProperties().get(GlassfishModule.JAVA_PLATFORM_ATTR);
-        if (null == javaInstall)
-            return null;
-        File f = new File(javaInstall);
-        if (f.exists()) {
-            try {
-                //              bin             home
-                File dir = f.getParentFile().getParentFile();
+        try {
+            if (null == javaInstall) {
+                File dir = new File(getJdkHome());
                 retVal = FileUtil.createFolder(FileUtil.normalizeFile(dir));
-            } catch (IOException ex) {
+            } else {
+                File f = new File(javaInstall);
+                if (f.exists()) {
+                    //              bin             home
+                    File dir = f.getParentFile().getParentFile();
+                    retVal = FileUtil.createFolder(FileUtil.normalizeFile(dir));
+                }
             }
+        } catch (IOException ioe) {
         }
         return retVal;
     }
@@ -413,9 +416,18 @@ public class StartTask extends BasicTask<OperationState> {
 
         varMap.put("com.sun.aas.installRoot", fixPath(ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR)));
         varMap.put("com.sun.aas.instanceRoot", fixPath(domainRoot.getAbsolutePath()));
-        varMap.put("com.sun.aas.javaRoot", fixPath(System.getProperty("java.home")));
-        varMap.put("com.sun.aas.derbyRoot", 
-                fixPath(ip.get(GlassfishModule.INSTALL_FOLDER_ATTR) + File.separatorChar + "javadb"));
+        varMap.put("com.sun.aas.javaRoot", fixPath(jdkHome.getPath())); // System.getProperty("java.home")));
+        // account for changes of "source" for java db.
+        File javadb = new File(ip.get(GlassfishModule.INSTALL_FOLDER_ATTR) + File.separatorChar + "javadb");
+        if (javadb.exists()) {
+            // a v3 Prelude install
+            varMap.put("com.sun.aas.derbyRoot",
+                    fixPath(ip.get(GlassfishModule.INSTALL_FOLDER_ATTR) + File.separatorChar + "javadb"));
+        } else {
+            // a v3 install
+            varMap.put("com.sun.aas.derbyRoot",
+                    fixPath(jdkHome.getPath() + File.separatorChar + "javadb"));
+        }
         
         File domainXml = new File(domainRoot, "config/domain.xml");
 

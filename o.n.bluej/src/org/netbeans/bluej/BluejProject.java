@@ -91,7 +91,7 @@ import org.w3c.dom.NodeList;
  */
 public final class BluejProject implements Project, AntProjectListener {
     
-    private static final Icon BLUEJ_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/bluej/resources/bluejproject.png")); // NOI18N
+    private static final Icon BLUEJ_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/bluej/resources/bluejproject.png", false); // NOI18N
 
     private static final String PROP_BLUEJ_HOME = "bluej.userlib"; //NOI18N
     

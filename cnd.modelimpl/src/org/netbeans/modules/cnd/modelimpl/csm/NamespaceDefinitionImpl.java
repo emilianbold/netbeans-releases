@@ -146,7 +146,12 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     private void insertIntoSortedDeclArray(CsmUID<CsmOffsetableDeclaration> uid) {
         for (int pos = 0; pos < declarations.size(); pos++) {
             CsmUID<CsmOffsetableDeclaration> currUID = declarations.get(pos);
-            if (UIDUtilities.compareWithinFile(uid, currUID) <= 0) {
+            int i = UIDUtilities.compareWithinFile(uid, currUID);
+            if (i <= 0) {
+                if (i == 0){
+                    declarations.set(pos, uid);
+                    return;
+                }
                 declarations.add(pos, uid);
                 return;
             }

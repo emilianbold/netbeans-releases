@@ -227,7 +227,7 @@ public class JavacParser extends Parser {
                 if (ec == null) {
                     LOGGER.log(Level.FINE,
                         String.format("File: %s has no EditorCookie.Observable", //NOI18N
-                        FileUtil.getFileDisplayName (file)));
+                        FileUtil.getFileDisplayName (source.getFileObject())));
                 }
             } catch (DataObjectNotFoundException e) {
                 LOGGER.log(Level.FINE,"Invalid DataObject",e);
@@ -241,9 +241,9 @@ public class JavacParser extends Parser {
     private void init (final Snapshot snapshot, final Task task, final boolean singleSource) {
         if (!initialized) {
             final Source source = snapshot.getSource();
-            final FileObject file = source.getFileObject();
-            assert file != null;
-            this.file = file;
+            final FileObject sourceFile = source.getFileObject();
+            assert sourceFile != null;
+            this.file = sourceFile;
             ClasspathInfo _tmpInfo;
             if (task instanceof ClasspathInfoProvider &&
                     (_tmpInfo = ((ClasspathInfoProvider)task).getClasspathInfo()) != null) {
@@ -251,11 +251,11 @@ public class JavacParser extends Parser {
                 explicitCpInfo = true;
             }
             else {
-                cpInfo = ClasspathInfo.create(file);
+                cpInfo = ClasspathInfo.create(sourceFile);
             }
             final ClassPath cp = cpInfo.getClassPath(PathKind.SOURCE);
             assert cp != null;
-            this.root = cp.findOwnerRoot(file);
+            this.root = cp.findOwnerRoot(sourceFile);
             if (singleSource) {
                 cpInfo.addChangeListener(WeakListeners.change(cpInfoListener, cpInfo));
                 initialized = true;
@@ -493,11 +493,11 @@ public class JavacParser extends Parser {
                 }
                 currentPhase = Phase.PARSED;
                 long end = System.currentTimeMillis();
-                FileObject file = currentInfo.getFileObject();
+                FileObject currentFile = currentInfo.getFileObject();
                 TIME_LOGGER.log(Level.FINE, "Compilation Unit",
-                    new Object[] {file, unit});
+                    new Object[] {currentFile, unit});
 
-                logTime (file,currentPhase,(end-start));
+                logTime (currentFile,currentPhase,(end-start));
             }                
             if (lmListener != null && lmListener.lowMemory.getAndSet(false)) {
                 currentInfo.needsRestart = true;

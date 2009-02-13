@@ -468,15 +468,13 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
             desc.addFilter(ATTRIBUTES_FILTER,
                     NbBundle.getMessage(NavigatorContent.class, "LBL_ShowAttributes"),     //NOI18N
                     NbBundle.getMessage(NavigatorContent.class, "LBL_ShowAttributesTip"),     //NOI18N
-                    showAttributes,
-                    new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/xml/text/navigator/resources/a.png")), //NOI18N
+                    showAttributes, ImageUtilities.loadImageIcon("org/netbeans/modules/xml/text/navigator/resources/a.png", false), //NOI18N
                     null
                     );
             desc.addFilter(CONTENT_FILTER,
                     NbBundle.getMessage(NavigatorContent.class, "LBL_ShowContent"),     //NOI18N
                     NbBundle.getMessage(NavigatorContent.class, "LBL_ShowContentTip"),     //NOI18N
-                    showContent,
-                    new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/xml/text/navigator/resources/content.png")), //NOI18N
+                    showContent, ImageUtilities.loadImageIcon("org/netbeans/modules/xml/text/navigator/resources/content.png", false), //NOI18N
                     null
                     );
             

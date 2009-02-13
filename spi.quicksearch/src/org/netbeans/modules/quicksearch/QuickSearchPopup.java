@@ -52,6 +52,7 @@ import javax.swing.JLayeredPane;
 import javax.swing.JList;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.UIManager;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.modules.quicksearch.recent.RecentSearches;
@@ -100,6 +101,9 @@ public class QuickSearchPopup extends javax.swing.JPanel
         jList1.setModel(rModel);
         jList1.setCellRenderer(new SearchResultRender(this));
         rModel.addListDataListener(this);
+
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
+            jList1.setBackground(QuickSearchComboBar.getResultBackground());
 
         updateStatusPanel();
     }
@@ -374,7 +378,9 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
         Dimension cSize = comboBar.getSize();
         int width = getCategoryWidth() + getResultWidth() + 3;
         Point location = new Point(cSize.width - width - 1, comboBar.getBottomLineY() - 1);
-        location = SwingUtilities.convertPoint(comboBar, location, lPane);
+        if (SwingUtilities.getWindowAncestor(comboBar) != null) {
+            location = SwingUtilities.convertPoint(comboBar, location, lPane);
+        }
         result.setLocation(location);
 
         // hack to make jList.getpreferredSize work correctly

@@ -75,6 +75,8 @@ public abstract class ConfigurableProjectPanel extends JPanel implements Project
     public abstract void setLocalServerModel(MutableComboBoxModel localServers);
     public abstract Charset getEncoding();
     public abstract void setEncoding(Charset encoding);
+    public abstract void setState(boolean enabled);
+    public abstract boolean getState();
 
     public String getProjectFolder() {
         return projectFolderComponent.getProjectFolder();

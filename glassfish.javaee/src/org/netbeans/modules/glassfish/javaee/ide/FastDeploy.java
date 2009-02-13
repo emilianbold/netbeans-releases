@@ -171,9 +171,9 @@ public class FastDeploy extends IncrementalDeployment {
      * @return 
      */
     public boolean canFileDeploy(Target target, J2eeModule deployable) {
-        if (null == target){
-            return false;
-        }
+//        if (null == target){
+//            return false;
+//        }
         if (null == deployable){
             return false;
         }

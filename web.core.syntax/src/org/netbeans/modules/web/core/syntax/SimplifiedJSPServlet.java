@@ -355,6 +355,10 @@ public class SimplifiedJSPServlet {
                 List<TagInfo> tags = syntaxSupport.getAllTags(prefix, false); //do not require fresh data - #146762
 
                 for (TagInfo tag : tags) {
+                    // #146754 - prevent NPE:
+                    if (tag == null) {
+                        continue;
+                    }
                     VariableInfo vars[] = tag.getVariableInfo(fooArg);
 
                     if (vars != null){

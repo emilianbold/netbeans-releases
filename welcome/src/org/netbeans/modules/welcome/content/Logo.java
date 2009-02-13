@@ -73,7 +73,7 @@ public class Logo extends JPanel implements Constants, MouseListener {
     /** Creates a new instance of RecentProjects */
     public Logo( String img, String url ) {
         super( new BorderLayout() );
-        Icon image = new ImageIcon(ImageUtilities.loadImage(img, true));
+        Icon image = ImageUtilities.loadImageIcon(img, true);
         JLabel label = new JLabel( image );
         label.setBorder( BorderFactory.createEmptyBorder() );
         label.setOpaque( false );

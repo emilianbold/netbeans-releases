@@ -79,6 +79,7 @@ import org.netbeans.modules.uml.drawingarea.actions.IterateSelectAction;
 import org.netbeans.modules.uml.drawingarea.RelationshipDiscovery;
 import org.netbeans.modules.uml.drawingarea.actions.DiagramPopupMenuProvider;
 import org.netbeans.modules.uml.drawingarea.actions.EdgeLabelIteratorAction;
+import org.netbeans.modules.uml.drawingarea.actions.MoveAction;
 import org.netbeans.modules.uml.drawingarea.actions.MoveControlPointAction;
 import org.netbeans.modules.uml.drawingarea.actions.NavigateLinkAction;
 import org.netbeans.modules.uml.drawingarea.palette.RelationshipFactory;
@@ -221,8 +222,6 @@ public class DefaultDiagramEngine extends  DiagramEngine {
     }
 
     public void setActions(Widget widget,IPresentationElement node) {
-        DesignerScene scene=(DesignerScene) widget.getScene();
-        
         MoveStrategy moveStrategy = DEFAULT_MOVE_STRATEGY;
         MoveProvider moveProvider = DEFAULT_MOVE_PROVIDER;
         WidgetAction selectAction = sceneSelectAction;
@@ -255,7 +254,7 @@ public class DefaultDiagramEngine extends  DiagramEngine {
         selectTool.addAction(selectAction);
         selectTool.addAction(POPUP_ACTION);
         selectTool.addAction(mouseHoverAction);
-        selectTool.addAction(ActionFactory.createMoveAction(moveStrategy, moveProvider));        
+        selectTool.addAction(new MoveAction(moveStrategy, moveProvider));
         if (widget instanceof CompositeNodeWidget)
         {
             selectTool.addAction(new NodeLabelIteratorAction());
