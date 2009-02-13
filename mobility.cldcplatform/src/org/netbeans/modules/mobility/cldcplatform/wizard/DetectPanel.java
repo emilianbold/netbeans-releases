@@ -562,7 +562,7 @@ public class DetectPanel extends javax.swing.JPanel {
         return list.toArray(new J2MEPlatform[list.size()]);
     }
     
-    public boolean isValid() {
+    public boolean isStateValid() {
         final Object descs[] = platformsListModel.toArray();
         if (checkForError(findSelectedPlatformDescriptor())) return false;
         boolean selected = false;

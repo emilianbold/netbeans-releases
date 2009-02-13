@@ -111,7 +111,7 @@ public class AddPushRegistryPanel extends javax.swing.JPanel implements ActionLi
         return true;
     }
     
-    public boolean isValid() {
+    public boolean isStateValid() {
         if (getClazz().length() == 0  ||  !isValidClassName(getClazz())) {
             errorPanel.setErrorBundleMessage("ERR_AddPush_InvClass");//NOI18N
             return false;
@@ -210,7 +210,7 @@ public class AddPushRegistryPanel extends javax.swing.JPanel implements ActionLi
     
     public void actionPerformed(final java.awt.event.ActionEvent e) {
         if (dd != null)
-            dd.setValid(isValid());
+            dd.setValid(isStateValid());
     }
     
     public void changedUpdate(final javax.swing.event.DocumentEvent e) {

@@ -84,7 +84,7 @@ public class CloneConfigurationPanel extends JPanel implements DocumentListener 
         changedUpdate(null);
     }
     
-    public boolean isValid() {
+    public boolean isStateValid() {
         final String name = jTextFieldName.getText();
         if (J2MEProjectUtils.ILEGAL_CONFIGURATION_NAMES.contains(name)) {
             errorPanel.setErrorBundleMessage("ERR_AddCfg_ReservedWord"); //NOI18N
@@ -105,7 +105,7 @@ public class CloneConfigurationPanel extends JPanel implements DocumentListener 
     public void changedUpdate(@SuppressWarnings("unused")
 	final DocumentEvent e) {
         if (dialogDescriptor != null) {
-            dialogDescriptor.setValid(isValid());
+            dialogDescriptor.setValid(isStateValid());
         }
     }
     
