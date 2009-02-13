@@ -166,7 +166,10 @@ public class ElementJavadoc {
                             ret[0] = new ElementJavadoc(controller, linkDoc.resolve(controller), null);
                         } else {
                             int idx = link.indexOf('#'); //NOI18N
-                            URI uri = URI.create(idx < 0 ? link : link.substring(0, idx));
+                            URI uri = null;
+                            try {
+                                uri = URI.create(idx < 0 ? link : link.substring(0, idx));
+                            } catch (IllegalArgumentException iae) {}
                             if (uri != null) {
                                 if (!uri.isAbsolute())
                                     uri = uri.normalize();
