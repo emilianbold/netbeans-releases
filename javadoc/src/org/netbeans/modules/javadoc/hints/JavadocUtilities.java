@@ -587,7 +587,7 @@ public class JavadocUtilities {
                         Line l = lc.getLineSet().getCurrent(line);
                         
                         if (l != null) {
-                            l.show(Line.SHOW_GOTO, column);
+                            l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS, column);
                             return true;
                         }
                     }
