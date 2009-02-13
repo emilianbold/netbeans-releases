@@ -597,7 +597,7 @@ public final class ModuleManager {
     }
 
     private void subCreate(Module m) throws DuplicateException {
-        Util.err.fine("created: " + m);
+        Util.err.log(Level.FINE, "created: {0}", m);
         Module old = get(m.getCodeNameBase());
         if (old != null) {
             throw new DuplicateException(old, m);
@@ -736,7 +736,7 @@ public final class ModuleManager {
      */
     public void enable(Set<Module> modules) throws IllegalArgumentException, InvalidException {
         assertWritable();
-        Util.err.fine("enable: " + modules);
+        Util.err.log(Level.FINE, "enable: {0}", modules);
         /* Consider eager modules:
         if (modules.isEmpty()) {
             return;
