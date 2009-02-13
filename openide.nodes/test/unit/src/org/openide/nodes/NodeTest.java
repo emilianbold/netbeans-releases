@@ -43,17 +43,15 @@ package org.openide.nodes;
 
 import java.awt.event.ActionEvent;
 import java.beans.*;
-import java.util.*;
+import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-
 import junit.textui.TestRunner;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-
-import org.openide.nodes.*;
+import org.openide.util.Exceptions;
 import org.openide.util.actions.SystemAction;
 
 /** Checking some of the behaviour of Node (and AbstractNode).
@@ -77,10 +75,12 @@ public class NodeTest extends NbTestCase {
         };
         
         AbstractNode an = new AbstractNode (Children.LEAF) {
+            @Override
             public SystemAction[] getActions () {
                 return arr1;
             }
             
+            @Override
             public SystemAction[] getContextActions () {
                 return arr2;
             }
@@ -109,7 +109,56 @@ public class NodeTest extends NbTestCase {
         
         assertEquals("Log is empty", "", log.toString());
     }
-    
+
+    public void testCanCreateNodeWithoutChildrenMutex() {
+        final CountDownLatch l1 = new CountDownLatch(1);
+        final CountDownLatch l2 = new CountDownLatch(1);
+
+        Thread t1 = new Thread() {
+
+            @Override
+            public void run() {
+                if (!Children.MUTEX.isWriteAccess()){
+                    Children.MUTEX.writeAccess(this);
+                    return;
+                }
+                try {
+                    l2.countDown();
+                    l1.await();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        };
+        Thread t2 = new Thread() {
+
+            @Override
+            public void run() {
+                try {
+                    l2.await();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                Node n = new AbstractNode(new Children.Array());
+                l1.countDown();
+            }
+        };
+
+        t1.start();
+        t2.start();
+        for (int i = 0; i < 1000; i++) {
+            try {
+                t1.join(10);
+                t2.join(10);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        if (t1.isAlive() || t2.isAlive()) {
+            fail("It seems Node creation requires Children.MUTEX");
+        }
+    }
+
     public void testPreferredAction() throws Exception {
         final SystemAction a1 = SystemAction.get(PropertiesAction.class);
         final Action a2 = new AbstractAction() {
@@ -126,12 +175,14 @@ public class NodeTest extends NbTestCase {
             }
         };
         Node n2 = new AbstractNode(Children.LEAF) {
+            @Override
             public SystemAction getDefaultAction() {
                 return a1;
             }
         };
         // New code:
         Node n4 = new AbstractNode(Children.LEAF) {
+            @Override
             public Action getPreferredAction() {
                 return a1;
             }
@@ -142,11 +193,13 @@ public class NodeTest extends NbTestCase {
                 setDefaultAction (a1);
             }
             
+            @Override
             public SystemAction getDefaultAction () {
                 return super.getDefaultAction ();
             }
         };
         Node n6 = new AbstractNode(Children.LEAF) {
+            @Override
             public Action getPreferredAction() {
                 return a2;
             }
@@ -156,6 +209,7 @@ public class NodeTest extends NbTestCase {
             {
                 setDefaultAction(a1);
             }
+            @Override
             public SystemAction getDefaultAction() {
                 return a3;
             }
@@ -178,6 +232,7 @@ public class NodeTest extends NbTestCase {
         class PCL extends NodeAdapter {
             public int cnt;
             
+            @Override
             public void propertyChange (PropertyChangeEvent ev) {
                 if (Node.PROP_SHORT_DESCRIPTION.equals (ev.getPropertyName ())) {
                     cnt++;
