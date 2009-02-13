@@ -446,6 +446,11 @@ public class ProjectActionSupport {
                     return false;
                 }
             }
+            // Check existence of executable
+            if (!IpeUtils.isPathAbsolute(executable) && (executable.startsWith(".") || executable.indexOf('/') > 0)) { // NOI18N
+                //executable is relative to project root - convert to absolute and check. Should be safe (?).
+                executable = IpeUtils.toAbsolutePath(pae.getConfiguration().getBaseDir(), executable);
+            }
             if (IpeUtils.isPathAbsolute(executable)) {
                 Configuration conf = pae.getConfiguration();
                 boolean ok = true;
