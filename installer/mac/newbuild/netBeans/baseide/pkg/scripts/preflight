@@ -26,9 +26,15 @@ then
 fi
 . "$basename"/env.sh
 
-#if [ -n "$NETBEANS_INSTALL_DIR" ] && [ -d "$NETBEANS_INSTALL_DIR" ]  ; then
-#    rm -rf "$NETBEANS_INSTALL_DIR"
-#fi
+if [ -n "$NETBEANS_INSTALL_DIR" ] && [ -d "$NETBEANS_INSTALL_DIR" ]  ; then
+    #read build_info to get current build number
+    cd "$NETBEANS_INSTALL_DIR"/Contents/Resources/NetBeans/"$NB_CLUSTER_DIR";
+    current_buildnumber=`cat build_info | sed '/Number/!d;s/Number:[ \t]*//'`
+    if [ "$current_buildnumber" != "$NETBEANS_BUILDNUMBER" ] ; then
+        mv -f "$NETBEANS_INSTALL_DIR" "$NETBEANS_INSTALL_DIR".back
+    fi
+fi
+
 
 if [ -d "/Library/Receipts/baseide.pkg" ] ; then
     rm -rf "/Library/Receipts/baseide.pkg"
