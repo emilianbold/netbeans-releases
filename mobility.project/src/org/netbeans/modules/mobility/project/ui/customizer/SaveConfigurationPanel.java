@@ -82,7 +82,7 @@ public class SaveConfigurationPanel extends JPanel implements DocumentListener {
         return jTextFieldName == null ? null : jTextFieldName.getText();
     }
     
-    final public boolean isValid() {
+    final public boolean isStateValid() {
         final String name = jTextFieldName.getText();
         if (J2MEProjectUtils.ILEGAL_CONFIGURATION_NAMES.contains(name)) {
             errorPanel.setErrorBundleMessage("ERR_SaveCfg_ReservedWord"); //NOI18N
@@ -103,7 +103,7 @@ public class SaveConfigurationPanel extends JPanel implements DocumentListener {
     final public void changedUpdate(@SuppressWarnings("unused")
 	final DocumentEvent e) {
         if (saveBtn != null) {
-            saveBtn.setEnabled(isValid());
+            saveBtn.setEnabled(isStateValid());
         }
     }
     
