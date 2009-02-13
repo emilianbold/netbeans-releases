@@ -89,7 +89,7 @@ public class CloneConfigurationPanel2 extends JPanel implements DocumentListener
         changedUpdate(null);
     }
     
-    public boolean isValid() {
+    public boolean isStateValid() {
         for (String name : namesToClone) {
             name = jTextFieldName.getText() + name + jTextField1.getText();
             if (J2MEProjectUtils.ILEGAL_CONFIGURATION_NAMES.contains(name)) {
@@ -112,7 +112,7 @@ public class CloneConfigurationPanel2 extends JPanel implements DocumentListener
     public void changedUpdate(@SuppressWarnings("unused")
 	final DocumentEvent e) {
         if (dialogDescriptor != null) {
-            dialogDescriptor.setValid(isValid());
+            dialogDescriptor.setValid(isStateValid());
         }
     }
     

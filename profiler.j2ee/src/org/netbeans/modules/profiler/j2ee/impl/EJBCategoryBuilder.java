@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,35 +34,27 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.profiler.selector.java;
+package org.netbeans.modules.profiler.j2ee.impl;
 
-import java.util.Collections;
-import java.util.List;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.profiler.projectsupport.AbstractProjectLookupProvider;
-import org.netbeans.modules.profiler.selector.java.impl.PackageSelectionTreeViewBuilder;
-import org.netbeans.spi.project.LookupProvider;
+import org.netbeans.modules.profiler.categories.CategoryBuilder;
+import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-@LookupProvider.Registration(projectType={
-    "org-netbeans-modules-java-j2seproject",
-    "org-netbeans-modules-j2ee-earproject",
-    "org-netbeans-modules-j2ee-ejbjarproject",
-    "org-netbeans-modules-web-project",
-     "org-netbeans-modules-apisupport-project",
-    "org-netbeans-modules-apisupport-project-suite"
-}, projectTypes=@LookupProvider.Registration.ProjectType(id="org-netbeans-modules-ant-freeform", position=1200))
-public class LookupProviderImpl extends AbstractProjectLookupProvider {
+@ProjectServiceProvider(service = CategoryBuilder.class, projectTypes = {
+    @ProjectType(id = "org-netbeans-modules-j2ee-earproject"),
+    @ProjectType(id = "org-netbeans-modules-j2ee-ejbjarproject")
+})
+public class EJBCategoryBuilder extends CategoryBuilder {
 
-    @Override
-    protected List getAdditionalLookups(Project project) {
-        return Collections.singletonList(new PackageSelectionTreeViewBuilder(project));
+    public EJBCategoryBuilder(Project proj) {
+        super(proj, "org-netbeans-modules-j2ee-ejbjarproject");
     }
-
 }
