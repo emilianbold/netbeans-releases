@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.sun.ide.runtime.nodes;
 
 import javax.swing.Action;
 import org.netbeans.modules.j2ee.sun.bridge.apis.AppserverMgmtActiveNode;
+import org.netbeans.modules.j2ee.sun.bridge.apis.AppserverMgmtControllerBase;
 import org.netbeans.modules.j2ee.sun.ide.controllers.DeployedItemsController;
 import org.netbeans.modules.j2ee.sun.ide.controllers.EnablerController;
 import org.netbeans.modules.j2ee.sun.bridge.apis.Controller;
@@ -166,5 +167,9 @@ public abstract class AppserverMgmtApplicationsNode
     public void setEnabled(boolean enabled) {
         ((EnablerController)getController()).setEnabled(enabled);
     }
-    
+
+    @Override
+    public boolean isServerLocal() {
+        return ((AppserverMgmtControllerBase)getController()).isDeployMgrLocal();
+    }
 }
