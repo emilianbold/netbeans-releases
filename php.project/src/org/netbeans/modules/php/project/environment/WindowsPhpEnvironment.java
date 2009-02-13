@@ -111,6 +111,11 @@ final class WindowsPhpEnvironment extends PhpEnvironment {
         return getAllPhpInterpreters(PHP);
     }
 
+    @Override
+    public List<String> getAllPhpUnits() {
+        return findFileOnUsersPath("phpunit.bat"); // NOI18N
+    }
+
     private static boolean isFloppy(File root) {
         String absolutePath = root.getAbsolutePath();
         LOGGER.fine("Testing floppy on " + absolutePath);
