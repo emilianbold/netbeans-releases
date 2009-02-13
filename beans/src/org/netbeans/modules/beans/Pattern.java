@@ -51,7 +51,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
-import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.ui.ElementIcons;
 import org.openide.util.Utilities;
 
 
@@ -81,8 +81,8 @@ public abstract class Pattern {
     protected static final Image EVENT_SET_UNICAST = Utilities.loadImage(ICON_BASE + "eventSetUnicast" + GIF_EXTENSION); // NOI18N
     protected static final Image EVENT_SET_MULTICAST = Utilities.loadImage(ICON_BASE + "eventSetMulticast" + GIF_EXTENSION); // NOI18N
    
-    protected static final Image CLASS = Utilities.icon2Image(UiUtils.getElementIcon(ElementKind.CLASS, Collections.<Modifier>emptySet())); // NOI18N
-    protected static final Image INTERFACE = Utilities.icon2Image(UiUtils.getElementIcon(ElementKind.INTERFACE, Collections.<Modifier>emptySet())); // NOI18N
+    protected static final Image CLASS = Utilities.icon2Image(ElementIcons.getElementIcon(ElementKind.CLASS, Collections.<Modifier>emptySet())); // NOI18N
+    protected static final Image INTERFACE = Utilities.icon2Image(ElementIcons.getElementIcon(ElementKind.INTERFACE, Collections.<Modifier>emptySet())); // NOI18N
    
     protected final TypeMirrorHandle<TypeMirror> type;
     protected final String name;
