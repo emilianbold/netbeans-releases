@@ -50,6 +50,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -130,7 +131,20 @@ public class HgUtils {
         c.setTime(date);
         c.add(Calendar.DATE, days);
         return c.getTime();
-    }   
+    }
+
+    /**
+     * Creates annotation format string.
+     * @param format format specified by the user, e.g. [{status}]
+     * @return modified format, e.g. [{0}]
+     */
+    public static String createAnnotationFormat(final String format) {
+        String string = format;
+        string = Utils.skipUnsupportedVariables(string, new String[] {"{status}", "{folder}"});     // NOI18N
+        string = string.replaceAll("\\{status\\}", "\\{0\\}");                                      // NOI18N
+        string = string.replaceAll("\\{folder\\}", "\\{1\\}");                                      // NOI18N
+        return string;
+    }
 
     /**
      * isSolaris - check you are running onthe Solaris OS
@@ -1187,5 +1201,22 @@ itor tabs #66700).
         TY9_LOG.log(Level.FINEST, msg);
     }
 
+    /**
+     * Validates annotation format text
+     * @param format format to be validatet
+     * @return <code>true</code> if the format is correct, <code>false</code> otherwise.
+     */
+    public static boolean isAnnotationFormatValid(String format) {
+        boolean retval = true;
+        if (format != null) {
+            try {
+                new MessageFormat(format);
+            } catch (IllegalArgumentException ex) {
+                Mercurial.LOG.log(Level.FINER, "Bad user input - annotation format", ex);
+                retval = false;
+            }
+        }
+        return retval;
+    }
 
 }
