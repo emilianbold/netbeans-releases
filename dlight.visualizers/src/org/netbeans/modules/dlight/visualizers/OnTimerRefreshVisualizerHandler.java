@@ -89,6 +89,7 @@ class OnTimerRefreshVisualizerHandler implements SessionStateListener, DLightSes
         if (timerIsActive) {
             TimerTaskExecutionService.getInstance().unregisterTimerTask(timerTask);
             timerIsActive = false;
+            task.timerStopped();
         }
     }
 
