@@ -71,9 +71,11 @@ public final class PerfanDataStorage extends DataStorage {
         return null;
     }
 
-    public Object[] getTopFunctions(String mspec, String msort, int limit) {
-        System.out.println("Actual metrics: " + erprint.setMetrics("name"));
-        return null;
+    public String[] getTopFunctions(String mspec, String msort, int limit) {
+        System.out.println("Actual metrics: " + erprint.setMetrics(mspec));
+        System.out.println("Actual sort by: " + erprint.setSortBy(msort));
+
+        return erprint.getHotFunctions(limit);
     }
 
     @Override
