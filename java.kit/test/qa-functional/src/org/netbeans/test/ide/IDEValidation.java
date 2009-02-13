@@ -389,7 +389,7 @@ public class IDEValidation extends JellyTestCase {
      */
     public void testDb() {
         // "Databases"
-        String databasesLabel = Bundle.getString("org.netbeans.modules.db.resources.Bundle", "NDN_Databases");
+        String databasesLabel = Bundle.getString("org.netbeans.modules.db.resources.Bundle", "RootNode_DISPLAYNAME");
         Node databasesNode = new Node(RuntimeTabOperator.invoke().getRootNode(), databasesLabel);
         // "Please wait..."
         String waitNodeLabel = Bundle.getString("org.openide.nodes.Bundle", "LBL_WAIT");
@@ -404,7 +404,7 @@ public class IDEValidation extends JellyTestCase {
             log("Timeout expired: "+e.getMessage());
         }
         // "Drivers"
-        String driversLabel = Bundle.getString("org.netbeans.modules.db.resources.Bundle", "NDN_Drivers");
+        String driversLabel = Bundle.getString("org.netbeans.modules.db.resources.Bundle", "DriverListNode_DISPLAYNAME");
         Node driversNode = new Node(RuntimeTabOperator.invoke().getRootNode(), databasesLabel+"|"+driversLabel);
         // "Add Driver ..."
         String addDriverItem = Bundle.getString("org.netbeans.modules.db.resources.Bundle", "AddNewDriver");

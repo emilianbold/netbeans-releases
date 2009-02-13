@@ -191,8 +191,7 @@ final public class FindPanel extends javax.swing.JPanel implements SearchRunnabl
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private static final class Badger extends FileFilter implements FileChooserBuilder.BadgeProvider {
-        final Icon badge = new ImageIcon (ImageUtilities.loadImage(
-                "org/netbeans/modules/java/platform/resources/platformBadge.gif"));
+        final Icon badge = ImageUtilities.loadImageIcon("org/netbeans/modules/java/platform/resources/platformBadge.gif", false);
 
         public boolean accept(File f) {
             return f.isDirectory();

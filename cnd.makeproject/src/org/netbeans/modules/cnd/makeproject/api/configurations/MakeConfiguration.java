@@ -154,6 +154,7 @@ public class MakeConfiguration extends Configuration {
 
     public void setMakefileConfiguration(MakefileConfiguration makefileConfiguration) {
         this.makefileConfiguration = makefileConfiguration;
+        this.makefileConfiguration.setMakeConfiguration(this);
     }
 
     public MakefileConfiguration getMakefileConfiguration() {
@@ -335,6 +336,7 @@ public class MakeConfiguration extends Configuration {
 
     public void setLinkerConfiguration(LinkerConfiguration linkerConfiguration) {
         this.linkerConfiguration = linkerConfiguration;
+        this.linkerConfiguration.setMakeConfiguration(this);
     }
 
     public LinkerConfiguration getLinkerConfiguration() {
@@ -343,6 +345,7 @@ public class MakeConfiguration extends Configuration {
 
     public void setArchiverConfiguration(ArchiverConfiguration archiverConfiguration) {
         this.archiverConfiguration = archiverConfiguration;
+        this.archiverConfiguration.setMakeConfiguration(this);
     }
 
     public ArchiverConfiguration getArchiverConfiguration() {
@@ -351,6 +354,7 @@ public class MakeConfiguration extends Configuration {
 
     public void setPackagingConfiguration(PackagingConfiguration packagingConfiguration) {
         this.packagingConfiguration = packagingConfiguration;
+        this.packagingConfiguration.setMakeConfiguration(this);
     }
 
     public PackagingConfiguration getPackagingConfiguration() {

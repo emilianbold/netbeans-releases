@@ -172,7 +172,7 @@ public class DependencyGraphTopComponent extends TopComponent {
 
         jPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
-        btnBigger.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/maven/graph/zoomin.gif")));
+        btnBigger.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/graph/zoomin.gif", false));
         btnBigger.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnBiggerActionPerformed(evt);
@@ -180,7 +180,7 @@ public class DependencyGraphTopComponent extends TopComponent {
         });
         jPanel1.add(btnBigger);
 
-        btnSmaller.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/maven/graph/zoomout.gif")));
+        btnSmaller.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/graph/zoomout.gif", false));
         btnSmaller.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnSmallerActionPerformed(evt);

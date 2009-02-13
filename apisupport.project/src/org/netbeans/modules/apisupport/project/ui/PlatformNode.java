@@ -154,11 +154,11 @@ final class PlatformNode extends AbstractNode implements ChangeListener {
     }
     
     public void stateChanged(ChangeEvent e) {
-        this.fireNameChange(null, null);
-        this.fireDisplayNameChange(null, null);
         //The caller holds ProjectManager.mutex() read lock
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
+                PlatformNode.this.fireNameChange(null, null);
+                PlatformNode.this.fireDisplayNameChange(null, null);
                 ((PlatformContentChildren) getChildren()).addNotify();
             }
         });
@@ -206,7 +206,7 @@ final class PlatformNode extends AbstractNode implements ChangeListener {
                     Icon icon;
                     if ("jar".equals(roots[i].getURL().getProtocol())) { //NOI18N
                         file = FileUtil.getArchiveFile(roots[i]);
-                        icon = new ImageIcon(ImageUtilities.loadImage(ARCHIVE_ICON));
+                        icon = ImageUtilities.loadImageIcon(ARCHIVE_ICON, false);
                     } else {
                         file = roots[i];
                         icon = null;

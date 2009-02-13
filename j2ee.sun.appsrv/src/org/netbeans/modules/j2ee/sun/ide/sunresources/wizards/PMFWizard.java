@@ -271,7 +271,7 @@ public final class PMFWizard implements WizardDescriptor.InstantiatingIterator, 
         }else if (index == 2) {
             ((CommonPropertyPanel) panels[3]).setInitialFocus();
         }else if (index == 3) {
-            ((CPVendorPanel) panels[4]).setInitialFocus();
+            ((CPVendor) panels[4]).setInitialFocus();
         }else if (index == 4){
             ((CPPropertiesPanelPanel) panels[5]).refreshFields();
         }else if (index == 5){
@@ -430,7 +430,7 @@ public final class PMFWizard implements WizardDescriptor.InstantiatingIterator, 
                     panels[1],
                     panels[2],
                     panels[3],
-                    new CPVendorPanel(this.cphelper, this.cpWizardInfo),
+                    new CPVendor(this.cphelper, this.cpWizardInfo),
                     new CPPropertiesPanelPanel(this.cphelper, this.cpWizardInfo),
                     new CommonAttributePanel(this.cphelper, this.cpWizardInfo,  new String[] {"pool-setting", "pool-setting-2", "pool-setting-3"}), //NOI18N
                 };

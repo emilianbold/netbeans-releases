@@ -76,7 +76,7 @@ abstract class BasicAction extends AbstractAction {
     
     protected final void setSmallIcon( String iconResource ) {
         if ( iconResource != null ) {
-            putValue( SMALL_ICON, new ImageIcon( ImageUtilities.loadImage( iconResource ) ) );
+            putValue( SMALL_ICON, ImageUtilities.loadImageIcon(iconResource, false));
         }
     }
         

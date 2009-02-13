@@ -183,7 +183,7 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
     }
 
     private CsmFile getStartCsmFile() {
-        CsmFile startFile = getCsmFile(getStartReferenceObject());
+        CsmFile startFile = CsmRefactoringUtils.getCsmFile(getStartReferenceObject());
         if (startFile == null) {
             if (getEditorContext() != null) {
                 startFile = getEditorContext().getFile();
@@ -217,6 +217,7 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
         FileObject fo = CsmUtilities.getFileObject(csmFile);
         Collection<CsmReference> refs = new LinkedHashSet<CsmReference>();
         for (CsmObject obj : refObjects) {
+            // do not interrupt refactoring
             Collection<CsmReference> curRefs = CsmReferenceRepository.getDefault().getReferences(obj, csmFile, CsmReferenceKind.ALL, null);
             refs.addAll(curRefs);
         }
@@ -232,7 +233,7 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
         }
     }
     
-    protected final void processRefactoredReferences(List<CsmReference> sortedRefs, FileObject fo, CloneableEditorSupport ces, ModificationResult mr) {
+    private void processRefactoredReferences(List<CsmReference> sortedRefs, FileObject fo, CloneableEditorSupport ces, ModificationResult mr) {
         String newName = refactoring.getNewName();
         for (CsmReference ref : sortedRefs) {
             String oldName = ref.getText().toString();

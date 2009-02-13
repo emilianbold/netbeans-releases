@@ -146,8 +146,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             new javax.swing.border.EtchedBorder(), "anchorPanel")); // NOI18N
 
         nwButton = new javax.swing.JToggleButton();
-        nwButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/nw.gif"))); // NOI18N
+        nwButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/nw.gif", false)); // NOI18N
         nwButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         nwButton.setActionCommand("NW"); // NOI18N
         nwButton.addActionListener(actionLsnr);
@@ -156,8 +155,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         anchorPanel.add(nwButton, gridBagConstraints2);
 
         nButton = new javax.swing.JToggleButton();
-        nButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/n.gif"))); // NOI18N
+        nButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/n.gif", false)); // NOI18N
         nButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         nButton.setActionCommand("N"); // NOI18N
         nButton.addActionListener(actionLsnr);
@@ -166,8 +164,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         anchorPanel.add(nButton, gridBagConstraints2);
 
         neButton = new javax.swing.JToggleButton();
-        neButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/ne.gif"))); // NOI18N
+        neButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/ne.gif", false)); // NOI18N
         neButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         neButton.setActionCommand("NE"); // NOI18N
         neButton.addActionListener(actionLsnr);
@@ -177,8 +174,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         anchorPanel.add(neButton, gridBagConstraints2);
 
         wButton = new javax.swing.JToggleButton();
-        wButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/w.gif"))); // NOI18N
+        wButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/w.gif", false)); // NOI18N
         wButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         wButton.setActionCommand("W"); // NOI18N
         wButton.addActionListener(actionLsnr);
@@ -187,8 +183,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         anchorPanel.add(wButton, gridBagConstraints2);
 
         cButton = new javax.swing.JToggleButton();
-        cButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/c.gif"))); // NOI18N
+        cButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/c.gif", false)); // NOI18N
         cButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         cButton.setActionCommand("C"); // NOI18N
         cButton.addActionListener(actionLsnr);
@@ -197,8 +192,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         anchorPanel.add(cButton, gridBagConstraints2);
 
         eButton = new javax.swing.JToggleButton();
-        eButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/e.gif"))); // NOI18N
+        eButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/e.gif", false)); // NOI18N
         eButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         eButton.setActionCommand("E"); // NOI18N
         eButton.addActionListener(actionLsnr);
@@ -208,8 +202,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         anchorPanel.add(eButton, gridBagConstraints2);
 
         swButton = new javax.swing.JToggleButton();
-        swButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/sw.gif"))); // NOI18N
+        swButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/sw.gif", false)); // NOI18N
         swButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         swButton.setActionCommand("SW"); // NOI18N
         swButton.addActionListener(actionLsnr);
@@ -219,8 +212,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         anchorPanel.add(swButton, gridBagConstraints2);
 
         sButton = new javax.swing.JToggleButton();
-        sButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/s.gif"))); // NOI18N
+        sButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/s.gif", false)); // NOI18N
         sButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         sButton.setActionCommand("S"); // NOI18N
         sButton.addActionListener(actionLsnr);
@@ -230,8 +222,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         anchorPanel.add(sButton, gridBagConstraints2);
 
         seButton = new javax.swing.JToggleButton();
-        seButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/se.gif"))); // NOI18N
+        seButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/se.gif", false)); // NOI18N
         seButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         seButton.setActionCommand("SE"); // NOI18N
         seButton.addActionListener(actionLsnr);
@@ -254,8 +245,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             new javax.swing.border.EtchedBorder(), "fillPanel")); // NOI18N
 
         horizontalFillButton = new javax.swing.JToggleButton();
-        horizontalFillButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/horizontal.gif"))); // NOI18N
+        horizontalFillButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/horizontal.gif", false)); // NOI18N
         horizontalFillButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         horizontalFillButton.addActionListener(actionLsnr);
 
@@ -264,8 +254,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         fillPanel.add(horizontalFillButton, gridBagConstraints3);
 
         verticalFillButton = new javax.swing.JToggleButton();
-        verticalFillButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/vertical.gif"))); // NOI18N
+        verticalFillButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/vertical.gif", false)); // NOI18N
         verticalFillButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         verticalFillButton.addActionListener(actionLsnr);
 
@@ -289,16 +278,14 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             new javax.swing.border.EtchedBorder(), "iPaddingPanel")); // NOI18N
 
         jLabel1 = new javax.swing.JLabel();
-        jLabel1.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/horizontalGr.gif"))); // NOI18N
+        jLabel1.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/horizontalGr.gif", false)); // NOI18N
 
         gridBagConstraints4 = new java.awt.GridBagConstraints();
         gridBagConstraints4.insets = new java.awt.Insets(0, 0, 0, 5);
         ipadPanel.add(jLabel1, gridBagConstraints4);
 
         ipadHMButton = new javax.swing.JButton();
-        ipadHMButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/minus.gif"))); // NOI18N
+        ipadHMButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/minus.gif", false)); // NOI18N
         ipadHMButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         ipadHMButton.setActionCommand("HM"); // NOI18N
         ipadHMButton.addActionListener(actionLsnr);
@@ -307,8 +294,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         ipadPanel.add(ipadHMButton, gridBagConstraints4);
 
         ipadHPButton = new javax.swing.JButton();
-        ipadHPButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/plus.gif"))); // NOI18N
+        ipadHPButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/plus.gif", false)); // NOI18N
         ipadHPButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         ipadHPButton.setActionCommand("HP"); // NOI18N
         ipadHPButton.addActionListener(actionLsnr);
@@ -318,16 +304,14 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         ipadPanel.add(ipadHPButton, gridBagConstraints4);
 
         jLabel2 = new javax.swing.JLabel();
-        jLabel2.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/verticalGr.gif"))); // NOI18N
+        jLabel2.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/verticalGr.gif", false)); // NOI18N
 
         gridBagConstraints4 = new java.awt.GridBagConstraints();
         gridBagConstraints4.insets = new java.awt.Insets(0, 0, 4, 5);
         ipadPanel.add(jLabel2, gridBagConstraints4);
 
         ipadVMButton = new javax.swing.JButton();
-        ipadVMButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/minus.gif"))); // NOI18N
+        ipadVMButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/minus.gif", false)); // NOI18N
         ipadVMButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         ipadVMButton.setActionCommand("VM"); // NOI18N
         ipadVMButton.addActionListener(actionLsnr);
@@ -337,8 +321,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         ipadPanel.add(ipadVMButton, gridBagConstraints4);
 
         ipadVPButton = new javax.swing.JButton();
-        ipadVPButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/plus.gif"))); // NOI18N
+        ipadVPButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/plus.gif", false)); // NOI18N
         ipadVPButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         ipadVPButton.setActionCommand("VP"); // NOI18N
         ipadVPButton.addActionListener(actionLsnr);
@@ -363,8 +346,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             new javax.swing.border.EtchedBorder(), "insetsPanel")); // NOI18N
 
         topMButton = new javax.swing.JButton();
-        topMButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/minus.gif"))); // NOI18N
+        topMButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/minus.gif", false)); // NOI18N
         topMButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         topMButton.setActionCommand("tM"); // NOI18N
         topMButton.addActionListener(actionLsnr);
@@ -377,8 +359,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         insetsPanel.add(topMButton, gridBagConstraints5);
 
         topPButton = new javax.swing.JButton();
-        topPButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/plus.gif"))); // NOI18N
+        topPButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/plus.gif", false)); // NOI18N
         topPButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         topPButton.setActionCommand("tP"); // NOI18N
         topPButton.addActionListener(actionLsnr);
@@ -391,8 +372,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         insetsPanel.add(topPButton, gridBagConstraints5);
 
         leftPButton = new javax.swing.JButton();
-        leftPButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/plus.gif"))); // NOI18N
+        leftPButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/plus.gif", false)); // NOI18N
         leftPButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         leftPButton.setActionCommand("lP"); // NOI18N
         leftPButton.addActionListener(actionLsnr);
@@ -404,8 +384,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         insetsPanel.add(leftPButton, gridBagConstraints5);
 
         leftMButton = new javax.swing.JButton();
-        leftMButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/minus.gif"))); // NOI18N
+        leftMButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/minus.gif", false)); // NOI18N
         leftMButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         leftMButton.setActionCommand("lM"); // NOI18N
         leftMButton.addActionListener(actionLsnr);
@@ -417,8 +396,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         insetsPanel.add(leftMButton, gridBagConstraints5);
 
         rightPButton = new javax.swing.JButton();
-        rightPButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/plus.gif"))); // NOI18N
+        rightPButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/plus.gif", false)); // NOI18N
         rightPButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         rightPButton.setActionCommand("rP"); // NOI18N
         rightPButton.addActionListener(actionLsnr);
@@ -430,8 +408,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         insetsPanel.add(rightPButton, gridBagConstraints5);
 
         rightMButton = new javax.swing.JButton();
-        rightMButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/minus.gif"))); // NOI18N
+        rightMButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/minus.gif", false)); // NOI18N
         rightMButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         rightMButton.setActionCommand("rM"); // NOI18N
         rightMButton.addActionListener(actionLsnr);
@@ -443,8 +420,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         insetsPanel.add(rightMButton, gridBagConstraints5);
 
         bottomMButton = new javax.swing.JButton();
-        bottomMButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/minus.gif"))); // NOI18N
+        bottomMButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/minus.gif", false)); // NOI18N
         bottomMButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         bottomMButton.setActionCommand("bM"); // NOI18N
         bottomMButton.addActionListener(actionLsnr);
@@ -456,8 +432,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         insetsPanel.add(bottomMButton, gridBagConstraints5);
 
         bottomPButton = new javax.swing.JButton();
-        bottomPButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/plus.gif"))); // NOI18N
+        bottomPButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/plus.gif", false)); // NOI18N
         bottomPButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         bottomPButton.setActionCommand("bP"); // NOI18N
         bottomPButton.addActionListener(actionLsnr);
@@ -469,8 +444,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         insetsPanel.add(bottomPButton, gridBagConstraints5);
 
         jLabel3 = new javax.swing.JLabel();
-        jLabel3.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/horizontalGr.gif"))); // NOI18N
+        jLabel3.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/horizontalGr.gif", false)); // NOI18N
 
         gridBagConstraints5 = new java.awt.GridBagConstraints();
         gridBagConstraints5.gridx = 0;
@@ -479,8 +453,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         insetsPanel.add(jLabel3, gridBagConstraints5);
 
         HMButton = new javax.swing.JButton();
-        HMButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/minus.gif"))); // NOI18N
+        HMButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/minus.gif", false)); // NOI18N
         HMButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         HMButton.setActionCommand("HM"); // NOI18N
         HMButton.addActionListener(actionLsnr);
@@ -492,8 +465,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         insetsPanel.add(HMButton, gridBagConstraints5);
 
         HPButton = new javax.swing.JButton();
-        HPButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/plus.gif"))); // NOI18N
+        HPButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/plus.gif", false)); // NOI18N
         HPButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         HPButton.setActionCommand("HP"); // NOI18N
         HPButton.addActionListener(actionLsnr);
@@ -505,8 +477,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         insetsPanel.add(HPButton, gridBagConstraints5);
 
         jLabel4 = new javax.swing.JLabel();
-        jLabel4.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/verticalGr.gif"))); // NOI18N
+        jLabel4.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/verticalGr.gif", false)); // NOI18N
 
         gridBagConstraints5 = new java.awt.GridBagConstraints();
         gridBagConstraints5.gridx = 0;
@@ -515,8 +486,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         insetsPanel.add(jLabel4, gridBagConstraints5);
 
         VMButton = new javax.swing.JButton();
-        VMButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/minus.gif"))); // NOI18N
+        VMButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/minus.gif", false)); // NOI18N
         VMButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         VMButton.setActionCommand("VM"); // NOI18N
         VMButton.addActionListener(actionLsnr);
@@ -527,8 +497,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         insetsPanel.add(VMButton, gridBagConstraints5);
 
         VPButton = new javax.swing.JButton();
-        VPButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/plus.gif"))); // NOI18N
+        VPButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/plus.gif", false)); // NOI18N
         VPButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         VPButton.setActionCommand("VP"); // NOI18N
         VPButton.addActionListener(actionLsnr);
@@ -539,8 +508,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         insetsPanel.add(VPButton, gridBagConstraints5);
 
         jLabel5 = new javax.swing.JLabel();
-        jLabel5.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/bothGr.gif"))); // NOI18N
+        jLabel5.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/bothGr.gif", false)); // NOI18N
 
         gridBagConstraints5 = new java.awt.GridBagConstraints();
         gridBagConstraints5.gridx = 0;
@@ -549,8 +517,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         insetsPanel.add(jLabel5, gridBagConstraints5);
 
         BMButton = new javax.swing.JButton();
-        BMButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/minus.gif"))); // NOI18N
+        BMButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/minus.gif", false)); // NOI18N
         BMButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         BMButton.setActionCommand("BM"); // NOI18N
         BMButton.addActionListener(actionLsnr);
@@ -562,8 +529,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         insetsPanel.add(BMButton, gridBagConstraints5);
 
         BPButton = new javax.swing.JButton();
-        BPButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/plus.gif"))); // NOI18N
+        BPButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/plus.gif", false)); // NOI18N
         BPButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         BPButton.setActionCommand("BP"); // NOI18N
         BPButton.addActionListener(actionLsnr);
@@ -589,16 +555,14 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             new javax.swing.border.EtchedBorder(), "panelSizePanel")); // NOI18N
 
         jLabel6 = new javax.swing.JLabel();
-        jLabel6.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/horizontalGr.gif"))); // NOI18N
+        jLabel6.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/horizontalGr.gif", false)); // NOI18N
 
         gridBagConstraints6 = new java.awt.GridBagConstraints();
         gridBagConstraints6.insets = new java.awt.Insets(0, 0, 0, 5);
         gridSizePanel.add(jLabel6, gridBagConstraints6);
 
         gridSizeHMButton = new javax.swing.JButton();
-        gridSizeHMButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/minus.gif"))); // NOI18N
+        gridSizeHMButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/minus.gif", false)); // NOI18N
         gridSizeHMButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         gridSizeHMButton.setActionCommand("HM"); // NOI18N
         gridSizeHMButton.addActionListener(actionLsnr);
@@ -607,8 +571,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         gridSizePanel.add(gridSizeHMButton, gridBagConstraints6);
 
         gridSizeHPButton = new javax.swing.JButton();
-        gridSizeHPButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/plus.gif"))); // NOI18N
+        gridSizeHPButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/plus.gif", false)); // NOI18N
         gridSizeHPButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         gridSizeHPButton.setActionCommand("HP"); // NOI18N
         gridSizeHPButton.addActionListener(actionLsnr);
@@ -617,8 +580,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         gridSizePanel.add(gridSizeHPButton, gridBagConstraints6);
 
         gsRHButton = new javax.swing.JToggleButton();
-        gsRHButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/remainder.gif"))); // NOI18N
+        gsRHButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/remainder.gif", false)); // NOI18N
         gsRHButton.setMargin(new java.awt.Insets(5, 5, 5, 5));
         gsRHButton.setActionCommand("HR"); // NOI18N
         gsRHButton.addActionListener(actionLsnr);
@@ -628,16 +590,14 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         gridSizePanel.add(gsRHButton, gridBagConstraints6);
 
         jLabel8 = new javax.swing.JLabel();
-        jLabel8.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/verticalGr.gif"))); // NOI18N
+        jLabel8.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/verticalGr.gif", false)); // NOI18N
 
         gridBagConstraints6 = new java.awt.GridBagConstraints();
         gridBagConstraints6.insets = new java.awt.Insets(0, 0, 4, 5);
         gridSizePanel.add(jLabel8, gridBagConstraints6);
 
         gridSizeVMButton = new javax.swing.JButton();
-        gridSizeVMButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/minus.gif"))); // NOI18N
+        gridSizeVMButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/minus.gif", false)); // NOI18N
         gridSizeVMButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         gridSizeVMButton.setActionCommand("VM"); // NOI18N
         gridSizeVMButton.addActionListener(actionLsnr);
@@ -647,8 +607,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         gridSizePanel.add(gridSizeVMButton, gridBagConstraints6);
 
         gridSizeVPButton = new javax.swing.JButton();
-        gridSizeVPButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/plus.gif"))); // NOI18N
+        gridSizeVPButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/plus.gif", false)); // NOI18N
         gridSizeVPButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         gridSizeVPButton.setActionCommand("VP"); // NOI18N
         gridSizeVPButton.addActionListener(actionLsnr);
@@ -658,8 +617,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         gridSizePanel.add(gridSizeVPButton, gridBagConstraints6);
 
         gsRVButton = new javax.swing.JToggleButton();
-        gsRVButton.setIcon(new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/form/layoutsupport/resources/remainder.gif"))); // NOI18N
+        gsRVButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/resources/remainder.gif", false)); // NOI18N
         gsRVButton.setMargin(new java.awt.Insets(5, 5, 5, 5));
         gsRVButton.setActionCommand("VR"); // NOI18N
         gsRVButton.addActionListener(actionLsnr);

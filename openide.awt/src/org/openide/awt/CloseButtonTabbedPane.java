@@ -135,8 +135,8 @@ final class CloseButtonTabbedPane extends JTabbedPane {
             String s = c.getName();
             if (s != null) {
                 s += "  ";
+                setTitleAt(getComponentCount() - 1, s);
             }
-            setTitleAt (getComponentCount() - 1, s);
         }
         return result;
     }

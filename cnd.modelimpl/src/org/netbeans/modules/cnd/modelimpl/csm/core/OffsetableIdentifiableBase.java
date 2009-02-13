@@ -87,7 +87,10 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
 
     protected final void setSelfUID() {
         if (uid != null) {
-            System.err.println("replacing " + uid + " to self UID");
+            new Exception("replacing " + uid + " to self UID").printStackTrace(); // NOI18N
+            if (UIDProviderIml.isSelfUID(uid)) {
+                return;
+            }
         }
         uid = UIDProviderIml.createSelfUID(this);
     }

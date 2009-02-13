@@ -88,7 +88,7 @@ public abstract class RemoteCommand extends Command {
 
     @Override
     public final void invokeAction(Lookup context) {
-        if (!isRunConfigurationValid(false)) {
+        if (!getConfigAction().isValid(false)) {
             // property not set yet
             return;
         }

@@ -43,6 +43,7 @@ package org.netbeans.modules.php.project.ui.actions;
 
 import org.netbeans.modules.php.project.ui.actions.support.Displayable;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -64,11 +65,12 @@ public class RunProjectCommand extends Command implements Displayable {
     @Override
     public void invokeAction(Lookup context) {
         boolean scriptSelected = isScriptSelected();
-        if (!isRunConfigurationValid(scriptSelected)) {
+        ConfigAction configAction = getConfigAction();
+        if (!configAction.isValid(scriptSelected)) {
             // property not set yet
             return;
         }
-        getConfigAction().runProject();
+        configAction.runProject();
     }
 
     @Override

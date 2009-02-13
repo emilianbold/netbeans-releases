@@ -46,7 +46,6 @@ import org.netbeans.api.diff.DiffView;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.modules.diff.builtin.DiffPresenter;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 import javax.swing.*;
 import java.awt.Component;
@@ -56,6 +55,7 @@ import java.io.Reader;
 import java.io.IOException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import org.openide.util.ImageUtilities;
 
 /**
  * Registration of the editable visualizer. 
@@ -122,7 +122,7 @@ public class EditableDiffVisualizer extends DiffVisualizer {
                     onNext();
                 }
             };
-            nextAction.putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/editable/diff-next.png"))); // NOI18N
+            nextAction.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/diff/builtin/visualizer/editable/diff-next.png", false)); // NOI18N
             JButton nextButton = new JButton(nextAction);
             nextButton.setMargin(new Insets(2, 2, 2, 2));
             toolbar.add(nextButton);
@@ -132,7 +132,7 @@ public class EditableDiffVisualizer extends DiffVisualizer {
                     onPrev();
                 }
             };
-            prevAction.putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/editable/diff-prev.png"))); // NOI18N
+            prevAction.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/diff/builtin/visualizer/editable/diff-prev.png", false)); // NOI18N
             JButton prevButton = new JButton(prevAction);
             prevButton.setMargin(new Insets(2, 2, 2, 2));
             toolbar.add(prevButton);

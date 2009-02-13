@@ -94,7 +94,7 @@ public class NestedType extends TypeImpl {
                     classifier = getNestedClassifier(memberResolver, parentClassifier, getOwnText());
                 }
             }
-            if (classifier == null) {
+            if (!CsmBaseUtilities.isValid(classifier)) {
                 // try to resolve qualified name, not through the parent classifier
                 List<CharSequence> fqn = getFullQName();
                 classifier = renderClassifier(fqn.toArray(new CharSequence[fqn.size()]), parent);

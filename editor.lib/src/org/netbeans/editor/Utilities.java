@@ -1027,6 +1027,14 @@ public class Utilities {
         }
     }
 
+    public static void setStatusText(JTextComponent c, String text, int importance) {
+        EditorUI eui = getEditorUI(c);
+        StatusBar sb = eui == null ? null : eui.getStatusBar();
+        if (sb != null) {
+            sb.setText(text, importance);
+        }
+    }
+
     public static void setStatusText(JTextComponent c, String text,
                                      Coloring extraColoring) {
         EditorUI eui = getEditorUI(c);

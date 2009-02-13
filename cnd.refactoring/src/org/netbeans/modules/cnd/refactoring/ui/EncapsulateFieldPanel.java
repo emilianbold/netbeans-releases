@@ -153,11 +153,11 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         initComponents();
         setName(title);
         jCheckAccess.setSelected(ALWAYS_USE_ACCESSORS);
-        jCheckAccess.setEnabled(EXPERIMENTAL);
+        jCheckAccess.setEnabled(false && EXPERIMENTAL);
         jComboAccess.setSelectedIndex(METHOD_ACCESS_INDEX);
-        jComboAccess.setEnabled(EXPERIMENTAL);
+        jComboAccess.setEnabled(false && EXPERIMENTAL);
         jComboField.setSelectedIndex(FIELD_ACCESS_INDEX);
-        jComboField.setEnabled(EXPERIMENTAL);
+        jComboField.setEnabled(false && EXPERIMENTAL);
         // *** initialize table
         // set renderer for the column "Field" to display name of the feature (with icon)
         jTableFields.setDefaultRenderer(CsmField.class, new EncapsulateCsmFieldTableCellRenderer());
@@ -174,10 +174,10 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
             jTableFields.setGridColor(UIManager.getColor("control")); // NOI18N
         }
 
-        initEnumCombo(jComboSort, SortBy.PAIRS);
-        jComboSort.setEnabled(EXPERIMENTAL);
-        initEnumCombo(jComboJavadoc, Documentation.DEFAULT);
-        jComboJavadoc.setEnabled(EXPERIMENTAL);
+        initEnumCombo(jComboSort, SortBy.DEFAULT);
+        jComboSort.setEnabled(false && EXPERIMENTAL);
+        initEnumCombo(jComboJavadoc, Documentation.NONE);
+        jComboJavadoc.setEnabled(false && EXPERIMENTAL);
     }
 
     public Component getComponent() {
@@ -259,7 +259,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         
         initialized = true;
     }
-    
+
     private void setColumnWidth(int a) {
         TableColumn col = jTableFields.getColumnModel().getColumn(a);
         JCheckBox box = new JCheckBox();
@@ -588,7 +588,6 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     
     private void initInsertPoints() {
         CsmClass encloser = csmClassContainer;
-
         List<InsertPoint> result = new ArrayList<InsertPoint>();
         int idx = 0;
         hasOutOfClassMemberDefinitions = false;
@@ -596,7 +595,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
             if (CsmKindUtilities.isMethod(member)) {
                 CsmMethod method = (CsmMethod) member;
                 CsmFunction definition = ((CsmFunction)method).getDefinition();
-                InsertPoint ip = new InsertPoint(method, definition, idx + 1, NbBundle.getMessage(
+                InsertPoint ip = new InsertPoint(encloser, method, definition, idx + 1, NbBundle.getMessage(
                         EncapsulateFieldPanel.class,
                         "MSG_EncapsulateFieldInsertPointMethod", // NOI18N
                         MemberInfo.create(method).getHtmlText()
@@ -610,8 +609,12 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         }
         jComboInsertPoint.addItem(InsertPoint.DEFAULT);
         if (!result.isEmpty()) {
-            jComboInsertPoint.addItem(InsertPoint.FIRST); // NOI18N
-            jComboInsertPoint.addItem(InsertPoint.LAST); // NOI18N
+            InsertPoint first = new InsertPoint(encloser, null, null, Integer.MIN_VALUE,
+            getString("EncapsulateFieldPanel.jComboInsertPoint.first")); // NOI18N
+            InsertPoint last = new InsertPoint(encloser, null, null, Integer.MAX_VALUE,
+            getString("EncapsulateFieldPanel.jComboInsertPoint.last")); // NOI18N
+            jComboInsertPoint.addItem(first); // NOI18N
+            jComboInsertPoint.addItem(last); // NOI18N
             for (InsertPoint ip : result) {
                 jComboInsertPoint.addItem(ip);
             }
@@ -654,7 +657,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         }
         return inline;
     }
-    
+
     public boolean isCheckAccess() {
         ALWAYS_USE_ACCESSORS = jCheckAccess.isSelected();
         return ALWAYS_USE_ACCESSORS;
@@ -821,7 +824,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     
     public enum SortBy implements Comparator<SortBy> {
         
-//        DEFAULT("EncapsulateFieldPanel.jComboSort.default"), // NOI18N
+        DEFAULT("EncapsulateFieldPanel.jComboSort.default"), // NOI18N
         PAIRS("EncapsulateFieldPanel.jComboSort.pairs"), // NOI18N
         ALPHABETICALLY("EncapsulateFieldPanel.jComboSort.alphabetically"), // NOI18N
         GETTERS_FIRST("EncapsulateFieldPanel.jComboSort.gettersFirst"); // NOI18N
@@ -885,22 +888,24 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     
     public static final class InsertPoint {
         
-        public static final InsertPoint DEFAULT = new InsertPoint(null, null, Integer.MIN_VALUE,
+        public static final InsertPoint DEFAULT = new InsertPoint(null, null, null, Integer.MIN_VALUE,
                 getString("EncapsulateFieldPanel.jComboInsertPoint.default")); // NOI18N
-        public static final InsertPoint FIRST = new InsertPoint(null, null, Integer.MIN_VALUE,
-                getString("EncapsulateFieldPanel.jComboInsertPoint.first")); // NOI18N
-        public static final InsertPoint LAST = new InsertPoint(null, null, Integer.MAX_VALUE,
-                getString("EncapsulateFieldPanel.jComboInsertPoint.last")); // NOI18N
         private final int index;
         private final String description;
         private final CsmOffsetable elemDecl;
         private final CsmOffsetable elemDef;
+        private final CsmClass clazz;
 
-        private InsertPoint(CsmOffsetable elemDecl, CsmOffsetable elemDef, int index, String description) {
+        private InsertPoint(CsmClass clazz, CsmOffsetable elemDecl, CsmOffsetable elemDef, int index, String description) {
             this.index = index;
             this.description = description;
             this.elemDecl = elemDecl;
             this.elemDef = elemDef;
+            this.clazz = clazz;
+        }
+
+        public CsmClass getContainerClass() {
+            return clazz;
         }
 
         public CsmOffsetable getElementDeclaration() {

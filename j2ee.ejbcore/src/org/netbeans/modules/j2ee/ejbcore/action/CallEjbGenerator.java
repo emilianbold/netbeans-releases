@@ -51,6 +51,8 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.naming.NamingException;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
@@ -59,12 +61,12 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
+import org.netbeans.modules.j2ee.core.api.support.classpath.ContainerClassPathModifier;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
@@ -80,7 +82,6 @@ import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.ServiceLocatorStrategy;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -139,9 +140,17 @@ public class CallEjbGenerator {
         boolean enterpriseProjectIsJavaEE5 = Utils.isJavaEE5orHigher(enterpriseProject);
         boolean nodeProjectIsJavaEE5 = Utils.isJavaEE5orHigher(nodeProject);
 
+        //#157918
+        ContainerClassPathModifier ccpm = enterpriseProject.getLookup().lookup(ContainerClassPathModifier.class);
+        if (ccpm != null) {
+            ccpm.extendClasspath(referencingFO, new String[] {
+                ContainerClassPathModifier.API_EJB //is that all that is needed?
+            });
+        }
+
         if (remote) {
             if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(referencingFO, referencingClassName)) {
-                addProjectToClassPath(enterpriseProject, ejbReference);
+                addProjectToClassPath(enterpriseProject, ejbReference, referencingFO);
             } else if (nodeProjectIsJavaEE5 == enterpriseProjectIsJavaEE5){ // see #75876
                 erc.addEjbReference(ejbReference, ejbReferenceName, referencingFO, referencingClassName);
             }
@@ -152,7 +161,7 @@ public class CallEjbGenerator {
             }
         } else {
             if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(referencingFO, referencingClassName)) {
-                addProjectToClassPath(enterpriseProject, ejbReference);
+                addProjectToClassPath(enterpriseProject, ejbReference, referencingFO);
             } else if (nodeProjectIsJavaEE5 == enterpriseProjectIsJavaEE5){ // see #75876
                 erc.addEjbLocalReference(ejbReference, ejbReferenceName, referencingFO, referencingClassName);
             }
@@ -528,15 +537,15 @@ public class CallEjbGenerator {
         return caps.toString();
     }
     
-    private static void addProjectToClassPath(final Project enterpriseProject, final EjbReference ref) throws IOException {
+    private static void addProjectToClassPath(final Project enterpriseProject, final EjbReference ref, FileObject refFO) throws IOException {
         
-        AntArtifact target = Utils.getAntArtifact(ref);
+        Project target = Utils.getProject(ref);
         
-        boolean differentProject = target != null && !enterpriseProject.equals(target.getProject());
+        boolean differentProject = target != null && !enterpriseProject.equals(target);
         if (differentProject) {
-            ProjectClassPathExtender pcpe = enterpriseProject.getLookup().lookup(ProjectClassPathExtender.class);
-            assert pcpe != null;
-            pcpe.addAntArtifact(target, target.getArtifactLocations()[0]);
+//            Sources sg = ProjectUtils.getSources(target);
+//            SourceGroup[] grp = sg.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            ProjectClassPathModifier.addProjects(new Project[] {target} , refFO, ClassPath.COMPILE);
         }
     }
     

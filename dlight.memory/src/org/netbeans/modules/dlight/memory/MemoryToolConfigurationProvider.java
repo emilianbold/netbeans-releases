@@ -77,14 +77,14 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         DataTableMetadata rawTableMetadata = null;
         if (useCollector) {
             Column timestampColumn = new Column("timestamp", Long.class, "Timestamp", null);
-            Column timeColumn = new Column("kind", Integer.class, "Kind", null);
+            Column kindColumn = new Column("kind", Integer.class, "Kind", null);
             Column sizeColumn = new Column("size", Integer.class, "Size", null);
-            Column addressColumn = new Column("address", Integer.class, "Address", null);
+            Column addressColumn = new Column("address", Long.class, "Address", null);
             Column stackColumn = new Column("stackid", Integer.class, "Stack ID", null);
 
             List<Column> columns = Arrays.asList(
                     timestampColumn,
-                    timeColumn,
+                    kindColumn,
                     sizeColumn,
                     addressColumn,
                     totalColumn,

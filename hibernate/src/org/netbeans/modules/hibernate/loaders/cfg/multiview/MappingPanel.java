@@ -70,7 +70,7 @@ public class MappingPanel extends javax.swing.JPanel {
         this.classTextField.setText( className );
     }
     
-    public boolean isValid() {
+    public boolean isDataValid() {
         // At least one field should be filled to make it valid
         if( getResourceName().length() != 0 
                 || getJarName().length() != 0 

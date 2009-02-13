@@ -214,6 +214,10 @@ public final class PhpUnitLogParser extends DefaultHandler {
                 testCase.addStacktrace(NbBundle.getMessage(PhpUnitLogParser.class, "LBL_At", line.trim()));
             }
         }
+        // #157846
+        if (testCase.getStacktrace().length == 0) {
+            testCase.addStacktrace(buffer.toString().trim());
+        }
     }
 
     private int getTests(Attributes attributes) {

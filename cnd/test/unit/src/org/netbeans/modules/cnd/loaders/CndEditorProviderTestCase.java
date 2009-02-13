@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.File;
@@ -56,28 +55,34 @@ import org.openide.loaders.DataObject;
  * @author Vladimir Voskresensky
  */
 public class CndEditorProviderTestCase extends BaseTestCase {
-    
+
+    private static final boolean TRACE = false;
+
     /**
      * Creates a new instance of CndEditorProviderTestCase
      */
     public CndEditorProviderTestCase(String testName) {
         super(testName);
     }
-    
+
     public void testEditorSupport() throws Exception {
         File newFile = new File(super.getWorkDir(), "file.h"); // NOI18N
         newFile.createNewFile();
         assertTrue("Not created file " + newFile, newFile.exists());
-        FileObject fo = FileUtil.toFileObject(newFile);        
+        FileObject fo = FileUtil.toFileObject(newFile);
         DataObject dob = DataObject.find(fo);
         assertTrue(dob instanceof HDataObject);
         JEditorPane pane = CndCoreTestUtils.getEditorPane(dob);
         assertNotNull(pane);
         BaseDocument doc = Utilities.getDocument(pane);
         assertNotNull(doc);
-        System.err.println("text len: " + doc.getLength());
-        if (doc.getLength() > 0) {
-            System.err.println("text: " + doc.getText(0, doc.getLength() - 1));
+        if (TRACE) {
+            System.err.println("text len: " + doc.getLength());
         }
-    }     
+        if (doc.getLength() > 0) {
+            if (TRACE) {
+                System.err.println("text: " + doc.getText(0, doc.getLength() - 1));
+            }
+        }
+    }
 }

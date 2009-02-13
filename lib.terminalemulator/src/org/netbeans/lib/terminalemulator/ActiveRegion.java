@@ -40,36 +40,32 @@
  *
  * Contributor(s): Ivan Soleimanipour.
  */
-
-
 /*
  * "ActiveRegion.java"
  * ActiveRegion.java 1.8 01/07/16
  */
-
 package org.netbeans.lib.terminalemulator;
 
 import java.util.LinkedList;
 import java.util.ListIterator;
 
 public class ActiveRegion {
+
     public Coord begin = new Coord();
     public Coord end = new Coord();
 
     // accessible to RegionManager
     ActiveRegion parent;
     boolean nested;
-
-    private LinkedList children;
+    private LinkedList<ActiveRegion> children;
     private boolean has_end;
-
     private int parentAttrs;      // attrs at the time this region began
 
     ActiveRegion(ActiveRegion parent, Coord begin, boolean nested) {
-	this.parent = parent;
-	this.begin.copyFrom(begin);
-	this.nested = nested;
-    } 
+        this.parent = parent;
+        this.begin.copyFrom(begin);
+        this.nested = nested;
+    }
 
     void setParentAttrs(int attrs) {
         this.parentAttrs = attrs;
@@ -80,96 +76,100 @@ public class ActiveRegion {
     }
 
     public ActiveRegion parent() {
-	return this.parent;
-    } 
+        return this.parent;
+    }
 
     public Extent getExtent() {
-	if (has_end)
-	    return new Extent(begin, end);
-	else
-	    return new Extent(begin, begin);
+        if (has_end) {
+            return new Extent(begin, end);
+        } else {
+            return new Extent(begin, begin);
+        }
     }
 
     void setEnd(Coord end) {
-	this.end.copyFrom(end);
-	has_end = true;
-    } 
+        this.end.copyFrom(end);
+        has_end = true;
+    }
 
     void addChild(ActiveRegion child) {
-	if (children == null)
-	    children = new LinkedList();
-	children.add(child);
-    } 
+        if (children == null) {
+            children = new LinkedList<ActiveRegion>();
+        }
+        children.add(child);
+    }
 
     void removeChild(ActiveRegion child) {
-	if (children == null)
-	    return;
-	children.remove(child);
-    } 
+        if (children == null) {
+            return;
+        }
+        children.remove(child);
+    }
 
     ActiveRegion contains(Coord coord) {
 
-	// System.out.println("ActiveRegion [ " + begin + "-" + end + "] vs " +	// NOI18N
-	// coord);
-	boolean coord_past_end = has_end && coord.compareTo(end) > 0;
-	if (this.parent != null && (coord.compareTo(begin) < 0  ||
-				    coord_past_end)) {
-	    return null;	// outside of us entirely
-	}
+        // System.out.println("ActiveRegion [ " + begin + "-" + end + "] vs " +	// NOI18N
+        // coord);
+        boolean coord_past_end = has_end && coord.compareTo(end) > 0;
+        if (this.parent != null && (coord.compareTo(begin) < 0 ||
+                coord_past_end)) {
+            return null;	// outside of us entirely
+        }
 
-	if (children != null) {
-	    ListIterator iter = children.listIterator();
-	    while(iter.hasNext()) {
-		ActiveRegion child = (ActiveRegion) iter.next();
-		if (coord.compareTo(child.begin) < 0)
-		    break;	// short circuit
-		// 'target' is 'child' or one if it's children
-		ActiveRegion target = child.contains(coord);
-		if (target != null)
-		    return target;
-	    }
-	}
-	return this;
+        if (children != null) {
+            ListIterator<ActiveRegion> iter = children.listIterator();
+            while (iter.hasNext()) {
+                ActiveRegion child = iter.next();
+                if (coord.compareTo(child.begin) < 0) {
+                    break;	// short circuit
+                }		// 'target' is 'child' or one if it's children
+                ActiveRegion target = child.contains(coord);
+                if (target != null) {
+                    return target;
+                }
+            }
+        }
+        return this;
     }
 
 
     // absolute coordinate mgmt
-
     void relocate(int delta) {
-	this.begin.row += delta;
-	this.end.row += delta;
-	if (children != null) {
-	    ListIterator iter = children.listIterator();
-	    while(iter.hasNext()) {
-		ActiveRegion child = (ActiveRegion) iter.next();
-		child.relocate(delta);
-	    }
-	}
+        this.begin.row += delta;
+        this.end.row += delta;
+        if (children != null) {
+            ListIterator iter = children.listIterator();
+            while (iter.hasNext()) {
+                ActiveRegion child = (ActiveRegion) iter.next();
+                child.relocate(delta);
+            }
+        }
     }
 
     void cull(int origin) {
 
-	// See RegionManager.cull() for culling strategy.
-	// This function isn't recursive. It's called only once on root.
+        // See RegionManager.cull() for culling strategy.
+        // This function isn't recursive. It's called only once on root.
 
-	if (children == null)
-	    return;
+        if (children == null) {
+            return;
+        }
 
-	int nculled = 0;
+        int nculled = 0;
 
-	ListIterator iter = children.listIterator();
-	while(iter.hasNext()) {
-	    ActiveRegion child = (ActiveRegion) iter.next();
-	    if (child.begin.row < origin) {
-		iter.remove();
-		nculled++;
-	    } else
-		break;	// short circuit out
-	}
+        ListIterator iter = children.listIterator();
+        while (iter.hasNext()) {
+            ActiveRegion child = (ActiveRegion) iter.next();
+            if (child.begin.row < origin) {
+                iter.remove();
+                nculled++;
+            } else {
+                break;	// short circuit out
+            }
+        }
 
-	// System.out.println("cull'ed " + nculled + " regions");	// NOI18N
-    } 
-
+    // System.out.println("cull'ed " + nculled + " regions");	// NOI18N
+    }
 
     /**
      * Mark this region as one that may be converted to a selection.
@@ -177,17 +177,16 @@ public class ActiveRegion {
      * This is just a convenience state-keeping flag
      */
     public void setSelectable(boolean selectable) {
-	this.selectable = selectable;
-    } 
+        this.selectable = selectable;
+    }
 
     /**
      * Return the value set using setSelectable().
      */
     public boolean isSelectable() {
-	return selectable;
-    } 
+        return selectable;
+    }
     private boolean selectable;
-
 
     /**
      * Mark this region as one that will provide feedback when the mouse moves
@@ -196,15 +195,15 @@ public class ActiveRegion {
      * This is just a convenience state-keeping flag
      */
     public void setFeedbackEnabled(boolean feedback) {
-	this.feedback_enabled = feedback;
-    } 
+        this.feedback_enabled = feedback;
+    }
 
     /**
      * Return the value set using setFeedback().
      */
     public boolean isFeedbackEnabled() {
-	return feedback_enabled;
-    } 
+        return feedback_enabled;
+    }
     private boolean feedback_enabled;
 
     /**
@@ -212,45 +211,41 @@ public class ActiveRegion {
      * region.
      */
     public void setFeedbackViaParent(boolean feedback_via_parent) {
-	this.feedback_via_parent = feedback_via_parent;
-    } 
+        this.feedback_via_parent = feedback_via_parent;
+    }
 
     public boolean isFeedbackViaParent() {
-	return feedback_via_parent;
-    } 
-
+        return feedback_via_parent;
+    }
     private boolean feedback_via_parent;
 
     /*
      * Mark this region as a "link".
      */
     public void setLink(boolean link) {
-	this.link = link;
-    } 
+        this.link = link;
+    }
+
     public boolean isLink() {
-	return link;
-    } 
+        return link;
+    }
     private boolean link;
-
-
 
     /**
      * Associate additional data with this ActiveRegion.
      */
     public void setUserObject(Object object) {
-	this.user_object = object;
-    } 
+        this.user_object = object;
+    }
 
     /**
      * Retrieve the additional data associated with this ActiveRegion through 
      * setUserObject.
      */
     public Object getUserObject() {
-	return user_object;
-    } 
+        return user_object;
+    }
     private Object user_object;
-
-
 
     // siblings
     //
@@ -268,71 +263,72 @@ public class ActiveRegion {
     // vector (less storage than two pointers, and vector has less overhead
     // than linkedlist to compensate). Note that this will work only
     // because ActiveRegions are not editable.
-
-
     /**
      * Return the first child of this
      */
     public ActiveRegion firstChild() {
-	if (children == null)
-	    return null;
-	return (ActiveRegion) children.getFirst();
-    } 
+        if (children == null) {
+            return null;
+        }
+        return children.getFirst();
+    }
 
     /**
      * Return the last child of this
      */
     public ActiveRegion lastChild() {
-	if (children == null)
-	    return null;
-	return (ActiveRegion) children.getLast();
-    } 
-
+        if (children == null) {
+            return null;
+        }
+        return children.getLast();
+    }
 
     /**
      * Get the previous sibling of this region
      */
     public ActiveRegion getPreviousSibling() {
-	if (parent != null)
-	    return parent.previous_sibling_of(this);
-	else
-	    return null;
-    } 
+        if (parent != null) {
+            return parent.previous_sibling_of(this);
+        } else {
+            return null;
+        }
+    }
 
     /**
      * Get the next sibling of this region
      */
     public ActiveRegion getNextSibling() {
-	if (parent != null)
-	    return parent.next_sibling_of(this);
-	else
-	    return null;
-    } 
+        if (parent != null) {
+            return parent.next_sibling_of(this);
+        } else {
+            return null;
+        }
+    }
 
     private ActiveRegion previous_sibling_of(ActiveRegion child) {
-	ListIterator iter = children.listIterator();
+        ListIterator iter = children.listIterator();
         ActiveRegion previousChild = null;
-	while (iter.hasNext()) {
-	    ActiveRegion candidate = (ActiveRegion) iter.next();
-	    if (candidate == child) {
+        while (iter.hasNext()) {
+            ActiveRegion candidate = (ActiveRegion) iter.next();
+            if (candidate == child) {
                 // bug: iterator is already shifted, so following command
                 // returns again child
-		//return (ActiveRegion) (iter.hasPrevious()? iter.previous(): null);
+                //return (ActiveRegion) (iter.hasPrevious()? iter.previous(): null);
                 return previousChild;
-	    }
+            }
             previousChild = candidate;
-	}
-	return null;
+        }
+        return null;
     }
 
     private ActiveRegion next_sibling_of(ActiveRegion child) {
-	ListIterator iter = children.listIterator();
-	while (iter.hasNext()) {
-	    ActiveRegion candidate = (ActiveRegion) iter.next();
-	    if (candidate == child) {
-		return (ActiveRegion) (iter.hasNext()? iter.next(): null);
-	    }
-	}
-	return null;
+        ListIterator iter = children.listIterator();
+        while (iter.hasNext()) {
+            ActiveRegion candidate = (ActiveRegion) iter.next();
+            if (candidate == child) {
+                return (ActiveRegion) (iter.hasNext() ? iter.next() : null);
+            }
+        }
+        return null;
     }
 }

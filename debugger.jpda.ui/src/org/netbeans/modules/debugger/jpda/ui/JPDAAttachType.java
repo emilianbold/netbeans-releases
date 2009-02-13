@@ -46,21 +46,16 @@ import java.lang.ref.WeakReference;
 import javax.swing.JComponent;
 import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.debugger.ui.Controller;
-import org.openide.util.NbBundle;
 
 
 /**
  *
  * @author   Jan Jancura
  */
+@AttachType.Registration(displayName="#CTL_Connector_name")
 public class JPDAAttachType extends AttachType {
 
     private Reference<ConnectPanel> customizerRef = new WeakReference<ConnectPanel>(null);
-
-    @Override
-    public String getTypeDisplayName () {
-        return NbBundle.getMessage (JPDAAttachType.class, "CTL_Connector_name");
-    }
 
     public JComponent getCustomizer () {
         ConnectPanel panel = new ConnectPanel ();

@@ -1120,9 +1120,7 @@ public class Actions extends Object {
 
             if (!popup) {
                 boolean jdk16orNewer = "1.6".compareTo(System.getProperty("java.version")) <= 0;
-                button.setIcon(new ImageIcon(Utilities.loadImage(
-                        jdk16orNewer ? "org/openide/resources/actions/empty.gif" // NOI18N
-                                    : "org/openide/resources/actions/gap.gif", true))); // NOI18N
+                button.setIcon(ImageUtilities.loadImageIcon(jdk16orNewer ? "org/openide/resources/actions/empty.gif" : "org/openide/resources/actions/gap.gif", true)); // NOI18N
             }
         }
 

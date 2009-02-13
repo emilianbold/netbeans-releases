@@ -44,8 +44,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.netbeans.modules.nativeexecution.util.ExternalTerminal;
-import org.netbeans.modules.nativeexecution.util.ExternalTerminalProvider;
+import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
+import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 
 /**
  *

@@ -100,7 +100,7 @@ final class TestsuiteNodeChildren extends Children.Keys<Testcase> {
     /**
      */
     protected Node[] createNodes(final Testcase testcase) {
-        if (filtered && Status.FAILED.compareTo(testcase.getStatus()) > 0) {
+        if (filtered && !Status.isFailure(testcase.getStatus())) {
             return EMPTY_NODE_ARRAY;
         }
         return new Node[] {testcase.getSession().getNodeFactory().createTestMethodNode(testcase, report.getProject())};
@@ -120,7 +120,7 @@ final class TestsuiteNodeChildren extends Children.Keys<Testcase> {
                 
         if (isInitialized()) {
             for (Testcase testcase : report.getTests()) {
-                if (Status.FAILED.compareTo(testcase.getStatus()) <= 0) {
+                if (!Status.isFailure(testcase.getStatus())) {
                     refreshKey(testcase);
                 }
             }

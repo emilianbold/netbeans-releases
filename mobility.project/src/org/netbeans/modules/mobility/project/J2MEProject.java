@@ -144,8 +144,7 @@ import org.w3c.dom.Node;
  * @author Jesse Glick, Adam Sotona, Tim Boudreau
  */
 public final class J2MEProject implements Project, AntProjectListener {
-    final Icon J2ME_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/mobility/project/ui/resources/mobile-project.png" )); // NOI18N
+    final Icon J2ME_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/mobility/project/ui/resources/mobile-project.png", false); // NOI18N
     private static final URLStreamHandler COMPOSED_STREAM_HANDLER = new URLStreamHandler() {
         protected URLConnection openConnection(URL u) throws IOException {
             return new ComposedConnection(u);

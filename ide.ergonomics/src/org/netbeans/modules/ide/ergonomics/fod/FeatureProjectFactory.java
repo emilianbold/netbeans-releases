@@ -285,7 +285,11 @@ public class FeatureProjectFactory implements ProjectFactory {
             }
         }
         final void switchToReal() {
-            ProjectState s = state;
+            ProjectState s = null;
+            synchronized (this) {
+                s = state;
+                state = null;
+            }
             if (s != null) {
                 try {
                     s.notifyDeleted();
@@ -294,7 +298,6 @@ public class FeatureProjectFactory implements ProjectFactory {
                         throw new IllegalStateException("New project shall be found! " + p); // NOI18N
                     }
                     delegate.associate(p);
-                    state = null;
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -342,6 +345,8 @@ public class FeatureProjectFactory implements ProjectFactory {
                 } else if (toEnable != null && ! toEnable.isEmpty ()) {
                     ModulesActivator enabler = new ModulesActivator (toEnable, findModules);
                     enabler.getEnableTask ().waitFinished ();
+                    success = true;
+                } else if (toEnable == null || toInstall == null) {
                     success = true;
                 } else if (toEnable.isEmpty() && toInstall.isEmpty()) {
                     success = true;
@@ -398,9 +403,9 @@ public class FeatureProjectFactory implements ProjectFactory {
             if (info != this) {
                 return info.getIcon();
             }
-            return ImageUtilities.image2Icon(
-                ImageUtilities.loadImage("org/netbeans/modules/ide/ergonomics/fod/project.png") // NOI18N
-            );
+            return ImageUtilities.loadImageIcon(
+                "org/netbeans/modules/ide/ergonomics/fod/project.png" // NOI18N
+            , false);
         }
 
         public Project getProject() {
