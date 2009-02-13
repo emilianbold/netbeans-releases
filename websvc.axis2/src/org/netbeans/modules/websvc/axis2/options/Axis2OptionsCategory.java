@@ -53,7 +53,7 @@ public final class Axis2OptionsCategory extends OptionsCategory {
 
     @Override
     public Icon getIcon() {
-        return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/websvc/axis2/resources/axis_options_32.png")); // NOI18N
+        return ImageUtilities.loadImageIcon("org/netbeans/modules/websvc/axis2/resources/axis_options_32.png", false); // NOI18N
     }
 
     public String getCategoryName() {

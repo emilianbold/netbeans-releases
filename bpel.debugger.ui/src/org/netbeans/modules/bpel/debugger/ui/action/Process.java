@@ -42,10 +42,7 @@ public class Process extends AbstractAction {
       // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
       putValue(NAME, NbBundle.getMessage(Process.class, "LBL_ProcessView"));//NOI18N
       putValue(
-        SMALL_ICON,
-        new ImageIcon (ImageUtilities.loadImage (
-        "org/netbeans/modules/bpel/debugger/ui/" + // NOI18N
-        "resources/image/process.gif"))); // NOI18N
+        SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/bpel/debugger/ui/" + "resources/image/process.gif", false)); // NOI18N
     }
     
     /**{@inheritDoc}*/

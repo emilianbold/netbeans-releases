@@ -74,8 +74,7 @@ public class AddMethodAction extends AbstractAction implements Node.Cookie {
      */
     public AddMethodAction(ResourceType resource, String resourcePath, WadlModel model) {
         super(getName());
-        putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage
-            ("org/netbeans/modules/websvc/rest/wadl/design/view/resources/method.png")));
+        putValue(SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/websvc/rest/wadl/design/view/resources/method.png", false));
         putValue(SHORT_DESCRIPTION, NbBundle.getMessage(AddMethodAction.class, "Hint_AddMethod"));
         putValue(MNEMONIC_KEY, Integer.valueOf(NbBundle.getMessage(AddMethodAction.class, "LBL_AddMethod_mnem_pos")));
         this.resource=resource;

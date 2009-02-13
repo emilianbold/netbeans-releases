@@ -22,7 +22,7 @@ public class PythonConsoleAction extends AbstractAction {
     public static String ICON_PATH = "org/netbeans/modules/python/console/actions/pyConsole.png";
     public PythonConsoleAction() {
         super(NbBundle.getMessage(PythonConsoleAction.class, "CTL_PythonConsoleAction"));
-        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(ICON_PATH, true)));
+        putValue(SMALL_ICON, ImageUtilities.loadImageIcon(ICON_PATH, true));
     }
 
     public void actionPerformed(ActionEvent evt) {

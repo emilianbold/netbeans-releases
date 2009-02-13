@@ -624,7 +624,7 @@ public class GoToSymbolAction extends AbstractAction implements GoToPanel.Conten
             
             jlName.setText( "Sample" ); // NOI18N
             //jlName.setIcon(UiUtils.getElementIcon(ElementKind.CLASS, null));
-            jlName.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/jumpto/type/sample.png")));
+            jlName.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/jumpto/type/sample.png", false));
             
             jList.setFixedCellHeight(jlName.getPreferredSize().height);
             jList.setFixedCellWidth(jv.getExtentSize().width);

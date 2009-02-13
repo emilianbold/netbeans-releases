@@ -345,7 +345,9 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     model.remove(extension);
     int selectedIndex = cbExtension.getSelectedIndex();
     cbExtension.removeItem(extension);
-    cbExtension.setSelectedIndex(Math.max(0, --selectedIndex));
+    if (cbExtension.getItemCount() > 0) {
+        cbExtension.setSelectedIndex(Math.max(0, --selectedIndex));
+    }
     controller.changed();
 }//GEN-LAST:event_btnRemoveActionPerformed
 

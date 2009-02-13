@@ -177,7 +177,7 @@ import org.openide.util.Exceptions;
  */
 public class EjbJarProject implements Project, AntProjectListener, FileChangeListener {
     
-    private static final Icon PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon.gif")); // NOI18N
+    private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon.gif", false); // NOI18N
     
     private static final Logger LOGGER = Logger.getLogger(EjbJarProject.class.getName());
     

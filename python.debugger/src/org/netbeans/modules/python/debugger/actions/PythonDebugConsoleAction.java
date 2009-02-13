@@ -55,7 +55,7 @@ public class PythonDebugConsoleAction extends AbstractAction {
 
   public PythonDebugConsoleAction() {
     super(NbBundle.getMessage(PythonDebugConsoleAction.class, "CTL_PythonDebugConsoleAction"));
-    putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(ICON_PATH, true)));
+    putValue(SMALL_ICON, ImageUtilities.loadImageIcon(ICON_PATH, true));
   }
 
   public void actionPerformed(ActionEvent evt) {

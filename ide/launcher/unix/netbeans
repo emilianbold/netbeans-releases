@@ -102,6 +102,8 @@ absolutize_paths() {
     while read path; do
         if [ -d "$path" ]; then
             (cd "$path" 2>/dev/null && pwd)
+        else
+            echo $path
         fi
     done
 }
