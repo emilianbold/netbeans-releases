@@ -61,6 +61,7 @@ import org.netbeans.modules.subversion.client.parser.LocalSubversionException;
 import org.netbeans.modules.subversion.client.parser.SvnWcParser;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.OutputListener;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 import org.w3c.dom.Document;
@@ -172,7 +173,7 @@ public class HudsonSubversionSCM implements HudsonSCM {
         }
     }
 
-    public List<? extends HudsonJobChangeItem> parseChangeSet(Element changeSet) {
+    public List<? extends HudsonJobChangeItem> parseChangeSet(final Element changeSet) {
         if (!"svn".equals(xpath("kind", changeSet))) {
             // Either a different SCM, or old Hudson.
             if (changeSet.getElementsByTagName("revision").getLength() == 0) {
@@ -181,31 +182,58 @@ public class HudsonSubversionSCM implements HudsonSCM {
             }
         }
         class SubversionItem implements HudsonJobChangeItem {
-            final Element xml;
+            final Element itemXML;
             SubversionItem(Element xml) {
-                this.xml = xml;
+                this.itemXML = xml;
             }
             public String getUser() {
-                return xpath("user", xml);
+                return xpath("user", itemXML);
             }
             public String getMessage() {
-                return xpath("msg", xml);
+                return xpath("msg", itemXML);
             }
             public Collection<? extends HudsonJobChangeFile> getFiles() {
                 class SubversionFile implements HudsonJobChangeFile {
-                    final Element xml;
+                    final Element fileXML;
                     SubversionFile(Element xml) {
-                        this.xml = xml;
+                        this.fileXML = xml;
                     }
                     public String getName() {
-                        return xpath("file", xml);
+                        return xpath("file", fileXML);
                     }
                     public EditType getEditType() {
-                        return EditType.valueOf(xpath("editType", xml));
+                        return EditType.valueOf(xpath("editType", fileXML));
+                    }
+                    public OutputListener hyperlink() {
+                        String module = xpath("revision/module", changeSet);
+                        String rev = xpath("revision", itemXML);
+                        if (module == null || !module.startsWith("http") || rev == null) {
+                            return null;
+                        }
+                        int r = Integer.parseInt(rev);
+                        String path = getName();
+                        int startRev, endRev;
+                        switch (getEditType()) {
+                        case edit:
+                            startRev = r - 1;
+                            endRev = r;
+                            break;
+                        case add:
+                            startRev = 0;
+                            endRev = r;
+                            break;
+                        case delete:
+                            startRev = r - 1;
+                            endRev = 0;
+                            break;
+                        default:
+                            throw new AssertionError();
+                        }
+                        return new SubversionHyperlink(module, path, startRev, endRev);
                     }
                 }
                 List<SubversionFile> files = new ArrayList<SubversionFile>();
-                NodeList nl = xml.getElementsByTagName("path");
+                NodeList nl = itemXML.getElementsByTagName("path");
                 for (int i = 0; i < nl.getLength(); i++) {
                     files.add(new SubversionFile((Element) nl.item(i)));
                 }

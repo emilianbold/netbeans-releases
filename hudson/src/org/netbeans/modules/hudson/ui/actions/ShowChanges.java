@@ -40,7 +40,9 @@
 package org.netbeans.modules.hudson.ui.actions;
 
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.util.Collection;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -51,6 +53,7 @@ import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -84,27 +87,41 @@ public class ShowChanges extends AbstractAction implements Runnable {
         OutputWriter out = io.getOut();
         OutputWriter err = io.getErr();
         Collection<? extends HudsonJobChangeItem> changes = instance.getConnector().getJobBuild(job, buildNumber).getChanges();
-        if (changes.isEmpty()) {
-            out.println("No changes."); // XXX I18N
-        } else {
-            for (HudsonJobChangeItem item : changes) {
-                out.println(item.getUser() + ": " + item.getMessage());
-                for (HudsonJobChangeFile file : item.getFiles()) {
-                    // XXX hyperlink to diff viewer
-                    switch (file.getEditType()) {
-                    case edit:
-                        out.print('±');
-                        break;
-                    case add:
-                        out.print('+');
-                        break;
-                    case delete:
-                        out.print('-');
+        boolean first = true;
+        for (HudsonJobChangeItem item : changes) {
+            if (first) {
+                first = false;
+            } else {
+                out.println();
+            }
+            out.println(item.getUser() + ": " + item.getMessage());
+            for (HudsonJobChangeFile file : item.getFiles()) {
+                // XXX hyperlink to diff viewer
+                switch (file.getEditType()) {
+                case edit:
+                    out.print('±');
+                    break;
+                case add:
+                    out.print('+');
+                    break;
+                case delete:
+                    out.print('-');
+                }
+                out.print(' ');
+                OutputListener hyperlink = file.hyperlink();
+                if (hyperlink != null) {
+                    try {
+                        out.println(file.getName(), hyperlink);
+                    } catch (IOException x) {
+                        LOG.log(Level.INFO, null, x);
                     }
-                    out.print(' ');
+                } else {
                     out.println(file.getName());
                 }
             }
+        }
+        if (first) {
+            out.println("No changes."); // XXX I18N
         }
         out.close();
         err.close();

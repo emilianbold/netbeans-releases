@@ -40,6 +40,7 @@
 package org.netbeans.modules.hudson.spi;
 
 import java.util.Collection;
+import org.openide.windows.OutputListener;
 
 public interface HudsonJobChangeItem {
 
@@ -59,7 +60,11 @@ public interface HudsonJobChangeItem {
 
         EditType getEditType();
 
-        // XXX may need to have a method to produce a diff component
+        /**
+         * Provides the ability for an SCM to hyperlink the diff of a file.
+         * @return a hyperlink implementation, or null
+         */
+        OutputListener hyperlink();
 
     }
 
