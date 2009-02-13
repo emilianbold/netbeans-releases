@@ -41,6 +41,7 @@
 package org.openide.explorer.view;
 
 import java.awt.Component;
+import java.awt.Container;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Children;
@@ -107,6 +108,7 @@ import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
+import javax.swing.ScrollPaneLayout;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.TransferHandler;
@@ -236,6 +238,8 @@ public abstract class TreeView extends JScrollPane {
     * @param popupAllowed should right-click open popup?
     */
     public TreeView(boolean defaultAction, boolean popupAllowed) {
+        setLayout(new ExplorerScrollPaneLayout());
+
         initializeTree();
 
 //        // activation of drop target
@@ -1549,50 +1553,136 @@ public abstract class TreeView extends JScrollPane {
         }
     }
 
+    @Override
+    public Insets getInsets() {
+        Insets res = getInnerInsets();
+        res = new Insets(res.top, res.left, res.bottom, res.right);
+        if( null != searchpanel && searchpanel.isVisible() ) {
+            res.bottom += searchpanel.getPreferredSize().height;
+        }
+        return res;
+    }
+
+    private Insets getInnerInsets() {
+        Insets res = super.getInsets();
+        if( null == res ) {
+            res = new Insets(0,0,0,0);
+        }
+        return res;
+    }
+
+    private JPanel searchpanel = null;
+    // searchTextField manages focus because it handles VK_TAB key
+    private JTextField searchTextField = new JTextField() {
+        @Override
+        public boolean isManagingFocus() {
+            return true;
+        }
+
+        @Override
+        public void processKeyEvent(KeyEvent ke) {
+            //override the default handling so that
+            //the parent will never receive the escape key and
+            //close a modal dialog
+            if (ke.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                removeSearchField();
+                ke.consume();
+
+                // bugfix #32909, reqest focus when search field is removed
+                SwingUtilities.invokeLater(
+                    new Runnable() {
+                        //additional bugfix - do focus change later or removing
+                        //the component while it's focused will cause focus to
+                        //get transferred to the next component in the
+                        //parent focusTraversalPolicy *after* our request
+                        //focus completes, so focus goes into a black hole - Tim
+                        public void run() {
+                            if( null != tree )
+                                tree.requestFocus();
+                        }
+                    }
+                );
+            } else {
+                super.processKeyEvent(ke);
+            }
+        }
+    };
+    private int originalScrollMode;
+
+
+
+    private void prepareSearchPanel() {
+        if( searchpanel == null ) {
+            searchpanel = new JPanel();
+
+            JLabel lbl = new JLabel(NbBundle.getMessage(TreeView.class, "LBL_QUICKSEARCH")); //NOI18N
+            searchpanel.setLayout(new BoxLayout(searchpanel, BoxLayout.X_AXIS));
+            searchpanel.add(lbl);
+            searchpanel.add(searchTextField);
+            lbl.setLabelFor(searchTextField);
+            searchTextField.setColumns(10);
+            searchTextField.setMaximumSize(searchTextField.getPreferredSize());
+            searchpanel.setBorder(BorderFactory.createEmptyBorder(2,6,2,2));
+            searchpanel.setOpaque( true );
+            searchTextField.putClientProperty("JTextField.variant", "search"); //NOI18N
+            lbl.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
+        }
+    }
+
+    /**
+     * Adds the search field to the tree.
+     */
+    private void displaySearchField() {
+        if( null != searchpanel )
+            return;
+
+        JViewport vp = getViewport();
+        originalScrollMode = vp.getScrollMode();
+        vp.setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
+        searchTextField.setFont(tree.getFont());
+        prepareSearchPanel();
+        add(searchpanel);
+        invalidate();
+        revalidate();
+        repaint();
+        searchTextField.requestFocus();
+    }
+
+    /**
+     * Removes the search field from the tree.
+     */
+    private void removeSearchField() {
+        if( null == searchpanel )
+            return;
+
+        remove(searchpanel);
+        searchpanel = null;
+        getViewport().setScrollMode(originalScrollMode);
+        invalidate();
+        revalidate();
+        repaint();
+    }
+
+    private class ExplorerScrollPaneLayout extends ScrollPaneLayout {
+
+        @Override
+        public void layoutContainer( Container parent ) {
+            super.layoutContainer(parent);
+            if( null != searchpanel && searchpanel.isVisible() ) {
+                Insets innerInsets = getInnerInsets();
+                Dimension prefSize = searchpanel.getPreferredSize();
+                searchpanel.setBounds(innerInsets.left, parent.getHeight()-innerInsets.bottom-prefSize.height,
+                        parent.getWidth()-innerInsets.left-innerInsets.right, prefSize.height);
+            }
+        }
+    }
+
     private final class ExplorerTree extends JTree implements Autoscroll {
         AutoscrollSupport support;
         private String maxPrefix;
         int SEARCH_FIELD_SPACE = 3;
         private boolean firstPaint = true;
 
-        // searchTextField manages focus because it handles VK_TAB key
-        private JTextField searchTextField = new JTextField() {
-            @Override
-                public boolean isManagingFocus() {
-                    return true;
-                }
-
-            @Override
-                public void processKeyEvent(KeyEvent ke) {
-                    //override the default handling so that
-                    //the parent will never receive the escape key and
-                    //close a modal dialog
-                    if (ke.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                        removeSearchField();
-                        ke.consume();
-
-                        // bugfix #32909, reqest focus when search field is removed
-                        SwingUtilities.invokeLater(
-                            new Runnable() {
-                                //additional bugfix - do focus change later or removing
-                                //the component while it's focused will cause focus to
-                                //get transferred to the next component in the 
-                                //parent focusTraversalPolicy *after* our request
-                                //focus completes, so focus goes into a black hole - Tim
-                                public void run() {
-                                    ExplorerTree.this.requestFocus();
-                                }
-                            }
-                        );
-                    } else {
-                        super.processKeyEvent(ke);
-                    }
-                }
-            };
-
-        private JPanel searchpanel = null;
-        final private int heightOfTextField = searchTextField.getPreferredSize().height;
-        private int originalScrollMode;
 
         ExplorerTree(TreeModel model) {
             super(model);
@@ -1714,18 +1804,6 @@ public abstract class TreeView extends JScrollPane {
 
         private void guardedDoLayout() {
             super.doLayout();
-
-            Rectangle visibleRect = getVisibleRect();
-
-            if ((searchpanel != null) && searchpanel.isDisplayable()) {
-                int width = searchpanel.getPreferredSize().width;
-
-                searchpanel.setBounds(
-                    Math.max(SEARCH_FIELD_SPACE, (visibleRect.x + visibleRect.width) - width),
-                    visibleRect.y + SEARCH_FIELD_SPACE, Math.min(visibleRect.width, width) - SEARCH_FIELD_SPACE,
-                    heightOfTextField
-                );
-            }
         }
 
         @Override
@@ -1767,21 +1845,6 @@ public abstract class TreeView extends JScrollPane {
                     r.height = (bottom.y + bottom.height) - top.y;
                     repaint(r.x, r.y, r.width, r.height);
                 }
-            }
-        }
-
-        private void prepareSearchPanel() {
-            if (searchpanel == null) {
-                searchpanel = new JPanel();
-
-                JLabel lbl = new JLabel(NbBundle.getMessage(TreeView.class, "LBL_QUICKSEARCH")); //NOI18N
-                searchpanel.setLayout(new BoxLayout(searchpanel, BoxLayout.X_AXIS));
-                searchpanel.add(lbl);
-                searchpanel.add(searchTextField);
-                lbl.setLabelFor(searchTextField);
-                searchTextField.setColumns(10);
-                searchpanel.setBorder(BorderFactory.createRaisedBevelBorder());
-                lbl.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
             }
         }
 
@@ -1922,36 +1985,6 @@ public abstract class TreeView extends JScrollPane {
                 row = (row + increment + max) % max;
             } while (row != startingRow);
             return null;
-        }
-
-        /**
-         * Adds the search field to the tree.
-         */
-        private void displaySearchField() {
-            if (!searchTextField.isDisplayable()) {
-                JViewport viewport = TreeView.this.getViewport();
-                originalScrollMode = viewport.getScrollMode();
-                viewport.setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
-                searchTextField.setFont(ExplorerTree.this.getFont());
-                prepareSearchPanel();
-                add(searchpanel);
-                revalidate();
-                repaint();
-                searchTextField.requestFocus();
-            }
-        }
-
-        /**
-         * Removes the search field from the tree.
-         */
-        private void removeSearchField() {
-            if (searchpanel.isDisplayable()) {
-                remove(searchpanel);
-                TreeView.this.getViewport().setScrollMode(originalScrollMode);
-
-                Rectangle r = searchpanel.getBounds();
-                this.repaint(r);
-            }
         }
 
         /** notify the Component to autoscroll */
