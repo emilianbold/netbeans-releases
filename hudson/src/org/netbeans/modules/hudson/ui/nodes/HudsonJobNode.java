@@ -50,6 +50,7 @@ import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.impl.HudsonJobImpl;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
 import org.netbeans.modules.hudson.ui.actions.ShowBuildConsole;
+import org.netbeans.modules.hudson.ui.actions.ShowChanges;
 import org.netbeans.modules.hudson.ui.actions.ShowFailures;
 import org.netbeans.modules.hudson.ui.actions.ShowJobDetailAction;
 import org.netbeans.modules.hudson.ui.actions.StartJobAction;
@@ -116,6 +117,7 @@ public class HudsonJobNode extends AbstractNode {
         actions.add(SystemAction.get(StartJobAction.class));
         int last = job.getLastBuild();
         if (last >= 0) {
+            actions.add(new ShowChanges(job, last));
             actions.add(new ShowBuildConsole(job, last));
         }
         int lastCompleted = job.getLastCompletedBuild();
