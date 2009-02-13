@@ -70,10 +70,7 @@ public final class Advanced extends OptionsCategory {
     @Override
     public Icon getIcon () {
         if (icon == null)
-            icon = new ImageIcon (
-                ImageUtilities.loadImage
-                    ("org/netbeans/modules/options/resources/advanced.png")
-            );
+            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/options/resources/advanced.png", false);
         return icon;
     }
     

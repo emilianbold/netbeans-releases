@@ -63,6 +63,7 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.editor.structure.api.DocumentModel;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.PerseusController;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
@@ -207,7 +208,9 @@ final class ParsingTask extends Thread implements HyperlinkListener {
             } catch(InterruptedException ie){
                 LOG.log(Level.INFO, null, ie);
             } catch(Exception e) {
-                showParsingErrors(fileModel.getModel().getDocument(), e);
+                DocumentModel docModel = fileModel.getModel();
+                Document doc = docModel != null ? docModel.getDocument() : null;
+                showParsingErrors(doc, e);
             } finally {
                 m_dObj.getSceneManager().setBusyState(PARSE_TOKEN, false);
                 System.setErr(System.err);
@@ -272,58 +275,58 @@ final class ParsingTask extends Thread implements HyperlinkListener {
         final List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
         
         errors.add( new ErrorDescription(perseusException));
+        if (doc != null) {
+            ErrorHandler errorHandler = new ErrorHandler() {
 
-        ErrorHandler errorHandler = new ErrorHandler() {                
-            public void warning(SAXParseException e) throws SAXException {
-                addError( new ErrorDescription( e, ErrorDescription.SEVERITY_WARNING));
-            }
-
-            public void fatalError(SAXParseException e) throws SAXException {
-                addError( new ErrorDescription( e, ErrorDescription.SEVERITY_FATAL));
-            }
-
-            public void error(SAXParseException e) throws SAXException {
-                addError( new ErrorDescription( e, ErrorDescription.SEVERITY_ERROR));
-            }
-            
-            private void addError( ErrorDescription errDesc) {
-                for ( ErrorDescription ed : errors) {
-                    if (ed.m_text.equals(errDesc.m_text)) {
-                        if ( ed.m_line == -1 && errDesc.m_line != -1) {
-                            ed.m_line   = errDesc.m_line;
-                            ed.m_column = errDesc.m_column;
-                        }
-                        return;
-                    }
+                public void warning(SAXParseException e) throws SAXException {
+                    addError(new ErrorDescription(e, ErrorDescription.SEVERITY_WARNING));
                 }
-                errors.add(errDesc);
-            }
-        };
 
-        InputStream in = new EncodingInputStream( (BaseDocument) doc, m_dObj.getEncodingHelper().getEncoding());
-        try { 
-            InputSource isource = new InputSource(in);
-            XMLUtil.parse( isource, true, true, errorHandler, EntityCatalog.getDefault());
-        } catch( SAXException e) { 
-            //Not interested in these errors ...
-        }
-        // Fix for IZ#145734 .
-        catch ( ConnectException e ){
-            /*
-             * Ignore this exception . It can be caused by connection 
-             * error from entity resolver.
-             */
-        }    
-        catch (Exception e) {
-            SceneManager.error("Error during document parse", e); //NOI18N
-        } finally {
+                public void fatalError(SAXParseException e) throws SAXException {
+                    addError(new ErrorDescription(e, ErrorDescription.SEVERITY_FATAL));
+                }
+
+                public void error(SAXParseException e) throws SAXException {
+                    addError(new ErrorDescription(e, ErrorDescription.SEVERITY_ERROR));
+                }
+
+                private void addError(ErrorDescription errDesc) {
+                    for (ErrorDescription ed : errors) {
+                        if (ed.m_text.equals(errDesc.m_text)) {
+                            if (ed.m_line == -1 && errDesc.m_line != -1) {
+                                ed.m_line = errDesc.m_line;
+                                ed.m_column = errDesc.m_column;
+                            }
+                            return;
+                        }
+                    }
+                    errors.add(errDesc);
+                }
+            };
+
+            InputStream in = new EncodingInputStream((BaseDocument) doc, m_dObj.getEncodingHelper().getEncoding());
             try {
-                in.close();
-            } catch (IOException ex) {
-                SceneManager.error("Could not close stream", ex); //NOI18N
+                InputSource isource = new InputSource(in);
+                XMLUtil.parse(isource, true, true, errorHandler, EntityCatalog.getDefault());
+            } catch (SAXException e) {
+                //Not interested in these errors ...
+            } // Fix for IZ#145734 .
+            catch (ConnectException e) {
+                /*
+                 * Ignore this exception . It can be caused by connection
+                 * error from entity resolver.
+                 */
+            } catch (Exception e) {
+                SceneManager.error("Error during document parse", e); //NOI18N
+            } finally {
+                try {
+                    in.close();
+                } catch (IOException ex) {
+                    SceneManager.error("Could not close stream", ex); //NOI18N
+                }
             }
         }
-        
+
         for ( ErrorDescription ed : errors) {
             ed.fillNumbers( m_dObj.getModel());
         }

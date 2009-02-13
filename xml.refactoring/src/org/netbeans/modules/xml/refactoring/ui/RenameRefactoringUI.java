@@ -322,10 +322,7 @@ public class RenameRefactoringUI implements org.netbeans.modules.refactoring.spi
     }
 
     public Icon getCustomIcon() {
-         return new ImageIcon(
-            ImageUtilities.loadImage(
-            "org/netbeans/modules/xml/refactoring/resources/"+
-            "graphical_view_refactoring.png"));
+         return ImageUtilities.loadImageIcon("org/netbeans/modules/xml/refactoring/resources/" + "graphical_view_refactoring.png", false);
     }
 
     public String getCustomToolTip() {

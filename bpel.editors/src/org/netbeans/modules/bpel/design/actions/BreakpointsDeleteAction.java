@@ -59,9 +59,7 @@ public class BreakpointsDeleteAction extends AbstractAction {
 
     //public static final String ACCELERATOR = "alt shift F10"; // NOI18N
     
-    private static final Icon ICON = new ImageIcon(ImageUtilities.loadImage(
-            "org/netbeans/modules/bpel/design/actions/" + // NOI18N
-            "resources/breakpoints_delete.png")); // NOI18N
+    private static final Icon ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/bpel/design/actions/" + "resources/breakpoints_delete.png", false); // NOI18N
     
     private static final String LABEL = NbBundle.getMessage(
             BreakpointsDeleteAction.class, "NAME_Breakpoints_Delete");

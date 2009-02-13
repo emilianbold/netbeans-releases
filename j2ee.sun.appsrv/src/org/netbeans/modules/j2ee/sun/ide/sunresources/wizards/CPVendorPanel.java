@@ -51,9 +51,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Vector;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import javax.swing.ButtonGroup;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.DocumentListener;
@@ -62,7 +66,6 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 
 import org.netbeans.modules.j2ee.sun.api.restricted.ResourceConfigurator;
 import org.netbeans.modules.j2ee.sun.api.restricted.ResourceUtils;
-import org.openide.util.HelpCtx;
 import org.openide.loaders.TemplateWizard;
 
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Field;
@@ -70,10 +73,10 @@ import org.netbeans.modules.j2ee.sun.sunresources.beans.FieldGroup;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Wizard;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.FieldGroupHelper;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.FieldHelper;
-import org.openide.WizardDescriptor;
+import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 import org.openide.filesystems.FileObject;
 
-public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener, DocumentListener, ListDataListener {
+public class CPVendorPanel extends javax.swing.JPanel implements ChangeListener, DocumentListener, ListDataListener, WizardConstants {
     
     static final long serialVersionUID = 93474632245456421L;
     
@@ -86,11 +89,18 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
     private boolean setupValid = true;
     
     private static final String CONST_TRUE = "true"; // NOI18N
-        
+
+    public ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"); //NOI18N
+    private final List listeners = new ArrayList();
+
+    protected final CPVendor panel;
+    
     /** Creates new form DBSchemaConnectionpanel */
-    public CPVendorPanel(ResourceConfigHelper helper, Wizard wiardInfo) {
+    public CPVendorPanel(CPVendor panel, ResourceConfigHelper helper, Wizard wiardInfo) {
         this.firstTime = true;
+        this.panel = panel;
         this.helper = helper;
+
         this.generalGroup = FieldGroupHelper.getFieldGroup(wiardInfo, __General); 
         this.propGroup = FieldGroupHelper.getFieldGroup(wiardInfo, __Properties); 
         this.vendorGroup = FieldGroupHelper.getFieldGroup(wiardInfo, __PropertiesURL); 
@@ -321,7 +331,7 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
         if (!value.equals(newValue)) {
             this.helper.getData().setString(__Name, newValue);
         }
-        fireChange(this);
+        fireChange();
     }
 
     private void nameFieldActionPerformed(java.awt.event.ActionEvent evt) {
@@ -339,7 +349,7 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
         String newValue = nameField.getText();
         if (!value.equals(newValue)) {
             this.helper.getData().setString(__Name, newValue);
-            fireChange(this);
+            fireChange();
         }
         
         if((this.getRootPane().getDefaultButton() != null) && (this.getRootPane().getDefaultButton().isEnabled())){
@@ -354,15 +364,7 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
 
     private void nameComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
         // Add your handling code here:
-        setNewConfigData(true);      
-/*           
-        usernameTextField.setText(""); //NOI18N
-        passwordField.setText(""); //NOI18N
-        
-        data.setDriver(driverTextField.getText());
-        data.setSchema(null);
-        schemas = false;
-*/       
+        setNewConfigData(true);           
     }
     
     private void setNewConfigData(boolean replaceProps) {
@@ -399,7 +401,7 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
             if (replaceProps) {
                 setPropertiesInData(vendorName);
             }
-        }    
+        }
     }
     
     private void setDataSourceClassNameAndResTypeInData(String vendorName) {
@@ -482,7 +484,7 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
             
             setDataSourceClassNameAndResTypeInData(vendorName);
         }
-           
+
     }
     
     private void setDerbyProps(String vendorName, String url) {
@@ -530,23 +532,21 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
     private javax.swing.JRadioButton newCofigRadioButton;
     // End of variables declaration//GEN-END:variables
 
-//    private static final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"); //NOI18N
-    
-    public boolean isValid() {
+    public boolean hasValidData() {
         if(! setupValid){
-            setErrorMsg(bundle.getString("Err_InvalidSetup"));
+            panel.setErrorMsg(bundle.getString("Err_InvalidSetup"));
             return false;
         }
-        setErrorMsg(bundle.getString("Empty_String"));
+        panel.setErrorMsg(bundle.getString("Empty_String"));
         String name = nameField.getText();
         if (name == null || name.length() == 0){
-            setErrorMsg(bundle.getString("Err_InvalidName"));
+            panel.setErrorMsg(bundle.getString("Err_InvalidName"));
             return false;
         }else if(! ResourceUtils.isLegalResourceName(name)){
-            setErrorMsg(bundle.getString("Err_InvalidName"));
+            panel.setErrorMsg(bundle.getString("Err_InvalidName"));
             return false;
         }else if(! ResourceUtils.isUniqueFileName(name, this.helper.getData().getTargetFileObject(), __ConnectionPoolResource)){
-            setErrorMsg(bundle.getString("Err_DuplFileName"));
+            panel.setErrorMsg(bundle.getString("Err_DuplFileName"));
             return false;
         }
         
@@ -554,39 +554,39 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
             if (existingConnComboBox.getSelectedIndex() > 0)
                 return true;
             else
-                setErrorMsg(bundle.getString("Err_ChooseDBConn"));
+                panel.setErrorMsg(bundle.getString("Err_ChooseDBConn"));
         }else if (newCofigRadioButton.isSelected()) {
             if (nameComboBox.getSelectedIndex() > 0)
                 return true;
             else
-                setErrorMsg(bundle.getString("Err_ChooseDBVendor"));
+                panel.setErrorMsg(bundle.getString("Err_ChooseDBVendor"));
         } 
         
         return false;
     }
 
     public void removeUpdate(final javax.swing.event.DocumentEvent event) {
-        fireChange(this);
+        fireChange();
     }
     
     public void changedUpdate(final javax.swing.event.DocumentEvent event) {
-        fireChange(this);
+        fireChange();
     }
     
     public void insertUpdate(final javax.swing.event.DocumentEvent event) {
-        fireChange(this);
+        fireChange();
     }
 
     public void intervalAdded(final javax.swing.event.ListDataEvent p1) {
-        fireChange(this);
+        fireChange();
     }
     
     public void intervalRemoved(final javax.swing.event.ListDataEvent p1) {
-        fireChange(this);
+        fireChange();
     }
     
     public void contentsChanged(final javax.swing.event.ListDataEvent p1) {
-        fireChange(this);
+        fireChange();
     }
 
     public void stateChanged(final javax.swing.event.ChangeEvent p1) {
@@ -609,7 +609,7 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
                 setNewConfigData(true);
             }  
         }
-        fireChange(this);
+        fireChange();
     }
     
     public CPVendorPanel setFirstTime(boolean first) {
@@ -617,58 +617,50 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
         return this;
     }
 
-    protected void initData() {
-        /*if (existingConnRadioButton.isSelected()) {
-            data.setExistingConn(true);
-            if(existingConnComboBox.getSelectedIndex() > 0)
-                data.setConnectionNodeInfo((ConnectionNodeInfo) connInfos.get(existingConnComboBox.getSelectedIndex() - 1));
-            
-            data.setDriver(null);
-            data.setUrl(null);
-            data.setUsername(null);
-            data.setPassword(null);
-        } else {
-            data.setExistingConn(false);
-            data.setDriver(driverTextField.getText());
-            data.setUrl(urlTextField.getText());
-            data.setUsername(usernameTextField.getText());
-            data.setPassword(new String(passwordField.getPassword()));
+    private void fireChange() {
+        ChangeEvent event = new ChangeEvent(this);
+        ArrayList tempList;
 
-            data.setConnectionNodeInfo(null);
-        }*/
+        synchronized (listeners) {
+            tempList = new ArrayList(listeners);
+        }
+
+        Iterator iter = tempList.iterator();
+        while (iter.hasNext())
+            ((ChangeListener)iter.next()).stateChanged(event);
     }
-    
-    public HelpCtx getHelp() {
-         return new HelpCtx("AS_Wiz_ConnPool_chooseDB"); //NOI18N
+
+    public void addChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.add(l);
+        }
     }
-    
-    public void readSettings(Object settings) {
-        this.wizDescriptor = (WizardDescriptor)settings;
-        TemplateWizard wizard = (TemplateWizard)settings;
+
+    public void read(Object settings) {
+        TemplateWizard wizard = (TemplateWizard) settings;
         String targetName = wizard.getTargetName();
-        if(this.helper.getData().getString(__DynamicWizPanel).equals(CONST_TRUE)){ //NOI18N
+        if (this.helper.getData().getString(__DynamicWizPanel).equals(CONST_TRUE)) { //NOI18N
             targetName = null;
-        }  
+        }
         FileObject setupFolder = ResourceUtils.getResourceDirectory(this.helper.getData().getTargetFileObject());
-        this.helper.getData().setTargetFileObject (setupFolder);
-        if(setupFolder != null){
+        this.helper.getData().setTargetFileObject(setupFolder);
+        if (setupFolder != null) {
             String resourceName = this.helper.getData().getString(__Name);
-            if((resourceName != null) && (! resourceName.equals(""))) {
+            if ((resourceName != null) && (!resourceName.equals(""))) {
                 targetName = resourceName;
             }
-            targetName = ResourceUtils.createUniqueFileName (targetName, setupFolder, __ConnectionPoolResource);
-            this.helper.getData ().setTargetFile (targetName);
+            targetName = ResourceUtils.createUniqueFileName(targetName, setupFolder, __ConnectionPoolResource);
+            this.helper.getData().setTargetFile(targetName);
             this.nameField.setText(targetName);
             this.helper.getData().setString(__Name, targetName);
-        }else
+        } else {
             setupValid = false;
+        }
     }
     
     public void setInitialFocus(){
         new setFocus(nameField);
     }
     
-//    private boolean setupValid(){
-//        return setupValid;
-//    }
+
 }

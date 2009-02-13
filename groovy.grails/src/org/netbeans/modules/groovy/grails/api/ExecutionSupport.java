@@ -95,14 +95,14 @@ public final class ExecutionSupport {
         };
     }
 
-    public Callable<Process> createRunApp(final GrailsProjectConfig config) {
+    public Callable<Process> createRunApp(final GrailsProjectConfig config, final String... arguments) {
         return new Callable<Process>() {
 
             public Process call() throws Exception {
                 File directory = FileUtil.toFile(config.getProject().getProjectDirectory());
 
                 GrailsRuntime.CommandDescriptor descriptor = GrailsRuntime.CommandDescriptor.forProject(
-                        "run-app", directory, config, new String[] {}, null); // NOI18N
+                        GrailsRuntime.IDE_RUN_COMMAND, directory, config, arguments, null);
 
                 return runtime.createCommand(descriptor).call();
             }

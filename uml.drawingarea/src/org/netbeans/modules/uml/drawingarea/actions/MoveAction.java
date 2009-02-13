@@ -60,6 +60,7 @@ public final class MoveAction extends WidgetAction.LockedAdapter {
     private Point dragSceneLocation = null;
     private Point originalSceneLocation = null;
     private Point initialMouseLocation = null;
+    private boolean dragged=false;
 
     public MoveAction (MoveStrategy strategy, MoveProvider provider) {
         this.strategy = strategy;
@@ -70,10 +71,12 @@ public final class MoveAction extends WidgetAction.LockedAdapter {
         return movingWidget != null;
     }
 
+    @Override
     public State mousePressed (Widget widget, WidgetMouseEvent event) {
         if (isLocked ())
             return State.createLocked (widget, this);
         if (event.getButton () == MouseEvent.BUTTON1  &&  event.getClickCount () == 1) {
+            dragged=false;
             movingWidget = widget;
             initialMouseLocation = event.getPoint ();
             originalSceneLocation = provider.getOriginalLocation (widget);
@@ -86,9 +89,12 @@ public final class MoveAction extends WidgetAction.LockedAdapter {
         return State.REJECTED;
     }
 
+    @Override
     public State mouseReleased (Widget widget, WidgetMouseEvent event) {
         boolean state;
         if (initialMouseLocation != null  &&  initialMouseLocation.equals (event.getPoint ()))
+            state = true;
+        else if(dragSceneLocation!=null && dragSceneLocation.equals(widget.convertLocalToScene(event.getPoint())))
             state = true;
         else
             state = move (widget, event.getPoint ());
@@ -102,7 +108,9 @@ public final class MoveAction extends WidgetAction.LockedAdapter {
         return state ? State.CONSUMED : State.REJECTED;
     }
 
+    @Override
     public State mouseDragged (Widget widget, WidgetMouseEvent event) {
+        dragged=true;
         return move (widget, event.getPoint ()) ? State.createLocked (widget, this) : State.REJECTED;
     }
 

@@ -764,31 +764,6 @@ public class TraceModel extends TraceModelBase {
         }
     }
 
-    private void waitProjectParsed(boolean trace) {
-        boolean wasWait = true;
-        while (wasWait) {
-            wasWait = waitParsed(getProject(), trace);
-            if (getProject().getLibraries().size() > 0) {
-                if (trace) {
-                    System.err.println("checking libraries");
-                }
-                for (Iterator it = getProject().getLibraries().iterator(); it.hasNext();) {
-                    CsmProject lib = (CsmProject) it.next();
-                    if (trace) {
-                        System.err.println("checking library " + lib.getName());
-                    }
-                    wasWait |= waitParsed((ProjectBase) lib, trace);
-                }
-            }
-        }
-    }
-
-    private boolean waitParsed(ProjectBase project, boolean trace) {
-        boolean wasWait = false;
-        project.waitParse();
-        return wasWait;
-    }
-
 //    private void sleep(int timeout, String message) {
 //	System.err.printf("Sleeping: %s\n", message);
 //	sleep(timeout);
@@ -1192,7 +1167,7 @@ public class TraceModel extends TraceModelBase {
         int errCount = 0;
 
         FileImpl fileImpl = (FileImpl) getProject().testAPTParseFile(item);
-        waitProjectParsed(false);
+        waitProjectParsed(getProject(), false);
         if (dumpAst || writeAst || showAstWindow) {
             tree = fileImpl.debugParse();
         }

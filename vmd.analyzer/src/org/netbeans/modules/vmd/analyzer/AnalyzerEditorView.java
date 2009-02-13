@@ -133,7 +133,7 @@ public class AnalyzerEditorView implements DataEditorView, DesignDocumentAwarene
         refreshButton.setBorderPainted (false);
         refreshButton.setRolloverEnabled (true);
         refreshButton.setSize (14, 14);
-        refreshButton.setIcon (new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/vmd/analyzer/resources/refresh.png"))); // NOI18N
+        refreshButton.setIcon (ImageUtilities.loadImageIcon("org/netbeans/modules/vmd/analyzer/resources/refresh.png", false)); // NOI18N
         refreshButton.addActionListener (new ActionListener() {
             public void actionPerformed (ActionEvent e) {
                 updateAnalyzers ();

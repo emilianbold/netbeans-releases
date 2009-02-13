@@ -211,7 +211,7 @@ public final class DataSourceWizard implements WizardDescriptor.InstantiatingIte
         if (index == 0) {
             ((CommonPropertyPanel) panels[1]).setInitialFocus();
         }else if (index == 1) {
-            ((CPVendorPanel) panels[2]).setInitialFocus();
+            ((CPVendor) panels[2]).setInitialFocus();
         }else if (index == 2){
             ((CPPropertiesPanelPanel) panels[3]).refreshFields();
         }else if (index == 3){
@@ -309,7 +309,7 @@ public final class DataSourceWizard implements WizardDescriptor.InstantiatingIte
             morePanels = new WizardDescriptor.Panel[] {
                 panels[0],
                 panels[1],
-                new CPVendorPanel(this.cphelper, this.cpWizardInfo),
+                new CPVendor(this.cphelper, this.cpWizardInfo),
                 new CPPropertiesPanelPanel(this.cphelper, this.cpWizardInfo),
                 new CommonAttributePanel(this.cphelper, this.cpWizardInfo,  new String[] {"pool-setting", "pool-setting-2", "pool-setting-3"}), //NOI18N
             };

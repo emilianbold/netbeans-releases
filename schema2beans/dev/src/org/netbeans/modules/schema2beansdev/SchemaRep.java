@@ -5128,14 +5128,14 @@ public class SchemaRep implements PrefixGuesser {
              "byte", "java.net.URI", "javax.xml.namespace.QName", "java.lang.String", "java.lang.String",
              "java.lang.String", "java.lang.String", "java.lang.String",
              "java.lang.String", "java.lang.String", "int", "java.lang.String", "java.lang.String",
-             "java.lang.String", "java.lang.String"};
+             "java.lang.String", "java.lang.String", "java.lang.String"};
         String[] schemaType = new String[] {"string", "dateTime", "date",
              "long", "int", "char", "short", "double", "float", "byte", "boolean",
              "NMTOKEN", "positiveInteger", "nonNegativeInteger", "nonPositiveInteger", "negativeInteger", "unsignedLong", "unsignedInt", "unsignedShort",
              "unsignedByte", "anyURI", "QName", "NCName", "Name",
              "duration", "time", "ID",
              "token", "normalizedString", "gYear", "gYearMonth", "gMonthDay",
-             "gDay", "gMonth"};
+             "gDay", "gMonth", "language"};
         for (int i = 0; i < schemaType.length; ++i)
             st.put(schemaType[i], new SimpleType(namespace+schemaType[i], types[i]));
         if (useBigDataTypes) {
@@ -5163,6 +5163,8 @@ public class SchemaRep implements PrefixGuesser {
             WhiteSpace ws = new WhiteSpace("collapse");
             restrict.addSubElement(ws);
         }
+        addRestriction((SimpleType) st.get("language"), namespace+"token",
+                    new WhiteSpace("collapse"), new Pattern("[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*"));
         addRestriction((SimpleType) st.get("nonPositiveInteger"), namespace+"integer", new MaxInclusive("0"));
         addRestriction((SimpleType) st.get("negativeInteger"), namespace+"nonPositiveInteger", new MaxExclusive("0"));
         addRestriction((SimpleType) st.get("nonNegativeInteger"), namespace+"integer", new MinInclusive("0"));
@@ -5175,10 +5177,12 @@ public class SchemaRep implements PrefixGuesser {
     }
 
     protected void addRestriction(ContainsSubElements cse,
-                                  String restrictionBase, RestrictionType rt) {
+                                  String restrictionBase, RestrictionType... rt) {
         Restriction restrict = new Restriction(restrictionBase);
         cse.addSubElement(restrict);
-        restrict.addSubElement(rt);
+        for (RestrictionType r : rt) {
+            restrict.addSubElement(r);
+        }
     }
 
     /**

@@ -56,9 +56,7 @@ import org.netbeans.modules.dlight.api.execution.SubstitutableTarget;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.openide.util.RequestProcessor;
-import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 
@@ -182,24 +180,22 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     }
 
     private void start(ExecutionEnvVariablesProvider executionEnvProvider) {
+        ExecutionDescriptor descr = new ExecutionDescriptor();
+        descr = descr.controllable(true).frontWindow(true);
+        
         NativeProcessBuilder pb = new NativeProcessBuilder(execEnv, cmd);
         pb = pb.setArguments(args);
         pb = pb.addNativeProcessListener(NativeExecutableTarget.this);
         pb = pb.setWorkingDirectory(workingDirectory);
         pb = pb.addEnvironmentVariables(envs);
-        pb = pb.useExternalTerminal(externalTerminal);
+        
+        if (externalTerminal != null) {
+            pb = pb.useExternalTerminal(externalTerminal);
+            descr = descr.inputVisible(false);
+        }
+        
         if (executionEnvProvider != null && executionEnvProvider.getExecutionEnv() != null) {
             pb = pb.addEnvironmentVariables(executionEnvProvider.getExecutionEnv());
-        }
-        ExecutionDescriptor descr = new ExecutionDescriptor();
-        descr = descr.controllable(true).frontWindow(true);
-
-        boolean useTerm = Util.getBoolean("dlight.use.terminal", true);
-
-        if (useTerm) {
-            pb = pb.useExternalTerminal(
-                    ExternalTerminalProvider.getTerminal("gnome-terminal"));
-            descr.inputVisible(false);
         }
 
         final ExecutionService es = ExecutionService.newService(

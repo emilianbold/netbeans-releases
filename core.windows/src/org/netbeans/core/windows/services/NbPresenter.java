@@ -877,18 +877,15 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         if (msg != null && msg.trim().length() > 0) {
             switch (msgType) {
                 case MSG_TYPE_ERROR:
-                    prepareMessage(notificationLine,
-                        new ImageIcon (ImageUtilities.loadImage ("org/netbeans/core/windows/resources/error.png")),
+                    prepareMessage(notificationLine, ImageUtilities.loadImageIcon("org/netbeans/core/windows/resources/error.png", false),
                         nbErrorForeground);
                     break;
                 case MSG_TYPE_WARNING:
-                    prepareMessage(notificationLine,
-                        new ImageIcon (ImageUtilities.loadImage ("org/netbeans/core/windows/resources/warning.png")),
+                    prepareMessage(notificationLine, ImageUtilities.loadImageIcon("org/netbeans/core/windows/resources/warning.png", false),
                         nbWarningForeground);
                     break;
                 case MSG_TYPE_INFO:
-                    prepareMessage(notificationLine,
-                        new ImageIcon (ImageUtilities.loadImage ("org/netbeans/core/windows/resources/info.png")),
+                    prepareMessage(notificationLine, ImageUtilities.loadImageIcon("org/netbeans/core/windows/resources/info.png", false),
                         nbInfoForeground);
                     break;
                 default:

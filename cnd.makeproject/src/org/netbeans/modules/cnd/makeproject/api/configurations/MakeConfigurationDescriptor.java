@@ -100,7 +100,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     public static final String RESOURCE_FILES_FOLDER = "ResourceFiles"; // NOI18N
     public static final String ICONBASE = "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject"; // NOI18N
     public static final String ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"; // NOI18N
-    public static final Icon MAKEFILE_ICON = new ImageIcon(ImageUtilities.loadImage(ICON)); // NOI18N
+    public static final Icon MAKEFILE_ICON = ImageUtilities.loadImageIcon(ICON, false); // NOI18N
     private Project project = null;
     private String baseDir;
     private boolean modified = false;

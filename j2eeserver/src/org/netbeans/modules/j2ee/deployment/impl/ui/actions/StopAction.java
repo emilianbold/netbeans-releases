@@ -149,8 +149,7 @@ public class StopAction extends NodeAction {
         private final ServerInstance instance;
         
         public OutputAction(ServerInstance instance) {
-            super(NbBundle.getMessage(StopAction.class, "LBL_StopOutput"),
-                  new ImageIcon(ImageUtilities.loadImage(ICON)));
+            super(NbBundle.getMessage(StopAction.class, "LBL_StopOutput"),ImageUtilities.loadImageIcon(ICON, false));
             putValue(SHORT_DESCRIPTION, NbBundle.getMessage(StopAction.class, "LBL_StopOutputDesc"));
             this.instance = instance;
             

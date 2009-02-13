@@ -61,5 +61,11 @@ public enum Status {
     public String getHtmlDisplayColor() {
         return displayColor;
     }
-            
+
+    /**
+     * @return true if the given status represents a failure or an error.
+     */
+    static boolean isFailure(Status status) {
+        return FAILED.compareTo(status) <= 0;
+    }
 }

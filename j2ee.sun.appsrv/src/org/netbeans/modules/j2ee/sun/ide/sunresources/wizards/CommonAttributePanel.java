@@ -48,9 +48,6 @@ package org.netbeans.modules.j2ee.sun.ide.sunresources.wizards;
 
 import java.awt.Component;
 import javax.swing.JTextField;
-import java.util.Set;
-import java.util.Arrays;
-import java.util.HashSet;
 import org.netbeans.modules.j2ee.sun.api.restricted.ResourceUtils;
 import org.openide.filesystems.FileObject;
 
@@ -165,24 +162,7 @@ public class CommonAttributePanel extends ResourceWizardPanel {
         return wizardInfo;
     }
     
-    public String getJndiName() {
-        if(! getIsConnPool()) {
-            CommonAttributeVisualPanel visComponent = (CommonAttributeVisualPanel) component;
-            if (visComponent != null && visComponent.jLabels != null && visComponent.jFields != null) {
-                int i;
-                for (i = 0; i < visComponent.jLabels.length; i++) {
-                    String jLabel = (String) visComponent.jLabels[i].getText();
-                    if (jLabel.equals(bundle.getString("LBL_" + __JndiName))) {
-                        // NO18N
-                        return (String) ((JTextField)visComponent.jFields[i]).getText();
-                    }
-                }
-            }
-        }    
-        return null;
-    }
-    
-    /**
+     /**
      * Checks if the JNDI Name in the wizard is duplicate name in the
      * Unregistered resource list for JDBC Data Sources, Persistenc Managers, 
      * and Java Mail Sessions.
@@ -200,11 +180,9 @@ public class CommonAttributePanel extends ResourceWizardPanel {
           if(! getIsConnPool()) {
               CommonAttributeVisualPanel visComponent = (CommonAttributeVisualPanel) component;
               if (visComponent != null && visComponent.jLabels != null && visComponent.jFields != null) {
-                  int i;
-                  for (i = 0; i < visComponent.jLabels.length; i++) {
+                  for (int i = 0; i < visComponent.jLabels.length; i++) {
                       String jLabel = (String) visComponent.jLabels[i].getText ();
-                      if (jLabel.equals(bundle.getString("LBL_" + __JndiName))) {
-                          // NO18N
+                      if (jLabel.equals(Util.getCorrectedLabel(bundle, __JndiName))) { // NO18N
                           String jndiName = (String) ((JTextField)visComponent.jFields[i]).getText ();
                           if (jndiName == null || jndiName.length() == 0) {
                               setErrorMsg(bundle.getString("Err_InvalidJndiName"));
@@ -228,17 +206,8 @@ public class CommonAttributePanel extends ResourceWizardPanel {
                                   }
                               }
                           }
-                      } else {
-                          Set commonAttr = new HashSet(Arrays.asList(COMMON_ATTR_INTEGER));
-                          if (commonAttr.contains(jLabel.trim())) {
-                              String fieldValue = (String) ((JTextField)visComponent.jFields[i]).getText ();
-                              if (fieldValue == null || fieldValue.length() == 0) {
-                                  setErrorMessage(bundle.getString("Err_EmptyValue"), jLabel);
-                                  return false;
-                              }
-                          }
-                      }
-                  }
+                      } //if
+                  } //for
               }
               if (!isNewResourceSelected()) {
                   //Need to check the poolname for jdbc
@@ -266,6 +235,9 @@ public class CommonAttributePanel extends ResourceWizardPanel {
                       }
                   }
               }
+          } else {
+              ConnectionPoolOptionalVisualPanel visComponent = (ConnectionPoolOptionalVisualPanel) component;
+              return visComponent.hasValidData();
           }
           return true;
       }
@@ -331,5 +303,9 @@ public class CommonAttributePanel extends ResourceWizardPanel {
     private boolean getIsConnPool(){
         return isConnPool;
     }
+
+//    protected final void fireChangeEvent (Object source) {
+//       super.fireChange(this);
+//    }
 }
 
