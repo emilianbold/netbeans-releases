@@ -62,7 +62,7 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.spi.PhpStructureProvider;
+import org.netbeans.modules.php.project.spi.PhpUnitSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.project.util.PhpUnit;
@@ -255,9 +255,9 @@ public final class CreateTestsAction extends NodeAction {
         final File parent = FileUtil.toFile(sourceFo.getParent());
 
         // find out the name of a class(es)
-        PhpStructureProvider structureProvider = Lookup.getDefault().lookup(PhpStructureProvider.class);
-        assert structureProvider != null : "PHP structure provider must exist";
-        Collection<? extends String> classNames = structureProvider.getClassNames(sourceFo);
+        PhpUnitSupport phpUnitSupport = Lookup.getDefault().lookup(PhpUnitSupport.class);
+        assert phpUnitSupport != null : "PHP unit support must exist";
+        Collection<? extends String> classNames = phpUnitSupport.getClassNames(sourceFo);
         if (classNames.size() == 0) {
             // run phpunit in order to have some output
             generateSkeleton(phpUnit, sourceFo.getName(), sourceFo, parent, paramSkeleton);
