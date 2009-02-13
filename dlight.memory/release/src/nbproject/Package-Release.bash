@@ -7,7 +7,7 @@
 # Macros
 TOP=`pwd`
 PLATFORM=GNU-Solaris-x86
-TMPDIR=build/Default/${PLATFORM}/tmp-packaging
+TMPDIR=build/Release/${PLATFORM}/tmp-packaging
 TMPDIRNAME=tmp-packaging
 OUTPUT_PATH=MissingOutputInProject
 OUTPUT_BASENAME=MissingOutputInProject
@@ -50,7 +50,7 @@ function copyFileToTmpDir
 
 # Setup
 cd "${TOP}"
-mkdir -p dist/Default/${PLATFORM}/package
+mkdir -p dist/Release/${PLATFORM}/package
 rm -rf ${TMPDIR}
 mkdir -p ${TMPDIR}
 
@@ -62,9 +62,9 @@ copyFileToTmpDir "${OUTPUT_PATH}" "${TMPDIR}/${PACKAGE_TOP_DIR}bin/${OUTPUT_BASE
 
 # Generate tar file
 cd "${TOP}"
-rm -f dist/Default/${PLATFORM}/package/src.tar
+rm -f dist/Release/${PLATFORM}/package/src.tar
 cd ${TMPDIR}
-tar -vcf ../../../../dist/Default/${PLATFORM}/package/src.tar *
+tar -vcf ../../../../dist/Release/${PLATFORM}/package/src.tar *
 checkReturnCode
 
 # Cleanup

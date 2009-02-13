@@ -27,11 +27,11 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 PROJECTNAME=src
 
 # Active Configuration
-DEFAULTCONF=Default
+DEFAULTCONF=Release
 CONF=${DEFAULTCONF}
 
 # All Configurations
-ALLCONFS=Default 
+ALLCONFS=Release Debug-1 Debug-2 
 
 
 # build
