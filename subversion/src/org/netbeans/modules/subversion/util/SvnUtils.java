@@ -352,8 +352,14 @@ public class SvnUtils {
 
                 if (fileURL != null && repositoryURL !=  null) {
                     String fileLink = fileURL.toString();
-                    String repositoryLink = repositoryURL.toString();
-                    repositoryPath = fileLink.substring(repositoryLink.length());
+                    String repositoryLink = decode(repositoryURL).toString();
+                    try {
+                        repositoryPath = fileLink.substring(repositoryLink.length());
+                    } catch (StringIndexOutOfBoundsException ex) {
+                        // XXX delete try-catch after bugfix verification
+                        Subversion.LOG.log(Level.INFO, "repoUrl: " + repositoryURL.toString() + "\nfileURL: " + fileLink, ex);
+                        throw ex;
+                    }
 
                     Iterator it = path.iterator();
                     StringBuffer sb = new StringBuffer();
