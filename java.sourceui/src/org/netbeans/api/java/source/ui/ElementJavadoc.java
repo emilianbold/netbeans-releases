@@ -1434,7 +1434,7 @@ public class ElementJavadoc {
                             tags.clear();
                             for(Tag t : throwsTags.get(param).inlineTags()) {
                                 if (INHERIT_DOC_TAG.equals(t.kind()))
-                                    tags.addAll(inheritedParamInlineTags.get(param));
+                                    tags.addAll(inheritedThrowsInlineTags.get(param));
                                 else
                                     tags.add(t);
                             }
