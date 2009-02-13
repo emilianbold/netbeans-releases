@@ -227,35 +227,42 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
             return grp;
         }
         if (JavaProjectConstants.SOURCES_TYPE_RESOURCES.equals(str)) {
-            URI[] uris = project.getResources(false);
-            if (uris.length > 0) {
-                List<URI> virtuals = new ArrayList<URI>();
-                List<SourceGroup> existing = new ArrayList<SourceGroup>();
-                for (URI u : uris) {
-                    FileObject fo = FileUtilities.convertURItoFileObject(u);
-                    if (fo == null) {
-                        virtuals.add(u);
-                    } else {
-                        existing.add(GenericSources.group(project, fo, "resources",  //NOI18N
-                            NbBundle.getMessage(MavenSourcesImpl.class, "SG_Project_Resources"), null, null));
-                    }
-                }
-                if (existing.size() == 0) {
-                    File root = new File(virtuals.get(0));
-                    FileObject fo=null;
-                    try {
-                        fo = FileUtil.createFolder(root);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+            return getOrCreateResourceSourceGroup(false);
+        }
+//        logger.warn("unknown source type=" + str);
+        return new SourceGroup[0];
+    }
+
+    private SourceGroup[] getOrCreateResourceSourceGroup(boolean test) {
+        URI[] uris = project.getResources(test);
+        if (uris.length > 0) {
+            List<URI> virtuals = new ArrayList<URI>();
+            List<SourceGroup> existing = new ArrayList<SourceGroup>();
+            for (URI u : uris) {
+                FileObject fo = FileUtilities.convertURItoFileObject(u);
+                if (fo == null) {
+                    virtuals.add(u);
+                } else {
                     existing.add(GenericSources.group(project, fo, "resources",  //NOI18N
                         NbBundle.getMessage(MavenSourcesImpl.class, "SG_Project_Resources"), null, null));
                 }
-                //TODO we should probably add includes/excludes to source groups.
-                return existing.toArray(new SourceGroup[0]);
             }
+            if (existing.size() == 0) {
+                File root = new File(virtuals.get(0));
+                FileObject fo=null;
+                try {
+                    fo = FileUtil.createFolder(root);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                existing.add(GenericSources.group(project, fo, "resources",  //NOI18N
+                    NbBundle.getMessage(MavenSourcesImpl.class, "SG_Project_Resources"), null, null));
+            }
+            //TODO we should probably add includes/excludes to source groups.
+            return existing.toArray(new SourceGroup[0]);
+        } else {
+            //TODO add <Resources> element to pom??
         }
-//        logger.warn("unknown source type=" + str);
         return new SourceGroup[0];
     }
     
@@ -384,6 +391,14 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         assert type != null;
         MavenProject mp = project.getOriginalMavenProject();
         File folder = null;
+        if (JavaProjectConstants.SOURCES_TYPE_RESOURCES.equals(type)) {
+            boolean main = JavaProjectConstants.SOURCES_HINT_MAIN.equals(hint);
+            SourceGroup[] grps =  getOrCreateResourceSourceGroup(!main);
+            if (grps.length > 0) {
+                return grps[0];
+            }
+            return null;
+        }
         if (JavaProjectConstants.SOURCES_TYPE_JAVA.equals(type)) {
             if (JavaProjectConstants.SOURCES_HINT_MAIN.equals(hint)) {
                 folder = FileUtilities.convertStringToFile(mp.getBuild().getSourceDirectory());
