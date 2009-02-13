@@ -17,6 +17,9 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <dlfcn.h>
+#include <errno.h>
+
+#include "dlight.h"
 
 static int msqid;
 
@@ -49,12 +52,15 @@ static size_t minfo() {
 
 static void report() {
     if (MEMFUN_ADDR) {
-        long buf = minfo();
+        struct dlight_msg_mem buf;
+        buf.type = DLIGHT_MEM;
+        buf.heap_used = minfo();
         /* Send a message. */
-        dbg_log("report: %ld\n", buf, 0, 0);
-        msgsnd(msqid, &buf, 0, IPC_NOWAIT);
+        dbg_log("\nreporting: %ld bytes msgtype %d msgsize=%d\n", buf.heap_used, buf.type, sizeof(buf.heap_used));
+        int rc = msgsnd(msqid, &buf, sizeof(buf.heap_used), IPC_NOWAIT);
+        dbg_log("reported: %ld rc=%d errno=%d\n\n", buf.heap_used, rc, errno);
     } else {
-        dbg_log("report: can't report", 0, 0, 0);
+        dbg_log("can't report: function not found", 0, 0, 0);
     }
 }
 
@@ -65,9 +71,11 @@ static void control_reporting(int i) {
 
 static void report_failure() {
     dbg_log("report_failure\n", 0, 0, 0);
-    long buf = 0x7fffffff;
+    struct dlight_msg_mem buf;
+    buf.type = DLIGHT_MEM;
+    buf.heap_used = DLIGHT_ERROR;
     /* Send a message. */
-    msgsnd(msqid, &buf, 0, IPC_NOWAIT);
+    msgsnd(msqid, &buf, sizeof(buf.heap_used), IPC_NOWAIT);
 }
 
 static void control_reporting_first(int i) {
