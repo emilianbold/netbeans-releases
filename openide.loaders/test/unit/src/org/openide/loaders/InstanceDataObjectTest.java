@@ -54,6 +54,7 @@ import javax.swing.JButton;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.*;
 import org.openide.modules.ModuleInfo;
@@ -267,6 +268,7 @@ public class InstanceDataObjectTest extends NbTestCase {
     
     /** Checks whether the instance is the same.
      */
+    @RandomlyFails // NB-Core-Build #2131, #2136 (both in IDOT and IDOT.LkpIDO)
     public void testSame() throws Exception {
 
         Ser ser = new Ser ("1");
@@ -894,6 +896,7 @@ public class InstanceDataObjectTest extends NbTestCase {
         assertEquals ("It is 1", 1, ((Long)o).intValue());
     }
     
+    @RandomlyFails // NB-Core-Build #2131, #2136 (both in IDOT and IDOT.LkpIDO)
     public void testDeleteSettings() throws Exception {
         FileObject root = lfs.getRoot();
         DataFolder folder = DataFolder.findFolder(root);
@@ -924,6 +927,7 @@ public class InstanceDataObjectTest extends NbTestCase {
         assertNull(filename + ".settings was not deleted!", root.getFileObject(filename));
     }
     
+    @RandomlyFails // NB-Core-Build #2131, #2136 (both in IDOT and IDOT.LkpIDO)
     public void testDeleteSettingsRemovesListener() throws Exception {
         FileObject root = lfs.getRoot();
         DataFolder folder = DataFolder.findFolder(root);
@@ -974,6 +978,7 @@ public class InstanceDataObjectTest extends NbTestCase {
         assertEquals (new String (all),1, events.size()); 
     }
 
+    @RandomlyFails // NB-Core-Build #2131, #2136 (both in IDOT and IDOT.LkpIDO)
     public void testSerFileChange () throws Exception {
         FileObject fo = FileUtil.createData (lfs.getRoot (), "HH/BBB/Y.ser");
         FileObject services = FileUtil.createData (FileUtil.getConfigRoot (), "Services");
