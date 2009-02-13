@@ -145,7 +145,7 @@ public class RetoucheUtils {
     }
     
     public static Collection<ExecutableElement> getOverridenMethods(ExecutableElement e, CompilationInfo info) {
-        return getOverridenMethods(e, SourceUtils.getEnclosingTypeElement(e), info);
+        return getOverridenMethods(e, info.getElementUtilities().enclosingTypeElement(e), info);
     }
 
     private static Collection<ExecutableElement> getOverridenMethods(ExecutableElement e, TypeElement parent, CompilationInfo info) {

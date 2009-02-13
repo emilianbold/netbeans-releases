@@ -174,7 +174,7 @@ public class MoveTransformer extends RefactoringVisitor {
     }
     
     private TypeElement getTypeElement(Element e) {
-        TypeElement t = SourceUtils.getEnclosingTypeElement(e);
+        TypeElement t = workingCopy.getElementUtilities().enclosingTypeElement(e);
         if (t==null && e instanceof TypeElement) {
             return (TypeElement) e;
         }
