@@ -109,7 +109,7 @@ public class KenaiProjectTest {
     public void testOpen() throws KenaiException {
         KenaiProject instance = Kenai.getDefault().getProject("mykenaitestproject");
         instance.open();
-        for (KenaiProject prj:Kenai.getOpenProjects()) {
+        for (KenaiProject prj:Kenai.getDefault().getOpenProjects()) {
             System.out.println(prj);
         }
     }
