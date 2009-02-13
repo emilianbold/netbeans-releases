@@ -329,7 +329,7 @@ public class ParserEventController implements IParserEventController
                     
             String temp = oldState.stateName;
 
-            if(temp != GUESSING_STATE)
+            if(!GUESSING_STATE.equals(temp))
             {
                fireEndState(oldState);
             }
@@ -575,7 +575,7 @@ public class ParserEventController implements IParserEventController
         {
             if(m_StateFilter != null)
             {
-                retVal = !m_StateFilter.processState(stateName, m_LanguageName);;
+                retVal = !m_StateFilter.processState(stateName, m_LanguageName);
             }
         }
 
