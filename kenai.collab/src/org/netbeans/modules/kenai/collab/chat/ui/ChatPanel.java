@@ -94,8 +94,8 @@ public class ChatPanel extends javax.swing.JPanel {
 //        users.setModel(new BuddyListModel(ctrl.getRoster()));
 //        chat.addParticipantListener(getBuddyListModel());
         chat.addParticipantListener(new PresenceListener());
-        chat.addMessageListener(new ChatListener());
-        KenaiConnection.getDefault().join(chat);
+        KenaiConnection.getDefault().join(chat,new ChatListener());
+        //KenaiConnection.getDefault().join(chat);
         inbox.setBackground(Color.WHITE);
         outbox.setBackground(Color.WHITE);
         splitter.setResizeWeight(0.9);
@@ -252,11 +252,11 @@ public class ChatPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(splitter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE)
+            .add(splitter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(splitter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
+            .add(splitter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 

@@ -53,7 +53,7 @@ import org.openide.DialogDisplayer;
  *
  * @author Jan Becicka
  */
-class MessageNotification extends Notification{
+class PrivateChatNotification extends Notification{
 
     private LinkedList<Message> messageQueue = new LinkedList<Message>();
 

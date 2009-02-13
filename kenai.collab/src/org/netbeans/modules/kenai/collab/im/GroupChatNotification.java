@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,40 +31,63 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
+package org.netbeans.modules.kenai.collab.im;
 
-package org.netbeans.modules.kenai.collab.chat.ui;
-
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.kenai.collab.im.KenaiConnection;
+import java.util.LinkedList;
+import javax.swing.Icon;
+import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.util.StringUtils;
+import org.netbeans.modules.kenai.collab.chat.ui.ChatTopComponent;
+import org.netbeans.modules.notifications.spi.Notification;
 
 /**
- * Just for testing
+ *
  * @author Jan Becicka
  */
-public class Main implements Runnable {
+class GroupChatNotification extends Notification{
 
-    private KenaiConnection ctrl;
-    private ChatPanel chatPanel;
+    private Message lastMessage;
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        SwingUtilities.invokeLater(new Main());
+    @Override
+    public String getLinkTitle() {
+        return "read";
     }
 
+    @Override
+    public String getTitle() {
+        return "<b>New Message</b>";
+    }
 
-    public void run() {
-        JFrame frame = new JFrame();
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        chatPanel = new ChatPanel(KenaiConnection.getDefault().getChats().first());
-        ChatContainer chats = new ChatContainer();
-        chats.addChats("chat 1", chatPanel);
-        frame.getContentPane().add(chats);
-        frame.pack();
-        frame.setVisible(true);
+    @Override
+    public String getDescription() {
+        String from= StringUtils.parseName(lastMessage.getFrom());
+        return "<i>"+from + " says: </i>" + lastMessage.getBody();
+    }
+
+    @Override
+    public void showDetails() {
+        ChatTopComponent.getDefault().open();
+        ChatTopComponent.getDefault().requestActive();
+        ChatTopComponent.getDefault().setActive(StringUtils.parseName(lastMessage.getFrom()));
+    }
+
+    @Override
+    public Priority getPriority() {
+        return Priority.NORMAL;
+    }
+
+    @Override
+    public Icon getIcon() {
+        return null;
+    }
+
+    void setMessage(Message msg) {
+        lastMessage=msg;
     }
 }

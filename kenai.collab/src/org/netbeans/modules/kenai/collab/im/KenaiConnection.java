@@ -38,43 +38,83 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.kenai.collab.im;
 
-import java.util.Collections;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.filter.MessageTypeFilter;
+import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.Message.Type;
+import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiEvent;
+import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiListener;
+import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.collab.chat.ui.PresenceIndicator;
 import org.netbeans.modules.kenai.collab.chat.ui.PresenceIndicator.PresenceListener;
 import org.netbeans.modules.kenai.collab.chat.ui.PresenceIndicator.Status;
-import org.openide.util.RequestProcessor;
+import org.openide.util.Exceptions;
 
 /**
- * Class representing connection to kenai
- * Currently just hordcoded values connecting to localhost
+ * Class representing connection to kenai xmpp server
  * @author Jan Becicka
  */
-public class KenaiConnection {
+public class KenaiConnection implements KenaiListener {
 
-    public void join(MultiUserChat chat) {
-                try {
-            // User2 joins the new room
-            // The room service will decide the amount of history to send
+    //Map <kenai project name, message listener>
+    private HashMap<String, PacketListener> listeners = new HashMap();
+    private XMPPConnection connection;
+    //Map <kenai project name, multi user chat>
+    private HashMap<String, MultiUserChat> chats = new HashMap<String, MultiUserChat>();
+
+    //singleton instance
+    private static KenaiConnection instance;
+
+    //just logger
+    private static Logger XMPPLOG = Logger.getLogger(KenaiConnection.class.getName());
+
+    // Map<name of kenai project, message queue>
+    private HashMap<String, LinkedList<Message>> messageQueue = new HashMap<String, LinkedList<Message>>();
+
+    private static PrivateChatNotification privateNotification = new PrivateChatNotification();
+    private static GroupChatNotification groupNotification = new GroupChatNotification();
+
+    private void join(MultiUserChat chat) {
+        try {
             chat.addParticipantListener(PresenceIndicator.getDefault().new PresenceListener());
-            chat.join(USER);
+            chat.join(getUserName());
         } catch (XMPPException ex) {
-            Logger.getLogger(KenaiConnection.class.getName()).log(Level.SEVERE, null, ex);
+            XMPPLOG.log(Level.SEVERE, null, ex);
         }
-
     }
 
-    void tryConnect() {
+    /**
+     * Adds listener to given MultiUserChat
+     * only one listener can listen on given MultiUserChat
+     * @param muc
+     * @param lsn
+     */
+    public void join(MultiUserChat muc, PacketListener lsn) {
+        final String name = StringUtils.parseName(muc.getRoom());
+        PacketListener put = listeners.put(name, lsn);
+        for (Message m : messageQueue.get(name)) {
+            lsn.processPacket(m);
+        }
+        assert put == null;
+    }
+
+    private void tryConnect() {
         try {
             connect();
             initChats();
@@ -84,87 +124,157 @@ public class KenaiConnection {
         }
     }
 
-    XMPPConnection connection;
-    MultiUserChat nbChat;
-//    bcol4 test server
-    private static final String USER = "testuser1";
-    private static final String PASSWORD = "password";
-    private static final String XMPP_SERVER = "bco14.central.sun.com";
-    private static final String CHAT_ROOM = "nbchat@muc.central.sun.com";
 
-////  test server on localhost
-//    private static final String USER = "netbeans";
-//    private static final String PASSWORD = "netbeans";
-//    private static final String XMPP_SERVER = "127.0.0.1";
-//    private static final String CHAT_ROOM = "nb@conference.127.0.0.1";
-
-
-    private static KenaiConnection instance;
-
-    private static Logger XMPPLOG = Logger.getLogger(KenaiConnection.class.getName());
-
+    /**
+     * Default singleton instance representing XMPP connection to kenai server
+     * @return
+     */
     public static synchronized KenaiConnection getDefault() {
-        if (instance==null) {
+        if (instance == null) {
             instance = new KenaiConnection();
+            Kenai.getDefault().addKenaiListener(instance);
+            instance.tryConnect();
         }
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                if (!instance.isConnected()) {
-                    instance.tryConnect();
-                }
-            }
-        });
         return instance;
     }
 
     private KenaiConnection() {
     }
 
-   public boolean isConnected() {
-        return connection!=null && connection.isConnected() && connection.isAuthenticated();
+    /**
+     * is connection to kenai xmpp up and living?
+     * @return
+     */
+    public boolean isConnected() {
+        return connection != null && connection.isConnected() && connection.isAuthenticated();
     }
 
     private void connect() throws XMPPException {
         connection = new XMPPConnection(XMPP_SERVER);
         connection.connect();
         login();
-        //connection.addPacketListener(new PacketL(), new MessageTypeFilter(Type.chat));
+        connection.addPacketListener(new PacketL(), new MessageTypeFilter(Type.chat));
     }
 
-//    private class PacketL implements PacketListener {
-//
-//        public void processPacket(Packet packet) {
-//            notification.addMessage((Message)packet);
-//            notification.add();
-//        }
-//    }
+    private class PacketL implements PacketListener {
+        public void processPacket(Packet packet) {
+            final Message msg = (Message) packet;
+            privateNotification.addMessage(msg);
+            privateNotification.add();
+        }
+    }
 
-    private static MessageNotification notification = new MessageNotification();
+    private class MessageL implements PacketListener {
+        public void processPacket(Packet packet) {
+            final Message msg = (Message) packet;
+            final String name = StringUtils.parseName(msg.getFrom());
+            final LinkedList<Message> thisQ = messageQueue.get(name);
+            thisQ.add(msg);
+            final PacketListener listener = listeners.get(name);
+            if (listener != null) {
+                listener.processPacket(msg);
+            } else {
+                groupNotification.setMessage(msg);
+                groupNotification.add();
+            }
+        }
+    }
 
     private void login() throws XMPPException {
-        connection.login(USER,PASSWORD);
+        connection.login(USER, PASSWORD);
     }
 
-    private MultiUserChat initChats() {
-        if (!connection.isConnected())
-            return null;
-        nbChat = new MultiUserChat(connection,CHAT_ROOM);
-//        try {
-//            // User2 joins the new room
-//            // The room service will decide the amount of history to send
-//            nbChat.join(USER);
-//        } catch (XMPPException ex) {
-//            Logger.getLogger(KenaiConnection.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-        return nbChat;
+    private void initChats() {
+        if (!connection.isConnected()) {
+            return;
+        }
+        for (KenaiProject prj : KenaiConnection.getDefault().getMyProjects()) {
+            final MultiUserChat multiUserChat = new MultiUserChat(connection, getChatroomName(prj));
+            chats.put(prj.getName(), multiUserChat);
+            messageQueue.put(prj.getName(), new LinkedList<Message>());
+            multiUserChat.addMessageListener(new MessageL());
+            join(multiUserChat);
+        }
     }
 
-    public SortedSet<MultiUserChat> getChats() {
-        return Collections.unmodifiableSortedSet(new TreeSet<MultiUserChat>(Collections.singleton(nbChat)));
+    public Collection<MultiUserChat> getChats() {
+        return chats.values();
+    }
+
+    /**
+     * 
+     * @param prj
+     * @return
+     */
+    public MultiUserChat getChat(KenaiProject prj) {
+        return chats.get(prj.getName());
     }
 
     public Roster getRoster() {
         return connection.getRoster();
     }
+
+    public void stateChanged(KenaiEvent e) {
+//        if (e.getType()==e.LOGIN) {
+//            final PasswordAuthentication pa = (PasswordAuthentication) e.getSource();
+//            if (pa.getUserName()!=null) {
+//                try {
+//                    connection.login(pa.getUserName(), pa.getPassword().toString());
+//                } catch (XMPPException ex) {
+//                    Exceptions.printStackTrace(ex);
+//                }
+//            }
+//        }
+    }
+    
+//------------------------------------------
+//TODO this should be removed when xmpp server starts working on kenai.com    
+
+//    bcol4 test server
+//    private static final String USER = "testuser1";
+//    private static final String PASSWORD = "password";
+//    private static final String XMPP_SERVER = "bco14.central.sun.com";
+//    private static final String CHAT_ROOM = "nbchat@muc.central.sun.com";
+
+//  test server on localhost
+    private static final String USER = "netbeans";
+    private static final String PASSWORD = "netbeans";
+    private static final String XMPP_SERVER = "127.0.0.1";
+    private static final String CHAT_ROOM = "@conference.127.0.0.1";
+
+    /**
+     * TODO: should return kenai account name
+     * @return
+     */
+    private String getUserName() {
+        return USER;
+    }
+
+
+    /**
+     * TODO: should return data from KenaiProjectFeature
+     */
+    private String getChatroomName(KenaiProject prj) {
+        return prj.getName() + CHAT_ROOM;
+    //return prj.getFeatures(KenaiFeature.CHAT)[0].getName();
+    }
+
+    private Collection<KenaiProject> myProjects;
+
+    //TODO: my projects does not work so far
+    public Collection<KenaiProject> getMyProjects() {
+        if (myProjects == null) {
+            try {
+                myProjects = new ArrayList();
+                myProjects.add(Kenai.getDefault().getProject("kenai"));
+                myProjects.add(Kenai.getDefault().getProject("ndc"));
+                myProjects.add(Kenai.getDefault().getProject("alligator"));
+            } catch (KenaiException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return myProjects;
+    }
+
 
 }

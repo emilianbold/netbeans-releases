@@ -16,12 +16,12 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="splitter" alignment="0" pref="328" max="32767" attributes="2"/>
+          <Component id="splitter" alignment="0" pref="268" max="32767" attributes="2"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="splitter" pref="383" max="32767" attributes="0"/>
+          <Component id="splitter" pref="402" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
