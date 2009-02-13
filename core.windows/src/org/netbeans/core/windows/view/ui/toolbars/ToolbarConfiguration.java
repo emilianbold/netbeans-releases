@@ -263,8 +263,6 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
             bars.put(name, tb);
         }
 
-        removeStaleConstraints( bars );
-
         removeEmptyRows();
 
         for( ToolbarRow row : rows ) {
@@ -509,30 +507,6 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
 
     List<? extends List<? extends ToolbarConstraints>> getSnapshot() {
         return snapshot;
-    }
-
-    /**
-     * Remove toolbar constraints (and rows) for toolbars that were created and deleted
-     * by the user (or toolbars dynamically added/removed by installed/uninstalled modules).
-     * @param availableToolbars
-     */
-    private void removeStaleConstraints( Map<String, Toolbar> availableToolbars ) {
-        ArrayList<ToolbarConstraints> staleConstraints = new ArrayList<ToolbarConstraints>(20);
-        Map<String, ToolbarConstraints> bars = collectAllConstraints();
-        for( String barName : bars.keySet() ) {
-            if( null == availableToolbars.get(barName ) ) {
-                staleConstraints.add( bars.get(barName));
-            }
-        }
-        ArrayList<ToolbarRow> rowsToRemove = new ArrayList<ToolbarRow>(10);
-        for( ToolbarConstraints tc : staleConstraints ) {
-            for( ToolbarRow r : rows ) {
-                if( r.removeConstraint( tc ) && r.isEmpty() ) {
-                    rowsToRemove.add(r);
-                }
-            }
-        }
-        rows.removeAll(rowsToRemove);
     }
 
     /**
