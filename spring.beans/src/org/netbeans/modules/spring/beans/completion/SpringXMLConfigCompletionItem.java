@@ -303,7 +303,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/spring/beans/resources/spring-bean.png")); // NOI18N
+            return ImageUtilities.loadImageIcon("org/netbeans/modules/spring/beans/resources/spring-bean.png", false); // NOI18N
         }
 
         @Override
@@ -419,7 +419,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
 
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(ImageUtilities.loadImage(CLASS));
+            return ImageUtilities.loadImageIcon(CLASS, false);
         }
 
         @Override
@@ -475,7 +475,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         
         @Override
         protected ImageIcon getIcon(){
-            if (icon == null) icon = new ImageIcon(ImageUtilities.loadImage(PACKAGE));
+            if (icon == null) icon = ImageUtilities.loadImageIcon(PACKAGE, false);
             return icon;            
         }
         
@@ -655,7 +655,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                         break;
                 }
             }
-            ImageIcon newIcon = new ImageIcon(ImageUtilities.loadImage(iconPath));
+            ImageIcon newIcon = ImageUtilities.loadImageIcon(iconPath, false);
             icon[isStatic?1:0][level] = newIcon;
             return newIcon;            
         }
@@ -875,13 +875,13 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             if(cachedIcon == null) {
                 switch(propertyType) {
                     case READ_ONLY:
-                        cachedIcon = new ImageIcon(ImageUtilities.loadImage(PROP_RO));
+                        cachedIcon = ImageUtilities.loadImageIcon(PROP_RO, false);
                         break;
                     case READ_WRITE:
-                        cachedIcon = new ImageIcon(ImageUtilities.loadImage(PROP_RW));
+                        cachedIcon = ImageUtilities.loadImageIcon(PROP_RW, false);
                         break;
                     case WRITE_ONLY:
-                        cachedIcon = new ImageIcon(ImageUtilities.loadImage(PROP_WO));
+                        cachedIcon = ImageUtilities.loadImageIcon(PROP_WO, false);
                         break;
                 }
                 
@@ -962,8 +962,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
 
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(ImageUtilities.loadImage(
-                    "org/netbeans/modules/spring/beans/resources/spring.png")); // NOI18N
+            return ImageUtilities.loadImageIcon("org/netbeans/modules/spring/beans/resources/spring.png", false); // NOI18N
         }
 
         @Override

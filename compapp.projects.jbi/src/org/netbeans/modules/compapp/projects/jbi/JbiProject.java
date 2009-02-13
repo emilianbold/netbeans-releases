@@ -104,11 +104,7 @@ import org.openide.filesystems.FileUtil;
  * @author Chris Webster
  */
 public final class JbiProject implements Project, AntProjectListener, ProjectPropertyProvider {
-    private static final Icon PROJECT_ICON = new ImageIcon(
-            ImageUtilities.loadImage(
-            "org/netbeans/modules/compapp/projects/jbi/ui/resources/composite_application_project.png" // NOI18N
-            )
-            ); // NOI18N
+    private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/compapp/projects/jbi/ui/resources/composite_application_project.png", false); // NOI18N
     
     /**
      * DOCUMENT ME!

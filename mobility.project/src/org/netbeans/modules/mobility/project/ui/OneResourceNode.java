@@ -204,7 +204,7 @@ final class OneResourceNode extends LazyInitFilterNode implements FileMonitor {
             //Add a jar file
             if ("jar".equals(file.getURL().getProtocol())) { //NOI18N
                 file = FileUtil.getArchiveFile(file);
-                icon = openedIcon = new ImageIcon(ImageUtilities.loadImage(ARCHIVE_ICON));
+                icon = openedIcon = ImageUtilities.loadImageIcon(ARCHIVE_ICON, false);
                 result = PackageView.createPackageView(new LibrariesSourceGroup(file, file.getNameExt(), icon, openedIcon));
             } else {
                 if (file.isFolder()) {
