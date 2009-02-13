@@ -41,11 +41,9 @@ package org.netbeans.modules.dlight.perfan.storage.impl;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -68,17 +66,19 @@ public class Erprint {
     private final String er_printCmd;
     private final String experimentDirectory;
     private Future<Integer> er_printTask;
-    private final StringWriter out = new StringWriter(1024);
     private PrintWriter in;
-    private String terminalString = "";
+    private final FilteredInputProcessor erOutputProcessor;
 
     public Erprint(ExecutionEnvironment execEnv, String sproHome, String experimentDirectory) {
         this.execEnv = execEnv;
         this.er_printCmd = sproHome + "/bin/er_print"; // NOI18N
         this.experimentDirectory = experimentDirectory;
+        this.erOutputProcessor = new FilteredInputProcessor();
     }
 
-    void start() {
+    synchronized void start() {
+        final CountDownLatch doneSignal = new CountDownLatch(1);
+
         NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, er_printCmd);
         npb = npb.setArguments(experimentDirectory).addNativeProcessListener(new ChangeListener() {
 
@@ -89,17 +89,19 @@ public class Erprint {
                     new Thread(new Runnable() {
 
                         public void run() {
-                            out.getBuffer().setLength(0);
                             writer.write("limit -1\n");
                             writer.flush();
+                            String[] er_output;
                             while (true) {
                                 Thread.yield();
-                                terminalString = out.toString();
-                                if (terminalString.length() > 0) {
+                                er_output = erOutputProcessor.getBuffer();
+                                if (er_output.length > 0) {
+                                    erOutputProcessor.setPrompt(er_output[0]);
                                     break;
                                 }
                             }
                             in = writer;
+                            doneSignal.countDown();
                         }
                     }).start();
                 }
@@ -109,18 +111,38 @@ public class Erprint {
         ExecutionDescriptor descr = new ExecutionDescriptor();
         descr = descr.inputOutput(InputOutput.NULL);
         descr = descr.errProcessorFactory(new ErprintErrorRedirectorFactory());
-        descr = descr.outProcessorFactory(new ErprintOutputRedirectorFactory(out));
+        descr = descr.outProcessorFactory(new InputProcessorFactory() {
+
+            public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                return erOutputProcessor;
+            }
+        });
+
         ExecutionService service = ExecutionService.newService(npb, descr, "collect"); // NOI18N
         er_printTask = service.run();
+
+        try {
+            doneSignal.await();
+        } catch (InterruptedException ex) {
+        }
     }
 
-    void stop() {
+    synchronized void stop() {
         // TODO: do it more gracefully
         er_printTask.cancel(true);
         er_printTask = null;
     }
 
-    private String[] exec(String command) {
+    synchronized void refresh() {
+        stop();
+        start();
+    }
+
+    synchronized private String[] exec(String command) {
+        return exec(command, -1);
+    }
+
+    synchronized private String[] exec(String command, int limit) {
         if (er_printTask == null || er_printTask.isDone()) {
             start();
         }
@@ -129,21 +151,62 @@ public class Erprint {
             return null;
         }
 
-        out.getBuffer().setLength(0);
+        CountDownLatch doneSignal = new CountDownLatch(limit > 0 ? 3 : 2);
+        erOutputProcessor.reset(doneSignal);
+
+        if (limit > 0) {
+            in.write("limit " + limit + "\n");
+            in.flush();
+        }
+
         in.write(command + "\n");
         in.flush();
         in.write("limit -1\n");
         in.flush();
-        while (!out.toString().endsWith(terminalString)) {
-            Thread.yield();
+
+        try {
+            doneSignal.await();
+        } catch (InterruptedException ex) {
         }
 
-        return out.getBuffer().toString().replace(terminalString, "").split("\n");
+        return erOutputProcessor.getBuffer();
     }
 
     String setMetrics(String mspec) {
-        String[] result = exec("metrics " + mspec);
-        return result == null ? "" : result[0].substring(result[0].indexOf(':') + 1);
+        String[] result = exec("metrics " + mspec); // NOI18N
+        return result == null ? "" // NOI18N
+                : result[0].substring(result[0].indexOf(':') + 1); // NOI18N
+    }
+
+    String setSortBy(String msort) {
+        String[] result = exec("sort " + msort); // NOI18N
+        return result == null ? "" // NOI18N
+                : result[0].substring(result[0].indexOf(':') + 1); // NOI18N
+    }
+
+    String[] getHotFunctions(int limit) {
+        erOutputProcessor.setFilterType(FilterType.onlyContainsNumbers);
+        String[] result = exec("functions", limit);
+        erOutputProcessor.setFilterType(FilterType.noFiltering);
+        return result;
+    }
+
+    String[] getCallersCallees(int limit) {
+        String[] ccOut = exec("callers-callees", limit);
+        ArrayList<String> result = new ArrayList<String>();
+
+        for (String s : ccOut) {
+            if (s.length() == 0) {
+                result.add(s);
+            } else {
+                char c = s.charAt(0);
+                if ((c >= '0' && c <= '9') || c == '\n') {
+                    result.add(s);
+                }
+            }
+        }
+
+        return result.toArray(new String[0]);
     }
 
     private static class ErprintErrorRedirectorFactory
@@ -171,17 +234,66 @@ public class Erprint {
         }
     }
 
-    private static class ErprintOutputRedirectorFactory
-            implements InputProcessorFactory {
+    private static class FilteredInputProcessor implements InputProcessor {
 
-        private Writer writer;
+        private FilterType filterType = FilterType.noFiltering;
+        private List<String> buffer = new ArrayList();
+        private String prompt = null;
+        private CountDownLatch doneSignal;
 
-        public ErprintOutputRedirectorFactory(Writer writer) {
-            this.writer = writer;
+        public void setFilterType(FilterType filterType) {
+            this.filterType = filterType;
         }
 
-        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-            return InputProcessors.copying(writer);
+        public void setPrompt(String prompt) {
+            this.prompt = prompt;
         }
+
+        @Override
+        public void processInput(char[] chars) throws IOException {
+            String data = new String(chars, 0, chars.length);
+            String[] lines = data.split("\n");
+
+            for (String line : lines) {
+                if (prompt != null && line.startsWith(prompt)) {
+                    do {
+                        doneSignal.countDown();
+                        line = line.substring(prompt.length());
+                    } while (line.contains(prompt));
+                }
+
+                if (line.length() != 0) {
+                    switch (filterType) {
+                        case onlyContainsNumbers:
+                            if (!line.contains("0")) {
+                                continue;
+                            }
+                    }
+                    buffer.add(line);
+                }
+            }
+        }
+
+        public void reset() throws IOException {
+        }
+
+        public void close() throws IOException {
+            // do nothing
+        }
+
+        public String[] getBuffer() {
+            return buffer.toArray(new String[0]);
+        }
+
+        private void reset(CountDownLatch doneSignal) {
+            buffer.clear();
+            this.doneSignal = doneSignal;
+        }
+    }
+
+    private static enum FilterType {
+
+        noFiltering,
+        onlyContainsNumbers,
     }
 }
