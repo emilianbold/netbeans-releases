@@ -54,7 +54,8 @@ public enum KenaiFeature {
     PROJECTS("projects"),
     PUBLIC("public"),
     API("api"),
-    PROFILES("profiles");
+    PROFILES("profiles"),
+    CHAT("chat");
 
     private final String id;
 

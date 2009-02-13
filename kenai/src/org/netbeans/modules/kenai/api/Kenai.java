@@ -46,6 +46,7 @@ import java.net.URL;
 import java.util.AbstractCollection;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -79,7 +80,7 @@ public final class Kenai {
         if (instance == null) {
             try {
                 if (Kenai.url == null)
-                    Kenai.url = new URL("http://kenai.com");
+                    Kenai.url = new URL("https://kenai.com");
                 KenaiImpl impl = new KenaiREST(Kenai.url);
                 instance = new Kenai(impl);
             } catch (MalformedURLException ex) {
@@ -298,12 +299,17 @@ public final class Kenai {
      * @see KenaiProject#open()
      * @see KenaiProject#close()
      */
-    public static Collection<KenaiProject> getOpenProjects() {
-        if (Kenai.getDefault().openProjects==null) {
-            instance.openProjects = new HashSet<KenaiProject>();
-            instance.openProjects.addAll(Persistence.getInstance().loadProjects());
+    public Collection<KenaiProject> getOpenProjects() {
+        if (openProjects==null) {
+            openProjects = new HashSet<KenaiProject>();
+            openProjects.addAll(Persistence.getInstance().loadProjects());
         }
-        return instance.openProjects;
+        return Collections.unmodifiableCollection(openProjects);
+    }
+
+    public Collection<KenaiProject> getMyProjects() {
+        //TODO: must return my projects
+        return getOpenProjects();
     }
 
     Collection<KenaiProject> loadProjects() {

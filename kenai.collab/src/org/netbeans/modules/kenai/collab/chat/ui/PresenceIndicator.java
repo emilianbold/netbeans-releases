@@ -51,6 +51,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.collab.im.KenaiConnection;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -172,7 +173,12 @@ public class PresenceIndicator {
         }
 
         public void run() {
-            label.setText(NbBundle.getMessage(PresenceIndicator.class, "CTL_PresenceOnline", new Object[] {KenaiConnection.getDefault().getChats().first().getOccupantsCount()}));
+            int online=0;
+            for (MultiUserChat muc :KenaiConnection.getDefault().getChats()) {
+                online+=muc.getOccupantsCount();
+            }
+
+            label.setText(NbBundle.getMessage(PresenceIndicator.class, "CTL_PresenceOnline", new Object[] {online}));
         }
     }
 

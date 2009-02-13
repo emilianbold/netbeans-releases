@@ -42,9 +42,11 @@ package org.netbeans.modules.kenai.api;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.codeviation.commons.utils.CollectionsUtil;
 import org.netbeans.modules.kenai.FeatureData;
 import org.netbeans.modules.kenai.ProjectData;
 
@@ -142,7 +144,7 @@ public final class KenaiProject {
      */
     public synchronized void open() {
         final Kenai kenai = Kenai.getDefault();
-        Kenai.getOpenProjects().add(this);
+        Kenai.getDefault().getOpenProjects().add(this);
         kenai.storeProjects();
         kenai.fireKenaiEvent(new KenaiEvent(this, KenaiEvent.PROJECT_OPEN));
     }
@@ -153,7 +155,7 @@ public final class KenaiProject {
      */
     public synchronized void close() {
         final Kenai kenai = Kenai.getDefault();
-        Kenai.getOpenProjects().remove(this);
+        Kenai.getDefault().getOpenProjects().remove(this);
         kenai.storeProjects();
         kenai.fireKenaiEvent(new KenaiEvent(this, KenaiEvent.PROJECT_CLOSE));
     }
@@ -188,6 +190,21 @@ public final class KenaiProject {
             }
         }
         return features;
+    }
+
+    /**
+     * get features of given type
+     * @param type
+     * @return
+     */
+    public synchronized KenaiProjectFeature[] getFeatures(KenaiFeature type) {
+        ArrayList<KenaiProjectFeature> fs= new ArrayList();
+        for (KenaiProjectFeature f:getFeatures()) {
+            if (f.getType().equals(type)) {
+                fs.add(f);
+            }
+        }
+        return fs.toArray(new KenaiProjectFeature[fs.size()]);
     }
 
     /**
@@ -274,6 +291,4 @@ public final class KenaiProject {
         hash = 13 * hash + (this.name != null ? this.name.hashCode() : 0);
         return hash;
     }
-
-
 }
