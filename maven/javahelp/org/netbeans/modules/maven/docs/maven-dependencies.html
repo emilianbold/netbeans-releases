@@ -51,7 +51,8 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
         projects or libraries as dependencies.
         All dependencies need to be available as artifacts in your local repository.</p>
         
-        <p>You declare a dependency by adding the coordinates of the artifact you want to declare as a dependency to the POM.
+        <p>You declare a dependency by modifying the POM to add the coordinates of the artifact
+        you want to declare as a dependency.
         All Maven artifacts are defined by a unique coordinate that consists of a group identifier (groupId),
         artifact identifier (artifactId) and version.
         Adding a dependency to the POM is similar to adding libraries to the classpath in an Ant-based project.
@@ -77,24 +78,23 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
         appears under the project's Libraries node.
         Artifacts that are not in your local repository are marked with a badge.
         You need to have a copy of the artifact in your local repository if you
-        want to use it in your project.</p>
+        want to use it in your project.
+        This applies to libraries and to other projects that are described as dependencies.</p>
+        <p><strong>Notes:</strong></p>
         <ul class="notes">
             <li>
             If a required artifact is available in a remote repository,
             Maven will automatically download the artifact and any transitive dependencies
             from the repository when you build the project.
-            If the required artifact is not available in a remote repository ,
+            Maven will use the latest available version of the artifact if no version is specified.
+            If the required artifact is not available in a remote repository,
             you can right-click the artifact node and install the artifact manually.
             </li>
+            <li>It is recommended that you store Maven software library JARs and project artifacts
+            in a local repository and keep the source code for projects under a version control system.</li>
         </ul>
 
         
-        <p>If your project depends on another project, that project</p>
-
-
-
-        <!--In a Maven development environment, it is recommended that you store Maven software library JARs and
-        project artifacts in a local repository instead of in CVS.-->
 
 
         
