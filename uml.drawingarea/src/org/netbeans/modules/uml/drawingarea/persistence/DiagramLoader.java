@@ -477,6 +477,7 @@ class DiagramLoader
             {
                 scene.createView();
             }
+            scene.getView().setMaximumSize(new Dimension(Integer.MAX_VALUE,Integer.MAX_VALUE));
             scene.setZoomFactor(Double.parseDouble(diagInfo.getZoom()));
         }
     }
