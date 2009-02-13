@@ -299,6 +299,18 @@ public class Resolver3 implements Resolver {
         }
         return false;
     }
+
+    private CsmObject resolveInUsings(CsmNamespace containingNS, CharSequence nameToken) {
+        CsmObject result = null;
+        for (CsmUsingDirective udir : CsmUsingResolver.getDefault().findUsingDirectives(containingNS)) {
+            String fqn = udir.getName() + "::" + nameToken; // NOI18N
+            result = findClassifier(fqn);
+            if (result != null) {
+                break;
+            }
+        }
+        return result;
+    }
     
     private void traceRecursion(){
         System.out.println("Detected recursion in resolver:"); // NOI18N
@@ -584,13 +596,7 @@ public class Resolver3 implements Resolver {
                 containingNS = getContainingNamespace();
                 result = findClassifier(containingNS, nameTokens[0]);
                 if (result == null && containingNS != null) {
-                    for (CsmUsingDirective udir : CsmUsingResolver.getDefault().findUsingDirectives(containingNS)) {
-                        String fqn = udir.getName() + "::" + nameTokens[0]; // NOI18N
-                        result = findClassifier(fqn);
-                        if (result != null) {
-                            break;
-                        }
-                    }
+                    result = resolveInUsings(containingNS, nameTokens[0]);
                 }
             }
             if( result == null && needClassifiers()) {
@@ -645,13 +651,7 @@ public class Resolver3 implements Resolver {
                         if (result == null) {
                             CsmNamespace ns = findNamespace(nsp);
                             if (ns != null) {
-                                for (CsmUsingDirective udir : CsmUsingResolver.getDefault().findUsingDirectives(ns)) {
-                                    fqn = udir.getName() + "::" + nameTokens[0]; // NOI18N
-                                    result = findClassifier(fqn);
-                                    if (result != null) {
-                                        break;
-                                    }
-                                }
+                                result = resolveInUsings(ns, nameTokens[0]);
                             }
                         }
                         if( result != null ) {
@@ -740,6 +740,14 @@ public class Resolver3 implements Resolver {
                                 sb.append(nameTokens[i]);
                             }
                             result = findClassifier(sb.toString());
+                            if (result == null) {
+                                sb = new StringBuilder(nameTokens[1]);
+                                for (int i = 2; i < nameTokens.length; i++) {
+                                    sb.append("::"); // NOI18N
+                                    sb.append(nameTokens[i]);
+                                }
+                                result = resolveInUsings(ns, sb.toString());
+                            }
                         } else if( first instanceof CsmClass ) {
                             
                         }
