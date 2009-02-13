@@ -208,10 +208,10 @@ public final class IndexSearch
         
         sourceButton.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javadoc/resources/showSource.gif"))); // NOI18N
         byReferenceButton.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javadoc/resources/refSort.gif"))); // NOI18N
-        byTypeButton.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/typeSort.gif"))); // NOI18N
-        byNameButton.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/alphaSort.gif"))); // NOI18N
-        quickViewButton.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/list_only.gif"))); // NOI18N
-        quickViewButton.setSelectedIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/list_html.gif"))); // NOI18N
+        byTypeButton.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javadoc/resources/typeSort.gif"))); // NOI18N
+        byNameButton.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javadoc/resources/alphaSort.gif"))); // NOI18N
+        quickViewButton.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javadoc/resources/list_only.gif"))); // NOI18N
+        quickViewButton.setSelectedIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javadoc/resources/list_html.gif"))); // NOI18N
 
         javax.swing.ButtonGroup bg = new javax.swing.ButtonGroup();
         bg.add( byReferenceButton );
@@ -686,7 +686,7 @@ public final class IndexSearch
             refIndexSearch = new SoftReference(indexSearch);
 
             indexSearch.setName( NbBundle.getMessage(IndexSearch.class, "CTL_SEARCH_WindowTitle") );   //NOI18N
-            indexSearch.setIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/searchDoc.gif")); // NOI18N
+            indexSearch.setIcon(ImageUtilities.loadImage("org/netbeans/modules/javadoc/resources/searchDoc.gif")); // NOI18N
         }
         return indexSearch;
     }
