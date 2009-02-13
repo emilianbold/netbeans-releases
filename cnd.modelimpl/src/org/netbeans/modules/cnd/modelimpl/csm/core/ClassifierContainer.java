@@ -63,8 +63,6 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  */
 /*package-local*/ class ClassifierContainer implements Persistent, SelfPersistent {
 
-    private static final boolean fix_iz_151567 = Boolean.getBoolean("cnd.fix.IZ151567"); //NOI18N
-
     private Map<CharSequence, CsmUID<CsmClassifier>> classifiers = new ConcurrentHashMap<CharSequence, CsmUID<CsmClassifier>>();
     private Map<CharSequence, CsmUID<CsmClassifier>> typedefs = new ConcurrentHashMap<CharSequence, CsmUID<CsmClassifier>>();
     
@@ -79,16 +77,6 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
     public CsmClassifier getClassifier(CharSequence qualifiedName) {
         CsmClassifier result;
         qualifiedName = CharSequenceKey.create(qualifiedName);
-        if (fix_iz_151567 && qualifiedName.toString().indexOf("MixedClass1")>=0){//NOI18N
-            System.err.println("get classifier "+qualifiedName);
-            StackTraceElement[] stack = new Exception().getStackTrace();
-            for(StackTraceElement st : stack){
-                if (st.toString().indexOf("RepositoryValidationBase")>0){//NOI18N
-                    break;
-                }
-                System.err.println("\t"+st);
-            }
-        }
         CsmUID<CsmClassifier> uid = classifiers.get(qualifiedName);
         if (uid == null) {
             uid = typedefs.get(qualifiedName);
@@ -99,16 +87,6 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
     
     public boolean putClassifier(CsmClassifier decl) {
         CharSequence qn = decl.getQualifiedName();
-        if (fix_iz_151567 && qn.toString().indexOf("MixedClass1")>=0){//NOI18N
-            System.err.println("put classifier "+qn);
-            StackTraceElement[] stack = new Exception().getStackTrace();
-            for(StackTraceElement st : stack){
-                if (st.toString().indexOf("RepositoryValidationBase")>0){//NOI18N
-                    break;
-                }
-                System.err.println("\t"+st);
-            }
-        }
         Map<CharSequence, CsmUID<CsmClassifier>> map;
         if (isTypedef(decl)) {
             map = typedefs;
@@ -126,16 +104,6 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
     }
 
     public void removeClassifier(CsmDeclaration decl) {
-        if (fix_iz_151567 && decl.getQualifiedName().toString().indexOf("MixedClass1")>=0){//NOI18N
-            System.err.println("remove classifier "+decl.getQualifiedName());
-            StackTraceElement[] stack = new Exception().getStackTrace();
-            for(StackTraceElement st : stack){
-                if (st.toString().indexOf("RepositoryValidationBase")>0){//NOI18N
-                    break;
-                }
-                System.err.println("\t"+st);
-            }
-        }
         Map<CharSequence, CsmUID<CsmClassifier>> map;
         if (isTypedef(decl)) {
             map = typedefs;
