@@ -52,7 +52,7 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.ui.ElementIcons;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 
 
 /** Base class for patterns object. These objects hold information
@@ -68,21 +68,21 @@ public abstract class Pattern {
     private static final String ICON_BASE = "org/netbeans/modules/beans/resources/";
     private static final String GIF_EXTENSION = ".gif";
    
-    protected static final Image PATTERNS = Utilities.loadImage(ICON_BASE + "patternGroup" + GIF_EXTENSION); // NOI18N
+    protected static final Image PATTERNS = ImageUtilities.loadImage(ICON_BASE + "patternGroup" + GIF_EXTENSION); // NOI18N
     
-    protected static final Image PROPERTY_READ = Utilities.loadImage(ICON_BASE + "propertyRO" + GIF_EXTENSION); // NOI18N
-    protected static final Image PROPERTY_WRITE = Utilities.loadImage(ICON_BASE + "propertyWO" + GIF_EXTENSION); // NOI18N
-    protected static final Image PROPERTY_READ_WRITE = Utilities.loadImage(ICON_BASE + "propertyRW" + GIF_EXTENSION); // NOI18N
+    protected static final Image PROPERTY_READ = ImageUtilities.loadImage(ICON_BASE + "propertyRO" + GIF_EXTENSION); // NOI18N
+    protected static final Image PROPERTY_WRITE = ImageUtilities.loadImage(ICON_BASE + "propertyWO" + GIF_EXTENSION); // NOI18N
+    protected static final Image PROPERTY_READ_WRITE = ImageUtilities.loadImage(ICON_BASE + "propertyRW" + GIF_EXTENSION); // NOI18N
     
-    protected static final Image IDX_PROPERTY_READ = Utilities.loadImage(ICON_BASE + "propertyIndexedRO" + GIF_EXTENSION); // NOI18N
-    protected static final Image IDX_PROPERTY_WRITE = Utilities.loadImage(ICON_BASE + "propertyIndexedWO" + GIF_EXTENSION); // NOI18N
-    protected static final Image IDX_PROPERTY_READ_WRITE = Utilities.loadImage(ICON_BASE + "propertyIndexedRW" + GIF_EXTENSION); // NOI18N
+    protected static final Image IDX_PROPERTY_READ = ImageUtilities.loadImage(ICON_BASE + "propertyIndexedRO" + GIF_EXTENSION); // NOI18N
+    protected static final Image IDX_PROPERTY_WRITE = ImageUtilities.loadImage(ICON_BASE + "propertyIndexedWO" + GIF_EXTENSION); // NOI18N
+    protected static final Image IDX_PROPERTY_READ_WRITE = ImageUtilities.loadImage(ICON_BASE + "propertyIndexedRW" + GIF_EXTENSION); // NOI18N
     
-    protected static final Image EVENT_SET_UNICAST = Utilities.loadImage(ICON_BASE + "eventSetUnicast" + GIF_EXTENSION); // NOI18N
-    protected static final Image EVENT_SET_MULTICAST = Utilities.loadImage(ICON_BASE + "eventSetMulticast" + GIF_EXTENSION); // NOI18N
+    protected static final Image EVENT_SET_UNICAST = ImageUtilities.loadImage(ICON_BASE + "eventSetUnicast" + GIF_EXTENSION); // NOI18N
+    protected static final Image EVENT_SET_MULTICAST = ImageUtilities.loadImage(ICON_BASE + "eventSetMulticast" + GIF_EXTENSION); // NOI18N
    
-    protected static final Image CLASS = Utilities.icon2Image(ElementIcons.getElementIcon(ElementKind.CLASS, Collections.<Modifier>emptySet())); // NOI18N
-    protected static final Image INTERFACE = Utilities.icon2Image(ElementIcons.getElementIcon(ElementKind.INTERFACE, Collections.<Modifier>emptySet())); // NOI18N
+    protected static final Image CLASS = ImageUtilities.icon2Image(ElementIcons.getElementIcon(ElementKind.CLASS, Collections.<Modifier>emptySet())); // NOI18N
+    protected static final Image INTERFACE = ImageUtilities.icon2Image(ElementIcons.getElementIcon(ElementKind.INTERFACE, Collections.<Modifier>emptySet())); // NOI18N
    
     protected final TypeMirrorHandle<TypeMirror> type;
     protected final String name;
