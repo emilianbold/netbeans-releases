@@ -145,6 +145,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                 additionalClassPath = getAdditionalClassPath(baseDir);
             } else {
                 additionalClassPath = null;
+                Exceptions.printStackTrace(new NullPointerException("No base directory is defined. Properties = "+properties));
             }
             if (additionalClassPath != null) {
                 smartSteppingSourcePath = ClassPathSupport.createProxyClassPath (
