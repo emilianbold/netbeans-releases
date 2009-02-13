@@ -63,6 +63,7 @@ import org.openide.util.actions.SystemAction;
  *
  *	@since 1.0
  */
+@SuppressWarnings({"deprecation", "unchecked"}) // XXX supress deprecated warnings temporarily until issue #41443 gets resolved
 public class HTTPFileSystem extends FileSystem implements VetoableChangeListener {
 
     /**

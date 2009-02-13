@@ -352,8 +352,7 @@ public abstract class NamespaceReferenceCreator<T extends Component>
             messageLabel.setIcon(null);
         } else {
             messageLabel.setText(msg);
-            messageLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(
-                    "org/netbeans/modules/xml/xam/ui/resources/error.gif"))); // NOI18N
+            messageLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/xml/xam/ui/resources/error.gif", false)); // NOI18N
         }
     }
 

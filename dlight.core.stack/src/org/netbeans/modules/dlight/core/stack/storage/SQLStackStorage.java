@@ -318,6 +318,11 @@ public class SQLStackStorage {
         public String getQuilifiedName() {
             return name;
         }
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 
     protected static class FunctionCallImpl extends FunctionCall {
@@ -343,6 +348,15 @@ public class SQLStackStorage {
             }
             return null;
         }
+
+        @Override
+        public String toString() {
+            StringBuilder buf = new StringBuilder();
+            buf.append("FunctionCall{ function=").append(getFunction());
+            buf.append(", metrics=").append(metrics).append(" }");
+            return buf.toString();
+        }
+
     }
 
     private static class AddFunction {
@@ -379,14 +393,14 @@ public class SQLStackStorage {
 
         public void submitCommand(Object cmd) {
             queue.offer(cmd);
-            //if (cmd instanceof AddStack) {
-            //    System.err.println("Queue size: " + queue.size());
-            //}
         }
 
-        public void flush() throws InterruptedException {
+        public synchronized void flush() throws InterruptedException {
+            // Proper synchronization is needed to guarantee that
+            // queue.isEmpty() is checked either before commands are
+            // taken from the queue, or after they are executed.
             while (!queue.isEmpty()) {
-                Thread.sleep(10);
+                wait();
             }
         }
 
@@ -397,92 +411,97 @@ public class SQLStackStorage {
                 Map<Integer, UpdateMetrics> nodeMetrics = new HashMap<Integer, UpdateMetrics>();
                 List<Object> cmds = new LinkedList<Object>();
                 while (true) {
-                    queue.drainTo(cmds, MAX_COMMANDS);
+                    // Taking commands from queue and executing them should be one atomic action.
+                    synchronized (this) {
+                        queue.drainTo(cmds, MAX_COMMANDS);
 
-                    // first pass: collect metrics
-                    Iterator<Object> cmdIterator = cmds.iterator();
-                    while (cmdIterator.hasNext()) {
-                        Object cmd = cmdIterator.next();
-                        if (cmd instanceof UpdateMetrics) {
-                            UpdateMetrics updateMetricsCmd = (UpdateMetrics) cmd;
-                            Map<Integer, UpdateMetrics> map = updateMetricsCmd.funcOrNode? nodeMetrics : funcMetrics;
-                            UpdateMetrics original = map.get(updateMetricsCmd.objId);
-                            if (original == null) {
-                                map.put(updateMetricsCmd.objId, updateMetricsCmd);
-                            } else {
-                                original.add(updateMetricsCmd);
-                            }
-                            cmdIterator.remove();
-                        }
-                    }
-
-                    // second pass: execute inserts
-                    cmdIterator = cmds.iterator();
-                    while (cmdIterator.hasNext()) {
-                        Object cmd = cmdIterator.next();
-                        try {
-                            if (cmd instanceof AddFunction) {
-                                AddFunction addFunctionCmd = (AddFunction) cmd;
-                                PreparedStatement stmt = sqlStorage.prepareStatement("INSERT INTO Func (func_id, func_name, time_incl, time_excl) VALUES (?, ?, ?, ?)");
-                                stmt.setInt(1, addFunctionCmd.id);
-                                stmt.setString(2, addFunctionCmd.name.toString());
-                                UpdateMetrics metrics = funcMetrics.remove(addFunctionCmd.id);
-                                if (metrics == null) {
-                                    stmt.setLong(3, 0);
-                                    stmt.setLong(4, 0);
+                        // first pass: collect metrics
+                        Iterator<Object> cmdIterator = cmds.iterator();
+                        while (cmdIterator.hasNext()) {
+                            Object cmd = cmdIterator.next();
+                            if (cmd instanceof UpdateMetrics) {
+                                UpdateMetrics updateMetricsCmd = (UpdateMetrics) cmd;
+                                Map<Integer, UpdateMetrics> map = updateMetricsCmd.funcOrNode? nodeMetrics : funcMetrics;
+                                UpdateMetrics original = map.get(updateMetricsCmd.objId);
+                                if (original == null) {
+                                    map.put(updateMetricsCmd.objId, updateMetricsCmd);
                                 } else {
-                                    stmt.setLong(3, metrics.cpuTimeInclusive);
-                                    stmt.setLong(4, metrics.cpuTimeExclusive);
+                                    original.add(updateMetricsCmd);
                                 }
-                                stmt.executeUpdate();
-                            } else if (cmd instanceof AddNode) {
-                                AddNode addNodeCmd = (AddNode) cmd;
-                                PreparedStatement stmt = sqlStorage.prepareStatement("INSERT INTO Node (node_id, caller_id, func_id, time_incl, time_excl) VALUES (?, ?, ?, ?, ?)");
-                                stmt.setInt(1, addNodeCmd.id);
-                                stmt.setInt(2, addNodeCmd.callerId);
-                                stmt.setInt(3, addNodeCmd.funcId);
-                                UpdateMetrics metrics = nodeMetrics.remove(addNodeCmd.id);
-                                if (metrics == null) {
-                                    stmt.setLong(4, 0);
-                                    stmt.setLong(5, 0);
-                                } else {
-                                    stmt.setLong(4, metrics.cpuTimeInclusive);
-                                    stmt.setLong(5, metrics.cpuTimeExclusive);
-                                }
-                                stmt.executeUpdate();
+                                cmdIterator.remove();
                             }
-                        } catch (SQLException ex) {
-                            ex.printStackTrace();
                         }
-                    }
-                    cmds.clear();
 
-                    // third pass: execute updates
-                    for (UpdateMetrics cmd : funcMetrics.values()) {
-                        try {
-                            PreparedStatement stmt = sqlStorage.prepareStatement("UPDATE Func SET time_incl = time_incl + ?, time_excl = time_excl + ? WHERE func_id = ?");
-                            stmt.setLong(1, cmd.cpuTimeInclusive);
-                            stmt.setLong(2, cmd.cpuTimeExclusive);
-                            stmt.setInt(3, cmd.objId);
-                            stmt.executeUpdate();
-                        } catch (SQLException ex) {
-                            ex.printStackTrace();
+                        // second pass: execute inserts
+                        cmdIterator = cmds.iterator();
+                        while (cmdIterator.hasNext()) {
+                            Object cmd = cmdIterator.next();
+                            try {
+                                if (cmd instanceof AddFunction) {
+                                    AddFunction addFunctionCmd = (AddFunction) cmd;
+                                    PreparedStatement stmt = sqlStorage.prepareStatement("INSERT INTO Func (func_id, func_name, time_incl, time_excl) VALUES (?, ?, ?, ?)");
+                                    stmt.setInt(1, addFunctionCmd.id);
+                                    stmt.setString(2, addFunctionCmd.name.toString());
+                                    UpdateMetrics metrics = funcMetrics.remove(addFunctionCmd.id);
+                                    if (metrics == null) {
+                                        stmt.setLong(3, 0);
+                                        stmt.setLong(4, 0);
+                                    } else {
+                                        stmt.setLong(3, metrics.cpuTimeInclusive);
+                                        stmt.setLong(4, metrics.cpuTimeExclusive);
+                                    }
+                                    stmt.executeUpdate();
+                                } else if (cmd instanceof AddNode) {
+                                    AddNode addNodeCmd = (AddNode) cmd;
+                                    PreparedStatement stmt = sqlStorage.prepareStatement("INSERT INTO Node (node_id, caller_id, func_id, time_incl, time_excl) VALUES (?, ?, ?, ?, ?)");
+                                    stmt.setInt(1, addNodeCmd.id);
+                                    stmt.setInt(2, addNodeCmd.callerId);
+                                    stmt.setInt(3, addNodeCmd.funcId);
+                                    UpdateMetrics metrics = nodeMetrics.remove(addNodeCmd.id);
+                                    if (metrics == null) {
+                                        stmt.setLong(4, 0);
+                                        stmt.setLong(5, 0);
+                                    } else {
+                                        stmt.setLong(4, metrics.cpuTimeInclusive);
+                                        stmt.setLong(5, metrics.cpuTimeExclusive);
+                                    }
+                                    stmt.executeUpdate();
+                                }
+                            } catch (SQLException ex) {
+                                ex.printStackTrace();
+                            }
                         }
-                    }
-                    funcMetrics.clear();
+                        cmds.clear();
 
-                    for (UpdateMetrics cmd : nodeMetrics.values()) {
-                        try {
-                            PreparedStatement stmt = sqlStorage.prepareStatement("UPDATE Node SET time_incl = time_incl + ?, time_excl = time_excl + ? WHERE node_id = ?");
-                            stmt.setLong(1, cmd.cpuTimeInclusive);
-                            stmt.setLong(2, cmd.cpuTimeExclusive);
-                            stmt.setInt(3, cmd.objId);
-                            stmt.executeUpdate();
-                        } catch (SQLException ex) {
-                            ex.printStackTrace();
+                        // third pass: execute updates
+                        for (UpdateMetrics cmd : funcMetrics.values()) {
+                            try {
+                                PreparedStatement stmt = sqlStorage.prepareStatement("UPDATE Func SET time_incl = time_incl + ?, time_excl = time_excl + ? WHERE func_id = ?");
+                                stmt.setLong(1, cmd.cpuTimeInclusive);
+                                stmt.setLong(2, cmd.cpuTimeExclusive);
+                                stmt.setInt(3, cmd.objId);
+                                stmt.executeUpdate();
+                            } catch (SQLException ex) {
+                                ex.printStackTrace();
+                            }
                         }
+                        funcMetrics.clear();
+
+                        for (UpdateMetrics cmd : nodeMetrics.values()) {
+                            try {
+                                PreparedStatement stmt = sqlStorage.prepareStatement("UPDATE Node SET time_incl = time_incl + ?, time_excl = time_excl + ? WHERE node_id = ?");
+                                stmt.setLong(1, cmd.cpuTimeInclusive);
+                                stmt.setLong(2, cmd.cpuTimeExclusive);
+                                stmt.setInt(3, cmd.objId);
+                                stmt.executeUpdate();
+                            } catch (SQLException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                        nodeMetrics.clear();
+
+                        notifyAll();
                     }
-                    nodeMetrics.clear();
 
                     Thread.sleep(SLEEP_INTERVAL);
                 }

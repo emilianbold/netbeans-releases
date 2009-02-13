@@ -13,13 +13,13 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 /*
  * 
- * Copyright 2005 Sun Microsystems, Inc.
+ * Copyright 2009 Sun Microsystems, Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 
 import org.openide.NotifyDescriptor;
@@ -58,26 +57,19 @@ import org.openide.util.HelpCtx;
  * 
  * @author
  */
-public class JDBCWizardTransferPanel extends JPanel implements ActionListener, WizardDescriptor.Panel {
-
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 1L;
+public class JDBCWizardTransferPanel implements ActionListener, WizardDescriptor.Panel {
 
     /* Log4J category string */
     private static final String LOG_CATEGORY = JDBCWizardTransferPanel.class.getName();
 
     /* Set <ChangeListeners> */
-    private final Set listeners = new HashSet(1);
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
 
     private List selTableList = new ArrayList();
 
     private JDBCWizardTablePanel tablePanel;
-
-    /** Creates a default instance of JDBCWizardTransferPanel. */
-    public JDBCWizardTransferPanel() {
-    }
+    private JDBCWizardTransferPanelUI comp;
+    private String title;
 
     /**
      * Creates a new instance of JDBCWizardTransferPanel using the given ListModels to initially
@@ -90,11 +82,7 @@ public class JDBCWizardTransferPanel extends JPanel implements ActionListener, W
      *            it displays available destination OTDs
      */
     public JDBCWizardTransferPanel(final String title) {
-        this();
-        if (title != null && title.trim().length() != 0) {
-            this.setName(title);
-        }
-
+        this.title = title;
 //        final ArrayList testList = new ArrayList();
 //        this.tablePanel = new JDBCWizardTablePanel(testList);
 //
@@ -126,7 +114,10 @@ public class JDBCWizardTransferPanel extends JPanel implements ActionListener, W
      * @see org.openide.WizardDescriptor.Panel#getComponent
      */
     public Component getComponent() {
-        return this;
+        if (comp == null) {
+            comp = new JDBCWizardTransferPanelUI (title);
+        }
+        return comp;
     }
 
     /**
@@ -172,8 +163,11 @@ public class JDBCWizardTransferPanel extends JPanel implements ActionListener, W
 			final ArrayList testList = new ArrayList();
 		    this.tablePanel = new JDBCWizardTablePanel(testList);
 
-		    this.setLayout(new BorderLayout());
-		    this.add(this.tablePanel, BorderLayout.CENTER);
+		    if (comp == null) {
+                getComponent ();
+            }
+            comp.setLayout(new BorderLayout());
+		    comp.add(this.tablePanel, BorderLayout.CENTER);
 		    JDBCWizardTransferPanel.this.tablePanel.resetTable(this.selTableList);
 		}
 	}
@@ -205,7 +199,10 @@ public class JDBCWizardTransferPanel extends JPanel implements ActionListener, W
                 return;
         }
         if(selectedOption.toString().equals("PREVIOUS_OPTION")){
-        	this.remove(this.tablePanel);
+            if (comp == null) {
+                getComponent ();
+            }
+        	comp.remove(this.tablePanel);
         	this.selTableList = null;
         	return;
         }

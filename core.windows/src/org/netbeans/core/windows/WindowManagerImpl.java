@@ -1177,6 +1177,9 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         ModeImpl mode = getModeForOpenedTopComponent(tc);
         if(mode != null) {
             central.setModeSelectedTopComponent(mode, tc);
+            if( mode.getState() == Constants.MODE_STATE_SEPARATED ) {
+                tc.toFront();
+            }
         }
     }
 

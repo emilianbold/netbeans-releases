@@ -61,7 +61,7 @@ class IconWithArrow implements Icon {
     private static final String ARROW_IMAGE_NAME = "org/openide/awt/resources/arrow.png"; //NOI18N
     
     private Icon orig;
-    private Icon arrow = new ImageIcon( ImageUtilities.loadImage( ARROW_IMAGE_NAME ) );
+    private Icon arrow = ImageUtilities.loadImageIcon(ARROW_IMAGE_NAME, false);
     private boolean paintRollOver;
     
     private static final int GAP = 6;

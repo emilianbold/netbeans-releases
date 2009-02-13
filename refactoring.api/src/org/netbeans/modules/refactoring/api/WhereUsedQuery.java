@@ -41,8 +41,9 @@
 package org.netbeans.modules.refactoring.api;
 
 import java.util.Hashtable;
-import org.netbeans.modules.refactoring.api.*;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 
 /**
  * Where used query does not do any "real" refactoring.
@@ -80,7 +81,7 @@ public final class WhereUsedQuery extends AbstractRefactoring {
      * </table>
      * @param lookup put object for which you request references into Lookup instance.
      */
-    public WhereUsedQuery(Lookup lookup) {
+    public WhereUsedQuery(@NonNull Lookup lookup) {
         super(lookup);
         putValue(FIND_REFERENCES, true);
     }
@@ -89,7 +90,8 @@ public final class WhereUsedQuery extends AbstractRefactoring {
      * Setter for searched item
      * @param lookup put object for which you request references into Lookup instance.
      */
-    public final void setRefactoringSource(Lookup lookup) {
+    public final void setRefactoringSource(@NonNull Lookup lookup) {
+        Parameters.notNull("lookup", lookup); // NOI18N
         this.refactoringSource = lookup;
     }
     
@@ -102,7 +104,8 @@ public final class WhereUsedQuery extends AbstractRefactoring {
      * @see WhereUsedQuery#SEARCH_IN_COMMENTS
      * @see WhereUsedQuery#FIND_REFERENCES
      */
-    public final boolean getBooleanValue(Object key) {
+    public final boolean getBooleanValue(@NonNull Object key) {
+        Parameters.notNull("key", key); // NOI18N
         Object o = hash.get(key);
         if (o instanceof Boolean) 
             return (Boolean)o;
@@ -116,7 +119,8 @@ public final class WhereUsedQuery extends AbstractRefactoring {
      * @see WhereUsedQuery#SEARCH_IN_COMMENTS
      * @see WhereUsedQuery#FIND_REFERENCES
      */
-    public final void putValue(Object key, Object value) {
+    public final void putValue(@NonNull Object key, Object value) {
+        Parameters.notNull("key", key); // NOI18N
         hash.put(key, value);
     }
 }

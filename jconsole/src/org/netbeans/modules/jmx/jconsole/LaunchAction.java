@@ -212,9 +212,7 @@ public class LaunchAction extends javax.swing.AbstractAction {
         
         //Needed in Tools|Options|...| ToolBars action icons
          putValue (
-            Action.SMALL_ICON, 
-            new javax.swing.ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/jmx/jconsole/resources/console.png")) // NOI18N
-                );
+            Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/jmx/jconsole/resources/console.png", false));
     }
     
     public org.openide.util.HelpCtx getHelpCtx() {

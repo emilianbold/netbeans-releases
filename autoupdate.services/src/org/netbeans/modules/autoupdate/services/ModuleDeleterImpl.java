@@ -123,7 +123,9 @@ public final class ModuleDeleterImpl  {
             assert config != null : "Located config file for " + moduleInfo.getCodeName ();
             assert config.exists () : config + " config file must exists for " + moduleInfo.getCodeName ();
             err.log(Level.FINE, "Locate config file of " + moduleInfo.getCodeNameBase () + ": " + config);
-            configs.add (config);
+            if(config!=null) {
+                configs.add (config);
+            }
             if (handle != null) {
                 handle.progress (++i);
             }

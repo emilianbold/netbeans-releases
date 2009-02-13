@@ -128,26 +128,27 @@ public class CreateCopyAction extends ContextAction {
     }
 
     private void performCopy(final CreateCopy createCopy, final RequestProcessor rp, final Node[] nodes, final File[] roots) {
+        if (!createCopy.showDialog()) {
+            return;
+        }
         rp.post(new Runnable() {
             public void run() {
-                if (createCopy.showDialog()) {
-                    String errorText = validateTargetPath(createCopy);
-                    if (errorText == null) {
-                        ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(CreateCopyAction.this, nodes) {
-                            public void perform() {
-                                performCopy(createCopy, this, roots);
-                            }
-                        };
-                        support.start(createRequestProcessor(nodes));
-                    } else {
-                        SvnClientExceptionHandler.annotate(errorText);
-                        createCopy.setErrorText(errorText);
-                        EventQueue.invokeLater(new Runnable() {
-                            public void run() {
-                                performCopy(createCopy, rp, nodes, roots);
-                            }
-                        });
-                    }
+                String errorText = validateTargetPath(createCopy);
+                if (errorText == null) {
+                    ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(CreateCopyAction.this, nodes) {
+                        public void perform() {
+                            performCopy(createCopy, this, roots);
+                        }
+                    };
+                    support.start(rp);
+                } else {
+                    SvnClientExceptionHandler.annotate(errorText);
+                    createCopy.setErrorText(errorText);
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            performCopy(createCopy, rp, nodes, roots);
+                        }
+                    });
                 }
             }
         });
@@ -207,6 +208,27 @@ public class CreateCopyAction extends ContextAction {
                         throw ex;
                     }
                 }
+
+                /**
+                 * svn client <=1.4
+                 */
+                ISVNInfo info = null;
+                try{
+                    info = client.getInfo(folderToCreate);
+                } catch (SVNClientException ex) {
+                    if(!SvnClientExceptionHandler.isWrongUrl(ex.getMessage())) {
+                        throw ex;
+                    }
+                }
+
+                if(support.isCanceled()) {
+                    return;
+                }
+
+                if(info == null) {
+                    client.mkdir(folderToCreate, true,
+                                 "[Netbeans SVN client generated message: create a new folder for the copy]: '\n" + createCopy.getMessage() + "\n'"); // NOI18N
+                }
             }
 
             if(support.isCanceled()) {
@@ -215,12 +237,12 @@ public class CreateCopyAction extends ContextAction {
 
             if(createCopy.isLocal()) {
                 if(roots.length == 1) {
-                    client.copy(new File[] {createCopy.getLocalFile()}, toRepositoryFile.getFileUrl(), createCopy.getMessage(), true, true);
+                    client.copy(new File[] {createCopy.getLocalFile()}, toRepositoryFile.getFileUrl(), createCopy.getMessage(), true, false);
                 } else {
                     // more roots => copying a multifile dataobject - see getActionRoots(ctx)
                     for (File root : roots) {
                         SVNUrl toUrl = getToRepositoryFile(toRepositoryFile, root).getFileUrl();
-                        client.copy(new File[] {root}, toUrl, createCopy.getMessage(), true, true);
+                        client.copy(new File[] {root}, toUrl, createCopy.getMessage(), true, false);
                     }
                 }
             } else {
@@ -229,13 +251,13 @@ public class CreateCopyAction extends ContextAction {
                     client.copy(fromRepositoryFile.getFileUrl(),
                             toRepositoryFile.getFileUrl(),
                             createCopy.getMessage(),
-                            fromRepositoryFile.getRevision(), true);
+                            fromRepositoryFile.getRevision(), false);
                 } else {
                     // more roots => copying a multifile dataobject - see getActionRoots(ctx)
                     for (File root : roots) {
                         SVNUrl fromUrl = SvnUtils.getRepositoryRootUrl(root).appendPath(SvnUtils.getRepositoryPath(root));
                         SVNUrl toUrl = getToRepositoryFile(toRepositoryFile, root).getFileUrl();
-                        client.copy(fromUrl, toUrl, createCopy.getMessage(), SVNRevision.HEAD, true);
+                        client.copy(fromUrl, toUrl, createCopy.getMessage(), SVNRevision.HEAD, false);
                     }
                 }
             }                            

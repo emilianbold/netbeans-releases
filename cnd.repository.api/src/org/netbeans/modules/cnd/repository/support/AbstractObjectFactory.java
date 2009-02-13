@@ -61,7 +61,7 @@ public abstract class AbstractObjectFactory {
             output.writeShort(NULL_POINTER);
         } else {
             int handler = getHandler(object);
-            assert handler != NULL_POINTER && handler <= Short.MAX_VALUE;
+            assert LAST_INDEX < handler && handler <= Short.MAX_VALUE;
             output.writeShort(handler);
             object.write(output);
         }

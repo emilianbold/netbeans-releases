@@ -70,6 +70,8 @@ import org.openide.util.NbPreferences;
  */
 public class ConfigurationMakefileWriterTest {
 
+    private static final boolean TRACE = false;
+
     public ConfigurationMakefileWriterTest() {
     }
 
@@ -90,7 +92,9 @@ public class ConfigurationMakefileWriterTest {
     }
 
     private void testAppWithLibraries(String testName, String flavorName, int platform, String golden) {
-        System.out.println("-----------------------------------------------------" + testName);
+        if (TRACE) {
+            System.out.println("-----------------------------------------------------" + testName);
+        }
         System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
         Logger logger = Logger.getLogger(NbPreferences.class.getName());
         logger.setLevel(Level.SEVERE);
@@ -182,12 +186,16 @@ public class ConfigurationMakefileWriterTest {
             ioe.printStackTrace();
         }
 
-        System.out.println(result);
+        if (TRACE) {
+            System.out.println(result);
+        }
         assert result.toString().equals(golden);
     }
 
     private void testDynamicLibrary(String testName, String flavorName, int platform, String golden) {
-        System.out.println("-----------------------------------------------------" + testName);
+        if (TRACE) {
+            System.out.println("-----------------------------------------------------" + testName);
+        }
         System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
         // Setup project
         MakeConfigurationDescriptor makeConfigurationDescriptor = new MakeConfigurationDescriptor("/tmp/Xxx");
@@ -243,7 +251,9 @@ public class ConfigurationMakefileWriterTest {
             ioe.printStackTrace();
         }
 
-        System.out.println(result);
+        if (TRACE) {
+            System.out.println(result);
+        }
         assert result.toString().equals(golden);
     }
 

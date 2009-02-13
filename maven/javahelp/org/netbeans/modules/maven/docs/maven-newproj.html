@@ -48,9 +48,10 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
         <p>
         The New Project wizard enables you to create a new Maven project (artifact) based on an archetype in your local or
         a remote repository.
-        When you create the new artifact the wizard prompts you to specify the artifactId, groupId and versionId.
+        When you create the new artifact the wizard prompts you to specify the 
+        project coordinates (artifactId, groupId, versionId).
         </p>
-        <p><strong>To create a new Maven project</strong></p>
+        <p><strong>To create a new Maven project:</strong></p>
         <ol>
             <li>Choose File &gt; New Project from the main menu to open the New Project wizard.</li>
             <li>Choose the Maven category and then choose a Maven project template. Click Next.
@@ -66,17 +67,17 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
         in the Projects window.</p>
         <p><strong>Notes.</strong></p>
         <ul class="note">
-            <li>If you have just installed Maven, the first time you create a project
-            Maven will need to download the most recent artifacts into your local repository.
+            <li>If you have only recently installed Maven, the first time you create a project
+            the IDE may need to download the most recent artifacts into your local repository.
             This can take some time.</li>
-            <li>If you choose the Enterprise Application template, the IDE will automatically
+            <li>If you choose an Enterprise Application template, the IDE will automatically
             create an assembly module for packaging the web application module and EJB module.
-            You can select the modules that you want the IDE to create.</li>
+            You can select the modules that you want to create in the New Project wizard.</li>
             <li>If you have an existing Maven 2 project that contains <tt>pom.xml</tt> you do not need to use the New Project wizard.
             You can open the project by choosing Open Project (Shift-Ctrl-O) from the main menu.</li>
         </ul>
 
-        <p>After you create the project, you can configure the properties for the project by right-clicking the project
+        <p>After you create the project, you can configure additional project properties by right-clicking the project
         node in the Projects window and choosing Properties.</p>
 
 

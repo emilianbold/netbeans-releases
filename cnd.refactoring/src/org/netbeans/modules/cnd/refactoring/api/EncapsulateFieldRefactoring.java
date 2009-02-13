@@ -44,7 +44,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmField;
-import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.openide.util.lookup.Lookups;
@@ -71,7 +70,7 @@ public final class EncapsulateFieldRefactoring extends AbstractRefactoring {
         super(Lookups.fixed(field));
     }
     
-    public CsmField getSourceType() {
+    public CsmField getSourceField() {
         return getRefactoringSource().lookup(CsmField.class);
     }
     

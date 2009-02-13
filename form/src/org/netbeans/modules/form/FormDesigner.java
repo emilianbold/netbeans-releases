@@ -2428,7 +2428,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 code = (horizontal ? (leading ? "l" : "r") : (leading ? "u" : "d")); // NOI18N
             }
             String iconResource = ICON_BASE + code + ".png"; // NOI18N
-            putValue(Action.SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(iconResource)));
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon(iconResource, false));
             putValue(Action.SHORT_DESCRIPTION, FormUtils.getBundleString("CTL_AlignAction_" + code)); // NOI18N
             setEnabled(false);
         }
@@ -2469,7 +2469,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             this.dimension = dimension;
             String code = (dimension == LayoutConstants.HORIZONTAL) ? "h" : "v"; // NOI18N
             String iconResource = ICON_BASE + code + ".png"; // NOI18N
-            putValue(Action.SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(iconResource)));
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon(iconResource, false));
             putValue(Action.SHORT_DESCRIPTION, FormUtils.getBundleString("CTL_ResizeButton_" + code)); // NOI18N
             setEnabled(false);
         }

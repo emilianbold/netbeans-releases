@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.JEditorPane;
@@ -181,6 +182,8 @@ public final class SVGFileModel {
             super(cause);
         }
     }
+
+    private static final Logger LOG = Logger.getLogger(SVGFileModel.class.getName());
 
     private final XmlMultiViewEditorSupport m_edSup;
     private final ElementMapping      m_mapping;
@@ -367,12 +370,12 @@ public final class SVGFileModel {
     private synchronized BaseDocument getDoc() {
         if (m_bDoc == null) {
             try {
-                SceneManager.log(Level.INFO, "Opening new document."); //NOI18N
+                LOG.log(Level.INFO, "Opening new document."); //NOI18N
                 m_bDoc = (BaseDocument) m_edSup.openDocument();
                 assert m_bDoc != null;
                 m_bDoc.addDocumentListener(m_docListener);
             } catch (IOException ex) {
-                SceneManager.error("Could not open the document", ex); //NOI18N
+                LOG.warning("Could not open the document: "+ex.getMessage()); //NOI18N
             }
         }
         return m_bDoc;
@@ -381,11 +384,14 @@ public final class SVGFileModel {
     private synchronized void checkModel() {
         if (m_model == null) {
             try {
-                m_model = DocumentModel.getDocumentModel(getDoc());
-                m_model.addDocumentModelListener(m_modelListener);
-                m_model.addDocumentModelStateListener(m_modelStateListener);
+                BaseDocument doc = getDoc();
+                if (doc != null) {
+                    m_model = DocumentModel.getDocumentModel(doc);
+                    m_model.addDocumentModelListener(m_modelListener);
+                    m_model.addDocumentModelStateListener(m_modelStateListener);
+                }
             } catch (DocumentModelException ex) {
-                SceneManager.error("Could not obtain document model", ex); //NOI18N
+                SceneManager.log(Level.WARNING, "Could not obtain document model ", ex); //NOI18N
             }
         }
     }
