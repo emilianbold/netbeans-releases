@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,53 +34,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.profiler.selector.java.impl;
+package org.netbeans.modules.maven.profiler.impl;
 
-import org.netbeans.modules.profiler.selector.java.project.nodes.ProjectNode;
-import java.util.Collections;
-import java.util.List;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
-import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.profiler.categories.CategoryBuilder;
 import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-@ProjectServiceProvider(service=SelectionTreeBuilder.class,
-    projectTypes={@ProjectType(id="org-netbeans-modules-java-j2seproject"),
-                    @ProjectType(id="org-netbeans-modules-j2ee-earproject"),
-                    @ProjectType(id="org-netbeans-modules-j2ee-ejbjarproject"),
-                    @ProjectType(id="org-netbeans-modules-web-project"),
-                    @ProjectType(id="org-netbeans-modules-apisupport-project"),
-                    @ProjectType(id="org-netbeans-modules-apisupport-project-suite"),
-                    @ProjectType(id="org-netbeans-modules-ant-freeform", position=1200),
-                    @ProjectType(id="org-netbeans-modules-maven")
-    }
-)
-public class PackageSelectionTreeViewBuilder extends ProjectSelectionTreeBuilder {
+@ProjectServiceProvider(service=CategoryBuilder.class, projectType="org-netbeans-modules-maven")
+public class MavenCategoryBuilder extends CategoryBuilder {
 
-    public PackageSelectionTreeViewBuilder(Project project) {
-        this(project, false);
+    public MavenCategoryBuilder(Project proj) {
+        super(proj, findProjectId(proj));
     }
 
-    public PackageSelectionTreeViewBuilder(Project project, boolean isPreferred) {
-        super(new Type("package-view", "Package View"), isPreferred, project);
-    }
-
-    @Override
-    public List<? extends SelectorNode> buildSelectionTree() {
-        return Collections.singletonList(new ProjectNode(project));
-    }
-
-    @Override
-    public int estimatedNodeCount() {
-        return 1;
+    private static String findProjectId(Project proj) {
+        NbMavenProject mp = proj.getLookup().lookup(NbMavenProject.class);
+        String mpType = mp.getPackagingType();
+        if (mpType.equals(NbMavenProject.TYPE_JAR)) {
+            return "org-netbeans-modules-java-j2seproject";
+        } else if (mpType.equals(NbMavenProject.TYPE_WAR)) {
+            return "org-netbeans-modules-web-project";
+        } else if (mpType.equals(NbMavenProject.TYPE_EJB)) {
+            return "org-netbeans-modules-j2ee-ejbjarproject";
+        } else if (mpType.equals(NbMavenProject.TYPE_NBM)) {
+            return "org-netbeans-modules-apisupport-project";
+        }
+        return "";
     }
 
 }
