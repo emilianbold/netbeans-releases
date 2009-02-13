@@ -427,7 +427,7 @@ public class RetoucheUtils {
     
     public static FileObject getClassPathRoot(URL url) throws IOException {
         FileObject result = URLMapper.findFileObject(url);
-        File f = FileUtil.normalizeFile(new File(URLDecoder.decode(url.getPath())));
+        File f = result != null ? null : FileUtil.normalizeFile(new File(URLDecoder.decode(url.getPath(), "UTF-8"))); //NOI18N
         while (result==null) {
             result = FileUtil.toFileObject(f);
             f = f.getParentFile();
