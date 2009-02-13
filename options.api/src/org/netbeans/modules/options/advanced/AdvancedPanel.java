@@ -50,6 +50,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -136,6 +137,7 @@ public final class AdvancedPanel extends JPanel {
         
         // define layout
         setLayout (new BorderLayout ());
+        removeAll(); // #157434 - remove previous tabbedPanel
         add (tabbedPanel, BorderLayout.CENTER);
         initTabbedPane (masterLookup);
     }
@@ -201,9 +203,17 @@ public final class AdvancedPanel extends JPanel {
     
     private class LookupListenerImpl implements LookupListener {
         public void resultChanged(LookupEvent ev) {
-            Lookup masterLookup = model.getLookup();
+            final Lookup masterLookup = model.getLookup();
             model = new Model(subpath, listener);
-            initTabbedPane(masterLookup);
+            if(SwingUtilities.isEventDispatchThread()) {
+                initTabbedPane(masterLookup);
+            } else {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        initTabbedPane(masterLookup);
+                    }
+                });
+            }
         }        
     }
 }
