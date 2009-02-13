@@ -174,6 +174,7 @@ public class HudsonSubversionSCM implements HudsonSCM {
 
     public List<? extends HudsonJobChangeItem> parseChangeSet(Element changeSet) {
         if (changeSet.getElementsByTagName("revision").getLength() == 0) {
+            // XXX clumsy. See https://stapler.dev.java.net/nonav/issues/show_bug.cgi?id=4 and accompanying discussion.
             return null;
         }
         class SubversionItem implements HudsonJobChangeItem {
