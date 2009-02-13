@@ -52,6 +52,7 @@
 package org.netbeans.modules.cnd.api.model.services;
 
 import javax.swing.text.Document;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionDocProvider;
 import org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionViewProvider;
 import org.openide.util.Lookup;
@@ -145,6 +146,20 @@ public final class CsmMacroExpansion {
     }
 
     /**
+     * Macro expands content of the document.
+     * If we already knew file for document it's better to use this function, because it's faster.
+     *
+     * @param doc - document for macro expansion
+     * @param doc - file of the document
+     * @param startOffset - start offset for expansion
+     * @param endOffset - end offset for expansion
+     * @return - expansion
+     */
+    public static String expand(Document doc, CsmFile file, int startOffset, int endOffset) {
+        return getMacroExpansionDocProvider().expand(doc, file, startOffset, endOffset);
+    }
+
+    /**
      * Transforms original offset to offset in expanded text.
      *
      * @param expandedDoc - document
@@ -211,6 +226,10 @@ public final class CsmMacroExpansion {
         }
 
         public String expand(Document doc, int startOffset, int endOffset) {
+            return null;
+        }
+
+        public String expand(Document doc, CsmFile file, int startOffset, int endOffset) {
             return null;
         }
 

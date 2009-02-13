@@ -267,7 +267,13 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         if(doc == null) {
             return null;
         }
-        CsmFile file = CsmUtilities.getCsmFile(doc, true);
+        return expand(doc, CsmUtilities.getCsmFile(doc, true), startOffset, endOffset);
+    }
+
+    public String expand(Document doc, CsmFile file, int startOffset, int endOffset) {
+        if(doc == null) {
+            return null;
+        }
         if (file == null) {
             return null;
         }
@@ -283,7 +289,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         }
         if(updateTable) {
             synchronized (tt) {
-                expand(doc, tt);
+                expand(doc, file, tt);
             }
         }
         return expandInterval(doc, tt, startOffset, endOffset);
@@ -334,11 +340,10 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         return sb.toString();
     }
 
-    private void expand(final Document doc, final TransformationTable tt) {
+    private void expand(final Document doc, final CsmFile file, final TransformationTable tt) {
         if (doc == null) {
             return;
         }
-        final CsmFile file = CsmUtilities.getCsmFile(doc, true);
         if (file == null) {
             return;
         }
