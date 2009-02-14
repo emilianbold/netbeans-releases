@@ -40,10 +40,9 @@ package org.netbeans.modules.python.debugger.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
 import org.netbeans.modules.python.debugger.config.NetBeansFrontend;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 
 /**
  * Action which shows PythonDebugging Console component.
