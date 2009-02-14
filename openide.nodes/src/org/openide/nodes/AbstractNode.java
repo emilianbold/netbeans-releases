@@ -435,9 +435,14 @@ public class AbstractNode extends Node {
             return sheet;
         }
 
-        setSheetImpl(createSheet());
+        Sheet s = createSheet();
+        if (s == null) {
+            // #150503
+            throw new IllegalStateException("createSheet returns null in " + this.getClass().getName()); // NOI18N
+        }
+        setSheetImpl(s);
 
-        return sheet;
+        return s;
     }
 
     /** Get a list of property sets.
