@@ -61,9 +61,9 @@ class CLibrary {
 	public String ptsname(int master_fd);
 
 	// termios stuff
-	public int tcgetattr(int fd, Termios termios);
-	public int tcsetattr(int fd, int optionalActions, final Termios termios);
-	public void cfmakeraw(Termios termios);
+	public int tcgetattr(int fd, LinuxTermios termios);
+	public int tcsetattr(int fd, int optionalActions, final LinuxTermios termios);
+	public void cfmakeraw(LinuxTermios termios);
 
 	// generic unix support stuff
 	public int close(int fd);
@@ -87,16 +87,16 @@ class CLibrary {
 
 	// Linux: /bits/fcntl.h
 	// Mac: /usr/include/sys/fcntl.h
+	// Solaris: /usr/include/sys/fcntl.h
 	public final int O_RDWR = 2;
-
-	// Linux: /bits/termios.h
-	public final int NCCS = 32;          // 19 on solaris
 
 	public final int TCSANOW = 0;        // for tcsetattr()
 	public final int TCSADRAIN = 1;
 	public final int TCSAFLUSH = 2;
 
 	public abstract int I_PUSH();
+
+	public abstract int NCCS();
 
 	public abstract int TIOCSWINSZ();
     }
@@ -109,8 +109,31 @@ class CLibrary {
 	public int I_PUSH() {
 	    throw new UnsupportedOperationException("I_PUSH not supported");
 	}
+
+	public int NCCS() {
+	    throw new UnsupportedOperationException("NCCS not supported");
+	}
     }
 
+    private static class SolarisConstants extends GenericConstants {
+	public int TIOCSWINSZ() {
+	    // Solaris: /sys/termios.h
+	    final int _TIOC = ('T' << 8);
+	    return (_TIOC | 103);
+	}
+
+	public int I_PUSH() {
+	    // Solaris: /sys/stropts.h
+	    final int STR = ('S' << 8);
+	    return (STR | 02);
+	}
+
+	public int NCCS() {
+	    // Solaris: /sys/termios.h
+	    final int NCCS = 19;
+	    return NCCS;
+	}
+    }
     private static class LinuxConstants extends GenericConstants {
 	public int TIOCSWINSZ() {
 	    // Linux: /ioctls.h
@@ -122,6 +145,12 @@ class CLibrary {
 	    final int __SID = ('S' << 8);
 	    return (__SID | 2);
 	}
+
+	public int NCCS() {
+	    // Linux: /bits/termios.h
+	    final int NCCS = 32;
+	    return NCCS;
+	}
     }
 
     private static class MacConstants extends GenericConstants {
@@ -131,6 +160,11 @@ class CLibrary {
 	}
 
 	public int I_PUSH() {
+	    throw new UnsupportedOperationException("I_PUSH not supported");
+	}
+
+	public int NCCS() {
+	    // Used for termios and not used on the Mac
 	    throw new UnsupportedOperationException("I_PUSH not supported");
 	}
     }
@@ -150,6 +184,9 @@ class CLibrary {
 	    case SolarisIntel64:
 	    case SolarisSparc32:
 	    case SolarisSparc64:
+		delegate = (GenericCLibrary) Native.loadLibrary("c", DefaultCLibrary.class);
+		constants = new SolarisConstants();
+		break;
 	    case WindowsIntel32:
 	    case Other:
 	    default:
@@ -160,6 +197,7 @@ class CLibrary {
     }
 
     // struct winsize
+    // Solaris: sys/termios.h
     public static class WinSize extends Structure {
         // JNA cannot figure sizeof structure if members aren't public
         public short ws_row;
@@ -179,17 +217,31 @@ class CLibrary {
 
     // struct termios
     // Not used on the mac
-    static class Termios extends Structure {
+
+    static class SolarisTermios extends Structure {
         public int c_iflag;     // input modes
         public int c_oflag;     // output modes
         public int c_cflag;     // control modes
         public int c_lflag;     // local modes
-        public byte c_line;     // line discipline  (+linux -solaris)
         public byte c_cc[];     // control characters
-        public int c_ispeed;    // input speed      (+linux -solaris)
-        public int c_ospeed;    // output speed     (+linux - solaris)
 
-        public Termios() {
+        public SolarisTermios() {
+            c_cc = new byte[INSTANCE.NCCS()];
+        }
+    }
+
+    // Not used on the mac
+    static class LinuxTermios extends Structure {
+        public int c_iflag;     // input modes
+        public int c_oflag;     // output modes
+        public int c_cflag;     // control modes
+        public int c_lflag;     // local modes
+        public byte c_line;     // line discipline
+        public byte c_cc[];     // control characters
+        public int c_ispeed;    // input speed
+        public int c_ospeed;    // output speed
+
+        public LinuxTermios() {
             c_cc = new byte[INSTANCE.NCCS()];
         }
     }
@@ -219,14 +271,33 @@ class CLibrary {
     }
 
     // termios stuff
-    public final int tcgetattr(int fd, Termios termios) {
-	return delegate.tcgetattr(fd, termios);
+    public final int tcgetattr(int fd, LinuxTermios termios) {
+	switch (Platform.get()) {
+	    case LinuxIntel32:
+	    case LinuxIntel64:
+		return delegate.tcgetattr(fd, termios);
+	    default:
+		throw new UnsupportedOperationException("tcgetattr not supported");
+	}
     }
-    public final int tcsetattr(int fd, int optionalActions, final Termios termios) {
-	return delegate.tcsetattr(fd, optionalActions, termios);
+    public final int tcsetattr(int fd, int optionalActions, final LinuxTermios termios) {
+	switch (Platform.get()) {
+	    case LinuxIntel32:
+	    case LinuxIntel64:
+		return delegate.tcsetattr(fd, optionalActions, termios);
+	    default:
+		throw new UnsupportedOperationException("tcsetattr not supported");
+	}
     }
-    public final void cfmakeraw(Termios termios) {
-	delegate.cfmakeraw(termios);
+    public final void cfmakeraw(LinuxTermios termios) {
+	switch (Platform.get()) {
+	    case LinuxIntel32:
+	    case LinuxIntel64:
+		delegate.cfmakeraw(termios);
+		break;
+	    default:
+		throw new UnsupportedOperationException("cfmakeraw not supported");
+	}
     }
 
     // generic unix support stuff
@@ -249,7 +320,7 @@ class CLibrary {
     public final int SIGHUP() { return constants.SIGHUP; }
     public final int SIGTERM() { return constants.SIGTERM; }
 
-    public final int NCCS() { return constants.NCCS; }
+    public final int NCCS() { return constants.NCCS(); }
 
     public final int TCSANOW() { return constants.TCSANOW; }
     public final int TCSADRAIN() { return constants.TCSADRAIN; }
