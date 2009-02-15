@@ -39,17 +39,30 @@
 
 package org.netbeans.modules.profiler.selector.java.impl;
 
-import org.netbeans.modules.profiler.selector.java.impl.ProjectSelectionTreeBuilder;
 import org.netbeans.modules.profiler.selector.java.project.nodes.ProjectNode;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
+import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
+@ProjectServiceProvider(service=SelectionTreeBuilder.class,
+    projectTypes={@ProjectType(id="org-netbeans-modules-java-j2seproject"),
+                    @ProjectType(id="org-netbeans-modules-j2ee-earproject"),
+                    @ProjectType(id="org-netbeans-modules-j2ee-ejbjarproject"),
+                    @ProjectType(id="org-netbeans-modules-web-project"),
+                    @ProjectType(id="org-netbeans-modules-apisupport-project"),
+                    @ProjectType(id="org-netbeans-modules-apisupport-project-suite"),
+                    @ProjectType(id="org-netbeans-modules-ant-freeform", position=1200),
+                    @ProjectType(id="org-netbeans-modules-maven")
+    }
+)
 public class PackageSelectionTreeViewBuilder extends ProjectSelectionTreeBuilder {
 
     public PackageSelectionTreeViewBuilder(Project project) {

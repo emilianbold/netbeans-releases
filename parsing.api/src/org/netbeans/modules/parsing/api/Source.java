@@ -53,7 +53,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.lexer.InputAttributes;
@@ -73,7 +72,6 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Parameters;
 import org.openide.util.UserQuestionException;
 
@@ -278,8 +276,15 @@ public final class Source {
         final String [] text = new String [] {""}; //NOI18N
         Document doc = getDocument (false);
         if (doc == null) {
-            EditorKit kit = CloneableEditorSupport.getEditorKit (mimeType);
-            Document customDoc = kit.createDefaultDocument ();
+            // Ideally we should use CloneableEditorSupport.getEditorKit (mimeType),
+            // which would return EditorKit implementation registered for this Source's mimeType.
+            // However, since all Netbeans kit's are subclasses of BaseKit and BaseKit
+            // delegates its read/write methods to a document (ie. BaseDocument in this case)
+            // this has severe performance implications such as #157676.
+            //
+            // The code below is a copy of CharacterConversions.lineSeparatorToLineFeed() method
+            // and it handles line-end conversion. In general EditorKits can do more conversions,
+            // but they usually don't and this should be good enough for Snapshots.
             try {
                 if (fileObject.isValid ()) {
                     InputStream is = fileObject.getInputStream ();
@@ -291,10 +296,38 @@ public final class Source {
                             )
                         );
                         try {
-                            kit.read (reader, customDoc, 0);
-                            doc = customDoc;
-                        } catch (BadLocationException ble) {
-                            LOG.log (Level.WARNING, null, ble);
+                            StringBuilder output = new StringBuilder((int) fileObject.getSize());
+                            boolean lastCharCR = false;
+                            char [] buffer = new char [1024];
+                            int size = -1;
+
+                            final char LF = '\n'; //NOI18N, Unicode line feed (0x000A)
+                            final char CR = '\r'; //NOI18N, Unicode carriage return (0x000D)
+                            final char LS = 0x2028; // Unicode line separator (0x2028)
+                            final char PS = 0x2029; // Unicode paragraph separator (0x2029)
+
+                            while(-1 != (size = reader.read(buffer, 0, buffer.length))) {
+                                for(int i = 0; i < size; i++) {
+                                    char ch = buffer[i];
+                                    if (lastCharCR && ch == LF) { // found CRLF sequence
+                                        output.append(LF);
+                                        lastCharCR = false;
+
+                                    } else { // not CRLF sequence
+                                        if (ch == CR) {
+                                            lastCharCR = true;
+                                        } else if (ch == LS || ch == PS) { // Unicode LS, PS
+                                            output.append(LF);
+                                            lastCharCR = false;
+                                        } else { // current char not CR
+                                            lastCharCR = false;
+                                            output.append(ch);
+                                        }
+                                    }
+                                }
+                            }
+
+                            text[0] = output.toString();
                         } finally {
                             reader.close ();
                         }
@@ -305,8 +338,7 @@ public final class Source {
             } catch (IOException ioe) {
                 LOG.log (Level.WARNING, null, ioe);
             }
-        }
-        if (doc != null) {
+        } else {
             final Document d = doc;
             d.render (new Runnable () {
                 public void run () {

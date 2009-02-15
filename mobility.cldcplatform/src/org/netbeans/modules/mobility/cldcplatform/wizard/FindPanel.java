@@ -323,7 +323,7 @@ final public class FindPanel extends javax.swing.JPanel implements SearchRunnabl
         if (platformsListModel.isEmpty()) jButton1ActionPerformed(null);
     }
     
-    public boolean isValid() {
+    public boolean isStateValid() {
         if (selectedFolders.isEmpty()) {
             showError(NbBundle.getMessage(FindPanel.class, "ERR_NothingSelected"));//NOI18N
             return false;
