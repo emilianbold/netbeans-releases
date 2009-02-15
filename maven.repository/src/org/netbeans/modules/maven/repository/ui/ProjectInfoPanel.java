@@ -59,6 +59,7 @@ import org.apache.maven.model.License;
 import org.apache.maven.model.MailingList;
 import org.apache.maven.model.Scm;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.modules.maven.api.CommonArtifactActions;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
@@ -84,6 +85,7 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
     public ProjectInfoPanel(Lookup lookup) {
         super(lookup);
         initComponents();
+        btnCheckout.setIcon(null);
     }
 
     /** This method is called from within the constructor to
@@ -116,6 +118,7 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
         txtConnection = new javax.swing.JTextField();
         lblDevConnection = new javax.swing.JLabel();
         txtDevConnection = new javax.swing.JTextField();
+        btnCheckout = new javax.swing.JButton();
         pnlCim = new javax.swing.JPanel();
         lblCimSystem = new javax.swing.JLabel();
         txtCimSystem = new javax.swing.JTextField();
@@ -168,8 +171,8 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
                     .add(lblIssues))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(pnlIssuesLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(btnIssues, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 529, Short.MAX_VALUE)
-                    .add(txtSystem, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 529, Short.MAX_VALUE))
+                    .add(btnIssues, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 552, Short.MAX_VALUE)
+                    .add(txtSystem, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 552, Short.MAX_VALUE))
                 .addContainerGap())
         );
         pnlIssuesLayout.setVerticalGroup(
@@ -182,7 +185,7 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
                 .add(pnlIssuesLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(btnIssues)
                     .add(lblIssues))
-                .addContainerGap(14, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pnlScm.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ProjectInfoPanel.class, "TIT_SCM"))); // NOI18N
@@ -203,6 +206,9 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
 
         txtDevConnection.setEditable(false);
 
+        btnCheckout.setAction(CommonArtifactActions.createScmCheckoutAction(getLookup()));
+        btnCheckout.setText(org.openide.util.NbBundle.getMessage(ProjectInfoPanel.class, "ProjectInfoPanel.btnCheckout.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout pnlScmLayout = new org.jdesktop.layout.GroupLayout(pnlScm);
         pnlScm.setLayout(pnlScmLayout);
         pnlScmLayout.setHorizontalGroup(
@@ -215,9 +221,13 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
                     .add(lblDevConnection))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(pnlScmLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(txtConnection, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 475, Short.MAX_VALUE)
-                    .add(btnScmUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 475, Short.MAX_VALUE)
-                    .add(txtDevConnection, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 475, Short.MAX_VALUE))
+                    .add(btnScmUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE)
+                    .add(pnlScmLayout.createSequentialGroup()
+                        .add(pnlScmLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, txtDevConnection, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, txtConnection, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(btnCheckout)))
                 .addContainerGap())
         );
         pnlScmLayout.setVerticalGroup(
@@ -229,7 +239,8 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(pnlScmLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblConnection)
-                    .add(txtConnection, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(txtConnection, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(btnCheckout))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(pnlScmLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblDevConnection)
@@ -255,7 +266,6 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
         pnlCim.setLayout(pnlCimLayout);
         pnlCimLayout.setHorizontalGroup(
             pnlCimLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 617, Short.MAX_VALUE)
             .add(pnlCimLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(pnlCimLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -263,13 +273,12 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
                     .add(lblCimUrl))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(pnlCimLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(btnCimUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 529, Short.MAX_VALUE)
-                    .add(txtCimSystem, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 529, Short.MAX_VALUE))
+                    .add(btnCimUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 552, Short.MAX_VALUE)
+                    .add(txtCimSystem, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 552, Short.MAX_VALUE))
                 .addContainerGap())
         );
         pnlCimLayout.setVerticalGroup(
             pnlCimLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 52, Short.MAX_VALUE)
             .add(pnlCimLayout.createSequentialGroup()
                 .add(pnlCimLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblCimSystem)
@@ -294,20 +303,20 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, pnlMailingLists, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 627, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, pnlLicense, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 627, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, pnlMailingLists, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 650, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, pnlLicense, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 650, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel4Layout.createSequentialGroup()
                         .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(lblProjectName)
                             .add(lblDescription))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 490, Short.MAX_VALUE)
-                            .add(txtProjectName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 490, Short.MAX_VALUE)))
+                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
+                            .add(txtProjectName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)))
                     .add(jPanel4Layout.createSequentialGroup()
                         .add(lblProjectHome)
                         .add(18, 18, 18)
-                        .add(btnProjectHome, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 492, Short.MAX_VALUE))
+                        .add(btnProjectHome, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 515, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, pnlIssues, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, pnlScm, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, pnlCim, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -361,6 +370,7 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnCheckout;
     private javax.swing.JButton btnCimUrl;
     private javax.swing.JButton btnIssues;
     private javax.swing.JButton btnProjectHome;

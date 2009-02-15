@@ -44,8 +44,8 @@
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="pnlMailingLists" alignment="0" pref="627" max="32767" attributes="0"/>
-                          <Component id="pnlLicense" alignment="0" pref="627" max="32767" attributes="0"/>
+                          <Component id="pnlMailingLists" alignment="0" pref="650" max="32767" attributes="0"/>
+                          <Component id="pnlLicense" alignment="0" pref="650" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="lblProjectName" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -53,14 +53,14 @@
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="jScrollPane1" pref="490" max="32767" attributes="0"/>
-                                  <Component id="txtProjectName" alignment="0" pref="490" max="32767" attributes="0"/>
+                                  <Component id="jScrollPane1" pref="513" max="32767" attributes="0"/>
+                                  <Component id="txtProjectName" alignment="0" pref="513" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="lblProjectHome" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
-                              <Component id="btnProjectHome" pref="492" max="32767" attributes="0"/>
+                              <Component id="btnProjectHome" pref="515" max="32767" attributes="0"/>
                           </Group>
                           <Component id="pnlIssues" alignment="0" max="32767" attributes="0"/>
                           <Component id="pnlScm" alignment="0" max="32767" attributes="0"/>
@@ -179,8 +179,8 @@
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="btnIssues" pref="529" max="32767" attributes="0"/>
-                              <Component id="txtSystem" alignment="0" pref="529" max="32767" attributes="0"/>
+                              <Component id="btnIssues" pref="552" max="32767" attributes="0"/>
+                              <Component id="txtSystem" alignment="0" pref="552" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -198,7 +198,7 @@
                               <Component id="btnIssues" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="lblIssues" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="14" max="32767" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -251,19 +251,25 @@
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="lblScmUrl" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Component id="lblConnection" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Component id="lblDevConnection" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace max="-2" attributes="0"/>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="txtConnection" pref="475" max="32767" attributes="0"/>
-                              <Component id="btnScmUrl" alignment="0" pref="475" max="32767" attributes="0"/>
-                              <Component id="txtDevConnection" alignment="0" pref="475" max="32767" attributes="0"/>
+                              <Component id="btnScmUrl" alignment="0" pref="498" max="32767" attributes="0"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Group type="103" groupAlignment="1" attributes="0">
+                                      <Component id="txtDevConnection" alignment="0" pref="390" max="32767" attributes="2"/>
+                                      <Component id="txtConnection" alignment="0" pref="390" max="32767" attributes="2"/>
+                                  </Group>
+                                  <EmptySpace min="-2" max="-2" attributes="0"/>
+                                  <Component id="btnCheckout" min="-2" max="-2" attributes="0"/>
+                              </Group>
                           </Group>
-                          <EmptySpace max="-2" attributes="0"/>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -278,6 +284,7 @@
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="lblConnection" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="txtConnection" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="btnCheckout" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
@@ -332,6 +339,16 @@
                     <Property name="editable" type="boolean" value="false"/>
                   </Properties>
                 </Component>
+                <Component class="javax.swing.JButton" name="btnCheckout">
+                  <Properties>
+                    <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                      <Connection code="CommonArtifactActions.createScmCheckoutAction(getLookup())" type="code"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="org/netbeans/modules/maven/repository/ui/Bundle.properties" key="ProjectInfoPanel.btnCheckout.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                    </Property>
+                  </Properties>
+                </Component>
               </SubComponents>
             </Container>
             <Container class="javax.swing.JPanel" name="pnlCim">
@@ -348,7 +365,6 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <EmptySpace min="0" pref="617" max="32767" attributes="0"/>
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
@@ -357,8 +373,8 @@
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="btnCimUrl" alignment="0" pref="529" max="32767" attributes="0"/>
-                              <Component id="txtCimSystem" alignment="0" pref="529" max="32767" attributes="0"/>
+                              <Component id="btnCimUrl" alignment="0" pref="552" max="32767" attributes="0"/>
+                              <Component id="txtCimSystem" alignment="0" pref="552" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -366,7 +382,6 @@
                 </DimensionLayout>
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <EmptySpace min="0" pref="52" max="32767" attributes="0"/>
                       <Group type="102" alignment="0" attributes="0">
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="lblCimSystem" alignment="3" min="-2" max="-2" attributes="0"/>
