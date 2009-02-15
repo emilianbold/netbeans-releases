@@ -383,10 +383,12 @@ final class StandardModule extends Module {
                 }
             }
         }
-        Util.err.fine("localeVariants of " + jar + ": " + localeVariants);
-        Util.err.fine("plainExtensions of " + jar + ": " + plainExtensions);
-        Util.err.fine("localeExtensions of " + jar + ": " + localeExtensions);
-        Util.err.fine("patches of " + jar + ": " + patches);
+        if (Util.err.isLoggable(Level.FINE)) {
+            Util.err.fine("localeVariants of " + jar + ": " + localeVariants);
+            Util.err.fine("plainExtensions of " + jar + ": " + plainExtensions);
+            Util.err.fine("localeExtensions of " + jar + ": " + localeExtensions);
+            Util.err.fine("patches of " + jar + ": " + patches);
+        }
         if (patches != null) {
             for (File patch : patches) {
                 events.log(Events.PATCH, patch);
