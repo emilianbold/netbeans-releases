@@ -78,15 +78,6 @@ import org.openide.util.Utilities;
  */
 public class FodDataObjectFactory implements DataObject.Factory {
     private static MultiFileLoader delegate;
-    private static Method getCookie;
-    static {
-        try {
-            getCookie = MultiDataObject.class.getDeclaredMethod("getCookieSet");
-            getCookie.setAccessible(true);
-        } catch (Exception ex) {
-            throw new IllegalStateException(ex);
-        }
-    }
 
     private FileObject definition;
     
