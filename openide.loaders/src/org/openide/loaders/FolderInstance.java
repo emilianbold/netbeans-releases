@@ -650,11 +650,15 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
     * @param arr collection of DataObjects
     */
     final void processObjects (final Collection<DataObject> arr) {
-        creationTask = postCreationTask (new Runnable () {
+        final Task[] myCreation = new Task[1];
+        myCreation[0] = postCreationTask (new Runnable () {
             public void run () {
-                defaultProcessObjects (arr);
+                if (creationTask == myCreation[0]) {
+                    defaultProcessObjects (arr);
+                }
             }
         });
+        creationTask = myCreation[0];
     }
 
     /** Default processing of objects.
