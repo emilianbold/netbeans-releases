@@ -41,6 +41,7 @@
 package org.netbeans.modules.maven.repository.ui;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -217,10 +218,13 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
             toolbar.setFloatable(false);
             Action[] a = new Action[1];
             Action[] actions = getLookup().lookup(a.getClass());
+            Dimension space = new Dimension(3, 0);
+            toolbar.addSeparator(space);
             for (Action act : actions) {
                 JButton btn = new JButton();
                 Actions.connect(btn, act);
                 toolbar.add(btn);
+                toolbar.addSeparator(space);
             }
         }
         return toolbar;

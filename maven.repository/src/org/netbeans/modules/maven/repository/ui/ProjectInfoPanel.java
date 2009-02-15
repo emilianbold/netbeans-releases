@@ -40,6 +40,7 @@
 package org.netbeans.modules.maven.repository.ui;
 
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
@@ -411,10 +412,13 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
             toolbar.setFloatable(false);
             Action[] a = new Action[1];
             Action[] actions = getLookup().lookup(a.getClass());
+            Dimension space = new Dimension(3, 0);
+            toolbar.addSeparator(space);
             for (Action act : actions) {
                 JButton btn = new JButton();
                 Actions.connect(btn, act);
                 toolbar.add(btn);
+                toolbar.addSeparator(space);
             }
         }
         return toolbar;
