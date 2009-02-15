@@ -167,7 +167,8 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                     }
                 }
                 if(support != null && support.isCanceled()) {
-                    Subversion.LOG.log(Level.WARNING, null, t);
+                    // action has been canceled, level info should be fine
+                    Subversion.LOG.log(Level.INFO, null, t);
                     // who knows what might have happened ...
                     throw new SVNClientException(SvnClientExceptionHandler.ACTION_CANCELED_BY_USER);
                 }
