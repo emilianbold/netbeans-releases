@@ -50,6 +50,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -71,6 +73,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 
 /** Support for special dataobjects that can dynamically FoD objects.
  *
@@ -108,8 +111,9 @@ public class FodDataObjectFactory implements DataObject.Factory {
     }
 
     private final class Cookies extends MultiDataObject
-    implements OpenCookie, EditCookie, Runnable {
-        private FileObject fo;
+    implements OpenCookie, EditCookie, Runnable, ChangeListener {
+        private final FileObject fo;
+        private final ChangeListener weakL;
         private boolean success;
         private boolean open;
         private ProgressHandle handle;
@@ -118,6 +122,8 @@ public class FodDataObjectFactory implements DataObject.Factory {
         private Cookies(FileObject fo, MultiFileLoader loader) throws DataObjectExistsException {
             super(fo, loader);
             this.fo = fo;
+            this.weakL = WeakListeners.change(this, FeatureManager.getInstance());
+            FeatureManager.getInstance().addChangeListener(weakL);
         }
 
         @Override
@@ -221,6 +227,13 @@ public class FodDataObjectFactory implements DataObject.Factory {
                 dialog.setVisible(false);
                 dialog = null;
                 handle = null;
+            }
+        }
+
+        public void stateChanged(ChangeEvent e) {
+            FeatureInfo info = FoDFileSystem.getInstance().whichProvides(definition);
+            if (info == null || info.isEnabled()) {
+                dispose();
             }
         }
     } // end Cookies
