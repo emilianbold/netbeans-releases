@@ -132,6 +132,9 @@ class JNAPty extends Pty {
 		throw new PtyException("open(\"" + slave_name + "\") failed -- " + strerror(Native.getLastError()));
 	    }
 
+	    // On solaris things are RAW by default unless you push some stuff
+	    // On Linux things are cooked to begin with and one can mimic
+	    // raw mode using cfmakeraw(termios).
             if (mode() != Mode.RAW) {
                 if (OS.get() == OS.SOLARIS) {
 
@@ -152,7 +155,7 @@ class JNAPty extends Pty {
                 }
             } else {
                 if (OS.get() == OS.LINUX) {
-                    CLibrary.Termios termios = new CLibrary.Termios();
+                    CLibrary.LinuxTermios termios = new CLibrary.LinuxTermios();
 
                     // check existing settings
                     // If we don't do this tcssetattr() will return EINVAL.
