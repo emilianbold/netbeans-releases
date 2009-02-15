@@ -218,12 +218,15 @@ public class FodDataObjectFactory implements DataObject.Factory {
                 success = true;
             } else if (toEnable.isEmpty() && toInstall.isEmpty()) {
                 success = true;
+                handle = null;
             }
 
             finishOpen();
 
             if (dialog != null) {
-                handle.finish();
+                if (handle != null) {
+                    handle.finish();
+                }
                 dialog.setVisible(false);
                 dialog = null;
                 handle = null;
