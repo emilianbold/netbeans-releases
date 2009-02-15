@@ -39,59 +39,76 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.clientproject.wsclient;
+/*
+ * SystemImpl.java
+ *
+ * Created on December 6, 2006, 2:34 PM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
 
+package org.netbeans.modules.websvc.jaxws.catalog.impl;
 
-import java.io.IOException;
-import org.netbeans.modules.j2ee.api.ejbjar.Car;
-import org.netbeans.modules.j2ee.clientproject.AppClientProject;
-import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
-import org.netbeans.modules.websvc.spi.jaxws.client.ProjectJAXWSClientSupport;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
+import java.net.URI;
+import org.netbeans.modules.websvc.jaxws.catalog.CatalogAttributes;
+import org.netbeans.modules.websvc.jaxws.catalog.CatalogQNames;
+import org.netbeans.modules.websvc.jaxws.catalog.CatalogVisitor;
+import org.w3c.dom.Element;
 
 /**
  *
- * @author mkuchtiak
+ * @author girix
  */
-public class AppClientProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*implements JAXWSClientSupportImpl*/ {
-    AppClientProject project;
+public class SystemImpl extends CatalogComponentImpl implements
+        org.netbeans.modules.websvc.jaxws.catalog.System{
     
-    /**
-     * Creates a new instance of AppClientProjectJAXWSClientSupport
-     */
-    public AppClientProjectJAXWSClientSupport(AppClientProject project, AntProjectHelper antProjectHelper) {
-        super(project);
-        this.project=project;
-    }
-
-    public FileObject getWsdlFolder(boolean create) throws IOException {
-        JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
-        Car carModule = Car.getCar(project.getProjectDirectory());
-        if (carModule!=null) {
-            FileObject webInfFo = carModule.getMetaInf();
-            if (webInfFo!=null) {
-                FileObject wsdlFo = webInfFo.getFileObject("wsdl"); //NOI18N
-                if (wsdlFo!=null) {
-                    return wsdlFo;
-                } else if (create) {
-                    return webInfFo.createFolder("wsdl"); //NOI18N
-                }
-            }
-        }
-        return null;
-    }
-
-    protected void addJaxWs20Library() throws Exception {
+    public SystemImpl(CatalogModelImpl model, Element e) {
+        super(model, e);
     }
     
-    /** return root folder for xml artifacts
-     */
-    @Override
-    protected FileObject getXmlArtifactsRoot() {
-        return project.getCarModule().getMetaInf();
+    public SystemImpl(CatalogModelImpl model) {
+        this(model, createElementNS(model, CatalogQNames.SYSTEM));
     }
+    
+    public void accept(CatalogVisitor visitor) {
+        visitor.visit(this);
+    }
+    
+    public String getSystemIDAttr() {
+        return getAttribute(CatalogAttributes.systemId);
+    }
+    
+    public String getURIAttr() {
+        return getAttribute(CatalogAttributes.uri);
+    }
+    
+    public String getXprojectCatalogFileLocationAttr() {
+        return getAttribute(CatalogAttributes.xprojectCatalogFileLocation);
+    }
+    
+    public String getReferencingFileAttr() {
+        return getAttribute(CatalogAttributes.referencingFile);
+    }
+    
+    public void setSystemIDAttr(URI uri) {
+        super.setAttribute(SYSTEMID_ATTR_PROP, CatalogAttributes.systemId,
+                uri.toString());
+    }
+    
+    public void setURIAttr(URI uri) {
+        super.setAttribute(URI_ATTR_PROP, CatalogAttributes.uri,
+                uri.toString());
+    }
+    
+    public void setXprojectCatalogFileLocationAttr(URI uri) {
+        super.setAttribute(XPROJECTREF_ATTR_PROP, 
+                CatalogAttributes.xprojectCatalogFileLocation, uri.toString());
+    }
+    
+    public void setReferencingFileAttr(URI uri) {
+        super.setAttribute(REFFILE_ATTR_PROP, CatalogAttributes.referencingFile,
+                uri.toString());
+    }
+
 }

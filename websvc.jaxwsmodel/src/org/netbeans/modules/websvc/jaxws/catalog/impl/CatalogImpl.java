@@ -38,60 +38,53 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.websvc.jaxws.catalog.impl;
 
-package org.netbeans.modules.j2ee.clientproject.wsclient;
+import java.util.List;
+import org.netbeans.modules.websvc.jaxws.catalog.Catalog;
+import org.netbeans.modules.websvc.jaxws.catalog.CatalogQNames;
+import org.netbeans.modules.websvc.jaxws.catalog.CatalogVisitor;
+import org.netbeans.modules.websvc.jaxws.catalog.NextCatalog;
+import org.netbeans.modules.websvc.jaxws.catalog.System;
+import org.w3c.dom.Element;
 
-
-import java.io.IOException;
-import org.netbeans.modules.j2ee.api.ejbjar.Car;
-import org.netbeans.modules.j2ee.clientproject.AppClientProject;
-import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
-import org.netbeans.modules.websvc.spi.jaxws.client.ProjectJAXWSClientSupport;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-
-/**
- *
- * @author mkuchtiak
- */
-public class AppClientProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*implements JAXWSClientSupportImpl*/ {
-    AppClientProject project;
+public class CatalogImpl extends CatalogComponentImpl implements Catalog {
     
-    /**
-     * Creates a new instance of AppClientProjectJAXWSClientSupport
-     */
-    public AppClientProjectJAXWSClientSupport(AppClientProject project, AntProjectHelper antProjectHelper) {
-        super(project);
-        this.project=project;
-    }
-
-    public FileObject getWsdlFolder(boolean create) throws IOException {
-        JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
-        Car carModule = Car.getCar(project.getProjectDirectory());
-        if (carModule!=null) {
-            FileObject webInfFo = carModule.getMetaInf();
-            if (webInfFo!=null) {
-                FileObject wsdlFo = webInfFo.getFileObject("wsdl"); //NOI18N
-                if (wsdlFo!=null) {
-                    return wsdlFo;
-                } else if (create) {
-                    return webInfFo.createFolder("wsdl"); //NOI18N
-                }
-            }
-        }
-        return null;
-    }
-
-    protected void addJaxWs20Library() throws Exception {
+    public CatalogImpl(CatalogModelImpl model, Element e) {
+        super(model, e);
     }
     
-    /** return root folder for xml artifacts
-     */
-    @Override
-    protected FileObject getXmlArtifactsRoot() {
-        return project.getCarModule().getMetaInf();
+    public CatalogImpl(CatalogModelImpl model) {
+        this(model, createElementNS(model, CatalogQNames.CATALOG));
     }
+    
+    public void accept(CatalogVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    public List<System> getSystems() {
+       return super.getChildren(org.netbeans.modules.websvc.jaxws.catalog.System.class);
+    }
+
+    public void addSystem(System sid) {
+        appendChild(Catalog.SYSTEM_PROP, sid);
+    }
+
+    public void removeSystem(System sid) {
+        removeChild(Catalog.SYSTEM_PROP, sid);
+    }
+
+    public List<NextCatalog> getNextCatalogs() {
+        return super.getChildren(NextCatalog.class);
+    }
+
+    public void addNextCatalog(NextCatalog ncat) {
+        appendChild(Catalog.NEXTCATALOG_PROP, ncat);
+    }
+
+    public void removeNextCatalog(NextCatalog ncat) {
+        removeChild(Catalog.NEXTCATALOG_PROP, ncat);
+    }
+    
+    
 }

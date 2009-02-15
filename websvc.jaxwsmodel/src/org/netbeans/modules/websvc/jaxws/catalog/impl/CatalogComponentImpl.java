@@ -38,60 +38,51 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.websvc.jaxws.catalog.impl;
 
-package org.netbeans.modules.j2ee.clientproject.wsclient;
+import java.util.List;
+import org.netbeans.modules.websvc.jaxws.catalog.CatalogQNames;
+import org.netbeans.modules.websvc.jaxws.catalog.CatalogComponent;
+import org.netbeans.modules.websvc.jaxws.catalog.CatalogModel;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
+import org.netbeans.modules.xml.xam.dom.Attribute;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
-
-import java.io.IOException;
-import org.netbeans.modules.j2ee.api.ejbjar.Car;
-import org.netbeans.modules.j2ee.clientproject.AppClientProject;
-import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
-import org.netbeans.modules.websvc.spi.jaxws.client.ProjectJAXWSClientSupport;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-
-/**
- *
- * @author mkuchtiak
- */
-public class AppClientProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*implements JAXWSClientSupportImpl*/ {
-    AppClientProject project;
+public abstract class CatalogComponentImpl extends AbstractDocumentComponent<CatalogComponent> 
+            implements CatalogComponent {
     
-    /**
-     * Creates a new instance of AppClientProjectJAXWSClientSupport
-     */
-    public AppClientProjectJAXWSClientSupport(AppClientProject project, AntProjectHelper antProjectHelper) {
-        super(project);
-        this.project=project;
+    public CatalogComponentImpl(CatalogModelImpl model, Element element) {
+        super(model, element);
+    }
+    
+    public CatalogModelImpl getModel() {
+        return (CatalogModelImpl) super.getModel();
     }
 
-    public FileObject getWsdlFolder(boolean create) throws IOException {
-        JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
-        Car carModule = Car.getCar(project.getProjectDirectory());
-        if (carModule!=null) {
-            FileObject webInfFo = carModule.getMetaInf();
-            if (webInfFo!=null) {
-                FileObject wsdlFo = webInfFo.getFileObject("wsdl"); //NOI18N
-                if (wsdlFo!=null) {
-                    return wsdlFo;
-                } else if (create) {
-                    return webInfFo.createFolder("wsdl"); //NOI18N
+    static public Element createElementNS(CatalogModel model, CatalogQNames rq) {
+        return model.getDocument().createElementNS(rq.getQName().getNamespaceURI(), rq.getQualifiedName());
+    }
+    
+    protected Object getAttributeValueOf(Attribute attr, String stringValue) {
+        return stringValue;
+    }
+
+    protected void populateChildren(List<CatalogComponent> children) {
+        NodeList nl = getPeer().getChildNodes();
+        if (nl != null){
+            for (int i = 0; i < nl.getLength(); i++) {
+                org.w3c.dom.Node n = nl.item(i);
+                if (n instanceof Element) {
+                    CatalogModel model = getModel();
+                    CatalogComponent comp = (CatalogComponent) model.getFactory().create((Element)n, this);
+                    if (comp != null) {
+                        children.add(comp);
+                    }
                 }
             }
         }
-        return null;
     }
 
-    protected void addJaxWs20Library() throws Exception {
-    }
     
-    /** return root folder for xml artifacts
-     */
-    @Override
-    protected FileObject getXmlArtifactsRoot() {
-        return project.getCarModule().getMetaInf();
-    }
 }

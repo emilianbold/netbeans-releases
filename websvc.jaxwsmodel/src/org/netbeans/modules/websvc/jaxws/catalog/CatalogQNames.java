@@ -38,60 +38,58 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.websvc.jaxws.catalog;
 
-package org.netbeans.modules.j2ee.clientproject.wsclient;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import javax.xml.namespace.QName;
 
-
-import java.io.IOException;
-import org.netbeans.modules.j2ee.api.ejbjar.Car;
-import org.netbeans.modules.j2ee.clientproject.AppClientProject;
-import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
-import org.netbeans.modules.websvc.spi.jaxws.client.ProjectJAXWSClientSupport;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-
-/**
- *
- * @author mkuchtiak
- */
-public class AppClientProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*implements JAXWSClientSupportImpl*/ {
-    AppClientProject project;
+public enum CatalogQNames {
+    CATALOG("catalog"),
+    SYSTEM("system"),
+    NEXTCATALOG("nextCatalog");//,
     
-    /**
-     * Creates a new instance of AppClientProjectJAXWSClientSupport
-     */
-    public AppClientProjectJAXWSClientSupport(AppClientProject project, AntProjectHelper antProjectHelper) {
-        super(project);
-        this.project=project;
+    /*SYSTEMID("systemId"),
+    URI("uri"),
+    XPROJECT_CATALOGFILE_LOCATION("xprojectCatalogFileLocation"),
+    REFERENCING_FILE("referencingFile");*/
+    
+    
+    public static final String CATALOG_NS = "urn:oasis:names:tc:entity:xmlns:xml:catalog";
+    public static final String CATALOG_PREFIX = "cat";
+    
+    private static Set<QName> mappedQNames = new HashSet<QName>();
+    static {
+        mappedQNames.add(CATALOG.getQName());
+        mappedQNames.add(SYSTEM.getQName());
+        mappedQNames.add(NEXTCATALOG.getQName());
+        
+        /*mappedQNames.add(SYSTEMID.getQName());
+        mappedQNames.add(URI.getQName());
+        mappedQNames.add(XPROJECT_CATALOGFILE_LOCATION.getQName());
+        mappedQNames.add(REFERENCING_FILE.getQName());*/
     }
 
-    public FileObject getWsdlFolder(boolean create) throws IOException {
-        JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
-        Car carModule = Car.getCar(project.getProjectDirectory());
-        if (carModule!=null) {
-            FileObject webInfFo = carModule.getMetaInf();
-            if (webInfFo!=null) {
-                FileObject wsdlFo = webInfFo.getFileObject("wsdl"); //NOI18N
-                if (wsdlFo!=null) {
-                    return wsdlFo;
-                } else if (create) {
-                    return webInfFo.createFolder("wsdl"); //NOI18N
-                }
-            }
-        }
-        return null;
-    }
-
-    protected void addJaxWs20Library() throws Exception {
+    private QName qname;
+    
+    CatalogQNames(String localName) {
+        qname = new QName(CATALOG_NS, localName, CATALOG_PREFIX);
     }
     
-    /** return root folder for xml artifacts
-     */
-    @Override
-    protected FileObject getXmlArtifactsRoot() {
-        return project.getCarModule().getMetaInf();
+    public QName getQName() { 
+        return qname; 
+    }
+
+    public String getLocalName() { 
+        return qname.getLocalPart();
+    }
+    
+    public String getQualifiedName() {
+        return qname.getPrefix() + ":" + qname.getLocalPart();
+    }
+    
+    public static Set<QName> getMappedQNames() {
+        return Collections.unmodifiableSet(mappedQNames);
     }
 }
