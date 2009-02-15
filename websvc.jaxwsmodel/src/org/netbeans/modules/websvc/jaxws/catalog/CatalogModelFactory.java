@@ -38,60 +38,53 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-package org.netbeans.modules.j2ee.clientproject.wsclient;
-
+package org.netbeans.modules.websvc.jaxws.catalog;
 
 import java.io.IOException;
-import org.netbeans.modules.j2ee.api.ejbjar.Car;
-import org.netbeans.modules.j2ee.clientproject.AppClientProject;
-import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
-import org.netbeans.modules.websvc.spi.jaxws.client.ProjectJAXWSClientSupport;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.modules.xml.xam.AbstractModelFactory;
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.websvc.jaxws.catalog.impl.CatalogModelImpl;
 
-/**
- *
- * @author mkuchtiak
- */
-public class AppClientProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*implements JAXWSClientSupportImpl*/ {
-    AppClientProject project;
-    
+public class CatalogModelFactory extends AbstractModelFactory<CatalogModel> {
     /**
-     * Creates a new instance of AppClientProjectJAXWSClientSupport
+     * Creates a new instance of CatalogModelFactory
      */
-    public AppClientProjectJAXWSClientSupport(AppClientProject project, AntProjectHelper antProjectHelper) {
-        super(project);
-        this.project=project;
+    private CatalogModelFactory() {
     }
-
-    public FileObject getWsdlFolder(boolean create) throws IOException {
-        JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
-        Car carModule = Car.getCar(project.getProjectDirectory());
-        if (carModule!=null) {
-            FileObject webInfFo = carModule.getMetaInf();
-            if (webInfFo!=null) {
-                FileObject wsdlFo = webInfFo.getFileObject("wsdl"); //NOI18N
-                if (wsdlFo!=null) {
-                    return wsdlFo;
-                } else if (create) {
-                    return webInfFo.createFolder("wsdl"); //NOI18N
-                }
+    
+    private static CatalogModelFactory instance = new CatalogModelFactory();
+    
+    public static CatalogModelFactory getInstance() {
+        return instance;
+    }
+    
+    protected CatalogModel createModel(ModelSource source) {
+        return new CatalogModelImpl(source);
+    }
+    
+    public static final String CATALOG_TEMPLATE = "<?xml version=\"1.0\" encoding=\"UTF-8\""
+            +" standalone=\"no\"?>"+"\n"+
+            "<catalog xmlns=\"urn:oasis:names:tc:entity:xmlns:xml:catalog\" prefer=\"system\"/>";
+    
+    public CatalogModel getModel(ModelSource source) {
+        Document doc = (Document) source.getLookup().lookup(Document.class);
+        if( (doc != null) && doc.getLength() <= 5){
+            //means the catalog file is empty now
+            try {
+                doc.remove(0, doc.getLength());
+                doc.insertString(0, CATALOG_TEMPLATE, null);
+            } catch (BadLocationException ex) {
+                return null;
             }
         }
-        return null;
-    }
-
-    protected void addJaxWs20Library() throws Exception {
-    }
-    
-    /** return root folder for xml artifacts
-     */
-    @Override
-    protected FileObject getXmlArtifactsRoot() {
-        return project.getCarModule().getMetaInf();
+        
+        CatalogModel cm =(CatalogModel) super.getModel(source);
+        try {
+            cm.sync();
+        } catch (IOException ex) {
+        }
+        return cm;
     }
 }
