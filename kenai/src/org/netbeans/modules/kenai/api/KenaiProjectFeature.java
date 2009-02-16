@@ -59,7 +59,7 @@ public final class KenaiProjectFeature {
     }
 
     public KenaiFeature getType() {
-        return Enum.valueOf(KenaiFeature.class, featureData.type);
+        return KenaiFeature.forId(featureData.type);
     }
 
     public String getService() {

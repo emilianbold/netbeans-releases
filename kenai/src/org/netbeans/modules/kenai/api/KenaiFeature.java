@@ -49,13 +49,14 @@ public enum KenaiFeature {
     FORUM("forum"),
     ISSUES("issues"),
     LISTS("lists"),
-    SOURCE("source"),
+    SOURCE("scm"),
     WIKI("wiki"),
     PROJECTS("projects"),
     PUBLIC("public"),
     API("api"),
     PROFILES("profiles"),
-    CHAT("chat");
+    CHAT("chat"),
+    DOWNLOADS("downloads");
 
     private final String id;
 
@@ -65,5 +66,14 @@ public enum KenaiFeature {
 
     public String getId() {
         return id;
+    }
+
+    public static KenaiFeature forId(String id) {
+        if (id.equals(SOURCE.id)) {
+            return SOURCE;
+        } else {
+            return KenaiFeature.valueOf(id.toUpperCase());
+        }
+
     }
 }

@@ -47,19 +47,25 @@ import org.netbeans.modules.kenai.ServicesListData.ServicesListItem;
  */
 public final class KenaiService {
 
-    private String name;
-    private String description;
+    private ServicesListItem sli;
 
     KenaiService(ServicesListItem sli) {
-        this.name=sli.name;
-        this.description = sli.name;
+        this.sli=sli;
     }
 
     public String getDescription() {
-        return description;
+        return sli.description;
     }
 
     public String getName() {
-        return name;
+        return sli.name;
+    }
+
+    public String getDisplayName() {
+        return sli.display_name;
+    }
+
+    public KenaiFeature getType() {
+        return KenaiFeature.forId(sli.type);
     }
 }

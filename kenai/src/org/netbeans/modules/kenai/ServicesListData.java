@@ -50,5 +50,7 @@ public class ServicesListData extends ListData {
     public static class ServicesListItem {
         public String name;
         public String description;
+        public String type;
+        public String display_name;
     }
 }
