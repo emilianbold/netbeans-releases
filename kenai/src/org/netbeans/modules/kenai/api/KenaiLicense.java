@@ -76,4 +76,9 @@ public final class KenaiLicense {
     public URI getUri() {
         return uri;
     }
+
+    @Override
+    public String toString() {
+        return "KenaiLicense " + getName();
+    }
 }

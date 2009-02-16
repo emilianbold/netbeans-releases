@@ -78,4 +78,9 @@ public final class KenaiProjectFeature {
         return featureData.display_name;
     }
 
+    @Override
+    public String toString() {
+        return "KenaiProjectFeature " + getName() + ", url=" + getLocation() ;
+    }
+
 }

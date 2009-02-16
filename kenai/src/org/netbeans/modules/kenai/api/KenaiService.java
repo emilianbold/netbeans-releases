@@ -68,4 +68,9 @@ public final class KenaiService {
     public KenaiFeature getType() {
         return KenaiFeature.forId(sli.type);
     }
+
+    @Override
+    public String toString() {
+        return "KenaiService " + getName();
+    }
 }

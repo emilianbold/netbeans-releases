@@ -291,4 +291,11 @@ public final class KenaiProject {
         hash = 13 * hash + (this.name != null ? this.name.hashCode() : 0);
         return hash;
     }
+
+    @Override
+    public String toString() {
+        return "KenaiProject " + getName();
+    }
+
+
 }
