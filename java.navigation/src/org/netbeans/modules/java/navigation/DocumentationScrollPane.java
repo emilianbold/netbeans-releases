@@ -135,7 +135,7 @@ public class DocumentationScrollPane extends JScrollPane {
     }
     
     private ImageIcon resolveIcon(String res){
-        return new ImageIcon(ImageUtilities.loadImage (res));
+        return ImageUtilities.loadImageIcon(res, false);
     }
 
     private void installTitleComponent() {

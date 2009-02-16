@@ -48,6 +48,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
@@ -230,6 +231,21 @@ public class CPModifierLookupMerger implements LookupMerger<ProjectClassPathModi
             }
             return fallback.addAntArtifacts(arg0, arg1, arg2, arg3);
         }
+
+        @Override
+        protected boolean addProjects(Project[] projects, SourceGroup sg, String classPathType) throws IOException, UnsupportedOperationException {
+//            Collection<? extends ProjectClassPathModifierImplementation> list = context.lookupAll(ProjectClassPathModifierImplementation.class);
+//            for (ProjectClassPathModifierImplementation ext : list) {
+//                Boolean ret = (Boolean)retVal("addProjects", ext, //NOI18N
+//                        new Class<?>[] { new Project[0].getClass(), SourceGroup.class, String.class}, projects, sg, classPathType);
+//                if (ret.booleanValue()) {
+//                    return ret.booleanValue();
+//                }
+//            }
+            //use only the fallback, as that's the man with correct impl. others might have the ant based default method implementation preserved..
+            return fallback.addProjects(projects, sg, classPathType);
+        }
+
 
     }
     

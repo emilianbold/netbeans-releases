@@ -60,6 +60,8 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldRefactoring;
 import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
+import org.netbeans.modules.cnd.refactoring.ui.EncapsulateFieldPanel.InsertPoint;
+import org.netbeans.modules.cnd.refactoring.ui.EncapsulateFieldPanel.SortBy;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.openide.util.NbBundle;
@@ -82,7 +84,7 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
     /**
      * most restrictive accessibility modifier on tree path 
      */
-    private CsmVisibility fieldEncloserAccessibility;
+    private CsmVisibility fieldEncloserAccessibility = CsmVisibility.PUBLIC;
     /**
      * present accessibility of field
      */
@@ -104,18 +106,12 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
         super(refactoring);
         this.refactoring = refactoring;
     }
-
-//    protected JavaSource getJavaSource(Phase p) {
-//        TreePathHandle handle = sourceType != null? sourceType: refactoring.getSourceType();
-//        FileObject fo = handle.getFileObject();
-//        return JavaSource.forFileObject(fo);
-//    }
     
     @Override
     public Problem preCheck() {
         fireProgressListenerStart(AbstractRefactoring.PRE_CHECK, 2);
         try {
-            CsmField field = refactoring.getSourceType();
+            CsmField field = refactoring.getSourceField();
             Problem result = checkIfModificationPossible(null, field, "", ""); // NOI18N
             if (result != null) {
                 return result;
@@ -151,7 +147,7 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
     @Override
     public Problem checkParameters() {
         Problem p = null;
-        CsmField field = refactoring.getSourceType();
+        CsmField field = refactoring.getSourceField();
         CsmClass clazz = field.getContainingClass();
         String getname = refactoring.getGetterName();
         String setname = refactoring.getSetterName();
@@ -205,7 +201,7 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
             // as getter/setter name
             return new Problem(true, NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_EncapsulateMethods"));
         } else {
-            // we have no problem :-)
+            // we have no problems
             return null;
         }
     }
@@ -338,7 +334,12 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
 
     @Override
     protected void processFile(CsmFile csmFile, ModificationResult mr) {
-
+        // add declaration/definition to file
+        InsertPoint insPt = refactoring.getContext().lookup(InsertPoint.class);
+        if (insPt == InsertPoint.DEFAULT) {
+            // try to detect position from context
+        }
+        SortBy sortBy = refactoring.getContext().lookup(SortBy.class);
     }
 //    @Override
 //    public Problem prepare(RefactoringElementsBag bag) {

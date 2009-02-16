@@ -44,3 +44,23 @@ template <class T> class T4
 public:
     T t;
 };
+
+class Person{
+public:
+    void method();
+};
+
+template <class T>
+class DataSource {
+public:
+    T one() const {
+        T t;
+        return t;
+    }
+};
+
+
+template <class T> DataSource<T> select() {
+    DataSource<T> p;
+    return p;
+}

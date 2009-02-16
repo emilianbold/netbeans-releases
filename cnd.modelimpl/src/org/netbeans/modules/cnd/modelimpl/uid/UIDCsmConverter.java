@@ -213,7 +213,15 @@ public final class UIDCsmConverter {
         }
     }
 
-    public static <T extends CsmObject> Collection<CsmUID<T>> CsmObjectsToUIDs(Collection<T> objs) {
+    public static <T extends CsmObject> CsmUID<T> objectToUID(T obj) {
+        if (obj == null) {
+            return null;
+        } else {
+            return UIDs.get(obj);
+        }
+    }
+    
+    public static <T extends CsmObject> Collection<CsmUID<T>> objectsToUIDs(Collection<T> objs) {
         if (objs == null) {
             return null;
         }

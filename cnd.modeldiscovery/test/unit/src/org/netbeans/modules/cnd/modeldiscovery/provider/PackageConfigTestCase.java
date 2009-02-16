@@ -40,11 +40,9 @@ package org.netbeans.modules.cnd.modeldiscovery.provider;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.ResolvedPath;
 import org.openide.util.NbPreferences;
@@ -55,6 +53,8 @@ import org.netbeans.modules.cnd.test.BaseTestCase;
  * @author Alexander Simon
  */
 public class PackageConfigTestCase extends BaseTestCase {
+
+    private static final boolean TRACE = false;
 
     public PackageConfigTestCase(String testName) {
         super(testName);
@@ -82,20 +82,30 @@ public class PackageConfigTestCase extends BaseTestCase {
 
     private void basicTest(PkgConfigImpl pc) {
         String packageName = "gtk+-2.0";
-        pc.traceConfig(packageName, true);
-        pc.traceRecursiveConfig(packageName);
+        if (TRACE) {
+            pc.traceConfig(packageName, true);
+            pc.traceRecursiveConfig(packageName);
+        }
         //pc.trace();
         assert pc.getPkgConfig(packageName) != null;
         String include = "gtk/gtk.h";
         ResolvedPath rp = pc.getResolvedPath(include);
         assert rp != null;
-        System.out.println("Resolved include paths");
+        if (TRACE) {
+            System.out.println("Resolved include paths");
+        }
         String path = rp.getIncludePath();
-        System.out.println("Include: " + include);
-        System.out.println("Path:    " + path);
+        if (TRACE) {
+            System.out.println("Include: " + include);
+        }
+        if (TRACE) {
+            System.out.println("Path:    " + path);
+        }
         StringBuilder packages = new StringBuilder();
         for (PackageConfiguration pkg : rp.getPackages()) {
-            System.out.print("Package: " + pkg.getName());
+            if (TRACE) {
+                System.out.print("Package: " + pkg.getName());
+            }
             packages.append(pkg.getName() + " ");
             StringBuilder buf = new StringBuilder();
             for (String p : pkg.getIncludePaths()) {
@@ -111,7 +121,9 @@ public class PackageConfigTestCase extends BaseTestCase {
                 }
                 buf2.append(p);
             }
-            System.out.println("\t[" + buf.toString() + "] ["+buf2.toString()+"]");
+            if (TRACE) {
+                System.out.println("\t[" + buf.toString() + "] [" + buf2.toString() + "]");
+            }
         }
         assert packages.toString().indexOf(packageName + " ") >= 0;
 

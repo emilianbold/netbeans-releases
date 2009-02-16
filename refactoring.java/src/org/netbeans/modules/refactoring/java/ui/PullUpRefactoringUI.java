@@ -85,7 +85,7 @@ public class PullUpRefactoringUI implements RefactoringUI {
        // create an instance of pull up refactoring object
         Element selected = selectedElements.resolveElement(info);
         if (!(selected instanceof TypeElement))
-            selected = SourceUtils.getEnclosingTypeElement(selected);
+            selected = info.getElementUtilities().enclosingTypeElement(selected);
         TreePath tp = info.getTrees().getPath(selected);
         TreePathHandle sourceType = TreePathHandle.create(tp, info);
         description = ElementHeaders.getHeader(tp, info, ElementHeaders.NAME);

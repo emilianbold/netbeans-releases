@@ -44,6 +44,7 @@ package org.netbeans.modules.j2ee.sun.ide.sunresources.wizards;
 import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -55,9 +56,9 @@ import org.openide.util.HelpCtx;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
-public abstract class ResourceWizardPanel extends javax.swing.JPanel implements WizardDescriptor.FinishablePanel, WizardConstants {
+public abstract class ResourceWizardPanel implements WizardDescriptor.FinishablePanel, ChangeListener, WizardConstants {
 
-    private ArrayList list;
+    private final List listeners = new ArrayList();
 
     /** Default preferred width of the panel - should be the same for all panels within one wizard */
     private static final int DEFAULT_WIDTH = 600;
@@ -67,12 +68,11 @@ public abstract class ResourceWizardPanel extends javax.swing.JPanel implements 
     public WizardDescriptor wizDescriptor;
     public ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"); //NOI18N
     
-    public ResourceWizardPanel() {
-        list = new ArrayList();
-    }
+    public ResourceWizardPanel() { }
 
     /** @return preferred size of the wizard panel - it should be the same for all panels within one Wizard
     * so that the wizard dialog does not change its size when switching between panels */
+    
     public java.awt.Dimension getPreferredSize () {
         return new java.awt.Dimension (DEFAULT_WIDTH, DEFAULT_HEIGHT);
     }
@@ -81,15 +81,15 @@ public abstract class ResourceWizardPanel extends javax.swing.JPanel implements 
         return null; // HelpCtx.DEFAULT_HELP;
     }
 
-    public java.awt.Component getComponent() {
-        return this;
+    public void stateChanged(ChangeEvent event) {
+        fireChange(event);
     }
-
+    
     public void fireChange (Object source) {
         ArrayList lst;
 
-        synchronized (this) {
-            lst = (ArrayList) this.list.clone();
+        synchronized (listeners) {
+            lst = new ArrayList(listeners);
         }
 
         ChangeEvent event = new ChangeEvent(source);
@@ -99,12 +99,16 @@ public abstract class ResourceWizardPanel extends javax.swing.JPanel implements 
         }
     }
 
-    public synchronized void addChangeListener (ChangeListener listener) {
-        list.add(listener);
+    public void addChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.add(l);
+        }
     }
 
-    public synchronized void removeChangeListener (ChangeListener listener) {
-        list.remove(listener);
+    public void removeChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.remove(l);
+        }
     }
     
     public boolean isFinishPanel() {

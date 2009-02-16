@@ -144,7 +144,19 @@ public class RevertModificationsAction extends ContextAction {
                 logger.outputInRed(""); // NOI18N
                 return;
             }
-            
+
+            // revision with no events - e.g. automatic merge
+            if (revertFiles.isEmpty()) {
+                logger.outputInRed(
+                    NbBundle.getMessage(RevertModificationsAction.class,
+                    "MSG_REVERT_NOFILES")); // NOI18N
+                logger.outputInRed(
+                        NbBundle.getMessage(RevertModificationsAction.class,
+                        "MSG_REVERT_DONE")); // NOI18N
+                logger.outputInRed(""); // NOI18N
+                return;
+            }
+
             logger.output(
                     NbBundle.getMessage(RevertModificationsAction.class,
                     "MSG_REVERT_REVISION_STR", revStr)); // NOI18N

@@ -383,10 +383,12 @@ final class StandardModule extends Module {
                 }
             }
         }
-        Util.err.fine("localeVariants of " + jar + ": " + localeVariants);
-        Util.err.fine("plainExtensions of " + jar + ": " + plainExtensions);
-        Util.err.fine("localeExtensions of " + jar + ": " + localeExtensions);
-        Util.err.fine("patches of " + jar + ": " + patches);
+        if (Util.err.isLoggable(Level.FINE)) {
+            Util.err.fine("localeVariants of " + jar + ": " + localeVariants);
+            Util.err.fine("plainExtensions of " + jar + ": " + plainExtensions);
+            Util.err.fine("localeExtensions of " + jar + ": " + localeExtensions);
+            Util.err.fine("patches of " + jar + ": " + patches);
+        }
         if (patches != null) {
             for (File patch : patches) {
                 events.log(Events.PATCH, patch);
@@ -561,7 +563,9 @@ final class StandardModule extends Module {
      * The parents should already have had their classloaders initialized.
      */
     protected void classLoaderUp(Set<Module> parents) throws IOException {
-        Util.err.fine("classLoaderUp on " + this + " with parents " + parents);
+        if (Util.err.isLoggable(Level.FINE)) {
+            Util.err.fine("classLoaderUp on " + this + " with parents " + parents);
+        }
         // Find classloaders for dependent modules and parent to them.
         List<ClassLoader> loaders = new ArrayList<ClassLoader>(parents.size() + 1);
         // This should really be the base loader created by org.nb.Main for loading openide etc.:
@@ -589,7 +593,7 @@ final class StandardModule extends Module {
             }
             ClassLoader l = parent.getClassLoader();
             if (parent.isFixed() && loaders.contains(l)) {
-                Util.err.fine("#24996: skipping duplicate classloader from " + parent);
+                Util.err.log(Level.FINE, "#24996: skipping duplicate classloader from {0}", parent);
                 continue;
             }
             loaders.add(l);

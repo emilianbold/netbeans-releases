@@ -82,7 +82,7 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
             if (file != null) {
                 List<CsmReference> macros = CsmFileInfoQuery.getDefault().getMacroUsages(file);
                 if (macros != null) {
-                    CsmMacroExpansion.expand(doc, 0, doc.getLength());
+                    CsmMacroExpansion.expand(doc, file, 0, 0);
                     return new CsmExpandedTokenProcessor(doc, file, tp, offset, macros);
                 }
             }
@@ -106,7 +106,7 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
         // Additional logic only for macros
         if (isMacro(token, tokenOffset) || afterMacro) {
             TokenSequence<CppTokenId> expTS = null;
-            String expansion = CsmMacroExpansion.expand(doc, tokenOffset, tokenOffset + token.length());
+            String expansion = CsmMacroExpansion.expand(doc, file, tokenOffset, tokenOffset + token.length());
             if (expansion != null) {
                 if (expansion.equals("")) { // NOI18N
                     if (tokenOffset + token.length() < offset) {

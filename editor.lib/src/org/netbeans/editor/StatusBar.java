@@ -56,7 +56,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
@@ -88,11 +90,14 @@ import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 /**
-* Status bar support
-*
-* @author Miloslav Metelka
-* @version 1.00
-*/
+ * Status bar support.
+ * <br>
+ * By default the status bar is hidden and a global IDE's status bar is used.
+ * It is only visible if the editor window is undocked.
+ *
+ * @author Miloslav Metelka
+ * @version 1.00
+ */
 
 public class StatusBar implements PropertyChangeListener, DocumentListener {
 
@@ -121,6 +126,12 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
         ),
         BorderFactory.createEmptyBorder(0, 2, 0, 2)
     );
+
+    private static Map<String,JLabel> cellName2GlobalCell = new HashMap<String, JLabel>();
+
+    public static void setGlobalCell(String cellName, JLabel globalCell) {
+        cellName2GlobalCell.put(cellName, globalCell);
+    }
 
     protected EditorUI editorUI;
 
@@ -162,11 +173,6 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
                 if (caretL != null) {
                     caretL.setDelay(caretDelay);
                 }
-            }
-
-            if (evt == null || SimpleValueNames.STATUS_BAR_VISIBLE.equals(evt.getKey())) {
-                boolean wantVisible = prefs.getBoolean(SimpleValueNames.STATUS_BAR_VISIBLE, EditorPreferencesDefaults.defaultStatusBarVisible);
-                setVisible(wantVisible);
             }
         }
     };
@@ -249,6 +255,21 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
                             }
                         }
                     );
+                }
+            }
+        }
+
+        // If not visible check that the global panel is updated by values
+        if (!v) {
+            JTextComponent compoennt = editorUI.getComponent();
+            if (compoennt != null && compoennt.hasFocus()) {
+                // Update all cell mappings
+                for (Map.Entry<String,JLabel> e : cellName2GlobalCell.entrySet()) {
+                    if (CELL_MAIN.equals(e.getKey())) { // Do not sync main cell into global panel
+                        continue;
+                    }
+                    String s = getText(e.getKey());
+                    e.getValue().setText(s);
                 }
             }
         }
@@ -472,32 +493,58 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
     }
 
     public void setText(String cellName, String text, Coloring extraColoring) {
+        setText(cellName, text, extraColoring, 1);
+    }
+
+    public void setText(String cellName, String text, Coloring extraColoring, int importance) {
         JLabel cell = getCellByName(cellName);
         if (cell != null) {
-            Coloring c = getColoring(
-                org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(editorUI.getComponent()), 
-                FontColorNames.STATUS_BAR_COLORING
-            );
-            
-            if (c != null && extraColoring != null) {
-                c = extraColoring.apply(c);
-            } else if (c == null) {
-                c = extraColoring;
-            }
             cell.setText(text);
-            
-            if (CELL_POSITION.equals(cellName)){
-                cell.setToolTipText(caretPositionLocaleString);
-            } else if (CELL_TYPING_MODE.equals(cellName)) {
-                cell.setToolTipText(insText.equals(text)? insertModeLocaleString : overwriteModeLocaleString);
-            } else {
-                cell.setToolTipText(text == null || text.length() == 0 ? null : text);
-            }
-            
-            if (c != null && cell instanceof Cell) {
-                applyColoring((Cell) cell, c);            
+            if (visible) {
+                Coloring c = getColoring(
+                    org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(editorUI.getComponent()),
+                    FontColorNames.STATUS_BAR_COLORING
+                );
+
+                if (c != null && extraColoring != null) {
+                    c = extraColoring.apply(c);
+                } else if (c == null) {
+                    c = extraColoring;
+                }
+                if (CELL_POSITION.equals(cellName)){
+                    cell.setToolTipText(caretPositionLocaleString);
+                } else if (CELL_TYPING_MODE.equals(cellName)) {
+                    cell.setToolTipText(insText.equals(text)? insertModeLocaleString : overwriteModeLocaleString);
+                } else {
+                    cell.setToolTipText(text == null || text.length() == 0 ? null : text);
+                }
+
+                if (c != null && cell instanceof Cell) {
+                    applyColoring((Cell) cell, c);
+                }
+            } else { // Status bar not visible => use global status bar if possible
+                JLabel globalCell = cellName2GlobalCell.get(cellName);
+                if (globalCell != null) {
+                    if (CELL_MAIN.equals(cellName)) {
+                        globalCell.putClientProperty("importance", importance);
+                        globalCell.setText(text);
+                    }
+                    globalCell.setText(text);
+                }
             }
         }
+    }
+
+    /**
+     * Set text into main cell with a given importance.
+     *
+     * @param text non-null text to be displayed.
+     * @param importance positive integer having
+     */
+    public void setText(String text, int importance) {
+        setText(CELL_MAIN, text, getColoring(
+            org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(editorUI.getComponent()),
+            FontColorNames.STATUS_BAR_BOLD_COLORING), importance);
     }
 
     /* Refresh the whole panel by removing all the components
@@ -646,6 +693,12 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
 
         public @Override void setFont(Font f) {
             super.setFont(f);
+            updateSize();
+        }
+
+        @Override
+        public void setBorder(Border border) {
+            super.setBorder(border);
             updateSize();
         }
 

@@ -48,17 +48,18 @@ When enabled, you can easily create and activate any configurations that you cre
 You can create configurations that can activate specific Maven profiles.
 You can also use a configuration to map IDE actions to Maven goals.</p>
 
-<p>You can switch to a configuration by right-clicking the project node in the Projects window and
-choosing Set Configuration.
-If your project is set as the main project in the IDE you can also
-switch configurations using the drop-down list in the toolbar.</p>
-
 <p>Using a named configuration enables you to do the following:</p>
 <ul>
     <li>Load the project in the IDE with a customized set of dependencies or submodules.</li>
     <li>Trigger actions and activate any associated profiles.</li>
     <li>Customize IDE actions to map to Maven goals.</li>
 </ul>
+
+<p>You can switch to a configuration by right-clicking the project node in the Projects window and
+choosing Set Configuration.
+If your project is set as the main project in the IDE you can also
+switch configurations using the drop-down list in the toolbar.</p>
+
 
 <ul class="note">
     <li>If you do not enable configurations for your project, you can activate Maven profiles
@@ -70,7 +71,10 @@ switch configurations using the drop-down list in the toolbar.</p>
 
 <p>You can use the Actions category in the Properties window to customize IDE actions by binding the action to Maven goals.
 The Actions pane lists the IDE's default project actions that can be mapped to Maven goals.
-You can assign the mapping to a project configuration if you activated configurations for the project.
+You can assign the mapping to a project configuration if you activated configurations for the project.</p>
+<p>After you select an IDE action you can modify the Maven goals and properties of the action by
+typing in the textfield.
+Actions are displayed in bold if the default values for the action have been modified.
 The following textfields display the goals and properties associated with the selected action.</p>
 
 <ul>
@@ -79,12 +83,9 @@ The following textfields display the goals and properties associated with the se
     <li><strong>Activate Profiles</strong> This field displays any profiles that are activated when the action
     is invoked.</li>
     <li><strong>Set Properties</strong> This field displays the properties that are set on the command
-    line. These generally customize behavior of the executed goal. You can click Add to </li>
+    line. Properties are generally used to customize the behavior of the executed goal.</li>
 </ul>
 
-<p>After you select an IDE action you can modify the Maven goals and properties of the action by
-typing in the textfield.
-Actions are displayed in bold if the default values for the action have been modified.</p>
 
 <p><strong>Creating Custom Actions</strong></p>
 <p>You can create custom actions for a project by clicking Add Custom in the Actions category of the Properties window.

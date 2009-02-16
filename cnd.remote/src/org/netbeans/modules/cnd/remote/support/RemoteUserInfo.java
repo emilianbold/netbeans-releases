@@ -77,6 +77,7 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
     private final String host;
     private final Encrypter crypter;
     private final boolean avoidUI;
+    private volatile boolean bannerShown;
     
     private RemoteUserInfo(String host) {
         this(host, false);
@@ -211,10 +212,37 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         return cancelled;
     }
 
-    public void showMessage(String message){
+    public void showMessage(String message) {
         synchronized (DLGLOCK) {
+            if (isShowingBanner()) {
+                if (bannerShown) {
+                    return;
+                }
+                bannerShown = true;
+            }
             JOptionPane.showMessageDialog(parent, message);
         }
+    }
+
+    // FIXUP A dirty hack for #158285 Connection to RemoteHost never succeeds
+    // This code will gone as soon as I switch to new o.n.m.nativeexecution
+    private boolean isShowingBanner() {
+        StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+        for (int i = 0; i < stack.length; i++) {
+            if (getClass().getName().equals(stack[i].getClassName())) {
+                if ("showMessage".equals(stack[i].getMethodName())) { //NOI18N
+                    if (i+1 < stack.length) {
+                        StackTraceElement top = stack[i+1];
+                        if ("com.jcraft.jsch.UserAuthNone".equals(top.getClassName())) { //NOI18N
+                            if ("start".equals(top.getMethodName())) { //NOI18N
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     public synchronized String[] promptKeyboardInteractive(String destination, String name,

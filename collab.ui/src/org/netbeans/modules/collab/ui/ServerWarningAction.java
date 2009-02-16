@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -76,7 +76,7 @@ public class ServerWarningAction extends CallableSystemAction implements ActionL
     
     public void showDialog () {
         //Disabled till we get final UI/text for dialog
-        /*DialogDescriptor descriptor = new DialogDescriptor(
+        DialogDescriptor descriptor = new DialogDescriptor(
             new ServerWarningPanel(),
             NbBundle.getMessage(ServerWarningAction.class, "ServerWarning_title"),
             true,
@@ -94,7 +94,7 @@ public class ServerWarningAction extends CallableSystemAction implements ActionL
             if (dlg != null) {
                 dlg.dispose();
             }
-        }*/
+        }
     }
     
     @Override

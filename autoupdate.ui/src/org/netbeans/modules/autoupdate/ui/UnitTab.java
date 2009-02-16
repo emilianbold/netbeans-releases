@@ -487,8 +487,7 @@ public class UnitTab extends javax.swing.JPanel {
             }
         }
         if (model.needsRestart ()) {
-            Icon warningIcon = new ImageIcon (ImageUtilities.loadImage (
-                    "org/netbeans/modules/autoupdate/ui/resources/warning.gif")); // NOI18N
+            Icon warningIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/warning.gif", false); // NOI18N
             lWarning.setIcon (warningIcon);
             lWarning.setText (NbBundle.getMessage (UnitTab.class, "UnitTab_lWarning_Text", NbBundle.getMessage (UnitTab.class, operationNameKey))); // NOI18N
         }

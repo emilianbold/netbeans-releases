@@ -40,28 +40,27 @@ package org.netbeans.modules.dlight.api.execution;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import org.netbeans.modules.nativeexecution.api.ObservableAction;
+import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 
 /**
  *
  */
 public final class ValidationStatus {
 
-    private static ValidationStatus validStatus =
+    private final static ValidationStatus validStatus =
             new ValidationStatus(true, true, "OK", null); // NOI18N
-    private static ValidationStatus initialStatus =
+    private final static ValidationStatus initialStatus =
             new ValidationStatus(false, false, "Initial", null); // NOI18N
-    private boolean isDefined = false;
-    private boolean isValid = false;
-    private String reason = "";
-    private Collection<ObservableAction> requiredActions =
-            new ArrayList<ObservableAction>();
+    private final boolean isDefined;
+    private final boolean isValid;
+    private final String reason;
+    private final Collection<AsynchronousAction> requiredActions = new ArrayList<AsynchronousAction>();
 
     private ValidationStatus(
             final boolean isDefined,
             final boolean isValid,
             final String reason,
-            final Collection<ObservableAction> requiredActions) {
+            final Collection<AsynchronousAction> requiredActions) {
         this.isValid = isValid;
         this.isDefined = isDefined;
         this.reason = reason == null ? "" : reason; // NOI18N
@@ -81,13 +80,13 @@ public final class ValidationStatus {
      * @return object that represents UNKNOWN validation status.
      */
     public static ValidationStatus unknownStatus(final String reason,
-            final ObservableAction requiredAction) {
+            final AsynchronousAction requiredAction) {
         if (requiredAction == null) {
             throw new NullPointerException(
                     "requiredAction cannot be NULL"); // NOI18N
         }
 
-        ArrayList<ObservableAction> actions = new ArrayList<ObservableAction>();
+        ArrayList<AsynchronousAction> actions = new ArrayList<AsynchronousAction>();
         actions.add(requiredAction);
         return new ValidationStatus(false, false, reason, actions);
 
@@ -171,8 +170,7 @@ public final class ValidationStatus {
         }
 
         // here both are not validated... do merge!
-        Collection<ObservableAction> mergedActions =
-                new ArrayList<ObservableAction>();
+        Collection<AsynchronousAction> mergedActions = new ArrayList<AsynchronousAction>();
         mergedActions.addAll(this.requiredActions);
         mergedActions.addAll(status.requiredActions);
 
@@ -262,10 +260,10 @@ public final class ValidationStatus {
      * Returns actions (usually that require user interaction) needed to be
      * performed to complete full validation.
      *
-     * @return Collection of observable actions needed to be performed to
-     * complete full validation.
+     * @return Collection of actions needed to be performed to complete full
+     * validation.
      */
-    public Collection<ObservableAction> getRequiredActions() {
+    public Collection<AsynchronousAction> getRequiredActions() {
         return requiredActions;
     }
 

@@ -94,7 +94,7 @@ public class NbInstallerTest8 extends SetupHid {
             m = mgr.create(moduleJar, new ModuleHistory(moduleJar.getAbsolutePath()), false, false, false);
             assertEquals("look-for-myself.jar can be enabled", Collections.EMPTY_SET, m.getProblems());
             mgr.enable(m);
-            Class c = m.getClassLoader().loadClass("lookformyself.Loder");
+            Class<?> c = m.getClassLoader().loadClass("lookformyself.Loder");
             Method meth = c.getMethod("foundNow");
             assertTrue("ModuleInfo is found after startup", (Boolean) meth.invoke(null));
             Field f = c.getField("foundEarly");

@@ -287,40 +287,40 @@ public class DefineCorrelationWizard implements WizardProperties {
         Map<Class, Icon> mapIcons =  new HashMap<Class, Icon>(9);
         
         String iconFileName = IMAGE_FOLDER_NAME + "UNKNOWN_TYPE" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(Object.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
+        mapIcons.put(Object.class, ImageUtilities.loadImageIcon(iconFileName, false));
 
         iconFileName = IMAGE_FOLDER_NAME + "RECEIVE" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(Receive.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
+        mapIcons.put(Receive.class, ImageUtilities.loadImageIcon(iconFileName, false));
 
         iconFileName = IMAGE_FOLDER_NAME + "REPLY" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(Reply.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
+        mapIcons.put(Reply.class, ImageUtilities.loadImageIcon(iconFileName, false));
 
         iconFileName = IMAGE_FOLDER_NAME + "INVOKE" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(Invoke.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
+        mapIcons.put(Invoke.class, ImageUtilities.loadImageIcon(iconFileName, false));
         
         iconFileName = IMAGE_FOLDER_NAME + "MESSAGE_TYPE" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(Message.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
+        mapIcons.put(Message.class, ImageUtilities.loadImageIcon(iconFileName, false));
         
         iconFileName = IMAGE_FOLDER_NAME + "MESSAGE_PART" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(Part.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
+        mapIcons.put(Part.class, ImageUtilities.loadImageIcon(iconFileName, false));
         
         iconFileName = IMAGE_FOLDER_NAME + "ON_EVENT" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(OnEvent.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
+        mapIcons.put(OnEvent.class, ImageUtilities.loadImageIcon(iconFileName, false));
         
         iconFileName = IMAGE_FOLDER_NAME + "MESSAGE_HANDLER" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(OnMessage.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
+        mapIcons.put(OnMessage.class, ImageUtilities.loadImageIcon(iconFileName, false));
     
         iconFileName = IMAGE_FOLDER_NAME + "GLOBAL_ELEMENT" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(Element.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
+        mapIcons.put(Element.class, ImageUtilities.loadImageIcon(iconFileName, false));
     
         iconFileName = IMAGE_FOLDER_NAME + "ATTRIBUTE" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(Attribute.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
+        mapIcons.put(Attribute.class, ImageUtilities.loadImageIcon(iconFileName, false));
     
         iconFileName = IMAGE_FOLDER_NAME + "GLOBAL_COMPLEX_TYPE" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(ComplexType.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
+        mapIcons.put(ComplexType.class, ImageUtilities.loadImageIcon(iconFileName, false));
         
         iconFileName = IMAGE_FOLDER_NAME + "GLOBAL_SIMPLE_TYPE" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(SimpleType.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
+        mapIcons.put(SimpleType.class, ImageUtilities.loadImageIcon(iconFileName, false));
          
         return mapIcons;
     }

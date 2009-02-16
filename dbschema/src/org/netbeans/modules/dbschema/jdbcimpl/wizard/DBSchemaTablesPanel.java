@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -76,8 +76,8 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
 
     private final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.dbschema.jdbcimpl.resources.Bundle"); //NOI18N
 
-    private LinkedList tables;
-    private LinkedList views;
+    private LinkedList<String> tables;
+    private LinkedList<String> views;
     private ConnectionProvider cp;
     private String schema;
     private String driver;
@@ -95,8 +95,8 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
     public DBSchemaTablesPanel(DBSchemaWizardData data, ArrayList list) {
         this.list = list;
         this.data = data;
-        tables = new LinkedList();
-        views = new LinkedList();
+        tables = new LinkedList<String>();
+        views = new LinkedList<String>();
         cp = null;
 
         putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(2)); //NOI18N
@@ -132,7 +132,7 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
 
     protected boolean init() {
         
-        List handlers = new ArrayList();
+        List<Handler> handlers = new ArrayList<Handler>();
         Parameters params = new Parameters();
         
         boolean init = true;
@@ -147,6 +147,7 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
                     public void handle(Parameters params) {
                         uninit();
                     }
+                    @Override
                     public String getMessage() {
                         return NbBundle.getMessage(DBSchemaTablesPanel.class, "MSG_ClosingPrevious");
                     }
@@ -179,6 +180,7 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
                         conn = null;
                     }
                 }
+                @Override
                 public String getMessage() {
                     return NbBundle.getMessage(DBSchemaTablesPanel.class, "MSG_CheckingExisting");
                 }
@@ -204,9 +206,11 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
                     count++;
                 }
             }
+            @Override
             public boolean getRunInEDT() {
                 return true;
             }
+            @Override
             public boolean isRunnable() {
                 return conn == null;
             }
@@ -299,10 +303,12 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
                 params.setResult(true);
             }
 
+            @Override
             public String getMessage() {
                 return NbBundle.getMessage(DBSchemaTablesPanel.class, "MSG_RetrievingTables");
             }
 
+            @Override
             public boolean isRunnable() {
                 return conn != null;
             }
@@ -687,7 +693,7 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
         jButtonRemoveAll.setEnabled(((SortedListModel) jListSelectedTables.getModel()).isEmpty() ? false : true);
     }
 
-    public boolean isValid() {
+    public boolean isInputValid() {
         if (jListSelectedTables.getModel().getSize() > 0)
             return true;
         else
@@ -736,6 +742,7 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
             return true;
         }
         
+        @Override
         public String toString() {
             return "Handler[message='" + getMessage() + "',runInEDT=" + getRunInEDT() + ",runnable=" + isRunnable() + "]"; // NOI18N
         }

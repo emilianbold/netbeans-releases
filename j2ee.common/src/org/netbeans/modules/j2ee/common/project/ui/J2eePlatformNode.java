@@ -86,7 +86,7 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
     private static final String DEFAULT_ICON = "org/netbeans/modules/j2ee/common/project/ui/resources/j2eeServer.gif"; //NOI18N
     private static final String BROKEN_PROJECT_BADGE = "org/netbeans/modules/j2ee/common/project/ui/resources/brokenProjectBadge.gif"; //NOI18N
     
-    private static final Icon icon = new ImageIcon(ImageUtilities.loadImage(ARCHIVE_ICON));
+    private static final Icon icon = ImageUtilities.loadImageIcon(ARCHIVE_ICON, false);
     
     private static final Image brokenIcon = ImageUtilities.mergeImages(
             ImageUtilities.loadImage(DEFAULT_ICON),

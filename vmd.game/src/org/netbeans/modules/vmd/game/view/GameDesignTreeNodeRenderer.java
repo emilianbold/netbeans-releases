@@ -62,10 +62,10 @@ public class GameDesignTreeNodeRenderer implements TreeCellRenderer {
 	private static ImageIcon imgScene;
 	
 	static {
-		imgGame = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/vmd/game/integration/res/gamer_16.png"));
-		imgSprite = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/vmd/game/model/adapter/res/sprite.png"));
-		imgTiled = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/vmd/game/model/adapter/res/tiled.png"));
-		imgScene = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/vmd/game/model/adapter/res/scene.png"));
+		imgGame = ImageUtilities.loadImageIcon("org/netbeans/modules/vmd/game/integration/res/gamer_16.png", false);
+		imgSprite = ImageUtilities.loadImageIcon("org/netbeans/modules/vmd/game/model/adapter/res/sprite.png", false);
+		imgTiled = ImageUtilities.loadImageIcon("org/netbeans/modules/vmd/game/model/adapter/res/tiled.png", false);
+		imgScene = ImageUtilities.loadImageIcon("org/netbeans/modules/vmd/game/model/adapter/res/scene.png", false);
 	}
 
 	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {

@@ -42,13 +42,10 @@ public class RepositoryValidationGoldens extends RepositoryValidationBase {
         super(testName);
     }
     
-//    static {
-//        System.setProperty("cnd.modelimpl.parser.threads", "1");
-//    }
-    
     @Override
     protected void setUp() throws Exception {
         System.setProperty("cnd.repository.hardrefs", Boolean.TRUE.toString()); //NOI18N
+        System.setProperty("org.netbeans.modules.cnd.apt.level","OFF"); // NOI18N
         super.setUp();
     }
 
@@ -63,7 +60,7 @@ public class RepositoryValidationGoldens extends RepositoryValidationBase {
 
         List<String> args = find();
         assert args.size() > 0;
-        args.add("-fq"); //NOI18N
+        //args.add("-fq"); //NOI18N
         doTest(args.toArray(new String[]{}), streamOut, streamErr);
         assertNoExceptions();
     }

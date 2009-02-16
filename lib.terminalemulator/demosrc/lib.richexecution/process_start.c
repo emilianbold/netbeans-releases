@@ -47,6 +47,8 @@
 #include <string.h>
 #include <signal.h>
 
+#include <sys/ioctl.h>
+
 /*
  * 
  */
@@ -125,6 +127,20 @@ int main(int argc, char* argv[])
                 pty, strerror(errno));
             exit(-1);
         }
+
+	// setsid() leaves us w/o a controlling terminal.
+	// On Linux and Solaris the first open makes whatever we opened
+	// our controlling terminal.
+	// On BSD/Mac we need to explicitly assign a controlling terminal
+	// using TIOCSCTTY. It does no harm on Linux either.
+
+#if defined(TIOCSCTTY)
+	if (ioctl(pty_fd, TIOCSCTTY, 0) == -1) {
+            printf("ERROR ioctl(TIOCSCTTY) failed on \"%s\" -- %s\n",
+                pty, strerror(errno));
+            exit(-1);
+	}
+#endif
 
         // Flush out the PID message before we take away stdout
         fflush(stdout);

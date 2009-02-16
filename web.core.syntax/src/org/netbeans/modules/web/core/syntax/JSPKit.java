@@ -611,10 +611,17 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         public void actionPerformed(ActionEvent e, JTextComponent target) {
             currentTarget = target;
             if (target!=null){
-                TokenSequence javaTokenSequence = JspSyntaxSupport.tokenSequence(
+                TokenSequence javaTokenSequence;
+                AbstractDocument adoc = (AbstractDocument)target.getDocument();
+                adoc.readLock();
+                try {
+                    javaTokenSequence = JspSyntaxSupport.tokenSequence(
                         TokenHierarchy.get(target.getDocument()),
                         JavaTokenId.language(),
                         target.getCaret().getDot() - 1);
+                } finally {
+                    adoc.readUnlock();
+                }
 
                 if (javaTokenSequence != null){
                     JavaKit jkit = (JavaKit)getKit(JavaKit.class);

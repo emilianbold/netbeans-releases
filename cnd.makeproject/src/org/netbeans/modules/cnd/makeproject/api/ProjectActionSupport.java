@@ -73,6 +73,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -385,9 +386,19 @@ public class ProjectActionSupport {
                 progressHandle.finish();
                 return;
             }
+
+            // This code is executed in finishing ProjectActionHandler's thread.
+            // Starting next handler in this thread may lead to problems, such as
+            // new threads being created in old handler's thread group, and NetBeans
+            // thinking that old handler has not completed.
+            // So the call to go() is posted to RequestProcessor.
             if (rc == 0) {
                 currentAction++;
-                go();
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        go();
+                    }
+                });
             }
         }
 
@@ -434,6 +445,12 @@ public class ProjectActionSupport {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
                     return false;
                 }
+            }
+            // Check existence of executable
+            if (!IpeUtils.isPathAbsolute(executable) && (executable.startsWith(".") || executable.indexOf(File.separatorChar) > 0)) { // NOI18N
+                //executable is relative to project root - convert to absolute and check. Should be safe (?).
+                executable = IpeUtils.toAbsolutePath(pae.getConfiguration().getBaseDir(), executable);
+                executable = FilePathAdaptor.normalize(executable);
             }
             if (IpeUtils.isPathAbsolute(executable)) {
                 Configuration conf = pae.getConfiguration();

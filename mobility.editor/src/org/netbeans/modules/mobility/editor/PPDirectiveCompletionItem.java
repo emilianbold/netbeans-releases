@@ -93,7 +93,7 @@ public class PPDirectiveCompletionItem implements CompletionItem {
         synchronized (this)
         {
             if (icon == null) {
-                icon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/mobility/editor/resources/d.png"));
+                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/mobility/editor/resources/d.png", false);
             }
         }
         

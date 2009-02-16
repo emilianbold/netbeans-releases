@@ -92,7 +92,7 @@ public abstract class ContextAction extends NodeAction {
     protected abstract String getBaseName(Node[] activatedNodes);
 
     protected boolean enable(Node[] nodes) {
-        return getContext(nodes).getRootFiles().length > 0;
+        return getCachedContext(nodes).getRootFiles().length > 0;
     }
     
     /**
@@ -174,7 +174,7 @@ public abstract class ContextAction extends NodeAction {
             return NbBundle.getBundle(this.getClass()).getString(baseName);
         }
 
-        File [] nodes = SvnUtils.getCurrentContext(activatedNodes, getFileEnabledStatus(), getDirectoryEnabledStatus()).getFiles();
+        File [] nodes = getCachedContext(activatedNodes).getFiles();
         int objectCount = nodes.length;
         // if all nodes represent project node the use plain name
         // It avoids "Show changes 2 files" on project node
@@ -238,7 +238,7 @@ public abstract class ContextAction extends NodeAction {
      */ 
     public String getContextDisplayName(Node [] activatedNodes) {
         // TODO: reuse this code in getName() 
-        File [] nodes = SvnUtils.getCurrentContext(activatedNodes, getFileEnabledStatus(), getDirectoryEnabledStatus()).getFiles();
+        File [] nodes = getCachedContext(activatedNodes).getFiles();
         int objectCount = nodes.length;
         // if all nodes represent project node the use plain name
         // It avoids "Show changes 2 files" on project node
@@ -293,8 +293,12 @@ public abstract class ContextAction extends NodeAction {
         return new HelpCtx(this.getClass());
     }
 
+    protected Context getCachedContext(Node[] nodes) {
+        return SvnUtils.getCurrentContext(nodes, getFileEnabledStatus(), getDirectoryEnabledStatus(), true);
+    }
+
     protected Context getContext(Node[] nodes) {
-        return SvnUtils.getCurrentContext(nodes, getFileEnabledStatus(), getDirectoryEnabledStatus());
+        return SvnUtils.getCurrentContext(nodes, getFileEnabledStatus(), getDirectoryEnabledStatus(), false);
     }
     
     protected int getFileEnabledStatus() {

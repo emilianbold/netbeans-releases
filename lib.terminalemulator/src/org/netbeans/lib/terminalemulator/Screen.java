@@ -45,7 +45,6 @@
  * "Screen.java"
  * Screen.java 1.9 01/07/26
  */
-
 package org.netbeans.lib.terminalemulator;
 
 import java.awt.*;
@@ -66,58 +65,58 @@ import javax.swing.text.StyleConstants;
 // - We loose the ability to use DebugGraphics.
 // - JComponent does double-buffering for us, so we need not reimplement it.
 //   (there's still an issue of whose double buffering is quicker).
-
-
 class Screen extends JComponent implements Accessible {
-    private Term term;		// back pointer
 
+    private Term term;		// back pointer
     private static final boolean debug = false;
 
     public Screen(Term term, int dx, int dy) {
-	this.term = term;
-	Dimension dim = new Dimension(dx, dy);
-	setSize(dim);
-	setPreferredSize(dim);
-	// setOpaque(true);	// see comment in Term.repaint()
+        this.term = term;
+        Dimension dim = new Dimension(dx, dy);
+        setSize(dim);
+        setPreferredSize(dim);
+        // setOpaque(true);	// see comment in Term.repaint()
 
-	setGrabTab(true);
+        setGrabTab(true);
 
-	if (debug) {
-	    // Just turning our double buffering isn't enough, need to
-	    // turn it off everywhere.
-	    RepaintManager repaintManager = RepaintManager.currentManager(this);
-	    repaintManager.setDoubleBufferingEnabled(false); 
+        if (debug) {
+            // Just turning our double buffering isn't enough, need to
+            // turn it off everywhere.
+            RepaintManager repaintManager = RepaintManager.currentManager(this);
+            repaintManager.setDoubleBufferingEnabled(false);
 
-	    setDebugGraphicsOptions(DebugGraphics.FLASH_OPTION |
-				    DebugGraphics.BUFFERED_OPTION |
-				    DebugGraphics.LOG_OPTION);
-	}
-    } 
+            setDebugGraphicsOptions(DebugGraphics.FLASH_OPTION |
+                    DebugGraphics.BUFFERED_OPTION |
+                    DebugGraphics.LOG_OPTION);
+        }
+    }
 
     // debugging hooks:
 
     /* TMP
     public void setSize(int width, int height) {
-        super.setSize(width, height);
+    super.setSize(width, height);
     }
     public void setSize(Dimension dim) {
-        super.setSize(dim);
+    super.setSize(dim);
     }
-    */
+     */
 
     // When under NB we sometime get resizes when validate() happens
     // while Term !isShowing() so the sizes are <= 0.
     // The result is a 1-column output.
     // In the following we discard "bad" resizes as a workaround.
-
+    @Override
     public void setBounds(int x, int y, int width, int height) {
-	if (width <= 0 || height <= 0)
-	    return;
-	super.setBounds(x, y, width, height);
+        if (width <= 0 || height <= 0) {
+            return;
+        }
+        super.setBounds(x, y, width, height);
     }
-    
+
+    @Override
     public void setBounds(Rectangle r) {
-	super.setBounds(r);
+        super.setBounds(r);
     }
 
     /**
@@ -125,10 +124,10 @@ class Screen extends JComponent implements Accessible {
      * This is deprecated under 1.4 but works runtime-wise.
      * Once we shipt to building under 1.4  should do things as the comment
      * below suggests.
-    */
+     */
     public boolean OLD_isManagingFocus() {
-	return true;
-    } 
+        return true;
+    }
 
     /* LATER
 
@@ -145,248 +144,265 @@ class Screen extends JComponent implements Accessible {
     we want to see. Note though that the Set returned by
     getFocusTraversalKeys is immutable and you'll need to achieve the
     subtraction through copying instead of deleting.
-    */
-
-    private java.util.Set original_fwd_keys = null;
-    private java.util.Set original_bwd_keys = null;
-
+     */
+    private java.util.Set<AWTKeyStroke> original_fwd_keys = null;
+    private java.util.Set<AWTKeyStroke> original_bwd_keys = null;
 
     private void setGrabTab(boolean grabTab) {
 
-	if (original_fwd_keys == null) {
-	    original_fwd_keys = new java.util.HashSet();
-	    original_fwd_keys.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB,
-							       InputEvent.CTRL_MASK));
-	    original_bwd_keys = new java.util.HashSet();
-	    original_bwd_keys.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB,
-							       InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK));
-	}
+        if (original_fwd_keys == null) {
+            original_fwd_keys = new java.util.HashSet<AWTKeyStroke>();
+            original_fwd_keys.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB,
+                    InputEvent.CTRL_MASK));
+            original_bwd_keys = new java.util.HashSet<AWTKeyStroke>();
+            original_bwd_keys.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB,
+                    InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK));
+        }
 
-	if (grabTab) {
-	    // install our simplified version allowing Ctrl-TAB to traverse
-	    setFocusTraversalKeys(
-		KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, original_fwd_keys);
-	    setFocusTraversalKeys(
-		KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, original_bwd_keys);
+        if (grabTab) {
+            // install our simplified version allowing Ctrl-TAB to traverse
+            setFocusTraversalKeys(
+                    KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, original_fwd_keys);
+            setFocusTraversalKeys(
+                    KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, original_bwd_keys);
 
-	} else {
-	    // revert to default
-	    setFocusTraversalKeys(
-		KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
-	    setFocusTraversalKeys(
-		KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
-	}
+        } else {
+            // revert to default
+            setFocusTraversalKeys(
+                    KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
+            setFocusTraversalKeys(
+                    KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
+        }
     }
 
+    @Override
     public void paint(Graphics g) {
 
-	// No need to double buffer as our caller, the repaint manager,
-	// already does so.
+        // No need to double buffer as our caller, the repaint manager,
+        // already does so.
 
-	if (debug) {
-	    // HACK, normally, by the time we get the Graphics
-	    // the components getComponentGraphics() should've retrieved
-	    // a DebugGraphics for us, _but_ it only does that if we have
-	    // a 'ui' which we don't, so I have to do this myself.
-	    g = new DebugGraphics(g, this);
-	}
+        if (debug) {
+            // HACK, normally, by the time we get the Graphics
+            // the components getComponentGraphics() should've retrieved
+            // a DebugGraphics for us, _but_ it only does that if we have
+            // a 'ui' which we don't, so I have to do this myself.
+            g = new DebugGraphics(g, this);
+        }
 
-	// Let the term do the actual work of rendering
-	term.do_paint(g);
+        // Let the term do the actual work of rendering
+        term.do_paint(g);
     }
 
+    @Override
     public Dimension getMaximumSize() {
-	return new Dimension(1000, 1000);
+        return new Dimension(1000, 1000);
     }
 
     //..........................................................................
     // Accessibility stuff is all here
     //..........................................................................
-
     private AccessibleContext accessible_context;
-
     private AccessibleScreenText accessible_screen_text;
 
+    @Override
     public AccessibleContext getAccessibleContext() {
-	if (accessible_context == null) {
-	     accessible_context = new AccessibleScreen();
-	}
-	return accessible_context;
+        if (accessible_context == null) {
+            accessible_context = new AccessibleScreen();
+        }
+        return accessible_context;
     }
 
     protected class AccessibleScreenText implements AccessibleText {
-	AccessibleScreenText() {
-	}
 
-	public int getCaretPosition() {
-	    return term.CoordToPosition(term.getCursorCoord());
-	}
+        AccessibleScreenText() {
+        }
 
-	// cache for getCharacterAttribute
-	private int last_attr;
-	private MutableAttributeSet last_as;
+        public int getCaretPosition() {
+            return term.CoordToPosition(term.getCursorCoord());
+        }
 
-	public AttributeSet getCharacterAttribute(int index) {
-	    Coord c = term.PositionToCoord(index);
-	    if (c == null)
-		return null;
-	    BCoord b = c.toBCoord(term.firsta);
-	    int attr = 0;
-	    try {
-		Line l = term.buf.lineAt(b.row);
-		int [] attrs = l.attrArray();
-		attr = attrs[b.col];
-	    } catch (Exception x) {
-		;
-	    } 
+        // cache for getCharacterAttribute
+        private int last_attr;
+        private MutableAttributeSet last_as;
 
-	    if (attr == last_attr)
-		return last_as;
+        public AttributeSet getCharacterAttribute(int index) {
+            Coord c = term.PositionToCoord(index);
+            if (c == null) {
+                return null;
+            }
+            BCoord b = c.toBCoord(term.firsta);
+            int attr = 0;
+            try {
+                Line l = term.buf.lineAt(b.row);
+                int[] attrs = l.attrArray();
+                attr = attrs[b.col];
+            } catch (Exception x) {
+                //
+            }
 
-	    MutableAttributeSet as = new SimpleAttributeSet();
+            if (attr == last_attr) {
+                return last_as;
+            }
 
-	    if ((attr & Attr.UNDERSCORE) == Attr.UNDERSCORE)
-		as.addAttribute(StyleConstants.Underline, Boolean.TRUE);
-	    if ((attr & Attr.BRIGHT) == Attr.BRIGHT)
-		as.addAttribute(StyleConstants.Bold, Boolean.TRUE);
+            MutableAttributeSet as = new SimpleAttributeSet();
 
-	    boolean reverse = ((attr & Attr.REVERSE) == Attr.REVERSE);
+            if ((attr & Attr.UNDERSCORE) == Attr.UNDERSCORE) {
+                as.addAttribute(StyleConstants.Underline, Boolean.TRUE);
+            }
+            if ((attr & Attr.BRIGHT) == Attr.BRIGHT) {
+                as.addAttribute(StyleConstants.Bold, Boolean.TRUE);
+            }
 
-	    Color color;
-	    if ((color = term.foregroundColor(reverse, attr)) != Color.black)
-		as.addAttribute(StyleConstants.Foreground, color);
+            boolean reverse = ((attr & Attr.REVERSE) == Attr.REVERSE);
 
-	    if ((color = term.backgroundColor(reverse, attr)) != null)
-		as.addAttribute(StyleConstants.Background, color);
+            Color color;
+            if ((color = term.foregroundColor(reverse, attr)) != Color.black) {
+                as.addAttribute(StyleConstants.Foreground, color);
+            }
 
-	    last_attr = attr;
-	    last_as = as;
+            if ((color = term.backgroundColor(reverse, attr)) != null) {
+                as.addAttribute(StyleConstants.Background, color);
+            }
 
-	    return as;
-	}
+            last_attr = attr;
+            last_as = as;
 
-	public Rectangle getCharacterBounds(int index) {
-	    return term.getCharacterBounds(term.PositionToCoord(index));
-	}
+            return as;
+        }
 
-	public int getCharCount() {
-	    return term.getCharCount();
-	}
+        public Rectangle getCharacterBounds(int index) {
+            return term.getCharacterBounds(term.PositionToCoord(index));
+        }
 
-	public int getSelectionStart() {
-	    Extent x = term.getSelectionExtent();
-	    if (x == null)
-		return getCaretPosition();
-	    return term.CoordToPosition(x.begin);
-	} 
+        public int getCharCount() {
+            return term.getCharCount();
+        }
 
-	public int getSelectionEnd() {
-	    Extent x = term.getSelectionExtent();
-	    if (x == null)
-		return getCaretPosition();
-	    return term.CoordToPosition(x.end);
-	} 
+        public int getSelectionStart() {
+            Extent x = term.getSelectionExtent();
+            if (x == null) {
+                return getCaretPosition();
+            }
+            return term.CoordToPosition(x.begin);
+        }
 
-	public String getSelectedText() {
-	    return term.getSelectedText();
-	} 
+        public int getSelectionEnd() {
+            Extent x = term.getSelectionExtent();
+            if (x == null) {
+                return getCaretPosition();
+            }
+            return term.CoordToPosition(x.end);
+        }
 
+        public String getSelectedText() {
+            return term.getSelectedText();
+        }
 
-	private String getHelper(int part, BCoord b) {
-	    if (b == null)
-		return null;
+        private String getHelper(int part, BCoord b) {
+            if (b == null) {
+                return null;
+            }
 
-	    Line l = term.buf.lineAt(b.row);
+            Line l = term.buf.lineAt(b.row);
 
-	    switch (part) {
-		case CHARACTER:
-		    // return new String(l.charArray(), b.col, 1);
-            return String.valueOf(l.charAt(b.col));
-		case WORD:
-		    BExtent bword = term.buf.find_word(term.word_delineator, b);
-		    Extent word = bword.toExtent(term.firsta);
-		    return term.textWithin(word.begin, word.end);
-		case SENTENCE:
-		    // return new String(l.charArray());
+            switch (part) {
+                case CHARACTER:
+                    // return new String(l.charArray(), b.col, 1);
+                    return String.valueOf(l.charAt(b.col));
+                case WORD:
+                    BExtent bword = term.buf.find_word(term.word_delineator, b);
+                    Extent word = bword.toExtent(term.firsta);
+                    return term.textWithin(word.begin, word.end);
+                case SENTENCE:
+                    // return new String(l.charArray());
                     return l.toString();
-	    } 
-	    return null;
-	}
+            }
+            return null;
+        }
 
-	public String getAfterIndex(int part, int index) {
-	    Coord c = term.PositionToCoord(index);
-	    if (c == null)
-		return null;
-	    BCoord b = c.toBCoord(term.firsta);
-	    b = term.buf.advance(b);
-	    return getHelper(part, b);
-	} 
+        public String getAfterIndex(int part, int index) {
+            Coord c = term.PositionToCoord(index);
+            if (c == null) {
+                return null;
+            }
+            BCoord b = c.toBCoord(term.firsta);
+            b = term.buf.advance(b);
+            return getHelper(part, b);
+        }
 
-	public String getAtIndex(int part, int index) {
-	    Coord c = term.PositionToCoord(index);
-	    if (c == null)
-		return null;
-	    BCoord b = c.toBCoord(term.firsta);
-	    return getHelper(part, b);
-	} 
+        public String getAtIndex(int part, int index) {
+            Coord c = term.PositionToCoord(index);
+            if (c == null) {
+                return null;
+            }
+            BCoord b = c.toBCoord(term.firsta);
+            return getHelper(part, b);
+        }
 
-	public String getBeforeIndex(int part, int index) {
-	    Coord c = term.PositionToCoord(index);
-	    if (c == null)
-		return null;
-	    BCoord b = c.toBCoord(term.firsta);
-	    b = term.buf.backup(b);
-	    return getHelper(part, b);
-	} 
+        public String getBeforeIndex(int part, int index) {
+            Coord c = term.PositionToCoord(index);
+            if (c == null) {
+                return null;
+            }
+            BCoord b = c.toBCoord(term.firsta);
+            b = term.buf.backup(b);
+            return getHelper(part, b);
+        }
 
-	public int getIndexAtPoint(Point p) {
-	    BCoord v = term.toViewCoord(p);
-	    BCoord b = term.toBufCoords(v);
-	    return term.CoordToPosition(new Coord(b, term.firsta));
-	}
+        public int getIndexAtPoint(Point p) {
+            BCoord v = term.toViewCoord(p);
+            BCoord b = term.toBufCoords(v);
+            return term.CoordToPosition(new Coord(b, term.firsta));
+        }
     }
-
 
     protected class AccessibleScreen extends AccessibleJComponent {
-	public String getAccessibleDescription() {
-	    return "Terminal emulator"; // NOI18N
-	}
-	public AccessibleRole getAccessibleRole() {
-	    return AccessibleRole.TEXT;
-	}
-	public AccessibleText getAccessibleText() {
-	    if (accessible_screen_text == null)
-		accessible_screen_text = new AccessibleScreenText();
-	    return accessible_screen_text;
-	}
-    }
 
+        @Override
+        public String getAccessibleDescription() {
+            return "Terminal emulator"; // NOI18N
+        }
+
+        @Override
+        public AccessibleRole getAccessibleRole() {
+            return AccessibleRole.TEXT;
+        }
+
+        @Override
+        public AccessibleText getAccessibleText() {
+            if (accessible_screen_text == null) {
+                accessible_screen_text = new AccessibleScreenText();
+            }
+            return accessible_screen_text;
+        }
+    }
     private int oldPos;
 
     void possiblyUpdateCaretText() {
-	/*
-	 * Called from Term.putc_work().
-	 *
-	 * This is very crude. It works on the assumption that Term is just
-	 * getting regular characters and on each one we modify the text and
-	 * the cursor advances so we fire both simultaneously.
-	 */
+        /*
+         * Called from Term.putc_work().
+         *
+         * This is very crude. It works on the assumption that Term is just
+         * getting regular characters and on each one we modify the text and
+         * the cursor advances so we fire both simultaneously.
+         */
 
-	// don't bother with this stuff if no-one cares
-        if (accessible_screen_text == null)
-	    return;
+        // don't bother with this stuff if no-one cares
+        if (accessible_screen_text == null) {
+            return;
+        }
 
-	int pos = term.CoordToPosition(term.getCursorCoord());
+        int pos = term.CoordToPosition(term.getCursorCoord());
 
-	accessible_context.firePropertyChange(
-	    AccessibleContext.ACCESSIBLE_TEXT_PROPERTY, 
-	    null, Integer.valueOf(pos));
-	// sending null, pos is how JTextComponent does it.
+        accessible_context.firePropertyChange(
+                AccessibleContext.ACCESSIBLE_TEXT_PROPERTY,
+                null, Integer.valueOf(pos));
+        // sending null, pos is how JTextComponent does it.
 
-	accessible_context.firePropertyChange(
-	    AccessibleContext.ACCESSIBLE_CARET_PROPERTY, 
-	    Integer.valueOf(pos), Integer.valueOf(oldPos));
+        accessible_context.firePropertyChange(
+                AccessibleContext.ACCESSIBLE_CARET_PROPERTY,
+                Integer.valueOf(pos), Integer.valueOf(oldPos));
 
-	oldPos = pos;
+        oldPos = pos;
     }
 }

@@ -93,7 +93,7 @@ public class AddMIDletPanel extends JPanel implements DocumentListener, ActionLi
     
     protected void setDialogDescriptor(final DialogDescriptor desc) {
         this.dd = desc;
-        dd.setValid(isValid());
+        dd.setValid(isStateValid());
     }
     
     public String getName() {
@@ -117,7 +117,7 @@ public class AddMIDletPanel extends JPanel implements DocumentListener, ActionLi
         return true;
     }
     
-    public boolean isValid() {
+    public boolean isStateValid() {
         if (getName().length() == 0 || getName().indexOf(',') >= 0) {
             errorPanel.setErrorBundleMessage("ERR_AddMID_InvalidName"); //NOI18N
             return false;

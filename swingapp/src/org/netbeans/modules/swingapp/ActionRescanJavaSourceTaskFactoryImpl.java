@@ -45,7 +45,12 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.modules.form.FormDataObject;
+import org.netbeans.modules.form.FormEditor;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
@@ -81,16 +86,40 @@ public class ActionRescanJavaSourceTaskFactoryImpl extends EditorAwareJavaSource
         }
 
         public void run(CompilationInfo info) throws Exception {
-            if (!AppFrameworkSupport.isFrameworkLibAvailable(file)
-                    || (AppFrameworkSupport.getApplicationClassName(file, false) == null)) {
-                // Issue 143617 - avoid repeated scanning for application class
-                // in projects where the application class is not present
-                return;
-            }
-            ActionManager am = ActionManager.getActionManager(file);
-            if(am != null && AppFrameworkSupport.getClassNameForFile(file) != null) {
-                am.lazyRescan(file);
+            // Rescan the file only if it is a java file from which some opened
+            // form might read action methods - technically this can be the form
+            // itself or a class representing the application class.
+            if (ActionManager.anyFormOpened()
+                    && AppFrameworkSupport.isFrameworkLibAvailable(file)
+                    && (isApplicationSourceFile(file)
+                        || isOpenedForm(file))) {
+                ActionManager.lazyRescan(file);
             }
         }
+
+        private static boolean isApplicationSourceFile(FileObject file) {
+            String appClsName = AppFrameworkSupport.getAppClassNameFromProjectConfig(FileOwnerQuery.getOwner(file));
+            if (appClsName != null) {
+                return appClsName.equals(AppFrameworkSupport.getClassNameForFile(file));
+            }
+            return false;
+        }
+
+        private static boolean isOpenedForm(FileObject fo) {
+            if (fo.existsExt("form") && fo.hasExt("java")) { // NOI18N
+                try {
+                    DataObject dobj = DataObject.find(fo);
+                    if (dobj instanceof FormDataObject) {
+                        FormDataObject formDO = (FormDataObject) dobj;
+                        return formDO.getFormEditor().isOpened();
+                    }
+                } catch(DataObjectNotFoundException ex) {
+                    assert false;
+                }
+
+            }
+            return false;
+        }
     }
+
 }

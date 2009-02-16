@@ -38,10 +38,6 @@
  */
 package org.netbeans.modules.nativeexecution.api;
 
-import java.util.Collection;
-import org.netbeans.modules.nativeexecution.api.impl.NativeProcessAccessor;
-import org.netbeans.modules.nativeexecution.support.Logger;
-
 /**
  * A {@link NativeProcessBuilder} starts a system process and returns an
  * instance of the {@link NativeProcess} which is a subclass of the
@@ -52,169 +48,19 @@ import org.netbeans.modules.nativeexecution.support.Logger;
  */
 public abstract class NativeProcess extends Process {
 
-    private final static java.util.logging.Logger log = Logger.getInstance();
-    private final Object stateLock = new Object();
-    private Collection<Listener> listeners = null;
-    private State state = State.INITIAL;
-    private Integer exitValue = null;
-    private String id = null;
-
-
-    static {
-        NativeProcessAccessor.setDefault(new NativeProcessAccessorImpl());
-    }
-
     /**
-     * Returns PID of underlaying system process.<br>
-     * @return PID of underlaying system process.
+     * Returns PID of the underlaying system process.<br>
+     * @return PID of the underlaying system process.
      * @throws IllegalStateException if no PID was obtained prior to method
-     *         invokation.
+     *         invocation.
      */
     public abstract int getPID() throws IllegalStateException;
-
-    /**
-     * To be implemented by a successor.
-     * It must terminate the underlaying system process on this method call.
-     */
-    protected abstract void cancel();
-
-    /**
-     * To be implemented by a successor. This method must cause the current
-     * thread to wait until the underlaying system process is done and return
-     * it's exit code.
-     *
-     * @return exit code of underlaying system process.
-     * @exception  InterruptedException if the current thread is
-     *             {@link Thread#interrupt() interrupted} by another thread
-     *             while it is waiting, then the wait is ended and an
-     *             {@link InterruptedException} is thrown.
-     */
-    protected abstract int waitResult() throws InterruptedException;
 
     /**
      * Returns the current {@link NativeProcess.State state} of the process.
      * @return current state of the process.
      */
-    public final State getState() {
-        return state;
-    }
-
-    /**
-     * Returns human-readable identification of the <tt>NativeProcess</tt>.
-     * @return string that identifies the <tt>NativeProcess</tt>.
-     */
-    @Override
-    public String toString() {
-        return (id == null) ? super.toString() : id.trim();
-    }
-
-    private final void setState(State state) {
-        synchronized (stateLock) {
-            if (this.state == state) {
-                return;
-            }
-
-            State oldState = this.state;
-            this.state = state;
-
-            notifyListeners(oldState, state);
-        }
-    }
-
-    /**
-     * Terminates the underlaying system process. The system process represented
-     * by this <code>NativeProcess</code> object is forcibly terminated.
-     */
-    @Override
-    public final void destroy() {
-        synchronized (stateLock) {
-            if (this.state == State.RUNNING) {
-                cancel();
-                setState(State.CANCELLED);
-            }
-        }
-    }
-
-    /**
-     * Causes the current thread to wait, if necessary, until the
-     * process represented by this <code>NativeProcess</code> object has
-     * terminated. This method returns immediately if the subprocess has already
-     * terminated. If the subprocess has not yet terminated, the calling thread
-     * will be blocked until the subprocess exits.
-     *
-     * @return     the exit value of the process. By convention,
-     *             <code>0</code> indicates normal termination.
-     * @exception  InterruptedException  if the current thread is
-     *             {@link Thread#interrupt() interrupted} by another thread
-     *             while it is waiting, then the wait is ended and an
-     *             {@link InterruptedException} is thrown.
-     */
-    @Override
-    public final int waitFor() throws InterruptedException {
-        setExitValue(waitResult());
-
-        if (exitValue == null) {
-            throw new InterruptedException(
-                    "Process has been cancelled."); // NOI18N
-        }
-
-        return exitValue.intValue();
-    }
-
-    /**
-     * Returns the exit code for the underlaying system process.
-     *
-     * @return  the exit code of the system process represented by this
-     *          <code>NativeProcess</code> object. By convention, the value
-     *          <code>0</code> indicates normal termination.
-     * @exception  IllegalThreadStateException if the system process
-     *             represented by this <code>Process</code> object has not
-     *             yet terminated.
-     */
-    @Override
-    public final int exitValue() {
-        if (exitValue == null) {
-            if (state == State.CANCELLED) {
-                // TODO: ??
-                // Removed CancellationException because it is not proceeded
-                // in ExecutionService...
-                // throw new CancellationException("Process has been cancelled");
-                return -1;
-            } else {
-                // Process not started yet...
-                throw new IllegalThreadStateException();
-            }
-        }
-
-        return exitValue;
-    }
-
-    private void notifyListeners(State oldState, State newState) {
-        if (listeners == null) {
-            return;
-        }
-
-        log.fine(this.toString() + " State change: " + // NOI18N
-                oldState + " -> " + newState); // NOI18N
-
-        for (Listener l : listeners) {
-            l.processStateChanged(this, oldState, newState);
-        }
-
-    }
-
-    private void setExitValue(int exitValue) {
-        if (this.exitValue != null) {
-            return;
-        }
-
-        if (state == State.CANCELLED || state == State.ERROR) {
-            return;
-        }
-
-        this.exitValue = Integer.valueOf(exitValue);
-        setState(State.FINISHED);
-    }
+    public abstract State getState();
 
     /**
      * Enumerates possible states of the {@link NativeProcess}.
@@ -248,48 +94,5 @@ public abstract class NativeProcess extends Process {
          * Native process forcibly terminated.
          */
         CANCELLED
-    }
-
-    /**
-     * The listener interface for recieving state change events from a
-     * {@link NativeProcess}.
-     * <p>
-     * One can implement <tt>NativeProcess.Listener</tt> and subscribe it to the
-     * {@link NativeProcess} to recieve <tt>processStateChanged</tt> events.
-     * <br>
-     * See {@link NativeProcessBuilder#addNativeProcessListener(org.netbeans.modules.nativeexecution.api.NativeProcess.Listener) NativeProcessBuilder.addNativeProcessListener()}
-     */
-    public static interface Listener {
-
-        /**
-         * A notification about process' state change. The notification is send
-         * to every registered listener on every state change.
-         * @param process {@link NativeProcess} which state changed.
-         * @param oldState previous state of the process.
-         * @param newState new state of the process.
-         * @see State
-         */
-        public void processStateChanged(
-                NativeProcess process, State oldState, State newState);
-    }
-
-    private final static class NativeProcessAccessorImpl
-            extends NativeProcessAccessor {
-
-        @Override
-        public void setID(NativeProcess process, String id) {
-            process.id = id;
-        }
-
-        @Override
-        public void setState(NativeProcess process, State state) {
-            process.setState(state);
-        }
-
-        @Override
-        public void setListeners(NativeProcess process,
-                Collection<Listener> listeners) {
-            process.listeners = listeners;
-        }
     }
 }

@@ -163,15 +163,6 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
         return result.values();
     }
 
-    protected final CsmFile getCsmFile(CsmObject csmObject) {
-        if (CsmKindUtilities.isFile(csmObject)) {
-            return ((CsmFile) csmObject);
-        } else if (CsmKindUtilities.isOffsetable(csmObject)) {
-            return ((CsmOffsetable) csmObject).getContainingFile();
-        }
-        return null;
-    }
-
     protected Collection<CsmFile> getRelevantFiles(CsmFile startFile, CsmObject referencedObject, AbstractRefactoring refactoring) {
         CsmObject enclScope = referencedObject == null ? null : CsmRefactoringUtils.getEnclosingElement(referencedObject);
         CsmFile scopeFile = null;
@@ -202,7 +193,7 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
             return Collections.singleton(scopeFile);
         } else {
             CsmProject[] prjs = refactoring.getContext().lookup(CsmProject[].class);
-            CsmFile declFile = getCsmFile(referencedObject);
+            CsmFile declFile = CsmRefactoringUtils.getCsmFile(referencedObject);
             if (prjs == null || prjs.length == 0 || declFile == null) {
                 CsmProject prj = startFile.getProject();
                 return prj.getAllFiles();

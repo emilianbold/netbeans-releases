@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.dlight.visualizers;
 
-
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,7 +54,7 @@ import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.core.stack.api.Function;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
-import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
+import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.TreeTableVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.impl.TreeTableVisualizerConfigurationAccessor;
@@ -68,253 +67,248 @@ import org.openide.util.RequestProcessor;
 
 class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTableNode> {
 
-  private static final int TOP_FUNCTIONS_COUNT = 10;
-  public static final String IS_CALLS = "TopTenFunctionsIsCalls"; // NOI18N
-  private JToggleButton callers;
-  private JToggleButton calls;
-  private JButton focusOn;
-  private boolean isCalls = true;
-  private List<? extends FunctionMetric> metricsList = null;
-  private StackDataProvider dataProvider;
-  private DefaultMutableTreeNode focusedTreeNode = null;
-  private CallersCalleesVisualizerConfiguration configuration;
+    private static final int TOP_FUNCTIONS_COUNT = 10;
+    public static final String IS_CALLS = "TopTenFunctionsIsCalls"; // NOI18N
+    private JToggleButton callers;
+    private JToggleButton calls;
+    private JButton focusOn;
+    private boolean isCalls = true;
+    private List<? extends FunctionMetric> metricsList = null;
+    private StackDataProvider dataProvider;
+    private DefaultMutableTreeNode focusedTreeNode = null;
+    private CallersCalleesVisualizerConfiguration configuration;
 
-  
-
-  CallersCalleesVisualizer(StackDataProvider dataProvider, TreeTableVisualizerConfiguration configuration) {
-    super(configuration, dataProvider);
-    this.configuration = (CallersCalleesVisualizerConfiguration)configuration;
-    this.dataProvider = dataProvider;
-    isCalls = NbPreferences.forModule(CallersCalleesVisualizer.class).getBoolean(IS_CALLS, true);
-//    functionsCallTreeModel = new DefaultTreeModel(TREE_ROOT);
-//    metricsList = dataProvider.getMetricsList();
-    initComponents();
-    updateButtons();
-  }
-
-
-
-  public TreeTableVisualizerConfiguration getConfiguration() {
-    return super.getVisualizerConfiguration();
-  }
-
-  @Override
-  protected void initComponents() {
-    super.initComponents();
-    if (TreeTableVisualizerConfigurationAccessor.getDefault().isTableView(getConfiguration())){//we do not need focus on and other buttons here
-      return;
+    CallersCalleesVisualizer(StackDataProvider dataProvider, TreeTableVisualizerConfiguration configuration) {
+        super(configuration, dataProvider);
+        this.configuration = (CallersCalleesVisualizerConfiguration) configuration;
+        this.dataProvider = dataProvider;
+        isCalls = NbPreferences.forModule(CallersCalleesVisualizer.class).getBoolean(IS_CALLS, true);
+        setEmptyContent();
     }
-    focusOn = new JButton();
-    calls = new JToggleButton();
-    callers = new JToggleButton();
-    JToolBar buttonsToolbar = getButtonsTolbar();
-    buttonsToolbar.setFloatable(false);
-    buttonsToolbar.setOrientation(1);
-    buttonsToolbar.setRollover(true);
+
+    public TreeTableVisualizerConfiguration getConfiguration() {
+        return super.getVisualizerConfiguration();
+    }
+
+    @Override
+    protected void initComponents() {
+        super.initComponents();
+        if (TreeTableVisualizerConfigurationAccessor.getDefault().isTableView(getConfiguration())) {//we do not need focus on and other buttons here
+            return;
+        }
+        focusOn = new JButton();
+        calls = new JToggleButton();
+        callers = new JToggleButton();
+        JToolBar buttonsToolbar = getButtonsTolbar();
+        buttonsToolbar.setFloatable(false);
+        buttonsToolbar.setOrientation(1);
+        buttonsToolbar.setRollover(true);
 
 
-    // focusOn button...
-    focusOn.setIcon(ImageLoader.loadIcon("focus.png")); // NOI18N
+        // focusOn button...
+        focusOn.setIcon(ImageLoader.loadIcon("focus.png")); // NOI18N
 //    focusOn.setToolTipText(org.openide.util.NbBundle.getMessage(PerformanceMonitorViewTopComponent.class, "FocusOnActionTooltip")); // NOI18N
-    focusOn.setFocusable(false);
-    focusOn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    focusOn.setMaximumSize(new java.awt.Dimension(28, 28));
-    focusOn.setMinimumSize(new java.awt.Dimension(28, 28));
-    focusOn.setPreferredSize(new java.awt.Dimension(28, 28));
-    focusOn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    focusOn.addActionListener(new java.awt.event.ActionListener() {
+        focusOn.setFocusable(false);
+        focusOn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        focusOn.setMaximumSize(new java.awt.Dimension(28, 28));
+        focusOn.setMinimumSize(new java.awt.Dimension(28, 28));
+        focusOn.setPreferredSize(new java.awt.Dimension(28, 28));
+        focusOn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        focusOn.addActionListener(new java.awt.event.ActionListener() {
 
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        focusOnActionPerformed(evt);
-      }
-    });
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                focusOnActionPerformed(evt);
+            }
+        });
 
-    buttonsToolbar.add(focusOn);
+        buttonsToolbar.add(focusOn);
 
-    buttonsToolbar.add(new JToolBar.Separator());
+        buttonsToolbar.add(new JToolBar.Separator());
 
-    calls.setIcon(ImageLoader.loadIcon("who_is_called.png")); // NOI18N
+        calls.setIcon(ImageLoader.loadIcon("who_is_called.png")); // NOI18N
 //    calls.setToolTipText(org.openide.util.NbBundle.getMessage(PerformanceMonitorViewTopComponent.class, "CallsActionTooltip")); // NOI18N
-    calls.setFocusable(false);
-    calls.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    calls.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    calls.addActionListener(new java.awt.event.ActionListener() {
+        calls.setFocusable(false);
+        calls.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        calls.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        calls.addActionListener(new java.awt.event.ActionListener() {
 
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        callsActionPerformed(evt);
-      }
-    });
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                callsActionPerformed(evt);
+            }
+        });
 
-    buttonsToolbar.add(calls);
+        buttonsToolbar.add(calls);
 
-    callers.setIcon(ImageLoader.loadIcon("who_calls.png")); // NOI18N
+        callers.setIcon(ImageLoader.loadIcon("who_calls.png")); // NOI18N
 //    callers.setToolTipText(org.openide.util.NbBundle.getMessage(PerformanceMonitorViewTopComponent.class, "CallersActionTooltip")); // NOI18N
-    callers.setFocusable(false);
-    callers.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    callers.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    callers.addActionListener(new java.awt.event.ActionListener() {
+        callers.setFocusable(false);
+        callers.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        callers.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        callers.addActionListener(new java.awt.event.ActionListener() {
 
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        callersActionPerformed(evt);
-      }
-    });
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                callersActionPerformed(evt);
+            }
+        });
 
-    buttonsToolbar.add(callers);
-    repaint();
-    revalidate();
-  }
-
-  
-
- 
-
-  
-
-
-
-
-
-  private void callsActionPerformed(ActionEvent evt) {
-    if (isCalls == calls.isSelected()) {
-      return;
+        buttonsToolbar.add(callers);
+        repaint();
+        revalidate();
     }
-    setDirection(true);
-  }
 
-  private void callersActionPerformed(ActionEvent evt) {
-    if (isCalls != callers.isSelected()) {
-      return;
-    }
-    setDirection(false);
-  }
-
-  private void focusOnActionPerformed(ActionEvent evt) {
-    //find selected
-    //functionsCallTreeModel.
-    //throw new UnsupportedOperationException("Not yet implemented");
-    ExplorerManager manager = getExplorerManager();
-    if (manager == null) {
-      System.out.println("RETURN NO ExplorerManager defined");
-      return;
-    }
-    //get selected
-    Node[] selectedNodes = manager.getSelectedNodes();
-    if (selectedNodes == null || selectedNodes.length == 0) {
-      System.out.println("ACHTUNG!! NULL SELECION!!");
-      return;
-    }
-    Node selectedNode = selectedNodes[0];
-    focusedTreeNode = selectedNode.getLookup().lookup(DefaultMutableTreeNode.class);
-    FunctionCall focusedFunction = focusedTreeNode == null ? null : ((FunctionCallTreeTableNode) focusedTreeNode.getUserObject()).getDeligator();
-    getTreeRoot().removeAllChildren();
-    getTreeRoot().add(focusedTreeNode);
-    fireTreeModelChanged();
-
-    loadTree(focusedTreeNode, Arrays.asList(new FunctionCallTreeTableNode(focusedFunction)));
-
-  //
-  //and now chage tree and invoke fireTreeModelChanged()
-
-  }
-
-  private ExplorerManager getExplorerManager() {
-    if (treeTableView != null && treeTableView instanceof ExplorerManager.Provider) {
-      return ((ExplorerManager.Provider) treeTableView).getExplorerManager();
-    }
-    return null;
-  }
-
-  private void setDirection(boolean direction) {
-    isCalls = direction;
-    NbPreferences.forModule(CallersCalleesVisualizer.class).putBoolean(IS_CALLS, isCalls);
-    updateButtons();
-    update();
-  }
-
-  private synchronized void update() {
-    if (focusedTreeNode == null) {
-      //just update tree
-      fillModel(getConfiguration().getMetadata().getColumns());
-      return;
-    }
-    //otherwise we should update
-    loadTree(focusedTreeNode, Arrays.asList((FunctionCallTreeTableNode) focusedTreeNode.getUserObject()));
-  }
-
-  /**
-   * This method will be invoked when
-   */
-  @Override
-  protected void loadTree(final DefaultMutableTreeNode rootNode, final List<FunctionCallTreeTableNode> ppath) {
-    //we should show Loading Node
-    //this.functionsCallTreeModel.get
-    //go away from AWT Thread
-    RequestProcessor.getDefault().post(new Runnable() {
-
-      public void run() {
-
-        List<FunctionCall> result = null;
-        FunctionCall[] path = new FunctionCall[ppath.size()];
-        for (int i = 0, size = ppath.size(); i < size; i++) {
-          path[i] = ppath.get(i).getDeligator();
+    private void callsActionPerformed(ActionEvent evt) {
+        if (isCalls == calls.isSelected()) {
+            return;
         }
-        //FunctionCall[] path = ppath.toArray(new FunctionCallTreeTableNode[0]);
-        if (CallersCalleesVisualizer.this.isCalls) {
-          result = dataProvider.getCallees(path, isCalls);
-        } else {
-          result = dataProvider.getCallers(path, false);
+        setDirection(true);
+    }
+
+    private void callersActionPerformed(ActionEvent evt) {
+        if (isCalls != callers.isSelected()) {
+            return;
         }
-        update(rootNode, result);
-      }
-    });
-  }
-
-  @Override
-  protected void updateTree(final DefaultMutableTreeNode rootNode, List<FunctionCallTreeTableNode> result) {
-    rootNode.removeAllChildren();
-    if (result != null) {
-      for (FunctionCallTreeTableNode call : result) {
-        rootNode.add(new DefaultMutableTreeNode(call));
-      }
+        setDirection(false);
     }
 
-    fireTreeModelChanged(rootNode);
-  }
+    private void focusOnActionPerformed(ActionEvent evt) {
+        //find selected
+        //functionsCallTreeModel.
+        //throw new UnsupportedOperationException("Not yet implemented");
+        ExplorerManager manager = getExplorerManager();
+        if (manager == null) {
+            System.out.println("RETURN NO ExplorerManager defined");
+            return;
+        }
+        //get selected
+        Node[] selectedNodes = manager.getSelectedNodes();
+        if (selectedNodes == null || selectedNodes.length == 0) {
+            System.out.println("ACHTUNG!! NULL SELECION!!");
+            return;
+        }
+        Node selectedNode = selectedNodes[0];
+        focusedTreeNode = selectedNode.getLookup().lookup(DefaultMutableTreeNode.class);
+        FunctionCall focusedFunction = focusedTreeNode == null ? null : ((FunctionCallTreeTableNode) focusedTreeNode.getUserObject()).getDeligator();
+        getTreeRoot().removeAllChildren();
+        getTreeRoot().add(focusedTreeNode);
+        fireTreeModelChanged();
 
-  private void update(final DefaultMutableTreeNode rootNode, List<FunctionCall> result) {
-    //add them all as a children to rootNode
-    rootNode.removeAllChildren();
-    if (result != null) {
-      for (FunctionCall call : result) {
-        rootNode.add(new DefaultMutableTreeNode(new FunctionCallTreeTableNode(call)));
-      }
+        loadTree(focusedTreeNode, Arrays.asList(new FunctionCallTreeTableNode(focusedFunction)));
+
+    //
+    //and now chage tree and invoke fireTreeModelChanged()
+
     }
 
-    fireTreeModelChanged(rootNode);
-
-  }
-
-   @Override
-  protected void fillModel(final List<Column> columns) {
-
-    RequestProcessor.getDefault().post(new Runnable() {
-
-      public void run() {       
-        List<FunctionCall> list =
-                dataProvider.getHotSpotFunctions(columns, null, TOP_FUNCTIONS_COUNT);
-        update(list);
-      }
-    });
-
-  }
-
-  private void update(List<FunctionCall> list) {
-    List<FunctionCallTreeTableNode> res = new ArrayList<FunctionCallTreeTableNode>();
-    for (FunctionCall c : list) {
-      res.add(new FunctionCallTreeTableNode(c));
+    private ExplorerManager getExplorerManager() {
+        if (treeTableView != null && treeTableView instanceof ExplorerManager.Provider) {
+            return ((ExplorerManager.Provider) treeTableView).getExplorerManager();
+        }
+        return null;
     }
-    updateList(res);
-  }
+
+    private void setDirection(boolean direction) {
+        isCalls = direction;
+        NbPreferences.forModule(CallersCalleesVisualizer.class).putBoolean(IS_CALLS, isCalls);
+        updateButtons();
+        update();
+    }
+
+    private synchronized void update() {
+        if (focusedTreeNode == null) {
+            //just update tree
+            asyncFillModel(getConfiguration().getMetadata().getColumns());
+            return;
+        }
+        //otherwise we should update
+        loadTree(focusedTreeNode, Arrays.asList((FunctionCallTreeTableNode) focusedTreeNode.getUserObject()));
+    }
+
+    /**
+     * This method will be invoked when
+     */
+    @Override
+    protected void loadTree(final DefaultMutableTreeNode rootNode, final List<FunctionCallTreeTableNode> ppath) {
+        //we should show Loading Node
+        //this.functionsCallTreeModel.get
+        //go away from AWT Thread
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            public void run() {
+
+                List<FunctionCall> result = null;
+                FunctionCall[] path = new FunctionCall[ppath.size()];
+                for (int i = 0, size = ppath.size(); i < size; i++) {
+                    path[i] = ppath.get(i).getDeligator();
+                }
+                //FunctionCall[] path = ppath.toArray(new FunctionCallTreeTableNode[0]);
+                if (CallersCalleesVisualizer.this.isCalls) {
+                    result = dataProvider.getCallees(path, isCalls);
+                } else {
+                    result = dataProvider.getCallers(path, false);
+                }
+                update(rootNode, result);
+            }
+        });
+    }
+
+    @Override
+    protected void updateTree(final DefaultMutableTreeNode rootNode, List<FunctionCallTreeTableNode> result) {
+        rootNode.removeAllChildren();
+        if (result != null) {
+            for (FunctionCallTreeTableNode call : result) {
+                rootNode.add(new DefaultMutableTreeNode(call));
+            }
+        }
+
+        fireTreeModelChanged(rootNode);
+    }
+
+    private void update(final DefaultMutableTreeNode rootNode, List<FunctionCall> result) {
+        //add them all as a children to rootNode
+        rootNode.removeAllChildren();
+        if (result != null) {
+            for (FunctionCall call : result) {
+                rootNode.add(new DefaultMutableTreeNode(new FunctionCallTreeTableNode(call)));
+            }
+        }
+
+        fireTreeModelChanged(rootNode);
+
+    }
+
+    @Override
+    protected void asyncFillModel(final List<Column> columns) {
+
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            public void run() {
+                final List<FunctionCall> list =
+                    dataProvider.getHotSpotFunctions(columns, null, TOP_FUNCTIONS_COUNT);
+                final boolean isEmptyConent = list == null || list.isEmpty();
+                UIThread.invoke(new Runnable() {
+
+                    public void run() {
+                        setContent(isEmptyConent);
+                        if (isEmptyConent) {
+                            return;
+                        }
+
+                        update(list);
+                    }
+                });
+
+            }
+        });
+
+    }
+
+    private void update(List<FunctionCall> list) {
+        List<FunctionCallTreeTableNode> res = new ArrayList<FunctionCallTreeTableNode>();
+        for (FunctionCall c : list) {
+            res.add(new FunctionCallTreeTableNode(c));
+        }
+        updateList(res);
+    }
 
 
 //  private void updateList(List<FunctionCall> list) {
@@ -339,52 +333,56 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
 //    });
 //
 //  }
-  @Override
-  protected void updateButtons() {
-    if (TreeTableVisualizerConfigurationAccessor.getDefault().isTableView(getConfiguration())){
-      return;
-    }
-    calls.setSelected(isCalls);
-    callers.setSelected(!isCalls);
-  }
-
-  private FunctionMetric getMetricByID(String id) {
-    for (FunctionMetric metric : metricsList) {
-      if (metric.getMetricID().equals(id)) {
-        return metric;
-      }
-    }
-    return null;
-  }
-
-  @Override
-  public void addNotify() {
-    super.addNotify();
-    updateButtons();
-  }
-
-  @Override
-  public int onTimer() {
-    update(dataProvider.getHotSpotFunctions(getConfiguration().getMetadata().getColumns(), null, TOP_FUNCTIONS_COUNT));
-    return 0;
-  }
-
-  class NodeActionsProviderImpl implements NodeActionsProvider {
-
-    public void performDefaultAction(Object node) throws UnknownTypeException {
-      if (!(node instanceof Function)) {
-        throw new UnknownTypeException(node);
-      }
+    @Override
+    protected void updateButtons() {
+        if (TreeTableVisualizerConfigurationAccessor.getDefault().isTableView(getConfiguration())) {
+            return;
+        }
+        calls.setSelected(isCalls);
+        callers.setSelected(!isCalls);
     }
 
-    public Action[] getActions(Object node) throws UnknownTypeException {
-      if (!(node instanceof Function)) {
-        throw new UnknownTypeException(node);
-      }
-      //final TableVisualizerEvent event = (TableVisualizerEvent)node;
-      AbstractAction openAnnotatedSourceAction = new AbstractAction("Go To Source") {
+    private FunctionMetric getMetricByID(String id) {
+        for (FunctionMetric metric : metricsList) {
+            if (metric.getMetricID().equals(id)) {
+                return metric;
+            }
+        }
+        return null;
+    }
 
-        public void actionPerformed(ActionEvent e) {
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        updateButtons();
+    }
+
+    @Override
+    public int onTimer() {
+        if (!isShown() || !isShowing()) {
+            return 0;
+        }
+        asyncFillModel(this.configuration.getMetadata().getColumns());
+//    update(dataProvider.getHotSpotFunctions(, null, TOP_FUNCTIONS_COUNT));
+        return 0;
+    }
+
+    class NodeActionsProviderImpl implements NodeActionsProvider {
+
+        public void performDefaultAction(Object node) throws UnknownTypeException {
+            if (!(node instanceof Function)) {
+                throw new UnknownTypeException(node);
+            }
+        }
+
+        public Action[] getActions(Object node) throws UnknownTypeException {
+            if (!(node instanceof Function)) {
+                throw new UnknownTypeException(node);
+            }
+            //final TableVisualizerEvent event = (TableVisualizerEvent)node;
+            AbstractAction openAnnotatedSourceAction = new AbstractAction("Go To Source") {
+
+                public void actionPerformed(ActionEvent e) {
 //          ExplorerManager manager = ExplorerManager.find(ObjectTableTreeRepresentation.this);
 //          if (manager == null){
 //            throw new UnsupportedOperationException("Not supported yet.");
@@ -401,9 +399,10 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
 //          sourceSupportProvider.showAnnotatedSource(
 //                  dtraceExecutor.getFunctionTableLineInfo(Integer.valueOf(event.getX())),
 //                  METRIC_ANNOTATION_TYPE, event.getY() + "");
+                }
+            };
+            return new Action[]{openAnnotatedSourceAction};
         }
-      };
-      return new Action[]{openAnnotatedSourceAction};
     }
-  }
+
 }

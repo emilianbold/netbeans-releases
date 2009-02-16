@@ -20,6 +20,13 @@
         </xsl:element>
     </xsl:template>
 
+    <xsl:template match="filesystem/folder[@name='Debugger']">
+        <xsl:element name="folder">
+            <xsl:attribute name="name">Debugger</xsl:attribute>
+                <xsl:apply-templates mode="attach-types"/>
+        </xsl:element>
+    </xsl:template>
+
     <xsl:template match="filesystem/folder[@name='Loaders']/folder/folder/folder[@name='Factories']">
         <xsl:element name="folder">
             <xsl:attribute name="name">Loaders</xsl:attribute>
@@ -86,6 +93,28 @@
         </xsl:element>
     </xsl:template>
     <xsl:template match="attr" mode="mime-resolvers">
+        <xsl:copy-of select="."/>
+    </xsl:template>
+
+    <!-- attach type -->
+    <xsl:template match="file" mode="attach-types">
+        <xsl:element name="file">
+            <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
+            <xsl:if test="@url">
+                <xsl:attribute name="url"><xsl:value-of select="@url"/></xsl:attribute>
+            </xsl:if>
+            <xsl:apply-templates mode="attach-types"/>
+        </xsl:element>
+    </xsl:template>
+
+    <xsl:template match="attr[@name='instanceCreate']" mode="attach-types">
+        <xsl:element name="attr">
+            <xsl:attribute name="name">instanceCreate</xsl:attribute>
+            <xsl:attribute name="methodvalue">org.netbeans.modules.ide.ergonomics.debugger.AttachTypeProxy.create</xsl:attribute>
+        </xsl:element>
+    </xsl:template>
+
+    <xsl:template match="attr" mode="attach-types">
         <xsl:copy-of select="."/>
     </xsl:template>
 </xsl:stylesheet>

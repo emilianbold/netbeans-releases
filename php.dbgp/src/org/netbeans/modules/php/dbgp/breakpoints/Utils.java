@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.php.dbgp.DebugSession;
 import org.netbeans.modules.php.dbgp.SessionId;
 import org.netbeans.modules.php.dbgp.breakpoints.FunctionBreakpoint.Type;
@@ -66,7 +67,8 @@ import org.openide.text.Line;
  *
  */
 public class Utils {
-    
+    //keep synchronized with PHPOptionsCategory.PATH_IN_LAYER
+    public static final String PATH_IN_LAYER = "org-netbeans-modules-php-project-ui-options-PHPOptionsCategory"; //NOI18N
     final static String  MIME_TYPE = "text/x-php5"; //NOI18N
     public static LineFactory lineFactory = new LineFactory();
     
@@ -199,5 +201,9 @@ public class Utils {
             }
             return null;
         }        
+    }
+
+    public static void openPhpOptionsDialog() {
+        OptionsDisplayer.getDefault().open(PATH_IN_LAYER);
     }
 }

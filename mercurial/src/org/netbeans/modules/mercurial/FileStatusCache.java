@@ -133,13 +133,27 @@ public class FileStatusCache {
 
     /**
      * Check if this context has at least one file with the passed in status
+     * May call I/O operations.
      *
      * @param context context to examine
      * @param includeStatus file status to check for
      * @return boolean true if this context contains at least one file with the includeStatus, false otherwise
      */
     public boolean containsFileOfStatus(VCSContext context, int includeStatus){
-        Map<File, FileInformation> allFiles = cacheProvider.getAllModifiedValues();
+        return containsFileOfStatus(context, includeStatus, false);
+    }
+
+
+    /**
+     * Check if this context has at least one file with the passed in status
+     *
+     * @param context context to examine
+     * @param includeStatus file status to check for
+     * @param cached if set to <code>true</code>, only cached values will be checked otherwise it may call I/O operations
+     * @return boolean true if this context contains at least one file with the includeStatus, false otherwise
+     */
+    public boolean containsFileOfStatus(VCSContext context, int includeStatus, boolean cached){
+        Map<File, FileInformation> allFiles = cached ? cacheProvider.getCachedValues() : cacheProvider.getAllModifiedValues();
         if(allFiles == null){
             Mercurial.LOG.log(Level.FINE, "containsFileOfStatus(): allFiles == null"); // NOI18N
             return false;

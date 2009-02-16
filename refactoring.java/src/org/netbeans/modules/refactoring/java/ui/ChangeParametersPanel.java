@@ -128,7 +128,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                         info.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
                         ExecutableElement e = (ExecutableElement) refactoredObj.resolveElement(info);
                         returnType = e.getReturnType().toString();
-                        Element def = SourceUtils.getEnclosingTypeElement(e);
+                        Element def = info.getElementUtilities().enclosingTypeElement(e);
                         if (def.getKind().isInterface()) {
                             modifiersCombo.setEnabled(false);
                         }

@@ -72,6 +72,7 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
         if (declarators == null) {
             declarators = new ArrayList<CsmDeclaration>();
             render();
+            //RepositoryUtils.setSelfUIDs(declarators);
         }
         return declarators;
     }
@@ -102,7 +103,7 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
         protected FunctionImpl createFunction(AST ast, CsmFile file, CsmScope scope) {
             FunctionImpl fun = null;
             try {
-                fun = new FunctionImpl(ast, file, getScope());
+                fun = new FunctionImpl(ast, file, getScope(), !isRenderingLocalContext(), !isRenderingLocalContext());
                 declarators.add(fun);
             } catch (AstRendererException ex) {
                 DiagnosticExceptoins.register(ex);
@@ -182,24 +183,28 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
                         }
                         break;
                     case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
-                        declarators.add(new NamespaceAliasImpl(token, getContainingFile(), null));
+                        declarators.add(new NamespaceAliasImpl(token, getContainingFile(), null, !isRenderingLocalContext()));
                         break;
                     case CPPTokenTypes.CSM_USING_DIRECTIVE:
-                        declarators.add(new UsingDirectiveImpl(token, getContainingFile()));
+                        declarators.add(new UsingDirectiveImpl(token, getContainingFile(), !isRenderingLocalContext()));
                         break;
                     case CPPTokenTypes.CSM_USING_DECLARATION:
-                        declarators.add(new UsingDeclarationImpl(token, getContainingFile(), null));
+                        declarators.add(new UsingDeclarationImpl(token, getContainingFile(), null, !isRenderingLocalContext()));
                         break;
 
                     case CPPTokenTypes.CSM_CLASS_DECLARATION:
                     {
                         ClassImpl cls = ClassImpl.create(token, null, getContainingFile(), !isRenderingLocalContext());
                         declarators.add(cls);
-                        CsmTypedef[] typedefs = renderTypedef(token, cls, currentNamespace);
-                        addTypedefs(typedefs, currentNamespace, container);
-                        if (typedefs != null && typedefs.length > 0) {
-                            for (int i = 0; i < typedefs.length; i++) {
-                                declarators.add(typedefs[i]);
+                        Pair typedefs = renderTypedef(token, cls, currentNamespace);
+                        if (!typedefs.getTypesefs().isEmpty()) {
+                            addTypedefs(typedefs.getTypesefs(), currentNamespace, container, cls);
+                            for (CsmTypedef typedef : typedefs.getTypesefs()) {
+                                declarators.add(typedef);
+                                //FIXME: class do not allow register enclosing typedef that does not in repository
+                                //if (cls != null) {
+                                //   cls.addEnclosingTypedef(typedefs[i]);
+                                //}
                             }
                         }
                         renderVariableInClassifier(token, cls, currentNamespace, container);
@@ -213,12 +218,15 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
                         break;
                     }
                     case CPPTokenTypes.CSM_GENERIC_DECLARATION:
-                        CsmTypedef[] typedefs = renderTypedef(token, (FileImpl) getContainingFile(), getScope(), null);
-                        if (typedefs != null && typedefs.length > 0) {
-                            for (int i = 0; i < typedefs.length; i++) {
-                                declarators.add(typedefs[i]);
+                    {
+                        Pair typedefs = renderTypedef(token, (FileImpl) getContainingFile(), getScope(), null);
+                        if (!typedefs.getTypesefs().isEmpty()) {
+                            for (CsmTypedef typedef : typedefs.getTypesefs()) {
+                                declarators.add(typedef);
                             }
                         }
+                        break;
+                    }
                 }
             }
         }

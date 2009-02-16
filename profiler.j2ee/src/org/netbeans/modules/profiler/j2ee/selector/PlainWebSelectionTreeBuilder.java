@@ -47,14 +47,27 @@ import java.util.List;
 import org.netbeans.modules.profiler.j2ee.selector.nodes.ProjectNode;
 import org.netbeans.modules.profiler.j2ee.selector.nodes.web.WebProjectChildren;
 import org.netbeans.modules.profiler.selector.java.impl.ProjectSelectionTreeBuilder;
+import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
+import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
+import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
 
 /**
  *
  * @author Jaroslav Bachorik
  */
+@ProjectServiceProvider(service = SelectionTreeBuilder.class, projectTypes = {
+    @ProjectType(id = "org-netbeans-modules-j2ee-earproject"),
+    @ProjectType(id = "org-netbeans-modules-web-project"),
+    @ProjectType(id = "org-netbeans-modules-maven")
+})
 public class PlainWebSelectionTreeBuilder extends ProjectSelectionTreeBuilder {
+    public PlainWebSelectionTreeBuilder(Project project) {
+        this(project, true);
+    }
+    
     public PlainWebSelectionTreeBuilder(Project project, boolean isPreferred) {
         super(new Type("web-application", "Web Applications View"), isPreferred, project);
     }
@@ -67,10 +80,10 @@ public class PlainWebSelectionTreeBuilder extends ProjectSelectionTreeBuilder {
             }
         };
         return Collections.singletonList(projectNode);
-    }
+   }
 
     @Override
     public int estimatedNodeCount() {
-        return 1;
+        return project.getLookup().lookup(WebModuleProvider.class) != null ? 1 : -1;
     }
 }

@@ -47,6 +47,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import org.apache.maven.embedder.MavenEmbedderLogger;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.output.ContextOutputProcessorFactory;
 import org.netbeans.modules.maven.api.output.NotifyFinishOutputProcessor;
@@ -55,6 +57,7 @@ import org.netbeans.modules.maven.api.output.OutputProcessorFactory;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.netbeans.api.project.Project;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -68,12 +71,48 @@ public abstract class AbstractOutputHandler {
     protected Set<OutputProcessor> currentProcessors;
     protected Set<NotifyFinishOutputProcessor> toFinishProcessors;
     protected OutputVisitor visitor;
+    private RequestProcessor.Task sleepTask;
+    private static final int SLEEP_DELAY = 5000;
 
     protected AbstractOutputHandler() {
         processors = new HashMap<String, Set<OutputProcessor>>();
         currentProcessors = new HashSet<OutputProcessor>();
         visitor = new OutputVisitor();
         toFinishProcessors = new HashSet<NotifyFinishOutputProcessor>();
+    }
+
+    protected AbstractOutputHandler(final ProgressHandle hand) {
+        this();
+        sleepTask = RequestProcessor.getDefault().create(new Runnable() {
+            public void run() {
+                hand.suspend("");
+            }
+        });
+    }
+
+    protected AbstractOutputHandler(final AggregateProgressHandle hand) {
+        this();
+        sleepTask = RequestProcessor.getDefault().create(new Runnable() {
+            public void run() {
+                hand.suspend("");
+            }
+        });
+    }
+
+    protected void checkSleepiness() {
+        RequestProcessor.Task task = sleepTask;
+        if (task != null) {
+            task.schedule(SLEEP_DELAY);
+        }
+    }
+
+
+    protected final void quitSleepiness() {
+        RequestProcessor.Task task = sleepTask;
+        if (task != null) {
+            task.cancel();
+            sleepTask = null;
+        }
     }
     
     abstract MavenEmbedderLogger getLogger();
@@ -114,6 +153,7 @@ public abstract class AbstractOutputHandler {
     }
     
     protected final void processStart(String id, OutputWriter writer) {
+        checkSleepiness();
         Set<OutputProcessor> set = processors.get(id);
         if (set != null) {
             currentProcessors.addAll(set);
@@ -138,6 +178,7 @@ public abstract class AbstractOutputHandler {
     }
     
     protected final void processEnd(String id, OutputWriter writer) {
+        checkSleepiness();
         visitor.resetVisitor();
         Iterator<OutputProcessor> it = currentProcessors.iterator();
         while (it.hasNext()) {
@@ -168,6 +209,7 @@ public abstract class AbstractOutputHandler {
     }
     
     protected final void processFail(String id, OutputWriter writer) {
+        checkSleepiness();
         visitor.resetVisitor();
         Iterator it = currentProcessors.iterator();
         while (it.hasNext()) {
@@ -202,6 +244,7 @@ public abstract class AbstractOutputHandler {
     }
     
     protected final void buildFinished() {
+        quitSleepiness();
         for (NotifyFinishOutputProcessor proc : toFinishProcessors) {
             proc.buildFinished();
         }
@@ -218,6 +261,8 @@ public abstract class AbstractOutputHandler {
     }
     
     protected final void processLine(String input, OutputWriter writer, String levelText) {
+        checkSleepiness();
+        
         visitor.resetVisitor();
         Iterator it = currentProcessors.iterator();
         while (it.hasNext()) {

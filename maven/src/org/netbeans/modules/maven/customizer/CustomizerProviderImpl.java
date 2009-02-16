@@ -64,6 +64,8 @@ import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.execute.UserActionGoalProvider;
 import hidden.org.codehaus.plexus.util.IOUtil;
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.jdom.DefaultJDOMFactory;
 import org.jdom.Document;
@@ -139,19 +141,23 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             
             dialog.setVisible(true);
         } catch (FileNotFoundException ex) {
-            //TODO
-            ex.printStackTrace();
+            if ("No pom file exists.".equals(ex.getMessage())) { //NOI18N
+                //#157020
+                return;
+            }
+            Logger.getLogger(CustomizerProviderImpl.class.getName()).log(Level.SEVERE, "Cannot show project customizer", ex);
         } catch (IOException ex) {
-            //TODO
-            ex.printStackTrace();
+            Logger.getLogger(CustomizerProviderImpl.class.getName()).log(Level.SEVERE, "Cannot show project customizer", ex);
         } catch (XmlPullParserException ex) {
-            //TODO
-            ex.printStackTrace();
+            Logger.getLogger(CustomizerProviderImpl.class.getName()).log(Level.SEVERE, "Cannot show project customizer", ex);
         } 
     }
     
-    private void init() throws XmlPullParserException, FileNotFoundException, IOException {
+    private void init() throws XmlPullParserException, IOException {
         FileObject pom = FileUtil.toFileObject(project.getPOMFile());
+        if (pom == null || !pom.isValid()) {
+            throw new FileNotFoundException("No pom file exists."); //NOI18N
+        }
         ModelSource source = Utilities.createModelSource(pom);
         POMModel model = POMModelFactory.getDefault().getModel(source);
         FileObject profilesFO = project.getProjectDirectory().getFileObject("profiles.xml");
