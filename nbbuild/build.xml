@@ -1404,7 +1404,15 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
               failonerror="${stop.when.clean.error}" />
   </target>
 
-  <target name="clean" depends="-bootstrap" description="Clean everything possible.">
+  <target name="-cacheclean">
+    <delete>
+      <fileset dir=".">
+        <include name="nbproject/private/*.ser"/>
+      </fileset>
+    </delete>
+  </target>
+
+  <target name="clean" depends="-bootstrap, -cacheclean" description="Clean everything possible.">
       <taskdef name="try-else" classname="org.netbeans.nbbuild.TryElse" classpath="nbantext.jar"/>
       <try-else first="-hg-clean" second="-real-clean"/>
   </target>
@@ -1431,7 +1439,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <fileset dir=".">
         <include name="NetBeans-*.log"/>
         <include name="NetBeans-*.zip"/>
-        <include name="nbproject/private/*.ser"/>
       </fileset>
     </delete>
     <!-- This step must be last: -->

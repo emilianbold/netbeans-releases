@@ -166,7 +166,10 @@ public class ElementJavadoc {
                             ret[0] = new ElementJavadoc(controller, linkDoc.resolve(controller), null);
                         } else {
                             int idx = link.indexOf('#'); //NOI18N
-                            URI uri = URI.create(idx < 0 ? link : link.substring(0, idx));
+                            URI uri = null;
+                            try {
+                                uri = URI.create(idx < 0 ? link : link.substring(0, idx));
+                            } catch (IllegalArgumentException iae) {}
                             if (uri != null) {
                                 if (!uri.isAbsolute())
                                     uri = uri.normalize();
@@ -1434,7 +1437,7 @@ public class ElementJavadoc {
                             tags.clear();
                             for(Tag t : throwsTags.get(param).inlineTags()) {
                                 if (INHERIT_DOC_TAG.equals(t.kind()))
-                                    tags.addAll(inheritedParamInlineTags.get(param));
+                                    tags.addAll(inheritedThrowsInlineTags.get(param));
                                 else
                                     tags.add(t);
                             }
