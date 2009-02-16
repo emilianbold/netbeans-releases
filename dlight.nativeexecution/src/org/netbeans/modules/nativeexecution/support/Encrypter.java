@@ -89,8 +89,16 @@ public class Encrypter {
         return algo.encrypt(str);
     }
 
+    public char[] encrypt(char[] chars) {
+        return algo.encrypt(String.valueOf(chars)).toCharArray();
+    }
+
     public String decrypt(String str) {
         return algo.decrypt(str);
+    }
+
+    public char[] decrypt(char[] chars) {
+        return algo.decrypt(String.valueOf(chars)).toCharArray();
     }
 
     public static long getFileChecksum(String fname) {
