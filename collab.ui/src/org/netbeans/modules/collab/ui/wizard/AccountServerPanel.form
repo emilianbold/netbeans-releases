@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.0" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.2" maxVersion="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
     <Component class="javax.swing.ButtonGroup" name="buttonGroup">
     </Component>
@@ -8,15 +8,17 @@
   <Properties>
     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
       <Border info="org.netbeans.modules.form.compat2.border.CompoundBorderInfo">
-        <CompundBorder>
+        <CompoundBorder>
           <Border PropertyName="inside" info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
             <EmptyBorder bottom="5" left="5" right="5" top="5"/>
           </Border>
-        </CompundBorder>
+        </CompoundBorder>
       </Border>
     </Property>
   </Properties>
   <AuxValues>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -89,7 +91,7 @@
       <Properties>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.CompoundBorderInfo">
-            <CompundBorder>
+            <CompoundBorder>
               <Border PropertyName="outside" info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
                 <TitledBorder title="Connect Via Proxy">
                   <ResourceString PropertyName="titleX" bundle="org/netbeans/modules/collab/ui/wizard/Bundle.properties" key="LBL_AccountProxyPanel_ProxyTypePanel" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
@@ -98,7 +100,7 @@
               <Border PropertyName="inside" info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                 <EmptyBorder bottom="5" left="5" right="5" top="0"/>
               </Border>
-            </CompundBorder>
+            </CompoundBorder>
           </Border>
         </Property>
       </Properties>
@@ -162,7 +164,7 @@
       <Properties>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.CompoundBorderInfo">
-            <CompundBorder>
+            <CompoundBorder>
               <Border PropertyName="outside" info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
                 <TitledBorder title="Proxy Server">
                   <ResourceString PropertyName="titleX" bundle="org/netbeans/modules/collab/ui/wizard/Bundle.properties" key="LBL_AccountProxyPanel_ProxyServerPanel" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
@@ -171,7 +173,7 @@
               <Border PropertyName="inside" info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                 <EmptyBorder bottom="5" left="5" right="5" top="5"/>
               </Border>
-            </CompundBorder>
+            </CompoundBorder>
           </Border>
         </Property>
       </Properties>

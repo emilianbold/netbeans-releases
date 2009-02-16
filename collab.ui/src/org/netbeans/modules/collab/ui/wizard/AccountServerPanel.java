@@ -127,20 +127,12 @@ public class AccountServerPanel extends WizardPanelBase {
     public void readSettings(Object object) {
         AccountWizardSettings settings = AccountWizardSettings.narrow(object);
         Account account = settings.getAccount();
-        String prepopulated_serverURL = NbBundle.getMessage(
-                AccountServerPanel.class, "PROP_AccountServerPanel_ServerURL"
-            ); // NOI18N
         serverField.setEditable(true);
 
-        if (settings.getAccount().getAccountType() == Account.NEW_PUBLIC_SERVER_ACCOUNT) {
-            serverField.setText(prepopulated_serverURL);
-            serverField.setEditable(false);
-        } else {
-            String serverURL = account.getServer();
+        String serverURL = account.getServer();
 
-            if ((serverURL != null) && !serverURL.trim().equals("")) {
-                serverField.setText(serverURL);
-            }
+        if ((serverURL != null) && !serverURL.trim().equals("")) {
+            serverField.setText(serverURL);
         }
 
         switch (account.getProxyType()) {

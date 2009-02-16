@@ -72,9 +72,8 @@ public class Account extends Object implements Cloneable, Serializable {
     public static final String PROP_PROXY_PASSWORD = "proxyPassword"; // NOI18N
     public static final String PROP_VALID = "valid"; // NOI18N
     public static final String PROP_AUTO_LOGIN = "autoLogin"; // NOI18N
-    public static final int NEW_PUBLIC_SERVER_ACCOUNT = 0;
-    public static final int EXISTING_ACCOUNT = 1;
-    public static final int NEW_ACCOUNT = 2;
+    public static final int EXISTING_ACCOUNT = 0;
+    public static final int NEW_ACCOUNT = 1;
 
     ////////////////////////////////////////////////////////////////////////////
     // Instance variables

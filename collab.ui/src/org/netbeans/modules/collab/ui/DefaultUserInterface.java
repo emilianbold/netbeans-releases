@@ -323,10 +323,7 @@ public class DefaultUserInterface extends UserInterface {
                 account = settings.getAccount();
 
                 // If the account is new, try to register it
-                if (
-                    (account.getAccountType() == Account.NEW_ACCOUNT) ||
-                        (account.getAccountType() == Account.NEW_PUBLIC_SERVER_ACCOUNT)
-                ) {
+                if (account.getAccountType() == Account.NEW_ACCOUNT) {
                     RequestProcessor.postRequest(new AsyncAccountRegistration(account));
                 } else {
                     try {

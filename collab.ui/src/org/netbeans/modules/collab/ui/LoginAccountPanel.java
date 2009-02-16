@@ -49,6 +49,10 @@ import org.openide.util.*;
 import com.sun.collablet.Account;
 import com.sun.collablet.AccountManager;
 import com.sun.collablet.CollabManager;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.collab.core.Debug;
 import org.openide.awt.Mnemonics;
 
@@ -70,6 +74,8 @@ public class LoginAccountPanel extends JPanel {
     private Set pendingLogins = Collections.synchronizedSet(new HashSet());
     private Account newAccount;
     private int locks;
+
+    private static final Preferences prefs = NbPreferences.forModule(LoginAccountPanel.class);
 
     /**
      *
@@ -360,6 +366,11 @@ public class LoginAccountPanel extends JPanel {
         CollabManager manager = CollabManager.getDefault();
         assert manager != null : "Could not find default CollabManager"; // NOI18N
 
+        if (account.getServer().startsWith("share.java.net") && // NOI18N
+            prefs.getBoolean("server.warning.show", Boolean.TRUE)) { // NOI18N
+            ServerWarningAction a = SharedClassObject.findObject(ServerWarningAction.class, true);
+            a.showDialog();
+        }
         loginButton.setEnabled(false);
 
         // Prompt for the login
@@ -390,6 +401,11 @@ public class LoginAccountPanel extends JPanel {
         CollabManager manager = CollabManager.getDefault();
         assert manager != null : "Could not find default CollabManager"; // NOI18N
 
+        if (account.getServer().startsWith("share.java.net") && // NOI18N
+            prefs.getBoolean("server.warning.show", Boolean.TRUE)) { // NOI18N
+            ServerWarningAction a = SharedClassObject.findObject(ServerWarningAction.class, true);
+            a.showDialog();
+        }
         loginButton.setEnabled(false);
 
         // Prompt for the login
@@ -838,6 +854,11 @@ public class LoginAccountPanel extends JPanel {
                         passwordField.setText(""); // NOI18N
                     }
                 }
+
+                Logger logger = Logger.getLogger("org.netbeans.ui.metrics.collab");   // NOI18N
+                LogRecord rec = new LogRecord(Level.INFO, "USG_COLLAB_LOGIN");   // NOI18N
+                rec.setLoggerName(logger.getName());
+                logger.log(rec);
 
                 // Show the collab explorer
                 CollabExplorerPanel.getInstance().showComponent(CollabExplorerPanel.COMPONENT_EXPLORER);
