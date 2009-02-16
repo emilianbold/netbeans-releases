@@ -109,6 +109,28 @@ public class FolderInstanceTaskOrderTest extends NbTestCase {
         assertEquals("Two actions", 2, computed.size());
     }
 
+    public void testRunImmediatelly() throws Exception {
+        String[] names = {
+            "folder/"
+        };
+        FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), names);
+        FileObject folder = lfs.findResource("folder");
+        DataFolder f = DataFolder.findFolder(folder);
+
+        InstanceDataObject.create(f, null, SaveAction.class);
+
+        err.info("Creating InvCheckFolderInstance");
+        RunImmediatelly instances = new RunImmediatelly(f);
+        err.info("Computing result");
+        List computed = (List)instances.instanceCreate();
+        assertEquals("One action", 1, computed.size());
+
+        InstanceDataObject.create(f, null, OpenAction.class);
+        computed = (List)instances.instanceCreate();
+        err.info("Result is here: " + computed);
+        assertEquals("Two actions", 2, computed.size());
+    }
+
     private final class ReorderTasksCheck extends FolderInstance {
         List<Task> tasks = new ArrayList<Task>();
 
@@ -130,5 +152,29 @@ public class FolderInstanceTaskOrderTest extends NbTestCase {
             return t;
         }
     }
-    
+
+    private final class RunImmediatelly extends FolderInstance {
+        public RunImmediatelly(DataFolder f) {
+            super(f);
+        }
+
+        protected Object createInstance(InstanceCookie[] cookies) throws IOException, ClassNotFoundException {
+            ArrayList list = new ArrayList();
+            for (int i = 0; i < cookies.length; i++) {
+                list.add(cookies[i].instanceCreate());
+            }
+            return list;
+        }
+        @Override
+        protected Task postCreationTask (Runnable run) {
+            run.run();
+            return new FinishedTask();
+        }
+
+    }
+    private static final class FinishedTask extends Task {
+        public FinishedTask() {
+            notifyFinished();
+        }
+    }
 }
