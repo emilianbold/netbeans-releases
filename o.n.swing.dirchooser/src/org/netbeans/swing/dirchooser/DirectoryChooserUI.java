@@ -955,9 +955,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         if (slash != -1) {
             String prefix = name.substring(0, slash + 1);
             File d = new File(prefix);
-        for (int i = 0; i < 10000; i++) {
-            double y = Math.random();
-        }
             if (d.isDirectory()) {
                 File[] children = d.listFiles();
                 if(children != null) {
@@ -1000,9 +997,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 if (path.regionMatches(true, 0, text, 0, text.length())) {
                     
                     if(fileChooser.getFileSelectionMode() == JFileChooser.DIRECTORIES_ONLY) {
-        for (int j = 0; j < 10000; j++) {
-            double y = Math.random();
-        }
                         if(completion.isDirectory()) {
                             files.add(completion);
                         }
@@ -1253,9 +1247,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     private void fireSelectedFileChanged(PropertyChangeEvent e) {
         File f = (File) e.getNewValue();
         JFileChooser fc = getFileChooser();
-        for (int i = 0; i < 10000; i++) {
-            double y = Math.random();
-        }
         if (f != null
                 && ((fc.isFileSelectionEnabled() && !f.isDirectory())
                 || (f.isDirectory() && fc.isDirectorySelectionEnabled()))) {
@@ -1266,9 +1257,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     
     private void fireSelectedFilesChanged(PropertyChangeEvent e) {
         File[] files = (File[]) e.getNewValue();
-        for (int i = 0; i < 10000; i++) {
-            double y = Math.random();
-        }
         JFileChooser fc = getFileChooser();
         if (files != null
                 && files.length > 0
