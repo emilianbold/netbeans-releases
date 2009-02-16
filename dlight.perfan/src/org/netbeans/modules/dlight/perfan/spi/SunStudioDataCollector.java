@@ -232,7 +232,7 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
         log.fine("Prepare PerfanDataCollector. Clean directory " + experimentDir);
 
         Future<Integer> rmFuture =
-                CommonTasksSupport.rmDir(execEnv, experimentDir, true);
+                CommonTasksSupport.rmDir(execEnv, experimentDir, true, null);
 
         Integer rmResult = null;
 
