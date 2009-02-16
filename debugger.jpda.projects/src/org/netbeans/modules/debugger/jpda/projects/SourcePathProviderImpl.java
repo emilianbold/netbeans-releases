@@ -878,8 +878,10 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                 error = NbBundle.getMessage(SourcePathProviderImpl.class, "MSG_NoDebug");
             }
 
+            boolean canFixClasses = Properties.getDefault().getProperties("debugger.options.JPDA").
+                    getBoolean("ApplyCodeChangesOnSave", CAN_FIX_CLASSES_AUTOMATICALLY);
             if (error == null) {
-                if (!CAN_FIX_CLASSES_AUTOMATICALLY) {
+                if (!canFixClasses) {
                     for (File f : artifacts) {
                         FileObject fo = FileUtil.toFileObject(f);
                         if (fo != null) {
@@ -903,7 +905,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                 BuildArtifactMapper.removeArtifactsUpdatedListener(url, this);
             }
 
-            if (error != null && CAN_FIX_CLASSES_AUTOMATICALLY) {
+            if (error != null && canFixClasses) {
                 FixActionProvider.notifyError(error);
             }
         }
