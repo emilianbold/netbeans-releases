@@ -153,10 +153,10 @@ bool JvmLauncher::start(const char *mainClassName, list<string> args, list<strin
 bool JvmLauncher::findClientOption(list<string> &options) {
     for (list<string>::iterator it = options.begin(); it != options.end(); ++it) {
         if (*it == "-client") {
-            return false;
+            return true;
         }
     }
-    return true;
+    return false;
 }
 
 bool JvmLauncher::canLoadJavaDll() {
