@@ -42,8 +42,15 @@ package org.netbeans.modules.kenai.ui.spi;
 import java.awt.Cursor;
 import java.awt.Dialog;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.security.NoSuchAlgorithmException;
+import java.util.prefs.Preferences;
+import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.SecretKeySpec;
 import javax.swing.JButton;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
@@ -55,13 +62,30 @@ import org.netbeans.modules.kenai.ui.LoginPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
+import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 /**
  * This class is not yet final. We be changed
  * @author Jan Becicka
  */
 public final class UIUtils {
-    private UIUtils () {}
+    private static final String encMethod = "AES";
+    private static SecretKeySpec key = new SecretKeySpec("netbeansnetbeans".getBytes(), encMethod);
+    private static Cipher cipher;
+    static {
+        try {
+            cipher = Cipher.getInstance(encMethod);
+        } catch (NoSuchAlgorithmException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (NoSuchPaddingException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private UIUtils() {
+    }
+
     public static final JTextPane createHTMLPane() {
         JTextPane textPane = new JTextPane();
         textPane.setContentType("text/html");
@@ -107,18 +131,72 @@ public final class UIUtils {
      */
     public static boolean showLogin() {
         final LoginPanel loginPanel = new LoginPanel();
-        DialogDescriptor login = new DialogDescriptor(loginPanel, "Login to Kenai", true, new Object[]{"Login", "Cancel"}, "Login", DialogDescriptor.DEFAULT_ALIGN, null, null);
-        Dialog d = DialogDisplayer.getDefault().createDialog(login);
-        d.setVisible(true);
-        if (login.getValue().equals("Login")) {
-            try {
-                Kenai.getDefault().login(loginPanel.getUsername(), loginPanel.getPassword());
-            } catch (KenaiException ex) {
-                Exceptions.printStackTrace(ex);
-                return false;
+        final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
+        DialogDescriptor login = new DialogDescriptor(loginPanel, "Login to Kenai", true, new Object[]{"Login", "Cancel"}, "Login", DialogDescriptor.DEFAULT_ALIGN, null, new ActionListener() {
+
+            public void actionPerformed(ActionEvent event) {
+                if (event.getSource().equals("Login")) {
+                    loginPanel.showProgress();
+                    RequestProcessor.getDefault().post(new Runnable() {
+
+                        public void run() {
+                            try {
+                                Kenai.getDefault().login(loginPanel.getUsername(), loginPanel.getPassword());
+                                loginPanel.getRootPane().getParent().setVisible(false);
+                            } catch (KenaiException ex) {
+                                loginPanel.showError(ex);
+                            }
+                        }
+                    });
+                    if (loginPanel.isStorePassword()) {
+                        preferences.put("kenai.username", loginPanel.getUsername());
+                        preferences.putByteArray("kenai.password", encode(new String(loginPanel.getPassword()).getBytes()));
+                    } else {
+                        preferences.remove("kenai.username");
+                        preferences.remove("kenai.password");
+                    }
+                } else {
+                    loginPanel.putClientProperty("cancel", "true");
+                    loginPanel.getRootPane().getParent().setVisible(false);
+                }
             }
+        });
+        login.setClosingOptions(new Object[]{"Cancel"}); 
+        Dialog d = DialogDisplayer.getDefault().createDialog(login);
+
+        String uname=preferences.get("kenai.username", null);
+        byte[] password=preferences.getByteArray("kenai.password", null);
+        if (uname!=null && password!=null) {
+            loginPanel.setUsername(uname);
+            loginPanel.setPassword(new String(decode(password)).toCharArray());
         }
-        return true;
+        d.setVisible(true);
+
+        return loginPanel.getClientProperty("cancel")==null;
     }
 
+
+        /** Creates new form LoginPanel */
+
+
+    static byte[] encode(byte[] password) {
+
+        try {
+            cipher.init(Cipher.ENCRYPT_MODE, key);
+            return cipher.doFinal(password);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+
+    static byte[] decode(byte[] pass) {
+        try {
+            cipher.init(Cipher.DECRYPT_MODE, key);
+            return cipher.doFinal(pass);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
 }

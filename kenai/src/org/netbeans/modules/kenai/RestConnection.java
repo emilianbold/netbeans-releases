@@ -46,6 +46,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.Authenticator;
 import java.net.HttpURLConnection;
 import java.net.PasswordAuthentication;
 import java.net.URL;
@@ -98,9 +99,10 @@ public class RestConnection {
                 conn.setUseCaches(false);
                 conn.setDefaultUseCaches(false);
                 conn.setAllowUserInteraction(true);
-                //KenaiAuthenticator not working. Why?
+                //TODO: KenaiAuthenticator not working. Why?
+                //this is just workaround this should be implemented properly
                 PasswordAuthentication a = Kenai.getDefault().getPasswordAuthentication();
-                if (a!= null && a.getUserName()!=null) {
+                if (a!= null && a.getUserName()!=null && (params==null || !params[0][0].equals("username"))) {
                     assert a.getPassword()!=null;
                     String userPassword = a.getUserName() + ":" + String.valueOf(a.getPassword());
                     String encoding = new sun.misc.BASE64Encoder().encode(userPassword.getBytes());  
