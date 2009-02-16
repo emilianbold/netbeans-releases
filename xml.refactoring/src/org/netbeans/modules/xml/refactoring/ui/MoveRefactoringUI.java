@@ -209,10 +209,7 @@ public class MoveRefactoringUI implements org.netbeans.modules.refactoring.spi.u
     }
 
     public Icon getCustomIcon() {
-         return new ImageIcon(
-            ImageUtilities.loadImage(
-            "org/netbeans/modules/xml/refactoring/resources/"+
-            "graphical_view_refactoring.png"));
+         return ImageUtilities.loadImageIcon("org/netbeans/modules/xml/refactoring/resources/" + "graphical_view_refactoring.png", false);
     }
 
     public String getCustomToolTip() {

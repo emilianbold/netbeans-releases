@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmField;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.refactoring.support.CsmContext;
@@ -63,6 +64,8 @@ public final class EncapsulateFieldsRefactoring extends AbstractRefactoring {
     private Collection<EncapsulateFieldInfo> refactorFields = Collections.emptyList();
     private Set<CsmVisibility> methodModifiers = Collections.emptySet();
     private Set<CsmVisibility> fieldModifiers = Collections.emptySet();;
+    private CsmFile classDeclFile = null;
+    private CsmFile classDefFile = null;
     private boolean alwaysUseAccessors;
     private boolean methodInline;
 
@@ -165,10 +168,33 @@ public final class EncapsulateFieldsRefactoring extends AbstractRefactoring {
         this.alwaysUseAccessors = alwaysUseAccessors;
     }
 
-    public CsmObject getSelectedObject() {
-        return getRefactoringSource().lookup(CsmObject.class);
+    /**
+     * @return the classDeclFile
+     */
+    public CsmFile getClassDeclarationFile() {
+        return classDeclFile;
     }
-    
+
+    /**
+     * @param classDeclFile the classDeclFile to set
+     */
+    public void setClassDeclarationFile(CsmFile classDeclFile) {
+        this.classDeclFile = classDeclFile;
+    }
+
+    /**
+     * @return the classDefFile
+     */
+    public CsmFile getClassDefinitionFile() {
+        return classDefFile;
+    }
+
+    /**
+     * @param classDefFile the classDefFile to set
+     */
+    public void setClassDefinitonFile(CsmFile classDefFile) {
+        this.classDefFile = classDefFile;
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     // INNER CLASSES

@@ -96,6 +96,7 @@ public class HyperlinkOperation implements MouseListener, MouseMotionListener, P
 
     private boolean        hyperlinkEnabled;
     private int            actionKeyMask;
+    private int            altActionKeyMask;
     
     public static void ensureRegistered(JTextComponent component, String mimeType) {
         if (component.getClientProperty(KEY) == null) {
@@ -106,6 +107,7 @@ public class HyperlinkOperation implements MouseListener, MouseMotionListener, P
     private static synchronized Cursor getMouseCursor(HyperlinkType type) {
         switch (type) {
             case GO_TO_DECLARATION:
+            case ALT_HYPERLINK:
                 return Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
             default:
                 throw new UnsupportedOperationException();
@@ -195,7 +197,10 @@ public class HyperlinkOperation implements MouseListener, MouseMotionListener, P
         this.hyperlinkEnabled = true;
 
         Preferences prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(component)).lookup(Preferences.class);
+        // there is in Mac preferences shortcut for META_MASK, by default we use CTRL_DOWN_MASK
         this.actionKeyMask = prefs.getInt(SimpleValueNames.HYPERLINK_ACTIVATION_MODIFIERS, InputEvent.CTRL_DOWN_MASK);
+        // there is in Mac preferences shortcut for "META_DONW_MASK | InputEvent.ALT_DOWN_MASK", by default we use Ctrl+Alt
+        this.altActionKeyMask = prefs.getInt(SimpleValueNames.ALT_HYPERLINK_ACTIVATION_MODIFIERS, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK);
     }
     
     public void mouseMoved(MouseEvent e) {
@@ -221,7 +226,13 @@ public class HyperlinkOperation implements MouseListener, MouseMotionListener, P
     }
     
     private HyperlinkType getHyperlinkType(InputEvent e) {
-        return ((e.getModifiers() | e.getModifiersEx()) & actionKeyMask) == actionKeyMask ? HyperlinkType.GO_TO_DECLARATION : null;
+        int modifiers = e.getModifiers() | e.getModifiersEx();
+        if ((modifiers & altActionKeyMask) == altActionKeyMask) {
+            return HyperlinkType.ALT_HYPERLINK;
+        } else if ((modifiers & actionKeyMask) == actionKeyMask) {
+            return HyperlinkType.GO_TO_DECLARATION;
+        }
+        return null;
     }
     
     private void performHyperlinking(int position, HyperlinkType type) {
@@ -357,8 +368,9 @@ public class HyperlinkOperation implements MouseListener, MouseMotionListener, P
     }
 
     public void keyReleased(KeyEvent e) {
-        if ((e.getModifiers() & actionKeyMask) == 0)
+        if (getHyperlinkType(e) == null) {
             unHyperlink(true);
+        }
     }
 
     public void keyPressed(KeyEvent e) {

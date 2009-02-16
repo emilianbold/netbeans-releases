@@ -904,6 +904,8 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
                             if (ArtifactInfo.NAMES.equals(fieldName)) {
                                 String clsname = field.getValue().replace(".", "/"); //NOI18N
                                 q = indexer.constructQuery(ArtifactInfo.NAMES, clsname.toLowerCase());
+                            } else if (ArtifactInfo.ARTIFACT_ID.equals(fieldName)) {
+                                q = indexer.constructQuery(fieldName, field.getValue());
                             } else {
                                 if (field.getMatch() == QueryField.MATCH_EXACT) {
                                     q = new TermQuery(new Term(fieldName, field.getValue()));

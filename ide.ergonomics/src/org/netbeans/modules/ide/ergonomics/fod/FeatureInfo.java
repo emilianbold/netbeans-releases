@@ -127,10 +127,6 @@ public final class FeatureInfo {
         return info;
     }
 
-    public String getAttachTypeName() {
-        return properties.getProperty("attachTypeName");
-    }
-
     public String getProfilerAttachName() {
         return properties.getProperty("profilerAttachName");
     }

@@ -158,7 +158,13 @@ public class PropertySupportFactory {
                 support.setValue ("item.separator", " ");//NOI18N
             }else{
                 if(info.isWritable()) {
-                    support = createReadWritePropertySupport(parent, attr, info);
+                    if ((parent.getNodeType().equals(NodeTypes.WEB_APPLICATION)) 
+                            && (attrName.equals(PropertyConstants.CONTEXTROOT))
+                            && (!parent.isServerLocal())) {
+                        support = createReadOnlyPropertySupport(attr, info);
+                    } else {
+                        support = createReadWritePropertySupport(parent, attr, info);
+                    }
                 } else {
                     support = createReadOnlyPropertySupport(attr, info);
                 }

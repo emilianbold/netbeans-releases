@@ -140,22 +140,47 @@ public class SvnUtils {
      * @param nodes null (then taken from windowsystem, it may be wrong on editor tabs #66700).
      * @param includingFileStatus if any activated file does not have this CVS status, an empty array is returned
      * @param includingFolderStatus if any activated folder does not have this CVS status, an empty array is returned
+     * @param fromCache if set to <code>true</code> reads status from cache otherwise uses I/O operations.
      * @return File [] array of activated files, or an empty array if any of examined files/folders does not have given status
      */
-    public static Context getCurrentContext(Node[] nodes, int includingFileStatus, int includingFolderStatus) {
+    public static Context getCurrentContext(Node[] nodes, int includingFileStatus, int includingFolderStatus, boolean fromCache) {
         Context context = getCurrentContext(nodes);
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         File [] files = context.getRootFiles();
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
-            FileInformation fi = cache.getStatus(file);
-            if (file.isDirectory()) {
-                if ((fi.getStatus() & includingFolderStatus) == 0) return Context.Empty;
+            FileInformation fi = fromCache ? cache.getCachedStatus(file) : cache.getStatus(file);
+            int status;
+            if (fi != null) {
+                // status got from the cache and is known or got through I/O
+                status = fi.getStatus();
             } else {
-                if ((fi.getStatus() & includingFileStatus) == 0) return Context.Empty;
+                // tried to get the cached value but it was not present in the cache
+                status = FileInformation.STATUS_VERSIONED_UPTODATE;
+            }
+            if (file.isDirectory()) {
+                if ((status & includingFolderStatus) == 0) return Context.Empty;
+            } else {
+                if ((status & includingFileStatus) == 0) return Context.Empty;
             }
         }
         return context;
+    }
+
+    /**
+     * Semantics is similar to {@link org.openide.windows.TopComponent#getActivatedNodes()} except that this
+     * method returns File objects instead od Nodes. Every node is examined for Files it represents. File and Folder
+     * nodes represent their underlying files or folders. Project nodes are represented by their source groups. Other
+     * logical nodes must provide FileObjects in their Lookup.
+     * Does not read statuses from cache, but through I/O, might take a long time to finish.
+     *
+     * @param nodes null (then taken from windowsystem, it may be wrong on editor tabs #66700).
+     * @param includingFileStatus if any activated file does not have this CVS status, an empty array is returned
+     * @param includingFolderStatus if any activated folder does not have this CVS status, an empty array is returned
+     * @return File [] array of activated files, or an empty array if any of examined files/folders does not have given status
+     */
+    public static Context getCurrentContext(Node[] nodes, int includingFileStatus, int includingFolderStatus) {
+        return getCurrentContext(nodes, includingFileStatus, includingFolderStatus, false);
     }
 
     /**
@@ -352,8 +377,14 @@ public class SvnUtils {
 
                 if (fileURL != null && repositoryURL !=  null) {
                     String fileLink = fileURL.toString();
-                    String repositoryLink = repositoryURL.toString();
-                    repositoryPath = fileLink.substring(repositoryLink.length());
+                    String repositoryLink = decode(repositoryURL).toString();
+                    try {
+                        repositoryPath = fileLink.substring(repositoryLink.length());
+                    } catch (StringIndexOutOfBoundsException ex) {
+                        // XXX delete try-catch after bugfix verification
+                        Subversion.LOG.log(Level.INFO, "repoUrl: " + repositoryURL.toString() + "\nfileURL: " + fileLink, ex);
+                        throw ex;
+                    }
 
                     Iterator it = path.iterator();
                     StringBuffer sb = new StringBuffer();

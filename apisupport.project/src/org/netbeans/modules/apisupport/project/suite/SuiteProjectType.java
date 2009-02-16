@@ -81,7 +81,7 @@ public final class SuiteProjectType implements AntBasedProjectType2 {
     }
 
     public Icon getIcon() {
-        return ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/apisupport/project/suite/resources/suite.png", true));
+        return ImageUtilities.loadImageIcon("org/netbeans/modules/apisupport/project/suite/resources/suite.png", true);
     }
     
 }

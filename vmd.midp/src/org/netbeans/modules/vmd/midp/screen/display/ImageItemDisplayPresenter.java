@@ -65,7 +65,7 @@ import org.openide.filesystems.FileObject;
 public class ImageItemDisplayPresenter extends ItemDisplayPresenter {
 
     private static final String ICON_BROKEN_PATH = "org/netbeans/modules/vmd/midp/resources/screen/broken-image.png"; // NOI18N
-    private static final Icon ICON_BROKEN = new ImageIcon(ImageUtilities.loadImage(ICON_BROKEN_PATH));
+    private static final Icon ICON_BROKEN = ImageUtilities.loadImageIcon(ICON_BROKEN_PATH, false);
     private JLabel label;
     private ScreenFileObjectListener imageFileListener;
     private FileObject imageFileObject;

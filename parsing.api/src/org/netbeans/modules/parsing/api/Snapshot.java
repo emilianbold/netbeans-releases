@@ -101,9 +101,9 @@ public final class Snapshot {
         String              mimeType
     ) {
         if (offset < 0 || length < 0)
-            throw new ArrayIndexOutOfBoundsException ();
+            throw new ArrayIndexOutOfBoundsException ("offset=" + offset + ", length=" + length); //NOI18N
         if (offset + length > getText ().length ())
-            throw new ArrayIndexOutOfBoundsException ();
+            throw new ArrayIndexOutOfBoundsException ("offset=" + offset + ", length=" + length + ", snapshot-length=" + getText().length()); //NOI18N
         List<int[]> newCurrentToOriginal = new ArrayList<int[]> ();
         List<int[]> newOriginalToCurrent = new ArrayList<int[]> ();
         int i = 1;

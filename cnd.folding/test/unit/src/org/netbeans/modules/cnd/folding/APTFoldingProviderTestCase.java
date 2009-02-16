@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.folding;
 
 import java.io.File;
@@ -56,37 +55,40 @@ import org.netbeans.modules.cnd.test.BaseTestCase;
  * @author Vladimir Voskresensky
  */
 public class APTFoldingProviderTestCase extends BaseTestCase {
-    
+
+    private static final boolean TRACE = false;
+
     /**
      * Creates a new instance of ModelImplBaseTestCase
      */
     public APTFoldingProviderTestCase(String testName) {
         super(testName);
     }
-    
+
     public void testIfdefFolding() throws Exception {
         performTest("ifdef.cc");
     }
-    
+
     public void testSimpleFolding() throws Exception {
         performTest("simpleFolding.cc");
     }
-    
+
     public void testErrorDirective() throws Exception {
         performTest("error_directive.cc");
     }
-    
+
     public void testLastIncludes() throws Exception {
         performTest("lastIncludes.cc");
     }
-    
+
     public void testMixedPrepocDirectives() throws Exception {
         performTest("mixedPreprocDirectives.cc");
     }
-    
-    
+
     private void performTest(String source) throws Exception {
-        System.out.println(getWorkDir());
+        if (TRACE) {
+            System.out.println(getWorkDir());
+        }
         File testSourceFile = getDataFile(source);
         char[] text = Analyzer.loadFile(testSourceFile.getAbsolutePath());
         Reader reader = new StringReader(new String(text));
@@ -98,8 +100,8 @@ public class APTFoldingProviderTestCase extends BaseTestCase {
         }
         compareReferenceFiles();
     }
-    
     private static Comparator<CppFoldRecord> FOLD_COMPARATOR = new Comparator<CppFoldRecord>() {
+
         public int compare(CppFoldRecord o1, CppFoldRecord o2) {
             int start1 = o1.getStartLine();
             int start2 = o2.getStartLine();

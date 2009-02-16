@@ -115,7 +115,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
                 res = processIncludeQuery((CsmFile)referencedObject);
             } else {
                 Collection<CsmObject> referencedObjects = getObjectsForFindUsages(referencedObject);
-                CsmFile startFile = getCsmFile(startReferenceObject);     
+                CsmFile startFile = CsmRefactoringUtils.getCsmFile(startReferenceObject);
                 Set<CsmFile> files = new HashSet<CsmFile>();
                 for (CsmObject csmObject : referencedObjects) {
                     files.addAll(getRelevantFiles(startFile, csmObject, refactoring));
@@ -141,7 +141,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         CsmUID uid = refactoring.getRefactoringSource().lookup(CsmUID.class);    
         Problem invalidContext = new Problem(true, NbBundle.getMessage(CsmWhereUsedQueryPlugin.class, "MSG_InvalidObjectNothingToFind")); // NOI18N;
         if (uid == null) {
-            CsmFile startFile = getCsmFile(startReferenceObject);
+            CsmFile startFile = CsmRefactoringUtils.getCsmFile(startReferenceObject);
             if (startFile == null || !startFile.isValid()) {
                 return invalidContext;
             }              

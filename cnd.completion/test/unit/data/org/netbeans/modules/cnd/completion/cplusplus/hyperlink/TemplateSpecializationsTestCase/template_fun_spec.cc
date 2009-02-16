@@ -1,4 +1,4 @@
-#include <stdio.h>
+//#include <stdio.h>
 
 template<typename K, typename V = K> class pair {
     K first;

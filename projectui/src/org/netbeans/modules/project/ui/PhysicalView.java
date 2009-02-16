@@ -119,6 +119,11 @@ public class PhysicalView {
                     "more than one source group");                                  // NOI18N
             return new Node[0];
         }
+
+        if (!projectDirGroup.getRootFolder().isValid()) {
+            //#150018
+            return new Node[0];
+        }
         
                     
         // Create the nodes

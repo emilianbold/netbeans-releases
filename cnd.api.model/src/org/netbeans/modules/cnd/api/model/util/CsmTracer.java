@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  * Misc. static methods used for tracing of code model objects
  * @author vk155633
  */
-public class CsmTracer {
+public final class CsmTracer {
 
     private static final String NULL_TEXT = "null"; // NOI18N
 
@@ -123,6 +123,9 @@ public class CsmTracer {
 
     public void print(String s, boolean newline) {
 	PrintStream stream = getStream();
+    if (stream ==  null) {
+        return;
+    }
 	if( newline ) {
 	    stream.print('\n');
 	    stream.print(indentBuffer.toString());
@@ -284,7 +287,7 @@ public class CsmTracer {
 		    sb.append("*"); // NOI18N
 		}
 	    }
-	    if( type.isReference() ) sb.append("&"); // NOI18N
+	    if( type.isReference() ) {sb.append("&");} // NOI18N
                 CsmClassifier classifier = type.getClassifier();
                 if( classifier != null ) {
                     sb.append(classifier.getQualifiedName());

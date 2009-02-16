@@ -248,7 +248,7 @@ public final class SuiteProject implements Project {
         }
         
         public Icon getIcon() {
-            return new ImageIcon(ImageUtilities.loadImage(SUITE_ICON_PATH));
+            return ImageUtilities.loadImageIcon(SUITE_ICON_PATH, false);
         }
         
         public Project getProject() {

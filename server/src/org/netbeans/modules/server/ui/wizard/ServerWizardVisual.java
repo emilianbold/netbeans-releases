@@ -51,6 +51,8 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.ListModel;
 import javax.swing.event.ChangeEvent;
@@ -177,8 +179,12 @@ public class ServerWizardVisual extends javax.swing.JPanel {
     private boolean existsDisplayName(String displayName) {
         for (ServerInstanceProvider type : ServerRegistry.getInstance().getProviders()) {
             for (ServerInstance instance : type.getInstances()) {
-                if (instance.getDisplayName().equalsIgnoreCase(displayName)) {
+                String instanceName = instance.getDisplayName();
+                if (null != instanceName && instanceName.equalsIgnoreCase(displayName)) {
                     return true;
+                } else if (null == instanceName) {
+                    Logger.getLogger(this.getClass().getName()).log(Level.FINE,
+                            "corrupted ServerInstance: " + instance.toString());
                 }
             }
         }

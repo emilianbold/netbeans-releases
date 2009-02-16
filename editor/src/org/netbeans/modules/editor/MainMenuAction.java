@@ -82,7 +82,7 @@ import org.openide.util.actions.Presenter;
  */
 public abstract class MainMenuAction extends GlobalContextAction implements Presenter.Menu, ChangeListener {
 
-    public static final Icon BLANK_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/editor/resources/empty.gif"));
+    public static final Icon BLANK_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/editor/resources/empty.gif", false);
     public boolean menuInitialized = false;
     /** icon of the action, null means no icon */
     private final Icon forcedIcon;

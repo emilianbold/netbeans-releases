@@ -110,6 +110,12 @@ public abstract class QtInfoProvider {
                 if (qmakeConfiguration.isOpenglEnabled().getValue()) {
                     list.add(baseDir + File.separator + "QtOpenGL"); // NOI18N
                 }
+                if (qmakeConfiguration.isPhononEnabled().getValue()) {
+                    list.add(baseDir + File.separator + "phonon"); // NOI18N
+                }
+                if (qmakeConfiguration.isQt3SupportEnabled().getValue()) {
+                    list.add(baseDir + File.separator + "Qt3Support"); // NOI18N
+                }
                 if (qmakeConfiguration.isSqlEnabled().getValue()) {
                     list.add(baseDir + File.separator + "QtSql"); // NOI18N
                 }
@@ -118,6 +124,9 @@ public abstract class QtInfoProvider {
                 }
                 if (qmakeConfiguration.isXmlEnabled().getValue()) {
                     list.add(baseDir + File.separator + "QtXml"); // NOI18N
+                }
+                if (qmakeConfiguration.isWebkitEnabled().getValue()) {
+                    list.add(baseDir + File.separator + "QtWebKit"); // NOI18N
                 }
                 String uiDir = qmakeConfiguration.getUiDir().getValue();
                 if (IpeUtils.isPathAbsolute(uiDir)) {

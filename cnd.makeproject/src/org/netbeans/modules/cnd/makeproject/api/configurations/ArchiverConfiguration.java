@@ -151,7 +151,7 @@ public class ArchiverConfiguration implements AllOptionsProvider {
     // Clone and assign
     public void assign(ArchiverConfiguration conf) {
         // ArchiverConfiguration
-        setMakeConfiguration(conf.getMakeConfiguration());
+        //setMakeConfiguration(conf.getMakeConfiguration()); // MakeConfiguration should not be assigned
         getOutput().assign(conf.getOutput());
         getRunRanlib().assign(conf.getRunRanlib());
         getReplaceOption().assign(conf.getReplaceOption());

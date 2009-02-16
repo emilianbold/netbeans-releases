@@ -72,7 +72,7 @@ public final class AvailableUpdatesNotification implements StatusLineElementProv
      */
     private static Component getUpdatesVisualizer () {
         if (null == flasher) {
-            ImageIcon img1 = new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/autoupdate/ui/resources/newUpdates.png", false)); // NOI18N
+            ImageIcon img1 = ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/newUpdates.png", false); // NOI18N
             assert img1 != null : "Icon cannot be null.";
             flasher = new UpdatesFlasher (img1);
         }
