@@ -68,7 +68,7 @@ public final class DBSchemaTablesWizardPanel extends DBSchemaPanel {
     }
     
     public boolean isValid () {
-        return getPanelUI().isValid();
+        return getPanelUI().isInputValid();
     }
 
 }

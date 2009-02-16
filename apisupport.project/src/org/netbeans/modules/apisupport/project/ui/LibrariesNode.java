@@ -312,7 +312,7 @@ final class LibrariesNode extends AbstractNode {
          */
         private Icon getLibrariesIcon() {
             if (librariesIcon == null) {
-                librariesIcon = new ImageIcon(ImageUtilities.loadImage(LIBRARIES_ICON, true));
+                librariesIcon = ImageUtilities.loadImageIcon(LIBRARIES_ICON, true);
             }
             return librariesIcon;
         }

@@ -264,7 +264,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         }
 
         if (warning.trim().length() > 0) {
-            Icon icon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/j2ee/persistence/ui/resources/warning.gif"));
+            Icon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/j2ee/persistence/ui/resources/warning.gif", false);
             createPUWarningLabel.setIcon(icon);
             createPUWarningLabel.setText(warning);
             createPUWarningLabel.setToolTipText(warning);

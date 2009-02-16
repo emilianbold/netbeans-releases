@@ -20,7 +20,7 @@ public class HttpMonitorAction extends AbstractAction {
     public HttpMonitorAction() {
         // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
         super(NbBundle.getMessage(HttpMonitorAction.class, "CTL_HttpMonitorAction"));
-        putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(HttpMonitorTopComponent.ICON_PATH, true)));
+        putValue(SMALL_ICON, ImageUtilities.loadImageIcon(HttpMonitorTopComponent.ICON_PATH, true));
     }
 
     public void actionPerformed(ActionEvent evt) {
