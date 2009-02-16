@@ -283,13 +283,15 @@ public class LocalDownloadSupport {
         return units.get (0);
     }
 
-    public void removeInstalledUnit () {
-        Iterator<UpdateUnit> it = getCodeName2Unit ().values ().iterator ();
-        while (it.hasNext ()) {
-            UpdateUnit u = it.next ();
-            if (u.getInstalled () != null && u.getAvailableUpdates ().isEmpty ()) {
-                it.remove ();
-                getNbm2CodeName ().remove (getNbm (u.getCodeName ()));
+    public void removeInstalledUnit() {
+        synchronized (LocalDownloadSupport.class) {
+            Iterator<UpdateUnit> it = getCodeName2Unit().values().iterator();
+            while (it.hasNext()) {
+                UpdateUnit u = it.next();
+                if (u.getInstalled() != null && u.getAvailableUpdates().isEmpty()) {
+                    it.remove();
+                    getNbm2CodeName().remove(getNbm(u.getCodeName()));
+                }
             }
         }
     }
