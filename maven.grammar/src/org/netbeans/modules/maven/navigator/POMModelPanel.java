@@ -39,7 +39,14 @@
 
 package org.netbeans.modules.maven.navigator;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -53,7 +60,19 @@ import java.util.Properties;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JToggleButton;
+import javax.swing.JToolBar;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
 import org.apache.maven.model.CiManagement;
 import org.apache.maven.model.Contributor;
 import org.apache.maven.model.Dependency;
@@ -81,7 +100,9 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -89,6 +110,7 @@ import org.openide.util.RequestProcessor;
  */
 public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager.Provider, Runnable {
 
+    private static final String NAVIGATOR_SHOW_UNDEFINED = "navigator.showUndefined"; //NOi18N
     private transient ExplorerManager explorerManager = new ExplorerManager();
     
     private BeanTreeView treeView;
@@ -100,11 +122,33 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                 RequestProcessor.getDefault().post(POMModelPanel.this);
             }
         };
+    private TapPanel filtersPanel;
+
+    private boolean filterIncludeUndefined;
 
     /** Creates new form POMInheritancePanel */
     public POMModelPanel() {
         initComponents();
+        filterIncludeUndefined = NbPreferences.forModule(POMModelPanel.class).getBoolean(NAVIGATOR_SHOW_UNDEFINED, false);
+
         treeView = (BeanTreeView)jScrollPane1;
+        // filters
+        filtersPanel = new TapPanel();
+        filtersPanel.setOrientation(TapPanel.DOWN);
+        // tooltip
+        KeyStroke toggleKey = KeyStroke.getKeyStroke(KeyEvent.VK_T,
+                Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+        String keyText = Utilities.keyToString(toggleKey);
+        filtersPanel.setToolTipText(NbBundle.getMessage(POMModelPanel.class, "TIP_TapPanel", keyText)); //NOI18N
+
+        JComponent buttons = createFilterButtons();
+        buttons.setBorder(BorderFactory.createEmptyBorder(0, 5, 5, 0));
+        filtersPanel.add(buttons);
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
+            filtersPanel.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+
+        add(filtersPanel, BorderLayout.SOUTH);
+
     }
     
     public ExplorerManager getExplorerManager() {
@@ -183,6 +227,33 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         });
     }
 
+    private JComponent createFilterButtons() {
+        Box box = new Box(BoxLayout.X_AXIS);
+        box.setBorder(new EmptyBorder(1, 2, 3, 5));
+
+            // configure toolbar
+        JToolBar toolbar = new JToolBar(JToolBar.HORIZONTAL) {
+            @Override
+            protected void paintComponent(Graphics g) {
+            }
+        };
+            toolbar.setFloatable(false);
+            toolbar.setRollover(true);
+            toolbar.setBorderPainted(false);
+            toolbar.setBorder(BorderFactory.createEmptyBorder());
+            toolbar.setOpaque(false);
+            toolbar.setFocusable(false);
+            JToggleButton tg1 = new JToggleButton(new ShowUndefinedAction());
+            tg1.setSelected(filterIncludeUndefined);
+            toolbar.add(tg1);
+            Dimension space = new Dimension(3, 0);
+            toolbar.addSeparator(space);
+
+            box.add(toolbar);
+            return box;
+
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -194,16 +265,8 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
 
         jScrollPane1 = new BeanTreeView();
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE)
-        );
+        setLayout(new java.awt.BorderLayout());
+        add(jScrollPane1, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
 
@@ -229,11 +292,35 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         an.setDisplayName(NbBundle.getMessage(POMInheritancePanel.class, "LBL_Error"));
         return an;
     }
+
+    protected void addSingleFieldNode(ModelLineage key, String[] vals, String dispName, List<Node> nds) {
+        if (!filterIncludeUndefined || definesValue(vals)) {
+            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, key, dispName, vals));
+        }
+    }
+
+    private void addObjectNode(ModelLineage key, List sMan, Children sueManagementChildren, String displayName, List<Node> nds) {
+        if (!filterIncludeUndefined || definesValue(sMan.toArray())) {
+            nds.add(new ObjectNode(Lookup.EMPTY, sueManagementChildren, key, displayName, sMan));
+        }
+    }
+
+    private void addListNode(ModelLineage key, List<List> sMan, ChildrenCreator chc, String displayName, List<Node> nds) {
+        if (!filterIncludeUndefined || definesValue(sMan.toArray())) {
+            nds.add(new ListNode(Lookup.EMPTY, chc, key, displayName, sMan));
+        }
+    }
     
     // <editor-fold defaultstate="collapsed" desc="POM Children">
-    private static class PomChildren extends Children.Keys<ModelLineage> {
+    private class PomChildren extends Children.Keys<ModelLineage> {
+        private ModelLineage lineage;
         public PomChildren(ModelLineage lineage) {
+            this.lineage = lineage;
             setKeys(new ModelLineage[] {lineage});
+        }
+
+        public void reshow() {
+            this.refreshKey(lineage);
         }
         
         @Override
@@ -244,40 +331,35 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
             Model[] models = mods.toArray(new Model[mods.size()]);
 
             List<Node> nds = new ArrayList<Node>();
-            String[] vals = getStringValue(models, "getModelVersion", Model.class);
-            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, key, "Model Version", vals));
-            vals = getStringValue(models, "getGroupId", Model.class);
-            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, key, "GroupId", vals));
-            vals = getStringValue(models, "getArtifactId", Model.class);
-            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, key, "ArtifactId", vals));
-            vals = getStringValue(models, "getPackaging", Model.class);
-            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, key, "Packaging", vals));
-            vals = getStringValue(models, "getName", Model.class);
-            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, key, "Name", vals));
-            vals = getStringValue(models, "getVersion", Model.class);
-            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, key, "Version", vals));
-            vals = getStringValue(models, "getDescription", Model.class);
-            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, key, "Description", vals));
-            vals = getStringValue(models, "getUrl", Model.class);
-            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, key, "Url", vals));
-            vals = getStringValue(models, "getInceptionYear", Model.class);
-            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, key, "Inception Year", vals));
+            addSingleFieldNode(key, getStringValue(models, "getModelVersion", Model.class), "Model Version", nds);
+            addSingleFieldNode(key, getStringValue(models, "getGroupId", Model.class), "GroupId", nds);
+            addSingleFieldNode(key, getStringValue(models, "getArtifactId", Model.class), "ArtifactId", nds);
+            addSingleFieldNode(key, getStringValue(models, "getPackaging", Model.class), "Packaging", nds);
+            addSingleFieldNode(key, getStringValue(models, "getName", Model.class), "Name", nds);
+            addSingleFieldNode(key, getStringValue(models, "getVersion", Model.class), "Version", nds);
+            addSingleFieldNode(key, getStringValue(models, "getDescription", Model.class), "Description", nds);
+            addSingleFieldNode(key, getStringValue(models, "getUrl", Model.class), "Url", nds);
+            addSingleFieldNode(key, getStringValue(models, "getInceptionYear", Model.class), "Inception Year", nds);
+
             @SuppressWarnings("unchecked")
             List<IssueManagement> issMan = getValue(models, "getIssueManagement", Model.class);
-            nds.add(new ObjectNode(Lookup.EMPTY, new IssueManagementChildren(issMan, key), key, "IssueManagement", issMan));
+            addObjectNode(key, issMan, new IssueManagementChildren(issMan, key), "IssueManagement", nds);
+
             @SuppressWarnings("unchecked")
             List<CiManagement> ciMan = getValue(models, "getCiManagement", Model.class);
-            nds.add(new ObjectNode(Lookup.EMPTY, new CiManagementChildren(ciMan, key), key, "CiManagement", ciMan));
+            addObjectNode(key, ciMan, new CiManagementChildren(ciMan, key), "CiManagement", nds);
+
             @SuppressWarnings("unchecked")
             List<Scm> scm = getValue(models, "getScm", Model.class);
-            nds.add(new ObjectNode(Lookup.EMPTY, new ScmChildren(scm, key), key, "Scm", scm));
+            addObjectNode(key, scm, new ScmChildren(scm, key), "Scm", nds);
+
             @SuppressWarnings("unchecked")
             List<Organization> org = getValue(models, "getOrganization", Model.class);
-            nds.add(new ObjectNode(Lookup.EMPTY, new OrgChildren(org, key), key, "Organization", org));
+            addObjectNode(key, org, new OrgChildren(org, key), "Organization", nds);
 
             @SuppressWarnings("unchecked")
             List<List> mailingLists = getValue(models, "getMailingLists", Model.class);
-            nds.add(new ListNode(Lookup.EMPTY, new ChildrenCreator() {
+            addListNode(key, mailingLists, new ChildrenCreator() {
                 public Children createChildren(List value, ModelLineage lineage) {
                     @SuppressWarnings("unchecked")
                     List<MailingList> lst = value;
@@ -288,11 +370,11 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                     String[] name = getStringValue(new Object[] {value}, "getName", MailingList.class);
                     return name.length > 0 ? name[0] : "Mailing List";
                 }
-            }, key, "Mailing Lists", mailingLists));
+            }, "Mailing Lists", nds);
 
             @SuppressWarnings("unchecked")
             List<List> developers = getValue(models, "getDevelopers", Model.class);
-            nds.add(new ListNode(Lookup.EMPTY, new ChildrenCreator() {
+            addListNode(key,developers, new ChildrenCreator() {
                 public Children createChildren(List value, ModelLineage lineage) {
                     @SuppressWarnings("unchecked")
                     List<Developer> lst = value;
@@ -304,11 +386,11 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                     String[] id = getStringValue(new Object[] {value}, "getId", Developer.class);
                     return name.length > 0 ? name[0] : (id.length > 0 ? id[0] : "Developer");
                 }
-            }, key, "Developers", developers));
+            }, "Developers", nds);
 
             @SuppressWarnings("unchecked")
             List<List> contributors = getValue(models, "getContributors", Model.class);
-            nds.add(new ListNode(Lookup.EMPTY, new ChildrenCreator() {
+            addListNode(key, contributors, new ChildrenCreator() {
                 public Children createChildren(List value, ModelLineage lineage) {
                     @SuppressWarnings("unchecked")
                     List<Contributor> lst = value;
@@ -319,11 +401,11 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                     String[] name = getStringValue(new Object[] {value}, "getName", Contributor.class);
                     return name.length > 0 ? name[0] : "Contributor";
                 }
-            }, key, "Contributors", contributors));
+            }, "Contributors", nds);
 
             @SuppressWarnings("unchecked")
             List<List> licenses = getValue(models, "getLicenses", Model.class);
-            nds.add(new ListNode(Lookup.EMPTY, new ChildrenCreator() {
+            addListNode(key, licenses, new ChildrenCreator() {
                 public Children createChildren(List value, ModelLineage lineage) {
                     @SuppressWarnings("unchecked")
                     List<License> lst = value;
@@ -334,11 +416,11 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                     String[] name = getStringValue(new Object[] {value}, "getName", License.class);
                     return name.length > 0 ? name[0] : "License";
                 }
-            }, key, "Licenses", licenses));
+            }, "Licenses", nds);
 
             @SuppressWarnings("unchecked")
             List<List> dependencies = getValue(models, "getDependencies", Model.class);
-            nds.add(new ListNode(Lookup.EMPTY, new ChildrenCreator2() {
+            addListNode(key,dependencies, new ChildrenCreator2() {
                 public Children createChildren(List value, ModelLineage lineage) {
                     @SuppressWarnings("unchecked")
                     List<Dependency> lst = value;
@@ -355,11 +437,11 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                     Dependency d2 = (Dependency)value2;
                     return d1.getManagementKey().equals(d2.getManagementKey());
                 }
-            }, key, "Dependencies", dependencies));
+            }, "Dependencies", nds);
 
             @SuppressWarnings("unchecked")
             List<List> repositories = getValue(models, "getRepositories", Model.class);
-            nds.add(new ListNode(Lookup.EMPTY, new ChildrenCreator2() {
+            addListNode(key,repositories, new ChildrenCreator2() {
                 public Children createChildren(List value, ModelLineage lineage) {
                     @SuppressWarnings("unchecked")
                     List<Repository> lst = value;
@@ -376,12 +458,14 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                     Repository d2 = (Repository)value2;
                     return d1.getId().equals(d2.getId());
                 }
-            }, key, "Repositories", repositories));
+            }, "Repositories", nds);
 
+            @SuppressWarnings("unchecked")
             List<Properties> props = getValue(models, "getProperties", Model.class);
-            nds.add(new ObjectNode(Lookup.EMPTY, new PropsChildren(props, key), key, "Properties", props));
+            addObjectNode(key, props, new PropsChildren(props, key), "Properties", nds);
             return nds.toArray(new Node[0]);
         }
+
         
     }
     // </editor-fold>
@@ -1005,6 +1089,24 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         }
         lst.add(o);
         return lst;
+    }
+
+    private class ShowUndefinedAction extends AbstractAction {
+
+        public ShowUndefinedAction() {
+            putValue(SMALL_ICON, ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/filterHideFields.gif")));
+            putValue(SHORT_DESCRIPTION, "Show only POM elements defined in at least one place.");
+        }
+
+
+        public void actionPerformed(ActionEvent e) {
+            filterIncludeUndefined = !filterIncludeUndefined;
+            NbPreferences.forModule(POMModelPanel.class).putBoolean( NAVIGATOR_SHOW_UNDEFINED, filterIncludeUndefined);
+
+            PomChildren keys = (PomChildren) explorerManager.getRootContext().getChildren();
+            keys.reshow();
+        }
+        
     }
 }
 
