@@ -77,7 +77,7 @@ public interface CsmMacroExpansionDocProvider {
      * @param doc - document for macro expansion
      * @param startOffset - start offset for expansion
      * @param endOffset - end offset for expansion
-     * @return - expansion
+     * @return - expansion, null otherwise
      */
     public String expand(Document doc, int startOffset, int endOffset);
 
@@ -89,17 +89,19 @@ public interface CsmMacroExpansionDocProvider {
      * @param doc - file of the document
      * @param startOffset - start offset for expansion
      * @param endOffset - end offset for expansion
-     * @return - expansion
+     * @return - expansion, null otherwise
      */
     public String expand(Document doc, CsmFile file, int startOffset, int endOffset);
 
     /**
-     * returns original text and expanded text for document on specified offset
+     * returns interval of macro expansion for offset in original text
      * @param doc document
      * @param offset offset in document
-     * @return array of two elements [text in document, expanded text]
+     * @param wait flag indicating if existing info must be updated to the most recent state
+     *  (which could takes time) or return what exists now, but without any blocks (for AWT calls)
+     * @return array of two elements [start;end] of expansion in document
      */
-    public String[] getMacroExpansion(Document doc, int offset);
+    public int[] getMacroExpansionSpan(Document doc, int offset, boolean wait);
 
     /**
      * Transforms original offset to offset in expanded text.

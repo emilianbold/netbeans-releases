@@ -278,30 +278,57 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
     }
 
     public String expand(Document doc, CsmFile file, int startOffset, int endOffset) {
-        if(doc == null) {
-            return null;
-        }
-        if (file == null) {
-            return null;
-        }
-        TransformationTable tt = null;
-        boolean updateTable = false;
-        synchronized (doc) {
-            tt = getMacroTable(doc);
-            if (tt == null || tt.documentVersion != DocumentUtilities.getDocumentVersion(doc) || tt.fileVersion != CsmFileInfoQuery.getDefault().getFileVersion(file)) {
-                tt = new TransformationTable(DocumentUtilities.getDocumentVersion(doc), CsmFileInfoQuery.getDefault().getFileVersion(file));
-                doc.putProperty(MACRO_EXPANSION_MACRO_TABLE, tt);
-                updateTable = true;
-            }
-        }
-        if(updateTable) {
-            synchronized (tt) {
-                expand(doc, file, tt);
-            }
-        }
-        return expandInterval(doc, tt, startOffset, endOffset);
+        TransformationTable tt = updateTransformationTableIfNeeded(doc, file);
+        return tt == null ? null : expandInterval(doc, tt, startOffset, endOffset);
     }
 
+    public int[] getMacroExpansionSpan(Document doc, int offset, boolean wait) {
+        int[] span = new int[]{offset, offset};
+        TransformationTable tt;
+        if (wait) {
+            CsmFile file = CsmUtilities.getCsmFile(doc, true);
+            tt = updateTransformationTableIfNeeded(doc, file);
+        } else {
+            tt = getMacroTable(doc);
+        }
+        if (tt != null) {
+            int startIndex = tt.findInIntervalIndex(offset);
+            if (startIndex < tt.intervals.size()) {
+                if (tt.intervals.get(startIndex).inInterval.end == offset) {
+                    // use next
+                    startIndex++;
+                }
+            }
+            boolean foundMacroExpansion = false;
+            // back to start of macro expansion
+            for (int i = startIndex; i >= 0; i--) {
+                IntervalCorrespondence ic = tt.intervals.get(i);
+                if (ic.macro) {
+                    span[0] = ic.inInterval.start;
+                    span[1] = ic.inInterval.end;
+                    foundMacroExpansion = true;
+                    break;
+                } else if (ic.outInterval.length() != 0) {
+                    // we are out of macro expansion
+                    return span;
+                }
+            }
+            if (foundMacroExpansion) {
+                // forward to the end of macro expansion
+                for (int i = startIndex+1; i < tt.intervals.size(); i++) {
+                    IntervalCorrespondence ic = tt.intervals.get(i);
+                    if (ic.outInterval.length() == 0) {
+                        // we are in macro expansion
+                        span[1] = ic.inInterval.end;
+                    } else {
+                        return span;
+                    }
+                }
+            }
+        }
+        return span;
+    }
+    
     private String expandInterval(Document doc, TransformationTable tt, int startOffset, int endOffset) {
         if (tt.intervals.isEmpty()) {
             return null;
@@ -894,5 +921,27 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             }
             return sb.toString();
         }
+    }
+
+    private TransformationTable updateTransformationTableIfNeeded(Document doc, CsmFile file) {
+        if (file == null || doc == null) {
+            return null;
+        }
+        TransformationTable tt = null;
+        boolean updateTable = false;
+        synchronized (doc) {
+            tt = getMacroTable(doc);
+            if (tt == null || tt.documentVersion != DocumentUtilities.getDocumentVersion(doc) || tt.fileVersion != CsmFileInfoQuery.getDefault().getFileVersion(file)) {
+                tt = new TransformationTable(DocumentUtilities.getDocumentVersion(doc), CsmFileInfoQuery.getDefault().getFileVersion(file));
+                doc.putProperty(MACRO_EXPANSION_MACRO_TABLE, tt);
+                updateTable = true;
+            }
+        }
+        if (updateTable) {
+            synchronized (tt) {
+                expand(doc, file, tt);
+            }
+        }
+        return tt;
     }
 }

@@ -125,6 +125,12 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
 
     public int[] getHyperlinkSpan(Document doc, int offset, HyperlinkType type) {
         TokenItem<CppTokenId> token = getToken(doc, offset);
+        if (type == HyperlinkType.ALT_HYPERLINK) {
+            int[] span = CsmMacroExpansion.getMacroExpansionSpan(doc, offset, false);
+            if (span != null && span[0] != span[1]) {
+                return span;
+            }
+        }
         if (isValidToken(token, type)) {
             jumpToken = token;
             return new int[]{token.offset(), token.offset() + token.length()};
@@ -199,7 +205,13 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
         if (doc == null || offset < 0 || offset > doc.getLength()) {
             return null;
         }
-
+        if (type == HyperlinkType.ALT_HYPERLINK) {
+            int[] span = CsmMacroExpansion.getMacroExpansionSpan(doc, offset+1, true);
+            if (span != null && span[0] != span[1]) {
+                // macro expansion
+                return getMacroExpandedText(doc, span[0], span[1]);
+            }
+        }
         TokenItem<CppTokenId> token = jumpToken;
         if (token == null || token.offset() > offset ||
                 (token.offset() + token.length()) < offset) {
@@ -218,6 +230,11 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
         int shortCut = prefs.getInt(SimpleValueNames.HYPERLINK_ACTIVATION_MODIFIERS, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK);
         InputEvent.getModifiersExText(shortCut);
         return NbBundle.getMessage(CsmAbstractHyperlinkProvider.class, "");
+    }
+
+    private String getMacroExpandedText(Document doc, int start, int end) {
+        String out = CsmMacroExpansion.expand(doc, start, end);
+        return out;
     }
 
 }
