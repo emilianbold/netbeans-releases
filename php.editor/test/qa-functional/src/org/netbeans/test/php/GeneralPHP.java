@@ -261,7 +261,7 @@ public class GeneralPHP extends JellyTestCase {
     int iSleeps = 0;
     while( !jcPath.isEnabled( ) )
     {
-      if( 60 >= ++iSleeps )
+      if( 60 <= ++iSleeps )
         fail( "Project path disabled during too long time." );
       Sleep( 1000 );
     }
