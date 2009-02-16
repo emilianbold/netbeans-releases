@@ -54,6 +54,8 @@ package org.netbeans.modules.cnd.modelui.impl.services;
 import antlr.TokenStream;
 import antlr.TokenStreamException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
@@ -263,6 +265,11 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         return null;
     }
 
+    public String[] getMacroExpansion(Document doc, int offset) {
+        // returns empty expansion
+        return new String[]{"", ""}; // NOI18N
+    }
+
     public String expand(Document doc, int startOffset, int endOffset) {
         if(doc == null) {
             return null;
@@ -271,36 +278,66 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
     }
 
     public String expand(Document doc, CsmFile file, int startOffset, int endOffset) {
-        if(doc == null) {
-            return null;
-        }
-        if (file == null) {
-            return null;
-        }
-        TransformationTable tt = null;
-        boolean updateTable = false;
-        synchronized (doc) {
-            tt = getMacroTable(doc);
-            if (tt == null || tt.documentVersion != DocumentUtilities.getDocumentVersion(doc) || tt.fileVersion != CsmFileInfoQuery.getDefault().getFileVersion(file)) {
-                tt = new TransformationTable(DocumentUtilities.getDocumentVersion(doc), CsmFileInfoQuery.getDefault().getFileVersion(file));
-                doc.putProperty(MACRO_EXPANSION_MACRO_TABLE, tt);
-                updateTable = true;
-            }
-        }
-        if(updateTable) {
-            synchronized (tt) {
-                expand(doc, file, tt);
-            }
-        }
-        return expandInterval(doc, tt, startOffset, endOffset);
+        TransformationTable tt = updateTransformationTableIfNeeded(doc, file);
+        return tt == null ? null : expandInterval(doc, tt, startOffset, endOffset);
     }
 
+    public int[] getMacroExpansionSpan(Document doc, int offset, boolean wait) {
+        int[] span = new int[]{offset, offset};
+        TransformationTable tt;
+        if (wait) {
+            CsmFile file = CsmUtilities.getCsmFile(doc, true);
+            tt = updateTransformationTableIfNeeded(doc, file);
+        } else {
+            tt = getMacroTable(doc);
+        }
+        if (tt != null) {
+            int startIndex = tt.findInIntervalIndex(offset);
+            if (startIndex < tt.intervals.size()) {
+                if (tt.intervals.get(startIndex).inInterval.end == offset) {
+                    // use next
+                    startIndex++;
+                }
+            }
+            boolean foundMacroExpansion = false;
+            // back to start of macro expansion
+            for (int i = startIndex; i >= 0; i--) {
+                IntervalCorrespondence ic = tt.intervals.get(i);
+                if (ic.macro) {
+                    span[0] = ic.inInterval.start;
+                    span[1] = ic.inInterval.end;
+                    foundMacroExpansion = true;
+                    break;
+                } else if (ic.outInterval.length() != 0) {
+                    // we are out of macro expansion
+                    return span;
+                }
+            }
+            if (foundMacroExpansion) {
+                // forward to the end of macro expansion
+                for (int i = startIndex+1; i < tt.intervals.size(); i++) {
+                    IntervalCorrespondence ic = tt.intervals.get(i);
+                    if (ic.outInterval.length() == 0) {
+                        // we are in macro expansion
+                        span[1] = ic.inInterval.end;
+                    } else {
+                        return span;
+                    }
+                }
+            }
+        }
+        return span;
+    }
+    
     private String expandInterval(Document doc, TransformationTable tt, int startOffset, int endOffset) {
         if (tt.intervals.isEmpty()) {
             return null;
         }
         StringBuilder sb = new StringBuilder(""); // NOI18N
-        for (IntervalCorrespondence ic : tt.intervals) {
+        int size = tt.intervals.size();
+        int startIndex = tt.findInIntervalIndex(startOffset);
+        for(int i = startIndex; i < size; i++) {
+            IntervalCorrespondence ic = tt.intervals.get(i);
             if (ic.inInterval.start >= endOffset) {
                 break;
             }
@@ -315,7 +352,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                 continue;
             }
             int endShift = startShift + (endOffset - startOffset);
-            if(endOffset == ic.inInterval.end) {
+            if(endOffset >= ic.inInterval.end) {
                 endShift = ic.outInterval.length();
             }
             if (endShift > ic.outInterval.length()) {
@@ -335,7 +372,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                         Exceptions.printStackTrace(ex);
                     }
                 }
-            }
+            } 
         }
         return sb.toString();
     }
@@ -860,6 +897,22 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             return outOffset;
         }
 
+        public int findInIntervalIndex(int offset) {
+            return Collections.binarySearch(intervals, new IntervalCorrespondence(new Interval(offset, offset), new Interval(offset, offset), false),
+                    new Comparator<IntervalCorrespondence>() {
+
+                        public int compare(IntervalCorrespondence o1, IntervalCorrespondence o2) {
+                            if (o1.inInterval.end < o2.inInterval.start) {
+                                return -1;
+                            }
+                            if (o1.inInterval.start > o2.inInterval.end) {
+                                return 1;
+                            }
+                            return 0;
+                        }
+                    });
+        }
+
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder(""); // NOI18N
@@ -868,5 +921,27 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             }
             return sb.toString();
         }
+    }
+
+    private TransformationTable updateTransformationTableIfNeeded(Document doc, CsmFile file) {
+        if (file == null || doc == null) {
+            return null;
+        }
+        TransformationTable tt = null;
+        boolean updateTable = false;
+        synchronized (doc) {
+            tt = getMacroTable(doc);
+            if (tt == null || tt.documentVersion != DocumentUtilities.getDocumentVersion(doc) || tt.fileVersion != CsmFileInfoQuery.getDefault().getFileVersion(file)) {
+                tt = new TransformationTable(DocumentUtilities.getDocumentVersion(doc), CsmFileInfoQuery.getDefault().getFileVersion(file));
+                doc.putProperty(MACRO_EXPANSION_MACRO_TABLE, tt);
+                updateTable = true;
+            }
+        }
+        if (updateTable) {
+            synchronized (tt) {
+                expand(doc, file, tt);
+            }
+        }
+        return tt;
     }
 }

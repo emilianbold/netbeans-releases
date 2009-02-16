@@ -363,9 +363,9 @@ public final class Session implements ContextProvider {
             languages = newLanguages;
             engines = newEngines;
             if (!enginesLookups.containsKey(engine)) {
-                Lookup newCompoundLookup = new Lookup.Compound(lookup, engine.getLookup());
+                Lookup newCompoundLookup = new Lookup.Compound(lookup, engine.getPrivateLookup());
                 lookup = newCompoundLookup;
-                enginesLookups.put(engine, engine.getLookup());
+                enginesLookups.put(engine, engine.getPrivateLookup());
             }
             if (currentLanguage == null) {
                 currentLanguage = language;

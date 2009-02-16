@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import javax.swing.text.JTextComponent;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
+import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.services.CsmFunctionDefinitionResolver;
@@ -75,16 +76,20 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     public CsmHyperlinkProvider() {
     }
 
-    protected void performAction(final Document doc, final JTextComponent target, final int offset) {
-        goToDeclaration(doc, target, offset);
+    protected void performAction(final Document doc, final JTextComponent target, final int offset, final HyperlinkType type) {
+        goToDeclaration(doc, target, offset, type);
     }
 
-    protected boolean isValidToken(TokenItem<CppTokenId> token) {
-        return isSupportedToken(token);
+    protected boolean isValidToken(TokenItem<CppTokenId> token, HyperlinkType type) {
+        return isSupportedToken(token, type);
     }
 
-    public static boolean isSupportedToken(TokenItem<CppTokenId> token) {
+    public static boolean isSupportedToken(TokenItem<CppTokenId> token, HyperlinkType type) {
         if (token != null) {
+            if (type == HyperlinkType.ALT_HYPERLINK) {
+                return !CppTokenId.WHITESPACE_CATEGORY.equals(token.id().primaryCategory()) &&
+                        !CppTokenId.COMMENT_CATEGORY.equals(token.id().primaryCategory());
+            }
             switch (token.id()) {
                 case IDENTIFIER:
                 case PREPROCESSOR_IDENTIFIER:
@@ -95,8 +100,8 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         return false;
     }
 
-    public boolean goToDeclaration(Document doc, JTextComponent target, int offset) {
-        if (!preJump(doc, target, offset, "opening-csm-element")) { //NOI18N
+    public boolean goToDeclaration(Document doc, JTextComponent target, int offset, HyperlinkType type) {
+        if (!preJump(doc, target, offset, "opening-csm-element", type)) { //NOI18N
             return false;
         }
         TokenItem<CppTokenId> jumpToken = getJumpToken();
@@ -190,7 +195,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         return item;
     }
 
-    protected String getTooltipText(Document doc, TokenItem<CppTokenId> token, int offset) {
+    protected String getTooltipText(Document doc, TokenItem<CppTokenId> token, int offset, HyperlinkType type) {
         CsmObject item = findTargetObject(doc, token, offset, false);
         CharSequence msg = item == null ? null : CsmDisplayUtilities.getTooltipText(item);
         return msg == null ? null : msg.toString();

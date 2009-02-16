@@ -268,7 +268,8 @@ made subject to such option by the copyright holder.
         <value><![CDATA[org.netbeans.modules.editor.impl.ComplexValueSettingsFactory.getWhitespaceAcceptorValue]]></value>
     </entry>
 
-    <entry name="hyperlink-activation-modifiers" value="128" javaType="java.lang.Integer" />
+    <entry name="hyperlink-activation-modifiers" value="128" javaType="java.lang.Integer" /> <!-- InputEvent.CTRL_DOWN_MASK -->
+    <entry name="alt-hyperlink-activation-modifiers" value="640" javaType="java.lang.Integer" /> <!-- InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK -->
     
 <!--
             settingsMap.put(SettingsNames.TAB_SIZE, SettingsDefaults.defaultTabSize);

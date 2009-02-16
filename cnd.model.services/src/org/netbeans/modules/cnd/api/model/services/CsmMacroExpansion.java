@@ -139,7 +139,7 @@ public final class CsmMacroExpansion {
      * @param doc - document for macro expansion
      * @param startOffset - start offset for expansion
      * @param endOffset - end offset for expansion
-     * @return - expansion
+     * @return - expansion, null otherwise
      */
     public static String expand(Document doc, int startOffset, int endOffset) {
         return getMacroExpansionDocProvider().expand(doc, startOffset, endOffset);
@@ -153,12 +153,23 @@ public final class CsmMacroExpansion {
      * @param doc - file of the document
      * @param startOffset - start offset for expansion
      * @param endOffset - end offset for expansion
-     * @return - expansion
+     * @return - expansion, null otherwise
      */
     public static String expand(Document doc, CsmFile file, int startOffset, int endOffset) {
         return getMacroExpansionDocProvider().expand(doc, file, startOffset, endOffset);
     }
 
+    /**
+     * returns interval of macro expansion for offset in original text
+     * @param doc document
+     * @param offset offset in document
+     * @param wait flag indicating if existing info should be updated to the most recent state
+     *  (which could takes time) or return what exists now, but without any blocks (for AWT calls)
+     * @return array of two elements [start;end] of expansion in document
+     */
+    public static int[] getMacroExpansionSpan(Document doc, int offset, boolean wait) {
+        return getMacroExpansionDocProvider().getMacroExpansionSpan(doc, offset, wait);
+    }
     /**
      * Transforms original offset to offset in expanded text.
      *
@@ -231,6 +242,11 @@ public final class CsmMacroExpansion {
 
         public String expand(Document doc, CsmFile file, int startOffset, int endOffset) {
             return null;
+        }
+        
+        public int[] getMacroExpansionSpan(Document doc, int offset, boolean wait) {
+            // returns empty expansion
+            return new int[]{offset, offset};
         }
 
         public int getOffsetInExpandedText(Document expandedDoc, int originalOffset) {

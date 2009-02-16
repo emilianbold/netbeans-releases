@@ -373,6 +373,12 @@ public final class SimpleValueNames {
      */
     public static final String HYPERLINK_ACTIVATION_MODIFIERS = "hyperlink-activation-modifiers"; //NOI18N
     
+    /**
+     * Modifiers for which the alternative hyperlinks should be enabled.
+     * @since 1.24
+     */
+    public static final String ALT_HYPERLINK_ACTIVATION_MODIFIERS = "alt-hyperlink-activation-modifiers"; //NOI18N
+
     /** 
      * Whether popup menu will be displayed on mouse right-click or not.
      * It's set to true by default.

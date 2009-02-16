@@ -258,6 +258,14 @@ public class GeneralPHP extends JellyTestCase {
     t.setTimeout( "JTextComponentOperator.TypeTextTimeout", 30000 );
     jcPath.setTimeouts( t );
 
+    int iSleeps = 0;
+    while( !jcPath.isEnabled( ) )
+    {
+      if( 60 <= ++iSleeps )
+        fail( "Project path disabled during too long time." );
+      Sleep( 1000 );
+    }
+
     jcPath.enterText( sProjectPath );
 
     t.setTimeout( "JTextComponentOperator.TypeTextTimeout", lBack );
