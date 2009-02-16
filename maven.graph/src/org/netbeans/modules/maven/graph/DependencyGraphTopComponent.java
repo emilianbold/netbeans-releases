@@ -438,12 +438,18 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
 //                Actions.connect(btn, act);
 //                toolbar.add(btn);
 //            }
+            Dimension space = new Dimension(3, 0);
+            toolbar.addSeparator(space);
             toolbar.add(btnBigger);
+            toolbar.addSeparator(space);
             toolbar.add(btnSmaller);
+            toolbar.addSeparator(space);
             toolbar.add(lblFind);
             toolbar.add(txtFind);
+            toolbar.addSeparator(space);
             toolbar.add(lblScopes);
             toolbar.add(comScopes);
+            toolbar.addSeparator(space);
             toolbar.add(sldDepth);
         }
         return toolbar;
