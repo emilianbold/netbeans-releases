@@ -76,7 +76,7 @@ import org.netbeans.spi.lexer.LanguageHierarchy;
 
 public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbedding<T> {
 
-    // -J-Dorg.netbeans.lib.lexer.EmbeddingContainer.level=FINE
+    // -J-Dorg.netbeans.lib.lexer.EmbeddingContainer.level=FINER
     private static final Logger LOG = Logger.getLogger(EmbeddingContainer.class.getName());
 
     /**
@@ -181,7 +181,12 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
                 // so no need to call etl.setNextEmbeddedTokenList(prevEtl.nextEmbeddedTokenList())
                 ec.addEmbeddedTokenList(prevEtl, etl, true);
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("@@@@@@@@@@ NATURAL-EMBEDDING-CREATED: " + etl.dumpInfo(null) + '\n');
+                    LOG.fine("@@@@@@@@@@ NATURAL-EMBEDDING-CREATED for " + embeddedLanguagePath.mimePath() +
+                            ", " + embedding + ": " + etl.dumpInfo(null) +
+                            ", initTokensInNew=" + initTokensInNew + '\n');
+                    if (LOG.isLoggable(Level.FINER)) { // Include stack trace of the creation
+                        LOG.log(Level.INFO, "Natural embedding created by:", new Exception());
+                    }
                 }
 
                 if (initTokensInNew) {
@@ -276,11 +281,16 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
             LanguagePath embeddedLanguagePath = LanguagePath.get(languagePath, embeddedLanguage);
             tokenHierarchyOperation.addLanguagePath(embeddedLanguagePath);
             // Make the embedded token list to be the first in the list
+
             etl = new EmbeddedTokenList<ET>(
                     ec, embeddedLanguagePath, embedding);
             ec.addEmbeddedTokenList(null, etl, false);
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("@@@@@@@@@@ EXPLICIT-EMBEDDING-CREATED: " + etl.dumpInfo(null) + '\n');
+                LOG.fine("@@@@@@@@@@ EXPLICIT-EMBEDDING-CREATED for " + embeddedLanguagePath.mimePath() +
+                        ", " + embedding + ": " + etl.dumpInfo(null) + '\n');
+                if (LOG.isLoggable(Level.FINER)) { // Include stack trace of the creation
+                    LOG.log(Level.INFO, "Explicit embedding created by:", new Exception());
+                }
             }
 
             
