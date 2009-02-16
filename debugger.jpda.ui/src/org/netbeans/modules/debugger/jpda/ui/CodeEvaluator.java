@@ -42,6 +42,7 @@ package org.netbeans.modules.debugger.jpda.ui;
 import java.awt.AWTKeyStroke;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
 import java.awt.datatransfer.Transferable;
@@ -57,10 +58,16 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -94,7 +101,9 @@ import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.DropDownButtonFactory;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.PasteType;
@@ -122,6 +131,10 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     private EvaluatorModelListener viewModelListener;
     private PropertyChangeListener csfListener;
     private TopComponent resultView;
+    private Set<String> editItemsSet = new HashSet<String>();
+    private ArrayList<String> editItemsList = new ArrayList<String>();
+    private JPopupMenu editItemsMenu;
+
     private static volatile CodeEvaluator currentEvaluator;
     private Variable result;
     private RequestProcessor.Task evalTask =
@@ -138,6 +151,14 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         historyToggleButton.setMargin(new Insets(2, 3, 2, 3));
         historyToggleButton.setFocusable(false);
         rightPanel.setPreferredSize(new Dimension(evaluateButton.getPreferredSize().width + 6, 0));
+
+        JButton dropDown = createDropDownButton();
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(3, 3, 0, 3);
+        rightPanel.add(dropDown, gridBagConstraints);
 
         final Document[] documentPtr = new Document[] { null };
         ActionListener contextUpdated = new ActionListener() {
@@ -162,6 +183,41 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         );
         checkDebuggerState();
         defaultInstance = this;
+    }
+
+    private JButton createDropDownButton() {
+        editItemsMenu = new JPopupMenu();
+        JButton button = DropDownButtonFactory.createDropDownButton(
+            ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/unvisited_bpkt_arrow_small_16.png", false), editItemsMenu); // [TODO] change icon
+        button.setPreferredSize(new Dimension(40, button.getPreferredSize().height)); // [TODO]
+        button.setMaximumSize(new Dimension(40, button.getPreferredSize().height)); // [TODO]
+        button.setFocusable(false);
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (editItemsList.size() > 0) {
+                    codePane.setText(editItemsList.get(0));
+                } // if
+            } // actionPerformed
+        });
+        return button;
+    }
+
+    public void recomputeDropDownItems() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                editItemsMenu.removeAll();
+                for (String str : editItemsList) {
+                    StringTokenizer tok = new StringTokenizer(str, "\n"); // NOI18N
+                    String dispName = "";
+                    while (dispName.trim().length() == 0 && tok.hasMoreTokens()) {
+                        dispName = tok.nextToken();
+                    }
+                    JMenuItem item = new JMenuItem(dispName, null);
+                    item.addActionListener(new MenuItemListener(str));
+                    editItemsMenu.add(item);
+                }
+            }
+        });
     }
 
     public static synchronized CodeEvaluator getInstance() {
@@ -412,7 +468,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         // viewModelListener.updateModel();
     }
 
-    private void addResultToHistory(String expr, Variable result) {
+    private void addResultToHistory(final String expr, Variable result) {
         String type = result.getType();
         String value = result.getValue();
         String toString = ""; // NOI18N
@@ -426,6 +482,23 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
             toString = value;
         }
         historyPanel.addItem(expr, type, value, toString);
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                if (editItemsSet.contains(expr)) {
+                    editItemsList.remove(expr);
+                    editItemsList.add(0, expr);
+                } else {
+                    editItemsList.add(0, expr);
+                    editItemsSet.add(expr);
+                    if (editItemsList.size() > 15) { // [TODO] constant
+                        String removed = editItemsList.remove(editItemsList.size() - 1);
+                        editItemsSet.remove(removed);
+                    }
+                }
+                recomputeDropDownItems();
+            }
+        });
     }
 
     // KeyListener implementation ..........................................
@@ -842,6 +915,20 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
             if (evaluator != null) {
                 evaluator.checkDebuggerState();
             }
+        }
+
+    }
+
+    private class MenuItemListener implements ActionListener {
+
+        private String str;
+
+        MenuItemListener(String str) {
+            this.str = str;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            codePane.setText(str);
         }
 
     }
