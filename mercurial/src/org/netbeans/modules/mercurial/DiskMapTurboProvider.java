@@ -70,6 +70,13 @@ class DiskMapTurboProvider implements TurboProvider {
         initCacheStore();
     }
 
+    Map<File, FileInformation> getCachedValues() {
+        if (cachedValues != null) {
+            return cachedValues;
+        }
+        return Collections.emptyMap();
+    }
+
     synchronized Map<File, FileInformation>  getAllModifiedValues() {
         if (cachedStoreSerial != storeSerial || cachedValues == null) {
             cachedValues = new HashMap<File, FileInformation>();
