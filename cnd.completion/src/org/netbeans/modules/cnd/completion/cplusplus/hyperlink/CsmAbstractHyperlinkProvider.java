@@ -41,13 +41,17 @@
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 import java.awt.Toolkit;
+import java.awt.event.InputEvent;
 import java.text.MessageFormat;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.prefs.Preferences;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
@@ -56,8 +60,10 @@ import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionUtils;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 
@@ -76,12 +82,12 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
     }
 
     public Set<HyperlinkType> getSupportedHyperlinkTypes() {
-        return EnumSet.of(HyperlinkType.GO_TO_DECLARATION);
+        return EnumSet.of(HyperlinkType.GO_TO_DECLARATION, HyperlinkType.ALT_HYPERLINK);
     }
 
-    protected abstract void performAction(final Document originalDoc, final JTextComponent target, final int offset);
+    protected abstract void performAction(final Document originalDoc, final JTextComponent target, final int offset, final HyperlinkType type);
 
-    public void performClickAction(Document originalDoc, final int offset, HyperlinkType type) {
+    public void performClickAction(Document originalDoc, final int offset, final HyperlinkType type) {
         if (originalDoc == null) {
             return;
         }
@@ -96,7 +102,12 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
         Runnable run = new Runnable() {
 
             public void run() {
-                performAction(doc, target, offset);
+                if (type == HyperlinkType.ALT_HYPERLINK) {
+                    // in this mode we open MacroView
+                    CsmMacroExpansion.showMacroExpansionView(doc, offset);
+                } else {
+                    performAction(doc, target, offset, type);
+                }
             }
         };
         if (hyperLinkTask != null) {
@@ -107,14 +118,20 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
 
     public boolean isHyperlinkPoint(Document doc, int offset, HyperlinkType type) {
         TokenItem<CppTokenId> token = getToken(doc, offset);
-        return isValidToken(token);
+        return isValidToken(token, type);
     }
 
-    protected abstract boolean isValidToken(TokenItem<CppTokenId> token);
+    protected abstract boolean isValidToken(TokenItem<CppTokenId> token, HyperlinkType type);
 
     public int[] getHyperlinkSpan(Document doc, int offset, HyperlinkType type) {
         TokenItem<CppTokenId> token = getToken(doc, offset);
-        if (isValidToken(token)) {
+        if (type == HyperlinkType.ALT_HYPERLINK) {
+            int[] span = CsmMacroExpansion.getMacroExpansionSpan(doc, offset, false);
+            if (span != null && span[0] != span[1]) {
+                return span;
+            }
+        }
+        if (isValidToken(token, type)) {
             jumpToken = token;
             return new int[]{token.offset(), token.offset() + token.length()};
         } else {
@@ -122,12 +139,12 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
         }
     }
 
-    protected boolean preJump(Document doc, JTextComponent target, int offset, String msgKey) {
+    protected boolean preJump(Document doc, JTextComponent target, int offset, String msgKey, HyperlinkType type) {
         if (doc == null || target == null || offset < 0 || offset > doc.getLength()) {
             return false;
         }
         jumpToken = getToken(doc, offset);
-        if (!isValidToken(jumpToken)) {
+        if (!isValidToken(jumpToken, type)) {
             return false;
         }
         //String name = jumpToken.text().toString();
@@ -188,17 +205,36 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
         if (doc == null || offset < 0 || offset > doc.getLength()) {
             return null;
         }
-
+        if (type == HyperlinkType.ALT_HYPERLINK) {
+            int[] span = CsmMacroExpansion.getMacroExpansionSpan(doc, offset+1, true);
+            if (span != null && span[0] != span[1]) {
+                // macro expansion
+                return getMacroExpandedText(doc, span[0], span[1]);
+            }
+        }
         TokenItem<CppTokenId> token = jumpToken;
         if (token == null || token.offset() > offset ||
                 (token.offset() + token.length()) < offset) {
             token = getToken(doc, offset);
         }
-        if (!isValidToken(token)) {
+        if (!isValidToken(token, type)) {
             return null;
         }
-        return getTooltipText(doc, token, offset);
+        return getTooltipText(doc, token, offset, type);
     }
 
-    protected abstract String getTooltipText(Document doc, TokenItem<CppTokenId> token, int offset);
+    protected abstract String getTooltipText(Document doc, TokenItem<CppTokenId> token, int offset, HyperlinkType type);
+
+    static String getAlternativeHyperlinkTip(Document doc) {
+        Preferences prefs = MimeLookup.getLookup(NbEditorUtilities.getMimeType(doc)).lookup(Preferences.class);
+        int shortCut = prefs.getInt(SimpleValueNames.HYPERLINK_ACTIVATION_MODIFIERS, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK);
+        InputEvent.getModifiersExText(shortCut);
+        return NbBundle.getMessage(CsmAbstractHyperlinkProvider.class, "");
+    }
+
+    private String getMacroExpandedText(Document doc, int start, int end) {
+        String out = CsmMacroExpansion.expand(doc, start, end);
+        return out;
+    }
+
 }
