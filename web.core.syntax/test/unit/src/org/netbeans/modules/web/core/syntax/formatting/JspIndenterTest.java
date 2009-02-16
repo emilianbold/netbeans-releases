@@ -57,7 +57,6 @@ import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.save.Reformatter;
 import org.netbeans.modules.web.core.syntax.EmbeddingProviderImpl;
 import org.netbeans.modules.web.core.syntax.JSPKit;
-//import org.netbeans.modules.web.core.syntax.JavaSourceProviderImpl;
 import org.netbeans.test.web.core.syntax.TestBase2;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -149,6 +148,10 @@ public class JspIndenterTest extends TestBase2 {
         StyledDocument doc = ec.openDocument();*/
 
         reformatFileContents("FormattingProject/web/case004.jsp",new IndentPrefs(4,4));
+    }
+
+    public void testFormattingCase005() throws Exception {
+        reformatFileContents("FormattingProject/web/case005.jsp",new IndentPrefs(4,4));
     }
 
     public void testFormattingIssue121102() throws Exception {

@@ -356,9 +356,6 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     // if this line does not contain any our "language" to format 
                     // then skip this line completely
                     if (rowStartOffset == -1 || rowEndOffset == -1) {
-                        assert rowStartOffset == -1 && rowEndOffset == -1 : "if language start " +
-                                "was not found them language end canot be found neither. " +
-                                "firstNonWhite="+firstNonWhite+" joinedTS="+joinedTS;
                         continue;
                     }
                     if (rowEndOffset > overallEndOffset) {
@@ -541,6 +538,10 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         return allPreviousCommands.get(allPreviousCommands.size()-1).getType() == IndentCommand.Type.CONTINUE;
     }
 
+    private static class ExtraResults {
+        private int compoundLevel;
+    }
+
     /**
      * Calculate indenation of this line for given base indentation and given
      * line indentation commands. This method can be called with update set to
@@ -549,7 +550,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
      */
     private int calculateLineIndent(int indentation, List<Line> lines, Line line, Line previousLine,
             List<IndentCommand> currentLineIndents, List<IndentCommand> allPreviousCommands,
-            boolean update, int lineStart) throws BadLocationException {
+            boolean update, int lineStart, ExtraResults extraResults) throws BadLocationException {
 
         boolean beingFormatted = line != null ? line.index >= lineStart : false;
         int thisLineIndent = 0;
@@ -578,6 +579,9 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                         thisLineIndent = ii.getFixedIndentSize();
                     } else {
                         thisLineIndent += indentationSize;
+                    }
+                    if (ii.getType() == IndentCommand.Type.INDENT && extraResults != null) {
+                        extraResults.compoundLevel++;
                     }
                     break;
 
@@ -623,6 +627,9 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     // calculated so far
                     indentation = allCommands.get(index).getCalculatedIndentation();
                     thisLineIndent = 0;
+                    if (extraResults != null) {
+                        extraResults.compoundLevel--;
+                    }
                     break;
 
                 case DO_NOT_INDENT_THIS_LINE:
@@ -743,9 +750,49 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         Line previousLine = null;
         int emptyLinesCount = 0;
         int index = 0;
+        boolean inBlock = false;
+        int lineIndex = -1;
+        ExtraResults results = new ExtraResults();
+        ExtraResults preliminaryResults = new ExtraResults();
+
+        // update indentedLines to contain
+        // record per line (wihtin lineStart and End ) but leave some lines null
+        indentedLines = addNonLanguageLines(indentedLines);
 
         // iterate over lines indentation commands and calculate real indentation
         for (Line line : indentedLines) {
+
+            if (line != null) {
+                // update lineIndex
+                if (lineIndex == -1) {
+                    lineIndex = line.index;
+                } else {
+                    assert line.index == lineIndex : "line indexes do not match: " +
+                            "lineIndex="+lineIndex+" line.index="+line.index;
+                }
+            } else {
+                assert lineIndex != -1 : "lineIndex must be set by now";
+                if (inBlock) {
+                    // if we are in block then preserve block lines:
+                    Line l = generateBasicLine(lineIndex);
+                    l.indentThisLine = true;
+                    l.preserveThisLineIndent = true;
+                    if (!l.emptyLine) {
+                        indentedLines.set(lineIndex, l);
+                    }
+                } else if (compoundIndent && preliminaryResults.compoundLevel != 0) {
+                    // indent line if formatter supports compound indentation and compound
+                    // indentation level is not 0
+                    Line l = generateBasicLine(lineIndex);
+                    l.compoundLevel = preliminaryResults.compoundLevel;
+                    l.indentation = l.existingLineIndent + preliminaryResults.compoundLevel*indentationSize;
+                    if (!l.emptyLine) {
+                        indentedLines.set(lineIndex, l);
+                    }
+                }
+                lineIndex++;
+                continue;
+            }
 
             if (!context.isPrimaryFormatter()) {
                 // if this is not primary formatter and it is beginning of language block then
@@ -773,11 +820,34 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             }
 
             // calculate indentation:
-            indentation = calculateLineIndent(indentation, indentedLines, line, previousLine, line.lineIndent, commands, true, lineStart);
+            indentation = calculateLineIndent(indentation, indentedLines, line, previousLine, line.lineIndent, commands, true, lineStart, results);
 
             // force zero indent if line is empty and empty lines should not be indented
             if (line.emptyLine && !indentEmptyLines) {
                 line.indentation = 0;
+            }
+
+            // update inBlock:
+            boolean preserveThisLine = false;
+            if (inBlock) {
+                if (line.compoundEnd) {
+                    inBlock = false;
+                    if (!line.indentThisLine) {
+                        // line ending the block starts with foreign language
+                        // and should be therefore preserved:
+                        preserveThisLine = true;
+                    }
+                }
+                if (line.compoundStart) {
+                    inBlock = true;
+                }
+            } else {
+                if (line.compoundStart) {
+                    inBlock = true;
+                }
+                if (line.compoundEnd) {
+                    inBlock = false;
+                }
             }
 
             // are we at the end of language block:
@@ -787,11 +857,16 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 if (context.getLineInitialIndent(line.index+1) == -1 && line.indentThisLine) {
                     List<IndentCommand> commands2 = new ArrayList<IndentCommand>(commands);
                     commands2.addAll(line.lineIndent);
-                    int indent = calculateLineIndent(indentation, indentedLines, null, line, line.preliminaryNextLineIndent, commands2, false, lineStart);
+                    preliminaryResults.compoundLevel = results.compoundLevel;
+                    int indent = calculateLineIndent(indentation, indentedLines, null, line, line.preliminaryNextLineIndent, commands2, false, lineStart, preliminaryResults);
                     lineIndents.put(line.index+1, indent);
                 }
             }
 
+            if (preserveThisLine) {
+                line.indentThisLine = true;
+                line.preserveThisLineIndent = true;
+            }
 
             commands.addAll(line.lineIndent);
             if (line.emptyLine) {
@@ -801,10 +876,11 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 emptyLinesCount = 0;
             }
             index++;
+            lineIndex++;
         }
 
-        // generate line indents for lines within a block:
-        indentedLines = generateBlockIndents(indentedLines);
+        // remove all null lines:
+        indentedLines = removeNullLines(indentedLines);
 
         // set line indent for preserved lines:
         updateIndentationForPreservedLines(indentedLines);
@@ -813,8 +889,9 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         if (DEBUG) {
             System.err.println(">> line data:");
             for (Line line : indentedLines) {
-                System.err.println(line.dump());
+                System.err.println(" "+line.dump());
             }
+            System.err.println(">> line indentations:");
             for (Line line : indentedLines) {
                 if (line.indentThisLine) {
                     debugLineIndentation(line, line.index >= lineStart && line.index <= lineEnd);
@@ -837,42 +914,42 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         applyIndentations(indentedLines, lineStart, lineEnd);
     }
 
-    private List<Line> generateBlockIndents(List<Line> indentedLines) {
-        // go through compound blocks and generate lines for them:
+    private List<Line> addNonLanguageLines(List<Line> currentLines) {
         List<Line> indents = new ArrayList<Line>();
-        int lastStart = -1;
-        for (Line line : indentedLines) {
-            if (line.compoundStart) {
-                lastStart = line.index;
-            }
-            if (line.compoundEnd) {
-                if (lastStart == -1) {
-                    assert false : "found line.compoundEnd without start: "+indentedLines;
+        int lastLine = -1;
+        for (Line line : currentLines) {
+            if (lastLine != -1 && lastLine+1 != line.index) {
+                for (int i = lastLine+1; i < line.index; i++) {
+                    //Line line2 = generateBasicLine(i);
+                    indents.add(null);
                 }
-                if (lastStart != line.index) {
-                    int end = line.index;
-                    if (!line.indentThisLine) {
-                        // if end line is not indentable than treat it as part of
-                        // BLOCK to shift (eg. JSP code "javaCall(); %>")
-                        end++;
-                    }
-                    assert (indents.size() > 0 ? indents.get(indents.size()-1).index <= lastStart : true) :
-                        "start="+lastStart+" end="+end+" indents="+indents+" indentedLines="+indentedLines;
-                    for (int i = lastStart+1; i < end; i++) {
-                        Line line2 = new Line();
-                        line2.index = i;
-                        line2.indentThisLine = true;
-                        line2.preserveThisLineIndent = true;
-                        line2.offset = Utilities.getRowStartFromLineOffset(getDocument(), i);
-                        line2.existingLineIndent = GsfUtilities.getLineIndent(getDocument(), line2.offset);
-                        indents.add(line2);
-                    }
-                }
-                lastStart = -1;
             }
             indents.add(line);
+            lastLine = line.index;
         }
         return indents;
+    }
+
+    private List<Line> removeNullLines(List<Line> currentLines) {
+        List<Line> indents = new ArrayList<Line>();
+        for (Line line : currentLines) {
+            if (line != null) {
+                indents.add(line);
+            }
+        }
+        return indents;
+    }
+
+    private Line generateBasicLine(int index) throws BadLocationException {
+        Line line = new Line();
+        line.index = index;
+        line.offset = Utilities.getRowStartFromLineOffset(getDocument(), index);
+        line.existingLineIndent = GsfUtilities.getLineIndent(getDocument(), line.offset);
+        line.emptyLine = Utilities.getRowFirstNonWhite(getDocument(), line.offset) == -1;
+        line.lineStartOffset = line.offset;
+        line.lineEndOffset = Utilities.getRowEnd(getDocument(), line.offset);
+
+        return line;
     }
 
     private void updateIndentationForPreservedLines(List<Line> indentedLines) {
@@ -931,9 +1008,20 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
     }
 
     private void debugLineIndentation(Line ln, boolean indentable) throws BadLocationException {
-        String line = getDocument().getText(ln.lineStartOffset, ln.lineEndOffset-ln.lineStartOffset+1).replace("\n", "").replace("\r", "").trim();
+        String line = "";
+        if (ln.lineStartOffset != ln.lineEndOffset) {
+            line = getDocument().getText(ln.lineStartOffset, ln.lineEndOffset-ln.lineStartOffset+1).replace("\n", "").replace("\r", "").trim();
+        }
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("%1c[%4d]", indentable ? '*' : ' ', ln.index+1));
+        char ch = ' ';
+        if (ln.preserveThisLineIndent) {
+            ch = 'P';
+        } else if (ln.compoundLevel > 0) {
+            ch = 'C';
+        } else if (indentable) {
+            ch = '*';
+        }
+        sb.append(String.format("%1c[%4d]", ch, ln.index+1));
         for (int i=0; i<ln.indentation; i++) {
             sb.append('.');
         }
@@ -961,6 +1049,8 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         private boolean compoundStart;
         private boolean compoundEnd;
         private int existingLineIndent = -1;
+        // just for diagnostics:
+        private int compoundLevel = -1;
 
         public String dump() {
             return String.format("[%4d]", index+1)+
@@ -975,6 +1065,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     (compoundEnd? " compEnd" : "") +
                     (preserveThisLineIndent? " preserve" : "") +
                     (emptyLine? " empty" : "") +
+                    (compoundLevel > 0 ? " compoundLevel="+compoundLevel : "") +
                     (!indentThisLine? " noIndent" : "");
         }
 
@@ -991,6 +1082,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     (blockEnd? ",blockEnd" : "") +
                     (preserveThisLineIndent? ",preserveThisLineIndent" : "") +
                     (emptyLine? ",empty" : "") +
+                    (compoundLevel > 0 ? " compoundLevel="+compoundLevel : "") +
                     (!indentThisLine? ",doNotIndentThisLine" : "") +
                     ",lineIndent=" +lineIndent+
                     "]";
