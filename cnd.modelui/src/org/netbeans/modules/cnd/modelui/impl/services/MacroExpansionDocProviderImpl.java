@@ -54,6 +54,8 @@ package org.netbeans.modules.cnd.modelui.impl.services;
 import antlr.TokenStream;
 import antlr.TokenStreamException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
@@ -300,7 +302,10 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             return null;
         }
         StringBuilder sb = new StringBuilder(""); // NOI18N
-        for (IntervalCorrespondence ic : tt.intervals) {
+        int size = tt.intervals.size();
+        int startIndex = tt.findInIntervalIndex(startOffset);
+        for(int i = startIndex; i < size; i++) {
+            IntervalCorrespondence ic = tt.intervals.get(i);
             if (ic.inInterval.start >= endOffset) {
                 break;
             }
@@ -335,7 +340,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                         Exceptions.printStackTrace(ex);
                     }
                 }
-            }
+            } 
         }
         return sb.toString();
     }
@@ -858,6 +863,22 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                 }
             }
             return outOffset;
+        }
+
+        public int findInIntervalIndex(int offset) {
+            return Collections.binarySearch(intervals, new IntervalCorrespondence(new Interval(offset, offset), new Interval(offset, offset), false),
+                    new Comparator<IntervalCorrespondence>() {
+
+                        public int compare(IntervalCorrespondence o1, IntervalCorrespondence o2) {
+                            if (o1.inInterval.end < o2.inInterval.start) {
+                                return -1;
+                            }
+                            if (o1.inInterval.start > o2.inInterval.end) {
+                                return 1;
+                            }
+                            return 0;
+                        }
+                    });
         }
 
         @Override
