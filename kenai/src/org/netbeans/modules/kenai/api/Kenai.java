@@ -40,6 +40,7 @@
 package org.netbeans.modules.kenai.api;
 
 import java.lang.ref.WeakReference;
+import java.net.Authenticator;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
@@ -114,6 +115,8 @@ public final class Kenai {
         impl.verify(username, password);
         fireKenaiEvent(new KenaiEvent(getPasswordAuthentication(), KenaiEvent.LOGIN));
     }
+
+
 
     /**
      * Logs out current session

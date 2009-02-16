@@ -39,10 +39,11 @@
 
 package org.netbeans.modules.kenai.ui;
 
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
-import org.netbeans.modules.kenai.api.Kenai;
+import java.awt.Cursor;
+import java.net.MalformedURLException;
+import java.net.URL;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
 
 /**
@@ -51,9 +52,27 @@ import org.openide.util.Exceptions;
  */
 public class LoginPanel extends javax.swing.JPanel {
 
-    /** Creates new form LoginPanel */
+        /** Creates new form LoginPanel */
     public LoginPanel() {
         initComponents();
+        errorProgress.setVisible(false);
+    }
+
+    public boolean isStorePassword() {
+        return chkRememberMe.isSelected();
+    }
+
+    public void showError(KenaiException ex) {
+        errorProgress.setVisible(true);
+        progressBar.setVisible(false);
+        error.setText(ex.getMessage());
+        error.setVisible(true);
+    }
+
+    public void showProgress() {
+        errorProgress.setVisible(true);
+        progressBar.setVisible(true);
+        progressBar.setIndeterminate(true);
     }
 
     /** This method is called from within the constructor to
@@ -65,6 +84,9 @@ public class LoginPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        errorProgress = new javax.swing.JPanel();
+        progressBar = new javax.swing.JProgressBar();
+        error = new javax.swing.JLabel();
         lblKenaiLogo = new javax.swing.JLabel();
         lblUserName = new javax.swing.JLabel();
         username = new javax.swing.JTextField();
@@ -74,6 +96,11 @@ public class LoginPanel extends javax.swing.JPanel {
         lblNoAccount = new javax.swing.JLabel();
         register = new javax.swing.JLabel();
         password = new javax.swing.JPasswordField();
+
+        errorProgress.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        errorProgress.setLayout(new java.awt.CardLayout());
+        errorProgress.add(progressBar, "card2");
+        errorProgress.add(error, "card3");
 
         lblKenaiLogo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/kenai.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(lblKenaiLogo, org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.lblKenaiLogo.text")); // NOI18N
@@ -89,33 +116,58 @@ public class LoginPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(chkRememberMe, org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.chkRememberMe.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(forgotPassword, org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.forgotPassword.text")); // NOI18N
+        forgotPassword.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                forgotPasswordMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                forgotPasswordMouseExited(evt);
+            }
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                forgotPasswordMousePressed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(lblNoAccount, org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.lblNoAccount.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(register, org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.register.text")); // NOI18N
-
-        password.setText(org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.password.text")); // NOI18N
+        register.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                registerMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                registerMouseExited(evt);
+            }
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                registerMousePressed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(lblKenaiLogo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(lblUserName)
-                    .add(lblPassword))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(layout.createSequentialGroup()
-                        .add(lblNoAccount)
+                        .addContainerGap()
+                        .add(errorProgress, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(lblUserName)
+                            .add(lblPassword))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(register))
-                    .add(forgotPassword)
-                    .add(chkRememberMe)
-                    .add(username, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
-                    .add(password, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(lblNoAccount)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(register))
+                            .add(forgotPassword)
+                            .add(chkRememberMe)
+                            .add(password, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
+                            .add(username, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, lblKenaiLogo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -138,19 +190,56 @@ public class LoginPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblNoAccount)
                     .add(register))
-                .addContainerGap(19, Short.MAX_VALUE))
+                .add(26, 26, 26)
+                .add(errorProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(16, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void forgotPasswordMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_forgotPasswordMouseEntered
+        forgotPassword.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_forgotPasswordMouseEntered
+
+    private void forgotPasswordMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_forgotPasswordMouseExited
+        forgotPassword.setCursor(Cursor.getDefaultCursor());
+    }//GEN-LAST:event_forgotPasswordMouseExited
+
+    private void forgotPasswordMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_forgotPasswordMousePressed
+        try {
+            HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("https://kenai.com/people/forgot_password"));
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }//GEN-LAST:event_forgotPasswordMousePressed
+
+    private void registerMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_registerMouseEntered
+        register.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_registerMouseEntered
+
+    private void registerMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_registerMousePressed
+        try {
+            HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("https://kenai.com/people/new"));
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }//GEN-LAST:event_registerMousePressed
+
+    private void registerMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_registerMouseExited
+        register.setCursor(Cursor.getDefaultCursor());
+    }//GEN-LAST:event_registerMouseExited
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     javax.swing.JCheckBox chkRememberMe;
+    javax.swing.JLabel error;
+    javax.swing.JPanel errorProgress;
     javax.swing.JLabel forgotPassword;
     javax.swing.JLabel lblKenaiLogo;
     javax.swing.JLabel lblNoAccount;
     javax.swing.JLabel lblPassword;
     javax.swing.JLabel lblUserName;
     javax.swing.JPasswordField password;
+    javax.swing.JProgressBar progressBar;
     javax.swing.JLabel register;
     javax.swing.JTextField username;
     // End of variables declaration//GEN-END:variables
@@ -162,6 +251,12 @@ public class LoginPanel extends javax.swing.JPanel {
     public String getUsername() {
         return username.getText();
     }
+    public void setUsername(String uname) {
+        username.setText(uname);
+        chkRememberMe.setSelected(true);
+    }
 
-
+    public void setPassword(char[] pwd) {
+        password.setText(new String(pwd));
+    }
 }
