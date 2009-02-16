@@ -234,7 +234,7 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
                     if (i+1 < stack.length) {
                         StackTraceElement top = stack[i+1];
                         if ("com.jcraft.jsch.UserAuthNone".equals(top.getClassName())) { //NOI18N
-                            if ("start".equals(top.getMethodName())) {
+                            if ("start".equals(top.getMethodName())) { //NOI18N
                                 return true;
                             }
                         }
