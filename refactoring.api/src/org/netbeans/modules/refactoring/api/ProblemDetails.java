@@ -42,8 +42,10 @@
 package org.netbeans.modules.refactoring.api;
 
 import javax.swing.Action;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.refactoring.spi.ProblemDetailsImplementation;
 import org.openide.util.Cancellable;
+import org.openide.util.Parameters;
 
 /**
  * This class holds details of a Problem
@@ -66,7 +68,9 @@ public final class ProblemDetails {
      * @param parent component, which can be cancelled
      * @see ProblemDetailsImplementation
      */
-    public void showDetails(Action rerunRefactoringAction, Cancellable parent) {
+    public void showDetails(@NonNull Action rerunRefactoringAction, @NonNull Cancellable parent) {
+        Parameters.notNull("rerunRefactoringAction", rerunRefactoringAction); // NOI18N
+        Parameters.notNull("parent", parent); // NOI18N
         pdi.showDetails(rerunRefactoringAction, parent);
     }
     
@@ -75,6 +79,7 @@ public final class ProblemDetails {
      * that there are more details available.
      * @return string representation of hint
      */
+    @NonNull
     public String getDetailsHint() {
         return pdi.getDetailsHint();
     }

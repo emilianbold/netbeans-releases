@@ -46,12 +46,8 @@ import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
-import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.ui.BrowseTestSources;
-import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
-import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -192,51 +188,6 @@ public final class ProjectPropertiesSupport {
 
     public static boolean areAspTagsEnabled(PhpProject project) {
         return getBoolean(project, PhpProjectProperties.ASP_TAGS, PhpLanguageOptions.ASP_TAGS_ENABLED);
-    }
-
-    /** validates the active config and return <code>true</code> if it's OK */
-    public static boolean isActiveConfigValid(PhpProject project, boolean indexFileNeeded, boolean showCustomizer) {
-        boolean valid = validateActiveConfig(project, indexFileNeeded);
-        if (!valid && showCustomizer) {
-            project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.RUN);
-        }
-        return valid;
-    }
-
-    private static boolean validateActiveConfig(PhpProject project, boolean indexFileNeeded) {
-        String indexFile = getIndexFile(project);
-        if (indexFileNeeded && (indexFile == null || indexFile.trim().length() == 0)) {
-            return false;
-        }
-        RunAsType runAs = getRunAs(project);
-        switch (runAs) {
-            case LOCAL:
-                if (RunAsValidator.validateWebFields(getUrl(project), FileUtil.toFile(getWebRootDirectory(project)),
-                        null, getArguments(project)) != null) {
-                    return false;
-                }
-                break;
-            case REMOTE:
-                String remoteConnection = getRemoteConnection(project);
-                if (RunAsValidator.validateWebFields(getUrl(project), FileUtil.toFile(getWebRootDirectory(project)),
-                        null, getArguments(project)) != null) {
-                    return false;
-                } else if (remoteConnection == null || RemoteConnections.get().remoteConfigurationForName(remoteConnection) == null) {
-                    return false;
-                } else if (RunAsValidator.validateUploadDirectory(getRemoteDirectory(project), true) != null) {
-                    return false;
-                }
-                break;
-            case SCRIPT:
-                if (RunAsValidator.validateScriptFields(getPhpInterpreter(project).getProgram(),
-                        FileUtil.toFile(getSourcesDirectory(project)), null, getArguments(project)) != null) {
-                    return false;
-                }
-                break;
-            default:
-                assert false : "Unknown run configuration type: " + runAs;
-        }
-        return true;
     }
 
     /**

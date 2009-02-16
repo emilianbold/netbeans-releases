@@ -41,12 +41,17 @@ package org.netbeans.modules.maven.configurations;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.openide.DialogDescriptor;
 
 /**
  *
  * @author  mkleint
  */
-public class NewConfigurationPanel extends javax.swing.JPanel {
+public class NewConfigurationPanel extends javax.swing.JPanel implements DocumentListener {
+
+    private DialogDescriptor descriptor;
 
     public String getConfigurationId() {
         return txtId.getText();
@@ -68,6 +73,8 @@ public class NewConfigurationPanel extends javax.swing.JPanel {
     /** Creates new form NewConfigurationPanel */
     public NewConfigurationPanel() {
         initComponents();
+
+        txtId.getDocument().addDocumentListener(this);
     }
     
     public void setProfiles(List<String> profiles) {
@@ -90,6 +97,17 @@ public class NewConfigurationPanel extends javax.swing.JPanel {
             }
         }
         return toRet;
+    }
+
+    void attachDescriptor(DialogDescriptor dd) {
+        this.descriptor = dd;
+        check();
+    }
+
+    private void check() {
+        if (descriptor != null) {
+            descriptor.setValid(txtId.getText().trim().length() > 0);
+        }
     }
     
 
@@ -167,5 +185,17 @@ public class NewConfigurationPanel extends javax.swing.JPanel {
     private javax.swing.JTextField txtActivate;
     private javax.swing.JTextField txtId;
     // End of variables declaration//GEN-END:variables
+
+    public void insertUpdate(DocumentEvent e) {
+        check();
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        check();
+    }
+
+    public void changedUpdate(DocumentEvent e) {
+        check();
+    }
 
 }

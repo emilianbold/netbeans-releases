@@ -59,12 +59,18 @@ import org.netbeans.modules.editor.settings.storage.spi.StorageDescription;
 import org.netbeans.modules.editor.settings.storage.spi.StorageFilter;
 import org.netbeans.modules.editor.settings.storage.spi.StorageReader;
 import org.netbeans.modules.editor.settings.storage.spi.StorageWriter;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -80,6 +86,12 @@ public final class StorageImpl <K extends Object, V extends Object> {
         this.storageDescription = sd;
         this.dataChangedCallback = callback;
         this.baseFolder = FileUtil.getConfigFile("Editors"); //NOI18N
+        try {
+            this.tracker = new FilesystemTracker(FileUtil.getConfigRoot().getFileSystem());
+        } catch (FileStateInvalidException ex) {
+            // something is terribly wrong, because we can't access SystemFileSystem
+            throw new IllegalStateException(ex);
+        }
         Filters.registerCallback(this);
     }
 
@@ -199,9 +211,16 @@ public final class StorageImpl <K extends Object, V extends Object> {
     private final StorageDescription<K, V> storageDescription;
     private final Callable<Void> dataChangedCallback;
     private final FileObject baseFolder;
+    private final FilesystemTracker tracker;
     
     private final Object lock = new String("StorageImpl.lock"); //NOI18N
     private final Map<MimePath, Map<CacheKey, Map<K, V>>> profilesCache = new WeakHashMap<MimePath, Map<CacheKey, Map<K, V>>>();
+
+    private static volatile boolean ignoreFilesystemEvents = false;
+    
+    /* test */ static void ignoreFilesystemEvents(boolean ignore) {
+        ignoreFilesystemEvents = ignore;
+    }
 
     private List<Object []> scan(MimePath mimePath, String profile, boolean scanModules, boolean scanUsers) {
         Map<String, List<Object []>> files = new HashMap<String, List<Object []>>();
@@ -316,7 +335,7 @@ public final class StorageImpl <K extends Object, V extends Object> {
             final String settingFileName = SettingsType.getLocator(storageDescription).getWritableFileName(
                 mimePathString, profile, null, defaults);
             
-            FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
+            tracker.runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {
                     if (added.size() > 0 || removed.size() > 0) {
                         FileObject f = FileUtil.createData(baseFolder, settingFileName);
@@ -356,7 +375,7 @@ public final class StorageImpl <K extends Object, V extends Object> {
             // Perform the operation
             final List<Object []> profileInfos = scan(mimePath, profile, defaults, !defaults);
             if (profileInfos != null) {
-                FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
+                tracker.runAtomicAction(new FileSystem.AtomicAction() {
                     public void run() throws IOException {
                         for(Object [] info : profileInfos) {
                             assert info.length == 5;
@@ -515,4 +534,84 @@ public final class StorageImpl <K extends Object, V extends Object> {
         }
 
     } // End of Filters class
+
+    private final class FilesystemTracker implements FileChangeListener, Runnable {
+
+        // -------------------------------------------------------------------
+        // FileChangeListener implementation
+        // -------------------------------------------------------------------
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            processEvent(fe);
+        }
+
+        public void fileChanged(FileEvent fe) {
+            processEvent(fe);
+        }
+
+        public void fileDataCreated(FileEvent fe) {
+            processEvent(fe);
+        }
+
+        public void fileDeleted(FileEvent fe) {
+            processEvent(fe);
+        }
+
+        public void fileFolderCreated(FileEvent fe) {
+            processEvent(fe);
+        }
+
+        public void fileRenamed(FileRenameEvent fe) {
+            processEvent(fe);
+        }
+
+        // -------------------------------------------------------------------
+        // Runnable implementation
+        // -------------------------------------------------------------------
+
+        // runs asynchronously on the default RequestProcessor's thread
+        public void run() {
+            StorageImpl.this.refresh();
+        }
+
+        // -------------------------------------------------------------------
+        // Public implementation
+        // -------------------------------------------------------------------
+
+        public FilesystemTracker(FileSystem fileSystem) {
+            this.fileSystem = fileSystem;
+            this.fileSystem.addFileChangeListener(FileUtil.weakFileChangeListener(this, this.fileSystem));
+        }
+
+        // runs under StorageImpl.this.lock
+        public void runAtomicAction(FileSystem.AtomicAction task) throws IOException {
+            assert atomicAction == null;
+            atomicAction = task;
+            try {
+                fileSystem.runAtomicAction(task);
+            } finally {
+                atomicAction = null;
+            }
+        }
+
+        // -------------------------------------------------------------------
+        // Private implementation
+        // -------------------------------------------------------------------
+
+        private final FileSystem fileSystem;
+        private final RequestProcessor.Task refreshCacheTask= RequestProcessor.getDefault().create(this);
+
+        private volatile FileSystem.AtomicAction atomicAction;
+
+        // runs asynchronously when events are fired from the filesystem
+        private void processEvent(FileEvent fe) {
+            if (!ignoreFilesystemEvents && fe.getFile().getPath().startsWith("Editors")) { //NOI18N
+                final FileSystem.AtomicAction aa = atomicAction;
+                if (aa == null || !fe.firedFrom(aa)) {
+                    refreshCacheTask.schedule(71);
+                }
+            }
+        }
+
+    } // End of FilesystemTracker class
 }

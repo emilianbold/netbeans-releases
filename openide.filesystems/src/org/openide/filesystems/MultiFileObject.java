@@ -811,12 +811,23 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
         return null;
     }
 
+    private static boolean sameFullName(FileObject f1, FileObject f2) {
+        while (f1 != null && f2 != null) {
+            if (!f1.getNameExt().equals(f2.getNameExt())) {
+                return false;
+            }
+            f1 = f1.getParent();
+            f2 = f2.getParent();
+        }
+        return f1 == null && f2 == null;
+    }
+
     private Object getAttribute(FileObject fo, String attrName, String path) {
         Object o;
 
         FileObject previousFO = attrAskedFileObject.get();
 
-        if (previousFO == null || !previousFO.getPath().equals(getPath()))  {
+        if (previousFO == null || !sameFullName(previousFO, this))  {
             attrAskedFileObject.set(this);
         }
 

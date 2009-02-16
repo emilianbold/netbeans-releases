@@ -182,7 +182,7 @@ public class IpeUtils {
                     s.append(".." + File.separator);					// NOI18N
                 }
                 for (int i = match; i < pnames.length; i++) {
-                    if (s.charAt(s.length() - 1) != File.separatorChar) {
+                    if (s.length() > 0 && s.charAt(s.length() - 1) != File.separatorChar) {
                         s.append(File.separator);
                     }
                     s.append(pnames[i].toString());

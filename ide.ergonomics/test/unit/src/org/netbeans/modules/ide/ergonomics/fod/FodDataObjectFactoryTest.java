@@ -43,7 +43,7 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Collections;
-import java.util.Set;
+import java.util.HashSet;
 import java.util.logging.Level;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
@@ -53,7 +53,6 @@ import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObject.Factory;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -162,6 +161,8 @@ public class FodDataObjectFactoryTest extends NbTestCase {
         FileUtil.setMIMEType("huh", "text/x-huh");
         FileObject fo = FileUtil.createData(FileUtil.getConfigRoot(), "test/my.huh");
         DataObject obj = DataObject.find(fo);
+        FileObject fo2 = FileUtil.createData(FileUtil.getConfigRoot(), "test/subdir/my.huh");
+        DataObject obj2 = DataObject.find(fo2);
         OpenCookie oc = obj.getLookup().lookup(OpenCookie.class);
         assertNotNull("Open cookie found", oc);
         assertEquals("Cookie is OK too", oc, obj.getCookie(OpenCookie.class));
@@ -177,6 +178,14 @@ public class FodDataObjectFactoryTest extends NbTestCase {
             fail("New object shall be created: " + newObj);
         }
         assertFalse("Old is no longer valid", obj.isValid());
+
+        DataObject newObj2 = DataObject.find(fo2);
+        if (obj2 == newObj2) {
+            fail("New object shall be created for all objects: " + newObj2);
+        }
+
+        DataObject folder = FodDataObjectFactory.create(fo).findDataObject(fo.getParent(), new HashSet<FileObject>());
+        assertNull("Folders are not recognized", folder);
     }
 
 }

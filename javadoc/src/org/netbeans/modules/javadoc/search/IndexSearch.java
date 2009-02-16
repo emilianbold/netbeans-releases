@@ -55,7 +55,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.javahelp.Help;
 import org.netbeans.modules.javadoc.settings.DocumentationSettings;
 import org.openide.awt.HtmlBrowser;
@@ -206,12 +206,12 @@ public final class IndexSearch
 
 
         
-        sourceButton.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javadoc/resources/showSource.gif"))); // NOI18N
-        byReferenceButton.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javadoc/resources/refSort.gif"))); // NOI18N
-        byTypeButton.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/typeSort.gif"))); // NOI18N
-        byNameButton.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/alphaSort.gif"))); // NOI18N
-        quickViewButton.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/list_only.gif"))); // NOI18N
-        quickViewButton.setSelectedIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/list_html.gif"))); // NOI18N
+        sourceButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/javadoc/resources/showSource.gif", false)); // NOI18N
+        byReferenceButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/javadoc/resources/refSort.gif", false)); // NOI18N
+        byTypeButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/javadoc/resources/typeSort.gif", false)); // NOI18N
+        byNameButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/javadoc/resources/alphaSort.gif", false)); // NOI18N
+        quickViewButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/javadoc/resources/list_only.gif", false)); // NOI18N
+        quickViewButton.setSelectedIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/javadoc/resources/list_html.gif", false)); // NOI18N
 
         javax.swing.ButtonGroup bg = new javax.swing.ButtonGroup();
         bg.add( byReferenceButton );
@@ -567,7 +567,7 @@ public final class IndexSearch
             if ( e != null ) {
                 FileObject toOpen = (FileObject) e[0];
                 ElementHandle eh = (ElementHandle) e[1];
-                UiUtils.open(toOpen, eh);
+                ElementOpen.open(toOpen, eh);
             }
             else {
                 NotifyDescriptor.Message nd = new NotifyDescriptor.Message( NbBundle.getMessage(IndexSearch.class, "MSG_SEARCH_SrcNotFound" ) );   //NOI18N
@@ -686,7 +686,7 @@ public final class IndexSearch
             refIndexSearch = new SoftReference(indexSearch);
 
             indexSearch.setName( NbBundle.getMessage(IndexSearch.class, "CTL_SEARCH_WindowTitle") );   //NOI18N
-            indexSearch.setIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/searchDoc.gif")); // NOI18N
+            indexSearch.setIcon(ImageUtilities.loadImage("org/netbeans/modules/javadoc/resources/searchDoc.gif")); // NOI18N
         }
         return indexSearch;
     }

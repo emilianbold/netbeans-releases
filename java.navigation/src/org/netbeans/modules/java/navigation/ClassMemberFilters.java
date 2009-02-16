@@ -127,29 +127,25 @@ public final class ClassMemberFilters {
         desc.addFilter(SHOW_INHERITED,
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowInherited"),     //NOI18N
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowInheritedTip"),     //NOI18N
-                false,
-                new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/java/navigation/resources/filterHideInherited.png")), //NOI18N
+                false, ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/filterHideInherited.png", false), //NOI18N
                 null
         );
         desc.addFilter(SHOW_FIELDS,
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowFields"),     //NOI18N
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowFieldsTip"),     //NOI18N
-                true,
-                new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/java/navigation/resources/filterHideFields.gif")), //NOI18N
+                true, ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/filterHideFields.gif", false), //NOI18N
                 null
         );
         desc.addFilter(SHOW_STATIC,
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowStatic"),     //NOI18N
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowStaticTip"),     //NOI18N
-                true,
-                new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/java/navigation/resources/filterHideStatic.png")), //NOI18N
+                true, ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/filterHideStatic.png", false), //NOI18N
                 null
         );
         desc.addFilter(SHOW_NON_PUBLIC,
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowNonPublic"),     //NOI18N
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowNonPublicTip"),     //NOI18N
-                true,
-                new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/java/navigation/resources/filterHideNonPublic.png")), //NOI18N
+                true, ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/filterHideNonPublic.png", false), //NOI18N
                 null
         );
         

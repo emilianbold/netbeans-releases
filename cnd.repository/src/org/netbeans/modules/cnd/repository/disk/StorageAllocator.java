@@ -155,4 +155,24 @@ public class StorageAllocator {
         File repositoryPath = new File(diskRepositoryPath);
         deleteDirectory(repositoryPath, false);
     }
+
+    /**
+     * Finds and deletes outdated cache entries. All directories that
+     * have not been modified within last 2 weeks are considered outdated.
+     */
+    public void purgeCaches() {
+        File repositoryDir = new File(diskRepositoryPath);
+        File[] unitDirs = repositoryDir.listFiles();
+        if (unitDirs != null && 0 < unitDirs.length) {
+            long now = System.currentTimeMillis();
+            for (File unitDir : unitDirs) {
+                if (unitDir.isDirectory() && unitDir.lastModified() + PURGE_TIMEOUT < now) {
+                    if (Stats.TRACE_UNIT_DELETION) { System.err.println("Purging outdated unit directory " + unitDir); }
+                    deleteDirectory(unitDir, true);
+                }
+            }
+        }
+    }
+
+    private static final long PURGE_TIMEOUT = 14 * 24 * 3600 * 1000l; // 14 days
 }

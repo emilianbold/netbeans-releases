@@ -209,8 +209,8 @@ public final class IncludePathUiSupport {
         private static final String RESOURCE_ICON_CLASSPATH
                 = "org/netbeans/modules/php/project/ui/resources/referencedClasspath.gif"; //NOI18N
 
-        private static final ImageIcon ICON_BROKEN_BADGE = new ImageIcon(ImageUtilities.loadImage(RESOURCE_ICON_BROKEN_BADGE));
-        private static final ImageIcon ICON_CLASSPATH = new ImageIcon(ImageUtilities.loadImage(RESOURCE_ICON_CLASSPATH));
+        private static final ImageIcon ICON_BROKEN_BADGE = ImageUtilities.loadImageIcon(RESOURCE_ICON_BROKEN_BADGE, false);
+        private static final ImageIcon ICON_CLASSPATH = ImageUtilities.loadImageIcon(RESOURCE_ICON_CLASSPATH, false);
         private static ImageIcon ICON_FOLDER = null;
         private static ImageIcon ICON_BROKEN_FOLDER = null;
 

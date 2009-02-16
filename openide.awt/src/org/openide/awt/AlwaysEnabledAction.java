@@ -124,7 +124,7 @@ implements PropertyChangeListener, ContextAwareAction {
                 return ImageUtilities.image2Icon((Image)icon);
             }
             if (icon instanceof String) {
-                return ImageUtilities.loadImage((String)icon);
+                return ImageUtilities.loadImageIcon((String)icon, false);
             }
             if (icon instanceof URL) {
                 return Toolkit.getDefaultToolkit().getImage((URL) icon);

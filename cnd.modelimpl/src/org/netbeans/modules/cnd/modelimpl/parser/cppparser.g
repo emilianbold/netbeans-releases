@@ -1947,7 +1947,7 @@ declarator
     |
         // typedef ((...));
         // int (i);
-        {_td || (_ts != tsTYPEID && _ts != tsInvalid)}? (LPAREN declarator RPAREN (SEMICOLON | RPAREN)) =>
+        {_td || (_ts != tsTYPEID && _ts != tsInvalid)}? (LPAREN declarator RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
         LPAREN declarator RPAREN
     |
         direct_declarator
@@ -1957,7 +1957,7 @@ restrict_declarator
     :
         // IZ 109079 : Parser reports "unexpexted token" on parenthesized pointer to array
         // IZ 140559 : parser fails on code from boost
-        (LPAREN declarator RPAREN (SEMICOLON | RPAREN)) =>
+        (LPAREN declarator RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
         LPAREN declarator RPAREN
     |
         // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong

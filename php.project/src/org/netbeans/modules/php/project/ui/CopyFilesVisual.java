@@ -39,9 +39,6 @@
 
 package org.netbeans.modules.php.project.ui;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -133,6 +130,10 @@ public class CopyFilesVisual extends JPanel {
         copyFilesCheckBox.setEnabled(enabled);
     }
 
+    public boolean getState() {
+        return copyFilesCheckBox.isEnabled();
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -174,7 +175,7 @@ public class CopyFilesVisual extends JPanel {
                 .add(copyFilesComboBox, 0, 168, Short.MAX_VALUE)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(copyFilesButton))
-        
+
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
@@ -185,7 +186,7 @@ public class CopyFilesVisual extends JPanel {
                     .add(copyFilesButton)
                     .add(copyFilesComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .add(localServerLabel)))
-        
+
         );
 
         copyFilesCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CopyFilesVisual.class, "CopyFilesVisual.copyFilesCheckBox.AccessibleContext.accessibleName")); // NOI18N

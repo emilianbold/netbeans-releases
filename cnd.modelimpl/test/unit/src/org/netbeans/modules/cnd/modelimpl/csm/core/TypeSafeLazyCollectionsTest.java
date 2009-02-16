@@ -84,7 +84,7 @@ public class TypeSafeLazyCollectionsTest extends ModelImplBaseTestCase {
 
         project.waitParse();
         
-        new CsmTracer(System.err).dumpModel(project);
+        //new CsmTracer(System.err).dumpModel(project);
                 
         CsmClass cls = (CsmClass) findDeclaration(className, project);
         assertNotNull(className + " can not be found", cls);
@@ -108,7 +108,7 @@ public class TypeSafeLazyCollectionsTest extends ModelImplBaseTestCase {
         
         project.waitParse();
         
-        new CsmTracer(System.err).dumpModel(project);
+        //new CsmTracer(System.err).dumpModel(project);
         
         //
         // Make sure no class cast exception happens
