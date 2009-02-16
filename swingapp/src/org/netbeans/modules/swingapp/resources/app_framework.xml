@@ -56,4 +56,8 @@ made subject to such option by the copyright holder.
         <type>javadoc</type>
         <resource>jar:nbinst://org.netbeans.modules.swingapp/docs/appframework-1.0.3-doc.zip!/</resource>
     </volume>
+    <volume>
+        <type>maven-pom</type>
+        <resource>http://repo2.maven.org/maven2/net/java/dev/appframework/appframework/1.03/appframework-1.03.pom</resource>
+    </volume>
 </library>

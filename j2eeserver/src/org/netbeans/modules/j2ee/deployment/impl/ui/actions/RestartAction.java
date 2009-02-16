@@ -150,8 +150,7 @@ public class RestartAction extends NodeAction {
         private final ServerInstance instance;
         
         public OutputAction(ServerInstance instance) {
-            super(NbBundle.getMessage(RestartAction.class, "LBL_RestartOutput"),
-                  new ImageIcon(ImageUtilities.loadImage(ICON)));
+            super(NbBundle.getMessage(RestartAction.class, "LBL_RestartOutput"),ImageUtilities.loadImageIcon(ICON, false));
             putValue(SHORT_DESCRIPTION, NbBundle.getMessage(RestartAction.class, "LBL_RestartOutputDesc"));
             this.instance = instance;
             

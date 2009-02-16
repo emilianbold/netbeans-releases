@@ -44,19 +44,15 @@ import java.lang.ref.WeakReference;
 import javax.swing.JComponent;
 import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.debugger.ui.Controller;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author gordonp
  */
+@AttachType.Registration(displayName="#CTL_GdbAttachPanel_name")
 public class GdbAttachType extends AttachType  {
-
     private Reference<GdbAttachPanel> customizerRef = new WeakReference<GdbAttachPanel>(null);
 
-    public String getTypeDisplayName() {
-        return NbBundle.getMessage(GdbAttachType.class, "CTL_GdbAttachPanel_name"); // NOI18N
-    }
 
     public JComponent getCustomizer () {
         GdbAttachPanel panel = new GdbAttachPanel ();

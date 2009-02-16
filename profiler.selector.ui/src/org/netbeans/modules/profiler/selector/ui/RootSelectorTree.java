@@ -180,6 +180,7 @@ public class RootSelectorTree extends JCheckTree {
             Collection<SelectionTreeBuilder> builders = factory.createBuildersFor(context);
 
             for (SelectionTreeBuilder builder : builders) {
+                if (builder.estimatedNodeCount() == -1) continue; // builder can't build the tree for some reason
                 SelectionTreeBuilder.Type type = builder.getType();
                 TypeEntry te = new TypeEntry(type);
                 if (entries.contains(te)) {

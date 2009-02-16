@@ -60,8 +60,7 @@ public final class StopAction extends AbstractAction {
 
     public StopAction() {
         setEnabled(false); // initially, until ready
-        putValue(Action.SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(
-                "org/netbeans/modules/extexecution/resources/stop.png"))); // NOI18N
+        putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/extexecution/resources/stop.png", false)); // NOI18N
         putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(StopAction.class, "Stop"));
     }
 

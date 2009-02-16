@@ -42,8 +42,6 @@ package org.netbeans.modules.debugger.jpda.ui.models;
 
 
 import java.awt.datatransfer.Transferable;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,18 +54,12 @@ import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.NodeModel;
-import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.datatransfer.PasteType;
 
 public class EvaluatorNodeModelFilter implements ExtendedNodeModelFilter {
 
     private Collection<ModelListener> listeners = new HashSet<ModelListener>();
-    private EvaluatorListener evalListener = new EvaluatorListener();
-
-    public EvaluatorNodeModelFilter() {
-        CodeEvaluator.addResultListener(evalListener);
-    }
 
     public void addModelListener(ModelListener l) {
         synchronized (listeners) {
@@ -87,12 +79,13 @@ public class EvaluatorNodeModelFilter implements ExtendedNodeModelFilter {
             ls = new ArrayList<ModelListener>(listeners);
         }
         ModelEvent event;
-        event = new ModelEvent.NodeChanged(this, node,
-                ModelEvent.NodeChanged.DISPLAY_NAME_MASK |
-                ModelEvent.NodeChanged.ICON_MASK |
-                ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK |
-                ModelEvent.NodeChanged.CHILDREN_MASK |
-                ModelEvent.NodeChanged.EXPANSION_MASK);
+//        event = new ModelEvent.NodeChanged(this, node,
+//                ModelEvent.NodeChanged.DISPLAY_NAME_MASK |
+//                ModelEvent.NodeChanged.ICON_MASK |
+//                ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK |
+//                ModelEvent.NodeChanged.CHILDREN_MASK |
+//                ModelEvent.NodeChanged.EXPANSION_MASK);
+        event = new ModelEvent.NodeChanged(this, node, ModelEvent.NodeChanged.CHILDREN_MASK);
         for (ModelListener ml : ls) {
             ml.modelChanged (event);
         }
@@ -171,17 +164,6 @@ public class EvaluatorNodeModelFilter implements ExtendedNodeModelFilter {
             }
         }
         return original.getShortDescription(node);
-    }
-
-    // **************************************************************************
-
-    private class EvaluatorListener implements PropertyChangeListener {
-
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            fireNodeChanged(TreeModel.ROOT);
-        }
-
     }
 
 }

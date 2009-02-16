@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.File;
@@ -54,18 +53,20 @@ import org.openide.loaders.DataObject;
  * @author Vladimir Voskresensky
  */
 public class CndDocumentProviderTestCase extends BaseTestCase {
-    
+
+    private static final boolean TRACE = false;
+
     /**
      * Creates a new instance of CndDocumentProviderTestCase
      */
     public CndDocumentProviderTestCase(String testName) {
         super(testName);
     }
-    
+
     public void testHeaderDocument() throws Exception {
         testBaseDocumentInitialized("file.h", HDataObject.class); // NOI18N
     }
-    
+
     public void testCSourceDocument() throws Exception {
         testBaseDocumentInitialized("file.c", CDataObject.class); // NOI18N
     }
@@ -78,15 +79,19 @@ public class CndDocumentProviderTestCase extends BaseTestCase {
         File newFile = new File(super.getWorkDir(), file);
         newFile.createNewFile();
         assertTrue("Not created file " + newFile, newFile.exists());
-        FileObject fo = FileUtil.toFileObject(newFile);        
+        FileObject fo = FileUtil.toFileObject(newFile);
         DataObject dob = DataObject.find(fo);
         assertNotNull(dob);
         assertSame(dob.getClass(), clazz);
         BaseDocument doc = CndCoreTestUtils.getBaseDocument(dob);
         assertNotNull(doc);
-        System.err.println("text len: " + doc.getLength());
-        if (doc.getLength() > 0) {
-            System.err.println("text: " + doc.getText(0, doc.getLength() - 1));
+        if (TRACE) {
+            System.err.println("text len: " + doc.getLength());
         }
-    }        
+        if (doc.getLength() > 0) {
+            if (TRACE) {
+                System.err.println("text: " + doc.getText(0, doc.getLength() - 1));
+            }
+        }
+    }
 }

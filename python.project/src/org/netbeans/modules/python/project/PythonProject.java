@@ -48,8 +48,7 @@ import org.w3c.dom.Text;
  */
 public class PythonProject implements Project {
     
-    private static final ImageIcon PROJECT_ICON = new ImageIcon(
-            ImageUtilities.loadImage("org/netbeans/modules/python/project/resources/py_25_16.png"));
+    private static final ImageIcon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/python/project/resources/py_25_16.png", false);
     
     protected AntProjectHelper helper;
     protected  UpdateHelper updateHelper;

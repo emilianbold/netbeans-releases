@@ -75,8 +75,7 @@ public final class RerunAction extends AbstractAction implements ChangeListener 
 
     public RerunAction() {
         setEnabled(false); // initially, until ready
-        putValue(Action.SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(
-                "org/netbeans/modules/extexecution/resources/rerun.png"))); // NOI18N
+        putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/extexecution/resources/rerun.png", false)); // NOI18N
         putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(RerunAction.class, "Rerun"));
     }
 

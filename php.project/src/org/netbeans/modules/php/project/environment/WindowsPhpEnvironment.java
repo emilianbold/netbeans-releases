@@ -64,7 +64,7 @@ final class WindowsPhpEnvironment extends PhpEnvironment {
     }
 
     @Override
-    public List<DocumentRoot> getDocumentRoots(String projectName) {
+    protected List<DocumentRoot> getDocumentRoots(String projectName) {
         File[] fsRoots = File.listRoots();
         if (fsRoots == null) {
             // should not happen
@@ -109,6 +109,11 @@ final class WindowsPhpEnvironment extends PhpEnvironment {
     @Override
     public List<String> getAllPhpInterpreters() {
         return getAllPhpInterpreters(PHP);
+    }
+
+    @Override
+    public List<String> getAllPhpUnits() {
+        return findFileOnUsersPath("phpunit.bat"); // NOI18N
     }
 
     private static boolean isFloppy(File root) {

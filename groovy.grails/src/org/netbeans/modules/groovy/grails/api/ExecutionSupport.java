@@ -41,22 +41,14 @@ package org.netbeans.modules.groovy.grails.api;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Properties;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author Petr Hejl
  */
 public final class ExecutionSupport {
-
-    private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
 
     private static ExecutionSupport instance;
 
@@ -103,26 +95,18 @@ public final class ExecutionSupport {
         };
     }
 
-    public Process executeCreateApp(File directory) throws Exception {
-        return execute(createCreateApp(directory));
-    }
-
-    public Callable<Process> createRunApp(final GrailsProjectConfig config) {
+    public Callable<Process> createRunApp(final GrailsProjectConfig config, final String... arguments) {
         return new Callable<Process>() {
 
             public Process call() throws Exception {
                 File directory = FileUtil.toFile(config.getProject().getProjectDirectory());
 
                 GrailsRuntime.CommandDescriptor descriptor = GrailsRuntime.CommandDescriptor.forProject(
-                        "run-app", directory, config, new String[] {}, null);
+                        GrailsRuntime.IDE_RUN_COMMAND, directory, config, arguments, null);
 
                 return runtime.createCommand(descriptor).call();
             }
         };
-    }
-
-    public Process executeRunApp(GrailsProjectConfig config) throws Exception {
-        return execute(createRunApp(config));
     }
 
     public Callable<Process> createSimpleCommand(final String command, final GrailsProjectConfig config,
@@ -139,22 +123,4 @@ public final class ExecutionSupport {
         };
     }
 
-    public Process executeSimpleCommand(String command, GrailsProjectConfig config,
-            String... arguments) throws Exception {
-
-        return execute(createSimpleCommand(command, config, arguments));
-    }
-
-    private Process execute(Callable<Process> callable) throws Exception {
-        Future<Process> future = EXECUTOR.submit(callable);
-        try {
-            return future.get();
-        } catch (ExecutionException ex) {
-            if (ex.getCause() instanceof Exception) {
-                throw (Exception) ex.getCause();
-            } else {
-                throw ex;
-            }
-        }
-    }
 }

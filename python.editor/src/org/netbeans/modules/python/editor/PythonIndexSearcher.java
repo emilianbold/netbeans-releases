@@ -33,7 +33,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.modules.python.editor.elements.IndexedElement;
 import org.netbeans.modules.python.editor.lexer.PythonLexerUtils;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -48,6 +47,7 @@ import org.netbeans.modules.gsf.api.IndexSearcher;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 import org.python.antlr.PythonTree;
 
 /**
@@ -172,7 +172,7 @@ public class PythonIndexSearcher implements IndexSearcher {
                 initProjectInfo();
             }
             if (isLibrary) {
-                return new ImageIcon(org.openide.util.ImageUtilities.loadImage(ICON_PATH));
+                return ImageUtilities.loadImageIcon(ICON_PATH, false);
             }
             return projectIcon;
         }

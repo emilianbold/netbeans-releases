@@ -43,7 +43,6 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collections;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -54,9 +53,9 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.visual.widget.BirdViewController;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 /**
@@ -172,7 +171,7 @@ public class DependencyGraphTopComponent extends TopComponent {
 
         jPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
-        btnBigger.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/maven/graph/zoomin.gif")));
+        btnBigger.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/graph/zoomin.gif", false));
         btnBigger.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnBiggerActionPerformed(evt);
@@ -180,7 +179,7 @@ public class DependencyGraphTopComponent extends TopComponent {
         });
         jPanel1.add(btnBigger);
 
-        btnSmaller.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/maven/graph/zoomout.gif")));
+        btnSmaller.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/graph/zoomout.gif", false));
         btnSmaller.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnSmallerActionPerformed(evt);

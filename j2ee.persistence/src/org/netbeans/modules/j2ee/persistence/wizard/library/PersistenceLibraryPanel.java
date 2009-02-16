@@ -157,10 +157,10 @@ public class PersistenceLibraryPanel extends javax.swing.JPanel {
         errorMessage.setForeground(nbErrorForeground);
         if (msg != null && msg.trim().length() > 0 && canContinue != null) {
             if (canContinue.booleanValue()) {
-                errorMessage.setIcon(new ImageIcon(ImageUtilities.loadImage(WARNING_GIF)));
+                errorMessage.setIcon(ImageUtilities.loadImageIcon(WARNING_GIF, false));
                 errorMessage.setForeground(nbWarningForeground);
             } else {
-                errorMessage.setIcon(new ImageIcon(ImageUtilities.loadImage(ERROR_GIF)));
+                errorMessage.setIcon(ImageUtilities.loadImageIcon(ERROR_GIF, false));
             }
             errorMessage.setToolTipText(msg);
         } else {

@@ -72,10 +72,13 @@ import org.openide.util.Lookup;
 public abstract class CompositeNodeWidget extends UMLNodeWidget implements ContainerWithCompartments
 {
     private ResizeStrategyProvider resizeProvider = null;
+    private static final int MIN_NODE_WIDTH = 80;
+    private static final int MIN_NODE_HEIGHT = 60;
     
     public CompositeNodeWidget(Scene scene)
     {
         super(scene, true);
+        setMinimumSize(new Dimension(MIN_NODE_WIDTH, MIN_NODE_HEIGHT));
         addToLookup(initializeContextPalette());
         addToLookup(new CompositeWidgetSelectProvider(this));
     }
@@ -288,7 +291,7 @@ public abstract class CompositeNodeWidget extends UMLNodeWidget implements Conta
     public class CompositeNodeResizeProvider extends WindowStyleResizeProvider
     {
         Rectangle minimumBounds;
-        
+
         public CompositeNodeResizeProvider(ResizeProvider.ControlPoint points[])
         {
             super(points);
@@ -298,10 +301,10 @@ public abstract class CompositeNodeWidget extends UMLNodeWidget implements Conta
         public void resizingStarted(Widget widget)
         {
             super.resizingStarted(widget);
-            minimumBounds = calculateMinimumBounds(); 
+            minimumBounds = calculateMinimumBounds();
             for (CompartmentWidget w : getCompartmentWidgets())
             {
-                
+
                 Object constraint = w.getParentWidget().getChildConstraint(w);
                 if (constraint instanceof Number)
                 {
@@ -322,9 +325,9 @@ public abstract class CompositeNodeWidget extends UMLNodeWidget implements Conta
                         w.setPreferredSize(null);
                     w.setPreferredBounds(null);
                 }
-            }       
+            }
         }
-        
+
         @Override
         public Rectangle boundsSuggested(Widget widget, Rectangle originalBounds, Rectangle suggestedBounds, ControlPoint controlPoint)
         {
@@ -358,7 +361,7 @@ public abstract class CompositeNodeWidget extends UMLNodeWidget implements Conta
             }
             return suggested;
         }
-        
+
         public void resizingFinished(Widget widget)
         {
             super.resizingFinished(widget);

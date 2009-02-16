@@ -203,7 +203,7 @@ public class ProblemComponent extends javax.swing.JPanel {
         }
         
         public void actionPerformed(ActionEvent event) {
-            new RefactoringPanel(ui).show();
+            new RefactoringPanel(ui).setVisible(true);
         }
     }
 }

@@ -76,7 +76,7 @@ import org.w3c.dom.Text;
  */
 public final class IepProject implements Project, AntProjectListener {
 
-    private static final Icon PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/iep/project/ui/resources/iepProject.gif")); // NOI18N
+    private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/iep/project/ui/resources/iepProject.gif", false); // NOI18N
     public static final String SOURCES_TYPE_ICANPRO = "BIZPRO";
     public static final String ARTIFACT_TYPE_JBI_ASA = "CAPS.asa";
 

@@ -61,11 +61,11 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
     private static final byte VIRTUAL = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+2);
 
     public MethodImpl(AST ast, ClassImpl cls, CsmVisibility visibility) throws AstRendererException {
-        this(ast, cls, visibility, true);
+        this(ast, cls, visibility, true, true);
     }
     
-    protected MethodImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
-        super(ast, cls.getContainingFile(), cls, false);
+    protected MethodImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register, boolean global) throws AstRendererException {
+        super(ast, cls.getContainingFile(), cls, false, global);
         this.visibility = visibility;
         //this(cls, visibility, AstUtil.findId(ast), 0, 0);
         //setAst(ast);

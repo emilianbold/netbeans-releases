@@ -216,7 +216,7 @@ class DemoPanel extends RSSFeedReaderPanel {
                 } catch( Exception e ) {
                     Logger.getLogger( DemoPanel.class.getName() ).log( Level.FINE, 
                             "Error while caching Welcome Page demo image", e ); //NOI18N
-                    image = new ImageIcon( ImageUtilities.loadImage( Constants.BROKEN_IMAGE ) );
+                    image = ImageUtilities.loadImageIcon(Constants.BROKEN_IMAGE, false);
                 } finally {
                     if( null != output ) {
                         try { output.close(); } catch( IOException e ) {}

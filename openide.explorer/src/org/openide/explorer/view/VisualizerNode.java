@@ -620,7 +620,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     /** Loads default icon if not loaded. */
     private static Icon getDefaultIcon() {
         if (defaultIcon == null) {
-            defaultIcon = ImageUtilities.image2Icon(ImageUtilities.loadImage(DEFAULT_ICON));
+            defaultIcon = ImageUtilities.loadImageIcon(DEFAULT_ICON, false);
         }
         return defaultIcon;
     }

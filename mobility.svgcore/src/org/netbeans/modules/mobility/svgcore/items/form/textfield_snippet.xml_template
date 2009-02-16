@@ -11,8 +11,7 @@
                        fill="freeze" to="black"/>
        </rect>
        <g>
-             <text  id="%%COMPONENT_ID%%_text" x="10" y="23" stroke="black" font-size="20" font-family="SunSansSemiBold">
-             Some Text</text>
+             <text  id="%%COMPONENT_ID%%_text" x="10" y="23" stroke="black" font-size="20" font-family="SunSansSemiBold">Some Text</text>
              <!-- Metadata information. Please don't edit. -->
              <text display="none">type=text</text>
        </g>

@@ -42,7 +42,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.util.ExternalTerminal;
+import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 
 /**
  * This class is configuration class used as constructor 

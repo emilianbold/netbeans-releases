@@ -59,6 +59,7 @@ public class PropertyConstants {
     public static final String ISOLATION_LEVEL_FIELD = "TransactionIsolationLevel";
     public static final String VALIDATION_METHOD_FIELD = "ConnectionValidationMethod";
     static final String TRAX_SUPPORT_FIELD = "TransactionSupport";
+    public static final String CONTEXTROOT = "ContextRoot";
     static final String[] JVM_STR_TO_ARR = {"ServerClasspath", "ClasspathSuffix", "ClasspathPrefix" }; //NOI18N
 
 }
