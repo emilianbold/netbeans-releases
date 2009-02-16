@@ -955,6 +955,9 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         if (slash != -1) {
             String prefix = name.substring(0, slash + 1);
             File d = new File(prefix);
+        for (int i = 0; i < 10000; i++) {
+            double y = Math.random();
+        }
             if (d.isDirectory()) {
                 File[] children = d.listFiles();
                 if(children != null) {
@@ -997,6 +1000,9 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 if (path.regionMatches(true, 0, text, 0, text.length())) {
                     
                     if(fileChooser.getFileSelectionMode() == JFileChooser.DIRECTORIES_ONLY) {
+        for (int j = 0; j < 10000; j++) {
+            double y = Math.random();
+        }
                         if(completion.isDirectory()) {
                             files.add(completion);
                         }
@@ -1247,6 +1253,9 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     private void fireSelectedFileChanged(PropertyChangeEvent e) {
         File f = (File) e.getNewValue();
         JFileChooser fc = getFileChooser();
+        for (int i = 0; i < 10000; i++) {
+            double y = Math.random();
+        }
         if (f != null
                 && ((fc.isFileSelectionEnabled() && !f.isDirectory())
                 || (f.isDirectory() && fc.isDirectorySelectionEnabled()))) {
@@ -1257,6 +1266,9 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     
     private void fireSelectedFilesChanged(PropertyChangeEvent e) {
         File[] files = (File[]) e.getNewValue();
+        for (int i = 0; i < 10000; i++) {
+            double y = Math.random();
+        }
         JFileChooser fc = getFileChooser();
         if (files != null
                 && files.length > 0
@@ -2214,74 +2226,85 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                     addNewDirectory(path);
                     addNewDirectory = false;
                 }
+                // Fix for IZ#123815 : Cannot refresh the tree content
+                refreshNode( path , node );
             }
-            // Fix for IZ#123815 : Cannot refresh the tree content
-            refreshNode( path , node );
         }
         public void treeCollapsed(TreeExpansionEvent event) {
         }
         
-        // Fix for IZ#123815 : Cannot refresh the tree content
-        private void refreshNode( TreePath path, DirectoryNode node ){
-            File folder = node.getFile();
-            
-            // Additional fixes for IZ#116859 [60cat] Node update bug in the "open project" panel while deleting directories
-            if ( !folder.exists() ){
-                TreePath parentPath = path.getParentPath();
-                boolean refreshTree = false;
-                
-                if(tree.isExpanded(path)) {
-                    tree.collapsePath(path);
-                    refreshTree = true;
-                }
-                model.removeNodeFromParent( node );
-                if ( refreshTree ){
-                    tree.expandPath( parentPath );
-                }
-            }
-            
-            int count = node.getChildCount();
-            Map<String,DirectoryNode> currentFiles = 
-                new HashMap<String,DirectoryNode>( ); 
-            for( int i=0; i< count ; i++ ){
-                TreeNode child = node.getChildAt(i);
-                if ( child instanceof DirectoryNode ){
-                    File file = ((DirectoryNode)child).getFile();
-                    currentFiles.put( file.getName() , (DirectoryNode)child);
-                }
-            }
-            
-            HashSet<String> realDirs = new HashSet<String>();
-            
-            File[] files =  folder.listFiles(); 
-            files = files == null ? new File[0] : files;
-            for (File file : files) {
-                if ( !file.isDirectory() ){
-                    continue;
-                }
-                String name = file.getName();
-                realDirs.add( name );
-            }
-            
-            Set<String> realCloned = new HashSet<String>( realDirs );
-            if ( realCloned.removeAll( currentFiles.keySet()) ){
-                // Handle added folders
-                for ( String name : realCloned ){
-                    DirectoryNode added = new DirectoryNode( new File( folder, name ) );
-                    model.insertNodeInto( added, node, node.getChildCount());
-                }
-            }
-            Set<String> currentNames = new HashSet<String>( currentFiles.keySet());
-            if ( currentNames.removeAll( realDirs )){
-                // Handle deleted folders
-                for ( String name : currentNames ){
-                    DirectoryNode removed = currentFiles.get( name );
-                    model.removeNodeFromParent( removed );
-                }
-            }
-            
-        }
     }
+
+    // Fix for IZ#123815 : Cannot refresh the tree content
+    private void refreshNode( final TreePath path, final DirectoryNode node ){
+        final File folder = node.getFile();
+
+        // Additional fixes for IZ#116859 [60cat] Node update bug in the "open project" panel while deleting directories
+        if ( !folder.exists() ){
+            TreePath parentPath = path.getParentPath();
+            boolean refreshTree = false;
+
+            if(tree.isExpanded(path)) {
+                tree.collapsePath(path);
+                refreshTree = true;
+            }
+            model.removeNodeFromParent( node );
+            if ( refreshTree ){
+                tree.expandPath( parentPath );
+            }
+            return;
+        }
+
+        RequestProcessor.getDefault().post(new Runnable() {
+            private Set<String> realDirs;
+            public void run() {
+                if (!EventQueue.isDispatchThread()) {
+                    // first phase
+                    realDirs = new HashSet<String>();
+                    File[] files = folder.listFiles();
+                    files = files == null ? new File[0] : files;
+                    for (File file : files) {
+                        if ( !file.isDirectory() ){
+                            continue;
+                        }
+                        String name = file.getName();
+                        realDirs.add( name );
+                    }
+                    SwingUtilities.invokeLater(this);
+                } else {
+                    // second phase, in EQ thread, invoked from first phase
+                    int count = node.getChildCount();
+                    Map<String,DirectoryNode> currentFiles =
+                        new HashMap<String,DirectoryNode>( );
+                    for( int i=0; i< count ; i++ ){
+                        TreeNode child = node.getChildAt(i);
+                        if ( child instanceof DirectoryNode ){
+                            File file = ((DirectoryNode)child).getFile();
+                            currentFiles.put( file.getName() , (DirectoryNode)child);
+                        }
+                    }
+
+                    Set<String> realCloned = new HashSet<String>( realDirs );
+                    if ( realCloned.removeAll( currentFiles.keySet()) ){
+                        // Handle added folders
+                        for ( String name : realCloned ){
+                            DirectoryNode added = new DirectoryNode( new File( folder, name ) );
+                            model.insertNodeInto( added, node, node.getChildCount());
+                        }
+                    }
+                    Set<String> currentNames = new HashSet<String>( currentFiles.keySet());
+                    if ( currentNames.removeAll( realDirs )){
+                        // Handle deleted folders
+                        for ( String name : currentNames ){
+                            DirectoryNode removed = currentFiles.get( name );
+                            model.removeNodeFromParent( removed );
+                        }
+                    }
+                }
+            }
+        });
+    }
+
     
     private class NewDirectoryAction extends AbstractAction {
         public void actionPerformed(ActionEvent e) {
