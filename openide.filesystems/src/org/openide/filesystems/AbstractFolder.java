@@ -54,7 +54,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.EventListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -144,16 +143,19 @@ abstract class AbstractFolder extends FileObject {
     /** Overrides the get name and ext method to make it faster then
      * default implementation.
      */
+    @Override
     public final String getNameExt() {
         return name;
     }
 
     /** Overridden in AbstractFolder */
+    @Override
     final boolean isHasExtOverride() {
         return true;
     }
 
     /** Overridden in AbstractFolder */
+    @Override
     boolean hasExtOverride(String ext) {
         if (ext == null) {
             return false;
@@ -310,12 +312,12 @@ abstract class AbstractFolder extends FileObject {
             // try to go on
             // lock to provide safety for getChild
             synchronized (fo) {
-                String name = en.nextElement();
+                String tmpName = en.nextElement();
 
                 if (en.hasMoreElements()) {
-                    fo = fo.getChild(name);
+                    fo = fo.getChild(tmpName);
                 } else {
-                    return fo.map.get(name);
+                    return fo.map.get(tmpName);
                 }
             }
         }

@@ -240,6 +240,17 @@ public class NbModuleSuiteTest extends TestCase {
         assertEquals("OK", System.getProperty("en.one"));
     }
 
+    public void testAutoloadNotUsedIfAutoloadsAreSupposedToBeIgnored() {
+        System.setProperty("en.one", "No");
+
+        NbModuleSuite.Configuration config = NbModuleSuite.Configuration.create(AskForOrgOpenideUtilEnumClass.class);
+        NbModuleSuite.Configuration addEnum = config.enableModules("org.openide.util.enumerations");
+        Test instance = NbModuleSuite.create(addEnum.gui(false).honorAutoloadEager(true));
+        junit.textui.TestRunner.run(instance);
+
+        assertEquals("No", System.getProperty("en.one"));
+    }
+
     public void testClustersCanBeCumulated() {
         System.setProperty("clusters", "No");
 

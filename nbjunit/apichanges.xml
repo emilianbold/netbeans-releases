@@ -55,6 +55,23 @@ made subject to such option by the copyright holder.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="NbModuleSuite.honorAutoloadEager">
+        <api name="nbjunit"/>
+        <summary>Leave autoloads as autoloads and eagers as eager</summary>
+        <version major="1" minor="57"/>
+        <date day="13" month="2" year="2009"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" semantic="compatible" binary="compatible" source="compatible" modification="no"/>
+        <description>
+            <p>
+            One can decide to <b>not</b> enable autoload modules
+            by calling
+            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#honorAutoloadEager(boolean)">
+                Configuration.honorAutoEager(true)</a>.
+            </p>
+        </description>
+        <class package="org.netbeans.junit" name="NbModuleSuite"/>
+    </change>
     <change id="NbModuleSuite.enableClasspathModules">
         <api name="nbjunit"/>
         <summary>Ignore modules on classpath</summary>
