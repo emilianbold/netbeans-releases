@@ -55,6 +55,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -119,6 +120,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
     private String[]                projectSourceRoots;
     private PropertyChangeSupport   pcs;
     private PathRegistryListener    pathRegistryListener;
+    private File                    baseDir;
     
     public SourcePathProviderImpl () {
         pcs = new PropertyChangeSupport (this);
@@ -135,7 +137,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         
         // 2) get default allSourceRoots of source roots used for stepping
         if (properties != null) {
-            File baseDir = (File) properties.get("baseDir");
+            baseDir = (File) properties.get("baseDir");
             smartSteppingSourcePath = (ClassPath) properties.get ("sourcepath");
             ClassPath jdkCP = (ClassPath) properties.get ("jdksources");
             if ( (jdkCP == null) && (JavaPlatform.getDefault () != null) )
@@ -359,6 +361,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                     additionalSourcePath.add(fo);
                 }
             }
+            this.additionalSourceRoots = new LinkedHashSet<String>(additionalSourceRoots);
             return ClassPathSupport.createClassPath(
                     additionalSourcePath.toArray(new FileObject[0]));
         } catch (MalformedURLException ex) {
@@ -382,9 +385,31 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                 additionalSourcePath.add(fo);
             }
         }
+        this.additionalSourceRoots = new LinkedHashSet<String>(additionalSourceRoots);
         return additionalSourcePath;
         //return ClassPathSupport.createClassPath(
         //        additionalSourcePath.toArray(new FileObject[0]));
+    }
+
+    private void storeAdditionalSourceRoots() {
+        Properties sourcesProperties = Properties.getDefault ().getProperties ("debugger").getProperties ("sources");
+        if (baseDir != null) {
+            String projectRoot;
+            try {
+                projectRoot = baseDir.toURI().toURL().toExternalForm();
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+                return ;
+            }
+            Map map = sourcesProperties.getProperties("additional_source_roots").
+                getMap("project", new HashMap());
+            map.put(projectRoot, new ArrayList<String>(additionalSourceRoots));
+            sourcesProperties.getProperties("additional_source_roots").
+                    setMap("project", map);
+        } else {
+            sourcesProperties.getProperties("additional_source_roots").
+                    setCollection("src_roots", new ArrayList<String>(additionalSourceRoots));
+        }
     }
 
     private Set<String> getDisabledSourceRoots(File baseDir) {
@@ -404,6 +429,27 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         Properties sourcesProperties = Properties.getDefault ().getProperties ("debugger").getProperties ("sources");
         return (Set<String>) sourcesProperties.getProperties("source_roots").
             getCollection("remote_disabled", Collections.emptySet());
+    }
+
+    private void storeDisabledSourceRoots(Set<String> disabledSourceRoots) {
+        Properties sourcesProperties = Properties.getDefault ().getProperties ("debugger").getProperties ("sources");
+        if (baseDir != null) {
+            String projectRoot;
+            try {
+                projectRoot = baseDir.toURI().toURL().toExternalForm();
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+                return ;
+            }
+            Map map = sourcesProperties.getProperties("source_roots").
+                    getMap("project_disabled", new HashMap());
+            map.put(projectRoot, disabledSourceRoots);
+            sourcesProperties.getProperties("source_roots").
+                    setMap("project_disabled", map);
+        } else {
+            sourcesProperties.getProperties("source_roots").
+                    setCollection("remote_disabled", disabledSourceRoots);
+        }
     }
 
     /**
@@ -602,6 +648,10 @@ public class SourcePathProviderImpl extends SourcePathProvider {
     public String[] getProjectSourceRoots() {
         return projectSourceRoots;
     }
+
+    public synchronized String[] getAdditionalSourceRoots() {
+        return (additionalSourceRoots == null) ? new String[] {} : additionalSourceRoots.toArray(new String[]{});
+    }
     
     /**
      * Sets array of source roots.
@@ -612,7 +662,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("SourcePathProviderImpl.setSourceRoots("+java.util.Arrays.asList(sourceRoots)+")");
         }
-        Set<String> newRoots = new HashSet<String>(Arrays.asList(sourceRoots));
+        Set<String> newRoots = new LinkedHashSet<String>(Arrays.asList(sourceRoots));
         ClassPath oldCP = null;
         ClassPath newCP = null;
         synchronized (this) {
@@ -622,7 +672,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                     Arrays.asList(originalSourcePath.getRoots()));
 
             // First check whether there are some new source roots
-            Set<String> newOriginalRoots = new HashSet<String>(newRoots);
+            Set<String> newOriginalRoots = new LinkedHashSet<String>(newRoots);
             for (FileObject fo : sourcePathOriginal) {
                 newOriginalRoots.remove(getRoot(fo));
             }
@@ -637,13 +687,13 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                         ClassPathSupport.createClassPath(
                             sourcePathOriginal.toArray(new FileObject[0]));
                 if (additionalSourceRoots == null) {
-                    additionalSourceRoots = new HashSet<String>();
+                    additionalSourceRoots = new LinkedHashSet<String>();
                 }
                 additionalSourceRoots.addAll(newOriginalRoots);
             }
 
             // Then correct the smart-stepping path
-            Set<String> newSteppingRoots = new HashSet<String>(newRoots);
+            Set<String> newSteppingRoots = new LinkedHashSet<String>(newRoots);
             for (FileObject fo : sourcePath) {
                 newSteppingRoots.remove(getRoot(fo));
             }
@@ -682,6 +732,15 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                             sourcePath.toArray(new FileObject[0]));
                 newCP = smartSteppingSourcePath;
             }
+            Set<FileObject> disabledRoots = new HashSet(sourcePathOriginal);
+            disabledRoots.removeAll(sourcePath);
+            Set<String> disabledSourceRoots = new HashSet<String>();
+            for (FileObject fo : disabledRoots) {
+                disabledSourceRoots.add(getRoot(fo));
+            }
+
+            storeAdditionalSourceRoots();
+            storeDisabledSourceRoots(disabledSourceRoots);
         }
         
         if (oldCP != null) {

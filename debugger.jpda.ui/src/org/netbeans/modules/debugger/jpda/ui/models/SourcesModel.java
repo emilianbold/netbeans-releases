@@ -85,18 +85,18 @@ NodeActionsProvider {
     private JPDADebugger            debugger;
     private Vector<ModelListener>   listeners = new Vector<ModelListener>();
     
-    private Set<String>             enabledSourceRoots = new HashSet<String>();
-    private Set<String>             disabledSourceRoots = new HashSet<String>();
-    private List<String>            additionalSourceRoots = new ArrayList<String>();
-    private Properties              filterProperties = Properties.
-        getDefault ().getProperties ("debugger").getProperties ("sources");
+    //private Set<String>             enabledSourceRoots = new HashSet<String>();
+    //private Set<String>             disabledSourceRoots = new HashSet<String>();
+    private Set<String>             additionalSourceRoots = null;
+    //private Properties              filterProperties = Properties.
+    //    getDefault ().getProperties ("debugger").getProperties ("sources");
     private final Set<String>       sourceRootsSet = new HashSet<String>();
 
 
     public SourcesModel (ContextProvider lookupProvider) {
         sourcePath = lookupProvider.lookupFirst(null, SourcePath.class);
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
-        loadFilters ();
+        //loadFilters ();
         updateCachedRoots();
         DELETE_ACTION.putValue (
             Action.ACCELERATOR_KEY,
@@ -126,9 +126,13 @@ NodeActionsProvider {
             String[] sourceRoots = sourcePath.getOriginalSourceRoots ();
 
             // 3) find additional disabled source roots (enabled are in sourceRoots)
-            List<String> addSrcRoots;
+            //List<String> addSrcRoots;
             synchronized (this) {
-                if (additionalSourceRoots.size() > 0) {
+                if (additionalSourceRoots == null) {
+                    additionalSourceRoots = new LinkedHashSet(Arrays.asList(sourcePath.getAdditionalSourceRoots()));
+
+                }
+                /*if (additionalSourceRoots.size() > 0) {
                     addSrcRoots = new ArrayList<String>(additionalSourceRoots.size());
                     for (String addSrcRoot : additionalSourceRoots) {
                         if (!enabledSourceRoots.contains(addSrcRoot)) {
@@ -137,13 +141,13 @@ NodeActionsProvider {
                     }
                 } else {
                     addSrcRoots = Collections.emptyList();
-                }
+                }*/
             }
 
             // 3) join them
-            Object[] os = new Object [sourceRoots.length + addSrcRoots.size()];
-            System.arraycopy (sourceRoots, 0, os, 0, sourceRoots.length);
-            System.arraycopy (addSrcRoots.toArray(), 0, os, sourceRoots.length, addSrcRoots.size());
+            Object[] os = sourceRoots;//new Object [sourceRoots.length + addSrcRoots.size()];
+            //System.arraycopy (sourceRoots, 0, os, 0, sourceRoots.length);
+            //System.arraycopy (addSrcRoots.toArray(), 0, os, sourceRoots.length, addSrcRoots.size());
             to = Math.min(os.length, to);
             from = Math.min(os.length, from);
             Object[] fos = new Object [to - from];
@@ -269,21 +273,22 @@ NodeActionsProvider {
         List<String> sourceRoots = new ArrayList<String>(sourceRootsSet);
         synchronized (this) {
             if (enabled) {
-                enabledSourceRoots.add (root);
-                disabledSourceRoots.remove (root);
+                //enabledSourceRoots.add (root);
+                //disabledSourceRoots.remove (root);
                 sourceRoots.add (root);
             } else {
-                disabledSourceRoots.add (root);
-                enabledSourceRoots.remove (root);
+                //disabledSourceRoots.add (root);
+                //enabledSourceRoots.remove (root);
                 sourceRoots.remove (root);
             }
         }
         String[] ss = new String [sourceRoots.size ()];
         sourcePath.setSourceRoots (sourceRoots.toArray (ss));
 
-        saveFilters ();
+        //saveFilters ();
     }
 
+    /*
     private void loadFilters () {
         enabledSourceRoots = new HashSet (
             filterProperties.getProperties ("source_roots").getCollection (
@@ -312,6 +317,7 @@ NodeActionsProvider {
         filterProperties.getProperties("additional_source_roots").
             setCollection("src_roots", additionalSourceRoots);
     }
+     */
 
     private synchronized void updateCachedRoots() {
         String[] roots = sourcePath.getSourceRoots();
@@ -465,7 +471,7 @@ NodeActionsProvider {
                     String d = zipOrDir.getCanonicalPath();
                     synchronized (SourcesModel.this) {
                         additionalSourceRoots.add(d);
-                        enabledSourceRoots.add(d);
+                        //enabledSourceRoots.add(d);
                     }
                     // Set the new source roots:
                     String[] sourceRoots = sourcePath.getSourceRoots();
@@ -475,7 +481,7 @@ NodeActionsProvider {
                     newSourceRoots[l] = d;
                     sourcePath.setSourceRoots(newSourceRoots);
 
-                    saveFilters();
+                    //saveFilters();
                     fireTreeChanged ();
                 } catch (java.io.IOException ioex) {
                     ErrorManager.getDefault().notify(ioex);
@@ -497,8 +503,8 @@ NodeActionsProvider {
                     String node = (String) nodes [i];
                     synchronized (SourcesModel.this) {
                         additionalSourceRoots.remove(node);
-                        enabledSourceRoots.remove(node);
-                        disabledSourceRoots.remove(node);
+                        //enabledSourceRoots.remove(node);
+                        //disabledSourceRoots.remove(node);
                     }
                     // Set the new source roots:
                     String[] sourceRoots = sourcePath.getSourceRoots();
@@ -517,7 +523,7 @@ NodeActionsProvider {
                         sourcePath.setSourceRoots(newSourceRoots);
                     }
                 }
-                saveFilters ();
+                //saveFilters ();
                 fireTreeChanged ();
             }
         },
