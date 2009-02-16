@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionUtils;
+import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
@@ -234,7 +235,7 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
                 }
             }
         });
-        return NbBundle.getMessage(CsmAbstractHyperlinkProvider.class, "MacroExpansion", docText.toString(), expandedText); // NOI18N
+        return NbBundle.getMessage(CsmAbstractHyperlinkProvider.class, "MacroExpansion", CsmDisplayUtilities.htmlize(docText), CsmDisplayUtilities.htmlize(expandedText)); // NOI18N
     }
 
 }
