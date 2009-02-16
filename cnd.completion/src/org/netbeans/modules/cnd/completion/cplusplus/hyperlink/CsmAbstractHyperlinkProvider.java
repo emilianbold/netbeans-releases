@@ -41,17 +41,14 @@
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 import java.awt.Toolkit;
-import java.awt.event.InputEvent;
 import java.text.MessageFormat;
 import java.util.EnumSet;
 import java.util.Set;
-import java.util.prefs.Preferences;
 import javax.swing.text.AbstractDocument;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
@@ -63,7 +60,6 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionUtils;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 
@@ -206,7 +202,7 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
             return null;
         }
         if (type == HyperlinkType.ALT_HYPERLINK) {
-            int[] span = CsmMacroExpansion.getMacroExpansionSpan(doc, offset+1, true);
+            int[] span = CsmMacroExpansion.getMacroExpansionSpan(doc, offset, true);
             if (span != null && span[0] != span[1]) {
                 // macro expansion
                 return getMacroExpandedText(doc, span[0], span[1]);
@@ -225,16 +221,20 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
 
     protected abstract String getTooltipText(Document doc, TokenItem<CppTokenId> token, int offset, HyperlinkType type);
 
-    static String getAlternativeHyperlinkTip(Document doc) {
-        Preferences prefs = MimeLookup.getLookup(NbEditorUtilities.getMimeType(doc)).lookup(Preferences.class);
-        int shortCut = prefs.getInt(SimpleValueNames.HYPERLINK_ACTIVATION_MODIFIERS, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK);
-        InputEvent.getModifiersExText(shortCut);
-        return NbBundle.getMessage(CsmAbstractHyperlinkProvider.class, "");
-    }
+    private String getMacroExpandedText(final Document doc, final int start, final int end) {
+        String expandedText = CsmMacroExpansion.expand(doc, start, end);
+        final StringBuilder docText = new StringBuilder();
+        doc.render(new Runnable() {
 
-    private String getMacroExpandedText(Document doc, int start, int end) {
-        String out = CsmMacroExpansion.expand(doc, start, end);
-        return out;
+            public void run() {
+                try {
+                    docText.append(doc.getText(start, end - start));
+                } catch (BadLocationException ex) {
+                    // skip
+                }
+            }
+        });
+        return NbBundle.getMessage(CsmAbstractHyperlinkProvider.class, "MacroExpansion", docText.toString(), expandedText); // NOI18N
     }
 
 }

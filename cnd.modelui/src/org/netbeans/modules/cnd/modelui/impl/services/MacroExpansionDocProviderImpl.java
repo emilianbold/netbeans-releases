@@ -300,6 +300,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                 }
             }
             boolean foundMacroExpansion = false;
+            int macroIndex = tt.intervals.size();
             // back to start of macro expansion
             for (int i = startIndex; i >= 0; i--) {
                 IntervalCorrespondence ic = tt.intervals.get(i);
@@ -307,6 +308,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                     span[0] = ic.inInterval.start;
                     span[1] = ic.inInterval.end;
                     foundMacroExpansion = true;
+                    macroIndex = i;
                     break;
                 } else if (ic.outInterval.length() != 0) {
                     // we are out of macro expansion
@@ -315,7 +317,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             }
             if (foundMacroExpansion) {
                 // forward to the end of macro expansion
-                for (int i = startIndex+1; i < tt.intervals.size(); i++) {
+                for (int i = macroIndex+1; i < tt.intervals.size(); i++) {
                     IntervalCorrespondence ic = tt.intervals.get(i);
                     if (ic.outInterval.length() == 0) {
                         // we are in macro expansion
