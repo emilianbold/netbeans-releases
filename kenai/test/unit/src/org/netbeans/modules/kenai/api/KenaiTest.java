@@ -209,6 +209,8 @@ public class KenaiTest {
         for(KenaiService ser:Kenai.getDefault().getServices()) {
             System.out.println(ser.getName());
             System.out.println(ser.getDescription());
+            System.out.println(ser.getDisplayName());
+            System.out.println(ser.getType());
         }
     }
 }
