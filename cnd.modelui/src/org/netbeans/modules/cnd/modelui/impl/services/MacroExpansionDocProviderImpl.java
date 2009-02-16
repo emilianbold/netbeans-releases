@@ -265,6 +265,11 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         return null;
     }
 
+    public String[] getMacroExpansion(Document doc, int offset) {
+        // returns empty expansion
+        return new String[]{"", ""}; // NOI18N
+    }
+
     public String expand(Document doc, int startOffset, int endOffset) {
         if(doc == null) {
             return null;
