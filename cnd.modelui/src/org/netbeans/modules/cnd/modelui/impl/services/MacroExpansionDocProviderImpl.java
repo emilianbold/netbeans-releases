@@ -352,7 +352,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                 continue;
             }
             int endShift = startShift + (endOffset - startOffset);
-            if(endOffset == ic.inInterval.end) {
+            if(endOffset >= ic.inInterval.end) {
                 endShift = ic.outInterval.length();
             }
             if (endShift > ic.outInterval.length()) {
