@@ -94,6 +94,14 @@ public interface CsmMacroExpansionDocProvider {
     public String expand(Document doc, CsmFile file, int startOffset, int endOffset);
 
     /**
+     * returns original text and expanded text for document on specified offset
+     * @param doc document
+     * @param offset offset in document
+     * @return array of two elements [text in document, expanded text]
+     */
+    public String[] getMacroExpansion(Document doc, int offset);
+
+    /**
      * Transforms original offset to offset in expanded text.
      *
      * @param expandedDoc - document
