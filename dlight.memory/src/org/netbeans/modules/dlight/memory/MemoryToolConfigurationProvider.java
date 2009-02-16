@@ -57,6 +57,7 @@ import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
+import org.openide.util.NbBundle;
 
 /**
  * 
@@ -145,7 +146,10 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
             "GROUP BY node.func_id, func.func_name";
 
         DataTableMetadata viewTableMetadata = new DataTableMetadata("mem", viewColumns, sql, Arrays.asList(rawTableMetadata));
-        return new TableVisualizerConfiguration(viewTableMetadata);
+        TableVisualizerConfiguration tableVisualizerConfiguration = new TableVisualizerConfiguration(viewTableMetadata);
+        tableVisualizerConfiguration.setEmptyAnalyzeMessage(NbBundle.getMessage(MemoryToolConfigurationProvider.class, "DetailedView.EmptyAnalyzeMessage"));
+        tableVisualizerConfiguration.setEmptyRunningMessage(NbBundle.getMessage(MemoryToolConfigurationProvider.class, "DetailedView.EmptyRunningMessage"));
+        return  tableVisualizerConfiguration;
     }
 
     private static class MAgentClioParser implements CLIOParser {

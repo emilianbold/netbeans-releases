@@ -37,10 +37,9 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.visualizers;
+package org.netbeans.modules.dlight.api.impl;
 
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.api.impl.TreeTableNode;
 
 
 /**
