@@ -87,7 +87,7 @@ public class CreateCopyAction extends ContextAction {
     }
     
     protected boolean enable(Node[] nodes) {
-        return nodes != null && nodes.length == 1 &&  getContext(nodes).getRoots().size() > 0;
+        return nodes != null && nodes.length == 1 &&  getCachedContext(nodes).getRoots().size() > 0;
     }   
     
     protected void performContextAction(final Node[] nodes) {
