@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,78 +34,33 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.xml.wizard;
+package org.netbeans.modules.xml.text.api;
 
-import java.util.Map;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.xml.text.indent.XMLLexerFormatter;
 
 /**
  *
  * @author Sonali
  */
-public class XMLContentAttributes {
+public class XMLFormatUtil {
     
-    public XMLContentAttributes(String prefix) {
-        this.prefix=prefix;
+    public static void reformat(BaseDocument doc, int startOffset, int endOffset) {
+        XMLLexerFormatter formatter = new XMLLexerFormatter(null);
+        BaseDocument formattedDoc = formatter.doReformat(doc, startOffset, endOffset);
+        doc.atomicLock();
+        try {
+            doc.replace(0, doc.getLength(),
+            formattedDoc.getText(0, formattedDoc.getLength()), null);
+            
+        } catch(Exception ex) {
+           
+        } finally {
+            doc.atomicUnlock();
+        }
     }
-    
-    public int getPreferredOccurences(){
-        return PREFERRED;
-    }
-    
-    public void setPreferredOccurences(int i){
-        PREFERRED = i;
-    }
-    
-    public boolean generateOptionalAttributes(){
-            return optionalAttributes;
-    }
-    
-    public void setOptionalAttributes(boolean value){
-        optionalAttributes = value;
-    }
-    
-    public boolean generateOptionalElements(){
-        return optionalElements;
-    }
-
-    public void setOptionalElements(boolean value){
-        optionalElements = value;
-    }
-    
-    public String getPrefix() {
-        return prefix;
-    }
-    
-    public void setPrefix(String pre) {
-        prefix = pre;
-    }
-    
-    public void setDepthPreferrence(int value) {
-       DEPTH = value;
-    }
-    
-    public int getDepthPreferrence(){
-        return DEPTH;
-    }
-    
-    public void setNamespaceToPrefixMap(Map<String, String> nsMap){
-        nsToPre = nsMap;
-    }
-    
-    public Map<String, String> getNamespaceToPrefixMap(){
-        return nsToPre;
-   
-    }
-    private int PREFERRED = 3;
-    private boolean optionalAttributes = true;
-    private boolean optionalElements = true;  
-    private String prefix="test_prefix";
-    private int DEPTH = 2;
-    private Map<String, String> nsToPre;
-
-    
 
 }

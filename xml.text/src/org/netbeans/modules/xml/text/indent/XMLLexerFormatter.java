@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import org.netbeans.api.lexer.LanguagePath;
@@ -70,7 +71,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
 
     private static final String TAG_OPENING_PREFIX = "<"; //NOI18N
     private static final String TAG_CLOSING_PREFIX = "</"; //NOI18N
-   
+
     private final LanguagePath languagePath;
     private int spacesPerTab = 4;
 
@@ -79,7 +80,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
     }
 
     @Override
-    protected boolean isOpeningTag(JoinedTokenSequence jts, int tagTokenOffset) {       
+    protected boolean isOpeningTag(JoinedTokenSequence jts, int tagTokenOffset) {
         Token token = getTokenAtOffset(jts, tagTokenOffset);
         return token != null
                 && token.id() == XMLTokenId.TAG
@@ -109,10 +110,10 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
     protected boolean isUnformattableToken(JoinedTokenSequence jts, int tagTokenOffset) {
         Token token = getTokenAtOffset(jts, tagTokenOffset);
         if (token.id() == XMLTokenId.BLOCK_COMMENT ||
-            token.id() == XMLTokenId.CDATA_SECTION) {
+                token.id() == XMLTokenId.CDATA_SECTION) {
             return true;
         }
-       
+
         return false;
     }
 
@@ -129,27 +130,27 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
     protected LanguagePath supportedLanguagePath() {
         return languagePath;
     }
-   
+
     @Override
     protected String extractTagName(JoinedTokenSequence jts, int tagTokenOffset) {
-        Token token = getTokenAtOffset(jts, tagTokenOffset);       
+        Token token = getTokenAtOffset(jts, tagTokenOffset);
         String tagImage = token.text().toString();
         int startIndex = -1;
-       
+
         if (isOpeningTag(jts, tagTokenOffset)) {
             startIndex = TAG_OPENING_PREFIX.length();
         } else if (isClosingTag(jts, tagTokenOffset)) {
             startIndex = TAG_CLOSING_PREFIX.length();
         }
-       
+
         if (startIndex >= 0) {
             String tagName = tagImage.substring(startIndex);
             return tagName;
         }
-       
-        return null;       
+
+        return null;
     }
-   
+
     @Override
     protected int getTagEndingAtPosition(JoinedTokenSequence jts,
             int position) throws BadLocationException {
@@ -194,7 +195,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
 
         int r = jts.offset() + jts.token().length();
         jts.move(originalOffset);
-        jts.moveNext();       
+        jts.moveNext();
         return thereAreMoreTokens ? r : -1;
     }
 
@@ -221,16 +222,20 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
     }
 
     @Override
-    public void reformat(Context context, int startOffset, int endOffset) throws BadLocationException {
-        BaseDocument doc = (BaseDocument) context.document();
+    public void reformat(Context context, final int startOffset, final int endOffset)
+            throws BadLocationException {
+       final BaseDocument doc = (BaseDocument) context.document();
+       doc.render(new Runnable() {
+           public void run() {
+               doReformat(doc, startOffset, endOffset);            }
+       }); 
+        
+    }
+    
+    public BaseDocument doReformat(BaseDocument doc, int startOffset, int endOffset) {
         spacesPerTab = IndentUtils.indentLevelSize(doc);
-        doc.atomicLock();
         try {
-            //buffer doc used as a worksheet
-            BaseDocument bufDoc = new BaseDocument(XMLKit.class, false);
-            bufDoc.insertString(0, doc.getText(0, doc.getLength()), null);
-            
-            List<TokenElement> tags = getTags(doc);
+            List<TokenElement> tags = getTags(doc, startOffset, endOffset);
             for (int i = tags.size() - 1; i >= 0; i--) {
                 TokenElement tag = tags.get(i);
                 int so = tag.getStartOffset();
@@ -250,30 +255,29 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                     int ndx = lineStr.lastIndexOf(tagName);
                     if (ndx != -1) {
                         lineStr = lineStr.substring(0, ndx);
-                        int ndx2 = lineStr.lastIndexOf("<" + tagName.substring(2) + ">");
+                        int ndx2 = lineStr.lastIndexOf("<" + tagName.substring(2) );
                         if (ndx2 == -1) {//no start found in this line, so indent this tag
-                            changePrettyText(bufDoc, tag, so);
+                            changePrettyText(doc, tag, so);
                         } else {
                             lineStr = lineStr.substring(ndx2 + 1);
                             ndx2 = lineStr.indexOf("<");
                             if (ndx2 != -1) {//indent this tag if it contains another tag
-                                changePrettyText(bufDoc, tag, so);
+                                changePrettyText(doc, tag, so);
                             }
                         }
                     }
                 } else {
-                    changePrettyText(bufDoc, tag, so);
+                    changePrettyText(doc, tag, so);
                 }
-            }
-            //Now do the actual replacement in the document with the pretty text
-            doc.replace(0, doc.getLength(), bufDoc.getText(0, bufDoc.getLength()), null);
+            }            
         } catch (BadLocationException ble) {
             //ignore exception
         } catch (IOException iox) {
-            //ignore exception
+           //ignore exception
         } finally {
-            doc.atomicUnlock();
+           //((AbstractDocument)doc).readUnlock();
         }
+        return doc;
     }
 
     private void changePrettyText(BaseDocument doc, TokenElement tag, int so) throws BadLocationException {
@@ -285,11 +289,20 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
         String newIndentText = IndentUtils.createIndentString(doc,
                 tag.getIndentLevel()*spacesPerTab);
         //String newIndentText = formatter.getIndentString(doc, tag.getIndentLevel());
-        doc.insertString(so, "\n" + newIndentText, null);
         int previousEndOffset = Utilities.getFirstNonWhiteBwd(doc, so) + 1;
-        if (previousEndOffset < so) {
-            doc.remove(previousEndOffset, so - previousEndOffset);
+        String temp = doc.getText(previousEndOffset, so - previousEndOffset);
+        if(temp.indexOf("\n") != -1){
+            int i = Utilities.getRowFirstNonWhite(doc, so);
+            int rowStart = Utilities.getRowStart(doc, so);
+            doc.insertString(so, newIndentText, null);
+            doc.remove(rowStart, i - rowStart);            
         }
+        else {
+             doc.insertString(so, "\n" + newIndentText, null);
+        }
+      //  if (previousEndOffset < so) {
+        //    doc.remove(previousEndOffset, so - previousEndOffset);
+  //  }
     }
 
     /**
@@ -297,83 +310,120 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
      * This method parses the document using lexer and creates folds and adds
      * them to the fold hierarchy.
      */
-    private List<TokenElement> getTags(BaseDocument basedoc)
+    private List<TokenElement> getTags(BaseDocument basedoc, int startOffset, int endOffset)
             throws BadLocationException, IOException {
-        TokenHierarchy tokenHierarchy = TokenHierarchy.get(basedoc);
-        TokenSequence<XMLTokenId> tokenSequence = tokenHierarchy.tokenSequence();
-        org.netbeans.api.lexer.Token<XMLTokenId> token = tokenSequence.token();
-        // Add the text token, if any, before xml decalration to document node
-        if (token != null && token.id() == XMLTokenId.TEXT) {
-            if (tokenSequence.moveNext()) {
-                token = tokenSequence.token();
-            }
-        }
-        int currentTokensSize = 0;
         List<TokenElement> tags = new ArrayList<TokenElement>();
-        Stack<TokenElement> stack = new Stack<TokenElement>();
-        String currentNode = null;
-        while (tokenSequence.moveNext()) {
-            token = tokenSequence.token();
-            XMLTokenId tokenId = token.id();
-            String image = token.text().toString();
-            TokenType tokenType = TokenType.TOKEN_WHITESPACE;
-            switch (tokenId) {
-                case TAG: {
-                    int len = image.length();
-                    if (image.charAt(len - 1) == '>') {// '/>'
-                        if (len == 2) {
-                            if (!stack.empty()) {
-                                stack.pop();
-                            }
-                        }
-                    } else {
-                        tokenType = TokenType.TOKEN_ELEMENT_START_TAG;
-                        if (image.startsWith("</")) {
-                            String tagName = image.substring(2);
-                            currentNode = tagName;
-                            int beginOffset = currentTokensSize;
-                            int endOffset = beginOffset + image.length();
-                            int indentLevel = 0;
-                            if (!stack.empty()) {
-                                stack.pop();
-                                indentLevel = stack.size();
-                            }
-                            TokenElement tag = new TokenElement(tokenType, image, beginOffset, endOffset, indentLevel);
-                            tags.add(tag);
-                        } else {
-                            String tagName = image.substring(1);
-                            int beginOffset = currentTokensSize;
-                            int endOffset = beginOffset + image.length();
-                            int indentLevel = stack.size();
-                            TokenElement tag = new TokenElement(tokenType, tagName, beginOffset, endOffset, indentLevel);
-                            tags.add(tag);
-                            stack.push(tag);
-                        }
-                    }
-                    break;
-                }
-                case BLOCK_COMMENT:
-                case CDATA_SECTION:
-                case PI_START:
-                case PI_TARGET:
-                case PI_CONTENT:
-                case PI_END:
-                case ARGUMENT: //attribute of an element
-                case VALUE:
-                case TEXT:
-                case CHARACTER:
-                case WS:
-                case OPERATOR:
-                case DECLARATION:
-                    break; //Do nothing for above case's
-
-                case ERROR:
-                case EOL:
-                default:
-                    throw new IOException("Invalid token found in document: " +
-                            "Please use the text editor to resolve the issues...");
+        basedoc.readLock();
+        int incrIndentLevelBy = 0;
+        try {
+            //are we formatting from the beginning of doc or a subsection
+            int line = Utilities.getLineOffset(basedoc, startOffset);
+            if(line > 0) {
+                boolean nested = isSubSectionToFormatNested(basedoc, startOffset);
+                //we are formatting a subsection
+                int precedingWordLoc = Utilities.getFirstNonWhiteBwd(basedoc, startOffset) ;
+                int previousLine = Utilities.getLineOffset(basedoc, precedingWordLoc);
+                int previousLineIndentation = 0;
+                //we need to get the previous line and find its indentation
+                //the previous line will be ( current line - 1), if the user has
+                //has selected the entire line to format
+                //the previous line will be the same as current line if user
+                //selected a part of line to format
+                if(previousLine != line){
+                    previousLineIndentation = Utilities.getRowIndent(basedoc, precedingWordLoc);
+                } else
+                    previousLineIndentation = Utilities.getRowIndent(basedoc, startOffset);
+                //the section being formatted should be idented wrt to previous line's indentation
+              
+                    int div = previousLineIndentation / spacesPerTab;
+                    if(nested)
+                       incrIndentLevelBy = div +1;
+                    else
+                        incrIndentLevelBy = div;
+                
             }
-            currentTokensSize += image.length();
+            TokenHierarchy tokenHierarchy = TokenHierarchy.get(basedoc);
+            TokenSequence<XMLTokenId> tokenSequence = tokenHierarchy.tokenSequence();
+            org.netbeans.api.lexer.Token<XMLTokenId> token = tokenSequence.token();
+            // Add the text token, if any, before xml decalration to document node
+            if (token != null && token.id() == XMLTokenId.TEXT) {
+                if (tokenSequence.moveNext()) {
+                    token = tokenSequence.token();
+                }
+            }
+            int currentTokensSize = 0;
+            Stack<TokenElement> stack = new Stack<TokenElement>();
+            String currentNode = null;
+            while (tokenSequence.moveNext()) {
+                token = tokenSequence.token();
+                XMLTokenId tokenId = token.id();
+                String image = token.text().toString();
+                if( ! (tokenSequence.offset() >= startOffset && tokenSequence.offset() <endOffset) ) {
+                    currentTokensSize += image.length();
+                    continue;
+                }
+                TokenType tokenType = TokenType.TOKEN_WHITESPACE;
+                switch (tokenId) {
+                    case TAG: {
+                        int len = image.length();
+                        if (image.charAt(len - 1) == '>') {// '/>'
+                            if (len == 2) {
+                                if (!stack.empty()) {
+                                    stack.pop();
+                                }
+                            }
+                        } else {
+                            tokenType = TokenType.TOKEN_ELEMENT_START_TAG;
+                            if (image.startsWith("</")) {
+                                String tagName = image.substring(2);
+                                currentNode = tagName;
+                                int begin = currentTokensSize;
+                                int end = begin + image.length();
+                                int indentLevel = incrIndentLevelBy;
+                                if (!stack.empty()) {
+                                    stack.pop();
+                                    indentLevel = stack.size() +incrIndentLevelBy;
+                                }
+                                
+                                TokenElement tag = new TokenElement(tokenType, image, begin, end, indentLevel);
+                                tags.add(tag);
+                            } else {
+                                String tagName = image.substring(1);
+                                int begin = currentTokensSize;
+                                int end = begin + image.length();
+                                int indentLevel = stack.size() + incrIndentLevelBy;
+                                TokenElement tag = new TokenElement(tokenType, tagName, begin, end, indentLevel);
+                                tags.add(tag);
+                                stack.push(tag);
+                            }
+                        }
+                        break;
+                    }
+                    case BLOCK_COMMENT:
+                    case CDATA_SECTION:
+                    case PI_START:
+                    case PI_TARGET:
+                    case PI_CONTENT:
+                    case PI_END:
+                    case ARGUMENT: //attribute of an element
+                    case VALUE:
+                    case TEXT:
+                    case CHARACTER:
+                    case WS:
+                    case OPERATOR:
+                    case DECLARATION:
+                        break; //Do nothing for above case's
+
+                    case ERROR:
+                    case EOL:
+                    default:
+                        throw new IOException("Invalid token found in document: " +
+                                "Please use the text editor to resolve the issues...");
+                }
+                currentTokensSize += image.length();
+            }
+        } finally {
+            basedoc.readUnlock();
         }
         return tags;
     }
@@ -387,4 +437,31 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
             return false;
         }
     }
+    
+       
+    private boolean isSubSectionToFormatNested(BaseDocument baseDoc, int startOffset){
+      AbstractDocument doc = (AbstractDocument)baseDoc;
+      doc.readLock();
+      try {
+          TokenHierarchy th = TokenHierarchy.get(doc);
+          TokenSequence ts = th.tokenSequence();
+          ts.move(startOffset);
+          while(ts.movePrevious()) {
+              Token t = ts.token();
+              if(t.id() == XMLTokenId.PI_END)
+                  return false;
+              String tagText = t.text().toString();
+              if(tagText.startsWith("</") || tagText.equals("/>"))
+                  return false;
+              if(tagText.startsWith("<"))
+                  return true;
+          }
+      } catch  (Exception ex) {
+          //return false anyway
+      } finally {
+          doc.readUnlock();
+      }
+      return false;
+  }
+   
 }
