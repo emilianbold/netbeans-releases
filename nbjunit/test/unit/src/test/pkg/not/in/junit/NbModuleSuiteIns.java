@@ -1,12 +1,14 @@
 package test.pkg.not.in.junit;
 
 import java.lang.reflect.Field;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.TestCase;
 import org.netbeans.insane.scanner.ObjectMap;
 import org.netbeans.insane.scanner.Visitor;
-import org.openide.util.Exceptions;
 
 public class NbModuleSuiteIns extends TestCase implements Visitor {
+    private static Logger LOG = Logger.getLogger("test.logger");
 
     public NbModuleSuiteIns(String t) {
         super(t);
@@ -17,7 +19,7 @@ public class NbModuleSuiteIns extends TestCase implements Visitor {
             Class<?> access = Class.forName("org.netbeans.insane.model.Support");
             System.setProperty("ins.one", "OK");
         } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+            LOG.log(Level.INFO, "Error loading class", ex);
         }
     }
 
@@ -27,7 +29,7 @@ public class NbModuleSuiteIns extends TestCase implements Visitor {
             Class<?> access = l.loadClass("org.openide.filesystems.FileSystem");
             System.setProperty("ins.fs", "OK");
         } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+            LOG.log(Level.INFO, "Error loading class", ex);
         }
     }
 
@@ -37,7 +39,7 @@ public class NbModuleSuiteIns extends TestCase implements Visitor {
             Class<?> access = l.loadClass("org.netbeans.api.java.platform.JavaPlatform");
             System.setProperty("ins.java", "OK");
         } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+            LOG.log(Level.INFO, "Error loading class", ex);
         }
     }
 
