@@ -185,6 +185,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             projectSourceRoots = getSourceRoots(originalSourcePath);
             Set<FileObject> preferredRoots = new HashSet<FileObject>();
             preferredRoots.addAll(Arrays.asList(originalSourcePath.getRoots()));
+            /*
             Set<FileObject> globalRoots = new TreeSet<FileObject>(new FileObjectComparator());
             globalRoots.addAll(GlobalPathRegistry.getDefault().getSourceRoots());
             globalRoots.removeAll(preferredRoots);
@@ -193,6 +194,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                     originalSourcePath,
                     globalCP
             );
+             */
             String listeningCP = (String) properties.get("listeningCP");
             if (listeningCP != null) {
                 for (String cp : listeningCP.split(File.pathSeparator)) {
