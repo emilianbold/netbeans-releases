@@ -207,6 +207,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
     public JPDADebuggerImpl (ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
+        
+        Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
+        suspend = p.getInt("StepResume", suspend);
+
         pcs = new PropertyChangeSupport (this);
         List l = lookupProvider.lookup (null, DebuggerEngineProvider.class);
         int i, k = l.size ();

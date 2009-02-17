@@ -381,7 +381,10 @@ public class CompletionResolverImpl implements CompletionResolver {
     private boolean resolveContext(CsmProject prj, ResultImpl resImpl, CsmContext context, int offset, String strPrefix, boolean match) {
         CsmFunction fun = CsmContextUtilities.getFunction(context, true);
         if (needLocalVars(context, offset)) {
-            resImpl.fileLocalEnumerators = contResolver.getFileLocalEnumerators(context, strPrefix, match);
+            if(resImpl.fileLocalEnumerators == null) {
+                resImpl.fileLocalEnumerators = new ArrayList<CsmEnumerator>();
+            }
+            resImpl.fileLocalEnumerators.addAll(contResolver.getFileLocalEnumerators(context, strPrefix, match));
             if (isEnough(strPrefix, match, resImpl.fileLocalEnumerators)) { return true; }
             boolean staticContext = fun == null ? true : CsmBaseUtilities.isStaticContext(fun);
 

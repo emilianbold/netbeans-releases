@@ -46,6 +46,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
+import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -82,12 +83,16 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     public CsmIncludeHyperlinkProvider() {
     }
 
-    protected boolean isValidToken(TokenItem<CppTokenId> token) {
-        return isSupportedToken(token);
+    protected boolean isValidToken(TokenItem<CppTokenId> token, HyperlinkType type) {
+        return isSupportedToken(token, type);
     }
 
-    public static boolean isSupportedToken(TokenItem<CppTokenId> token) {
+    public static boolean isSupportedToken(TokenItem<CppTokenId> token, HyperlinkType type) {
         if (token != null) {
+            if (type == HyperlinkType.ALT_HYPERLINK) {
+                return !CppTokenId.WHITESPACE_CATEGORY.equals(token.id().primaryCategory()) &&
+                        !CppTokenId.COMMENT_CATEGORY.equals(token.id().primaryCategory());
+            }
             switch (token.id()) {
                 case PREPROCESSOR_INCLUDE:
                 case PREPROCESSOR_INCLUDE_NEXT:
@@ -99,12 +104,12 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         return false;
     }
 
-    protected void performAction(final Document originalDoc, final JTextComponent target, final int offset) {
-        goToInclude(originalDoc, target, offset);
+    protected void performAction(final Document originalDoc, final JTextComponent target, final int offset, final HyperlinkType type) {
+        goToInclude(originalDoc, target, offset, type);
     }
 
-    public boolean goToInclude(Document doc, JTextComponent target, int offset) {
-        if (!preJump(doc, target, offset, "opening-include-element")) { //NOI18N
+    public boolean goToInclude(Document doc, JTextComponent target, int offset, HyperlinkType type) {
+        if (!preJump(doc, target, offset, "opening-include-element", type)) { //NOI18N
             return false;
         }
         CsmOffsetable item = findTargetObject(doc, offset);
@@ -182,7 +187,16 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         }
     };
 
-    protected String getTooltipText(Document doc, TokenItem<CppTokenId> token, int offset) {
+    protected String getTooltipText(Document doc, TokenItem<CppTokenId> token, int offset, HyperlinkType type) {
+        if (type == HyperlinkType.ALT_HYPERLINK) {
+            switch (token.id()) {
+                case PREPROCESSOR_INCLUDE:
+                case PREPROCESSOR_INCLUDE_NEXT:
+                case PREPROCESSOR_SYS_INCLUDE:
+                case PREPROCESSOR_USER_INCLUDE:
+                    return ""; // NOI18N
+            }
+        }
         CsmFile csmFile = CsmUtilities.getCsmFile(doc, true);
         CsmInclude target = null;
         if (csmFile != null) {

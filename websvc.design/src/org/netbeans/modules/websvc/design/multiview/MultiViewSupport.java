@@ -156,21 +156,21 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
     public CloneableTopComponent createMultiView() {
         MultiViewDescription views[];
         if (service != null && service.getLocalWsdlFile() != null) {
-            views = new MultiViewDescription[3];
+            views = new MultiViewDescription[2];
 
             // Put the source element first so that client code can find its
             // CloneableEditorSupport.Pane implementation.
             views[0] = new SourceMultiViewDesc(getDataObject());
             views[1] = new DesignMultiViewDesc(getDataObject());
-            views[2] = new PreviewMultiViewDesc(wsdlDo);
+            //views[2] = new PreviewMultiViewDesc(wsdlDo);
         } else {
-             views = new MultiViewDescription[3];
+             views = new MultiViewDescription[2];
 
             // Put the source element first so that client code can find its
             // CloneableEditorSupport.Pane implementation.
             views[0] = new SourceMultiViewDesc(getDataObject());
             views[1] = new DesignMultiViewDesc(getDataObject());
-            views[2] = new PreviewMultiViewDesc(getDataObject(), service);
+            //views[2] = new PreviewMultiViewDesc(getDataObject(), service);
         }
         
         // Make the column view the default element.

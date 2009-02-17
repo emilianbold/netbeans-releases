@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,54 +37,59 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.websvc.jaxws.catalog;
 
-package org.netbeans.modules.dlight.visualizers;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import javax.xml.namespace.QName;
 
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.api.impl.TreeTableNode;
-
-
-/**
- *
- * @author mt154047
- */
-public class DefaultTreeTableNode implements TreeTableNode{
-
-  private final String value;
-  private final Column[] tableColumns;
-  private final String[] tableValues;
-
-
-  public DefaultTreeTableNode(String treeValue, Column[] tableColumns, String[] tableValues) {
-    this.value = treeValue;
-    this.tableColumns = tableColumns;
-    this.tableValues = tableValues;
+public enum CatalogQNames {
+    CATALOG("catalog"),
+    SYSTEM("system"),
+    NEXTCATALOG("nextCatalog");//,
     
-  }
-
-
-
-  public String getValue(String columnName) {
-    int index = -1;
-    for (int i = 0; i < tableColumns.length; i ++){
-      if (tableColumns[i].getColumnName().equals(columnName)){
-        index = i;
-        break;
-      }
+    /*SYSTEMID("systemId"),
+    URI("uri"),
+    XPROJECT_CATALOGFILE_LOCATION("xprojectCatalogFileLocation"),
+    REFERENCING_FILE("referencingFile");*/
+    
+    
+    public static final String CATALOG_NS = "urn:oasis:names:tc:entity:xmlns:xml:catalog";
+    public static final String CATALOG_PREFIX = "cat";
+    
+    private static Set<QName> mappedQNames = new HashSet<QName>();
+    static {
+        mappedQNames.add(CATALOG.getQName());
+        mappedQNames.add(SYSTEM.getQName());
+        mappedQNames.add(NEXTCATALOG.getQName());
+        
+        /*mappedQNames.add(SYSTEMID.getQName());
+        mappedQNames.add(URI.getQName());
+        mappedQNames.add(XPROJECT_CATALOGFILE_LOCATION.getQName());
+        mappedQNames.add(REFERENCING_FILE.getQName());*/
     }
-    if (index < 0){
-      return null;
+
+    private QName qname;
+    
+    CatalogQNames(String localName) {
+        qname = new QName(CATALOG_NS, localName, CATALOG_PREFIX);
     }
-    return tableValues[index];
-  }
+    
+    public QName getQName() { 
+        return qname; 
+    }
 
-  public String getValue() {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
+    public String getLocalName() { 
+        return qname.getLocalPart();
+    }
+    
+    public String getQualifiedName() {
+        return qname.getPrefix() + ":" + qname.getLocalPart();
+    }
+    
+    public static Set<QName> getMappedQNames() {
+        return Collections.unmodifiableSet(mappedQNames);
+    }
 }

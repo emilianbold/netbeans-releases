@@ -1134,6 +1134,30 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 //            }
 
             FileContainer.Entry entry = getFileContainer().getEntry(csmFile.getBuffer().getFile());
+
+            if (entry == null) {
+                // since file container can return empty container the entry can be null.
+                StringBuilder buf = new StringBuilder("File container does not have file "); //NOI18N
+                buf.append("["+file+"]"); //NOI18N
+                if (getFileContainer() == FileContainer.empty()) {
+                    buf.append(" because file container is EMPTY."); //NOI18N
+                } else {
+                    buf.append("."); //NOI18N
+                }
+                if (isDisposing()) {
+                    buf.append("\n\tIt is very strange but project is disposing."); //NOI18N
+                }
+                if (!isValid()) {
+                    buf.append("\n\tIt is very strange but project is invalid."); //NOI18N
+                }
+                Status st = getStatus();
+                if (st != null) {
+                    buf.append("\n\tProject "+toString()+" has status "+st+"."); //NOI18N
+                }
+                Utils.LOG.info(buf.toString());
+                return csmFile;
+            }
+
             int entryModCount = 0;
 
             //
@@ -1576,23 +1600,29 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     protected FileImpl findFile(File file, int fileType, APTPreprocHandler preprocHandler,
             boolean scheduleParseIfNeed, APTPreprocHandler.State initial, NativeFileItem nativeFileItem) {
-
         FileImpl impl = getFile(file);
-        if (impl == null) {
-            synchronized (getFileContainer()) {
-                impl = getFile(file);
-                if (impl == null) {
-                    preprocHandler = (preprocHandler == null) ? getPreprocHandler(file) : preprocHandler;
-                    impl = new FileImpl(ModelSupport.getFileBuffer(file), this, fileType, nativeFileItem);
-                    if (nativeFileItem != null) {
-                        putNativeFileItem(impl.getUID(), nativeFileItem);
-                    }
-                    putFile(file, impl, initial);
-                    // NB: parse only after putting into a map
-                    if (scheduleParseIfNeed) {
-                        APTPreprocHandler.State ppState = preprocHandler == null ? null : preprocHandler.getState();
-                        ParserQueue.instance().add(impl, ppState, ParserQueue.Position.TAIL);
-                    }
+        if (impl == null){
+            impl = findFileImpl(file, fileType, preprocHandler, scheduleParseIfNeed, initial, nativeFileItem);
+        }
+        return impl;
+    }
+
+    private FileImpl findFileImpl(File file, int fileType, APTPreprocHandler preprocHandler,
+            boolean scheduleParseIfNeed, APTPreprocHandler.State initial, NativeFileItem nativeFileItem) {
+        FileImpl impl = null;
+        synchronized (fileContainerLock) {
+            impl = getFile(file);
+            if (impl == null) {
+                preprocHandler = (preprocHandler == null) ? getPreprocHandler(file) : preprocHandler;
+                impl = new FileImpl(ModelSupport.getFileBuffer(file), this, fileType, nativeFileItem);
+                if (nativeFileItem != null) {
+                    putNativeFileItem(impl.getUID(), nativeFileItem);
+                }
+                putFile(file, impl, initial);
+                // NB: parse only after putting into a map
+                if (scheduleParseIfNeed) {
+                    APTPreprocHandler.State ppState = preprocHandler == null ? null : preprocHandler.getState();
+                    ParserQueue.instance().add(impl, ppState, ParserQueue.Position.TAIL);
                 }
             }
         }
@@ -2431,6 +2461,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private final Object namespaceLock = new String("namespaceLock in Projectbase " + hashCode()); // NOI18N
     private final Key declarationsSorageKey;
     private final Key fileContainerKey;
+    private final Object fileContainerLock = new Object();
     private final Key graphStorageKey;
     protected final SourceRootContainer projectRoots = new SourceRootContainer();
     private NativeProjectListenerImpl projectListener;

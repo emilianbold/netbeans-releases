@@ -41,6 +41,8 @@
 package org.netbeans.modules.debugger.jpda.ui.models;
 
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -48,6 +50,7 @@ import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.ui.CodeEvaluator;
 import org.netbeans.modules.debugger.jpda.ui.HistoryPanel;
 import org.netbeans.spi.debugger.ui.Constants;
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -59,9 +62,15 @@ public class EvaluatorTreeModel extends CachedChildrenTreeModel {
         "org/netbeans/modules/debugger/jpda/resources/field.gif";
 
     public static final String HISTORY_ITEM =
-        "org/netbeans/modules/debugger/jpda/resources/interface.gif";
+        "org/netbeans/modules/debugger/jpda/resources/eval_history_item.gif";
 
     private Collection<ModelListener> listeners = new HashSet<ModelListener>();
+
+    EvaluatorListener evalListener = new EvaluatorListener();
+
+    public EvaluatorTreeModel() {
+        CodeEvaluator.addResultListener(evalListener);
+    }
 
     public Object getRoot() {
         return TreeModel.ROOT;
@@ -132,6 +141,22 @@ public class EvaluatorTreeModel extends CachedChildrenTreeModel {
     public void removeModelListener (ModelListener l) {
         synchronized (listeners) {
             listeners.remove (l);
+        }
+    }
+
+    public void fireNodeChanged (Object node) {
+        try {
+            recomputeChildren();
+        } catch (UnknownTypeException ex) {
+            return;
+        }
+        ModelListener[] ls;
+        synchronized (listeners) {
+            ls = listeners.toArray(new ModelListener[0]);
+        }
+        ModelEvent ev = new ModelEvent.NodeChanged(this, node);
+        for (int i = 0; i < ls.length; i++) {
+            ls[i].modelChanged (ev);
         }
     }
 
@@ -268,6 +293,17 @@ public class EvaluatorTreeModel extends CachedChildrenTreeModel {
                 return item.value;
             }
             return ""; // NOI18N
+        }
+
+    }
+
+    // **************************************************************************
+
+    private class EvaluatorListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            fireNodeChanged(TreeModel.ROOT);
         }
 
     }

@@ -186,10 +186,9 @@ public abstract class FileObject extends Object implements Serializable {
      * @since 3.7
      */
     public String getPath() {
-        StringBuilder sb = new StringBuilder();
-        constructName(sb, '/');
-
-        return sb.toString();
+        StringBuilder[] buf = { null };
+        constructName(buf, '/', 0);
+        return buf[0].toString();
     }
 
     /** Get fully-qualified filename. Does so by walking through all folders
@@ -207,23 +206,22 @@ public abstract class FileObject extends Object implements Serializable {
     public String getPackageNameExt(char separatorChar, char extSepChar) {
         assert false : "Deprecated.";
 
-        StringBuilder sb = new StringBuilder();
-
         if (isRoot() || getParent().isRoot()) {
             return getNameExt();
         }
 
-        getParent().constructName(sb, separatorChar);
+        StringBuilder[] arr = new StringBuilder[1];
+        getParent().constructName(arr, separatorChar, 50);
 
         String ext = getExt();
 
         if ((ext == null) || ext.equals("")) { // NOI18N
-            sb.append(separatorChar).append(getNameExt());
+            arr[0].append(separatorChar).append(getNameExt());
         } else {
-            sb.append(separatorChar).append(getName()).append(extSepChar).append(getExt());
+            arr[0].append(separatorChar).append(getName()).append(extSepChar).append(getExt());
         }
 
-        return sb.toString();
+        return arr[0].toString();
     }
 
     /** Get fully-qualified filename, but without extension.
@@ -236,18 +234,16 @@ public abstract class FileObject extends Object implements Serializable {
     public String getPackageName(char separatorChar) {
         assert false : "Deprecated.";
 
-        StringBuilder sb = new StringBuilder();
-
         if (isRoot() || getParent().isRoot()) {
             return (isFolder()) ? getNameExt() : getName();
         }
 
-        getParent().constructName(sb, separatorChar);
+        StringBuilder[] arr = new StringBuilder[1];
+        String name = getName();
 
-        //sb.append (separatorChar).append ((isFolder ()) ? getNameExt() : getName ());
-        sb.append(separatorChar).append(getName());
-
-        return sb.toString();
+        getParent().constructName(arr, separatorChar, name.length());
+        arr[0].append(separatorChar).append(name);
+        return arr[0].toString();
     }
 
     /** Getter for name and extension of a file object. Dot is used
@@ -262,18 +258,23 @@ public abstract class FileObject extends Object implements Serializable {
     }
 
     /** Constructs path of file.
-    * @param sb string buffer
+    * @param arr to place the string buffer
     * @param sepChar separator character
     */
-    private void constructName(StringBuilder sb, char sepChar) {
+    private void constructName(StringBuilder[] arr, char sepChar, int lengthSoFar) {
+        String myName = getNameExt();
+        int myLen = lengthSoFar + myName.length();
+
         FileObject parent = getParent();
 
         if ((parent != null) && !parent.isRoot()) {
-            parent.constructName(sb, sepChar);
-            sb.append(sepChar);
+            parent.constructName(arr, sepChar, myLen + 1);
+            arr[0].append(sepChar);
+        } else {
+            assert arr[0] == null;
+            arr[0] = new StringBuilder(myLen);
         }
-
-        sb.append(getNameExt());
+        arr[0].append(getNameExt());
     }
 
     /** Get the filesystem containing this file.

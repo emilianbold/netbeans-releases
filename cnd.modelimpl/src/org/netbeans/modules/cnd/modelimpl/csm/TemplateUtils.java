@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
@@ -193,6 +194,11 @@ public class TemplateUtils {
                     // now create parameter
                     parameterStart = child;
                     AST varDecl = child.getFirstChild();
+                    // skip qualifiers
+                    // IZ#156679 : Constant in template is highlighted as invalid identifier
+                    if (varDecl != null) {
+                        varDecl = AstRenderer.getFirstSiblingSkipQualifiers(varDecl);
+                    }
                     // skip "typename"
                     if (varDecl != null && varDecl.getType() == CPPTokenTypes.LITERAL_typename) {
                         varDecl = varDecl.getNextSibling();

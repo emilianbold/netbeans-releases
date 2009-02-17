@@ -1148,7 +1148,14 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                         copyItemConfigurations(item.getItemConfigurations(), oldConfigurations);
                     }
                 } else {
-                    if (IpeUtils.isPathAbsolute(item.getPath())) {
+                    if (toFolder.isDiskFolder()) {
+                        FileObject itemFO = item.getFileObject();
+                        String toFolderPath = IpeUtils.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
+                        FileObject toFolderFO = FileUtil.toFileObject(new File(toFolderPath));
+                        String newName = IpeUtils.createUniqueFileName(toFolderPath, itemFO.getName(), itemFO.getExt());
+                        FileObject movedFileFO = FileUtil.moveFile(itemFO, toFolderFO, newName);
+                    }
+                    else if (IpeUtils.isPathAbsolute(item.getPath())) {
                         viewItemNode.getFolder().removeItem(item);
                         toFolder.addItem(item);
                     } else if (item.getPath().startsWith("..")) { // NOI18N
@@ -1209,7 +1216,15 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                         }
                     }
                 } else {
-                    if (IpeUtils.isPathAbsolute(item.getPath())) {
+                    if (toFolder.isDiskFolder()) {
+                        FileObject fo = FileUtil.toFileObject(item.getCanonicalFile());
+                        String ext = fo.getExt();
+                        String toFolderPath = IpeUtils.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
+                        FileObject toFolderFO = FileUtil.toFileObject(new File(toFolderPath));
+                        String newName = IpeUtils.createUniqueFileName(toFolderPath, fo.getName(), ext);
+                        FileObject copiedFileObject = fo.copy(toFolderFO, newName, ext);
+                    }
+                    else if (IpeUtils.isPathAbsolute(item.getPath())) {
                         toFolder.addItem(new Item(item.getPath()));
                     } else if (item.getPath().startsWith("..")) { // NOI18N
                         String originalFilePath = FileUtil.toFile(viewItemNode.getFolder().getProject().getProjectDirectory()).getPath();

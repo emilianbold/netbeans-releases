@@ -189,11 +189,15 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     
     private synchronized void updateModel () {
         DebuggerManager dm = DebuggerManager.getDebuggerManager ();
-        sessionProviders =      dm.lookup (viewType, SessionProvider.class);
+        DebuggerEngine e = dm.getCurrentEngine ();
+        if (e == null) {
+            sessionProviders = dm.lookup (viewType, SessionProvider.class);
+        } else {
+            sessionProviders = DebuggerManager.join(e, dm).lookup (viewType, SessionProvider.class);
+        }
         if (!sessionProviders.contains(providerToDisplay)) {
             providerToDisplay = null;
         }
-        DebuggerEngine e = dm.getCurrentEngine ();
         if (e == null && providerToDisplay == null && sessionProviders.size() > 0) {
             providerToDisplay = sessionProviders.get(0);
         }

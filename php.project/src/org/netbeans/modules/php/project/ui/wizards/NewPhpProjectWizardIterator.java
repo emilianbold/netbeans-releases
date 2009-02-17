@@ -222,9 +222,12 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     public WizardDescriptor.Panel current() {
-        // wizard title
-        String title = NbBundle.getMessage(NewPhpProjectWizardIterator.class, wizardType == WizardType.NEW ? "TXT_PhpProject" : "TXT_ExistingPhpProject");
-        descriptor.putProperty("NewProjectWizard_Title", title); // NOI18N
+        // #158483
+        if (descriptor != null) {
+            // wizard title
+            String title = NbBundle.getMessage(NewPhpProjectWizardIterator.class, wizardType == WizardType.NEW ? "TXT_PhpProject" : "TXT_ExistingPhpProject");
+            descriptor.putProperty("NewProjectWizard_Title", title); // NOI18N
+        }
         return panels[index];
     }
 

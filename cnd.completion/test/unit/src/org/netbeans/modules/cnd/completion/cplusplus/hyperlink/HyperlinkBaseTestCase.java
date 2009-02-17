@@ -45,6 +45,7 @@ import java.io.File;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
@@ -161,11 +162,11 @@ public abstract class HyperlinkBaseTestCase extends ProjectBasedTestCase {
         CsmOffsetable csmItem = null;
         // emulate hyperlinks order
         // first ask includes handler
-        if (includeProvider.isValidToken(jumpToken)) {
+        if (includeProvider.isValidToken(jumpToken, HyperlinkType.GO_TO_DECLARATION)) {
             csmItem = includeProvider.findTargetObject(doc, offset);
         }
         // if failed => ask declarations handler
-        if (csmItem == null && declarationsProvider.isValidToken(jumpToken)) {
+        if (csmItem == null && declarationsProvider.isValidToken(jumpToken, HyperlinkType.GO_TO_DECLARATION)) {
             csmItem = (CsmOffsetable) declarationsProvider.findTargetObject(doc, jumpToken, offset, true);
         }
         return csmItem;

@@ -183,10 +183,21 @@ public class Lookups {
      * <p>It is expected that each <q>named</q> lookup
      * will contain a superset of what would be created by:
      * <code>{@linkplain #metaInfServices(ClassLoader,String) metaInfServices}(theRightLoader, "META-INF/namedservices/" + path + "/")</code>
-     * <p>However various environments can add their own
-     * extensions to its content. For example when running inside NetBeans Runtime
-     * Container, the content of system file system under the given
-     * <code>path</code> is also present in the returned lookup.
+     *
+     * <p class="nonnormative">Various environments can add their own
+     * extensions to its content. As such
+     * {@link Lookups#forPath(java.lang.String)} can combine lookups
+     * from several sources. In current NetBeans Runtime Container, two lookups are used:
+     * </p>
+     * <ul class="nonnormative">
+     * <li><code>Lookups.metaInfServices("META-INF/namedservices/" + path)</code></li>
+     * <li><code>org.openide.loaders.FolderLookup(path)</code></li>
+     * </ul>
+     * <p class="nonnormative">
+     * Please note that these lookups differ in the way they inspect sub-folders.
+     * The first lookup just returns instances from the given path, ignoring
+     * sub-folders, the second one retrieves instances from the whole sub-tree.
+     * </p>
      * <p>
      * Read more about the <a href="../doc-files/api.html#folderlookup">usage of this method</a>.
      * 

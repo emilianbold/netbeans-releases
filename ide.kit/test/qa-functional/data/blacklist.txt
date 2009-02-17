@@ -1,6 +1,11 @@
 # Black list for BlacklistedClassesHandler
 # Enter full qualified class names, one class name per line
 
+# editor.deprecated.pre61settings is disabled autoload and shall not be loaded
+org.netbeans.modules.editor.deprecated.pre61settings.EditorPreferencesInjector
+org.netbeans.modules.editor.deprecated.pre61settings.KeybindingsInjector
+org.openide.options.SystemOption
+
 #
 # Loaders that shall not be needed during startup, but probably they still are
 #

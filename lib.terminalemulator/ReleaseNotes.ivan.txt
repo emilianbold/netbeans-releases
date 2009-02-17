@@ -1,14 +1,19 @@
 ================================================================================
-<<<<<<< local
-nobugid (Options support and UI)
-        - lib.termsupport.TermOptions contains options information for a Term.
-        - lib.termsupport.TermOptionsPanel is a generic JPanel for viewing the
-          above.
-        - org.netbeans.modules.terminal uses TermAdvancedOption to provide
-          UI for options in NB under Tools->Options->Miscellaneous->Terminal.
-        - TermApp (nbterm) has An Options context menu action and brings up an
-          options dialog which is persisted in ~/.java/.userPrefs/nbterm.
-=======
+nobugid (Solaris work)
+	- lib.richexecution
+	  - class CLibrary enhanced to work with Solaris.
+	  - Viable process_start-solaris-intel.zip created.
+	  - Viable process_start-solaris-sparc.zip created.
+	  - Verified that JNA code and the process_start's work under both
+	    32-bit and 64-bit VM's.
+	  - Existing (zipped) process_start-linux-intel, whcih was built on
+	    FC6 crashes with a SIGFPE on newer linuxes like SLES10 or SuSe10
+	- lib.termsupport.nbterm
+	  - Introduced nbterm64 in order to test stuff under 64-bit VM's.
+	  - The distribution now contains all versions of process_starts
+	    which it gets from the zipfiles.
+
+================================================================================
 nobugid (Mac work)
 	- lib.richexecution
 	  - Introduced mac-intel as a platform in build.xml which now
@@ -38,7 +43,16 @@ nobugid (Mac work)
 	    processing.
 	    Introduced boolean onMac().
 
->>>>>>> other
+================================================================================
+nobugid (Options support and UI)
+        - lib.termsupport.TermOptions contains options information for a Term.
+        - lib.termsupport.TermOptionsPanel is a generic JPanel for viewing the
+          above.
+        - org.netbeans.modules.terminal uses TermAdvancedOption to provide
+          UI for options in NB under Tools->Options->Miscellaneous->Terminal.
+        - TermApp (nbterm) has An Options context menu action and brings up an
+          options dialog which is persisted in ~/.java/.userPrefs/nbterm.
+
 ================================================================================
 nobugid (get working on Windows again)
 	- richexecution
