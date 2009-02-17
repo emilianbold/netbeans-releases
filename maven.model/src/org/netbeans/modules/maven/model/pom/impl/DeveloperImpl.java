@@ -46,7 +46,7 @@ import org.netbeans.modules.maven.model.pom.POMComponentVisitor;
  *
  * @author mkleint
  */
-public class DeveloperImpl extends POMComponentImpl implements Developer {
+public class DeveloperImpl extends IdPOMComponentImpl implements Developer {
 
     public DeveloperImpl(POMModel model, Element element) {
         super(model, element);
@@ -54,6 +54,59 @@ public class DeveloperImpl extends POMComponentImpl implements Developer {
     
     public DeveloperImpl(POMModel model) {
         this(model, createElementNS(model, model.getPOMQNames().DEVELOPER));
+    }
+    public String getUrl() {
+        return getChildElementText(getModel().getPOMQNames().URL.getQName());
+    }
+
+    public void setUrl(String url) {
+        setChildElementText(getModel().getPOMQNames().URL.getName(), url,
+                getModel().getPOMQNames().URL.getQName());
+    }
+
+    public String getName() {
+        return getChildElementText(getModel().getPOMQNames().NAME.getQName());
+    }
+
+    public void setName(String name) {
+        setChildElementText(getModel().getPOMQNames().NAME.getName(), name,
+                getModel().getPOMQNames().NAME.getQName());
+    }
+
+    public String getEmail() {
+        return getChildElementText(getModel().getPOMQNames().EMAIL.getQName());
+    }
+
+    public void setEmail(String email) {
+        setChildElementText(getModel().getPOMQNames().EMAIL.getName(), email,
+                getModel().getPOMQNames().EMAIL.getQName());
+    }
+
+    public String getOrganization() {
+        return getChildElementText(getModel().getPOMQNames().ORGANIZATION.getQName());
+    }
+
+    public void setOrganization(String organization) {
+        setChildElementText(getModel().getPOMQNames().ORGANIZATION.getName(), organization,
+                getModel().getPOMQNames().ORGANIZATION.getQName());
+    }
+
+    public String getOrganizationUrl() {
+        return getChildElementText(getModel().getPOMQNames().ORGANIZATIONURL.getQName());
+    }
+
+    public void setOrganizationUrl(String url) {
+        setChildElementText(getModel().getPOMQNames().ORGANIZATIONURL.getName(), url,
+                getModel().getPOMQNames().ORGANIZATIONURL.getQName());
+    }
+
+    public String getTimezone() {
+        return getChildElementText(getModel().getPOMQNames().TIMEZONE.getQName());
+    }
+
+    public void setTimezone(String zone) {
+        setChildElementText(getModel().getPOMQNames().TIMEZONE.getName(), zone,
+                getModel().getPOMQNames().TIMEZONE.getQName());
     }
 
     // attributes

@@ -170,6 +170,16 @@ public final class POMQNames {
     public final POMQName EXCLUDES;
     public final POMQName EXCLUDE;
 
+    public final POMQName TAG;
+    public final POMQName CONNECTION;
+    public final POMQName DEVELOPERCONNECTION;
+
+    public final POMQName SYSTEM;
+
+    public final POMQName EMAIL;
+    public final POMQName ORGANIZATIONURL;
+    public final POMQName TIMEZONE;
+
 
     private boolean ns;
 
@@ -294,6 +304,16 @@ public final class POMQNames {
         INCLUDE = new POMQName(POMQName.createQName("include",ns), ns); //NOI18N
         EXCLUDES = new POMQName(POMQName.createQName("excludes",ns), ns); //NOI18N
         EXCLUDE = new POMQName(POMQName.createQName("exclude",ns), ns); //NOI18N
+
+        TAG = new POMQName(POMQName.createQName("tag",ns), ns); //NOI18N
+        CONNECTION = new POMQName(POMQName.createQName("connection",ns), ns); //NOI18N
+        DEVELOPERCONNECTION = new POMQName(POMQName.createQName("developerConnection",ns), ns); //NOI18N
+
+        SYSTEM = new POMQName(POMQName.createQName("system",ns), ns); //NOI18N
+
+        ORGANIZATIONURL = new POMQName(POMQName.createQName("organizationUrl",ns), ns); //NOI18N
+        EMAIL = new POMQName(POMQName.createQName("email",ns), ns); //NOI18N
+        TIMEZONE = new POMQName(POMQName.createQName("timezone",ns), ns); //NOI18N
         //when adding items here, need to add them to the set below as well.
 
     }
@@ -404,7 +424,15 @@ public final class POMQNames {
             INCLUDES.getQName(),
             INCLUDE.getQName(),
             EXCLUDES.getQName(),
-            EXCLUDE.getQName()
+            EXCLUDE.getQName(),
+            DEVELOPERCONNECTION.getQName(),
+            CONNECTION.getQName(),
+            TAG.getQName(),
+            SYSTEMPATH.getQName(),
+            ORGANIZATIONURL.getQName(),
+            EMAIL.getQName(),
+            TIMEZONE.getQName()
+                    
         };
         List<QName> list = Arrays.asList(names);
         return new HashSet<QName>(list);
