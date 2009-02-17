@@ -53,7 +53,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ConcurrentHashMap;
+import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
 
 
 /**
@@ -286,6 +286,28 @@ public class MercurialInterceptor extends VCSInterceptor {
             }
         });
     }
+
+    @Override
+    public String getAttribute(File file, String attrName) {
+        if("ProvidedExtensions.RemoteLocation".equals(attrName)) {
+            return getRemoteRepository(file);
+        } else {
+            return super.getAttribute(file, attrName);
+        }
+    }
+
+    public String getRemoteRepository(File file) {
+        if(file == null) return null;
+        String remotePath = HgRepositoryContextCache.getInstance().getPullDefault(file);
+        if(remotePath == null) {
+            remotePath = HgRepositoryContextCache.getInstance().getPushDefault(file);
+
+            Mercurial.LOG.log(Level.WARNING, "No defalt pull available for managed file : [" + file + "]");
+        }
+        return remotePath;
+    }
+
+
 
     private void fileChangedImpl(final File file) {
         if (file.isDirectory()) return;
