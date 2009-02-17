@@ -182,12 +182,12 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                     while (it.hasNext()) {
                         File pom = it.next();
                         FileUtil.refreshFor(pom);
-                        FileObject fo = FileUtil.toFileObject(file);
+                        FileObject fo = FileUtil.toFileObject(pom);
                         if (fo != null) {
                             ModelSource ms = org.netbeans.modules.maven.model.Utilities.createModelSource(fo);
                             POMModel mdl = POMModelFactory.getDefault().getModel(ms);
                             if (mdl != null) {
-                                mdls.add(mdl);
+                                mdls.add(0, mdl);
                             } else {
                                 System.out.println("no model for " + pom);
                             }
