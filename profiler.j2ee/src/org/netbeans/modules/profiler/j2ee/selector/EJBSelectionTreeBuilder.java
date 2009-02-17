@@ -42,17 +42,31 @@ package org.netbeans.modules.profiler.j2ee.selector;
 import org.netbeans.api.project.Project;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
 import org.netbeans.modules.profiler.j2ee.selector.nodes.ProjectNode;
 import org.netbeans.modules.profiler.j2ee.selector.nodes.ejb.ProjectChildren;
 import org.netbeans.modules.profiler.selector.java.impl.ProjectSelectionTreeBuilder;
+import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
+import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
+@ProjectServiceProvider(service = SelectionTreeBuilder.class, projectTypes = {
+    @ProjectType(id = "org-netbeans-modules-j2ee-earproject"),
+    @ProjectType(id = "org-netbeans-modules-j2ee-ejbjarproject"),
+    @ProjectType(id = "org-netbeans-modules-maven")
+})
 public class EJBSelectionTreeBuilder extends ProjectSelectionTreeBuilder {
+
+    public EJBSelectionTreeBuilder(Project project) {
+        this(project, true);
+    }
+
     public EJBSelectionTreeBuilder(Project project, boolean isPreferred) {
         super(new Type("ejb-application", "EJB View"), isPreferred, project);
     }
@@ -69,6 +83,6 @@ public class EJBSelectionTreeBuilder extends ProjectSelectionTreeBuilder {
 
     @Override
     public int estimatedNodeCount() {
-        return 1;
+        return project.getLookup().lookup(EjbJarImplementation.class) != null ? 1 : -1;
     }
 }

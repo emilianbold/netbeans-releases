@@ -373,11 +373,20 @@ public final class VCSContext {
 
     private static Set<File> substract(Set<File> roots, Set<File> exclusions, FileFilter filter) {
         Set<File> files = new HashSet<File>(roots);
+        Set<File> checkedFiles = new HashSet<File>();
         for (File exclusion : exclusions) {
             assert exclusion != null;
             for (;;) {
-                addSiblings(files, exclusion, filter);
-                exclusion = exclusion.getParentFile();
+                File parent = exclusion.getParentFile();
+                /**
+                 * only if the parent has not been checked yet - #158221
+                 * otherwise skip adding of the siblings - they have been already added
+                 */
+                if (!checkedFiles.contains(exclusion.getParentFile())) {
+                    addSiblings(files, exclusion, filter);
+                    checkedFiles.add(parent);
+                }
+                exclusion = parent;
                 files.remove(exclusion);
                 if (roots.contains(exclusion)) break;
             }

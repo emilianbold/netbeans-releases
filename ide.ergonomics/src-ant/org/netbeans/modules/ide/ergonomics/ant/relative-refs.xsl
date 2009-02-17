@@ -33,6 +33,15 @@
                     />
                 </xsl:element>
             </xsl:if>
+            <xsl:if test="//*/folder[@name='Debugger']">
+                <xsl:element name="folder">
+                    <xsl:attribute name="name">Debugger</xsl:attribute>
+                    <xsl:apply-templates
+                        select="//*/folder[@name='Debugger']/*"
+                        mode="project-wizard"
+                    />
+                </xsl:element>
+            </xsl:if>
         </xsl:element>
     </xsl:template>
 
@@ -59,6 +68,12 @@
         <xsl:element name="attr">
             <xsl:attribute name="name">SystemFileSystem.localizingBundle</xsl:attribute>
             <xsl:attribute name="stringvalue">org.netbeans.modules.ide.ergonomics.<xsl:value-of select="$cluster.name"/>.Bundle</xsl:attribute>
+        </xsl:element>
+    </xsl:template>
+    <xsl:template match="attr[@bundlevalue]" mode="project-wizard">
+        <xsl:element name="attr">
+            <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
+            <xsl:attribute name="bundlevalue">org.netbeans.modules.ide.ergonomics.<xsl:value-of select="$cluster.name"/>.Bundle#<xsl:value-of select="substring-after(@bundlevalue, '#')"/></xsl:attribute>
         </xsl:element>
     </xsl:template>
     <xsl:template match="attr[@urlvalue]" mode="project-wizard">

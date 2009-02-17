@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -78,21 +79,10 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
      * @param file 
      * @param type 
      * @param name 
-     * @param registerInProject 
-     */
-    public VariableImpl(AST ast, CsmFile file, CsmType type, String name, boolean registerInProject) {
-        this(ast, file, type, name, null, registerInProject);
-    }
-
-    /** Creates a new instance of VariableImpl 
-     * @param ast 
-     * @param file 
-     * @param type 
-     * @param name 
      * @param scope variable scope
      * @param registerInProject 
      */
-    public VariableImpl(AST ast, CsmFile file, CsmType type, String name, CsmScope scope, boolean registerInProject) {
+    public VariableImpl(AST ast, CsmFile file, CsmType type, String name, CsmScope scope, boolean registerInProject, boolean global) {
         super(ast, file);
         initInitialValue(ast);
         _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static);
@@ -102,6 +92,13 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         _setScope(scope);
         if (registerInProject) {
             registerInProject();
+        }
+        if (global) {
+            if (!registerInProject) {
+                RepositoryUtils.put(this);
+            }
+        } else {
+            Utils.setSelfUID(this);
         }
     }
 
@@ -114,6 +111,8 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         _setScope(scope);
         if (registerInProject) {
             registerInProject();
+        } else {
+            Utils.setSelfUID(this);
         }
     }
 

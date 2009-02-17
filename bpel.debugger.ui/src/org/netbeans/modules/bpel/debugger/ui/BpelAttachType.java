@@ -34,13 +34,10 @@ import org.openide.util.NbBundle;
  *
  * @author Sun Microsystems
  */
+@AttachType.Registration(displayName="#CTL_BpelConnector_name")
 public class BpelAttachType extends AttachType {
 
     private Reference<BpelConnectPanel> customizerRef = new WeakReference<BpelConnectPanel>(null);
-
-    public String getTypeDisplayName () {
-        return NbBundle.getMessage (getClass(), "CTL_Connector_name");
-    }
 
     public JComponent getCustomizer () {
         BpelConnectPanel panel = new BpelConnectPanel ();

@@ -60,6 +60,17 @@ public class QmakeConfiguration implements Cloneable {
     private final String[] BUILD_MODE_NAMES = { "Debug", "Release" }; // NOI18N
     private final String[] BUILD_NODE_OPTIONS = { "debug", "release" }; // NOI18N
 
+    private static final String CORE = "core"; // NOI18N
+    private static final String GUI = "gui"; // NOI18N
+    private static final String NETWORK = "network"; // NOI18N
+    private static final String OPENGL = "opengl"; // NOI18N
+    private static final String PHONON = "phonon"; // NOI18N
+    private static final String QT3SUPPORT = "qt3support"; // NOI18N
+    private static final String SQL = "sql"; // NOI18N
+    private static final String SVG = "svg"; // NOI18N
+    private static final String WEBKIT = "webkit"; // NOI18N
+    private static final String XML = "xml"; // NOI18N
+
     private final MakeConfiguration makeConfiguration;
 
     // general
@@ -73,8 +84,11 @@ public class QmakeConfiguration implements Cloneable {
     private BooleanConfiguration guiEnabled;
     private BooleanConfiguration networkEnabled;
     private BooleanConfiguration openglEnabled;
+    private BooleanConfiguration phononEnabled;
+    private BooleanConfiguration qt3SupportEnabled;
     private BooleanConfiguration sqlEnabled;
     private BooleanConfiguration svgEnabled;
+    private BooleanConfiguration webkitEnabled;
     private BooleanConfiguration xmlEnabled;
 
     // intermediate files
@@ -95,9 +109,12 @@ public class QmakeConfiguration implements Cloneable {
         guiEnabled = new BooleanConfiguration(null, true);
         networkEnabled = new BooleanConfiguration(null, false);
         openglEnabled = new BooleanConfiguration(null, false);
+        phononEnabled = new BooleanConfiguration(null, false);
+        qt3SupportEnabled = new BooleanConfiguration(null, false);
         sqlEnabled = new BooleanConfiguration(null, false);
         svgEnabled = new BooleanConfiguration(null, false);
         xmlEnabled = new BooleanConfiguration(null, false);
+        webkitEnabled = new BooleanConfiguration(null, false);
         mocDir = new StringConfiguration(null, ""); // NOI18N
         rccDir = new StringConfiguration(null, ""); // NOI18N
         uiDir = new StringConfiguration(null, ""); // NOI18N
@@ -125,9 +142,12 @@ public class QmakeConfiguration implements Cloneable {
         modules.put(new BooleanNodeProp(guiEnabled, true, "QtGui", getString("QtGuiTxt"), getString("QtGuiHint"))); // NOI18N
         modules.put(new BooleanNodeProp(networkEnabled, true, "QtNetwork", getString("QtNetworkTxt"), getString("QtNetworkHint"))); // NOI18N
         modules.put(new BooleanNodeProp(openglEnabled, true, "QtOpengl", getString("QtOpenglTxt"), getString("QtOpenglHint"))); // NOI18N
+        modules.put(new BooleanNodeProp(phononEnabled, true, "QtPhonon", getString("QtPhononTxt"), getString("QtPhononHint"))); // NOI18N
+        modules.put(new BooleanNodeProp(qt3SupportEnabled, true, "Qt3Support", getString("Qt3SupportTxt"), getString("Qt3SupportHint"))); // NOI18N
         modules.put(new BooleanNodeProp(sqlEnabled, true, "QtSql", getString("QtSqlTxt"), getString("QtSqlHint"))); // NOI18N
         modules.put(new BooleanNodeProp(svgEnabled, true, "QtSvg", getString("QtSvgTxt"), getString("QtSvgHint"))); // NOI18N
         modules.put(new BooleanNodeProp(xmlEnabled, true, "QtXml", getString("QtXmlTxt"), getString("QtXmlHint"))); // NOI18N
+        modules.put(new BooleanNodeProp(webkitEnabled, true, "QtWebkit", getString("QtWebkitTxt"), getString("QtWebkitHint"))); // NOI18N
         sheet.put(modules);
 
         Sheet.Set generatedFiles = new Sheet.Set();
@@ -222,25 +242,34 @@ public class QmakeConfiguration implements Cloneable {
     public String getEnabledModules() {
         StringBuilder buf = new StringBuilder();
         if (isCoreEnabled().getValue()) {
-            append(buf, "core"); // NOI18N
+            append(buf, CORE);
         }
         if (isGuiEnabled().getValue()) {
-            append(buf, "gui"); // NOI18N
+            append(buf, GUI);
         }
         if (isNetworkEnabled().getValue()) {
-            append(buf, "network"); // NOI18N
+            append(buf, NETWORK);
         }
         if (isOpenglEnabled().getValue()) {
-            append(buf, "opengl"); // NOI18N
+            append(buf, OPENGL);
+        }
+        if (isPhononEnabled().getValue()) {
+            append(buf, PHONON);
+        }
+        if (isQt3SupportEnabled().getValue()) {
+            append(buf, QT3SUPPORT);
         }
         if (isSqlEnabled().getValue()) {
-            append(buf, "sql"); // NOI18N
+            append(buf, SQL);
         }
         if (isSvgEnabled().getValue()) {
-            append(buf, "svg"); // NOI18N
+            append(buf, SVG);
         }
         if (isXmlEnabled().getValue()) {
-            append(buf, "xml"); // NOI18N
+            append(buf, XML);
+        }
+        if (isWebkitEnabled().getValue()) {
+            append(buf, WEBKIT);
         }
         return buf.toString();
     }
@@ -250,26 +279,35 @@ public class QmakeConfiguration implements Cloneable {
         isGuiEnabled().setValue(false);
         isNetworkEnabled().setValue(false);
         isOpenglEnabled().setValue(false);
+        isPhononEnabled().setValue(false);
+        isQt3SupportEnabled().setValue(false);
         isSqlEnabled().setValue(false);
         isSvgEnabled().setValue(false);
         isXmlEnabled().setValue(false);
+        isWebkitEnabled().setValue(false);
         StringTokenizer st = new StringTokenizer(modules);
         while (st.hasMoreTokens()) {
             String t = st.nextToken();
-            if (t.equals("core")) { // NOI18N
+            if (t.equals(CORE)) {
                 isCoreEnabled().setValue(true);
-            } else if (t.equals("gui")) { // NOI18N
+            } else if (t.equals(GUI)) {
                 isGuiEnabled().setValue(true);
-            } else if (t.equals("network")) { // NOI18N
+            } else if (t.equals(NETWORK)) {
                 isNetworkEnabled().setValue(true);
-            } else if (t.equals("opengl")) { // NOI18N
+            } else if (t.equals(OPENGL)) {
                 isOpenglEnabled().setValue(true);
-            } else if (t.equals("sql")) { // NOI18N
+            } else if (t.equals(PHONON)) {
+                isPhononEnabled().setValue(true);
+            } else if (t.equals(QT3SUPPORT)) {
+                isQt3SupportEnabled().setValue(true);
+            } else if (t.equals(SQL)) {
                 isSqlEnabled().setValue(true);
-            } else if (t.equals("svg")) { // NOI18N
+            } else if (t.equals(SVG)) {
                 isSvgEnabled().setValue(true);
-            } else if (t.equals("xml")) { // NOI18N
+            } else if (t.equals(XML)) {
                 isXmlEnabled().setValue(true);
+            } else if (t.equals(WEBKIT)) {
+                isWebkitEnabled().setValue(true);
             } else {
                 // unknown module
             }
@@ -308,6 +346,22 @@ public class QmakeConfiguration implements Cloneable {
         openglEnabled = val;
     }
 
+    public BooleanConfiguration isPhononEnabled() {
+        return phononEnabled;
+    }
+
+    private void setPhononEnabled(BooleanConfiguration val) {
+        this.phononEnabled = val;
+    }
+
+    public BooleanConfiguration isQt3SupportEnabled() {
+        return qt3SupportEnabled;
+    }
+
+    private void setQt3SupportEnabled(BooleanConfiguration val) {
+        this.qt3SupportEnabled = val;
+    }
+
     public BooleanConfiguration isSqlEnabled() {
         return sqlEnabled;
     }
@@ -330,6 +384,14 @@ public class QmakeConfiguration implements Cloneable {
 
     private void setXmlEnabled(BooleanConfiguration val) {
         xmlEnabled = val;
+    }
+
+    public BooleanConfiguration isWebkitEnabled() {
+        return webkitEnabled;
+    }
+
+    private void setWebkitEnabled(BooleanConfiguration val) {
+        this.webkitEnabled = val;
     }
 
     public StringConfiguration getMocDir() {
@@ -373,9 +435,12 @@ public class QmakeConfiguration implements Cloneable {
         isGuiEnabled().assign(other.isGuiEnabled());
         isNetworkEnabled().assign(other.isNetworkEnabled());
         isOpenglEnabled().assign(other.isOpenglEnabled());
+        isPhononEnabled().assign(other.isPhononEnabled());
+        isQt3SupportEnabled().assign(other.isQt3SupportEnabled());
         isSqlEnabled().assign(other.isSqlEnabled());
         isSvgEnabled().assign(other.isSvgEnabled());
         isXmlEnabled().assign(other.isXmlEnabled());
+        isWebkitEnabled().assign(other.isWebkitEnabled());
         getMocDir().assign(other.getMocDir());
         getRccDir().assign(other.getRccDir());
         getUiDir().assign(other.getUiDir());
@@ -394,9 +459,12 @@ public class QmakeConfiguration implements Cloneable {
             clone.setGuiEnabled(isGuiEnabled().clone());
             clone.setNetworkEnabled(isNetworkEnabled().clone());
             clone.setOpenglEnabled(isOpenglEnabled().clone());
+            clone.setPhononEnabled(isPhononEnabled().clone());
+            clone.setQt3SupportEnabled(isQt3SupportEnabled().clone());
             clone.setSqlEnabled(isSqlEnabled().clone());
             clone.setSvgEnabled(isSvgEnabled().clone());
             clone.setXmlEnabled(isXmlEnabled().clone());
+            clone.setWebkitEnabled(isWebkitEnabled().clone());
             clone.setMocDir(getMocDir().clone());
             clone.setRccDir(getRccDir().clone());
             clone.setUiDir(getUiDir().clone());

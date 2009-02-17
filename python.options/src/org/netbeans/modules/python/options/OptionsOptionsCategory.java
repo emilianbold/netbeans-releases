@@ -5,16 +5,16 @@
 package org.netbeans.modules.python.options;
 
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 
 public final class OptionsOptionsCategory extends OptionsCategory {
 
+    @Override
     public Icon getIcon() {
-        return new ImageIcon(Utilities.loadImage("org/netbeans/modules/python/options/py_25_32.png"));
+        return ImageUtilities.loadImageIcon("org/netbeans/modules/python/options/py_25_32.png", false);
     }
 
     public String getCategoryName() {

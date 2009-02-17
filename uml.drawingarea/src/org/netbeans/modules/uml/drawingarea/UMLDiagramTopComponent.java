@@ -46,7 +46,6 @@ import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
@@ -150,7 +149,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.datatransfer.ClipboardEvent;
 import org.openide.util.datatransfer.ClipboardListener;
 import org.openide.util.datatransfer.ExClipboard;
@@ -886,6 +884,7 @@ public class UMLDiagramTopComponent extends TopComponent implements MouseListene
             } else {
                 diagramView = scene.getView();
             }
+            scene.getView().setMaximumSize(new Dimension(Integer.MAX_VALUE,Integer.MAX_VALUE));
             diagramView.putClientProperty("print.printable", Boolean.TRUE); // NOI18N
             
             // If the scene component has a mouse wheel listener then the 
@@ -1789,6 +1788,7 @@ public class UMLDiagramTopComponent extends TopComponent implements MouseListene
     private class EngineDrawingAreaSink extends DrawingAreaEventsAdapter
     {
 
+        @Override
         public void onDrawingAreaPostPropertyChange(IProxyDiagram pProxyDiagram,
                                                     int pPropertyKindChanged,
                                                     IResultCell cell)

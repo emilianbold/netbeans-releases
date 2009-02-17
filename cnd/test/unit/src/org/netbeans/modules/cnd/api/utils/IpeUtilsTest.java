@@ -76,6 +76,12 @@ public class IpeUtilsTest {
     }
 
     @Test
+    public void test158596() {
+        assertEquals("c", // NOI18N
+                     normalize(IpeUtils.toRelativePath("\\C:\\f", "C:\\f\\c"))); // NOI18N
+    }
+
+    @Test
     public void testToRelativePath() {
         assertEquals("D:\\tmp\\test.cpp", // NOI18N
                      IpeUtils.toRelativePath("C:\\tmp", "D:\\tmp\\test.cpp")); // NOI18N

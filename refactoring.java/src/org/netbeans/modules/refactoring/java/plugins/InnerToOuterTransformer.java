@@ -84,7 +84,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
     public void setWorkingCopy(WorkingCopy wc) throws ToPhaseException {
         super.setWorkingCopy(wc);
         this.inner = refactoring.getSourceType().resolveElement(wc);
-        outer = SourceUtils.getEnclosingTypeElement(inner);
+        outer = wc.getElementUtilities().enclosingTypeElement(inner);
     }
 
     @Override
@@ -147,7 +147,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
     
     private TypeElement getOuter(TypeElement element) {
         while (element != null && !workingCopy.getTypes().isSubtype(element.asType(),outer.asType())) {
-            element = SourceUtils.getEnclosingTypeElement(element);
+            element = workingCopy.getElementUtilities().enclosingTypeElement(element);
         }
         return element;
     }
@@ -302,7 +302,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
         Element cur = getCurrentElement();
         if (cur==null || cur.getKind() == ElementKind.PACKAGE)
                 return false;
-        TypeElement encl = SourceUtils.getEnclosingTypeElement(cur);
+        TypeElement encl = workingCopy.getElementUtilities().enclosingTypeElement(cur);
         if (outer.equals(encl) && workingCopy.getTypes().isSubtype(getCurrentClass().asType(), inner.asType())) {
             return true;
         }

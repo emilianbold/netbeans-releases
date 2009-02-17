@@ -50,16 +50,13 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.AbstractSequentialList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.StringTokenizer;
 import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
@@ -189,10 +186,9 @@ public abstract class FileObject extends Object implements Serializable {
      * @since 3.7
      */
     public String getPath() {
-        StringBuilder sb = new StringBuilder();
-        constructName(sb, '/');
-
-        return sb.toString();
+        StringBuilder[] buf = { null };
+        constructName(buf, '/', 0);
+        return buf[0].toString();
     }
 
     /** Get fully-qualified filename. Does so by walking through all folders
@@ -210,23 +206,22 @@ public abstract class FileObject extends Object implements Serializable {
     public String getPackageNameExt(char separatorChar, char extSepChar) {
         assert false : "Deprecated.";
 
-        StringBuilder sb = new StringBuilder();
-
         if (isRoot() || getParent().isRoot()) {
             return getNameExt();
         }
 
-        getParent().constructName(sb, separatorChar);
+        StringBuilder[] arr = new StringBuilder[1];
+        getParent().constructName(arr, separatorChar, 50);
 
         String ext = getExt();
 
         if ((ext == null) || ext.equals("")) { // NOI18N
-            sb.append(separatorChar).append(getNameExt());
+            arr[0].append(separatorChar).append(getNameExt());
         } else {
-            sb.append(separatorChar).append(getName()).append(extSepChar).append(getExt());
+            arr[0].append(separatorChar).append(getName()).append(extSepChar).append(getExt());
         }
 
-        return sb.toString();
+        return arr[0].toString();
     }
 
     /** Get fully-qualified filename, but without extension.
@@ -239,18 +234,16 @@ public abstract class FileObject extends Object implements Serializable {
     public String getPackageName(char separatorChar) {
         assert false : "Deprecated.";
 
-        StringBuilder sb = new StringBuilder();
-
         if (isRoot() || getParent().isRoot()) {
             return (isFolder()) ? getNameExt() : getName();
         }
 
-        getParent().constructName(sb, separatorChar);
+        StringBuilder[] arr = new StringBuilder[1];
+        String name = getName();
 
-        //sb.append (separatorChar).append ((isFolder ()) ? getNameExt() : getName ());
-        sb.append(separatorChar).append(getName());
-
-        return sb.toString();
+        getParent().constructName(arr, separatorChar, name.length());
+        arr[0].append(separatorChar).append(name);
+        return arr[0].toString();
     }
 
     /** Getter for name and extension of a file object. Dot is used
@@ -265,18 +258,23 @@ public abstract class FileObject extends Object implements Serializable {
     }
 
     /** Constructs path of file.
-    * @param sb string buffer
+    * @param arr to place the string buffer
     * @param sepChar separator character
     */
-    private void constructName(StringBuilder sb, char sepChar) {
+    private void constructName(StringBuilder[] arr, char sepChar, int lengthSoFar) {
+        String myName = getNameExt();
+        int myLen = lengthSoFar + myName.length();
+
         FileObject parent = getParent();
 
         if ((parent != null) && !parent.isRoot()) {
-            parent.constructName(sb, sepChar);
-            sb.append(sepChar);
+            parent.constructName(arr, sepChar, myLen + 1);
+            arr[0].append(sepChar);
+        } else {
+            assert arr[0] == null;
+            arr[0] = new StringBuilder(myLen);
         }
-
-        sb.append(getNameExt());
+        arr[0].append(getNameExt());
     }
 
     /** Get the filesystem containing this file.
@@ -600,27 +598,7 @@ public abstract class FileObject extends Object implements Serializable {
      * @since 7.21
      */
     public List<String> asLines(final String encoding) throws IOException {
-        return new AbstractSequentialList<String>() {
-            final FileObjectLineIterator ready = new FileObjectLineIterator(FileObject.this, encoding);
-
-            public synchronized ListIterator<String> listIterator(int position) {
-                FileObjectLineIterator ret = ready.cloneIterator();
-                while (position-- > 0) {
-                    ret.next();
-                }
-                return ret;
-            }
-
-            public synchronized int size() {
-                int cnt = 0;
-                Iterator<String> it = listIterator();
-                while (it.hasNext()) {
-                    it.next();
-                    cnt++;
-                }
-                return cnt;
-            }
-        };
+        return new FileObjectLines(encoding, this);
     }
 
     /** Get output stream.

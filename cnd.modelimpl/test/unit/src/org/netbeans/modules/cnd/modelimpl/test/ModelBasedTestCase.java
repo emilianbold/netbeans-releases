@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.modelimpl.test;
 
 import java.util.ArrayList;
@@ -54,30 +53,30 @@ public class ModelBasedTestCase extends BaseTestCase {
 
     private final Collection<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
 
-
     public ModelBasedTestCase(String testName) {
         super(testName);
     }
 
     @Override
     protected void setUp() throws Exception {
-	super.setUp();
-	DiagnosticExceptoins.Hook hook = new DiagnosticExceptoins.Hook() {
-	    public void exception(Throwable thr) {
-		thr.printStackTrace();
-		exceptions.add(thr);
+        super.setUp();
+        DiagnosticExceptoins.Hook hook = new DiagnosticExceptoins.Hook() {
+
+            public void exception(Throwable thr) {
+                thr.printStackTrace();
+                exceptions.add(thr);
                 System.err.println("-----Start Thread Dump-----");
-                for(Map.Entry<Thread, StackTraceElement[]> entry : Thread.getAllStackTraces().entrySet()){
+                for (Map.Entry<Thread, StackTraceElement[]> entry : Thread.getAllStackTraces().entrySet()) {
                     System.err.println(entry.getKey().getName());
-                    for(StackTraceElement element : entry.getValue()){
-                        System.err.println("\tat "+element.toString());
+                    for (StackTraceElement element : entry.getValue()) {
+                        System.err.println("\tat " + element.toString());
                     }
                     System.err.println();
                 }
                 System.err.println("-----End Thread Dump-----");
-	    }
-	};
-	DiagnosticExceptoins.setHook(hook);
+            }
+        };
+        DiagnosticExceptoins.setHook(hook);
     }
 
     /**
@@ -86,32 +85,29 @@ public class ModelBasedTestCase extends BaseTestCase {
      * in the same way as exceptions that occur in code model threads
      */
     protected void registerException(Throwable thr) {
-	exceptions.add(thr);
+        exceptions.add(thr);
     }
 
     /** Asserts that no exceptions occur in code model threads */
     protected void assertNoExceptions() throws Exception {
-	assertEmpty(exceptions);
+        assertEmpty(exceptions);
     }
 
     private void assertEmpty(Collection<Throwable> errors) throws Exception {
-	// the idea here was to somehow make JUnit infrastructure
-	// display all caught exceptions;
-	// but I don't yet know how to;
-	// so for the time being we just throw 1-st one
-	if (!errors.isEmpty()) {
-	    for (Throwable thr : errors) {
-		if (thr instanceof Exception) {
-		    throw (Exception) thr;
-		}
-		else if( thr instanceof Error ) {
-		    throw (Error) thr;
-		} else {
-		    throw new Exception(thr);
-		}
-	    }
-	}
+        // the idea here was to somehow make JUnit infrastructure
+        // display all caught exceptions;
+        // but I don't yet know how to;
+        // so for the time being we just throw 1-st one
+        if (!errors.isEmpty()) {
+            for (Throwable thr : errors) {
+                if (thr instanceof Exception) {
+                    throw (Exception) thr;
+                } else if (thr instanceof Error) {
+                    throw (Error) thr;
+                } else {
+                    throw new Exception(thr);
+                }
+            }
+        }
     }
-
-
 }

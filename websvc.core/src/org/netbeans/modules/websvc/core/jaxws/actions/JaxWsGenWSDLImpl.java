@@ -97,10 +97,10 @@ public class JaxWsGenWSDLImpl implements JaxWsGenWSDLCookie {
                 JAXWSSupport wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
                 AntProjectHelper helper = wss.getAntProjectHelper();
                 EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                String propValue = props.get("build.generated.dir");  //NOI18N
+                String propValue = props.get("build.generated.sources.dir");  //NOI18N
                 PropertyEvaluator evaluator = helper.getStandardPropertyEvaluator();
                 String buildGenDir = evaluator.evaluate(propValue);
-                String relativePath = buildGenDir + File.separator + "wsgen" + File.separator + "service" + File.separator + "resources"; //NOI18N
+                String relativePath = buildGenDir + File.separator + "jax-ws"+ File.separator + "resources"; //NOI18N
                 relativePath = Pattern.compile("\\\\").matcher(relativePath).replaceAll("/");   //relativePath  should not have backslashes
                 FileObject wsdlDir = project.getProjectDirectory().getFileObject(relativePath);
                 if (wsdlDir != null && wsdlDir.getChildren().length > 0) {

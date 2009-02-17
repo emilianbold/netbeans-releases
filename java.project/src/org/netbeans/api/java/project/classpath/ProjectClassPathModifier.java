@@ -279,6 +279,35 @@ public class ProjectClassPathModifier {
             return result;
         }
     }
+
+    /**
+     * Adds projects into project's classpath if the
+     * artifacts are not already on it.
+     * <p>
+     *  It's not guaranteed that the source and target project will connect in cases when each is of different class of project. Eg.
+     * Ant-based vs Maven project types. A way to check is to attempt to retrieve AntArtifact from the source and target projects..
+     *
+     * @param projects to be added
+     * @param projectArtifact a file whose classpath should be extended
+     * @param classPathType the type of classpath to be extended, see {@link org.netbeans.api.java.classpath.ClassPath}
+     * @return true in case the classpath was changed, (at least one artifact was added to the classpath),
+     * the value false is returned when all the artifacts are already included on the classpath.
+     * @exception IOException in case the project metadata cannot be changed
+     * @exception UnsupportedOperationException is thrown when the project does not support
+     * adding of an artifact to the classpath of the given type.
+     * @since org.netbeans.modules.java.project/1 1.24
+     */
+    public static boolean addProjects (final Project[] projects,
+            final FileObject projectArtifact, final String classPathType) throws IOException, UnsupportedOperationException {
+        final Extensible extensible = findExtensible (projectArtifact, classPathType);
+        if (extensible.pcmi != null) {
+            assert extensible.sg != null;
+            assert extensible.classPathType != null;
+            return ProjectClassPathModifierAccessor.INSTANCE.addProjects (projects, extensible.pcmi, extensible.sg, extensible.classPathType);
+        } else {
+            throw new UnsupportedOperationException("Cannot add project as dependency. Missing ProjectClassPathModifierImplementation service in project type.");
+        }
+    }
     
     /**
      * Removes artifacts (e.g. subprojects) from project's classpath if the
@@ -288,7 +317,7 @@ public class ProjectClassPathModifier {
      * as artifacts.
      * (must be owned by the artifact and be relative to it)
      * @param projectArtifact a file from whose classpath the dependent projects should be removed
-     * @param classPathType the type of classpath, @see ClassPath
+     * @param classPathType the type of classpath, {@link  org.netbeans.api.java.classpath.ClassPath}
      * @return true in case the classpath was changed, (at least one artifact was removed from the classpath),
      * the value false is returned when none of the artifacts was included on the classpath.
      * @exception IOException in case the project metadata cannot be changed

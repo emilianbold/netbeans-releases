@@ -125,9 +125,9 @@ public class CCGoToDeclarationAction extends GotoDeclarationAction {
                     BaseDocument doc = (BaseDocument) target.getDocument();
                     int offset = target.getSelectionStart();
                     // first try include provider
-                    if (!new CsmIncludeHyperlinkProvider().goToInclude(doc, target, offset)) {
+                    if (!new CsmIncludeHyperlinkProvider().goToInclude(doc, target, offset, HyperlinkType.GO_TO_DECLARATION)) {
                         // if failed => try identifier provider
-                        new CsmHyperlinkProvider().goToDeclaration(doc, target, offset);
+                        new CsmHyperlinkProvider().goToDeclaration(doc, target, offset, HyperlinkType.GO_TO_DECLARATION);
                     }
                 }
             }
@@ -148,7 +148,7 @@ public class CCGoToDeclarationAction extends GotoDeclarationAction {
             // don't need to lock document because we are in EQ
             TokenItem<CppTokenId> token = CndTokenUtilities.getTokenCheckPrev(doc, offset);
             if (token != null) {
-                if (CsmIncludeHyperlinkProvider.isSupportedToken(token)) {
+                if (CsmIncludeHyperlinkProvider.isSupportedToken(token, HyperlinkType.GO_TO_DECLARATION)) {
                     retValue = NbBundle.getBundle(CCGoToDeclarationAction.class).getString("goto-included-file");
 //                } else if (CsmHyperlinkProvider.isSupportedToken(token)) {
 //                    // check if next token is '(' => it's possible to be functon

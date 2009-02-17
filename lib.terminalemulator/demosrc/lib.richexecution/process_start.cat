@@ -21,6 +21,7 @@ PLATFORM
         solaris-sparc
         solaris-intel
         linux-intel
+        mac-intel
     otherwise process_start.sh should be used.
 
 DESCRIPTION

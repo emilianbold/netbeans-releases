@@ -107,6 +107,11 @@ public class J2SEProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*i
         EditableProperties ep = WSUtils.getEditableProperties(project, AntProjectHelper.PROJECT_PROPERTIES_PATH);
         assert ep!=null;
         String metaInfStr = ep.getProperty("meta.inf.dir"); //NOI18N
+        if (metaInfStr.contains("$")) { 
+            // have no access to property evaluator
+            String srcDir = ep.getProperty("src.dir"); //NOI18N
+            metaInfStr = (srcDir == null ? "src" : srcDir) + "/META-INF"; //NOI18N
+        }
         String wsdlFolderStr = metaInfStr + "/" + WSDL_FOLDER; // NOI18N
         FileObject wsdlFolder = project.getProjectDirectory().getFileObject(wsdlFolderStr);
         if (wsdlFolder == null && create) {

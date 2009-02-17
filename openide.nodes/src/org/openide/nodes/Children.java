@@ -198,13 +198,19 @@ public abstract class Children extends Object {
             parent = n;
         }
 
+        // do not get Children.MUTEX if not necessary
+        Node[] nodes = testNodes();
+        if (nodes == null) {
+            return;
+        }
+
         // this is the only place where parent is changed,
         // but only under readAccess => double check if
         // it happened correctly
         try {
             PR.enterReadAccess();
 
-            Node[] nodes = testNodes();
+            nodes = testNodes();
 
             if (nodes == null) {
                 return;

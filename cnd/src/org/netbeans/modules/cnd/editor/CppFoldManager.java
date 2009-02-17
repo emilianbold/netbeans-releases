@@ -44,8 +44,10 @@ import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -129,21 +131,6 @@ final class CppFoldManager extends CppFoldManagerBase
         } else {
             return longname;
         }
-    }
-
-    private BlockFoldInfo findBlockFoldInfo(BlockFoldInfo info) {
-        if (info == null) {
-            return null;
-        }
-        // Peformance optimization: stop search if we passed reqired start position
-        for (BlockFoldInfo orig : blockFoldInfos) {
-            if (orig.equals(info)) {
-                return orig;
-            } else if (orig.after(info)) {
-                return null;
-            }
-        }
-        return null;
     }
 
     private FoldOperation getOperation() {
@@ -274,17 +261,23 @@ final class CppFoldManager extends CppFoldManagerBase
                 log.log(Level.FINE, "CFM.processUpdateFoldRequest: Processing " + getShortName() +
                         " [" + Thread.currentThread().getName() + "]"); // NOI18N
             }
-
+            LinkedHashMap<BlockFoldInfo, BlockFoldInfo> map = new LinkedHashMap<BlockFoldInfo, BlockFoldInfo>();
+            for(BlockFoldInfo info : blockFoldInfos){
+                // initialize hash code (because it's mutable between sessions)
+                info.recalcHashCode();
+                map.put(info, info);
+            }
             List<BlockFoldInfo> infoList = request.getBlockFoldInfos();
             for (BlockFoldInfo info : infoList) {
-                // look for existing fold
-                BlockFoldInfo orig = findBlockFoldInfo(info);
+                // initialize hash code (because it's mutable between sessions)
+                info.recalcHashCode();
+                BlockFoldInfo orig = map.get(info);
 
                 if (orig == null || info.isUpdateRequired(orig)) {
-                    //remove old
+                    //remove old from hierarchy, but based on new key
                     if (orig != null) {
                         orig.removeFromHierarchy(transaction);
-                        blockFoldInfos.remove(orig);
+                        map.remove(info);
                     }
 
                     // Add the new fold
@@ -294,15 +287,15 @@ final class CppFoldManager extends CppFoldManagerBase
                         // it is OK to skip such exceptions
                     }
                 } else {
-                    blockFoldInfos.remove(orig);
+                    map.remove(info);
                     info.fold = orig.fold;
                 }
             }
 
             // remove obsolete items 
             // (this is required because some blocks does not have controlled borders)
-            for (BlockFoldInfo orig : blockFoldInfos) {
-                orig.removeFromHierarchy(transaction);
+            for(Map.Entry<BlockFoldInfo, BlockFoldInfo> orig : map.entrySet()){
+                orig.getKey().removeFromHierarchy(transaction);
             }
             blockFoldInfos = infoList;
         }
@@ -408,7 +401,7 @@ final class CppFoldManager extends CppFoldManagerBase
 //        scheduleParsing(evt.getDocument());
     }
 
-    void removeFoldInfo(Fold fold) {
+    private void removeFoldInfo(Fold fold) {
         // TODO: can do binary search here because blockFoldInfos is sorted by the real start pos
         for (Iterator<BlockFoldInfo> iter = blockFoldInfos.iterator(); iter.hasNext();) {
             if (iter.next().fold == fold) {
@@ -496,7 +489,8 @@ final class CppFoldManager extends CppFoldManagerBase
 
         private Fold fold = null;
         private final FoldTemplate template;
-        private final int type;
+        //private final int type;
+        private int hash = 0;
         private final boolean collapse;
         private final int startOffset;
         private final int endOffset;
@@ -504,7 +498,7 @@ final class CppFoldManager extends CppFoldManagerBase
         public BlockFoldInfo(CppFoldRecord fi) throws BadLocationException {
             this.startOffset = fi.getStartOffset();
             this.endOffset = fi.getEndOffset();
-            this.type = fi.getType();
+            //this.type = fi.getType();
             switch (fi.getType()) {
                 case CppFoldRecord.INITIAL_COMMENT_FOLD:
                     template = INITIAL_COMMENT_FOLD_TEMPLATE;
@@ -550,8 +544,21 @@ final class CppFoldManager extends CppFoldManagerBase
             return (this.template == other.template) && (this.getRealStartOffset() == other.getRealStartOffset());
         }
 
-        public boolean after(BlockFoldInfo other) {
-            return this.getRealStartOffset() > other.getRealEndOffset();
+        private void recalcHashCode() {
+            hash = 0;
+            hashCode();
+        }
+
+        // hash code calculation will be when object is put in hash map
+        @Override
+        public int hashCode() {
+            if (hash == 0) {
+                int aHash = 7;
+                aHash = 59 * aHash + (this.template != null ? this.template.hashCode() : 0);
+                aHash = 59 * aHash + this.getRealStartOffset();
+                hash = aHash;
+            }
+            return hash;
         }
 
         public boolean isUpdateRequired(BlockFoldInfo orig) {

@@ -1,0 +1,12 @@
+action Action
+A
+Action
+B
+C
+DELETE
+RECEIVE
+SEND
+local_enumerators_foo() void
+globInt int
+globFoo() void
+main(int argc, char** argv) int

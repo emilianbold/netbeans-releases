@@ -63,6 +63,7 @@ import org.openide.util.NbBundle;
  *
  *	@since 1.0
  */
+@SuppressWarnings({"deprecation", "unchecked"}) // XXX supress deprecated warnings temporarily until issue #41443 gets resolved
 class HTTPFileObject extends FileObject {
     
     private static final long serialVersionUID = 200104;

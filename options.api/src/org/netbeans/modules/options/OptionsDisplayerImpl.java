@@ -370,6 +370,11 @@ public class OptionsDisplayerImpl {
         public void resultChanged(LookupEvent ev) {
             synchronized (lookupListener) {
                 descriptorRef = new WeakReference<DialogDescriptor>(null);
+                // #156947 - close dialog when categories change
+                if (dialog != null) {
+                    dialog.setVisible(false);
+                    dialog = null;
+                }
             }
         }
         

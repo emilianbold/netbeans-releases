@@ -44,6 +44,7 @@ import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -55,8 +56,11 @@ import javax.swing.text.Position.Bias;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -65,6 +69,7 @@ import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring;
@@ -112,6 +117,21 @@ public class GeneratorUtils {
     public static Collection<CsmMember> getAllMembers(CsmClass typeElement) {
         // for now returns only current class elements, but in fact needs full hierarchy
         return typeElement.getMembers();
+    }
+
+    public static Collection<CsmFunction> getAllOutOfClassMethodDefinitions(CsmClass clazz) {
+        // get all method declarations
+        Iterator<CsmMember> methods = CsmSelect.getDefault().getClassMembers(clazz, CsmSelect.getDefault().getFilterBuilder().createKindFilter(CsmDeclaration.Kind.FUNCTION));
+        List<CsmFunction> result = new ArrayList<CsmFunction>();
+        // find definitions of that declarations
+        while (methods.hasNext()) {
+            CsmMethod method = (CsmMethod) methods.next();
+            CsmFunction definition = ((CsmFunction) method).getDefinition();
+            if (definition != null && definition != method) {
+                result.add(definition);
+            }
+        }
+        return result;
     }
 
     public static boolean isConstant(CsmVariable var) {
@@ -318,20 +338,23 @@ public class GeneratorUtils {
      * @param path
      * @return
      */
-    private static InsertInfo[] getInsertPositons(CsmContext path, InsertPoint insPt) {
-        int position = 0;
+    private static InsertInfo[] getInsertPositons(CsmContext path, CsmClass enclClass, InsertPoint insPt) {
+        int declPos = -1;
+        int defPos = -1;
         CsmFile declFile = null;
         CsmFile defFile = null;
-        CsmClass enclClass = null;
         InsertInfo[] out = new InsertInfo[2];
         if (insPt == InsertPoint.DEFAULT) {
-            // calculate using editor context
-            CsmOffsetable decl = path.getObjectUnderOffset();
-            if (decl == null) {
+            // calculate using editor context when possible
+            CsmOffsetable decl = path == null ? null : path.getObjectUnderOffset();
+            if (decl == null && path != null) {
                 for (CsmObject csmObject : path.getPath()) {
                     if (CsmKindUtilities.isClass(csmObject)) {
                         enclClass = (CsmClass) csmObject;
-                        position = path.getCaretOffset();
+                        declPos = path.getCaretOffset();
+                        if (declPos <= enclClass.getLeftBracketOffset()) {
+                            declPos = enclClass.getLeftBracketOffset() + 1;
+                        }
                     } else {
                         if (CsmKindUtilities.isOffsetableDeclaration(csmObject)) {
                             decl = (CsmOffsetable)csmObject;
@@ -340,52 +363,79 @@ public class GeneratorUtils {
                 }
             }
             if (decl != null) {
-                position = decl.getEndOffset();
-                if (CsmKindUtilities.isClassMember(decl)) {
-                    enclClass = ((CsmMember)decl).getContainingClass();
-                    if (CsmKindUtilities.isField(decl)) {
-                        // we are on field, so let's try to find better place for insert point
-                        CsmMember lastPublicMethod = null;
-                        CsmMember firstPublicMethod = null;
-                        CsmMember lastPublicConstructor = null;
-                        CsmMember firstPublicConstructor = null;
-                        for (CsmMember member : enclClass.getMembers()) {
-                            if ((member.getVisibility() == CsmVisibility.PUBLIC) && CsmKindUtilities.isMethod(member)) {
-                                lastPublicMethod = member;
-                                if (firstPublicMethod == null) {
-                                    firstPublicMethod = member;
-                                }
-                                if (CsmKindUtilities.isConstructor(member)) {
-                                    lastPublicConstructor = member;
-                                    if (firstPublicConstructor == null) {
-                                        firstPublicConstructor = member;
-                                    }
-                                }
-                            }
-                        }
-                        // let's try to put after last public method
-                        if (lastPublicMethod != null) {
-                            position = lastPublicMethod.getEndOffset();
-                        }
-                    }
-                } else if (enclClass == null) {
-                    enclClass = path.getEnclosingClass();
+                declPos = decl.getEndOffset();
+            }
+            if (CsmKindUtilities.isClassMember(decl)) {
+                enclClass = ((CsmMember)decl).getContainingClass();
+                if (CsmKindUtilities.isField(decl)) {
+                    // we are on field
+                    declPos = -1;
                 }
+            } else if (enclClass == null) {
+                enclClass = path.getEnclosingClass();
             }
         } else {
-            enclClass = null;
+            if (enclClass == null) {
+                enclClass = insPt.getContainerClass();
+            }
+            if (insPt.getElementDeclaration() != null) {
+                declPos = insPt.getElementDeclaration().getEndOffset();
+            }
         }
-        if (CsmKindUtilities.isOffsetable(enclClass)) {
-            declFile = ((CsmOffsetable)enclClass).getContainingFile();
-        } else {
-            position = 10;
+        if (declPos < 0) {
+            // let's try to find default place for insert point
+            CsmMethod lastPublicMethod = null;
+            CsmMethod firstPublicMethod = null;
+            CsmMethod lastPublicConstructor = null;
+            CsmMethod firstPublicConstructor = null;
+            for (CsmMember member : enclClass.getMembers()) {
+                if ((member.getVisibility() == CsmVisibility.PUBLIC) && CsmKindUtilities.isMethod(member)) {
+                    CsmMethod method = (CsmMethod) member;
+                    lastPublicMethod = method;
+                    if (firstPublicMethod == null) {
+                        firstPublicMethod = method;
+                    }
+                    if (CsmKindUtilities.isConstructor(method)) {
+                        lastPublicConstructor = method;
+                        if (firstPublicConstructor == null) {
+                            firstPublicConstructor = method;
+                        }
+                    }
+                }
+            }
+            // let's try to put after last public method
+            if (lastPublicMethod != null) {
+                declPos = lastPublicMethod.getEndOffset();
+                CsmFunctionDefinition def = lastPublicMethod.getDefinition();
+                if (def != null && def != lastPublicMethod) {
+                    defFile = CsmRefactoringUtils.getCsmFile(def);
+                    defPos = def.getEndOffset();
+                }
+            } else {
+                declPos = enclClass.getLeftBracketOffset() + 1;
+            }
+        }
+        if (declFile == null) {
+            declFile = CsmRefactoringUtils.getCsmFile(enclClass);
+        }
+        if (defFile == null) {
+            Iterator<CsmFunction> extDefs = getAllOutOfClassMethodDefinitions(enclClass).iterator();
+            if (extDefs.hasNext()) {
+                CsmFunction def = extDefs.next();
+                defFile = CsmRefactoringUtils.getCsmFile(def);
+                defPos = def.getEndOffset();
+            }
         }
         CloneableEditorSupport classDeclEditor = CsmUtilities.findCloneableEditorSupport(declFile);
         CloneableEditorSupport classDefEditor = CsmUtilities.findCloneableEditorSupport(defFile);
-        PositionRef startDeclPos = classDeclEditor.createPositionRef(position, Bias.Backward);
-        PositionRef endDeclPos = classDeclEditor.createPositionRef(position, Bias.Forward);
-        out[0] = new InsertInfo(classDeclEditor, position, startDeclPos, endDeclPos);
-        out[1] = new InsertInfo(classDeclEditor, position, startDeclPos, endDeclPos);
+        PositionRef startDeclPos = classDeclEditor.createPositionRef(declPos, Bias.Backward);
+        PositionRef endDeclPos = classDeclEditor.createPositionRef(declPos, Bias.Forward);
+        out[0] = new InsertInfo(classDeclEditor, declPos, startDeclPos, endDeclPos);
+        if (classDefEditor != null && defPos >= 0) {
+            PositionRef startDefPos = classDefEditor.createPositionRef(defPos, Bias.Backward);
+            PositionRef endDefPos = classDefEditor.createPositionRef(defPos, Bias.Forward);
+            out[1] = new InsertInfo(classDefEditor, defPos, startDefPos, endDefPos);
+        }
         return out;
     }
     
@@ -402,7 +452,7 @@ public class GeneratorUtils {
             return;
         }
         if (inlineMethods) {
-            InsertInfo[] ins = getInsertPositons(path, InsertPoint.DEFAULT);
+            InsertInfo[] ins = getInsertPositons(path, enclosingClass, InsertPoint.DEFAULT);
             final InsertInfo def = ins[0];
             final StringBuilder result = new StringBuilder();
             for (CsmField field : fields) {

@@ -57,6 +57,7 @@ import org.netbeans.modules.ruby.elements.IndexedField;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.elements.IndexedVariable;
 import org.netbeans.modules.ruby.elements.KeywordElement;
+import org.openide.util.ImageUtilities;
 
 class RubyCompletionItem extends DefaultCompletionProposal {
 
@@ -181,7 +182,7 @@ class RubyCompletionItem extends DefaultCompletionProposal {
         @Override
         public ImageIcon getIcon() {
             if (keywordIcon == null) {
-                keywordIcon = new ImageIcon(org.openide.util.ImageUtilities.loadImage(RUBY_KEYWORD));
+                keywordIcon = ImageUtilities.loadImageIcon(RUBY_KEYWORD, false);
             }
 
             return keywordIcon;
@@ -321,7 +322,7 @@ class RubyCompletionItem extends DefaultCompletionProposal {
         @Override
         public ImageIcon getIcon() {
             if (symbolIcon == null) {
-                symbolIcon = new ImageIcon(org.openide.util.ImageUtilities.loadImage(CONSTANT_ICON));
+                symbolIcon = ImageUtilities.loadImageIcon(CONSTANT_ICON, false);
             }
 
             return symbolIcon;

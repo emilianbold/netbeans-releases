@@ -76,7 +76,7 @@ public class LoadAction extends AbstractAction {
   
   /** Creates a new instance of StopAction */
   public LoadAction(final Engine provider) {
-    super(java.util.ResourceBundle.getBundle("org/netbeans/modules/loadgenerator/actions/Bundle").getString("Start"), new ImageIcon(ImageUtilities.loadImage(ICON)));
+    super(java.util.ResourceBundle.getBundle("org/netbeans/modules/loadgenerator/actions/Bundle").getString("Start"),ImageUtilities.loadImageIcon(ICON, false));
     
     this.provider = provider;
     this.provider.addPropertyChangeListener(Engine.STATE, WeakListeners.propertyChange(listener, provider));

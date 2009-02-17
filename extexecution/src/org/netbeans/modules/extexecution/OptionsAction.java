@@ -57,8 +57,7 @@ public class OptionsAction extends AbstractAction {
 
     public OptionsAction(String optionsPath) {
         setEnabled(true); // just to be sure
-        putValue(Action.SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(
-                "org/netbeans/modules/extexecution/resources/options.png"))); // NOI18N
+        putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/extexecution/resources/options.png", false)); // NOI18N
         putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(OptionsAction.class, "Options"));
 
         this.optionsPath = optionsPath;

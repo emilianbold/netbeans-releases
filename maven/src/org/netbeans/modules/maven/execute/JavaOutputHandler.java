@@ -103,7 +103,8 @@ class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor, M
     private static final RequestProcessor PROCESSOR = new RequestProcessor("Maven Embedded Input Redirection", 5); //NOI18N
 
     
-    JavaOutputHandler() {
+    JavaOutputHandler(AggregateProgressHandle hand) {
+        super(hand);
     }
     
     /**
@@ -116,7 +117,7 @@ class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor, M
     }
     
     public JavaOutputHandler(InputOutput io, Project proj, AggregateProgressHandle hand, RunConfig config)    {
-        this();
+        this(hand);
         inputOutput = io;
         handle = hand;
         stdOut = inputOutput.getOut();
