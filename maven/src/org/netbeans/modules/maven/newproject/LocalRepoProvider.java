@@ -54,7 +54,8 @@ import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
  * and archetypeng ones.
  * @author mkleint
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.api.archetype.ArchetypeProvider.class)
+@SuppressWarnings("deprecation")
+@org.openide.util.lookup.ServiceProvider(service=ArchetypeProvider.class)
 public class LocalRepoProvider implements ArchetypeProvider {
     
     /** Creates a new instance of LocalRepoProvider */

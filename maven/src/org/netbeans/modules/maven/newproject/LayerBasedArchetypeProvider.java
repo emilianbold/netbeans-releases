@@ -42,29 +42,58 @@ package org.netbeans.modules.maven.newproject;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeProvider;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.ResourceBundle;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  * Archetype provider that lists the 3 basic ones to have something in the list
  * when the user never used any archetypes before..
  * @author mkleint
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.api.archetype.ArchetypeProvider.class)
-public class MockArchetypeProvider implements ArchetypeProvider {
+@SuppressWarnings("deprecation")
+@org.openide.util.lookup.ServiceProvider(service=ArchetypeProvider.class)
+public class LayerBasedArchetypeProvider implements ArchetypeProvider {
     
-    /** Creates a new instance of MockArchetypeProvider */
-    public MockArchetypeProvider() {
+    /** Creates a new instance of LayerBasedArchetypeProvider */
+    public LayerBasedArchetypeProvider() {
     }
 
     public List<Archetype> getArchetypes() {
+        FileObject root = FileUtil.getConfigFile("Projects/org-netbeans-modules-maven/Archetypes"); //NOI18N
         List<Archetype> toRet = new ArrayList<Archetype>();
-        Archetype simple = new Archetype(false);
-        simple.setArtifactId("maven-archetype-quickstart"); //NOI18N
-        simple.setGroupId("org.apache.maven.archetypes"); //NOI18N
-        simple.setVersion("1.0"); //NOI18N
-        simple.setName(org.openide.util.NbBundle.getMessage(MockArchetypeProvider.class, "LBL_Maven_Quickstart_Archetype"));
-        simple.setDescription(org.openide.util.NbBundle.getMessage(MockArchetypeProvider.class, "HINT_MavenQuickStart"));
-        toRet.add(simple);
+        for (FileObject fo : FileUtil.getOrder(Arrays.asList(root.getChildren()), false)) {
+            String groupId = (String) fo.getAttribute("groupId"); //NOI18N
+            String artifactId = (String) fo.getAttribute("artifactId"); //NOI18N
+            String version = (String) fo.getAttribute("version"); //NOI18N
+            String repository = (String) fo.getAttribute("repository"); //NOI18N
+            String nameKey = (String) fo.getAttribute("nameBundleKey"); //NOI18N
+            String descKey = (String) fo.getAttribute("descriptionBundleKey"); //NOI18N
+            String bundleLocation = (String) fo.getAttribute("SystemFileSystem.localizingBundle"); //NOI18N
+            if (groupId != null && artifactId != null && version != null) {
+                Archetype simple = new Archetype(false);
+                simple.setGroupId(groupId);
+                simple.setArtifactId(artifactId);
+                simple.setVersion(version);
+                simple.setRepository(repository);
+                if (bundleLocation != null) {
+                    ResourceBundle bundle = NbBundle.getBundle(bundleLocation);
+                    if (bundle != null && nameKey != null) {
+                        simple.setName(bundle.getString(nameKey));
+                    }
+                    if (bundle != null && descKey != null) {
+                        simple.setDescription(bundle.getString(descKey));
+                    }
+                }
+                if (simple.getName() == null) {
+                    simple.setName(simple.getArtifactId());
+                }
+                toRet.add(simple);
+            }
+        }
         return toRet;
     }
     
