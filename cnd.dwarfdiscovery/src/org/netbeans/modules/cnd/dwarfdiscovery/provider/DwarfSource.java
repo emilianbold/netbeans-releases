@@ -127,14 +127,23 @@ public class DwarfSource implements SourceFileProperties{
            if (Utilities.isWindows()) {
                if (FULL_TRACE) {System.out.println("CompileFlavor:"+compilerSettings.getCompileFlavor());} // NOI18N
                if ("Cygwin".equals(compilerSettings.getCompileFlavor())) { // NOI18N
-                   //cygwinPath = compilerSettings.getCompileDirectory();
-                   for(String path:list){
-                       int i = path.toLowerCase().indexOf(CYGWIN_PATH);
-                       if (i > 0) {
-                           if (cygwinPath == null) {
-                               cygwinPath = "" + Character.toUpperCase(path.charAt(0)) + CYGWIN_PATH; // NOI18N
-                               if (FULL_TRACE) {System.out.println("Detect cygwinPath:"+cygwinPath);} // NOI18N
-                               break;
+                   cygwinPath = compilerSettings.getCygwinDrive();
+                   if (cygwinPath == null) {
+                       for(String path:list){
+                           int i = path.toLowerCase().indexOf(CYGWIN_PATH);
+                           if (i > 0) {
+                               if (cygwinPath == null) {
+                                   cygwinPath = "" + Character.toUpperCase(path.charAt(0)) + CYGWIN_PATH; // NOI18N
+                                   for(i = i + CYGWIN_PATH.length();i < path.length();i++){
+                                       char c = path.charAt(i);
+                                       if (c == '\\'){
+                                           break;
+                                       }
+                                       cygwinPath+=""+c;
+                                   }
+                                   if (FULL_TRACE) {System.out.println("Detect cygwinPath:"+cygwinPath);} // NOI18N
+                                   break;
+                               }
                            }
                        }
                    }
