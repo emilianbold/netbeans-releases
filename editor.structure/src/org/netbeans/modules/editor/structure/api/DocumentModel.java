@@ -868,7 +868,9 @@ public final class DocumentModel {
             
             //create a new DocumentElement instance
             DocumentElement de = createDocumentElement(name, type, attributes, startOffset, endOffset);
-            
+
+            assert startOffset < endOffset;
+
             if(!elements.contains(de)) {
                 if(debug) System.out.println("# ADD " + de + " adding into transaction");
                 DocumentModelModification dmm = new DocumentModelModification(de, DocumentModelModification.ELEMENT_ADD);
@@ -1113,6 +1115,7 @@ public final class DocumentModel {
             }
             
             //notify the parent element that one of its children has been removed
+            System.out.println("removing element " + de + " from " + parent);
             if(parent != null) parent.childRemoved(de);
             
             fireDocumentModelEvent(de, ELEMENT_REMOVED);
@@ -1202,7 +1205,7 @@ public final class DocumentModel {
                                 //This is necessary when more elements with the same name is deleted
                                 //then they have the same start-end offsets so they "seem" to be
                                 //the same, thought they aren't.
-                                return de1.isEmpty() ? de2.hashCode() - de1.hashCode() : 0;
+                                return de1.isEmpty() ? System.identityHashCode(de2) - System.identityHashCode(de1) : 0;
                             }
                         }
                     }
