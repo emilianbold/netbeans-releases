@@ -44,6 +44,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 /**
@@ -81,7 +83,11 @@ public class SvnUtils {
         } finally {
             is.close();
         }
-        return new Info(new URL(module), new URL(repository));
+        try {
+            return new Info(new URI(module), new URI(repository));
+        } catch (URISyntaxException x) {
+            throw (IOException) new IOException(x.toString()).initCause(x);
+        }
     }
 
     /**
@@ -89,9 +95,9 @@ public class SvnUtils {
      * Replacement for {@link org.tigris.subversion.svnclientadapter.ISVNInfo}.
      */
     public static class Info {
-        public final URL module;
-        public final URL repository;
-        private Info(URL module, URL repository) {
+        public final URI module;
+        public final URI repository;
+        private Info(URI module, URI repository) {
             this.module = module;
             this.repository = repository;
         }
