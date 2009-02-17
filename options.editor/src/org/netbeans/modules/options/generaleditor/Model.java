@@ -69,6 +69,10 @@ public class Model {
         return getParameter("code-folding-collapse-initial-comment", false); //NOI18N
     }
     
+    boolean isFoldTag () {
+        return getParameter("code-folding-collapse-tags", false); //NOI18N
+    }
+
     boolean isFoldInnerClasses () {
         return getParameter("code-folding-collapse-innerclass", false); //NOI18N
     }
@@ -87,7 +91,8 @@ public class Model {
         boolean foldInitialComent,
         boolean foldInnerClasses,
         boolean foldJavaDoc,
-        boolean foldMethods
+        boolean foldMethods,
+        boolean foldTags
     ) {
         Set<String> mimeTypes = EditorSettings.getDefault().getAllMimeTypes();
         for(String mimeType : mimeTypes) {
@@ -99,6 +104,7 @@ public class Model {
             prefs.putBoolean("code-folding-collapse-innerclass", foldInnerClasses); //NOI18N
             prefs.putBoolean("code-folding-collapse-javadoc", foldJavaDoc); //NOI18N
             prefs.putBoolean("code-folding-collapse-method", foldMethods); //NOI18N
+            prefs.putBoolean("code-folding-collapse-tags", foldTags); //NOI18N
         }
     }
     

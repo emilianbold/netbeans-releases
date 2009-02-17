@@ -47,12 +47,15 @@ import java.util.List;
 import java.util.Stack;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.prefs.Preferences;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.api.editor.fold.FoldUtilities;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.netbeans.spi.editor.fold.FoldManager;
@@ -64,6 +67,7 @@ import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.xml.text.folding.TokenElement.Token;
 import org.netbeans.modules.xml.text.folding.TokenElement.TokenType;
+import org.netbeans.modules.xml.text.syntax.XMLKit;
 
 /**
  * This class is an implementation of @see org.netbeans.spi.editor.fold.FoldManager
@@ -81,6 +85,13 @@ public class XmlFoldManager implements FoldManager {
    
     public static final int DELAY_SYNCER = 2000;  // milisecs.
     public static final int DELAY_DIRTY = 1000;  // milisecs.
+
+    private Preferences prefs;
+
+    public XmlFoldManager() {
+        prefs = MimeLookup.getLookup(XMLKit.MIME_TYPE).lookup(Preferences.class);
+    }
+
 
     public void init(FoldOperation operation) {
         this.operation = operation;
@@ -311,7 +322,8 @@ public class XmlFoldManager implements FoldManager {
                             if(isOneLiner(so, eo))
                                 break;
                             String foldName = "<" + currentNode + ">";
-                            Fold f = createFold(XmlFoldTypes.TAG, foldName, false, so, eo, fhTran);
+                            boolean collapseByDefault = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_COLLAPSE_TAGS, false);
+                            Fold f = createFold(XmlFoldTypes.TAG, foldName, collapseByDefault, so, eo, fhTran);
                             currentNode = null;
                         }
                     } else {
@@ -340,7 +352,8 @@ public class XmlFoldManager implements FoldManager {
                             TokenElement tokenElem = stack.pop();
                             int so = tokenElem.getStartOffset();
                             int eo = currentTokensSize+image.length();
-                            Fold f = createFold(XmlFoldTypes.COMMENT, tokenElem.getName(), false, so, eo, fhTran);
+                            boolean collapseByDefault = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_COLLAPSE_JAVADOC, false);
+                            Fold f = createFold(XmlFoldTypes.COMMENT, tokenElem.getName(), collapseByDefault, so, eo, fhTran);
                             //myFolds.add(f);
                         }
                     }

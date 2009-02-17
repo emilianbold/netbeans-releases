@@ -94,6 +94,7 @@ import org.netbeans.modules.gsf.api.DataLoadersBridge;
  */
 public class GsfFoldManager implements FoldManager {
     public static final FoldType CODE_BLOCK_FOLD_TYPE = new FoldType("code-block"); // NOI18N
+    public static final FoldType TAG_FOLD_TYPE = new FoldType("tag"); // NOI18N
     public static final FoldType INITIAL_COMMENT_FOLD_TYPE = new FoldType("initial-comment"); // NOI18N
     public static final FoldType IMPORTS_FOLD_TYPE = new FoldType("imports"); // NOI18N
     public static final FoldType JAVADOC_FOLD_TYPE = new FoldType("javadoc"); // NOI18N
@@ -106,8 +107,13 @@ public class GsfFoldManager implements FoldManager {
     
     private static final String CODE_BLOCK_FOLD_DESCRIPTION = "{...}"; // NOI18N
 
+    private static final String TAG_FOLD_DESCRIPTION = "<.../>"; // NOI18N
+
     public static final FoldTemplate CODE_BLOCK_FOLD_TEMPLATE
         = new FoldTemplate(CODE_BLOCK_FOLD_TYPE, CODE_BLOCK_FOLD_DESCRIPTION, 1, 1);
+
+    public static final FoldTemplate TAG_FOLD_TEMPLATE
+        = new FoldTemplate(TAG_FOLD_TYPE, TAG_FOLD_DESCRIPTION, 0, 0);
     
     public static final FoldTemplate INITIAL_COMMENT_FOLD_TEMPLATE
         = new FoldTemplate(INITIAL_COMMENT_FOLD_TYPE, COMMENT_FOLD_DESCRIPTION, 2, 2);
@@ -135,6 +141,12 @@ public class GsfFoldManager implements FoldManager {
      * NOTE: This must be kept in sync with string literal in editor/options
      */
     public static final String CODE_FOLDING_COLLAPSE_IMPORT = "code-folding-collapse-import"; //NOI18N
+
+    /**
+     * Collapse tags by default
+     * NOTE: This must be kept in sync with string literal in editor/options
+     */
+    public static final String CODE_FOLDING_COLLAPSE_TAGS = "code-folding-collapse-tags"; //NOI18N
     
     /**
      * Collapse javadoc comment by default
@@ -466,6 +478,13 @@ public class GsfFoldManager implements FoldManager {
                     for (OffsetRange range : ranges) {
                         boolean collapseByDefault = manager.getSetting(CODE_FOLDING_COLLAPSE_IMPORT);
                         addFold(range, result, doc, collapseByDefault,IMPORTS_FOLD_TEMPLATE);
+                    }
+                }
+                ranges = folds.get("tags"); //NOI18N
+                if (ranges != null) {
+                    for (OffsetRange range : ranges) {
+                        boolean collapseByDefault = manager.getSetting(CODE_FOLDING_COLLAPSE_TAGS);
+                        addFold(range, result, doc, collapseByDefault,TAG_FOLD_TEMPLATE);
                     }
                 }
             }

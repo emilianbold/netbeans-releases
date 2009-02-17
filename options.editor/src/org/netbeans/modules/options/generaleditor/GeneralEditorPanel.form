@@ -22,44 +22,59 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="lUseCodeFolding" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="lCollapseByDefault" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="lUseCodeFolding" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="lCollapseByDefault" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                  <Component id="lCamelCaseBehavior" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="cbCamelCaseBehavior" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="cbFoldInitialComments" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbFoldJavadocComments" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbFoldImports" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbFoldInnerClasses" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbFoldMethods" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbUseCodeFolding" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="lCamelCaseBehaviorExample" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace pref="205" max="32767" attributes="0"/>
           </Group>
+          <Group type="102" attributes="0">
+              <EmptySpace min="146" pref="146" max="146" attributes="0"/>
+              <Component id="jSeparator3" pref="787" max="32767" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace min="155" pref="155" max="155" attributes="0"/>
+              <Component id="cbUseCodeFolding" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="750" max="32767" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace min="155" pref="155" max="155" attributes="0"/>
+              <Component id="cbFoldMethods" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="85" max="-2" attributes="0"/>
+              <Component id="cbFoldTags" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="398" max="32767" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace min="155" pref="155" max="155" attributes="0"/>
+              <Component id="cbFoldInnerClasses" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="662" max="32767" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace min="155" pref="155" max="155" attributes="0"/>
+              <Component id="cbFoldImports" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="697" max="32767" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace min="155" pref="155" max="155" attributes="0"/>
+              <Component id="cbFoldJavadocComments" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="626" max="32767" attributes="0"/>
+          </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="lCodeFolding" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="jSeparator1" pref="828" max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="1" attributes="0">
-              <Component id="lCamelCaseBehavior" min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="-2" pref="15" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="cbCamelCaseBehavior" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="lCamelCaseBehaviorExample" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace pref="205" max="32767" attributes="0"/>
-                  </Group>
-                  <Group type="102" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jSeparator3" pref="776" max="32767" attributes="0"/>
-                  </Group>
-              </Group>
+              <Component id="jSeparator1" pref="838" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -80,6 +95,7 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="lCollapseByDefault" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="cbFoldMethods" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="cbFoldTags" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
@@ -96,9 +112,9 @@
                   </Group>
                   <Component id="lCamelCaseBehavior" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
               <Component id="cbCamelCaseBehavior" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="lCamelCaseBehaviorExample" min="-2" max="-2" attributes="0"/>
               <EmptySpace pref="155" max="32767" attributes="0"/>
           </Group>
@@ -122,62 +138,35 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="cbUseCodeFolding">
-      <Properties>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-          </Border>
-        </Property>
-      </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="cbFoldMethods">
       <Properties>
         <Property name="text" type="java.lang.String" value="Methods"/>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-          </Border>
-        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="cbFoldInnerClasses">
       <Properties>
         <Property name="text" type="java.lang.String" value="Inner Classes"/>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-          </Border>
-        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="cbFoldImports">
       <Properties>
         <Property name="text" type="java.lang.String" value="Imports"/>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-          </Border>
-        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="cbFoldJavadocComments">
       <Properties>
         <Property name="text" type="java.lang.String" value="Javadoc Comments"/>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-          </Border>
-        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="cbFoldInitialComments">
       <Properties>
         <Property name="text" type="java.lang.String" value="Initial Comments"/>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-          </Border>
-        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="cbFoldTags">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Tags and Other Code Blocks"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JSeparator" name="jSeparator1">
@@ -192,11 +181,6 @@
     <Component class="javax.swing.JCheckBox" name="cbCamelCaseBehavior">
       <Properties>
         <Property name="text" type="java.lang.String" value="Enable Camel Case Navigation For Java"/>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-          </Border>
-        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="lCamelCaseBehaviorExample">
