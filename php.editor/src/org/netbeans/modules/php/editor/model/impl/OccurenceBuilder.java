@@ -49,9 +49,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import org.netbeans.modules.gsf.api.Index.SearchScope;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
@@ -887,7 +886,7 @@ class OccurenceBuilder {
     private static List<MethodScope> name2Methods(FileScopeImpl fileScope, final String name, ASTNodeInfo<MethodInvocation> nodeInfo ) {
         IndexScope indexScope = fileScope.getIndexScope();
         PHPIndex index = indexScope.getIndex();
-        Set<String> typeNamesForIdentifier = index.typeNamesForIdentifier(name, null, NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.of(SearchScope.SOURCE, SearchScope.DEPENDENCIES));
+        Set<String> typeNamesForIdentifier = index.typeNamesForIdentifier(name, null, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
         List<MethodScope> methods = Collections.emptyList();
         FunctionInvocation functionInvocation = nodeInfo.getOriginalNode().getMethod();
         int paramCount = functionInvocation.getParameters().size();
@@ -897,7 +896,7 @@ class OccurenceBuilder {
             methods = new ArrayList<MethodScope>();
             for (MethodScope methodScope : methodsSuggestions) {
                 List<? extends Parameter> parameters = methodScope.getParameters();
-                if (ModelElementImpl.nameKindMatch(name, NameKind.EXACT_NAME, methodScope.getName())
+                if (ModelElementImpl.nameKindMatch(name, QuerySupport.Kind.EXACT_NAME, methodScope.getName())
                         && paramCount >= numberOfMandatoryParams(parameters) && paramCount <= parameters.size() ) {
                     methods.add(methodScope);
                 }
@@ -911,13 +910,13 @@ class OccurenceBuilder {
         IndexScope indexScope = fileScope.getIndexScope();
         PHPIndex index = indexScope.getIndex();
         Set<String> typeNamesForIdentifier = index.typeNamesForIdentifier((name.startsWith("$")) ? name.substring(1) : name,
-                null, NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.of(SearchScope.SOURCE));
+                null, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
         List<FieldElementImpl> fields = Collections.emptyList();
         if (typeNamesForIdentifier.size() > 0) {
             fields = new ArrayList<FieldElementImpl>();
             List<FieldElementImpl> fieldSuggestions = flds4TypeNames(fileScope, typeNamesForIdentifier, name);
             for (FieldElementImpl fieldElementImpl : fieldSuggestions) {
-                if (ModelElementImpl.nameKindMatch(name, NameKind.EXACT_NAME, fieldElementImpl.getName())) {
+                if (ModelElementImpl.nameKindMatch(name, QuerySupport.Kind.EXACT, fieldElementImpl.getName())) {
                     fields.add(fieldElementImpl);
                 }
             }

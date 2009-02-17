@@ -46,18 +46,13 @@ import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
-import org.netbeans.modules.gsf.GsfTestBase;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
-import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
-import org.netbeans.modules.gsfret.source.usages.RepositoryUpdater;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.index.PHPIndex;
-import org.netbeans.napi.gsfret.source.ClasspathInfo;
-import org.netbeans.napi.gsfret.source.CompilationController;
-import org.netbeans.napi.gsfret.source.Phase;
-import org.netbeans.napi.gsfret.source.Source;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -67,7 +62,7 @@ import org.openide.loaders.DataObject;
  *
  * @author Jan Lahoda
  */
-public class TestBase extends GsfTestBase {
+public class TestBase extends CslTestBase {
     
     public TestBase(String testName) {
         super(testName);
@@ -124,45 +119,45 @@ public class TestBase extends GsfTestBase {
         return "test" + (index == (-1) ? "" : (char) ('a' + index)) + ".php";
     }
     
-    protected void performTest(String[] code, final CancellableTask<CompilationInfo> task) throws Exception {
-        clearWorkDir();
-        FileUtil.refreshAll();
-        
-        FileObject workDir = FileUtil.toFileObject(getWorkDir());
-        FileObject cache = workDir.createFolder("cache");
-        FileObject folder = workDir.createFolder("src");
-        FileObject cluster = workDir.createFolder("cluster");
-        int index = -1;
-        
-        for (String c : code) {
-            FileObject f = FileUtil.createData(folder, computeFileName(index));
-            TestUtilities.copyStringToFile(f, c);
-            index++;
-        }
-        
-        System.setProperty("netbeans.user", FileUtil.toFile(cache).getAbsolutePath());
-        PHPIndex.setClusterUrl(cluster.getURL().toExternalForm());
-        CountDownLatch l = RepositoryUpdater.getDefault().scheduleCompilationAndWait(folder, folder);
-        
-        l.await();
-        
-        final FileObject test = folder.getFileObject("test.php");
-        
-        Document doc = openDocument(test);
-        
-        ClassPath empty = ClassPathSupport.createClassPath(new FileObject[0]);
-        ClassPath source = ClassPathSupport.createClassPath(folder);
-        ClasspathInfo info = ClasspathInfo.create(empty, empty, source);
-        Source s = Source.create(info, test);
-        
-        s.runUserActionTask(new CancellableTask<CompilationController>() {
-            public void cancel() {}
-            public void run(CompilationController parameter) throws Exception {
-                parameter.toPhase(Phase.UP_TO_DATE);
-                
-                task.run(parameter);
-            }
-        }, true);
+    protected void performTest(String[] code, final UserTask task) throws Exception {
+//        clearWorkDir();
+//        FileUtil.refreshAll();
+//
+//        FileObject workDir = FileUtil.toFileObject(getWorkDir());
+//        FileObject cache = workDir.createFolder("cache");
+//        FileObject folder = workDir.createFolder("src");
+//        FileObject cluster = workDir.createFolder("cluster");
+//        int index = -1;
+//
+//        for (String c : code) {
+//            FileObject f = FileUtil.createData(folder, computeFileName(index));
+//            TestUtilities.copyStringToFile(f, c);
+//            index++;
+//        }
+//
+//        System.setProperty("netbeans.user", FileUtil.toFile(cache).getAbsolutePath());
+//        PHPIndex.setClusterUrl(cluster.getURL().toExternalForm());
+//        CountDownLatch l = RepositoryUpdater.getDefault().scheduleCompilationAndWait(folder, folder);
+//
+//        l.await();
+//
+//        final FileObject test = folder.getFileObject("test.php");
+//
+//        Document doc = openDocument(test);
+//
+//        ClassPath empty = ClassPathSupport.createClassPath(new FileObject[0]);
+//        ClassPath source = ClassPathSupport.createClassPath(folder);
+//        ClasspathInfo info = ClasspathInfo.create(empty, empty, source);
+//        Source s = Source.create(info, test);
+//
+//        s.runUserActionTask(new CancellableTask<CompilationController>() {
+//            public void cancel() {}
+//            public void run(CompilationController parameter) throws Exception {
+//                parameter.toPhase(Phase.UP_TO_DATE);
+//
+//                task.run(parameter);
+//            }
+//        }, true);
     }
 
     private static Document openDocument(FileObject fileObject) throws Exception {

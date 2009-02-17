@@ -40,69 +40,72 @@
  */
 package org.netbeans.modules.refactoring.ruby.plugins;
 
-import org.jruby.nb.ast.ClassVarAsgnNode;
-import org.jruby.nb.ast.ClassVarDeclNode;
-import org.jruby.nb.ast.ClassVarNode;
-import org.jruby.nb.ast.Colon2Node;
-import org.jruby.nb.ast.GlobalAsgnNode;
-import org.jruby.nb.ast.GlobalVarNode;
-import org.jruby.nb.ast.InstAsgnNode;
-import org.jruby.nb.ast.InstVarNode;
-import org.jruby.nb.ast.MethodDefNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.SymbolNode;
-import org.jruby.nb.ast.types.INameNode;
-import org.netbeans.modules.gsf.api.Error;
-import org.netbeans.modules.gsf.api.Severity;
-import org.netbeans.editor.Utilities;
-import org.netbeans.modules.ruby.AstPath;
-import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.RubyIndex;
-import org.netbeans.modules.ruby.RubyStructureAnalyzer.AnalysisResult;
-import org.netbeans.modules.ruby.elements.AstElement;
-import org.openide.filesystems.FileUtil;
-import org.openide.text.CloneableEditorSupport;
-import org.openide.util.Exceptions;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position.Bias;
 import org.jruby.nb.ast.ArgumentNode;
 import org.jruby.nb.ast.ClassNode;
+import org.jruby.nb.ast.ClassVarAsgnNode;
+import org.jruby.nb.ast.ClassVarDeclNode;
+import org.jruby.nb.ast.ClassVarNode;
+import org.jruby.nb.ast.Colon2Node;
 import org.jruby.nb.ast.DAsgnNode;
 import org.jruby.nb.ast.DVarNode;
+import org.jruby.nb.ast.GlobalAsgnNode;
+import org.jruby.nb.ast.GlobalVarNode;
+import org.jruby.nb.ast.InstAsgnNode;
+import org.jruby.nb.ast.InstVarNode;
 import org.jruby.nb.ast.LocalAsgnNode;
 import org.jruby.nb.ast.LocalVarNode;
+import org.jruby.nb.ast.MethodDefNode;
 import org.jruby.nb.ast.ModuleNode;
+import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.SClassNode;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.jruby.nb.ast.SymbolNode;
+import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
-import org.netbeans.napi.gsfret.source.ClasspathInfo;
-import org.netbeans.napi.gsfret.source.CompilationController;
-import org.netbeans.napi.gsfret.source.ModificationResult;
-import org.netbeans.napi.gsfret.source.ModificationResult.Difference;
-import org.netbeans.napi.gsfret.source.Source;
-import org.netbeans.napi.gsfret.source.WorkingCopy;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.refactoring.ruby.DiffElement;
+import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.csl.spi.support.ModificationResult;
+import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.refactoring.api.*;
+import org.netbeans.modules.refactoring.ruby.DiffElement;
 import org.netbeans.modules.refactoring.ruby.RetoucheUtils;
 import org.netbeans.modules.refactoring.ruby.RubyElementCtx;
-import org.netbeans.modules.ruby.RubyUtils;
-import org.openide.filesystems.FileObject;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.ruby.AstPath;
+import org.netbeans.modules.ruby.AstUtilities;
+import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.RubyParseResult;
+import org.netbeans.modules.ruby.RubyStructureAnalyzer.AnalysisResult;
+import org.netbeans.modules.ruby.RubyUtils;
+import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionRef;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -139,22 +142,21 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
     public RenameRefactoringPlugin(RenameRefactoring rename) {
         this.refactoring = rename;
         RubyElementCtx tph = rename.getRefactoringSource().lookup(RubyElementCtx.class);
-        if (tph!=null) {
+        if (tph != null) {
             treePathHandle = tph;
         } else {
-            Source source = RetoucheUtils.getSource(rename.getRefactoringSource().lookup(FileObject.class));
+            Source source = Source.create(rename.getRefactoringSource().lookup(FileObject.class));
             try {
-                source.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
-                    }
-                    
-                    public void run(CompilationController co) throws Exception {
-                        co.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
-                        org.jruby.nb.ast.Node root = AstUtilities.getRoot(co);
-                        if (root != null) {
-                            RubyParseResult rpr = AstUtilities.getParseResult(co);
-                            if (rpr != null) {
-                                AnalysisResult ar = rpr.getStructure();
+                ParserManager.parse(Collections.singleton(source), new UserTask() {
+
+                    public
+                    @Override
+                    void run(ResultIterator co) throws Exception {
+                        if (co.getSnapshot().getMimeType().equals(RubyUtils.RUBY_MIME_TYPE)) {
+                            RubyParseResult parserResult = AstUtilities.getParseResult(co.getParserResult());
+                            org.jruby.nb.ast.Node root = parserResult.getRootNode();
+                            if (root != null) {
+                                AnalysisResult ar = parserResult.getStructure();
                                 List<? extends AstElement> els = ar.getElements();
                                 if (els.size() > 0) {
                                     // TODO - try to find the outermost or most "relevant" module/class in the file?
@@ -162,44 +164,45 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                                     // It's not as simple in Ruby.
                                     AstElement element = els.get(0);
                                     org.jruby.nb.ast.Node node = element.getNode();
-                                    treePathHandle = new RubyElementCtx(root, node, element, co.getFileObject(), co);
+                                    treePathHandle = new RubyElementCtx(root, node,
+                                            element, RubyUtils.getFileObject(parserResult), parserResult);
                                     refactoring.getContext().add(co);
                                 }
                             }
                         }
                     }
-                }, false);
-            } catch (IllegalArgumentException ex) {
-                ex.printStackTrace();
-            } catch (IOException ex) {
-                ex.printStackTrace();
+                });
+            } catch (ParseException e) {
+                Logger.getLogger(RenameRefactoringPlugin.class.getName()).log(Level.WARNING, null, e);
             }
         }
     }
-    
-    protected Source getRubySource(Phase p) {
-        if (treePathHandle == null) {
-            return null;
-        }
-        switch (p) {
-            case PRECHECK:
-            case CHECKPARAMETERS:    
-                if (treePathHandle==null) {
-                    return null;
-                }
-                ClasspathInfo cpInfo = getClasspathInfo(refactoring);
-                return RetoucheUtils.createSource(cpInfo, treePathHandle.getFileObject());
-            case FASTCHECKPARAMETERS:
-                return RetoucheUtils.getSource(treePathHandle.getFileObject());
 
-        }
-        throw new IllegalStateException();
-    }
+    // XXX Parsing API
+//    protected Source getRubySource(Phase p) {
+//        if (treePathHandle == null) {
+//            return null;
+//        }
+//        switch (p) {
+//            case PRECHECK:
+//            case CHECKPARAMETERS:
+//                if (treePathHandle==null) {
+//                    return null;
+//                }
+//                ClasspathInfo cpInfo = getClasspathInfo(refactoring);
+//                return RetoucheUtils.createSource(cpInfo, treePathHandle.getFileObject());
+//            case FASTCHECKPARAMETERS:
+//                return RetoucheUtils.getSource(treePathHandle.getFileObject());
+//
+//        }
+//        throw new IllegalStateException();
+//    }
     
-    protected Problem preCheck(CompilationController info) throws IOException {
-        Problem preCheckProblem = null;
-        fireProgressListenerStart(RenameRefactoring.PRE_CHECK, 4);
-        info.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
+    // XXX Parsing API
+//    protected Problem preCheck(CompilationController info) throws IOException {
+//        Problem preCheckProblem = null;
+//        fireProgressListenerStart(RenameRefactoring.PRE_CHECK, 4);
+//        info.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
 //        Element el = treePathHandle.resolveElement(info);
 //        preCheckProblem = isElementAvail(treePathHandle, info);
 //        if (preCheckProblem != null) {
@@ -272,17 +275,16 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
 //            //                if (!((jmiObject instanceof Resource) && ((Resource)jmiObject).getClassifiers().isEmpty()))
 //            //                    result = createProblem(result, true, NbBundle.getMessage(RenameRefactoring.class, "ERR_RenameWrongType"));
 //        }
-        fireProgressListenerStop();
-        return preCheckProblem;
-    }
+//        fireProgressListenerStop();
+//        return preCheckProblem;
+//    }
     
 //    private static final String getCannotRename(FileObject r) {
 //        return new MessageFormat(NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_CannotRenameFile")).format(new Object[] {r.getNameExt()});
 //    }
     
-    protected Problem fastCheckParameters(CompilationController info) throws IOException {
+    public Problem fastCheckParameters() {
         Problem fastCheckProblem = null;
-        info.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
         ElementKind kind = treePathHandle.getKind();
         String newName = refactoring.getNewName();
         String oldName = treePathHandle.getSimpleName();
@@ -390,7 +392,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
         return fastCheckProblem;
     }
     
-    protected Problem checkParameters(CompilationController info) throws IOException {
+    public Problem checkParameters() {
         
         Problem checkProblem = null;
         int steps = 0;
@@ -403,7 +405,6 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
         
         fireProgressListenerStart(RenameRefactoring.PARAMETERS_CHECK, 8 + 3*steps);
         
-        info.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
 //        Element element = treePathHandle.resolveElement(info);
         
         fireProgressListenerStep();
@@ -436,7 +437,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
         return checkProblem;
     }
     
-//        private Problem checkMethodForOverriding(ExecutableElement m, String newName, Problem problem, CompilationInfo info) {
+//        private Problem checkMethodForOverriding(ExecutableElement m, String newName, Problem problem, ParserResult info) {
 //            ElementUtilities ut = info.getElementUtilities();
 //            //problem = willBeOverridden(m, newName, argTypes, problem);
 //            fireProgressListenerStep();
@@ -457,26 +458,12 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
     }
 
     private Set<FileObject> getRelevantFiles() {
-        ClasspathInfo cpInfo = getClasspathInfo(refactoring);
-        final Set<FileObject> set = new HashSet<FileObject>();
-        Source source = RetoucheUtils.createSource(cpInfo, treePathHandle.getFileObject());
-
-        try {
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
-                
-                public void cancel() {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-                
-                public void run(CompilationController info) throws Exception {
-                    // TODO if getSearchInComments I -should- search all files
-//                    System.out.println("TODO - compute a full set of files to be checked... for now just lamely using the project files");
-                    if (treePathHandle.getKind() == ElementKind.VARIABLE || treePathHandle.getKind() == ElementKind.PARAMETER) {
-                        // For local variables, only look in the current file!
-                        set.add(info.getFileObject());
-                    }  else {
-                        set.addAll(RetoucheUtils.getRubyFilesInProject(info.getFileObject()));
-                    }
+        if (treePathHandle.getKind() == ElementKind.VARIABLE || treePathHandle.getKind() == ElementKind.PARAMETER) {
+            // For local variables, only look in the current file!
+            return Collections.singleton(treePathHandle.getFileObject());
+        } else {
+            return RetoucheUtils.getRubyFilesInProject(treePathHandle.getFileObject());
+        }
 //                    final ClassIndex idx = info.getClasspathInfo().getClassIndex();
 //                    info.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
 //                    Element el = treePathHandle.resolveElement(info);
@@ -508,15 +495,10 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
 //                        }
 //                        set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE))); //?????
 //                    }
-                }
-            }, true);
-        } catch (IOException ioe) {
-            throw (RuntimeException) new RuntimeException().initCause(ioe);
-        }
-        return set;
+//        }
     }
-    
-//    private void addMethods(ExecutableElement e, Set set, CompilationInfo info, ClassIndex idx) {
+
+//    private void addMethods(ExecutableElement e, Set set, ParserResult info, ClassIndex idx) {
 //        set.add(SourceUtils.getFile(e, info.getClasspathInfo()));
 //        ElementHandle<TypeElement> encl = ElementHandle.create(SourceUtils.getEnclosingTypeElement(e));
 //        set.addAll(idx.getResources(encl, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
@@ -529,11 +511,22 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
         if (treePathHandle == null) {
             return null;
         }
-        Set<FileObject> a = getRelevantFiles();
-        fireProgressListenerStart(ProgressEvent.START, a.size());
-        if (!a.isEmpty()) {
-            TransformTask transform = new TransformTask(new RenameTransformer(refactoring.getNewName(), allMethods), treePathHandle);
-            final Collection<ModificationResult> results = processFiles(a, transform);
+        Set<FileObject> files = getRelevantFiles();
+        fireProgressListenerStart(ProgressEvent.START, files.size());
+        if (!files.isEmpty()) {
+            TransformTask transform = new TransformTask() {
+                @Override
+                protected Collection<ModificationResult> process(ParserResult parserResult) {
+                    RenameTransformer rt = new RenameTransformer(refactoring.getNewName(), allMethods);
+                    rt.setWorkingCopy(parserResult);
+                    rt.scan();
+                    ModificationResult mr = new ModificationResult();
+                    mr.addDifferences(parserResult.getSnapshot().getSource().getFileObject(), rt.diffs);
+                    return Collections.singleton(mr);
+                }
+            };
+
+            final Collection<ModificationResult> results = processFiles(files, transform);
             elements.registerTransaction(new RetoucheCommit(results));
             for (ModificationResult result:results) {
                 for (FileObject jfo : result.getModifiedFileObjects()) {
@@ -573,7 +566,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
 //        }
 //    }
 //    
-//    private Problem willOverride(ExecutableElement method, String name, Problem problem, CompilationInfo info) {
+//    private Problem willOverride(ExecutableElement method, String name, Problem problem, ParserResult info) {
 //        boolean isStatic = method.getModifiers().contains(Modifier.STATIC);
 //        TypeElement jc = (TypeElement) method.getEnclosingElement();
 //        LinkedList supertypes = new LinkedList();
@@ -630,7 +623,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
 //            return problem;
 //        }
 //    }
-//    private Element hides(Element field, String name, CompilationInfo info) {
+//    private Element hides(Element field, String name, ParserResult info) {
 //        TypeElement jc = SourceUtils.getEnclosingTypeElement(field);
 //        Elements elements = info.getElements();
 //        ElementUtilities utils = info.getElementUtilities();
@@ -650,7 +643,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
 //        return null;
 //    }
 //    
-//    private String variableClashes(String newName, TreePath tp, CompilationInfo info) {
+//    private String variableClashes(String newName, TreePath tp, ParserResult info) {
 //        LocalVarScanner lookup = new LocalVarScanner(info, newName);
 //        TreePath scopeBlok = tp;
 //        EnumSet set = EnumSet.of(Tree.Kind.BLOCK, Tree.Kind.FOR_LOOP, Tree.Kind.METHOD);
@@ -680,7 +673,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
 //        return null;
 //    }
 //    
-//    private String clashes(Element feature, String newName, CompilationInfo info) {
+//    private String clashes(Element feature, String newName, ParserResult info) {
 //        ElementUtilities utils = info.getElementUtilities();
 //        Element dc = feature.getEnclosingElement();
 //        ElementKind kind = feature.getKind();
@@ -721,17 +714,17 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
      */
     public class RenameTransformer extends SearchVisitor {
 
-        private Set<RubyElementCtx> allMethods;
-        private String newName;
-        private String oldName;
+        private final Set<RubyElementCtx> allMethods;
+        private final String newName;
+        private final String oldName;
         private CloneableEditorSupport ces;
         private List<Difference> diffs;
 
         @Override
-        public void setWorkingCopy(WorkingCopy workingCopy) {
+        public void setWorkingCopy(ParserResult workingCopy) {
             // Cached per working copy
             this.ces = null;
-            assert diffs == null; // Should have been committed already
+            this.diffs = null;
             super.setWorkingCopy(workingCopy);
         }
         
@@ -750,11 +743,12 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
             RubyElementCtx searchCtx = treePathHandle;
             Error error = null;
             Node root = AstUtilities.getRoot(workingCopy);
+            FileObject workingCopyFileObject = RubyUtils.getFileObject(workingCopy);
             if (root != null) {
                 
                 Element element = AstElement.create(workingCopy, root);
                 Node node = searchCtx.getNode();
-                RubyElementCtx fileCtx = new RubyElementCtx(root, node, element, workingCopy.getFileObject(), workingCopy);
+                RubyElementCtx fileCtx = new RubyElementCtx(root, node, element, workingCopyFileObject, workingCopy);
                 Node method = null;
                 if (node instanceof ArgumentNode) {
                     AstPath path = searchCtx.getPath();
@@ -783,7 +777,9 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
             } else {
                 //System.out.println("Skipping file " + workingCopy.getFileObject());
                 // See if the document contains references to this symbol and if so, put a warning in
-                if (workingCopy.getText().indexOf(oldName) != -1) {
+                String workingCopyText = workingCopy.getSnapshot().getText().toString();
+
+                if (workingCopyText.indexOf(oldName) != -1) {
                     // TODO - icon??
                     if (ces == null) {
                         ces = RetoucheUtils.findCloneableEditorSupport(workingCopy);
@@ -791,7 +787,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                     int start = 0;
                     int end = 0;
                     String desc = NbBundle.getMessage(RenameRefactoringPlugin.class, "ParseErrorFile", oldName);
-                    List<Error> errors = workingCopy.getErrors();
+                    List<? extends Error> errors = workingCopy.getDiagnostics();
                     if (errors.size() > 0) {
                         for (Error e : errors) {
                             if (e.getSeverity() == Severity.ERROR) {
@@ -825,7 +821,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
             }
 
             if (error == null && refactoring.isSearchInComments()) {
-                Document doc = RetoucheUtils.getDocument(workingCopy, workingCopy.getFileObject());
+                Document doc = RetoucheUtils.getDocument(workingCopy, RubyUtils.getFileObject(workingCopy));
                 if (doc != null) {
                     //force open
                     TokenHierarchy<Document> th = TokenHierarchy.get(doc);
@@ -837,20 +833,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                 }
             }
 
-            // Sort the diffs, if applicable
-            if (diffs.size() > 0) {
-                Collections.sort(diffs, new Comparator<Difference>() {
-                    public int compare(Difference d1, Difference d2) {
-                        return d1.getStartPosition().getOffset() - d2.getStartPosition().getOffset();
-                    }
-                });
-                for (Difference diff : diffs) {
-                    workingCopy.addDiff(diff);
-                }
-            }
-            diffs = null;
             ces = null;
-            
         }
         
         private void searchTokenSequence(TokenSequence<?> ts) {
@@ -963,7 +946,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                     int lineStart = Utilities.getRowFirstNonWhite(doc, start);
                     int lineEnd = Utilities.getRowLastNonWhite(doc, start)+1; // +1: after last char
                     if (lineStart == -1 || lineEnd == -1) { // We're really on the wrong line!
-                        System.out.println("Empty line entry in " + FileUtil.getFileDisplayName(workingCopy.getFileObject()) +
+                        System.out.println("Empty line entry in " + FileUtil.getFileDisplayName(RubyUtils.getFileObject(workingCopy)) +
                                 "; no match for " + oldCode + " in line " + start + " referenced by node " + 
                                 node + " of type " + node.getClass().getName());
                         return;
@@ -975,7 +958,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
 
                     String line = doc.getText(lineStart, lineEnd-lineStart);
                     if (line.indexOf(oldCode) == -1) {
-                        System.out.println("Skipping entry in " + FileUtil.getFileDisplayName(workingCopy.getFileObject()) +
+                        System.out.println("Skipping entry in " + FileUtil.getFileDisplayName(RubyUtils.getFileObject(workingCopy)) +
                                 "; no match for " + oldCode + " in line " + line + " referenced by node " + 
                                 node + " of type " + node.getClass().getName());
                     } else {

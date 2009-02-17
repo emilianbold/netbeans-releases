@@ -42,10 +42,11 @@ package org.netbeans.modules.php.editor.nav;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.DeclarationFinder.AlternativeLocation;
-import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.csl.api.DeclarationFinder.AlternativeLocation;
+import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.UserTask;
 
 /**
  *
@@ -2162,9 +2163,14 @@ public class DeclarationFinderImplTest extends TestBase {
     }
 
     private void performTestSimpleFindDeclaration(String[] code, final int caretOffset, final Set<Golden> golden) throws Exception {
-        performTest(code, new CancellableTask<CompilationInfo>() {
+        performTest(code, new UserTask() {
             public void cancel() {}
-            public void run(CompilationInfo parameter) throws Exception {
+
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+
+                ParserResult parameter = (ParserResult) resultIterator.getParserResult();
+
                 DeclarationLocation found = DeclarationFinderImpl.findDeclarationImpl(parameter, caretOffset);
 
                 assertNotNull(found.getFileObject());

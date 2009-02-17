@@ -41,14 +41,11 @@ package org.netbeans.modules.ruby.elements;
 
 import java.util.List;
 import org.jruby.nb.ast.Node;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Index.SearchResult;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.RubyTestBase;
 
 /**
- *
  * @author Tor Norbye
  */
 public class IndexedElementTest extends RubyTestBase {
@@ -160,220 +157,222 @@ public class IndexedElementTest extends RubyTestBase {
         checkCreate("testfiles/constants.rb.indexed");
     }
 
+    // XXX - Parsing API
     public void checkCreate(String testFile) throws Exception {
-        List<SearchResult> maps;
-        if (testFile.endsWith(".indexed")) {
-            maps = createTestMapsFromIndexFile(getTestFile(testFile));
-        } else {
-            maps = createTestMaps(getTestFile(testFile));
-        }
-
-        RubyIndex rubyIndex = RubyIndex.get(null, null);
-
-        int mapNo = -1;
-        for (SearchResult map : maps) {
-            mapNo++;
-
-            //if (mapNo < 1853) {
-            //    continue;
-            //}
-
-            String url = map.getPersistentUrl();
-            assertNotNull(url);
-
-            String clz = map.getValue("class");
-            if (clz != null) {
-                String fqn = map.getValue("fqn");
-                String attrs = map.getValue("attrs");
-
-                String originalAttrs = attrs;
-                if (attrs != null) {
-                    int flags = IndexedClass.stringToFlags(attrs);
-                    if (flags != 0) {
-                        int begin = attrs.indexOf("|");
-                        assertTrue(begin != -1);
-                        int end = attrs.indexOf(';', begin);
-                        if (end == -1) {
-                            end = attrs.length();
-                        }
-                        attrs = attrs.substring(0, begin) + IndexedMethod.flagToString(flags) + attrs.substring(end);
-                        ((TestSearchResult)map).setValue("attrs", attrs);
-
-                    }
-                }
-
-                IndexedClass cm = rubyIndex.createClass(fqn, clz, map);
-
-                if (originalAttrs != null) {
-                    if (originalAttrs.indexOf("|STATIC") != -1) {
-                        assertTrue(fqn+";"+originalAttrs, cm.isStatic());
-                    }
-                    if (originalAttrs.indexOf("|NODOC") != -1) {
-                        assertTrue(fqn+";"+originalAttrs, cm.isNoDoc());
-                    }
-                    if (originalAttrs.indexOf("|TOP_LEVEL") != -1) {
-                        assertTrue(fqn+";"+originalAttrs, cm.isTopLevel());
-                    }
-                    if (originalAttrs.indexOf("|DOCUMENTED") != -1) {
-                        assertTrue(fqn+";"+originalAttrs, cm.isDocumented());
-                    }
-                    if (originalAttrs.indexOf("|PRIVATE") != -1) {
-                        assertTrue(fqn+";"+originalAttrs, cm.isPrivate());
-                    }
-                    if (originalAttrs.indexOf("|PROTECTED") != -1) {
-                        assertTrue(fqn+";"+originalAttrs, cm.isProtected());
-                    }
-                }
-
-                boolean skip = false;
-                // Skip known problems
-                skip = !Character.isUpperCase(cm.getName().charAt(0));
-                if (url.endsWith("/action_controller.rb") || url.endsWith("/active_record.rb") || url.endsWith("/action_mailer.rb") || url.endsWith("/action_view.rb")) {
-                    // These classes are faked up by RubyIndexer
-                    skip = true;
-                }
-                if (fqn.equals("Object")) {
-                    // Top level methods may not specify Object
-                    skip = true;
-                }
-
-                if (!skip) {
-                    assertEquals(url, cm.getFileUrl());
-                    assertNotNull(cm.getFileUrl(), cm.getFileObject());
-                    CompilationInfo[] compilationInfoHolder = new CompilationInfo[1];
-                    Node node = AstUtilities.getForeignNode(cm, compilationInfoHolder);
-                    assertNotNull("Map " + mapNo + ", url=" + url + ":" + fqn, node);
-                } // else: Lots of problems with lowerclass class names - comes from anonymous classes assigned to variables
-            }
-
-            String[] methods = map.getValues("method");
-            if (methods != null) {
-                System.out.println("Checking url " + url + ", " + methods.length + " methods");
-                int methodCount = -1;
-                for (String signature : methods) {
-                    methodCount++;
-
-                    if (methodCount < 14) {
-                        continue;
-                    }
-
-                    String originalSignature = signature;
-                    int flags = IndexedMethod.stringToFlags(signature);
-                    if (flags != 0) {
-                        int begin = signature.indexOf("|",1); //1: "|" is a valid method name
-                        assertTrue(begin != -1);
-                        int end = signature.indexOf(';', begin);
-                        if (end == -1) {
-                            end = signature.length();
-                        }
-                        signature = signature.substring(0, begin) + IndexedMethod.flagToString(flags) + signature.substring(end);
-                    }
-                    IndexedMethod method = rubyIndex.createMethod(signature, map, false);
-                    assertEquals(url, method.getFileUrl());
-
-                    if (originalSignature.indexOf("|STATIC") != -1) {
-                        assertTrue(originalSignature, method.isStatic());
-                    }
-                    if (originalSignature.indexOf("|DEPRECATED") != -1) {
-                        assertTrue(originalSignature, method.isDeprecated());
-                    }
-                    if (originalSignature.indexOf("|NODOC") != -1) {
-                        assertTrue(originalSignature, method.isNoDoc());
-                    }
-                    if (originalSignature.indexOf("|BLOCK_OPTIONAL") != -1) {
-                        assertTrue(originalSignature, method.isBlockOptional());
-                    }
-                    if (originalSignature.indexOf("|TOP_LEVEL") != -1) {
-                        assertTrue(originalSignature, method.isTopLevel());
-                    }
-                    if (originalSignature.indexOf("|DOCUMENTED") != -1) {
-                        assertTrue(originalSignature, method.isDocumented());
-                    }
-                    if (originalSignature.indexOf("|PRIVATE") != -1) {
-                        assertTrue(originalSignature, method.isPrivate());
-                    }
-                    if (originalSignature.indexOf("|PROTECTED") != -1) {
-                        assertTrue(originalSignature, method.isProtected());
-                    }
-
-                    // Known exceptions
-                    if (url.endsWith("/schema_definitions.rb")) {
-                        // These are generated dynamically, no actual AST node
-                        continue;
-                    }
-                    // The bug here is that there is a sessions_key local variable we store
-                    // a class on -- but this isn't a class named session_key!!
-                    // Too late to mess with that now
-                    if (url.endsWith("/scenario_runner.rb")) {
-                        continue;
-                    }
-                    if (url.endsWith("/drb_server.rb")) {
-                        continue;
-                    }
-                    if (url.endsWith("/set.rb")) {
-                        // Another innerclass
-                        continue;
-                    }
-                    if (url.endsWith("/testrunner.rb")) {
-                        // Another innerclass
-                        continue;
-                    }
-                    if (signature.indexOf("hyphenate_to") != -1) {
-                        continue;
-                    }
-
-                    assertNotNull(method.getFileUrl(), method.getFileObject());
-                    CompilationInfo[] compilationInfoHolder = new CompilationInfo[1];
-                    Node node = AstUtilities.getForeignNode(method, compilationInfoHolder);
-                    assertNotNull("Map " + mapNo + ":" + methodCount + ", url=" + url + ":" + signature + "; " + method.getSignature(), node);
-                }
-            }
-
-            String[] fields = map.getValues("field");
-            if (fields != null) {
-                System.out.println("Checking url " + url + ", " + fields.length + " fields");
-                for (String signature : fields) {
-                    String originalSignature = signature;
-                    boolean isInstance = signature.indexOf("|STATIC") == -1;
-                    int flags = IndexedField.stringToFlags(signature);
-                    if (flags != 0) {
-                        int begin = signature.indexOf("|");
-                        assertTrue(begin != -1);
-                        int end = signature.indexOf(';', begin);
-                        if (end == -1) {
-                            end = signature.length();
-                        }
-                        signature = signature.substring(0, begin) + IndexedField.flagToString(flags) + signature.substring(end);
-                    }
-                    IndexedField field = rubyIndex.createField(signature, map, isInstance, false);
-                    assertEquals(url, field.getFileUrl());
-
-                    if (originalSignature.indexOf("|STATIC") != -1) {
-                        assertTrue(originalSignature, field.isStatic());
-                    }
-                    if (originalSignature.indexOf("|NODOC") != -1) {
-                        assertTrue(originalSignature, field.isNoDoc());
-                    }
-                    if (originalSignature.indexOf("|TOP_LEVEL") != -1) {
-                        assertTrue(originalSignature, field.isTopLevel());
-                    }
-                    if (originalSignature.indexOf("|DOCUMENTED") != -1) {
-                        assertTrue(originalSignature, field.isDocumented());
-                    }
-                    if (originalSignature.indexOf("|PRIVATE") != -1) {
-                        assertTrue(originalSignature, field.isPrivate());
-                    }
-                    if (originalSignature.indexOf("|PROTECTED") != -1) {
-                        assertTrue(originalSignature, field.isProtected());
-                    }
-
-
-                    assertNotNull(field.getFileUrl(), field.getFileObject());
-                    CompilationInfo[] compilationInfoHolder = new CompilationInfo[1];
-                    Node node = AstUtilities.getForeignNode(field, compilationInfoHolder);
-                    assertNotNull("Map " + mapNo + ", url=" + url + ":" + signature, node);
-                }
-            }
-        }
+        throw new UnsupportedOperationException("not implemented yet");
+//        List<SearchResult> maps;
+//        if (testFile.endsWith(".indexed")) {
+//            maps = createTestMapsFromIndexFile(getTestFile(testFile));
+//        } else {
+//            maps = createTestMaps(getTestFile(testFile));
+//        }
+//
+//        RubyIndex rubyIndex = RubyIndex.get(null, null);
+//
+//        int mapNo = -1;
+//        for (SearchResult map : maps) {
+//            mapNo++;
+//
+//            //if (mapNo < 1853) {
+//            //    continue;
+//            //}
+//
+//            String url = map.getPersistentUrl();
+//            assertNotNull(url);
+//
+//            String clz = map.getValue("class");
+//            if (clz != null) {
+//                String fqn = map.getValue("fqn");
+//                String attrs = map.getValue("attrs");
+//
+//                String originalAttrs = attrs;
+//                if (attrs != null) {
+//                    int flags = IndexedClass.stringToFlags(attrs);
+//                    if (flags != 0) {
+//                        int begin = attrs.indexOf("|");
+//                        assertTrue(begin != -1);
+//                        int end = attrs.indexOf(';', begin);
+//                        if (end == -1) {
+//                            end = attrs.length();
+//                        }
+//                        attrs = attrs.substring(0, begin) + IndexedMethod.flagToString(flags) + attrs.substring(end);
+//                        ((TestSearchResult)map).setValue("attrs", attrs);
+//
+//                    }
+//                }
+//
+//                IndexedClass cm = rubyIndex.createClass(fqn, clz, map);
+//
+//                if (originalAttrs != null) {
+//                    if (originalAttrs.indexOf("|STATIC") != -1) {
+//                        assertTrue(fqn+";"+originalAttrs, cm.isStatic());
+//                    }
+//                    if (originalAttrs.indexOf("|NODOC") != -1) {
+//                        assertTrue(fqn+";"+originalAttrs, cm.isNoDoc());
+//                    }
+//                    if (originalAttrs.indexOf("|TOP_LEVEL") != -1) {
+//                        assertTrue(fqn+";"+originalAttrs, cm.isTopLevel());
+//                    }
+//                    if (originalAttrs.indexOf("|DOCUMENTED") != -1) {
+//                        assertTrue(fqn+";"+originalAttrs, cm.isDocumented());
+//                    }
+//                    if (originalAttrs.indexOf("|PRIVATE") != -1) {
+//                        assertTrue(fqn+";"+originalAttrs, cm.isPrivate());
+//                    }
+//                    if (originalAttrs.indexOf("|PROTECTED") != -1) {
+//                        assertTrue(fqn+";"+originalAttrs, cm.isProtected());
+//                    }
+//                }
+//
+//                boolean skip = false;
+//                // Skip known problems
+//                skip = !Character.isUpperCase(cm.getName().charAt(0));
+//                if (url.endsWith("/action_controller.rb") || url.endsWith("/active_record.rb") || url.endsWith("/action_mailer.rb") || url.endsWith("/action_view.rb")) {
+//                    // These classes are faked up by RubyIndexer
+//                    skip = true;
+//                }
+//                if (fqn.equals("Object")) {
+//                    // Top level methods may not specify Object
+//                    skip = true;
+//                }
+//
+//                if (!skip) {
+//                    assertEquals(url, cm.getFileUrl());
+//                    assertNotNull(cm.getFileUrl(), cm.getFileObject());
+//                    CompilationInfo[] compilationInfoHolder = new CompilationInfo[1];
+//                    Node node = AstUtilities.getForeignNode(cm, compilationInfoHolder);
+//                    assertNotNull("Map " + mapNo + ", url=" + url + ":" + fqn, node);
+//                } // else: Lots of problems with lowerclass class names - comes from anonymous classes assigned to variables
+//            }
+//
+//            String[] methods = map.getValues("method");
+//            if (methods != null) {
+//                System.out.println("Checking url " + url + ", " + methods.length + " methods");
+//                int methodCount = -1;
+//                for (String signature : methods) {
+//                    methodCount++;
+//
+//                    if (methodCount < 14) {
+//                        continue;
+//                    }
+//
+//                    String originalSignature = signature;
+//                    int flags = IndexedMethod.stringToFlags(signature);
+//                    if (flags != 0) {
+//                        int begin = signature.indexOf("|",1); //1: "|" is a valid method name
+//                        assertTrue(begin != -1);
+//                        int end = signature.indexOf(';', begin);
+//                        if (end == -1) {
+//                            end = signature.length();
+//                        }
+//                        signature = signature.substring(0, begin) + IndexedMethod.flagToString(flags) + signature.substring(end);
+//                    }
+//                    IndexedMethod method = rubyIndex.createMethod(signature, map, false);
+//                    assertEquals(url, method.getFileUrl());
+//
+//                    if (originalSignature.indexOf("|STATIC") != -1) {
+//                        assertTrue(originalSignature, method.isStatic());
+//                    }
+//                    if (originalSignature.indexOf("|DEPRECATED") != -1) {
+//                        assertTrue(originalSignature, method.isDeprecated());
+//                    }
+//                    if (originalSignature.indexOf("|NODOC") != -1) {
+//                        assertTrue(originalSignature, method.isNoDoc());
+//                    }
+//                    if (originalSignature.indexOf("|BLOCK_OPTIONAL") != -1) {
+//                        assertTrue(originalSignature, method.isBlockOptional());
+//                    }
+//                    if (originalSignature.indexOf("|TOP_LEVEL") != -1) {
+//                        assertTrue(originalSignature, method.isTopLevel());
+//                    }
+//                    if (originalSignature.indexOf("|DOCUMENTED") != -1) {
+//                        assertTrue(originalSignature, method.isDocumented());
+//                    }
+//                    if (originalSignature.indexOf("|PRIVATE") != -1) {
+//                        assertTrue(originalSignature, method.isPrivate());
+//                    }
+//                    if (originalSignature.indexOf("|PROTECTED") != -1) {
+//                        assertTrue(originalSignature, method.isProtected());
+//                    }
+//
+//                    // Known exceptions
+//                    if (url.endsWith("/schema_definitions.rb")) {
+//                        // These are generated dynamically, no actual AST node
+//                        continue;
+//                    }
+//                    // The bug here is that there is a sessions_key local variable we store
+//                    // a class on -- but this isn't a class named session_key!!
+//                    // Too late to mess with that now
+//                    if (url.endsWith("/scenario_runner.rb")) {
+//                        continue;
+//                    }
+//                    if (url.endsWith("/drb_server.rb")) {
+//                        continue;
+//                    }
+//                    if (url.endsWith("/set.rb")) {
+//                        // Another innerclass
+//                        continue;
+//                    }
+//                    if (url.endsWith("/testrunner.rb")) {
+//                        // Another innerclass
+//                        continue;
+//                    }
+//                    if (signature.indexOf("hyphenate_to") != -1) {
+//                        continue;
+//                    }
+//
+//                    assertNotNull(method.getFileUrl(), method.getFileObject());
+//                    CompilationInfo[] compilationInfoHolder = new CompilationInfo[1];
+//                    Node node = AstUtilities.getForeignNode(method, compilationInfoHolder);
+//                    assertNotNull("Map " + mapNo + ":" + methodCount + ", url=" + url + ":" + signature + "; " + method.getSignature(), node);
+//                }
+//            }
+//
+//            String[] fields = map.getValues("field");
+//            if (fields != null) {
+//                System.out.println("Checking url " + url + ", " + fields.length + " fields");
+//                for (String signature : fields) {
+//                    String originalSignature = signature;
+//                    boolean isInstance = signature.indexOf("|STATIC") == -1;
+//                    int flags = IndexedField.stringToFlags(signature);
+//                    if (flags != 0) {
+//                        int begin = signature.indexOf("|");
+//                        assertTrue(begin != -1);
+//                        int end = signature.indexOf(';', begin);
+//                        if (end == -1) {
+//                            end = signature.length();
+//                        }
+//                        signature = signature.substring(0, begin) + IndexedField.flagToString(flags) + signature.substring(end);
+//                    }
+//                    IndexedField field = rubyIndex.createField(signature, map, isInstance, false);
+//                    assertEquals(url, field.getFileUrl());
+//
+//                    if (originalSignature.indexOf("|STATIC") != -1) {
+//                        assertTrue(originalSignature, field.isStatic());
+//                    }
+//                    if (originalSignature.indexOf("|NODOC") != -1) {
+//                        assertTrue(originalSignature, field.isNoDoc());
+//                    }
+//                    if (originalSignature.indexOf("|TOP_LEVEL") != -1) {
+//                        assertTrue(originalSignature, field.isTopLevel());
+//                    }
+//                    if (originalSignature.indexOf("|DOCUMENTED") != -1) {
+//                        assertTrue(originalSignature, field.isDocumented());
+//                    }
+//                    if (originalSignature.indexOf("|PRIVATE") != -1) {
+//                        assertTrue(originalSignature, field.isPrivate());
+//                    }
+//                    if (originalSignature.indexOf("|PROTECTED") != -1) {
+//                        assertTrue(originalSignature, field.isProtected());
+//                    }
+//
+//
+//                    assertNotNull(field.getFileUrl(), field.getFileObject());
+//                    CompilationInfo[] compilationInfoHolder = new CompilationInfo[1];
+//                    Node node = AstUtilities.getForeignNode(field, compilationInfoHolder);
+//                    assertNotNull("Map " + mapNo + ", url=" + url + ":" + signature, node);
+//                }
+//            }
+//        }
     }
 }

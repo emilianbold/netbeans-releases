@@ -38,14 +38,17 @@
  */
 package org.netbeans.modules.languages.yaml;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.jvyamlb.Position.Range;
 import org.jvyamlb.Positionable;
 import org.jvyamlb.nodes.Node;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.StructureItem;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.StructureItem;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  * A result from Parsing YAML
@@ -54,13 +57,15 @@ import org.netbeans.modules.gsf.api.StructureItem;
  */
 public class YamlParserResult extends ParserResult {
 
+    private final List<Error> errors = new ArrayList<Error>();
+
     private List<Node> nodes;
     private List<? extends StructureItem> items;
     private int[] byteToUtf8;
     private int[] utf8ToByte;
 
-    public YamlParserResult(List<Node> nodes, YamlParser parser, ParserFile file, boolean valid, int[] byteToUtf8, int[] utf8ToByte) {
-        super(parser, file, YamlTokenId.YAML_MIME_TYPE, valid);
+    public YamlParserResult(List<Node> nodes, YamlParser parser, Snapshot snapshot, boolean valid, int[] byteToUtf8, int[] utf8ToByte) {
+        super(snapshot);
         assert nodes != null;
         this.nodes = nodes;
         this.byteToUtf8 = byteToUtf8;
@@ -71,10 +76,21 @@ public class YamlParserResult extends ParserResult {
         return nodes;
     }
 
-    @Override
-    public AstTreeNode getAst() {
-        return null;
+    public void addError(Error error) {
+        errors.add(error);
     }
+
+    @Override
+    public List<? extends Error> getDiagnostics() {
+        return Collections.unmodifiableList(errors);
+    }
+
+    @Override
+    protected void invalidate() {
+        // FIXME parsing API
+        // remove from parser cache (?)
+    }
+
 
     public synchronized List<? extends StructureItem> getItems() {
         if (items == null) {

@@ -41,10 +41,10 @@ package org.netbeans.modules.php.editor.model.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
@@ -75,9 +75,9 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
 
     private PHPIndex index;
 
-    IndexScopeImpl(CompilationInfo info) {
+    IndexScopeImpl(ParserResult info) {
         this(info, "index", PhpKind.INDEX);//NOI18N
-        this.index = PHPIndex.get(info.getIndex(PHPLanguage.PHP_MIME_TYPE));
+        this.index = PHPIndex.get(info);
     }
 
     IndexScopeImpl(PHPIndex idx) {
@@ -97,10 +97,10 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
     }
 
     public List<? extends InterfaceScope> findInterfaces(String... queryName) {
-        return findInterfaces(NameKind.EXACT_NAME, queryName);
+        return findInterfaces(QuerySupport.Kind.EXACT_NAME, queryName);
     }
 
-    public List<? extends InterfaceScope> findInterfaces(NameKind nameKind, String... queryName) {
+    public List<? extends InterfaceScope> findInterfaces(QuerySupport.Kind nameKind, String... queryName) {
         List<InterfaceScope> retval = new ArrayList<InterfaceScope>();
         for (String name : queryName) {
             assert name != null && name.trim().length() > 0;
@@ -115,10 +115,10 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
     }
 
     public List<? extends TypeScope> findTypes(String... queryName) {
-        return findTypes(NameKind.EXACT_NAME, queryName);
+        return findTypes(QuerySupport.Kind.EXACT_NAME, queryName);
     }
 
-    public List<? extends TypeScope> findTypes(NameKind nameKind, String... queryName) {
+    public List<? extends TypeScope> findTypes(QuerySupport.Kind nameKind, String... queryName) {
         List<TypeScope> retval = new ArrayList<TypeScope>();
         for (String name : queryName) {
             assert name != null && name.trim().length() > 0;
@@ -138,7 +138,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
         return findClasses(NameKind.EXACT_NAME, queryName);
     }
 
-    public List<? extends ClassScope> findClasses(NameKind nameKind, String... queryName) {
+    public List<? extends ClassScope> findClasses(QuerySupport.Kind nameKind, String... queryName) {
         List<ClassScope> retval = new ArrayList<ClassScope>();
         for (String name : queryName) {
             assert name != null && name.trim().length() > 0;
@@ -154,7 +154,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
         return findFunctions(NameKind.EXACT_NAME, queryName);
     }
 
-    public List<? extends FunctionScope> findFunctions(NameKind nameKind, String... queryName) {
+    public List<? extends FunctionScope> findFunctions(QuerySupport.Kind nameKind, String... queryName) {
         List<FunctionScope> retval = new ArrayList<FunctionScope>();
         for (String name : queryName) {
             assert name != null && name.trim().length() > 0;
@@ -183,10 +183,10 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
     }
 
     public List<? extends VariableName> findVariables(String... queryName) {
-        return findVariables(NameKind.EXACT_NAME, queryName);
+        return findVariables(QuerySupport.Kind.EXACT_NAME, queryName);
     }
 
-    public List<? extends VariableName> findVariables(NameKind nameKind, String... queryName) {
+    public List<? extends VariableName> findVariables(QuerySupport.Kind nameKind, String... queryName) {
         List<VariableName> retval = new ArrayList<VariableName>();
         for (String name : queryName) {
             assert name != null && name.trim().length() > 0;
@@ -239,7 +239,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
     }
 
     public List<? extends ClassConstantElement> findClassConstants(TypeScope aThis, String... queryName) {
-        return findClassConstants(NameKind.EXACT_NAME, aThis, queryName);
+        return findClassConstants(QuerySupport.Kind.EXACT_NAME, aThis, queryName);
     }
 
     public List<? extends ClassConstantElement> findClassConstants(final NameKind nameKind, TypeScope type, final String... queryName) {
@@ -265,7 +265,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
         return retval;
     }
 
-    public List<? extends FieldElement> findFields(final NameKind nameKind, ClassScope cls, final String queryName, final int... modifiers) {
+    public List<? extends FieldElement> findFields(final QuerySupport.Kind nameKind, ClassScope cls, final String queryName, final int... modifiers) {
         List<FieldElementImpl> retval = new ArrayList<FieldElementImpl>();
         PhpModifiers attribs = new PhpModifiers(modifiers);
         String name = (queryName.startsWith("$")) //NOI18N
@@ -280,7 +280,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
     }
 
     public List<? extends FieldElement> findFields(ClassScope cls, final int... modifiers) {
-        return findFields(NameKind.PREFIX, cls, "", modifiers);
+        return findFields(QuerySupport.Kind.PREFIX, cls, "", modifiers);
     }
 
     public List<? extends FieldElement> findFields(ClassScope aThis, final String queryName, final int... modifiers) {

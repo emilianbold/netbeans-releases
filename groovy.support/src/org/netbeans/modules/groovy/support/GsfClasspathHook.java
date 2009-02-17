@@ -64,14 +64,14 @@ public class GsfClasspathHook extends ProjectOpenedHook {
     @Override
     protected void projectOpened() {
         if (isGroovyEnabled()) {
-            GroovyProjectExtender.registerGsfClassPath(project);
+            //GroovyProjectExtender.registerGsfClassPath(project);
         }
     }
 
     @Override
     protected void projectClosed() {
         if (isGroovyEnabled()) {
-            GroovyProjectExtender.unregisterGsfClassPath(project);
+            //GroovyProjectExtender.unregisterGsfClassPath(project);
         }
     }
 

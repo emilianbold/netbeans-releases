@@ -94,9 +94,11 @@
     <folder name="Editors">
         <folder name="application">
             <folder name="x-httpd-eruby">
+                <file name="org-netbeans-modules-ruby-rhtml-editor-RubyEmbeddingProvider$Factory.instance" />
+
                 <file name="org-netbeans-modules-ruby-rhtml-RhtmlIndentTaskFactory.instance"/>
                 <file name="org-netbeans-modules-ruby-rhtml-EmbeddedSectionsHighlighting$Factory.instance"/>
-                <file name="org-netbeans-modules-gsfret-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
+                <file name="org-netbeans-modules-csl-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
 
                 <file name="language.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId.language"/>
@@ -105,7 +107,7 @@
 
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-html-editor-HTMLCompletionProvider.instance"/>
-                    <file name="org-netbeans-modules-gsfret-editor-completion-GsfCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-csl-editor-completion-GsfCompletionProvider.instance"/>
                     <!-- This doesn't work right because most of the templates don't start with characters
                          that are identifiers
                     <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance"/>
@@ -116,13 +118,13 @@
                 <folder name="CodeTemplateFilterFactories">
                     <file name="org-netbeans-modules-ruby-rhtml-editor-RhtmlCodeTemplateFilter$Factory.instance"/>
                     OR:
-                    <file name="org-netbeans-modules-gsfret-editor-codetemplates-GsfCodeTemplateFilter$Factory.instance"/>
+                    <file name="org-netbeans-modules-csl-editor-codetemplates-GsfCodeTemplateFilter$Factory.instance"/>
                 </folder>   
                 -->
 
                 <folder name="HyperlinkProviders">
                     <file name="GsfHyperlinkProvider.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.gsfret.editor.hyperlink.GsfHyperlinkProvider"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.csl.editor.hyperlink.GsfHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                 </folder>
@@ -243,7 +245,7 @@
             </folder>
         </folder>
     </folder>
-    <folder name="GsfPlugins">
+    <folder name="CslPlugins">
         <folder name="application">
             <folder name="x-httpd-eruby">
                 <attr name="useCustomEditorKit" boolvalue="true"/>

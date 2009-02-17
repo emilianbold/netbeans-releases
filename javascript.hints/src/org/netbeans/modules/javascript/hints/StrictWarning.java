@@ -51,21 +51,20 @@ import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Error;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.EditList;
-import org.netbeans.modules.gsf.api.HintFix;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.PreviewableFix;
-import org.netbeans.modules.gsf.api.RuleContext;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.EditList;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.PreviewableFix;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.AstUtilities;
 import org.netbeans.modules.javascript.editing.BrowserVersion;
 import org.netbeans.modules.javascript.editing.JsParseResult;
 import org.netbeans.modules.javascript.editing.SupportedBrowsers;
-import org.netbeans.modules.javascript.editing.embedding.JsModel;
+import org.netbeans.modules.javascript.editing.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.javascript.hints.infrastructure.JsErrorRule;
@@ -129,7 +128,7 @@ public class StrictWarning extends JsErrorRule {
     }
 
     public void run(JsRuleContext context, Error error, List<Hint> result) {
-        CompilationInfo info = context.compilationInfo;
+        JsParseResult info = AstUtilities.getParseResult(context.parserResult);
         BaseDocument doc = context.doc;
 
         OffsetRange range = null;
@@ -197,7 +196,7 @@ public class StrictWarning extends JsErrorRule {
             }
 
             // In HTML etc ignore these
-            if (/*node.getType() == Token.EMPTY && */!JsTokenId.JAVASCRIPT_MIME_TYPE.equals(info.getFileObject().getMIMEType())) {
+            if (/*node.getType() == Token.EMPTY && */!JsTokenId.JAVASCRIPT_MIME_TYPE.equals(info.getSnapshot().getSource().getMimeType())) {
                 context.remove = true;
                 return;
             }
@@ -205,7 +204,7 @@ public class StrictWarning extends JsErrorRule {
             if (node.getType() == Token.EXPR_VOID) {
                 Node firstChild = node.getFirstChild();
                 if (firstChild != null && firstChild.getType() == Token.NAME &&
-                        JsModel.isGeneratedIdentifier(firstChild.getString())) {
+                        JsEmbeddingProvider.isGeneratedIdentifier(firstChild.getString())) {
                     context.remove = true;
                     return;
                 }
@@ -287,7 +286,7 @@ public class StrictWarning extends JsErrorRule {
                 message = error.getDisplayName();
             }
 
-            Hint desc = new Hint(this, message, info.getFileObject(), range, fixList, 500);
+            Hint desc = new Hint(this, message, info.getSnapshot().getSource().getFileObject(), range, fixList, 500);
             result.add(desc);
         }
     }
@@ -429,7 +428,7 @@ public class StrictWarning extends JsErrorRule {
 
             OffsetRange astRange = AstUtilities.getRange(node);
             if (astRange != OffsetRange.NONE) {
-                OffsetRange lexRange = LexUtilities.getLexerOffsets(context.compilationInfo, astRange);
+                OffsetRange lexRange = LexUtilities.getLexerOffsets(AstUtilities.getParseResult(context.parserResult), astRange);
                 if (lexRange != OffsetRange.NONE) {
                     if (assign) {
                         int offset = lexRange.getStart();
@@ -471,7 +470,7 @@ public class StrictWarning extends JsErrorRule {
             Position pos = edits.createPosition(varOffset);
             edits.apply();
             if (pos != null && pos.getOffset() != -1) {
-                JTextComponent target = GsfUtilities.getPaneFor(context.compilationInfo.getFileObject());
+                JTextComponent target = GsfUtilities.getPaneFor(context.parserResult.getSnapshot().getSource().getFileObject());
                 if (target != null) {
                     int start = pos.getOffset();
                     int end = start + varName.length();
