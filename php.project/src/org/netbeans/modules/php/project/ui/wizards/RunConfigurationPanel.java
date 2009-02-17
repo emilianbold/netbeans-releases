@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import javax.swing.MutableComboBoxModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.project.api.PhpOptions;
@@ -194,8 +195,12 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             runAsLocalWeb.setCopyFilesState(false);
             canceled = false;
             PhpEnvironment.get().readDocumentRoots(new PhpEnvironment.ReadDocumentRootsNotifier() {
-                public void finished(List<DocumentRoot> documentRoots) {
-                    initLocalServerModel(documentRoots);
+                public void finished(final List<DocumentRoot> documentRoots) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            initLocalServerModel(documentRoots);
+                        }
+                    });
                 }
             });
             fireChangeEvent();

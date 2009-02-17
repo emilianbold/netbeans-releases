@@ -51,6 +51,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import javax.swing.MutableComboBoxModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -137,8 +138,12 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
                     fireChangeEvent();
                     canceled = false;
                     PhpEnvironment.get().readDocumentRoots(new PhpEnvironment.ReadDocumentRootsNotifier() {
-                        public void finished(List<DocumentRoot> documentRoots) {
-                            initLocalServers(documentRoots);
+                        public void finished(final List<DocumentRoot> documentRoots) {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    initLocalServers(documentRoots);
+                                }
+                            });
                         }
                     });
                 }
