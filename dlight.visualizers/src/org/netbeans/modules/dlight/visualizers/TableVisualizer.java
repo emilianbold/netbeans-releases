@@ -59,7 +59,6 @@ import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.impl.TableVisualizerConfigurationAccessor;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -219,29 +218,22 @@ class TableVisualizer extends JPanel implements
     }
 
     private void load() {
-
-
-        RequestProcessor.getDefault().post(new Runnable() {
+        List<DataRow> dataRow = provider.queryData(configuration.getMetadata());
+        boolean isEmpty;
+        synchronized (data) {
+            data.clear();
+            data.addAll(dataRow);
+            isEmpty = data.isEmpty();
+        //in case there is no data create fake model
+        }
+        final boolean isEmptyConent = isEmpty;
+        UIThread.invoke(new Runnable() {
 
             public void run() {
-                List<DataRow> dataRow = provider.queryData(configuration.getMetadata());
-                boolean isEmpty;
-                synchronized (data) {
-                    data.clear();
-                    data.addAll(dataRow);
-                    isEmpty = data.isEmpty();
-                //in case there is no data create fake model
+                if (tableModel != null){
+                    tableModel.fireTableDataChanged();
                 }
-                final boolean isEmptyConent = isEmpty;
-                UIThread.invoke(new Runnable() {
-
-                    public void run() {
-                        if (tableModel != null){
-                            tableModel.fireTableDataChanged();
-                        }
-                        setContent(isEmptyConent);
-                    }
-                });
+                setContent(isEmptyConent);
             }
         });
     }

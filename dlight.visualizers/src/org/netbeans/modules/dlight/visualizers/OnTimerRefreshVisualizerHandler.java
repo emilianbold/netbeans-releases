@@ -48,15 +48,17 @@ import org.netbeans.modules.dlight.util.TimerTaskExecutionService;
 
 /**
  *
- * @author ak119685
  */
-class OnTimerRefreshVisualizerHandler implements SessionStateListener, DLightSessionListener{
+class OnTimerRefreshVisualizerHandler
+        implements SessionStateListener, DLightSessionListener {
 
-    private boolean timerIsActive = false;
+    private static final TimerTaskExecutionService service =
+            TimerTaskExecutionService.getInstance();
     private final VisualizerUpdateTask timerTask = new VisualizerUpdateTask();
-    private int timerFactor;
-    private SessionState currentSessionState = null;
     private final OnTimerTask task;
+    private final int timerFactor;
+    private boolean timerIsActive = false;
+    private SessionState currentSessionState = null;
 
     protected OnTimerRefreshVisualizerHandler(OnTimerTask task, int timerFactor) {
         this.task = task;
@@ -80,14 +82,14 @@ class OnTimerRefreshVisualizerHandler implements SessionStateListener, DLightSes
 
     synchronized void startTimer() {
         if (!timerIsActive) {
-            TimerTaskExecutionService.getInstance().registerTimerTask(timerTask, 5);
+            service.registerTimerTask(timerTask, timerFactor);
             timerIsActive = true;
         }
     }
 
     synchronized void stopTimer() {
         if (timerIsActive) {
-            TimerTaskExecutionService.getInstance().unregisterTimerTask(timerTask);
+            service.unregisterTimerTask(timerTask);
             timerIsActive = false;
             task.timerStopped();
         }
@@ -95,6 +97,7 @@ class OnTimerRefreshVisualizerHandler implements SessionStateListener, DLightSes
 
     public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState) {
         currentSessionState = newState;
+
         if (timerIsActive && (newState == SessionState.PAUSED || newState == SessionState.ANALYZE)) {
             stopTimer();
             return;
@@ -107,28 +110,26 @@ class OnTimerRefreshVisualizerHandler implements SessionStateListener, DLightSes
     }
 
     public void activeSessionChanged(DLightSession oldSession, DLightSession newSession) {
-        if (oldSession !=  null){
+        if (oldSession != null) {
             oldSession.removeSessionStateListener(this);
             stopTimer();
         }
-        if (newSession != null){
+
+        if (newSession != null) {
             newSession.addSessionStateListener(this);
             sessionStateChanged(newSession, SessionState.CONFIGURATION, newSession.getState());
         }
-        //throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public void sessionAdded(DLightSession newSession) {
-        //throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public void sessionRemoved(DLightSession removedSession) {
-         if (removedSession != null){
-             removedSession.removeSessionStateListener(this);
-             stopTimer();
-         }
+        if (removedSession != null) {
+            removedSession.removeSessionStateListener(this);
+            stopTimer();
+        }
     }
-
 
     private class VisualizerUpdateTask implements Callable<Integer> {
 
@@ -136,5 +137,4 @@ class OnTimerRefreshVisualizerHandler implements SessionStateListener, DLightSes
             return task.onTimer();
         }
     }
-
 }

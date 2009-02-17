@@ -277,29 +277,21 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
     }
 
     @Override
-    protected void asyncFillModel(final List<Column> columns) {
-
-        RequestProcessor.getDefault().post(new Runnable() {
+    protected void syncFillModel(final List<Column> columns) {
+        final List<FunctionCall> list =
+            dataProvider.getHotSpotFunctions(columns, null, TOP_FUNCTIONS_COUNT);
+        final boolean isEmptyConent = list == null || list.isEmpty();
+        UIThread.invoke(new Runnable() {
 
             public void run() {
-                final List<FunctionCall> list =
-                    dataProvider.getHotSpotFunctions(columns, null, TOP_FUNCTIONS_COUNT);
-                final boolean isEmptyConent = list == null || list.isEmpty();
-                UIThread.invoke(new Runnable() {
+                setContent(isEmptyConent);
+                if (isEmptyConent) {
+                    return;
+                }
 
-                    public void run() {
-                        setContent(isEmptyConent);
-                        if (isEmptyConent) {
-                            return;
-                        }
-
-                        update(list);
-                    }
-                });
-
+                update(list);
             }
         });
-
     }
 
     private void update(List<FunctionCall> list) {
@@ -362,7 +354,7 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
         if (!isShown() || !isShowing()) {
             return 0;
         }
-        asyncFillModel(this.configuration.getMetadata().getColumns());
+        syncFillModel(this.configuration.getMetadata().getColumns());
 //    update(dataProvider.getHotSpotFunctions(, null, TOP_FUNCTIONS_COUNT));
         return 0;
     }
