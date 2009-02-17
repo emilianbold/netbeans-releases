@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.perfan.spi;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.ConnectException;
@@ -87,11 +88,12 @@ import org.openide.windows.InputOutput;
  */
 public class SunStudioDataCollector implements DataCollector<SunStudioDCConfiguration> {
 
-    public static final Column TOP_FUNCTION_INFO = new Column("currentFunction", String.class);
-    private static final String ID = "PerfanDataStorage";
-    private static final List<DataStorageType> supportedStorageTypes = Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(ID));
-    private static final DataTableMetadata dataTableMetadata = new DataTableMetadata("idbe", Arrays.asList(TOP_FUNCTION_INFO));
+    public static final Column TOP_FUNCTION_INFO = new Column("currentFunction", String.class); // NOI18N
+    private static final String ID = "PerfanDataStorage"; // NOI18N
+    private static final List<DataStorageType> supportedStorageTypes;
+    private static final DataTableMetadata dataTableMetadata;
     private static final Logger log = DLightLogger.getLogger(SunStudioDataCollector.class);
+    private final Object lock = new String(SunStudioDataCollector.class.getName());
     private final List<ValidationListener> validationListeners;
     private final List<CollectedInfo> collectedInfoList;
     private ValidationStatus validationStatus = ValidationStatus.initialStatus();
@@ -102,6 +104,13 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
     private ExecutionEnvironment execEnv = null;
     private String collectCmd;
     private String sproHome;
+    private DLightTarget target = null;
+
+    static {
+        supportedStorageTypes = Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(ID));
+        dataTableMetadata = new DataTableMetadata("idbe", Arrays.asList(TOP_FUNCTION_INFO)); // NOI18N
+    }
+
 
     SunStudioDataCollector(List<CollectedInfo> collectedInfoList) {
         this.collectedInfoList = Collections.synchronizedList(
@@ -146,12 +155,12 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
         try {
             os = HostInfoUtils.getOS(execEnv);
 
-            if (!"SunOS".equals(os)) {
+            if (!"SunOS".equals(os)) { // NOI18N
                 return ValidationStatus.invalidStatus("SunStudioDataCollector works on SunOS only."); // NOI18N
             }
 
             sproHome = SunStudioLocator.getInstance().getSproHome(execEnv);
-            collectCmd = sproHome + "/bin/collect";
+            collectCmd = sproHome + "/bin/collect"; // NOI18N
 
             if (!HostInfoUtils.fileExists(execEnv, collectCmd)) {
                 return ValidationStatus.invalidStatus(collectCmd + " not found");
@@ -220,21 +229,41 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
     public void init(DataStorage dataStorage, DLightTarget target) {
         if (!(dataStorage instanceof PerfanDataStorage)) {
             throw new IllegalArgumentException("You can not use storage " +
-                    dataStorage + " for PerfanDataCollector!");
+                    dataStorage + " for PerfanDataCollector!"); // NOI18N
         }
 
         DLightLogger.assertTrue(execEnv.equals(target.getExecEnv()),
                 "Verification was performed against another execEnv"); // NOI18N
 
-        experimentDir = "/var/tmp/dlightExperiment.er";
+        this.storage = (PerfanDataStorage) dataStorage;
+        this.target = target;
+    }
 
-        log.fine("Initialize perfan collector and storage for target " + target.toString());
-        log.fine("Prepare PerfanDataCollector. Clean directory " + experimentDir);
+    public void reinit() {
+        log.fine("Initialize perfan collector and storage for target " + target.toString()); // NOI18N
+        boolean status = prepareDirectory("/var/tmp/dlightExperiment.er"); // NOI18N
 
-        Future<Integer> rmFuture =
-                CommonTasksSupport.rmDir(execEnv, experimentDir, true, null);
+        if (status == false) {
+            log.severe("Unable to prepare experiment directory!"); // NOI18N
+        }
 
+        // Init storage (i.e. er_print, actually)
+        storage.init(execEnv, sproHome, experimentDir);
+    }
+
+    public ExecutionEnvironment getExecEnv() {
+        return execEnv;
+    }
+
+    private boolean prepareDirectory(final String expDir) {
+        boolean status = true;
+
+        this.experimentDir = expDir;
+        log.fine("Prepare PerfanDataCollector. Clean directory " + expDir); // NOI18N
+        Future<Integer> rmFuture;
         Integer rmResult = null;
+
+        rmFuture = CommonTasksSupport.rmDir(execEnv, experimentDir, true, null);
 
         try {
             rmResult = rmFuture.get();
@@ -245,15 +274,19 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
         if (rmResult == null || rmResult.intValue() != 0) {
             log.info("SunStudioDataCollector: unable to delete directory " // NOI18N
                     + execEnv.toString() + ":" + experimentDir); // NOI18N
+            status = false;
         }
 
-        // Init storage (i.e. er_print, actually)
-        storage = (PerfanDataStorage) dataStorage;
-        storage.init(execEnv, sproHome, experimentDir);
-    }
+        File lockFile = new File(new File(experimentDir).getParentFile(), "_collector_directory_lock"); // NOI18N
+        rmFuture = CommonTasksSupport.rmFile(execEnv, lockFile.getPath(), null);
 
-    public ExecutionEnvironment getExecEnv() {
-        return execEnv;
+        try {
+            rmResult = rmFuture.get();
+        } catch (InterruptedException ex) {
+        } catch (ExecutionException ex) {
+        }
+
+        return status;
     }
 
     private void targetStarted(DLightTarget target) {
@@ -262,7 +295,7 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
             AttachableTarget at = (AttachableTarget) target;
             NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, collectCmd);
             npb = npb.setArguments("-P", "" + at.getPID(), "-o", experimentDir); // NOI18N
-            
+
             ExecutionDescriptor descr = new ExecutionDescriptor();
             descr = descr.errProcessorFactory(new StdErrRedirectorFactory());
             descr = descr.outProcessorFactory(new StdErrRedirectorFactory());
@@ -274,7 +307,7 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
     }
 
     private void targetFinished(DLightTarget target) {
-        log.fine("Stopping PerfanDataCollector: " + collectCmd);
+        log.fine("Stopping PerfanDataCollector: " + collectCmd); // NOI18N
 
         if (isAttachable()) {
             // i.e. separate process
@@ -328,22 +361,30 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
     }
 
     public void targetStateChanged(DLightTarget source, State oldState, State newState) {
-        switch (newState) {
-            case RUNNING:
-                targetStarted(source);
-                return;
-            case FAILED:
-                targetFinished(source);
-                return;
-            case TERMINATED:
-                targetFinished(source);
-                return;
-            case DONE:
-                targetFinished(source);
-                return;
-            case STOPPED:
-                targetFinished(source);
-                return;
+        // We need to be sure that events are processed sequentially ...
+        // So use synchronized block ...
+        // ??? Not sure - need to review.
+        synchronized (lock) {
+            switch (newState) {
+                case STARTING:
+                    reinit();
+                    return;
+                case RUNNING:
+                    targetStarted(source);
+                    return;
+                case FAILED:
+                    targetFinished(source);
+                    return;
+                case TERMINATED:
+                    targetFinished(source);
+                    return;
+                case DONE:
+                    targetFinished(source);
+                    return;
+                case STOPPED:
+                    targetFinished(source);
+                    return;
+            }
         }
     }
 
@@ -354,7 +395,7 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
             return InputProcessors.copying(new OutputStreamWriter(System.err) {
 
                 final StringBuilder sb = new StringBuilder();
-                final static String prefix = "!!!!! Collector !!!! : ";
+                final static String prefix = "!!!!! COLLECTOR SAYS !!!! : "; // NOI18N
 
                 @Override
                 public void write(char[] chars) throws IOException {

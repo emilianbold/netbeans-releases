@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,55 +34,11 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.perfan.stack.impl;
+package org.netbeans.modules.dlight.perfan.util;
 
-import java.util.Map;
-import org.netbeans.modules.dlight.core.stack.api.Function;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
+public interface Computable<P, R> {
 
-/**
- * This class holds metric values for Function calls.
- */
-public class FunctionCallImpl extends FunctionCall {
-
-    private final Map<FunctionMetric, Object> metrics;
-
-    public FunctionCallImpl(
-            final Function function,
-            final Map<FunctionMetric, Object> metrics) {
-        super(function);
-        this.metrics = metrics;
-    }
-
-    public Object getMetricValue(FunctionMetric metric) {
-        return metrics.get(metric);
-    }
-
-    @Override
-    public String toString() {
-        StringBuffer sb = new StringBuffer(getFunction().toString());
-        sb.append(" [ "); // NOI18N
-
-        for (FunctionMetric m : metrics.keySet()) {
-            sb.append(m.getMetricDisplayedName()).append(" == "); // NOI18N
-            sb.append(metrics.get(m)).append("; "); // NOI18N
-        }
-
-        sb.append("]"); // NOI18N
-
-        return sb.toString();
-    }
-
-    @Override
-    public Object getMetricValue(String metric_id) {
-        for (FunctionMetric metric : metrics.keySet()) {
-            if (metric.getMetricID().equals(metric_id)) {
-                return metrics.get(metric);
-            }
-        }
-        return null;
-    }
+    R compute(P taskArguments) throws InterruptedException;
 }
