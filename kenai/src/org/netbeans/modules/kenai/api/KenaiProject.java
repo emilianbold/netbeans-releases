@@ -144,7 +144,8 @@ public final class KenaiProject {
      */
     public synchronized void open() {
         final Kenai kenai = Kenai.getDefault();
-        Kenai.getDefault().getOpenProjects().add(this);
+        Kenai.getDefault().getOpenProjects();
+        Kenai.getDefault().openProjects.add(this);
         kenai.storeProjects();
         kenai.fireKenaiEvent(new KenaiEvent(this, KenaiEvent.PROJECT_OPEN));
     }
@@ -155,7 +156,8 @@ public final class KenaiProject {
      */
     public synchronized void close() {
         final Kenai kenai = Kenai.getDefault();
-        Kenai.getDefault().getOpenProjects().remove(this);
+        Kenai.getDefault().getOpenProjects();
+        Kenai.getDefault().openProjects.remove(this);
         kenai.storeProjects();
         kenai.fireKenaiEvent(new KenaiEvent(this, KenaiEvent.PROJECT_CLOSE));
     }
@@ -209,7 +211,6 @@ public final class KenaiProject {
 
     /**
      * Creates new feateru for this project
-     * @param projectName
      * @param name
      * @param display_name
      * @param description
@@ -220,7 +221,7 @@ public final class KenaiProject {
      * @return
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
-    KenaiProjectFeature createProjectFeature(
+    public KenaiProjectFeature createProjectFeature(
             String name,
             String display_name,
             String description,
@@ -232,6 +233,16 @@ public final class KenaiProject {
         KenaiProjectFeature feature = Kenai.getDefault().createProjectFeature(getName(), name, display_name, description, service, url, repository_url, browse_url);
         refresh();
         return feature;
+    }
+
+    /**
+     * Checks weather proposed name is unique and valid
+     * @param name proposed name
+     * @return Error message or null, if name is valid
+     * @throws org.netbeans.modules.kenai.api.KenaiException
+     */
+    public static String checkName(String name) throws KenaiException {
+        return Kenai.getDefault().checkName(name);
     }
 
     void fillInfo(ProjectData prj) {

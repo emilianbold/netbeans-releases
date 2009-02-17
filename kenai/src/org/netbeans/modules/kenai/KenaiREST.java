@@ -119,6 +119,7 @@ public class KenaiREST extends KenaiImpl {
         } catch (IOException iOException) {
             throw new KenaiException(iOException);
         }
+        if (resp.getResponseCode() != 200) throw new KenaiErrorMessage(resp.getResponseMessage(),resp.getDataAsString());
         String responseString = resp.getDataAsString();
 
         PojsonLoad pload = PojsonLoad.create();
@@ -137,6 +138,12 @@ public class KenaiREST extends KenaiImpl {
     public Collection<ServicesListData.ServicesListItem> getServices() throws KenaiException {
         ServicesListData pld = loadPage(baseURL.toString() + "/api/services.json", ServicesListData.class);
         return new LazyList(pld, ServicesListData.class);
+    }
+
+    @Override
+    public String checkName(String name) throws KenaiException {
+        CheckNameData cnd = loadPage(baseURL.toString() + "/projects/check_unique.json?name="+name, CheckNameData.class);
+        return cnd.is_unique?null:cnd.message;
     }
 
     private class LazyList<COLLECTION extends ListData, ITEM> extends AbstractCollection<ITEM> {

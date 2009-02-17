@@ -208,6 +208,11 @@ public class KenaiMockup extends KenaiImpl {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
+    public String checkName(String name) throws KenaiException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     static class User {
         String username;
         String password;

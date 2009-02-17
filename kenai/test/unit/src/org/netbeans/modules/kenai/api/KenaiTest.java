@@ -56,6 +56,7 @@ import org.junit.Test;
  * @author Jan Becicka
  */
 public class KenaiTest {
+    static String UNITTESTUNIQUENAME = "unittestuniquename01";
 
     private Kenai instance;
 
@@ -136,7 +137,7 @@ public class KenaiTest {
 
     @Test
     public void testIsAuthorized2() throws Exception {
-        String name = "unittestuniquename01";
+        String name = UNITTESTUNIQUENAME;
         KenaiProject prj = instance.getProject(name);
 
         boolean authorized = instance.isAuthorized(prj, KenaiActivity.PROJECTS_ADMIN);
@@ -151,7 +152,7 @@ public class KenaiTest {
     @Test
     public void testCreateProject() throws KenaiException {
         System.out.println("createProject");
-        String name = "unittestuniquename02";
+        String name = UNITTESTUNIQUENAME;
         String displayName = "Test Display Name";
         String description = "Test Description";
         String[] licenses = {"MIT"};
@@ -170,10 +171,10 @@ public class KenaiTest {
     @Test
     public void testCreateFeature() throws KenaiException {
         System.out.println("createFeature");
-        String name = "unittestfeature1";
+        String name = "unittestfeature01";
         String displayName = "Feature 1";
         String description = "Test Description";
-        KenaiProject project = instance.getProject("unittestuniquename01");
+        KenaiProject project = instance.getProject(UNITTESTUNIQUENAME);
         try {
             KenaiProjectFeature feature = project.createProjectFeature(name, displayName, description, KenaiFeature.FORUM.getId(), null, null, null);
             assert feature.getName().equals(name);
@@ -187,7 +188,7 @@ public class KenaiTest {
     @Test
     public void testGetFeatures() throws KenaiException {
         System.out.println("getFeature");
-        KenaiProject project = instance.getProject("unittestuniquename01");
+        KenaiProject project = instance.getProject(UNITTESTUNIQUENAME);
         for (KenaiProjectFeature feature: project.getFeatures()) {
             System.out.println(feature.getName());
         }
