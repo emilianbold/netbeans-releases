@@ -39,18 +39,20 @@
 
 package org.netbeans.modules.cnd.utils;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
+
 /**
  *
  * @author Alexey Vladykin
  */
 public class CndUtils {
 
-    public static boolean isStandalone() {
-        return !CndUtils.class.getClassLoader().getClass().getName().startsWith("org.netbeans."); // NOI18N
-    }
+    private static final Logger LOG = Logger.getLogger("cnd.logger"); //NOI18N
+    private static boolean releaseMode;
     
-    public static boolean isReleaseMode() {
-        boolean releaseMode;
+    static {
         String text = System.getProperty("cnd.release.mode");
         if (text == null) {
             releaseMode = true;
@@ -58,6 +60,16 @@ public class CndUtils {
         } else {
             releaseMode = Boolean.parseBoolean(text);
         }
+    }
+
+    private CndUtils() {
+    }
+
+    public static boolean isStandalone() {
+        return !CndUtils.class.getClassLoader().getClass().getName().startsWith("org.netbeans."); // NOI18N
+    }
+    
+    public static boolean isReleaseMode() {
         return releaseMode;
     }
 
@@ -73,4 +85,29 @@ public class CndUtils {
         return result;
     }
 
+    public static void assertTrue(boolean value) {
+        if (isDebugMode()) {
+            assertTrue(value, "Assertion error"); //NOI18N
+        }
+    }
+
+    public static void assertFalse(boolean value) {
+        if (isDebugMode()) {
+            assertTrue(!value, "Assertion error"); //NOI18N
+        }
+    }
+
+    public static void assertFalse(boolean value, String message) {
+        assertTrue(!value, message);
+    }
+
+    public static void assertTrue(boolean value, String message) {
+        if (isDebugMode() && !value) {
+            LOG.log(Level.SEVERE, message, new Exception(message));
+        }
+    }
+
+    public static final void assertNonUiThread() {
+        assertFalse(SwingUtilities.isEventDispatchThread(), "Should not be called from UI thread"); //NOI18N
+    }
 }
