@@ -307,6 +307,8 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.hudson.subversion</friend>
+                <friend>org.netbeans.modules.kenai.ui</friend>
+                <package>org.netbeans.modules.subversion.api</package>
                 <package>org.netbeans.modules.subversion.client.parser</package>
             </friend-packages>
         </data>
