@@ -64,7 +64,6 @@ made subject to such option by the copyright holder.
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.hudson.subversion</friend>
                 <friend>org.netbeans.modules.subversion</friend>
                 <package>org.netbeans.libs.svnclientadapter</package>
                 <package>org.tigris.subversion.svnclientadapter</package>

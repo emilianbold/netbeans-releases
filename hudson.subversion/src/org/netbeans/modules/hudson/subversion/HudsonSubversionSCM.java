@@ -39,10 +39,8 @@
 
 package org.netbeans.modules.hudson.subversion;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -57,13 +55,9 @@ import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile.EditType;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
-import org.netbeans.modules.subversion.client.parser.LocalSubversionException;
-import org.netbeans.modules.subversion.client.parser.SvnWcParser;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.OutputListener;
-import org.tigris.subversion.svnclientadapter.ISVNInfo;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -78,12 +72,11 @@ public class HudsonSubversionSCM implements HudsonSCM {
 
     public Configuration forFolder(File folder) {
         try {
-            ISVNInfo info = new SvnWcParser().getInfoFromWorkingCopy(folder);
-            SVNUrl url = info.getUrl();
-            if (url == null) {
+            SvnUtils.Info info = SvnUtils.parseCheckout(folder.toURI().toURL());
+            if (info == null) {
                 return null;
             }
-            final String urlS = url.toString();
+            final String urlS = info.module.toString();
             return new Configuration() {
                 public void configure(Document doc) {
                     Element root = doc.getDocumentElement();
@@ -101,7 +94,7 @@ public class HudsonSubversionSCM implements HudsonSCM {
                             appendChild(doc.createTextNode("@hourly"));
                 }
             };
-        } catch (LocalSubversionException ex) {
+        } catch (IOException ex) {
             LOG.log(Level.WARNING, "inspecting configuration for " + folder, ex);
             Exceptions.printStackTrace(ex);
             return null;
@@ -110,51 +103,42 @@ public class HudsonSubversionSCM implements HudsonSCM {
 
     public String translateWorkspacePath(HudsonJob job, String workspacePath, File localRoot) {
         try {
-            ISVNInfo info = new SvnWcParser().getInfoFromWorkingCopy(localRoot);
-            if (info.getUrl() == null) {
+            SvnUtils.Info local = SvnUtils.parseCheckout(localRoot.toURI().toURL());
+            if (local == null) {
                 return null;
             }
             int slash = workspacePath.lastIndexOf('/');
             String workspaceDir = workspacePath.substring(0, slash + 1);
             String workspaceFile = workspacePath.substring(slash + 1);
-            // XXX using SvnWcParser is impossible on a remote URL, so need to hardcode format here
-            URL svnEntries = new URL(job.getUrl() + "ws/" + workspaceDir + ".svn/entries");
-            InputStream is = svnEntries.openStream();
-            String checkout, repository;
-            try {
-                BufferedReader r = new BufferedReader(new InputStreamReader(is));
-                r.readLine(); // "8" or similar
-                r.readLine(); // blank
-                r.readLine(); // "dir"
-                r.readLine(); // rev #
-                checkout = r.readLine();
-                repository = r.readLine();
-            } finally {
-                is.close();
+            URL remoteCheckout = new URL(job.getUrl() + "ws/" + workspaceDir);
+            SvnUtils.Info remote = SvnUtils.parseCheckout(remoteCheckout);
+            if (remote == null) {
+                LOG.log(Level.FINE, "no remote checkout found at {0}", remoteCheckout);
+                return null;
             }
             // Example:
-            // workspacePath   = trunk/myprj/nbproject/build-impl.xml
-            // workspaceDir    = trunk/myprj/nbproject/
-            // workspaceFile   = build-impl.xml
-            // svnEntries      = http://my.build.server/hudson/job/myprj/ws/trunk/myprj/nbproject/.svn/entries
-            // repository      = https://myprj.dev.java.net/svnroot/myprj
-            // checkout        = https://myprj.dev.java.net/svnroot/myprj/trunk/myprj/nbproject
-            // info.repository = https://myprj.dev.java.net/svnroot/myprj
-            // info.url        = https://myprj.dev.java.net/svnroot/myprj/trunk/myprj
-            // checkoutPath    = /svnroot/myprj/trunk/myprj/nbproject/build-impl.xml
-            // infoURLPath     = /svnroot/myprj/trunk/myprj/
-            // translatedPath  = nbproject/build-impl.xml
-            if (!new URL(repository).getPath().equals(new URL(info.getRepository().toString()).getPath())) {
-                LOG.log(Level.FINE, "repository mismatch between {0} and {1}", new Object[] {repository, info.getRepository()});
+            // workspacePath     = trunk/myprj/nbproject/build-impl.xml
+            // workspaceDir      = trunk/myprj/nbproject/
+            // workspaceFile     = build-impl.xml
+            // remoteCheckout    = http://my.build.server/hudson/job/myprj/ws/trunk/myprj/nbproject/
+            // remote.repository = https://myprj.dev.java.net/svnroot/myprj
+            // remote.module     = https://myprj.dev.java.net/svnroot/myprj/trunk/myprj/nbproject
+            // local.repository  = https://myprj.dev.java.net/svnroot/myprj
+            // local.module      = https://myprj.dev.java.net/svnroot/myprj/trunk/myprj
+            // checkoutPath      = /svnroot/myprj/trunk/myprj/nbproject/build-impl.xml
+            // infoURLPath       = /svnroot/myprj/trunk/myprj/
+            // translatedPath    = nbproject/build-impl.xml
+            if (!remote.repository.getPath().equals(local.repository.getPath())) {
+                LOG.log(Level.FINE, "repository mismatch between {0} and {1}", new Object[] {remote.repository, local.repository});
                 return null;
             }
-            String checkoutPath = new URL(checkout + "/" + workspaceFile).getPath();
-            String infoURLPath = new URL(info.getUrl() + "/").getPath();
-            if (!checkoutPath.startsWith(infoURLPath)) {
-                LOG.log(Level.FINE, "checkout mismatch between {0} and {1}", new Object[] {infoURLPath, checkoutPath});
+            String remoteModule = new URL(remote.module + "/" + workspaceFile).getPath();
+            String localModuleBase = new URL(local.module + "/").getPath();
+            if (!remoteModule.startsWith(localModuleBase)) {
+                LOG.log(Level.FINE, "checkout mismatch between {0} and {1}", new Object[] {localModuleBase, remoteModule});
                 return null;
             }
-            String translatedPath = checkoutPath.substring(infoURLPath.length());
+            String translatedPath = remoteModule.substring(localModuleBase.length());
             LOG.log(Level.FINE, "translated path as {0}", translatedPath);
             return translatedPath;
         } catch (Exception x) {
