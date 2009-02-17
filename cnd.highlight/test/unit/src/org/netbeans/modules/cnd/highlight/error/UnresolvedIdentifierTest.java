@@ -111,6 +111,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         // IZ#158216 : Unresolved ids in compiler extensions
         performStaticTest("iz158216.cpp");
     }
+
+    public void testIZ158280() throws Exception {
+        // IZ#158280 : False positive error highlighting on templates in case of macro usage
+        performStaticTest("iz158280.cpp");
+    }
     
     /////////////////////////////////////////////////////////////////////
     // FAILS
@@ -124,11 +129,6 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         @Override
         protected Class getTestCaseDataClass() {
             return UnresolvedIdentifierTest.class;
-        }
-
-        public void testIZ158280() throws Exception {
-            // IZ#158280 : False positive error highlighting on templates in case of macro usage
-            performStaticTest("iz158280.cpp");
         }
     }
 }
