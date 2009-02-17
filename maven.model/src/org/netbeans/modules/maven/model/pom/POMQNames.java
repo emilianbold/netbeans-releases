@@ -180,6 +180,12 @@ public final class POMQNames {
     public final POMQName ORGANIZATIONURL;
     public final POMQName TIMEZONE;
 
+    public final POMQName SUBSCRIBE;
+    public final POMQName UNSUBSCRIBE;
+    public final POMQName POST;
+    public final POMQName ARCHIVE;
+
+
 
     private boolean ns;
 
@@ -316,6 +322,11 @@ public final class POMQNames {
         TIMEZONE = new POMQName(POMQName.createQName("timezone",ns), ns); //NOI18N
         //when adding items here, need to add them to the set below as well.
 
+        SUBSCRIBE = new POMQName(POMQName.createQName("subscribe",ns), ns); //NOI18N
+        UNSUBSCRIBE = new POMQName(POMQName.createQName("unsubscribe",ns), ns); //NOI18N
+        POST = new POMQName(POMQName.createQName("post",ns), ns); //NOI18N
+        ARCHIVE = new POMQName(POMQName.createQName("archive",ns), ns); //NOI18N
+
     }
 
     public boolean isNSAware() {
@@ -431,7 +442,11 @@ public final class POMQNames {
             SYSTEMPATH.getQName(),
             ORGANIZATIONURL.getQName(),
             EMAIL.getQName(),
-            TIMEZONE.getQName()
+            TIMEZONE.getQName(),
+            ARCHIVE.getQName(),
+            SUBSCRIBE.getQName(),
+            UNSUBSCRIBE.getQName(),
+            POST.getQName()
                     
         };
         List<QName> list = Arrays.asList(names);
