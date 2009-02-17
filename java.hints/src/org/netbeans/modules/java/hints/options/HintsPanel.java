@@ -286,9 +286,11 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         else if ( data instanceof AbstractHint ) {
             AbstractHint treeRule = (AbstractHint)data;
             renderer.setText( treeRule.getDisplayName() );            
-            
-            Preferences node = logic.getCurrentPrefernces(treeRule);                        
-            renderer.setSelected( HintsSettings.isEnabled(treeRule, node));
+
+            if (logic != null) {
+                Preferences node = logic.getCurrentPrefernces(treeRule);
+                renderer.setSelected(HintsSettings.isEnabled(treeRule, node));
+            }
         }
         else {
             renderer.setText( value.toString() );
