@@ -74,7 +74,7 @@ public final class Kenai {
     private static URL url;
 
     HashMap<String, WeakReference<KenaiProject>> projectsCache = new HashMap<String, WeakReference<KenaiProject>>();
-    private Collection<KenaiProject> openProjects = null;
+    Collection<KenaiProject> openProjects = null;
 
 
     public static synchronized Kenai getDefault() {
@@ -111,8 +111,14 @@ public final class Kenai {
      * @throws KenaiException
      */
     public void login(final String username, final char [] password) throws KenaiException {
-        auth = new PasswordAuthentication(username, password);
         impl.verify(username, password);
+        auth = new PasswordAuthentication(username, password);
+//        Authenticator.setDefault(new Authenticator() {
+//            @Override
+//            protected PasswordAuthentication getPasswordAuthentication() {
+//                return auth;
+//            }
+//        });
         fireKenaiEvent(new KenaiEvent(getPasswordAuthentication(), KenaiEvent.LOGIN));
     }
 
@@ -276,6 +282,10 @@ public final class Kenai {
                 browse_url,
                 service);
         return new KenaiProjectFeature(prj);
+    }
+
+    String checkName(String name) throws KenaiException {
+        return impl.checkName(name);
     }
 
     /**

@@ -42,6 +42,7 @@ package org.netbeans.modules.kenai.api;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -87,9 +88,9 @@ public class KenaiProjectTest {
     @Test
     public void testForRepository1() throws Exception {
         System.out.println("forRepository1");
-        String uri = "https://testkenai.com/svn/mykenaitestproject~test-svn";
+        String uri = "https://testkenai.com/svn/unittestuniquename01~source-code-repository";
         KenaiProject result = KenaiProject.forRepository(uri);
-        assert result.getName().equals("mykenaitestproject");
+        assert result.getName().equals(KenaiTest.UNITTESTUNIQUENAME);
     }
     /**
      * Test of forRepository method, of class KenaiProject.
@@ -97,9 +98,9 @@ public class KenaiProjectTest {
     @Test
     public void testForRepository2() throws Exception {
         System.out.println("forRepository2");
-        String uri = "https://testkenai.com/hg/mykenaitestproject~test-mercurial";
+        String uri = "https://testkenai.com/hg/unittestuniquename01~source-code-repository2";
         KenaiProject result = KenaiProject.forRepository(uri);
-        assert result.getName().equals("mykenaitestproject");
+        assert result.getName().equals(KenaiTest.UNITTESTUNIQUENAME);
     }
 
     /**
@@ -107,11 +108,16 @@ public class KenaiProjectTest {
      */
     @Test
     public void testOpen() throws KenaiException {
-        KenaiProject instance = Kenai.getDefault().getProject("mykenaitestproject");
+        KenaiProject instance = Kenai.getDefault().getProject(KenaiTest.UNITTESTUNIQUENAME);
         instance.open();
         for (KenaiProject prj:Kenai.getDefault().getOpenProjects()) {
             System.out.println(prj);
         }
     }
 
+    @Test
+    public void testCheckName() throws KenaiException, MalformedURLException {
+        assert KenaiProject.checkName("uniquename007") == null;
+        assert KenaiProject.checkName(KenaiTest.UNITTESTUNIQUENAME).equals("foo");
+    }
 }

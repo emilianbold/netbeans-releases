@@ -105,7 +105,7 @@ public class RestConnection {
                 if (a!= null && a.getUserName()!=null && (params==null || !params[0][0].equals("username"))) {
                     assert a.getPassword()!=null;
                     String userPassword = a.getUserName() + ":" + String.valueOf(a.getPassword());
-                    String encoding = new sun.misc.BASE64Encoder().encode(userPassword.getBytes());  
+                    String encoding = new sun.misc.BASE64Encoder().encode(userPassword.getBytes());
                     conn.setRequestProperty("Authorization", "Basic " + encoding);
                 }
 

@@ -54,6 +54,8 @@ public abstract class KenaiImpl {
 
     public abstract Collection<ServicesListData.ServicesListItem> getServices() throws KenaiException;
 
+    public abstract String checkName(String name) throws KenaiException;
+
 
     /**
      * Searches kenai for projects.
