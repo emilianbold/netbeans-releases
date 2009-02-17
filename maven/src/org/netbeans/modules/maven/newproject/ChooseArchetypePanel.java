@@ -224,7 +224,7 @@ public class ChooseArchetypePanel extends javax.swing.JPanel implements Explorer
 private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveActionPerformed
     Node[] nds = getExplorerManager().getSelectedNodes();
     if (nds.length != 0) {
-        Archetype arch = (Archetype) nds[0].getValue(PROP_ARCHETYPE);
+        final Archetype arch = (Archetype) nds[0].getValue(PROP_ARCHETYPE);
         NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
                 NbBundle.getMessage(ChooseArchetypePanel.class, "Q_RemoveArch", arch.getArtifactId()), 
                 NotifyDescriptor.YES_NO_OPTION);
@@ -232,26 +232,29 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         if (ret != NotifyDescriptor.YES_OPTION) {
             return;
         }
-        try {
-            RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById(RepositoryPreferences.LOCAL_REPO_ID);
-            if (info != null) {
-                List<NBVersionInfo> rec = RepositoryQueries.getRecords(arch.getGroupId(),
-                        arch.getArtifactId(), arch.getVersion(), info);
-                for (NBVersionInfo record : rec) {
-                        Artifact a = RepositoryUtil.createArtifact(record);
-                        RepositoryIndexer.deleteArtifactFromIndex(info, a);
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById(RepositoryPreferences.LOCAL_REPO_ID);
+                    if (info != null) {
+                        List<NBVersionInfo> rec = RepositoryQueries.getRecords(arch.getGroupId(),
+                                arch.getArtifactId(), arch.getVersion(), info);
+                        for (NBVersionInfo record : rec) {
+                            Artifact a = RepositoryUtil.createArtifact(record);
+                            RepositoryIndexer.deleteArtifactFromIndex(info, a);
+                        }
+                    }
+                    File path = new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir(),
+                            arch.getGroupId().replace('.', File.separatorChar) + File.separator + arch.getArtifactId() + File.separator + arch.getVersion());
+                    if (path.exists()) {
+                        FileUtils.deleteDirectory(path);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
-            File path = new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir(),
-                    arch.getGroupId().replace('.', File.separatorChar) + File.separator + arch.getArtifactId() 
-                  + File.separator + arch.getVersion());
-            if (path.exists()) {
-                FileUtils.deleteDirectory(path);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        ((Childs)getExplorerManager().getRootContext().getChildren()).removeArchetype(arch);
+        });
+        ((Childs) getExplorerManager().getRootContext().getChildren()).removeArchetype(arch);
     }
 }//GEN-LAST:event_btnRemoveActionPerformed
 
