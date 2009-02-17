@@ -950,7 +950,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     
     private void updateCompletions() {
         String name = normalizeFile(getFileName());
-        boolean showPopup = true;
         int slash = name.lastIndexOf(File.separatorChar);
         if (slash != -1) {
             String prefix = name.substring(0, slash + 1);
@@ -961,24 +960,17 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                     Vector list = buildList(name, children);
                     
                     if(completionPopup == null) {
-                        showPopup = true;
-                    }
-                    
-                    if((completionPopup != null) && completionPopup.isVisible()) {
-                        showPopup = false;
-                    }
-                    
-                    if(showPopup) {
                         completionPopup = new FileCompletionPopup(fileChooser, filenameTextField, list);
-                        
-                        if(showPopupCompletion && fileChooser.isShowing()) {
-                            java.awt.Point los = filenameTextField.getLocation();
-                            int popX = los.x;
-                            int popY = los.y + filenameTextField.getHeight() - 6;
-                            completionPopup.showPopup(filenameTextField, popX, popY);
-                        }
-                    } else {
+                    } else if (completionPopup.isShowing() || 
+                            (showPopupCompletion && fileChooser.isShowing())) {
                         completionPopup.setDataList(list);
+                    }
+                    
+                    if(showPopupCompletion && fileChooser.isShowing() && !completionPopup.isShowing()) {
+                        java.awt.Point los = filenameTextField.getLocation();
+                        int popX = los.x;
+                        int popY = los.y + filenameTextField.getHeight() - 6;
+                        completionPopup.showPopup(filenameTextField, popX, popY);
                     }
                 }
             }
