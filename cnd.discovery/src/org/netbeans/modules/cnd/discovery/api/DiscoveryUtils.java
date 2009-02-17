@@ -85,6 +85,14 @@ public class DiscoveryUtils {
         return null;
     }
 
+    public static final String getCygwinDrive(ProjectProxy project){
+        Project p = project.getProject();
+        if (p != null){
+            return new ProjectBridge(p).getCygwinDrive();
+        }
+        return null;
+    }
+
     public static final Map<String,String> getSystemMacroDefinitions(ProjectProxy project, boolean isCPP) {
         Project p = project.getProject();
         if (p != null){

@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * A queue that hold a list of files to parse.
@@ -389,7 +390,17 @@ public final class ParserQueue {
             if( files.contains(file) ) {
                 entry = findEntry(file); //TODO: think over / profile, probably this line is expensive
                 if( entry == null ) {
-                    assert false : "ProjectData contains file " + file + ", but there is no matching entry in the queue"; // NOI18N
+                    FileImpl findFile = null;
+                    for(FileImpl aFile : files){
+                        if (aFile.equals(file)){
+                            findFile = aFile;
+                        }
+                    }
+                    if (findFile == file) {
+                        CndUtils.assertTrue(false, "ProjectData contains file " + file + ", but there is no matching entry in the queue"); // NOI18N
+                    } else {
+                        CndUtils.assertTrue(false, "ProjectData contains another instance of file " + file + ", so there is no matching entry in the queue"); // NOI18N
+                    }
                 } else {
                     if (clearPrevState) {
                         entry.setStates(ppStates);
