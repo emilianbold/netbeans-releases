@@ -490,7 +490,7 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             if (key == LOADING_ARCHETYPE) {
                 return ChooseArchetypePanel.createNodes(key, LEAF);
             }
-            String id = key.getGroupId() + "|" + key.getArtifactId();
+            String id = key.getGroupId() + "|" + key.getArtifactId(); //NOI18N
             TreeMap<DefaultArtifactVersion, Archetype> rs = res.get(id);
             Children childs = Children.LEAF;
             if (rs != null && rs.size() > 1) {
@@ -507,7 +507,7 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         public void run() {
             RemoteRepoProvider provider = new RemoteRepoProvider();
             for (Archetype ar : provider.getArchetypes()) {
-                String key = ar.getGroupId() + "|" + ar.getArtifactId();
+                String key = ar.getGroupId() + "|" + ar.getArtifactId(); //NOI18N
                 TreeMap<DefaultArtifactVersion, Archetype> archs = res.get(key);
                 if (archs == null) {
                     archs = new TreeMap<DefaultArtifactVersion, Archetype>(new VersionComparator());
