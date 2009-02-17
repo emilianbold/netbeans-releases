@@ -247,7 +247,16 @@ public class GeneralPHP extends JellyTestCase {
     JTextComponentOperator jtName = new JTextComponentOperator( jdNew, 0 );
 
     if( null != sProjectName )
+    {
+      int iSleeps = 0;
+      while( !jtName.isEnabled( ) )
+      {
+        if( 60 <= ++iSleeps )
+          fail( "Project name disabled during too long time." );
+        Sleep( 1000 );
+      }
       jtName.setText( sProjectName );
+    }
 
     String sProjectPath = GetWorkDir( ) + File.separator + jtName.getText( );
 
