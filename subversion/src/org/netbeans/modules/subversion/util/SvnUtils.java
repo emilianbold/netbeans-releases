@@ -56,6 +56,7 @@ import java.io.*;
 import java.io.File;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.MessageFormat;
 import java.util.*;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -112,6 +113,21 @@ public class SvnUtils {
             return SharabilityQuery.getSharability(pathname) != SharabilityQuery.NOT_SHARABLE;
         }
     };
+
+    /**
+     * Creates annotation format string.
+     * @param format format specified by the user, e.g. [{status}]
+     * @return modified format, e.g. [{0}]
+     */
+    public static String createAnnotationFormat(final String format) {
+        String string = format;
+        string = Utils.skipUnsupportedVariables(string, new String[]{"{status}", "{folder}", "{revision}", "{mime_type}"});     // NOI18N
+        string = string.replaceAll("\\{revision\\}", "\\{0\\}");            // NOI18N
+        string = string.replaceAll("\\{status\\}", "\\{1\\}");              // NOI18N
+        string = string.replaceAll("\\{folder\\}", "\\{2\\}");              // NOI18N
+        string = string.replaceAll("\\{mime_type\\}", "\\{3\\}");           // NOI18N
+        return string;
+    }
 
     /**
      * Semantics is similar to {@link org.openide.windows.TopComponent#getActivatedNodes()} except that this
@@ -181,6 +197,24 @@ public class SvnUtils {
      */
     public static Context getCurrentContext(Node[] nodes, int includingFileStatus, int includingFolderStatus) {
         return getCurrentContext(nodes, includingFileStatus, includingFolderStatus, false);
+    }
+
+    /**
+     * Validates annotation format text
+     * @param format format to be validatet
+     * @return <code>true</code> if the format is correct, <code>false</code> otherwise.
+     */
+    public static boolean isAnnotationFormatValid(final String format) {
+        boolean retval = true;
+        if (format != null) {
+            try {
+                new MessageFormat(format);
+            } catch (IllegalArgumentException ex) {
+                Subversion.LOG.log(Level.FINER, "Bad user input - annotation format", ex);
+                retval = false;
+            }
+        }
+        return retval;
     }
 
     /**
