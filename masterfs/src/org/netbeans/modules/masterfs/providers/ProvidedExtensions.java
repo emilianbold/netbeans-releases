@@ -175,5 +175,16 @@ public class ProvidedExtensions implements InterceptionListener {
      * @param fo file which <code>FileLock</code> was released
      * @since 1.11
      */                
-    public void fileUnlocked(FileObject fo) {}        
+    public void fileUnlocked(FileObject fo) {}
+
+    /**
+     * Called by {@code MasterFileSystem} when {@code FileObject} is
+     * queried for attribute and attribute's name starts with {@code ProvidedExtensions}
+     * prefix.
+     * @param attrName name of attribute
+     * @return value of attribute
+     */
+    public Object getAttribute(File file, String attrName) {
+        return null;
+    }
 }
