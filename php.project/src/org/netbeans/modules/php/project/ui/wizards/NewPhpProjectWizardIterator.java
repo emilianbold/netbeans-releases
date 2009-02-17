@@ -234,6 +234,8 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             String title = NbBundle.getMessage(NewPhpProjectWizardIterator.class, wizardType == WizardType.NEW ? "TXT_PhpProject" : "TXT_ExistingPhpProject");
             descriptor.putProperty("NewProjectWizard_Title", title); // NOI18N
         }
+        if( null == panels )
+          System.out.println( "==== PANELS IS NULL ====" );
         return panels[index];
     }
 
