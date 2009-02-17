@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.WeakHashMap;
-import org.netbeans.modules.xml.schema.model.Include;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelReference;
@@ -155,21 +154,25 @@ public class RefCacheSupport {
                     //
                     if (SchemaModelReference.SCHEMA_LOCATION_PROPERTY.equals(propName)) {
                         Object source = evt.getSource();
-                        if (source instanceof Include) {
-                            Include include = Include.class.cast(source);
-                            if (include != null) {
-                                excludeModelRef(include);
-                            }
+                        if (source != null && source instanceof SchemaModelReference) {
+                            excludeModelRef((SchemaModelReference)source);
                             // System.out.println("schema location changed");
                         }
                     }
                     //
                     if (Model.STATE_PROPERTY.equals(propName)) {
+                        Object oldValue = evt.getOldValue();
                         Object newValue = evt.getNewValue();
                         Object source = evt.getSource();
                         if (newValue != State.VALID && source == mSModel) {
                             discardCache();
                             // System.out.println("schema is not valid");
+                        }
+                        if (oldValue != State.VALID && newValue == State.VALID
+                                && source == mSModel) {
+                            // Discard again for other case. 
+                            discardCache();
+                            // System.out.println("schema has become valid");
                         }
                     }
                 }
@@ -238,11 +241,18 @@ public class RefCacheSupport {
             public void propertyChange(PropertyChangeEvent evt) {
                 String propName = evt.getPropertyName();
                 if (Model.STATE_PROPERTY.equals(propName)) {
+                    Object oldValue = evt.getOldValue();
                     Object newValue = evt.getNewValue();
                     Object source = evt.getSource();
                     if (newValue != State.VALID && source instanceof SchemaModel) {
                         excludeModel(SchemaModel.class.cast(source));
                         // System.out.println("schema is not valid");
+                    }
+                    if (oldValue != State.VALID && newValue == State.VALID
+                            && source == mSModel) {
+                        // Remove schema again for other case.
+                        excludeModel(SchemaModel.class.cast(source));
+                        // System.out.println("schema has become valid");
                     }
                 }
                 if (Schema.TARGET_NAMESPACE_PROPERTY.equals(propName)) {
