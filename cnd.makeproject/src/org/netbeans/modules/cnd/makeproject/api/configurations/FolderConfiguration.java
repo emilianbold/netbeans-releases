@@ -126,6 +126,11 @@ public class FolderConfiguration implements ConfigurationAuxObject {
     public String getId() {
         return folder.getId();
     }
+
+    public void assignValues(FolderConfiguration folderConfiguration) {
+        getCCompilerConfiguration().assign(folderConfiguration.getCCompilerConfiguration());
+        getCCCompilerConfiguration().assign(folderConfiguration.getCCCompilerConfiguration());
+    }
     
     public void assign(ConfigurationAuxObject profileAuxObject) {
         if (!(profileAuxObject instanceof FolderConfiguration)) {

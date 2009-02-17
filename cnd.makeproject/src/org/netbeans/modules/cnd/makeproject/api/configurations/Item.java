@@ -291,6 +291,25 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return itemConfigurations;
     }
 
+    public void copyConfigurations(Item src) {
+        if (src.getFolder() == null) {
+            return;
+        }
+
+        MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor) src.getFolder().getConfigurationDescriptor();
+        if (makeConfigurationDescriptor == null) {
+            return;
+        }
+
+        for (Configuration conf : makeConfigurationDescriptor.getConfs().getConfs()) {
+            ItemConfiguration srcItemConfiguration = src.getItemConfiguration(conf);
+            ItemConfiguration dstItemConfiguration = getItemConfiguration(conf);
+            if (srcItemConfiguration != null && dstItemConfiguration != null) {
+                dstItemConfiguration.assignValues(srcItemConfiguration);
+            }
+        }
+    }
+
     /**
      * Copies configuration from <code>src</code> item to <code>dst</code> item.
      * Both items must be assigned to folders to correctly operate with

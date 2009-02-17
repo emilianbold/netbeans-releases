@@ -183,8 +183,14 @@ public class Folder implements FileChangeListener, ChangeListener {
             log.finer("-----------attachFilterListener " + getPath()); // NOI18N
         }
 
-        FileUtil.addFileChangeListener(this, folderFile);
-        log.finer("-----------attachFileChangeListener " + getPath()); // NOI18N
+        try {
+            FileUtil.addFileChangeListener(this, folderFile);
+            log.finer("-----------attachFileChangeListener " + getPath()); // NOI18N
+        }
+        catch (IllegalArgumentException iae) {
+            // Can happen if trying to attach twice...
+            log.finer("-----------attachFileChangeListener duplicate error" + getPath()); // NOI18N
+        }
 
         // Repeast for all sub folders
         Vector<Folder> subFolders = getFolders();
@@ -621,6 +627,19 @@ public class Folder implements FileChangeListener, ChangeListener {
         return null;
     }
 
+    public Item findItemByName(String name) {
+        if (name == null) {
+            return null;
+        }
+        Item[] items = getItemsAsArray();
+        for (int i = 0; i < items.length; i++) {
+            if (name.equals(items[i].getName())) {
+                return items[i];
+            }
+        }
+        return null;
+    }
+
     public Folder findFolderByName(String name) {
         if (name == null) {
             return null;
@@ -971,6 +990,41 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
     }
 
+    public void copyConfigurations(Folder src) {
+        MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor) getConfigurationDescriptor();
+        if (makeConfigurationDescriptor == null) {
+            return;
+        }
+
+        for (Configuration conf : makeConfigurationDescriptor.getConfs().getConfs()) {
+            FolderConfiguration srcFolderConfiguration = src.getFolderConfiguration(conf);
+            FolderConfiguration dstFolderConfiguration = getFolderConfiguration(conf);
+            if (srcFolderConfiguration != null && dstFolderConfiguration != null) {
+                dstFolderConfiguration.assignValues(srcFolderConfiguration);
+            }
+        }
+    }
+
+    private static void copyConfigurations(Folder oldFolder, Folder newFolder) {
+        newFolder.copyConfigurations(oldFolder);
+        // Copy item configurations
+        Item oldItems[] = oldFolder.getItemsAsArray();
+        for (Item oldItem : oldItems) {
+            Item newItem = newFolder.findItemByName(oldItem.getName());
+            if (newItem != null) {
+                newItem.copyConfigurations(oldItem);
+            }
+        }
+        // copy subfolder cnfigurations
+        Folder srcFolders[] = oldFolder.getFoldersAsArray();
+        for (Folder srcFolder : srcFolders) {
+            Folder dstFolder = newFolder.findFolderByName(srcFolder.getName());
+            if (dstFolder != null) {
+                dstFolder.copyConfigurations(srcFolder);
+            }
+        }
+    }
+
     public void fileRenamed(FileRenameEvent fe) {
         FileObject fileObject = fe.getFile();
         File file = FileUtil.toFile(fileObject);
@@ -982,7 +1036,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             Folder top = ((MakeConfigurationDescriptor) getConfigurationDescriptor()).addSourceFilesFromFolder(getThis(), file, true);
             getConfigurationDescriptor().setModified();
             // Copy all configurations
-            // ???????????? // FIXUP
+            copyConfigurations(folder, top);
             // Remove old folder
             removeFolderAction(folder);
             return;
