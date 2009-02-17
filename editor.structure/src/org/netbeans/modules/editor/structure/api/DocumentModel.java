@@ -1115,7 +1115,6 @@ public final class DocumentModel {
             }
             
             //notify the parent element that one of its children has been removed
-            System.out.println("removing element " + de + " from " + parent);
             if(parent != null) parent.childRemoved(de);
             
             fireDocumentModelEvent(de, ELEMENT_REMOVED);
