@@ -43,6 +43,7 @@ package org.netbeans.modules.debugger.jpda.ui.actions;
 
 import java.util.Collections;
 import java.util.Set;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
 
 
@@ -50,6 +51,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -59,14 +61,13 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 */
 public class MakeCalleeCurrentActionProvider extends JPDADebuggerAction {
 
-    private ContextProvider lookupProvider;
-    
+    private RequestProcessor rp;
     
     public MakeCalleeCurrentActionProvider (ContextProvider lookupProvider) {
         super (
             lookupProvider.lookupFirst(null, JPDADebugger.class)
         );
-        this.lookupProvider = lookupProvider;
+        this.rp = lookupProvider.lookupFirst(null, RequestProcessor.class);
         getDebuggerImpl ().addPropertyChangeListener 
             (JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME, this);
     }
@@ -82,25 +83,25 @@ public class MakeCalleeCurrentActionProvider extends JPDADebuggerAction {
             (getDebuggerImpl ());
         if (i == 0) return;
         MakeCallerCurrentActionProvider.setCurrentCallStackFrameIndex 
-            (getDebuggerImpl (), --i, lookupProvider);
+            (getDebuggerImpl (), --i);
     }
     
     protected void checkEnabled (int debuggerState) {
         if (debuggerState == getDebuggerImpl ().STATE_STOPPED) {
             JPDAThread t = getDebuggerImpl ().getCurrentThread ();
             if (t != null) {
-                int i = MakeCallerCurrentActionProvider.getCurrentCallStackFrameIndex 
-                    (getDebuggerImpl ());
-                setEnabled (
-                    ActionsManager.ACTION_MAKE_CALLEE_CURRENT,
-                    i > 0
-                );
+                checkEnabledLazySingleAction(debuggerState, rp);
                 return;
             }
         }
-        setEnabled (
-            ActionsManager.ACTION_MAKE_CALLEE_CURRENT,
-            false
-        );
+        setEnabledSingleAction(false);
     }
+
+    @Override
+    protected boolean checkEnabledLazyImpl(int debuggerState) {
+        int i = MakeCallerCurrentActionProvider.getCurrentCallStackFrameIndex
+            (getDebuggerImpl ());
+        return i > 0;
+    }
+
 }

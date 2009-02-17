@@ -64,6 +64,7 @@ import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 /**
  * Utility methods for sources.
@@ -96,7 +97,7 @@ public class SourcePath {
                     sourcePathProvider
                 );
             }
-            initSourcePaths ();
+            //initSourcePaths ();
         }
         return sourcePathProvider;
     }
@@ -182,6 +183,18 @@ public class SourcePath {
      */
     public String[] getOriginalSourceRoots () {
         return getContext ().getOriginalSourceRoots ();
+    }
+
+    public String[] getAdditionalSourceRoots() {
+        try {
+            java.lang.reflect.Method getProjectSourceRootsMethod = getContext().getClass().getMethod("getAdditionalSourceRoots", new Class[] {}); // NOI18N
+            String[] projectSourceRoots = (String[]) getProjectSourceRootsMethod.invoke(getContext(), new Object[] {});
+            return projectSourceRoots;
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            return new String[] {};
+        }
+
     }
     
     /**
@@ -631,6 +644,38 @@ public class SourcePath {
             cp2.setSourceRoots (sourceRoots);
         }
 
+        public String[] getAdditionalSourceRoots() {
+            String[] additionalSourceRoots1;
+            String[] additionalSourceRoots2;
+            //System.err.println("\nCompoundContextProvider["+toString()+"].getadditionalSourceRoots()...\n");
+            try {
+                java.lang.reflect.Method getAdditionalSourceRootsMethod = cp1.getClass().getMethod("getAdditionalSourceRoots", new Class[] {}); // NOI18N
+                additionalSourceRoots1 = (String[]) getAdditionalSourceRootsMethod.invoke(cp1, new Object[] {});
+            } catch (Exception ex) {
+                additionalSourceRoots1 = new String[0];
+            }
+            try {
+                java.lang.reflect.Method getAdditionalSourceRootsMethod = cp2.getClass().getMethod("getAdditionalSourceRoots", new Class[] {}); // NOI18N
+                additionalSourceRoots2 = (String[]) getAdditionalSourceRootsMethod.invoke(cp2, new Object[] {});
+            } catch (Exception ex) {
+                additionalSourceRoots2 = new String[0];
+            }
+            if (additionalSourceRoots1.length == 0) {
+                //System.err.println("\nCompoundContextProvider.getAdditionalSourceRoots() = "+java.util.Arrays.toString(additionalSourceRoots2)+"\n");
+                return additionalSourceRoots2;
+            }
+            if (additionalSourceRoots2.length == 0) {
+                //System.err.println("\nCompoundContextProvider.getAdditionalSourceRoots() = "+java.util.Arrays.toString(additionalSourceRoots1)+"\n");
+                return additionalSourceRoots1;
+            }
+            String[] additionalSourceRoots = new String[additionalSourceRoots1.length + additionalSourceRoots2.length];
+            System.arraycopy (additionalSourceRoots1, 0, additionalSourceRoots, 0, additionalSourceRoots1.length);
+            System.arraycopy (additionalSourceRoots2, 0, additionalSourceRoots, additionalSourceRoots1.length, additionalSourceRoots2.length);
+            //System.err.println("\nCompoundContextProvider.getAdditionalSourceRoots() = "+java.util.Arrays.toString(additionalSourceRoots)+"\n");
+            return additionalSourceRoots;
+        }
+
+
         public void addPropertyChangeListener (PropertyChangeListener l) {
             cp1.addPropertyChangeListener (l);
             cp2.addPropertyChangeListener (l);
@@ -641,7 +686,8 @@ public class SourcePath {
             cp2.removePropertyChangeListener (l);
         }
     }
-    
+
+    /*
     private void initSourcePaths () {
         Properties properties = Properties.getDefault ().
             getProperties ("debugger").getProperties ("sources");
@@ -674,6 +720,7 @@ public class SourcePath {
         String[] ss = new String [sourceRoots.size ()];
         sourcePathProvider.setSourceRoots ((String[]) sourceRoots.toArray (ss));
     }
+     */
 
     private static class CompoundAnnotation {
         Object annotation1;

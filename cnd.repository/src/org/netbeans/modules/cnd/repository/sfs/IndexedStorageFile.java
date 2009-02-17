@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.repository.sfs;
 
 import org.netbeans.modules.cnd.repository.sfs.index.FileIndexFactory;
@@ -72,7 +71,8 @@ import org.netbeans.modules.cnd.repository.testbench.Stats;
  * @author Nickolay Dalmatov
  */
 class IndexedStorageFile extends FileStorage {
-    
+
+    private static final boolean TRACE = false;
     final private File dataFile;
     final private File indexFile;
     final private FileStatistics fileStatistics;
@@ -82,15 +82,15 @@ class IndexedStorageFile extends FileStorage {
     // is necessary for tracking fragmentation
     private long usedSize;
     private Object writeLock = new Object();
-    
-    public IndexedStorageFile(final File basePath, final String name, final boolean create ) throws IOException {
-        dataFile =  new File(basePath, name + "-data"); // NOI18N
+
+    public IndexedStorageFile(final File basePath, final String name, final boolean create) throws IOException {
+        dataFile = new File(basePath, name + "-data"); // NOI18N
         indexFile = new File(basePath, name + "-index"); // NOI18N
         fileStatistics = new FileStatistics();
         boolean filesExists = (dataFile.exists() && indexFile.exists());
         fileRWAccess = createFileRWAccess(dataFile);
         boolean recreate = create || !filesExists;
-        
+
         if (!recreate) {
             try {
                 loadIndex();
@@ -98,59 +98,59 @@ class IndexedStorageFile extends FileStorage {
             } catch (IOException e) {
                 recreate = true;
             }
-            
+
             indexFile.delete();
-            
+
             if (usedSize == 0) {
                 fileRWAccess.truncate(0);
             }
-        } 
-        
-        if (recreate) {            
-            index = Stats.useCompactIndex ? new CompactFileIndex() : new SimpleFileIndex();            
+        }
+
+        if (recreate) {
+            index = Stats.useCompactIndex ? new CompactFileIndex() : new SimpleFileIndex();
             //index = new SimpleFileIndex();            
             fileRWAccess.truncate(0);
-            
+
             if (indexFile.exists()) {
                 indexFile.delete();
             }
-            
+
             usedSize = 0;
-        } 
+        }
     }
-    
+
     public Persistent read(final Key key) throws IOException {
         Persistent object = null;
-        
+
         final ChunkInfo chunkInfo = index.get(key);
         if (chunkInfo != null) {
             object = fileRWAccess.read(key.getPersistentFactory(), chunkInfo.getOffset(), chunkInfo.getSize());
             fileStatistics.incrementReadCount(key);
         }
-        
+
         return object;
     }
-    
+
     public void write(final Key key, final Persistent object) throws IOException {
-	
+
         final long offset;
         final int size;
         final int oldSize;
-        
-	synchronized( writeLock ) {
-	    offset = fileRWAccess.size();
-	    size = fileRWAccess.write(key.getPersistentFactory(), object, offset);
-	    oldSize = index.put(key, offset, size);
-	    usedSize += (size - oldSize);
-	    fileStatistics.incrementWriteCount(key, oldSize, size);
-	}
+
+        synchronized (writeLock) {
+            offset = fileRWAccess.size();
+            size = fileRWAccess.write(key.getPersistentFactory(), object, offset);
+            oldSize = index.put(key, offset, size);
+            usedSize += (size - oldSize);
+            fileStatistics.incrementWriteCount(key, oldSize, size);
+        }
     }
-    
+
     public void remove(final Key key) throws IOException {
         fileStatistics.removeNotify(key);
-        
+
         final int oldSize = index.remove(key);
-        
+
         if (oldSize != 0) {
             if (index.size() == 0) {
                 fileRWAccess.truncate(0);
@@ -160,80 +160,83 @@ class IndexedStorageFile extends FileStorage {
             }
         }
     }
-    
+
     public int getObjectsCount() {
         return index.size();
     }
-    
+
     public long getSize() throws IOException {
         return fileRWAccess.size();
-        
+
     }
-    
-    
+
     public void close() throws IOException {
         if (Stats.dumoFileOnExit) {
             dump(System.out);
-        }  else {
+        } else {
             if (Stats.fileStatisticsLevel > 0) {
                 dumpSummary(System.out);
             }
         }
-        
+
         fileRWAccess.close();
         storeIndex();
     }
-    
+
     public int getFragmentationPercentage() throws IOException {
         final long fileSize;
         final float delta;
-        
+
         fileSize = fileRWAccess.size();
         delta = fileSize - usedSize;
-        
+
         final float percentage = delta * 100 / fileSize;
         return Math.round(percentage);
     }
-    
-    
+
     public void dump(final PrintStream ps) throws IOException {
-        ps.printf("\nDumping %s\n", dataFile.getAbsolutePath()); // NOI18N
-        ps.printf("\nKeys:\n"); // NOI18N
-        for(Key key : index.keySet() ) {
+        if (TRACE) {
+            ps.printf("\nDumping %s\n", dataFile.getAbsolutePath()); // NOI18N
+            ps.printf("\nKeys:\n"); // NOI18N
+        }
+        for (Key key : index.keySet()) {
             ChunkInfo chunk = index.get(key);
-            ps.printf("\t%s: ", key); // NOI18N
+            if (TRACE) {
+                ps.printf("\t%s: ", key); // NOI18N
+            }
             print(ps, null, chunk, true);
         }
-        
-        ps.printf("\nChunks:\n"); // NOI18N
+
+        if (TRACE) {
+            ps.printf("\nChunks:\n"); // NOI18N
+        }
         final ChunkInfo[] infos = sortedChunkInfos();
         for (int i = 0; i < infos.length; i++) {
             print(ps, null, infos[i], true);
         }
-        
+
         dumpSummary(ps, infos);
     }
-    
+
     private long recalcUsedSize() {
         long calcUsedSize = 0;
-        for(Key key : index.keySet() ) {
+        for (Key key : index.keySet()) {
             ChunkInfo info = index.get(key);
             calcUsedSize += info.getSize();
         }
         usedSize = calcUsedSize;
         return calcUsedSize;
     }
-    
+
     public void dumpSummary(final PrintStream ps) throws IOException {
         dumpSummary(ps, null);
     }
-    
+
     private void dumpSummary(final PrintStream ps, ChunkInfo[] sortedInfos) throws IOException {
         RangeStatistics write = new RangeStatistics("Writes:", Stats.fileStatisticsLevel, Stats.fileStatisticsRanges);   // NOI18N
         RangeStatistics read = new RangeStatistics("Reads: ", Stats.fileStatisticsLevel, Stats.fileStatisticsRanges);    // NOI18N
         RangeStatistics size = new RangeStatistics("Sizes: ", Stats.fileStatisticsLevel, Stats.fileStatisticsRanges);    // NOI18N
-        long usedSize = 0;
-        for(Key key : index.keySet() ) {
+        for (Key key : index.keySet()) {
             ChunkInfo info = index.get(key);
             usedSize += info.getSize();
             read.consume(fileStatistics.getReadCount(key));
@@ -241,86 +244,90 @@ class IndexedStorageFile extends FileStorage {
             size.consume(info.getSize());
         }
         long channelSize = fileRWAccess.size();
-        
-        ps.printf("\n"); // NOI18N
-        ps.printf("Dumping %s\n", dataFile.getAbsolutePath()); // NOI18N
-        ps.printf("Entries count: %d\n", index.size()); // NOI18N
-        ps.printf("\n"); // NOI18N
-        write.print(ps);
-        read.print(ps);
-        size.print(ps);
-        ps.printf("\n"); // NOI18N
-        
-        ps.printf("File size:  %16d\n", channelSize); // NOI18N
-        ps.printf("Used size:  %16d\n", usedSize); // NOI18N
-        ps.printf("Percentage used: %11d%%\n", channelSize == 0 ? 0 : ((100*usedSize)/channelSize)); // NOI18N
-        ps.printf("Fragmentation:   %11d%%\n", getFragmentationPercentage()); // NOI18N
-        
-        if( sortedInfos == null ) {
+
+        if (TRACE) {
+            ps.printf("\n"); // NOI18N
+            ps.printf("Dumping %s\n", dataFile.getAbsolutePath()); // NOI18N
+            ps.printf("Entries count: %d\n", index.size()); // NOI18N
+            ps.printf("\n"); // NOI18N
+            write.print(ps);
+            read.print(ps);
+            size.print(ps);
+            ps.printf("\n"); // NOI18N
+            ps.printf("File size:  %16d\n", channelSize); // NOI18N
+            ps.printf("Used size:  %16d\n", usedSize); // NOI18N
+            ps.printf("Percentage used: %11d%%\n", channelSize == 0 ? 0 : ((100 * usedSize) / channelSize)); // NOI18N
+            ps.printf("Fragmentation:   %11d%%\n", getFragmentationPercentage()); // NOI18N
+        }
+        if (sortedInfos == null) {
             sortedInfos = sortedChunkInfos();
         }
         long firstExtent = (sortedInfos.length > 0) ? sortedInfos[0].getOffset() : 0;
-        ps.printf("First busy extent: %9d (0x%H)\n\n", firstExtent, firstExtent); // NOI18N
+        if (TRACE) {
+            ps.printf("First busy extent: %9d (0x%H)\n\n", firstExtent, firstExtent); // NOI18N
+        }
     }
-    
+
     private void print(final PrintStream ps, final Key key, final ChunkInfo chunk, final boolean lf) {
         final long endOffset = chunk.getOffset() + chunk.getSize() - 1;
-        ps.printf("%d-%d %d [0x%H-0x%H] read: %d written: %d (%s) %c", // NOI18N
-                chunk.getOffset(), endOffset, chunk.getSize(), chunk.getOffset(), endOffset,
-                fileStatistics.getReadCount(key), fileStatistics.getWriteCount(key), chunk.toString(),
-                lf ? '\n' : ' '); // NOI18N
+        if (TRACE) {
+            ps.printf("%d-%d %d [0x%H-0x%H] read: %d written: %d (%s) %c", // NOI18N
+                    chunk.getOffset(), endOffset, chunk.getSize(), chunk.getOffset(), endOffset,
+                    fileStatistics.getReadCount(key), fileStatistics.getWriteCount(key), chunk.toString(),
+                    lf ? '\n' : ' '); // NOI18N
+        }
     }
-    
+
     private ChunkInfo[] sortedChunkInfos() {
         ChunkInfo[] infos = new ChunkInfo[index.size()];
         int pos = 0;
-        
-        for(Key key : index.keySet() ) {
+
+        for (Key key : index.keySet()) {
             infos[pos++] = index.get(key);
         }
-        
+
         Arrays.sort(infos);
         return infos;
     }
-    
+
     /*packet */ String getTraceString() throws IOException {
         final Formatter formatter = new Formatter();
         formatter.format("%s index size %d  file size %d  fragmentation %d%%", // NOI18N
                 dataFile.getName(), index.size(), getSize(), getFragmentationPercentage());
         return formatter.toString();
     }
-    
-    /*packet*/ Iterator<Key>  getKeySetIterator() {
+
+    /*packet*/ Iterator<Key> getKeySetIterator() {
         return new IndexIterator();
     }
-    
+
     /* packet */ ChunkInfo getChunkInfo(Key key) {
         return index.get(key);
-        
+
     }
-    
+
     /* packet */ String getDataFileName() {
         return dataFile.getName();
     }
-    
+
     /*packet */ long getDataFileUsedSize() {
         return usedSize;
-        
+
     }
-    
+
     /*packet */ void moveDataFromOtherFile(FileRWAccess fileRW, long l, int size, long newOffset, Key key) throws IOException {
         fileRWAccess.move(fileRW, l, size, newOffset);
         index.put(key, newOffset, size);
         usedSize += size;
     }
-    
+
     /*packet */ FileRWAccess getDataFile() {
         return fileRWAccess;
     }
-    
+
     /*packet */ FileRWAccess createFileRWAccess(File file) throws IOException {
         FileRWAccess result;
-        switch( Stats.fileRWAccess ) {
+        switch (Stats.fileRWAccess) {
             case 0:
                 result = new BufferedRWAccess(file);
                 break;
@@ -337,17 +344,17 @@ class IndexedStorageFile extends FileStorage {
     private void loadIndex() throws IOException {
         InputStream in, bin;
         DataInputStream din = null;
-        
+
         try {
             in = new FileInputStream(indexFile);
             bin = new BufferedInputStream(in);
             din = new DataInputStream(bin);
-            
+
             index = FileIndexFactory.getDefaultFactory().readIndex(din);
-            
+
         } finally {
-            if (din != null){
-               din.close();
+            if (din != null) {
+                din.close();
             }
         }
     }
@@ -355,15 +362,15 @@ class IndexedStorageFile extends FileStorage {
     private void storeIndex() throws IOException {
         OutputStream out, bos;
         DataOutputStream dos = null;
-        
+
         try {
             out = new FileOutputStream(indexFile);
             bos = new BufferedOutputStream(out, 1024);
             dos = new DataOutputStream(bos);
-            
+
             FileIndexFactory.getDefaultFactory().writeIndex(index, dos);
         } finally {
-            if (dos != null){
+            if (dos != null) {
                 dos.close();
             }
         }
@@ -373,32 +380,33 @@ class IndexedStorageFile extends FileStorage {
         return false;
     }
 
-     /*
+    /*
      *  Iterator<Key> implementation for the index
      *
      */
     private class IndexIterator implements Iterator<Key> {
+
         private Iterator<Key> indexIterator;
         private Key currentKey;
-        
+
         IndexIterator() {
             indexIterator = index.getKeySetIterator();
         }
-        
+
         public boolean hasNext() {
             return indexIterator.hasNext();
         }
-        
+
         public Key next() {
-            currentKey =  indexIterator.next();
+            currentKey = indexIterator.next();
             return currentKey;
         }
-        
+
         public void remove() {
-            assert      currentKey != null;
-            final ChunkInfo   chi = getChunkInfo(currentKey);
+            assert currentKey != null;
+            final ChunkInfo chi = getChunkInfo(currentKey);
             indexIterator.remove();
-            
+
             if (index.size() == 0) {
                 try {
                     fileRWAccess.truncate(0);

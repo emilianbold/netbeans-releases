@@ -49,31 +49,36 @@ import org.netbeans.api.editor.guards.GuardedSection;
  */
 public abstract class SecondaryGoToSourcePresenter extends Presenter {
 
-    protected abstract boolean matches (GuardedSection section);
+    protected abstract boolean matches(GuardedSection section);
 
-    public static GoToSourcePresenter createGoToSourceForwarderToSecondaryGoToSourceOfParent () {
+    public static GoToSourcePresenter createGoToSourceForwarderToSecondaryGoToSourceOfParent() {
         return new GoToSourcePresenter() {
-            protected boolean matches (GuardedSection section) {
-                DesignComponent forward = getComponent ().getParentComponent ();
-                if (forward == null)
+
+            protected boolean matches(GuardedSection section) {
+                DesignComponent forward = getComponent().getParentComponent();
+                if (forward == null) {
                     return false;
-                SecondaryGoToSourcePresenter presenter2 = forward.getPresenter (SecondaryGoToSourcePresenter.class);
-                if (presenter2 != null  &&  presenter2.matches (section))
+                }
+                SecondaryGoToSourcePresenter presenter2 = forward.getPresenter(SecondaryGoToSourcePresenter.class);
+                if (presenter2 != null && presenter2.matches(section)) {
                     return true;
-                GoToSourcePresenter presenter = forward.getPresenter (GoToSourcePresenter.class);
-                return presenter != null  &&  presenter.matches (section);
+                }
+                GoToSourcePresenter presenter = forward.getPresenter(GoToSourcePresenter.class);
+                return presenter != null && presenter.matches(section);
             }
         };
     }
-    
-    public static Presenter createForwarder (final String propertyName) {
+
+    public static Presenter createForwarder(final String propertyName) {
         return new SecondaryGoToSourcePresenter() {
-            protected boolean matches (GuardedSection section) {
-                DesignComponent forward = getComponent ().readProperty (propertyName).getComponent ();
-                if (forward == null)
+
+            protected boolean matches(GuardedSection section) {
+                DesignComponent forward = getComponent().readProperty(propertyName).getComponent();
+                if (forward == null) {
                     return false;
-                GoToSourcePresenter presenter = forward.getPresenter (GoToSourcePresenter.class);
-                return presenter != null  &&  presenter.matches (section);
+                }
+                GoToSourcePresenter presenter = forward.getPresenter(GoToSourcePresenter.class);
+                return presenter != null && presenter.matches(section);
             }
         };
     }

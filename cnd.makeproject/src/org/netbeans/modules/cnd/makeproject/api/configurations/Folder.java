@@ -54,14 +54,13 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.loaders.CndDataObject;
-import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
-import org.netbeans.modules.cnd.makeproject.ui.wizards.FolderEntry;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -71,7 +70,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
-public class Folder implements FileChangeListener {
+public class Folder implements FileChangeListener, ChangeListener {
 
     public static final String DEFAULT_FOLDER_NAME = "f"; // NOI18N
     public static final String DEFAULT_FOLDER_DISPLAY_NAME = getString("NewFolderName");
@@ -85,8 +84,8 @@ public class Folder implements FileChangeListener {
     private final boolean projectFiles;
     private String id = null;
     private String root;
-//    private FileObject folderFileObject;
-    private final Logger log = Logger.getLogger("makeproject.folder"); // NOI18N
+    private final static Logger log = Logger.getLogger("makeproject.folder"); // NOI18N
+    private static boolean checkedLogging = checkLogging();
 
     public Folder(ConfigurationDescriptor configurationDescriptor, Folder parent, String name, String displayName, boolean projectFiles) {
         this.configurationDescriptor = configurationDescriptor;
@@ -97,7 +96,6 @@ public class Folder implements FileChangeListener {
         this.items = new Vector<Object>();
         this.sortName = displayName.toLowerCase();
 
-        log.setLevel(Level.OFF);
     }
 
     public void setRoot(String root) {
@@ -111,16 +109,16 @@ public class Folder implements FileChangeListener {
     public Folder getThis() {
         return this;
     }
-    
-    public void attachListenersAndRefresh() {
-        log.finer("----------attachListenersAndRefresh " + getPath()); // NOI18N
+
+    public void refreshDiskFolder() {
+        log.finer("----------refreshDiskFolder " + getPath()); // NOI18N
         String rootPath = getRootPath();
         String AbsRootPath = IpeUtils.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
 
         File folderFile = new File(AbsRootPath);
 
         // Folders to be removed
-        if (!folderFile.exists() || !folderFile.isDirectory()) {
+        if (!folderFile.exists() || !folderFile.isDirectory() || !VisibilityQuery.getDefault().isVisible(folderFile)) {
             // Remove it plus all subfolders and items from project
             log.fine("------------removing folder " + getPath() + " in " + getParent().getPath()); // NOI18N
             getParent().removeFolder(this);
@@ -128,7 +126,7 @@ public class Folder implements FileChangeListener {
         }
         // Items to be removed
         for (Item item : getItemsAsArray()) {
-            if (!item.getFile().exists()) {
+            if (!item.getFile().exists() || !VisibilityQuery.getDefault().isVisible(item.getFile())) {
                 log.fine("------------removing item " + item.getPath() + " in " + getPath()); // NOI18N
                 removeItem(item);
             }
@@ -140,11 +138,8 @@ public class Folder implements FileChangeListener {
         }
         List<File> fileList = new ArrayList<File>();
         for (int i = 0; i < files.length; i++) {
-            if (AllSourceFileFilter.getInstance().accept(files[i]) && // NOI18N
-                    !files[i].getName().equals("nbproject") && // NOI18N
-                    !files[i].getName().equals("CVS") && // NOI18N
-                    !files[i].getName().equals("SCCS") && // NOI18N
-                    !files[i].getName().startsWith(".")) { // NOI18N
+            if (VisibilityQuery.getDefault().isVisible(files[i]) &&
+                    !files[i].getName().equals("nbproject")) { // NOI18N
                 fileList.add(files[i]);
             }
         }
@@ -152,16 +147,10 @@ public class Folder implements FileChangeListener {
             if (file.isDirectory()) {
                 if (findFolderByName(file.getName()) == null) {
                     log.fine("------------adding folder " + file.getPath() + " in " + getPath()); // NOI18N
-                    AllSourceFileFilter filter = AllSourceFileFilter.getInstance();
-                    Vector<SourceFolderInfo> data = new Vector<SourceFolderInfo>();
-                    FolderEntry folderEntry = new FolderEntry(file, file.getName());
-                    folderEntry.setAddSubfoldersSelected(true);
-                    folderEntry.setFileFilter(filter);
-                    data.add(folderEntry);
-                    ((MakeConfigurationDescriptor)getConfigurationDescriptor()).addSourceFilesFromFolders(this, data.iterator(), false, false, false);
+                    ((MakeConfigurationDescriptor) getConfigurationDescriptor()).addSourceFilesFromFolder(this, file, true);
+
                 }
-            }
-            else {
+            } else {
                 String path = getRootPath() + '/' + file.getName();
                 if (path.startsWith("./")) { // NOI18N
                     path = path.substring(2);
@@ -173,25 +162,46 @@ public class Folder implements FileChangeListener {
             }
         }
 
-//        folderFileObject = FileUtil.toFileObject(folderFile);
-//        if (folderFileObject == null) {
-//            return; // FIXUP: error ?
-//        }
+        // Repeast for all sub folders
+        Vector<Folder> subFolders = getFolders();
+        for (Folder f : subFolders) {
+            f.refreshDiskFolder();
+        }
+    }
+
+    public void attachListeners() {
+        String rootPath = getRootPath();
+        String AbsRootPath = IpeUtils.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
+        File folderFile = new File(AbsRootPath);
+
+        if (!folderFile.exists() || !folderFile.isDirectory()) {
+            return;
+        }
+
+        if (isDiskFolder() && getRoot() != null) {
+            VisibilityQuery.getDefault().addChangeListener(this);
+            log.finer("-----------attachFilterListener " + getPath()); // NOI18N
+        }
 
         FileUtil.addFileChangeListener(this, folderFile);
-        log.finer("-----------attachListener " + getPath()); // NOI18N
+        log.finer("-----------attachFileChangeListener " + getPath()); // NOI18N
 
         // Repeast for all sub folders
         Vector<Folder> subFolders = getFolders();
         for (Folder f : subFolders) {
-            f.attachListenersAndRefresh();
+            f.attachListeners();
         }
     }
 
+
     public void detachListener() {
-        log.finer("-----------detachListener " + getPath()); // NOI18N
+        log.finer("-----------detachFileChangeListener " + getPath()); // NOI18N
         FileUtil.removeFileChangeListener(this);
-//        folderFileObject = null;
+        if (isDiskFolder() && getRoot() != null) {
+            VisibilityQuery.getDefault().removeChangeListener(this);
+            log.finer("-----------detachFilterListener " + getPath()); // NOI18N
+        }
+
     }
 
     public int size() {
@@ -236,7 +246,7 @@ public class Folder implements FileChangeListener {
         if (fromRoot && folder.getRoot() != null) {
             builder.append(folder.getRoot());
         } else {
-                builder.append(folder.getName());
+            builder.append(folder.getName());
         }
     }
 
@@ -889,119 +899,114 @@ public class Folder implements FileChangeListener {
         }
     }
 
-
-        public void fileAttributeChanged(FileAttributeEvent fe) {
+    public void stateChanged(ChangeEvent e) {
+        log.fine("------------stateChanged " + getThis().getPath()); // NOI18N
+        // Happens when filter has changed
+        if (isDiskFolder()) {
+            refreshDiskFolder();
         }
+    }
 
-        public void fileChanged(FileEvent fe) {
+    public void fileAttributeChanged(FileAttributeEvent fe) {
+    }
+
+    public void fileChanged(FileEvent fe) {
+    }
+
+    public void fileDataCreated(FileEvent fe) {
+        FileObject fileObject = fe.getFile();
+        File file = FileUtil.toFile(fileObject);
+        log.fine("------------fileDataCreated " + file + " in " + getThis().getPath()); // NOI18N
+        //if (true) return;
+        if (!file.exists() || file.isDirectory()) {
+            return; // FIXUP: error
         }
+        if (!AllSourceFileFilter.getInstance().accept(file)) {
+            return;
+        }
+        String itemPath = file.getPath();
+        itemPath = FilePathAdaptor.mapToRemote(itemPath);
+        itemPath = IpeUtils.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath);
+        itemPath = FilePathAdaptor.normalize(itemPath);
+        Item item = new Item(itemPath);
+        getConfigurationDescriptor().setModified();
+        addItemAction(item);
+    }
 
-        public void fileDataCreated(FileEvent fe) {
-            FileObject fileObject = fe.getFile();
-            File file = FileUtil.toFile(fileObject);
-            log.fine("------------fileDataCreated " + file + " in " + getThis().getPath()); // NOI18N
-            //if (true) return;
-            if (!file.exists() || file.isDirectory()) {
-                return; // FIXUP: error
-            }
-            if (!AllSourceFileFilter.getInstance().accept(file)) {
-                return;
-            }
-            String itemPath = file.getPath();
-            itemPath = FilePathAdaptor.mapToRemote(itemPath);
-            itemPath = FilePathAdaptor.normalize(itemPath);
-            Item item = new Item(IpeUtils.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath));
+    public void fileFolderCreated(FileEvent fe) {
+        FileObject fileObject = fe.getFile();
+        File file = FileUtil.toFile(fileObject);
+        log.fine("------------fileFolderCreated " + file.getPath() + " in " + getThis().getPath()); // NOI18N
+        //if (true) return;
+        if (!file.exists() || !file.isDirectory()) {
+            assert false;
+            return;
+        }
+        Folder top = ((MakeConfigurationDescriptor) getConfigurationDescriptor()).addSourceFilesFromFolder(getThis(), file, true);
+        getConfigurationDescriptor().setModified();
+    }
+
+    public void fileDeleted(FileEvent fe) {
+        FileObject fileObject = fe.getFile();
+        File file = FileUtil.toFile(fileObject);
+        log.fine("------------fileDeleted " + file.getPath() + " in " + getThis().getPath()); // NOI18N
+        //if (true) return;
+        String path = getRootPath() + '/' + file.getName();
+        if (path.startsWith("./")) { // NOI18N
+            path = path.substring(2);
+        }
+        // Try item first
+        Item item = findItemByPath(path);
+        if (item != null) {
+            removeItemAction(item);
             getConfigurationDescriptor().setModified();
-            addItemAction(item);
+            return;
         }
-
-        public void fileFolderCreated(FileEvent fe) {
-            FileObject fileObject = fe.getFile();
-            File file = FileUtil.toFile(fileObject);
-            log.fine("------------fileFolderCreated " + file.getPath() + " in " + getThis().getPath()); // NOI18N
-            //if (true) return;
-            if (!file.exists() || !file.isDirectory()) {
-                assert false;
-                return;
-            }
-            AllSourceFileFilter filter = AllSourceFileFilter.getInstance();
-            Vector<SourceFolderInfo> data = new Vector<SourceFolderInfo>();
-            FolderEntry folderEntry = new FolderEntry(file, file.getName());
-            folderEntry.setAddSubfoldersSelected(true);
-            folderEntry.setFileFilter(filter);
-            data.add(folderEntry);
-            ((MakeConfigurationDescriptor)getConfigurationDescriptor()).addSourceFilesFromFolders(getThis(), data.iterator(), false, false, false);
+        // then folder
+        Folder folder = findFolderByName(file.getName());
+        if (folder != null) {
+            removeFolderAction(folder);
             getConfigurationDescriptor().setModified();
+            return;
+        }
+    }
 
-            Folder folder = findFolderByName(file.getName());
-            if (folder != null) {
-                folder.setRoot(null);
-                folder.attachListenersAndRefresh();
+    public void fileRenamed(FileRenameEvent fe) {
+        FileObject fileObject = fe.getFile();
+        File file = FileUtil.toFile(fileObject);
+        log.fine("------------fileRenamed " + file.getPath() + " in " + getThis().getPath()); // NOI18N
+        // Try only folders. Items are taken care of in Item.propertyChange takes care of it....
+        Folder folder = findFolderByName(fe.getName());
+        if (folder != null && folder.isDiskFolder()) {
+            // Add new Folder
+            Folder top = ((MakeConfigurationDescriptor) getConfigurationDescriptor()).addSourceFilesFromFolder(getThis(), file, true);
+            getConfigurationDescriptor().setModified();
+            // Copy all configurations
+            // ???????????? // FIXUP
+            // Remove old folder
+            removeFolderAction(folder);
+            return;
+        }
+    }
+
+    private static boolean checkLogging() {
+        if (checkedLogging) {
+            return true;
+        }
+        String logProp = System.getProperty("makeproject.folder"); // NOI18N
+        if (logProp != null) {
+            if (logProp.equals("FINE")) { // NOI18N
+                log.setLevel(Level.FINE);
             }
-            else {
-                log.fine("------------fileFolderCreated - cannot find folder " + file.getName() + " in " + getThis().getPath()); // NOI18N
+            else if (logProp.equals("FINER")) { // NOI18N
+                log.setLevel(Level.FINER);
+            }
+            else if (logProp.equals("FINEST")) { // NOI18N
+                log.setLevel(Level.FINEST);
             }
         }
-
-        public void fileDeleted(FileEvent fe) {
-            FileObject fileObject = fe.getFile();
-            File file = FileUtil.toFile(fileObject);
-            log.fine("------------fileDeleted " + file.getPath() + " in " + getThis().getPath()); // NOI18N
-            //if (true) return;
-            String path = getRootPath() + '/' + file.getName();
-            if (path.startsWith("./")) { // NOI18N
-                path = path.substring(2);
-            }
-            // Try item first
-            Item item = findItemByPath(path);
-            if (item != null) {
-                removeItemAction(item);
-                getConfigurationDescriptor().setModified();
-                return;
-            }
-            // then folder
-            Folder folder = findFolderByName(file.getName());
-            if (folder != null) {
-                removeFolderAction(folder);
-                getConfigurationDescriptor().setModified();
-                return;
-            }
-        }
-
-        public void fileRenamed(FileRenameEvent fe) {
-            FileObject fileObject = fe.getFile();
-            File file = FileUtil.toFile(fileObject);
-            log.fine("------------fileRenamed " + file.getPath() + " in " + getThis().getPath()); // NOI18N
-            // Try only folders. Items are taken care of in Item.propertyChange takes care of it....
-            Folder folder = findFolderByName(fe.getName());
-            if (folder != null && folder.isDiskFolder()) {
-                // Add new Folder
-                AllSourceFileFilter filter = AllSourceFileFilter.getInstance();
-                Vector<SourceFolderInfo> data = new Vector<SourceFolderInfo>();
-                FolderEntry folderEntry = new FolderEntry(file, file.getName());
-                folderEntry.setAddSubfoldersSelected(true);
-                folderEntry.setFileFilter(filter);
-                data.add(folderEntry);
-                ((MakeConfigurationDescriptor)getConfigurationDescriptor()).addSourceFilesFromFolders(this, data.iterator(), false, false, false);
-                getConfigurationDescriptor().setModified();
-                // Copy all configurations
-                // ????????????
-                // Remove old folder
-                removeFolderAction(folder);
-
-                Folder renamedFolder = findFolderByName(file.getName());
-                if (renamedFolder != null) {
-                    renamedFolder.setRoot(null);
-                    renamedFolder.attachListenersAndRefresh();
-                }
-                else {
-                    log.fine("------------fileFolderCreated - cannot find folder " + file.getName() + " in " + getThis().getPath()); // NOI18N
-                }
-
-                return;
-            }
-        }
-
+        return true;
+    }
 
     /** Look up i18n strings here */
     private static String getString(String s) {

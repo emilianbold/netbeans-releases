@@ -79,17 +79,37 @@ public class OutputLogger {
     
     private OutputLogger(String repositoryRoot) {
         repositoryRootString = repositoryRoot;
-        log = IOProvider.getDefault().getIO(repositoryRootString, false);
     }
 
     private OutputLogger() {
     }
-    
+
+    /**
+     * @return the log
+     */
+    private InputOutput getLog() {
+        if(log == null) {
+            Mercurial.LOG.fine("Creating OutputLogger for " + repositoryRootString);
+            log = IOProvider.getDefault().getIO(repositoryRootString, false);
+        }
+        if (log.isClosed()) {
+            Mercurial.LOG.fine("Creating OutputLogger for " + repositoryRootString);
+            log = IOProvider.getDefault().getIO(repositoryRootString, false);
+            try {
+                // HACK (mystic logic) workaround, otherwise it writes to nowhere
+                log.getOut().reset();
+            } catch (IOException e) {
+                Mercurial.LOG.log(Level.SEVERE, null, e);
+            }
+        }
+        return log;
+    }
+
     public void closeLog() {
         rp.post(new Runnable() {
             public void run() {
-                log.getOut().flush();
-                log.getErr().flush();
+                getLog().getOut().flush();
+                getLog().getErr().flush();
             }
         });
     }
@@ -97,12 +117,12 @@ public class OutputLogger {
     public void flushLog() {
         rp.post(new Runnable() {
             public void run() {        
-                log.getOut().flush();
-                log.getErr().flush();
+                getLog().getOut().flush();
+                getLog().getErr().flush();
             }
         });        
     }
-    
+
     /**
      * Print contents of list to OutputLogger's tab
      *
@@ -114,8 +134,7 @@ public class OutputLogger {
 
         rp.post(new Runnable() {
             public void run() {                
-                OutputWriter out = log.getOut();
- 
+                OutputWriter out = getLog().getOut();
                 int lines = list.size();
                 if (lines > MAX_LINES_TO_PRINT) {
                     out.println(list.get(1));
@@ -146,9 +165,9 @@ public class OutputLogger {
     public void output(final String msg){
         if( msg == null) return;
         rp.post(new Runnable() {
-            public void run() {                
-                log.getOut().println(msg);
-                log.getOut().flush();
+            public void run() {
+                getLog().getOut().println(msg);
+                getLog().getOut().flush();
             }
         });
     }
@@ -163,9 +182,9 @@ public class OutputLogger {
         if( msg == null) return;
 
         rp.post(new Runnable() {
-            public void run() {                
-                log.getErr().println(msg);
-                log.getErr().flush();
+            public void run() {
+                getLog().getErr().println(msg);
+                getLog().getErr().flush();
             }
         });
     }
@@ -182,7 +201,7 @@ public class OutputLogger {
         rp.post(new Runnable() {
             public void run() {                
                 try {
-                    OutputWriter out = log.getOut();
+                    OutputWriter out = getLog().getOut();
 
                     OutputListener listener = new OutputListener() {
                         public void outputLineAction(OutputEvent ev) {
@@ -212,9 +231,8 @@ public class OutputLogger {
      */
     public void clearOutput(){
         rp.post(new Runnable() {
-            public void run() {                
-                OutputWriter out = log.getOut();
-         
+            public void run() {             
+                OutputWriter out = getLog().getOut();
                 try {
                     out.reset();
                 } catch (IOException ex) {

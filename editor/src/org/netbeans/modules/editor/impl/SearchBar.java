@@ -103,6 +103,7 @@ import javax.swing.text.Keymap;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.openide.awt.Mnemonics;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbPreferences;
 
 
@@ -656,7 +657,7 @@ public final class SearchBar extends JPanel {
             findNext();
         }
         
-        org.netbeans.editor.Utilities.setStatusText(component, null);
+        org.netbeans.editor.Utilities.setStatusText(component, "");
         FindSupport.getFindSupport().setBlockSearchHighlight(0, 0);
         FindSupport.getFindSupport().incSearchReset();
         setVisible(false);
@@ -703,7 +704,7 @@ public final class SearchBar extends JPanel {
             if (pattern != null) {
                 // valid regexp
                 incrementalSearchTextField.setForeground(Color.BLACK);
-                org.netbeans.editor.Utilities.setStatusText(component, null);
+                org.netbeans.editor.Utilities.setStatusText(component, "", StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND);
             } else {
                 // invalid regexp
                 incrementalSearchTextField.setForeground(INVALID_REGEXP);
@@ -715,14 +716,15 @@ public final class SearchBar extends JPanel {
                 // text found - reset incremental search text field's foreground
                 incrementalSearchTextField.setForeground(Color.BLACK);
                 navigateOnFocusLost = !empty;
-                org.netbeans.editor.Utilities.setStatusText(component, null);
+                org.netbeans.editor.Utilities.setStatusText(component, "", StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND);
             } else {
                 // text not found - indicate error in incremental search
                 // text field with red foreground
                 incrementalSearchTextField.setForeground(NOT_FOUND);
                 navigateOnFocusLost = false;
                 org.netbeans.editor.Utilities.setStatusText(component, NbBundle.getMessage(
-                    SearchBar.class, "incremental-search-not-found", incrementalSearchText)); //NOI18N
+                    SearchBar.class, "incremental-search-not-found", incrementalSearchText),
+                    StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND); //NOI18N
                 Toolkit.getDefaultToolkit().beep();
             }
         }

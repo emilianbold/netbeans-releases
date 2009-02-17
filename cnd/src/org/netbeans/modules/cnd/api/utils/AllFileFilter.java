@@ -70,15 +70,18 @@ public class AllFileFilter extends SourceFileFilter {
 
     @Override
     public String getSuffixesAsString() {
-        String suf = AllSourceFileFilter.getInstance().getSuffixesAsString();
-        suf += ResourceFileFilter.getInstance().getSuffixesAsString();
-        return suf;
+        StringBuilder buf = new StringBuilder();
+        buf.append(AllSourceFileFilter.getInstance().getSuffixesAsString()).append(' '); // NOI18N
+        buf.append(ResourceFileFilter.getInstance().getSuffixesAsString()).append(' '); // NOI18N
+        buf.append(QtFileFilter.getInstance().getSuffixesAsString());
+        return buf.toString();
     }
 
     public static String[] getAllSuffixes() {
         Vector<String> allSuffixes = new Vector<String>();
         addSuffices(allSuffixes, AllSourceFileFilter.getInstance().getSuffixes());
         addSuffices(allSuffixes, ResourceFileFilter.getInstance().getSuffixes());
+        addSuffices(allSuffixes, QtFileFilter.getInstance().getSuffixes());
         return allSuffixes.toArray(new String[allSuffixes.size()]);
     }
 

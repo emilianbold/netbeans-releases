@@ -527,6 +527,9 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
                                     // For blank lines, indentation may be 0, so don't adjust in that case
                                     if (!(Utilities.isRowEmpty(doc, prevOffset) || Utilities.isRowWhite(doc, prevOffset))) {
                                         indent = actualPrevIndent + (indent-prevIndent);
+                                        if (indent < 0) {
+                                            indent = 0;
+                                        }
                                     }
                                 }
                             }

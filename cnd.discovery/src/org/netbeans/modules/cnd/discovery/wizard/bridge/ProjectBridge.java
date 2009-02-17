@@ -54,7 +54,9 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
@@ -437,7 +439,15 @@ public class ProjectBridge {
         MakeConfiguration makeConfiguration = (MakeConfiguration)makeConfigurationDescriptor.getConfs().getActive();
         return CompilerSetManager.getDefault(makeConfiguration.getDevelopmentHost().getName()).getCompilerSet(makeConfiguration.getCompilerSet().getValue());
     }
-    
+
+    public String getCygwinDrive(){
+        String res =CompilerSetManager.getCygwinBase();
+        if (res != null && res.endsWith("/")){
+            res = res.substring(0,res.length()-1);
+        }
+        return res;
+    }
+
     public String getCompilerFlavor(){
         return getCompilerSet().getCompilerFlavor().toString();
     }

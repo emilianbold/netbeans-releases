@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 import junit.framework.TestCase;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 
 /**
@@ -88,6 +89,37 @@ public class DwarfSourceTest extends TestCase {
             }
         }
         assertFalse(sb.toString(), true);
+    }
+
+    public void testCygdrive() {
+        String CYGWIN_PATH = ":/cygwin"; // NOI18N
+        String path = "D:/cygwin_dir/lib/gcc/i686-pc-cygwin/3.4.4/include";
+        String cygwinPath = null;
+
+       int i = path.toLowerCase().indexOf(CYGWIN_PATH);
+       if (i > 0) {
+           if (cygwinPath == null) {
+               cygwinPath = "" + Character.toUpperCase(path.charAt(0)) + CYGWIN_PATH; // NOI18N
+               for(i = i + CYGWIN_PATH.length();i < path.length();i++){
+                   char c = path.charAt(i);
+                   if (c == '/'){
+                       break;
+                   }
+                   cygwinPath+=""+c;
+               }
+           }
+       }
+       assertEquals(cygwinPath, "D:/cygwin_dir");
+    }
+
+    public void testCygdrive2() {
+        //String res =CompilerSetManager.getCygwinBase();
+        String res ="D:\\cygwin_dir\\bin";
+        res = res.substring(0, res.length() - 4).replace("\\", "/"); // NOI18N
+        if (res != null && res.endsWith("/")){
+            res = res.substring(0,res.length()-1);
+        }
+       assertEquals(res, "D:/cygwin_dir");
     }
 
     /**

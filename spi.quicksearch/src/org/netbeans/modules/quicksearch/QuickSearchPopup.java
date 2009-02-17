@@ -378,7 +378,9 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
         Dimension cSize = comboBar.getSize();
         int width = getCategoryWidth() + getResultWidth() + 3;
         Point location = new Point(cSize.width - width - 1, comboBar.getBottomLineY() - 1);
-        location = SwingUtilities.convertPoint(comboBar, location, lPane);
+        if (SwingUtilities.getWindowAncestor(comboBar) != null) {
+            location = SwingUtilities.convertPoint(comboBar, location, lPane);
+        }
         result.setLocation(location);
 
         // hack to make jList.getpreferredSize work correctly

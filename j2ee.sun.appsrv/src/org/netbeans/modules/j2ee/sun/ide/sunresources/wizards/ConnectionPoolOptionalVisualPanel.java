@@ -13,7 +13,9 @@ public final class ConnectionPoolOptionalVisualPanel extends JPanel {
     protected final CommonAttributePanel panel;
     protected ResourceConfigHelper helper;
     protected ResourceConfigData data;
-        
+
+    ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"); //NOI18N
+    
     /** Creates new form ConnectionPoolVisualPanel3 */
     public ConnectionPoolOptionalVisualPanel(CommonAttributePanel panel, ResourceConfigHelper helper) {
         this.panel = panel;
@@ -504,6 +506,37 @@ public final class ConnectionPoolOptionalVisualPanel extends JPanel {
     public boolean isNewResourceSelected() {
         return false;
     }
+
+    public boolean hasValidData(){
+        String steadyPool = steadyField.getText();
+        if (steadyPool == null || steadyPool.length() == 0) {
+            panel.setErrorMessage(bundle.getString("Err_EmptyValue"), steadyLabel.getText());
+            return false;
+        }
+        String maxPool = maxField.getText();
+        if (maxPool == null || maxPool.length() == 0) {
+            panel.setErrorMessage(bundle.getString("Err_EmptyValue"), maxLabel.getText());
+            return false;
+        }
+        String waitTime = waitField.getText();
+        if (waitTime == null || waitTime.length() == 0) {
+            panel.setErrorMessage(bundle.getString("Err_EmptyValue"), waitLabel.getText());
+            return false;
+        }
+        String resize = resizeField.getText();
+        if (resize == null || resize.length() == 0) {
+            panel.setErrorMessage(bundle.getString("Err_EmptyValue"), resizeLabel.getText());
+            return false;
+        }
+        String idleTime = idleField.getText();
+        if (idleTime == null || idleTime.length() == 0) {
+            panel.setErrorMessage(bundle.getString("Err_EmptyValue"), idleLabel.getText());
+            return false;
+        }
+        
+        return true;
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox allowCallersCombo;
     private javax.swing.JLabel allowCallersLabel;

@@ -24,7 +24,7 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 
 
 # Project Name
-PROJECTNAME=Profiler_Simple_Tests
+PROJECTNAME=DLight_Simple_Tests
 
 # Active Configuration
 DEFAULTCONF=GNU

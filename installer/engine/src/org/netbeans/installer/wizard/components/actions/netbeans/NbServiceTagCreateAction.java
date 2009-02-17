@@ -322,7 +322,7 @@ public class NbServiceTagCreateAction extends WizardAction {
 
                 String gfVersion = null;
                 if(gfProduct.getVersion().getMajor() == 2) {
-                   gfVersion = gfProduct.getVersion().getMinor() == 1 ? "v2.1" : "v2";
+                   gfVersion = gfProduct.getUid().equals("glassfish")? "v2" : "v2.1";                   
                 } else {
                    gfVersion = "v3";
                 }

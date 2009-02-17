@@ -45,90 +45,64 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
     <body>
         <h2>Managing Maven Project Dependencies</h2>
         <p> <small><a href="#seealso">See Also</a>&nbsp; </small></p>
-        <!--<p>Software library archives (JARs), build artifacts and dependencies
-        that are used to build Maven projects are stored in repositories.
-        There are two types of repositories:</p>
 
+        <p>To make libraries and projects available to your project
+        during compilation, testing and execution you need to declare the
+        projects or libraries as dependencies.
+        All dependencies need to be available as artifacts in your local repository.</p>
+        
+        <p>You declare a dependency by modifying the POM to add the coordinates of the artifact
+        you want to declare as a dependency.
+        All Maven artifacts are defined by a unique coordinate that consists of a group identifier (groupId),
+        artifact identifier (artifactId) and version.
+        Adding a dependency to the POM is similar to adding libraries to the classpath in an Ant-based project.
+        </p>
+
+        <p>You can add a dependency to a Maven project in the following ways:</p>
         <ul>
-            <li><strong>Local repositories.</strong> A cache of a remote
-            repository that is stored on the local machine.
-            Maven projects are built against the local repository.
-            The local repository usually only stores a subset of the files
-            available in the remote repository and any temporary build artefacts.
+            <li><strong>Edit the POM in the editor.</strong> Open <tt>pom.xml</tt> in the XML editor and use
+            code completion to help add the dependency elements and artifact coordinates.</li>
+            <li><strong>Use the Add Library dialog.</strong>
+            Type or search for the artifact in the Add Library dialog and click OK.
+            When you click OK, the IDE adds the dependency elements and artifact coordinates to <tt>pom.xml</tt>.
+            <p>To open the Add Library dialog, right-click the
+            Libraries node in the Projects window and choose Add Library.
+            Alternatively, you can open the dialog by opening the Insert Code popup in <tt>pom.xml</tt>
+            (Ctrl-I) and choosing Add Dependency.
+            </p>
             </li>
-            <li><strong>Remote repositories.</strong> A central repository
-            that contains all the Maven artifacts and libraries.
-            The remote repository may be a third-party repository
-            (e.g. http://repo1.maven.org/),
-            or it may be a private internal repository.</li>
         </ul>
 
-        <p>The IDE indexes the contents of local and remote Maven repositories using the Nexus indexing engine.
-        The repository indexes are used for some functionality such as code completion.
-        You can browse and manage the indexes in the Maven Repositories window.</p>
-
-        <p>To browse Maven repositories.</p>
-        <ol>
-            <li>Choose Window &gt; Other &gt; Maven Repository Browser to open the Maven Repositories window.</li>
-            <li>Expand the repository nodes to view the groupId and artifactId for the indexed artifacts.</li>
-        </ol>
-
-        <p>The Maven Repositories window lists the Maven repositories registered with the IDE and
-        enables you to add, remove and update Maven repositories.
-        The local Maven repository is indicated by a yellow repository node
-        (&nbsp;<img src="img/localrepo.png" alt="local Maven repository">)
-        and remote repositories are indicated by blue repository nodes
-        (&nbsp;<img src="img/remoterepo.png" alt="remote Maven repository">).</p>
+        <p>After you add a dependency to <tt>pom.xml</tt>,
+        a node for the artifact (&nbsp;<img src="img/DependencyIcon.png">&nbsp;)
+        appears under the project's Libraries node.
+        Artifacts that are not in your local repository are marked with a badge.
+        You need to have a copy of the artifact in your local repository if you
+        want to use it in your project.
+        This applies to libraries and to other projects that are described as dependencies.</p>
+        <p><strong>Notes:</strong></p>
         <ul class="note">
-            <li>By default the IDE includes the central Maven repository in the list
-            of remote repositories.
-            When a project requires build artifacts that are not stored in the local repository,
-            Maven downloads the required artifacts to the local repository from a remote repository.
-            The files in the local Maven repository are then shared by all your Maven projects.</li>
+            <li>
+            If a required artifact is available in a remote repository,
+            Maven will automatically download the artifact and any transitive dependencies
+            from the repository when you build the project.
+            Maven will use the latest available version of the artifact if no version is specified.
+            If the required artifact is not available in a remote repository,
+            you can right-click the artifact node and install the artifact manually.
+            </li>
+            <li>It is recommended that you store Maven software library JARs and project artifacts
+            in a local repository and keep the source code for projects under a version control system.</li>
         </ul>
-        <p>The Maven Repositories window contains the following buttons for working with repositories.</p>
 
-        <table border="1" cellpadding="5" cellspacing="0">
-            <tr>
-            <th align="left" scope="col"><b>Button</b></th>
-            <th align="left" scope="col"><b>Description</b></th>
-            </tr>
-            <tr><td><img src="img/refreshRepo.png" alt="Updates repository indexes"></td><td>Updates Indexes.
-            Click this to reindex the local repository and update the indexes for the remote repositories.</td></tr>
-            <tr><td><img src="img/AddRepo.png" alt="Add repository"></td><td>Add repository.
-            Click this to open the Add Repository dialog box where you can specify the details
-            for the new repository.</td></tr>
-            <tr><td><img src="img/FindInRepo.png" alt="Find in repository"></td><td>Find.
-            Click this to open the Find in Repositories dialog box.
-            Enter a term to search the repositories for artifacts containing the term.</td></tr>
-        </table>
-
-        <p>You can expand the repository nodes to view the indexed artifacts grouped by GroupId and ArtifactId,
-        the version of the library sources and the type of packaging.
-        Depending on the metadata available, you can right-click a library to perform various actions.</p>
-        <ul>
-            <li><strong>Add As Dependency to.</strong> Choose this to add the library to an open project as a dependency.
-            The IDE automatically modifies the project's pom.</li>
-            <li><strong>Find Usages.</strong> Choose this to view open projects and repository artifacts that use
-            the selected library as a dependency.</li>
-            <li><strong>View JavaDoc.</strong></li>
-            <li><strong>Open Project Home Page.</strong> If available, opens the project home page for the library in your browser.</li>
-            <li><strong>Open Bug Tracker.</strong> If available, opens the bug tracking page for the library in your browser.</li>
-            <li><strong>SCM.</strong> If available, you can choose this to browse the sources online or checkout the sources.
-            If you choose to checkout the sources, you will be prompted to specify either a
-            remote or local repository and to supply the checkout details.
-            Sources are checked out from the repository using Maven SCM.</li>
-        </ul>-->
-
-
-        <!--In a Maven development environment, it is recommended that you store Maven software library JARs and
-        project artifacts in a local repository instead of in CVS.-->
+        
 
 
         
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/maven/maven-about.html">About Working with Maven</a></dd>
+    <dd><a href="maven_settings.html">Configuring Maven Settings</a></dd>
+    <dd><a href="maven-pom.html">Working with the Maven POM</a></dd>
 </dl>
 <hr>
 <small><a href="../credits.html">Legal Notices</a></small>

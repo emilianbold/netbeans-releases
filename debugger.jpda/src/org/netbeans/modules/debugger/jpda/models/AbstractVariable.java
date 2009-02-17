@@ -244,7 +244,8 @@ class AbstractVariable implements JDIVariable, Customizer, Cloneable {
                     try {
                         value = EvaluatorVisitor.unbox((ObjectReference) value,
                                                        (PrimitiveType) type,
-                                                       ((JPDAThreadImpl) ct).getThreadReference());
+                                                       ((JPDAThreadImpl) ct).getThreadReference(),
+                                                       null);
                     } catch (InvalidTypeException ex) {
                     } catch (ClassNotLoadedException ex) {
                     } catch (IncompatibleThreadStateException ex) {
@@ -312,7 +313,8 @@ class AbstractVariable implements JDIVariable, Customizer, Cloneable {
                     }
                     value = EvaluatorVisitor.box(pv,
                                                  (ReferenceType) type,
-                                                 ((JPDAThreadImpl) ct).getThreadReference());
+                                                 ((JPDAThreadImpl) ct).getThreadReference(),
+                                                 null);
                 } catch (InvalidTypeException ex) {
                 } catch (ClassNotLoadedException ex) {
                 } catch (IncompatibleThreadStateException ex) {

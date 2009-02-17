@@ -80,30 +80,23 @@ import org.openide.util.NbBundle;
 public class SourcesModel implements TreeModel, TableModel,
 NodeActionsProvider {
 
-    private static final String     FILTER_PREFIX = "Do not stop in: ";
-    private static final String     DISP_FILTER_PREFIX = NbBundle.getBundle
-        (SourcesModel.class).getString ("CTL_SourcesModel_Name_DoNotStopIn");
-
-
     private Listener                listener;
     private SourcePath              sourcePath;
     private JPDADebugger            debugger;
     private Vector<ModelListener>   listeners = new Vector<ModelListener>();
-    // set of filters
-    private Set<String>             filters = new LinkedHashSet<String>();
-    private Set<String>             enabledFilters = new HashSet<String>();
-    private Set<String>             enabledSourceRoots = new HashSet<String>();
-    private Set<String>             disabledSourceRoots = new HashSet<String>();
-    private List<String>            additionalSourceRoots = new ArrayList<String>();
-    private Properties              filterProperties = Properties.
-        getDefault ().getProperties ("debugger").getProperties ("sources");
+    
+    //private Set<String>             enabledSourceRoots = new HashSet<String>();
+    //private Set<String>             disabledSourceRoots = new HashSet<String>();
+    private Set<String>             additionalSourceRoots = null;
+    //private Properties              filterProperties = Properties.
+    //    getDefault ().getProperties ("debugger").getProperties ("sources");
     private final Set<String>       sourceRootsSet = new HashSet<String>();
 
 
     public SourcesModel (ContextProvider lookupProvider) {
         sourcePath = lookupProvider.lookupFirst(null, SourcePath.class);
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
-        loadFilters ();
+        //loadFilters ();
         updateCachedRoots();
         DELETE_ACTION.putValue (
             Action.ACCELERATOR_KEY,
@@ -132,18 +125,14 @@ NodeActionsProvider {
             // 1) get source roots
             String[] sourceRoots = sourcePath.getOriginalSourceRoots ();
 
-            // 2) get filters
-            String[] ep = new String [filters.size ()];
-            ep = filters.toArray (ep);
-            int i, k = ep.length;
-            for (i = 0; i < k; i++) {
-                ep [i] = DISP_FILTER_PREFIX + ep [i];
-            }
-
             // 3) find additional disabled source roots (enabled are in sourceRoots)
-            List<String> addSrcRoots;
+            //List<String> addSrcRoots;
             synchronized (this) {
-                if (additionalSourceRoots.size() > 0) {
+                if (additionalSourceRoots == null) {
+                    additionalSourceRoots = new LinkedHashSet(Arrays.asList(sourcePath.getAdditionalSourceRoots()));
+
+                }
+                /*if (additionalSourceRoots.size() > 0) {
                     addSrcRoots = new ArrayList<String>(additionalSourceRoots.size());
                     for (String addSrcRoot : additionalSourceRoots) {
                         if (!enabledSourceRoots.contains(addSrcRoot)) {
@@ -152,14 +141,13 @@ NodeActionsProvider {
                     }
                 } else {
                     addSrcRoots = Collections.emptyList();
-                }
+                }*/
             }
 
             // 3) join them
-            Object[] os = new Object [sourceRoots.length + addSrcRoots.size() + ep.length];
-            System.arraycopy (sourceRoots, 0, os, 0, sourceRoots.length);
-            System.arraycopy (addSrcRoots.toArray(), 0, os, sourceRoots.length, addSrcRoots.size());
-            System.arraycopy (ep, 0, os, sourceRoots.length + addSrcRoots.size(), ep.length);
+            Object[] os = sourceRoots;//new Object [sourceRoots.length + addSrcRoots.size()];
+            //System.arraycopy (sourceRoots, 0, os, 0, sourceRoots.length);
+            //System.arraycopy (addSrcRoots.toArray(), 0, os, sourceRoots.length, addSrcRoots.size());
             to = Math.min(os.length, to);
             from = Math.min(os.length, from);
             Object[] fos = new Object [to - from];
@@ -251,15 +239,13 @@ NodeActionsProvider {
 
     public Action[] getActions (Object node) throws UnknownTypeException {
         if (node instanceof String) {
-            if (((String) node).startsWith (DISP_FILTER_PREFIX) || additionalSourceRoots.contains(node)) {
+            if (additionalSourceRoots.contains(node)) {
                 return new Action[] {
-                    NEW_FILTER_ACTION,
                     NEW_SOURCE_ROOT_ACTION,
                     DELETE_ACTION
                 };
             } else {
                 return new Action[] {
-                    NEW_FILTER_ACTION,
                     NEW_SOURCE_ROOT_ACTION
                 };
             }
@@ -278,67 +264,32 @@ NodeActionsProvider {
     // other methods ...........................................................
 
     private boolean isEnabled (String root) {
-        if (root.startsWith (DISP_FILTER_PREFIX)) {
-            return enabledFilters.contains (root.substring (
-                DISP_FILTER_PREFIX.length ()
-            ));
-        }
         synchronized(this) {
             return sourceRootsSet.contains(root);
         }
     }
 
     private void setEnabled (String root, boolean enabled) {
-        if (root.startsWith (DISP_FILTER_PREFIX)) {
-            String filter = root.substring (DISP_FILTER_PREFIX.length ());
+        List<String> sourceRoots = new ArrayList<String>(sourceRootsSet);
+        synchronized (this) {
             if (enabled) {
-                synchronized (this) {
-                    enabledFilters.add (filter);
-                }
-                debugger.getSmartSteppingFilter ().addExclusionPatterns (
-                        Collections.singleton (filter)
-                );
+                //enabledSourceRoots.add (root);
+                //disabledSourceRoots.remove (root);
+                sourceRoots.add (root);
             } else {
-                synchronized (this) {
-                    enabledFilters.remove (filter);
-                }
-                debugger.getSmartSteppingFilter ().removeExclusionPatterns (
-                        Collections.singleton (filter)
-                );
+                //disabledSourceRoots.add (root);
+                //enabledSourceRoots.remove (root);
+                sourceRoots.remove (root);
             }
-        } else {
-            List<String> sourceRoots = new ArrayList<String>(sourceRootsSet);
-            synchronized (this) {
-                if (enabled) {
-                    enabledSourceRoots.add (root);
-                    disabledSourceRoots.remove (root);
-                    sourceRoots.add (root);
-                } else {
-                    disabledSourceRoots.add (root);
-                    enabledSourceRoots.remove (root);
-                    sourceRoots.remove (root);
-                }
-            }
-            String[] ss = new String [sourceRoots.size ()];
-            sourcePath.setSourceRoots (sourceRoots.toArray (ss));
-
         }
-        saveFilters ();
+        String[] ss = new String [sourceRoots.size ()];
+        sourcePath.setSourceRoots (sourceRoots.toArray (ss));
+
+        //saveFilters ();
     }
 
+    /*
     private void loadFilters () {
-        filters = new HashSet (
-            filterProperties.getProperties ("class_filters").getCollection (
-                "all",
-                Collections.EMPTY_SET
-            )
-        );
-        enabledFilters = new HashSet (
-            filterProperties.getProperties ("class_filters").getCollection (
-                "enabled",
-                Collections.EMPTY_SET
-            )
-        );
         enabledSourceRoots = new HashSet (
             filterProperties.getProperties ("source_roots").getCollection (
                 "enabled",
@@ -359,10 +310,6 @@ NodeActionsProvider {
     }
 
     private synchronized void saveFilters () {
-        filterProperties.getProperties ("class_filters").
-            setCollection ("all", filters);
-        filterProperties.getProperties ("class_filters").
-            setCollection ("enabled", enabledFilters);
         filterProperties.getProperties ("source_roots").setCollection
             ("enabled", enabledSourceRoots);
         filterProperties.getProperties ("source_roots").setCollection
@@ -370,6 +317,7 @@ NodeActionsProvider {
         filterProperties.getProperties("additional_source_roots").
             setCollection("src_roots", additionalSourceRoots);
     }
+     */
 
     private synchronized void updateCachedRoots() {
         String[] roots = sourcePath.getSourceRoots();
@@ -503,7 +451,7 @@ NodeActionsProvider {
                             return true;
                         }
                         try {
-                            return FileUtil.isArchiveFile(file.toURL());
+                            return FileUtil.isArchiveFile(file.toURI().toURL());
                         } catch (MalformedURLException ex) {
                             Exceptions.printStackTrace(ex);
                             return false;
@@ -517,13 +465,13 @@ NodeActionsProvider {
             if (state == JFileChooser.APPROVE_OPTION) {
                 File zipOrDir = newSourceFileChooser.getSelectedFile();
                 try {
-                    if (!zipOrDir.isDirectory() && !FileUtil.isArchiveFile(zipOrDir.toURL())) {
+                    if (!zipOrDir.isDirectory() && !FileUtil.isArchiveFile(zipOrDir.toURI().toURL())) {
                         return ;
                     }
                     String d = zipOrDir.getCanonicalPath();
                     synchronized (SourcesModel.this) {
                         additionalSourceRoots.add(d);
-                        enabledSourceRoots.add(d);
+                        //enabledSourceRoots.add(d);
                     }
                     // Set the new source roots:
                     String[] sourceRoots = sourcePath.getSourceRoots();
@@ -533,7 +481,7 @@ NodeActionsProvider {
                     newSourceRoots[l] = d;
                     sourcePath.setSourceRoots(newSourceRoots);
 
-                    saveFilters();
+                    //saveFilters();
                     fireTreeChanged ();
                 } catch (java.io.IOException ioex) {
                     ErrorManager.getDefault().notify(ioex);
@@ -542,33 +490,6 @@ NodeActionsProvider {
         }
     };
 
-    private final Action NEW_FILTER_ACTION = new AbstractAction
-        (NbBundle.getBundle (SourcesModel.class).getString
-            ("CTL_SourcesModel_Action_AddFilter")) {
-            public void actionPerformed (ActionEvent e) {
-                NotifyDescriptor.InputLine descriptor = new
-                    NotifyDescriptor.InputLine (
-                        NbBundle.getBundle (SourcesModel.class).getString
-                            ("CTL_SourcesModel_NewFilter_Filter_Label"),
-                        NbBundle.getBundle (SourcesModel.class).getString
-                            ("CTL_SourcesModel_NewFilter_Title")
-                    );
-                if (DialogDisplayer.getDefault ().notify (descriptor) ==
-                    NotifyDescriptor.OK_OPTION
-                ) {
-                    String filter = descriptor.getInputText ();
-                    synchronized (SourcesModel.this) {
-                        filters.add (filter);
-                        enabledFilters.add (filter);
-                    }
-                    debugger.getSmartSteppingFilter ().addExclusionPatterns (
-                        Collections.singleton (filter)
-                    );
-                    saveFilters();
-                    fireTreeChanged ();
-                }
-            }
-    };
     private final Action DELETE_ACTION = Models.createAction (
         NbBundle.getBundle (SourcesModel.class).getString
             ("CTL_SourcesModel_Action_Delete"),
@@ -580,40 +501,29 @@ NodeActionsProvider {
                 int i, k = nodes.length;
                 for (i = 0; i < k; i++) {
                     String node = (String) nodes [i];
-                    if (node.startsWith(DISP_FILTER_PREFIX)) {
-                        node = node.substring(DISP_FILTER_PREFIX.length());
-                        synchronized (SourcesModel.this) {
-                            filters.remove (node);
-                            enabledFilters.remove (node);
-                        }
-                        debugger.getSmartSteppingFilter ().removeExclusionPatterns (
-                            Collections.singleton (node)
-                        );
-                    } else {
-                        synchronized (SourcesModel.this) {
-                            additionalSourceRoots.remove(node);
-                            enabledSourceRoots.remove(node);
-                            disabledSourceRoots.remove(node);
-                        }
-                        // Set the new source roots:
-                        String[] sourceRoots = sourcePath.getSourceRoots();
-                        int l = sourceRoots.length;
-                        String[] newSourceRoots = new String[l - 1];
-                        int index = -1;
-                        for (int ii = 0; ii < l; ii++) {
-                            if (node.equals(sourceRoots[ii])) {
-                                index = ii;
-                                break;
-                            }
-                        }
-                        if (index >= 0) {
-                            System.arraycopy(sourceRoots, 0, newSourceRoots, 0, index);
-                            System.arraycopy(sourceRoots, index + 1, newSourceRoots, index, l - (index + 1));
-                            sourcePath.setSourceRoots(newSourceRoots);
+                    synchronized (SourcesModel.this) {
+                        additionalSourceRoots.remove(node);
+                        //enabledSourceRoots.remove(node);
+                        //disabledSourceRoots.remove(node);
+                    }
+                    // Set the new source roots:
+                    String[] sourceRoots = sourcePath.getSourceRoots();
+                    int l = sourceRoots.length;
+                    String[] newSourceRoots = new String[l - 1];
+                    int index = -1;
+                    for (int ii = 0; ii < l; ii++) {
+                        if (node.equals(sourceRoots[ii])) {
+                            index = ii;
+                            break;
                         }
                     }
+                    if (index >= 0) {
+                        System.arraycopy(sourceRoots, 0, newSourceRoots, 0, index);
+                        System.arraycopy(sourceRoots, index + 1, newSourceRoots, index, l - (index + 1));
+                        sourcePath.setSourceRoots(newSourceRoots);
+                    }
                 }
-                saveFilters ();
+                //saveFilters ();
                 fireTreeChanged ();
             }
         },

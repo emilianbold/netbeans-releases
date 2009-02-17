@@ -181,6 +181,7 @@
                 <friend>org.netbeans.modules.versioning.system.cvss</friend>
                 <friend>org.netbeans.modules.subversion</friend>
                 <friend>org.netbeans.modules.localhistory</friend>
+                <friend>org.netbeans.modules.bugtracking.bridge</friend>
                 <package>org.netbeans.modules.versioning.annotate</package>
                 <package>org.netbeans.modules.versioning.util</package>
                 <package>org.netbeans.modules.proxy</package>

@@ -264,6 +264,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("templateParameters.h", 90, 6, "templateParameters.h", 82, 1);
     }
 
+    public void testConstInTemplateParameters() throws Exception {
+        // IZ#156679 : Constant in template is highlighted as invalid identifier
+        performTest("templateParameters.h", 129, 9, "templateParameters.h", 125, 20);
+    }
+
     public void testSameName() throws Exception {
         performTest("main.cc", 53, 10, "main.cc", 51, 1); //sameValue(  in sameValue(sameValue - 1);
         performTest("main.cc", 53, 20, "main.cc", 51, 16); //sameValue-1  in sameValue(sameValue - 1);

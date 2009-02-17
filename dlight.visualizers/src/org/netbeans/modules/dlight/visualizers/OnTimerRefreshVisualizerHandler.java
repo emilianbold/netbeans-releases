@@ -89,6 +89,7 @@ class OnTimerRefreshVisualizerHandler implements SessionStateListener, DLightSes
         if (timerIsActive) {
             TimerTaskExecutionService.getInstance().unregisterTimerTask(timerTask);
             timerIsActive = false;
+            task.timerStopped();
         }
     }
 
@@ -108,9 +109,11 @@ class OnTimerRefreshVisualizerHandler implements SessionStateListener, DLightSes
     public void activeSessionChanged(DLightSession oldSession, DLightSession newSession) {
         if (oldSession !=  null){
             oldSession.removeSessionStateListener(this);
+            stopTimer();
         }
         if (newSession != null){
             newSession.addSessionStateListener(this);
+            sessionStateChanged(newSession, SessionState.CONFIGURATION, newSession.getState());
         }
         //throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -122,6 +125,7 @@ class OnTimerRefreshVisualizerHandler implements SessionStateListener, DLightSes
     public void sessionRemoved(DLightSession removedSession) {
          if (removedSession != null){
              removedSession.removeSessionStateListener(this);
+             stopTimer();
          }
     }
 

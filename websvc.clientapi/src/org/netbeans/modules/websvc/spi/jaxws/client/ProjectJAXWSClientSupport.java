@@ -54,6 +54,7 @@ import javax.swing.SwingUtilities;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.websvc.api.jaxws.project.CatalogUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.JAXWSVersionProvider;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.ClientAlreadyExistsExeption;
@@ -212,6 +213,29 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
                 }
                 writeJaxWsModel(jaxWsModel);
                 clientAdded=true;
+                // get jax-ws-catalog.xml
+                if (catalog != null) {
+                    try {
+                        FileObject webInfWsdl = getWsdlFolder(true);
+                        if (webInfWsdl != null) {
+                            FileObject jaxWsCatalog = webInfWsdl.getParent().getFileObject("jax-ws-catalog.xml");
+                            if (jaxWsCatalog == null) {
+                                jaxWsCatalog = FileUtil.copyFile(catalog, webInfWsdl.getParent(), "jax-ws-catalog"); //NOI18N
+                                // update system elements in jax-ws-catalog.xml
+                                CatalogUtils.updateCatalogEntriesForClient(jaxWsCatalog, clientName);
+                            } else {
+                                // copy, and modify catalog entries from catalog.xml to jax-ws-catalog.xml
+                                CatalogUtils.copyCatalogEntriesForClient(catalog, jaxWsCatalog, clientName);
+                            }
+                            // copy files
+                            WSUtils.copyFiles(xmlResourcesFo, webInfWsdl);
+                        }
+
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+
                 // generate wsdl model immediately
                 final String clientName2 = finalClientName;
                 try {

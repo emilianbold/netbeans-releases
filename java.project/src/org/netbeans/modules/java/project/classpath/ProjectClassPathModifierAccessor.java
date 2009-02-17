@@ -44,6 +44,7 @@ package org.netbeans.modules.java.project.classpath;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
@@ -70,7 +71,7 @@ public abstract class ProjectClassPathModifierAccessor {
     /** Creates a new instance of ProjectClassPathModifierAccessor */
     public ProjectClassPathModifierAccessor() {
     }
-    
+
     public abstract SourceGroup[] getExtensibleSourceGroups (ProjectClassPathModifierImplementation m);
     
     public abstract String[] getExtensibleClassPathTypes (ProjectClassPathModifierImplementation m, SourceGroup sg);
@@ -90,5 +91,7 @@ public abstract class ProjectClassPathModifierAccessor {
     public abstract boolean addAntArtifacts (AntArtifact[] artifacts, URI[] artifactElements, ProjectClassPathModifierImplementation m, SourceGroup sourceGroup, String type) throws IOException, UnsupportedOperationException;
 
     public abstract boolean removeAntArtifacts (AntArtifact[] artifacts, URI[] artifactElements, ProjectClassPathModifierImplementation m, SourceGroup sourceGroup, String type) throws IOException, UnsupportedOperationException;
-    
+
+    public abstract boolean addProjects(Project[] projects, ProjectClassPathModifierImplementation pcmi, SourceGroup sg, String classPathType) throws IOException, UnsupportedOperationException;
+
 }

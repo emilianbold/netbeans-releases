@@ -22,7 +22,7 @@
                         includes="**/*.jar" />
             <tarfileset dir="dist"
                         prefix="termapp"
-                        includes="nbterm"
+                        includes="nbterm,nbterm64"
                         filemode="775"/>
             <tarfileset dir="dist"
                         prefix="termapp"
@@ -43,13 +43,34 @@
         <chmod file="${dist.jar.dir}/nbterm"
                perm="+x" />
 
+        <echo message="Copying nbterm64 to dist ..." />
+        <copy file="release/nbterm64"
+              preservelastmodified="true"
+              todir="${dist.jar.dir}" />
+        <chmod file="${dist.jar.dir}/nbterm64"
+               perm="+x" />
+
         <echo message="Copying process_start* to dist/lib ..." />
         <dirname property="richexecution.dist.dir"
                  file="${reference.org_netbeans_lib_richexecution.module}" />
-        <echo message="richexecution is at ${richexecution.dist.dir}" />
+        <echo message="richexecution dist is at ${richexecution.dist.dir}" />
+        <property name="richexecution.module.dir"
+                  value="${project.org_netbeans_lib_richexecution}" />
+        <echo message="richexecution module is at ${richexecution.module.dir}" />
 
         <mkdir dir="${dist.jar.dir}/lib"/>
 
+	<!-- unzip all existing process-starts -->
+        <unzip src="${richexecution.module.dir}/process_start-mac-intel.zip"
+               dest="${dist.jar.dir}/lib" />
+        <unzip src="${richexecution.module.dir}/process_start-linux-intel.zip"
+               dest="${dist.jar.dir}/lib" />
+        <unzip src="${richexecution.module.dir}/process_start-solaris-intel.zip"
+               dest="${dist.jar.dir}/lib" />
+        <unzip src="${richexecution.module.dir}/process_start-solaris-sparc.zip"
+               dest="${dist.jar.dir}/lib" />
+
+	<!-- copy the latest process-start on the current platform for good measure -->
         <copy todir="${dist.jar.dir}/lib" flatten="true" verbose="true">
             <fileset dir="${richexecution.dist.dir}/lib"
                      includes="process_start.sh,process_start-*" />

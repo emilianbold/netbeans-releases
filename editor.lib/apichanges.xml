@@ -105,6 +105,21 @@ is the proper place.
 
     <changes>
 
+        <change id="HyperlinkType.ALT_HYPERLINK">
+            <summary>Adding HyperlinkType.ALT_HYPERLINK</summary>
+            <version major="1" minor="33"/>
+            <date day="16" month="2" year="2009"/>
+            <author login="vv159170"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no" deletion="no" modification="no" />
+            <description>
+                <p>
+                Adding a new constant <code>HyperlinkType.ALT_HYPERLINK</code> as the name
+                for alternative (other than <code>HyperlinkType.GO_TO_DECLARATION</code>) hyperlink action.
+                </p>
+            </description>
+            <issue number="157705"/>
+        </change>
+
         <change id="BaseDocument.atomicLock-deprecation">
             <summary>BaseDocument.atomicLock() method deprecated.</summary>
             <version major="1" minor="28"/>

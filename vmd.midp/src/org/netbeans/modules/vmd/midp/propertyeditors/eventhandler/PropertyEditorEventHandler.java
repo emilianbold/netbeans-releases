@@ -67,6 +67,7 @@ import org.netbeans.modules.vmd.midp.components.points.CallPointCD;
 import org.netbeans.modules.vmd.midp.components.points.MethodPointCD;
 import org.netbeans.modules.vmd.midp.components.points.MobileDeviceCD;
 import org.netbeans.modules.vmd.midp.general.AcceptContextResolver;
+import org.netbeans.modules.vmd.midp.propertyeditors.CleanUp;
 import org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorEventHandlerElement;
 import org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorElementFactory;
 import org.openide.awt.Mnemonics;
@@ -86,7 +87,6 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
 
     @SuppressWarnings(value = "unchecked") // NOI18N
     private PropertyEditorEventHandler() {
-        
     }
 
     public static final PropertyEditorEventHandler createInstance() {
@@ -199,7 +199,16 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
         return true;
     }
 
-    private class CustomEditor extends JPanel {
+    @Override
+    public void cleanUp(DesignComponent component) {
+        if (customEditor != null) {
+            customEditor.clean(component);
+        }
+        component = null;
+        super.cleanUp(component);
+    }
+
+    private class CustomEditor extends JPanel implements CleanUp {
 
         private Collection<PropertyEditorEventHandlerElement> elements;
         private JRadioButton doNothingRadioButton;
@@ -345,6 +354,18 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
                 initialized = true;
             }
             super.addNotify();
+        }
+
+        public void clean(DesignComponent component) {
+            if (elements != null && elements.size() > 0) {
+                for (PropertyEditorEventHandlerElement element : elements) {
+                    if (element instanceof CleanUp) {
+                        ((CleanUp) element).clean(component);
+                    }
+                }
+                elements = null;
+            }
+            doNothingRadioButton = null;
         }
     }
 }
