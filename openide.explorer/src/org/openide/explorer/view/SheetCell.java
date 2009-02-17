@@ -287,8 +287,10 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
                         toolT = val.toString();
                     }
                 }
-                if (toolT != null) {
-                    propPanel.setToolTipText(toolT);
+                if (toolT != null && toolT.trim ().length () > 0) {
+                    propPanel.setToolTipText (toolT.trim ());
+                } else {
+                    propPanel.setToolTipText (null);
                 }
             }
             propPanel.setOpaque(true);
