@@ -496,7 +496,10 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             if (rs != null && rs.size() > 1) {
                 //can it be actually null?
                 childs = new Childs();
-                ((Childs)childs).addArchetypes(rs.values());
+                List<Archetype> lst = new ArrayList<Archetype>();
+                lst.addAll(rs.values());
+                lst.remove(key);
+                ((Childs)childs).addArchetypes(lst);
             } 
             return ChooseArchetypePanel.createNodes(key, childs);
         }
