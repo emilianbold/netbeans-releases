@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.api.model.*;
@@ -62,10 +61,9 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmFunctionDefinition {
 
     private CsmUID<CsmFunction> declarationUID;
-    
     private final CsmCompoundStatement body;
-    private int parseCount;   
-    
+    private int parseCount;
+
     public FunctionDefinitionImpl(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
         super(ast, file, scope, false, global);
         body = AstRenderer.findCompoundStatement(ast, getContainingFile(), this);
@@ -76,15 +74,15 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
             } else {
                 Utils.setSelfUID(this);
             }
-            throw new AstRendererException((FileImpl)file, getStartOffset(),
+            throw new AstRendererException((FileImpl) file, getStartOffset(),
                     "Null body in function definition."); // NOI18N
-            //assert body != null : "null body in function definition, line " + getStartPosition().getLine() + ":" + file.getAbsolutePath();
+        //assert body != null : "null body in function definition, line " + getStartPosition().getLine() + ":" + file.getAbsolutePath();
         }
         if (register) {
             registerInProject();
         }
     }
-    
+
     @Override
     public CsmCompoundStatement getBody() {
         return body;
@@ -94,65 +92,96 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     public CsmFunction getDeclaration() {
         return getDeclaration(null);
     }
-    
+
     public CsmFunction getDeclaration(Resolver parent) {
         CsmFunction declaration = _getDeclaration();
-	if( declaration == null) {
-             int newCount = FileImpl.getParseCount();
-             if (newCount == parseCount) {
-                 return null;
-             }
+        if (declaration == null) {
+            int newCount = FileImpl.getParseCount();
+            if (newCount == parseCount) {
+                return null;
+            }
             _setDeclaration(null);
-	    declaration = findDeclaration(parent);
+            declaration = findDeclaration(parent);
             _setDeclaration(declaration);
             parseCount = newCount;
-	}
-	return declaration;
+        }
+        return declaration;
     }
-    
+
     private CsmFunction _getDeclaration() {
         CsmFunction decl = UIDCsmConverter.UIDtoDeclaration(this.declarationUID);
         // null object is OK here, because of changed cached reference
         return decl;
     }
-    
+
     private void _setDeclaration(CsmFunction decl) {
         this.declarationUID = UIDCsmConverter.declarationToUID(decl);
         assert this.declarationUID != null || decl == null;
     }
-    
+
+    // method try to find declaration in case class have exactly one cast operator with desired name
+    private CsmDeclaration fixCastOperator(CsmClass owner) {
+        CsmDeclaration candidate = null;
+        String s1 = getName().toString();
+        int i1 = s1.lastIndexOf("::"); // NOI18N
+        if (i1 > 0) {
+            s1 = "operator  " + s1.substring(i1 + 2); // NOI18N
+        }
+        Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers(owner,
+                CsmSelect.getDefault().getFilterBuilder().createNameFilter("operator", false, true, false));
+        while (it.hasNext()) {
+            CsmMember m = it.next();
+            String s2 = m.getName().toString();
+            int i2 = s2.lastIndexOf("::"); // NOI18N
+            if (i2 > 0) {
+                s2 = "operator  " + s2.substring(i2 + 2); // NOI18N
+            }
+            if (s1.equals(s2)) {
+                if (candidate == null) {
+                    candidate = m;
+                } else {
+                    candidate = null;
+                    break;
+                }
+            }
+        }
+        return candidate;
+    }
+
     private CsmFunction findDeclaration(Resolver parent) {
         String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
         CsmDeclaration def = getContainingFile().getProject().findDeclaration(uname);
-	if( def == null ) {
-	    CsmObject owner = findOwner(parent);
-	    if( owner instanceof CsmClass ) {
-		Iterator it = CsmSelect.getDefault().getClassMembers((CsmClass)owner, 
+        if (def == null) {
+            CsmObject owner = findOwner(parent);
+            if (owner instanceof CsmClass) {
+                Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers((CsmClass) owner,
                         CsmSelect.getDefault().getFilterBuilder().createNameFilter(getName().toString(), true, true, false));
-		def = findByName(it,getName());
-	    }
-	    else if( owner instanceof CsmNamespace ) {
+                def = findByName(it, getName());
+                if (def == null && isOperator()) {
+                    def = fixCastOperator((CsmClass)owner);
+                }
+            } else if (owner instanceof CsmNamespace) {
                 Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(((CsmNamespace) owner),
-                          CsmSelect.getDefault().getFilterBuilder().createNameFilter(getName().toString(),true, true, false));
-		def = findByName(it,getName());
-	    }
-	}
+                        CsmSelect.getDefault().getFilterBuilder().createNameFilter(getName().toString(), true, true, false));
+                def = findByName(it, getName());
+            }
+        }
         return (CsmFunction) def;
     }
-    
+
     private static CsmFunction findByName(Iterator declarations, CharSequence name) {
-	for (Iterator it = declarations; it.hasNext();) {
+        for (Iterator it = declarations; it.hasNext();) {
             Object o = it.next();
-            if (CsmKindUtilities.isCsmObject(o) && CsmKindUtilities.isFunction((CsmObject) o)){
+            if (CsmKindUtilities.isCsmObject(o) && CsmKindUtilities.isFunction((CsmObject) o)) {
                 CsmFunction decl = (CsmFunction) o;
-                if( decl.getName().equals(name) ) {
-		    return decl;
-		}
+                if (decl.getName().equals(name)) {
+                    return decl;
+                }
             }
-	}
-	return null;
+        }
+        return null;
     }
-    
+
     @Override
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.FUNCTION_DEFINITION;
@@ -160,13 +189,13 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
 
     @Override
     protected String findQualifiedName() {
-        CsmFunction declaration= _getDeclaration();
-	if( declaration != null ) {
-	    return declaration.getQualifiedName().toString();
-	}
+        CsmFunction declaration = _getDeclaration();
+        if (declaration != null) {
+            return declaration.getQualifiedName().toString();
+        }
         return super.findQualifiedName();
     }
-    
+
     @Override
     public CsmScope getScope() {
         return getContainingFile();
@@ -186,21 +215,20 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
 
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
-    
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
         PersistentUtils.writeCompoundStatement(this.body, output);
-        
+
         // save cached declaration
         UIDObjectFactory.getDefaultFactory().writeUID(this.declarationUID, output);
     }
-    
+
     public FunctionDefinitionImpl(DataInput input) throws IOException {
         super(input);
         this.body = PersistentUtils.readCompoundStatement(input);
-        
+
         // read cached declaration
-        this.declarationUID = UIDObjectFactory.getDefaultFactory().readUID(input);        
-    }      
+        this.declarationUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+    }
 }

@@ -367,7 +367,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     public String getDeclarationText() {
         return "";
     }
-    
+
     /**
      * Gets this function definition
      * TODO: describe getDefiition==this ...
@@ -413,8 +413,25 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return def;
     }
     
+    // method try to find definition in case cast operator definition is declared without scope
+    private CsmDeclaration fixCastOperator(CsmProject prj, String uname) {
+        int i = uname.indexOf("operator "); // NOI18N
+        if (i > 0) {
+            String s = uname.substring(i + 9);
+            int j = s.lastIndexOf("::"); // NOI18N
+            if (j > 0) {
+                s = uname.substring(0, i + 9) + " " + s.substring(j + 2); // NOI18N
+                return prj.findDeclaration(s);
+            }
+        }
+        return null;
+    }
+
     private CsmFunctionDefinition findDefinition(CsmProject prj, String uname){
         CsmDeclaration res = prj.findDeclaration(uname);
+        if (res == null && this.isOperator()) {
+            res = fixCastOperator(prj, uname);
+        }
         if (res instanceof CsmFunctionDefinition) {
             return (CsmFunctionDefinition)res;
         }
