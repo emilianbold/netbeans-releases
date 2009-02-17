@@ -130,7 +130,12 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     @CheckForNull
     public static RubyPlatform platformFor(final Project project) {
         RubyPlatformProvider rpp = project.getLookup().lookup(RubyPlatformProvider.class);
-        return rpp == null ? null : rpp.getPlatform();
+        RubyPlatform result = rpp == null ? null : rpp.getPlatform();
+        if (result == null && LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("Could not resolve a platform for " + project + ". " +
+                    "Platform provider: " + rpp);
+        }
+        return result;
     }
 
     /**

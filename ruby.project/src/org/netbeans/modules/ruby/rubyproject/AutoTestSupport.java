@@ -77,7 +77,8 @@ public class AutoTestSupport {
     }
     
     public static boolean isInstalled(final Project project) {
-        return RubyPlatform.platformFor(project).hasValidAutoTest(false);
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        return platform != null && platform.hasValidAutoTest(false);
     }
 
     public void start() {
