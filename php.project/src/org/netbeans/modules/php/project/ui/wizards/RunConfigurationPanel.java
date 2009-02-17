@@ -75,7 +75,7 @@ import org.openide.util.WeakListeners;
  * @author Tomas Mysik
  */
 public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescriptor>,
-        WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener {
+        WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener, CancelablePanel {
 
     static final String VALID = "valid"; // NOI18N // used in the previous step while validating sources - copy-folder
     static final String RUN_AS = PhpProjectProperties.RUN_AS; // this property is used in RunAsPanel... yeah, ugly
@@ -117,6 +117,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     private String originalProjectName = null;
 
     private volatile boolean readingDocumentRoots = false;
+    private volatile boolean canceled;
 
     public RunConfigurationPanel(String[] steps, SourcesFolderProvider sourcesFolderProvider, NewPhpProjectWizardIterator.WizardType wizardType) {
         this.sourcesFolderProvider = sourcesFolderProvider;
@@ -191,6 +192,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             runAsLocalWeb.setLocalServerModel(new LocalServer.ComboBoxModel(LocalServer.PENDING_LOCAL_SERVER));
             readingDocumentRoots = true;
             runAsLocalWeb.setCopyFilesState(false);
+            canceled = false;
             PhpEnvironment.get().readDocumentRoots(new PhpEnvironment.ReadDocumentRootsNotifier() {
                 public void finished(List<DocumentRoot> documentRoots) {
                     initLocalServerModel(documentRoots);
@@ -237,6 +239,9 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     void initLocalServerModel(List<DocumentRoot> documentRoots) {
+        if (canceled) {
+            return;
+        }
         int size = documentRoots.size();
         List<LocalServer> localServers = new ArrayList<LocalServer>(size);
         for (DocumentRoot root : documentRoots) {
@@ -616,6 +621,10 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                 break;
         }
         fireChangeEvent();
+    }
+
+    public void cancel() {
+        canceled = true;
     }
 
     private class WizardConfigProvider implements ConfigManager.ConfigProvider {
