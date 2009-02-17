@@ -186,8 +186,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         try {
             FileUtil.addFileChangeListener(this, folderFile);
             log.finer("-----------attachFileChangeListener " + getPath()); // NOI18N
-        }
-        catch (IllegalArgumentException iae) {
+        } catch (IllegalArgumentException iae) {
             // Can happen if trying to attach twice...
             log.finer("-----------attachFileChangeListener duplicate error" + getPath()); // NOI18N
         }
@@ -198,7 +197,6 @@ public class Folder implements FileChangeListener, ChangeListener {
             f.attachListeners();
         }
     }
-
 
     public void detachListener() {
         log.finer("-----------detachFileChangeListener " + getPath()); // NOI18N
@@ -1051,11 +1049,9 @@ public class Folder implements FileChangeListener, ChangeListener {
         if (logProp != null) {
             if (logProp.equals("FINE")) { // NOI18N
                 log.setLevel(Level.FINE);
-            }
-            else if (logProp.equals("FINER")) { // NOI18N
+            } else if (logProp.equals("FINER")) { // NOI18N
                 log.setLevel(Level.FINER);
-            }
-            else if (logProp.equals("FINEST")) { // NOI18N
+            } else if (logProp.equals("FINEST")) { // NOI18N
                 log.setLevel(Level.FINEST);
             }
         }

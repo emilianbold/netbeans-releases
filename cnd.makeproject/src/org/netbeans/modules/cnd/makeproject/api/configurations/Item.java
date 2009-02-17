@@ -145,7 +145,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         }
         String oldPath = getAbsPath();
         Item item = new Item(newPath);
-            f.addItem(item);
+        f.addItem(item);
         if (item.getFolder().isProjectFiles()) {
             copyItemConfigurations(this, item);
         }

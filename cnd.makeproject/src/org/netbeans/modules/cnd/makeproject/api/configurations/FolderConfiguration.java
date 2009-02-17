@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.ResourceBundle;
@@ -50,75 +49,74 @@ import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
 public class FolderConfiguration implements ConfigurationAuxObject {
+
     private boolean needSave = false;
-    
     private Configuration configuration;
     private Folder folder;
-    
     // Tools
     private CCompilerConfiguration cCompilerConfiguration;
     private CCCompilerConfiguration ccCompilerConfiguration;
-    
+
     public FolderConfiguration(Configuration configuration, CCompilerConfiguration parentCCompilerConfiguration, CCCompilerConfiguration parentCCCompilerConfiguration, Folder folder) {
         // General
         this.configuration = configuration;
         setFolder(folder);
         // Compilers
-        cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration)configuration).getBaseDir(), parentCCompilerConfiguration);
-        ccCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration)configuration).getBaseDir(), parentCCCompilerConfiguration);
+        cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), parentCCompilerConfiguration);
+        ccCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), parentCCCompilerConfiguration);
         clearChanged();
     }
-    
+
     public Configuration getConfiguration() {
         return configuration;
     }
-    
+
     public void setConfiguration(Configuration configuration) {
         this.configuration = configuration;
     }
-    
+
     public Folder getFolder() {
         return folder;
     }
-    
+
     private void setFolder(Folder folder) {
         this.folder = folder;
         needSave = true;
     }
-    
+
     // C Compiler
     public void setCCompilerConfiguration(CCompilerConfiguration cCompilerConfiguration) {
         this.cCompilerConfiguration = cCompilerConfiguration;
     }
-    
+
     public CCompilerConfiguration getCCompilerConfiguration() {
         return cCompilerConfiguration;
     }
-    
+
     // CC Compiler
     public void setCCCompilerConfiguration(CCCompilerConfiguration ccCompilerConfiguration) {
         this.ccCompilerConfiguration = ccCompilerConfiguration;
     }
-    
+
     public CCCompilerConfiguration getCCCompilerConfiguration() {
         return ccCompilerConfiguration;
     }
-    
+
     // interface ConfigurationAuxObject
     public boolean shared() {
         return true;
     }
-    
+
     // interface ConfigurationAuxObject
     public boolean hasChanged() {
         return needSave;
     }
-    
+
     // interface ProfileAuxObject
     public void clearChanged() {
         needSave = false;
     }
-    
+
     /**
      * Returns an unique id (String) used to retrive this object from the
      * pool of aux objects
@@ -131,27 +129,27 @@ public class FolderConfiguration implements ConfigurationAuxObject {
         getCCompilerConfiguration().assign(folderConfiguration.getCCompilerConfiguration());
         getCCCompilerConfiguration().assign(folderConfiguration.getCCCompilerConfiguration());
     }
-    
+
     public void assign(ConfigurationAuxObject profileAuxObject) {
         if (!(profileAuxObject instanceof FolderConfiguration)) {
             // FIXUP: exception ????
             System.err.println("Folder - assign: Profile object type expected - got " + profileAuxObject); // NOI18N
             return;
         }
-        FolderConfiguration i = (FolderConfiguration)profileAuxObject;
-        if (!getId().equals(i.getFolder().getId())){
-            System.err.println("Item - assign: Item ID "+getId()+" expected - got " + i.getFolder().getId()); // NOI18N
+        FolderConfiguration i = (FolderConfiguration) profileAuxObject;
+        if (!getId().equals(i.getFolder().getId())) {
+            System.err.println("Item - assign: Item ID " + getId() + " expected - got " + i.getFolder().getId()); // NOI18N
             return;
         }
         setConfiguration(i.getConfiguration());
         setFolder(i.getFolder());
-        
+
         getCCompilerConfiguration().assign(i.getCCompilerConfiguration());
         getCCCompilerConfiguration().assign(i.getCCCompilerConfiguration());
     }
-    
+
     public FolderConfiguration copy(MakeConfiguration makeConfiguration) {
-        FolderConfiguration copy = new FolderConfiguration(makeConfiguration, (CCompilerConfiguration)getCCompilerConfiguration().getMaster(), (CCCompilerConfiguration)getCCCompilerConfiguration().getMaster(), getFolder());
+        FolderConfiguration copy = new FolderConfiguration(makeConfiguration, (CCompilerConfiguration) getCCompilerConfiguration().getMaster(), (CCCompilerConfiguration) getCCCompilerConfiguration().getMaster(), getFolder());
         // safe using
         copy.assign(this);
         return copy;
@@ -159,58 +157,60 @@ public class FolderConfiguration implements ConfigurationAuxObject {
 
     @Override
     public FolderConfiguration clone() {
-        FolderConfiguration i = new FolderConfiguration(getConfiguration(), (CCompilerConfiguration)getCCompilerConfiguration().getMaster(), (CCCompilerConfiguration)getCCCompilerConfiguration().getMaster(), getFolder());
+        FolderConfiguration i = new FolderConfiguration(getConfiguration(), (CCompilerConfiguration) getCCompilerConfiguration().getMaster(), (CCCompilerConfiguration) getCCCompilerConfiguration().getMaster(), getFolder());
         i.setCCompilerConfiguration(getCCompilerConfiguration().clone());
         i.setCCCompilerConfiguration(getCCCompilerConfiguration().clone());
         return i;
     }
-    
+
     //
     // XML codec support
     public XMLDecoder getXMLDecoder() {
         return new FolderXMLCodec(this);
     }
-    
+
     public XMLEncoder getXMLEncoder() {
         return new FolderXMLCodec(this);
     }
-    
+
     public void initialize() {
         // FIXUP: this doesn't make sense...
     }
-    
+
     public Sheet getGeneralSheet() {
         Sheet sheet = new Sheet();
-        
+
         Sheet.Set set = new Sheet.Set();
         set.setName("FolderConfiguration"); // NOI18N
         set.setDisplayName(getString("FolderConfigurationTxt"));
         set.setShortDescription(getString("FolderConfigurationHint"));
         set.put(new StringRONodeProp(getString("NameTxt"), folder.getDisplayName()));
         sheet.put(set);
-        
+
         return sheet;
     }
-   
+
     private static class StringRONodeProp extends PropertySupport<String> {
+
         String value;
+
         public StringRONodeProp(String name, String value) {
             super(name, String.class, name, name, true, false);
             this.value = value;
         }
-        
+
         public String getValue() {
             return value;
         }
-        
+
         public void setValue(String v) {
         }
     }
 //    public String toString() {
 //        return getFolder().getPath();
 //    }
-    
     private static ResourceBundle bundle = null;
+
     private static String getString(String s) {
         if (bundle == null) {
             bundle = NbBundle.getBundle(FolderConfiguration.class);
