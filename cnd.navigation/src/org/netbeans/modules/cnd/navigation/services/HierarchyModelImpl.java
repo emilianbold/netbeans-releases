@@ -51,6 +51,7 @@ import javax.swing.Action;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -113,6 +114,17 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
         return aMap;
     }
     
+    private CsmClass getClassDeclaration(CsmInheritance inh){
+        CsmClass c = CsmInheritanceUtilities.getCsmClass(inh);
+        if (CsmKindUtilities.isInstantiation(c)) {
+            CsmDeclaration d = ((CsmInstantiation)c).getTemplateDeclaration();
+            if (CsmKindUtilities.isClass(d)){
+                c = (CsmClass) d;
+            }
+        }
+        return c;
+    }
+
     private void buildSuperHierarchy(CsmClass cls, Map<CsmClass,Set<CsmClass>> map){
         Set<CsmClass> back = map.get(cls);
         if (back != null) {
@@ -123,7 +135,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
         Collection<CsmInheritance> list = cls.getBaseClasses();
         if (list != null && list.size() >0){
             for(CsmInheritance inh : list){
-                CsmClass c = CsmInheritanceUtilities.getCsmClass(inh);
+                CsmClass c = getClassDeclaration(inh);
                 if (c != null) {
                     back.add(c);
                     buildSuperHierarchy(c, map);
@@ -155,7 +167,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
         Collection<CsmInheritance> list = cls.getBaseClasses();
         if (list != null && list.size() >0){
             for(CsmInheritance inh : list){
-                CsmClass c = CsmInheritanceUtilities.getCsmClass(inh);
+                CsmClass c = getClassDeclaration(inh);
                 if (c != null) {
                     Set<CsmClass> back = map.get(c);
                     if (back == null){
