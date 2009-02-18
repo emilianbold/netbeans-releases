@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,44 +34,71 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.collab.notifications;
+package org.netbeans.modules.hudson.kenai;
 
+import java.io.CharConversionException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
+import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.notifications.spi.Notification;
+import org.openide.awt.HtmlBrowser.URLDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.xml.XMLUtil;
 
 /**
- * Hardcoded TestFailed Notification
- * @author Jan Becicka
+ * Build failed or was unstable.
  */
-public class TestFailedNotification extends Notification {
+class ProblemNotification extends Notification {
 
-    public String getLinkTitle() {
-        return "details";
+    private final HudsonJob job;
+    private final boolean failed;
+    private final boolean running;
+
+    ProblemNotification(HudsonJob job, boolean failed, boolean running) {
+        this.job = job;
+        this.failed = failed;
+        this.running = running;
     }
 
     public String getTitle() {
-        return "<b>Tests failed</b>";
+        try {
+            return XMLUtil.toElementContent(job.getDisplayName()) + (failed ? " <em>failed</em>" : " is <em>unstable</em>"); // XXX I18N
+        } catch (CharConversionException ex) {
+            Exceptions.printStackTrace(ex);
+            return "";
+        }
     }
 
     public String getDescription() {
-        return "";
+        // XXX should perhaps summarize last lines of failed build, or list some failed tests...
+        return failed ? "The build failed." : "Some tests failed."; // XXX I18N
+    }
+
+    public String getLinkTitle() {
+        return "Show Job"; // XXX I18N
     }
 
     public void showDetails() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // XXX could also show console, show test failures, etc.
+        try {
+            URLDisplayer.getDefault().showURL(new URL(job.getUrl()));
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     public Priority getPriority() {
-        return Priority.NORMAL;
+        return failed ? Priority.HIGH : Priority.NORMAL;
     }
 
     public Icon getIcon() {
-        return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/offline.gif"));
+        return ImageUtilities.loadImageIcon("/org/netbeans/modules/hudson/ui/resources/" + // NOI18N
+                (failed ? "red" : "yellow") + (running ? "_run" : "") + ".png", true); // NOI18N
     }
 
 }

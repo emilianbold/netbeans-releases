@@ -81,9 +81,7 @@ public class NotifyIndicator implements Runnable {
     }
 
     public void run() {
-        new BuildFailedNotification().add();
         new NewCodeReviewNotification().add();
-        new TestFailedNotification().add();
     }
     
     private NotifyIndicator() {
