@@ -178,7 +178,8 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
             }
             layer(e).instanceFile(path, null, null).
                     stringvalue(ContextAwareServiceHandler.SERVICE_NAME, instantiableClassOrMethod(e)).
-                    stringvalue(ContextAwareServiceHandler.SERVICE_CLASSES, classNames).
+                    //stringvalue(ContextAwareServiceHandler.SERVICE_CLASSES, classNames). - taken from instanceOf so that we do not have to provide it twice
+                    stringvalue("instanceOf", classNames).
                     methodvalue("instanceCreate", "org.netbeans.spi.debugger.ContextAwareSupport", "createService").
                     write();
             cnt++;
