@@ -50,6 +50,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.svg.SVGElement;
 import org.w3c.dom.svg.SVGLocatableElement;
+import org.w3c.dom.svg.SVGRect;
 
 
 /**
@@ -615,17 +616,31 @@ public class SVGList extends SVGComponent implements DataListener {
         
         public void handlePointerPress( PointerEvent event ) {
             requestFocus();
+            if ( mySelection.getScreenBBox() == null ){
+                super.handlePointerPress(event);
+                return;
+            }
             synchronized ( SVGList.this ){
                 for ( int i=0; i<myRenderedComponents.size(); i++ ){
                     SVGComponent component = 
                         (SVGComponent)myRenderedComponents.elementAt( i );
                     SVGRectangle rect = component.getBounds();
                     if ( rect == null ){
-                        continue;
-                        
+                        continue;    
                     }
-                    rect.setSize((int)mySelection.getScreenBBox().getWidth(), 
-                            (int)rect.getHeight()); 
+
+                    SVGRect selection = mySelection.getScreenBBox();
+                    if ( selection.getHeight() == 0 ){
+                        // horizontal layout
+                        rect.setSize((int)mySelection.getScreenBBox().getWidth(),
+                            (int)rect.getHeight());
+                    }
+                    else {
+                        // vertical layout
+                        rect.setSize( (int)rect.getWidth(),
+                                (int)mySelection.getScreenBBox().getHeight());
+                    }
+                    
                     if ( rect.contains(event.getX(), event.getY())){
                         myPressedIndex  = i;
                         myPressedY = event.getY();
@@ -643,9 +658,18 @@ public class SVGList extends SVGComponent implements DataListener {
                     myPressedComponent.getBounds() != null) 
             {
                 SVGRectangle rect = myPressedComponent.getBounds();
-                if (rect != null) {
-                    rect.setSize((int)mySelection.getScreenBBox().getWidth(), 
-                            (int)rect.getHeight()); 
+                if ( mySelection.getScreenBBox() != null) {
+                    if ( mySelection.getScreenBBox().getHeight() == 0 ){
+                        // horizontal layout
+                        rect.setSize((int)mySelection.getScreenBBox().getWidth(),
+                            (int)rect.getHeight());
+                    }
+                    else {
+                        // vertical layout
+                        rect.setSize((int)rect.getWidth(),
+                                (int)mySelection.getScreenBBox().getHeight());
+                    }
+                    
                     if (rect.contains( event.getX(), event.getY())) {
                         myCurrentIndex = index;
                         synchronized (myUILock) {

@@ -5,16 +5,15 @@
             <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%.focusin" fill="freeze" to="visible"/>
             <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%.focusout" fill="freeze" to="hidden"/>
         </rect>
-        <rect id="_12" transform="matrix(1.2035432,0.0,0.0,1.0,-7.234642,0.0)"   x="5.0" y="0.0" rx="2" ry="2" width="33" height="20" fill="none" stroke="rgb(73,46,55)" stroke-width="1.5"/>
+        <rect id="%%COMPONENT_ID%%_border" transform="matrix(1.2035432,0.0,0.0,1.0,-7.234642,0.0)"   x="5.0" y="0.0" rx="2" ry="2" width="33" height="20" fill="none" stroke="rgb(73,46,55)" stroke-width="1.5"/>
         <g id="%%COMPONENT_ID%%_editor" >		<!-- this editor is SVGTextField component -->		<!-- metadata definition-->
             <text display="none">type=editor</text>
             <text display="none">editable=false</text>
             <text display="none">enabled=true</text>
             <g>
-                <text id="%%COMPONENT_ID%%_editor_text" x="0.75" y="16.0" font-size="16">                      0</text>                     <!-- Metadata information. Please don't edit. -->
+                <text id="%%COMPONENT_ID%%_editor_text" x="0.75" y="16.0" font-size="16">0</text>                     <!-- Metadata information. Please don't edit. -->
                 <text display="none">type=text</text>
             </g>
-            <rect visibility="hidden" x="5.0" y="0" width="33" height="20"/>
         </g>
         <g>	    	<!-- Metadata information. Please don't edit. -->
             <text display="none">type=up_button</text>
