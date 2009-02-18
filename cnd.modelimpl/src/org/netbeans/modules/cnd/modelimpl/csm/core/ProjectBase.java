@@ -196,15 +196,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return null;
     }
 
-    public CsmNamespace getGlobalNamespace() {
+    public final CsmNamespace getGlobalNamespace() {
         return _getGlobalNamespace();
     }
 
-    public CharSequence getName() {
+    public final CharSequence getName() {
         return name;
     }
 
-    protected void setName(String name) {
+    protected final void setName(String name) {
         this.name = name;
     }
 
@@ -213,7 +213,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * One should never rely on this name structure,
      * just use it as in unique identifier
      */
-    public CharSequence getUniqueName() {
+    public final CharSequence getUniqueName() {
         if (this.uniqueName == null) {
             this.uniqueName = getUniqueName(getPlatformProject());
         }
@@ -235,12 +235,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     /** Gets an object, which represents correspondent IDE project */
-    public Object getPlatformProject() {
+    public final Object getPlatformProject() {
         return platformProject;
     }
 
     /** Gets an object, which represents correspondent IDE project */
-    protected void setPlatformProject(Object platformProject) {
+    protected final void setPlatformProject(Object platformProject) {
         this.platformProject = platformProject;
         // recreate unique name
         this.uniqueName = null;
@@ -248,7 +248,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     /** Finds namespace by its qualified name */
-    public CsmNamespace findNamespace(CharSequence qualifiedName, boolean findInLibraries) {
+    public final CsmNamespace findNamespace(CharSequence qualifiedName, boolean findInLibraries) {
         CsmNamespace result = findNamespace(qualifiedName);
         if (result == null && findInLibraries) {
             for (Iterator it = getLibraries().iterator(); it.hasNext();) {
@@ -263,7 +263,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     /** Finds namespace by its qualified name */
-    public CsmNamespace findNamespace(CharSequence qualifiedName) {
+    public final CsmNamespace findNamespace(CharSequence qualifiedName) {
         CsmNamespace nsp = _getNamespace(qualifiedName);
         return nsp;
     }
@@ -282,7 +282,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return sb.toString();
     }
 
-    public NamespaceImpl findNamespaceCreateIfNeeded(NamespaceImpl parent, CharSequence name) {
+    public final NamespaceImpl findNamespaceCreateIfNeeded(NamespaceImpl parent, CharSequence name) {
         synchronized (namespaceLock) {
             String qualifiedName = ProjectBase.getNestedNamespaceQualifiedName(name, parent, true);
             NamespaceImpl nsp = _getNamespace(qualifiedName);
@@ -301,7 +301,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         _unregisterNamespace(namespace);
     }
 
-    public CsmClassifier findClassifier(CharSequence qualifiedName, boolean findInLibraries) {
+    public final CsmClassifier findClassifier(CharSequence qualifiedName, boolean findInLibraries) {
         CsmClassifier result = findClassifier(qualifiedName);
         if (result == null && findInLibraries) {
             for (Iterator it = getLibraries().iterator(); it.hasNext();) {
@@ -315,12 +315,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return result;
     }
 
-    public CsmClassifier findClassifier(CharSequence qualifiedName) {
+    public final CsmClassifier findClassifier(CharSequence qualifiedName) {
         CsmClassifier result = classifierContainer.getClassifier(qualifiedName);
         return result;
     }
 
-    public Collection<CsmClassifier> findClassifiers(CharSequence qualifiedName) {
+    public final Collection<CsmClassifier> findClassifiers(CharSequence qualifiedName) {
         CsmClassifier result = classifierContainer.getClassifier(qualifiedName);
         Collection<CsmClassifier> out = UIDCsmConverter.UIDsToDeclarations(new ArrayList<CsmUID<CsmClassifier>>());
         //Collection<CsmClassifier> out = new LazyCsmCollection<CsmClassifier, CsmClassifier>(new ArrayList<CsmUID<CsmClassifier>>(), TraceFlags.SAFE_UID_ACCESS);
@@ -339,21 +339,21 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return out;
     }
 
-    public CsmDeclaration findDeclaration(CharSequence uniqueName) {
+    public final CsmDeclaration findDeclaration(CharSequence uniqueName) {
         return getDeclarationsSorage().getDeclaration(uniqueName);
     }
 
-    public Collection<CsmOffsetableDeclaration> findDeclarations(CharSequence uniqueName) {
+    public final Collection<CsmOffsetableDeclaration> findDeclarations(CharSequence uniqueName) {
         return getDeclarationsSorage().findDeclarations(uniqueName);
     }
 
-    public Collection<CsmOffsetableDeclaration> findDeclarationsByPrefix(String prefix) {
+    public final Collection<CsmOffsetableDeclaration> findDeclarationsByPrefix(String prefix) {
         // To improve performance use char(255) instead real Character.MAX_VALUE
         char maxChar = 255; //Character.MAX_VALUE;
         return getDeclarationsSorage().getDeclarationsRange(prefix, prefix + maxChar); // NOI18N
     }
 
-    public Collection<CsmFriend> findFriendDeclarations(CsmOffsetableDeclaration decl) {
+    public final Collection<CsmFriend> findFriendDeclarations(CsmOffsetableDeclaration decl) {
         return getDeclarationsSorage().findFriends(decl);
     }
 
@@ -379,7 +379,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return true;
     }
 
-    public boolean registerDeclaration(CsmOffsetableDeclaration decl) {
+    public final boolean registerDeclaration(CsmOffsetableDeclaration decl) {
 
         if (!ProjectBase.canRegisterDeclaration(decl)) {
             if (TraceFlags.TRACE_REGISTRATION) {
@@ -430,7 +430,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return true;
     }
 
-    public void unregisterDeclaration(CsmDeclaration decl) {
+    public final void unregisterDeclaration(CsmDeclaration decl) {
         if (TraceFlags.TRACE_REGISTRATION) {
             traceRegistration("unregistered " + decl + " UID " + UIDs.get(decl)); //NOI18N
         }
@@ -445,7 +445,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         System.err.printf("registration: %s\n", text);
     }
 
-    public void waitParse() {
+    public final void waitParse() {
         boolean insideParser = ParserThreadManager.instance().isParserThread();
         if (insideParser) {
             new Throwable("project.waitParse should NEVER be called in parser thread !!!").printStackTrace(System.err); // NOI18N
@@ -483,7 +483,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return false;
     }
 
-    public boolean acceptNativeItem(NativeFileItem item) {
+    public final boolean acceptNativeItem(NativeFileItem item) {
         if (item.getFile() == null) {
             return false;
         }
@@ -494,7 +494,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 !item.isExcluded();
     }
 
-    protected synchronized void registerProjectListeners() {
+    protected final synchronized void registerProjectListeners() {
         if (platformProject instanceof NativeProject) {
             if (projectListener == null) {
                 projectListener = new NativeProjectListenerImpl(getModel(), (NativeProject) platformProject);
@@ -503,7 +503,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    protected synchronized void unregisterProjectListeners() {
+    protected final synchronized void unregisterProjectListeners() {
         if (projectListener != null) {
             if (platformProject instanceof NativeProject) {
                 ((NativeProject) platformProject).removeProjectItemsListener(projectListener);
@@ -801,7 +801,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    protected Status getStatus() {
+    protected final Status getStatus() {
         return status;
     }
 
@@ -926,13 +926,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    protected APTPreprocHandler createEmptyPreprocHandler(File file) {
+    protected final APTPreprocHandler createEmptyPreprocHandler(File file) {
         StartEntry startEntry = new StartEntry(FileContainer.getFileKey(file, true),
                 RepositoryUtils.UIDtoKey(getUID()));
         return APTHandlersSupport.createEmptyPreprocHandler(startEntry);
     }
 
-    protected APTPreprocHandler createPreprocHandler(NativeFileItem nativeFile) {
+    protected final APTPreprocHandler createPreprocHandler(NativeFileItem nativeFile) {
         assert (nativeFile != null);
         APTMacroMap macroMap = getMacroMap(nativeFile);
         APTIncludeHandler inclHandler = getIncludeHandler(nativeFile);
@@ -962,7 +962,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return map;
     }
 
-    protected boolean isSourceFile(NativeFileItem nativeFile) {
+    protected final boolean isSourceFile(NativeFileItem nativeFile) {
         int type = getFileType(nativeFile);
         return type == FileImpl.SOURCE_CPP_FILE || type == FileImpl.SOURCE_C_FILE || type == FileImpl.SOURCE_FILE;
     //return nativeFile.getSystemIncludePaths().size()>0;
@@ -1052,7 +1052,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     /**
      * This method for testing purpose only. Used from TraceModel
      */
-    public CsmFile testAPTParseFile(NativeFileItem item) {
+    public final CsmFile testAPTParseFile(NativeFileItem item) {
         APTPreprocHandler preprocHandler = this.createPreprocHandler(item);
         return findFile(item.getFile(), getFileType(item), preprocHandler, true, preprocHandler.getState(), item);
     }
@@ -1081,7 +1081,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return state;
     }
 
-    protected void invalidatePreprocState(File file) {
+    protected final void invalidatePreprocState(File file) {
         Object stateLock = getFileContainer().getLock(file);
         synchronized (stateLock) {
             getFileContainer().invalidatePreprocState(file);
@@ -1091,7 +1091,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     /**
      * The method is for tracing/testing/debugging purposes only
      */
-    public void debugInvalidateFiles() {
+    public final void debugInvalidateFiles() {
         getFileContainer().debugClearState();
         for (Iterator it = getLibraries().iterator(); it.hasNext();) {
             ProjectBase lib = (ProjectBase) it.next();
@@ -1496,7 +1496,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return null;
     }
 
-    public boolean isMySource(String includePath) {
+    public final boolean isMySource(String includePath) {
         return projectRoots.isMySource(includePath);
     }
 
@@ -1525,20 +1525,20 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     protected abstract void clearNativeFileContainer();
 
-    public void onFileRemoved(File nativeFile) {
+    public final void onFileRemoved(File nativeFile) {
         onFileRemoved(getFile(nativeFile));
     }
 
-    public void onFileExternalCreate(FileObject file) {
+    public final void onFileExternalCreate(FileObject file) {
         APTIncludeUtils.clearFileExistenceCache();
         DeepReparsingUtils.reparseOnAdded(file, this);
     }
 
-    public void onFileExternalChange(FileImpl file) {
+    public final void onFileExternalChange(FileImpl file) {
         DeepReparsingUtils.reparseOnEdit(file, this);
     }
 
-    public CsmFile findFile(Object absolutePathOrNativeFileItem) {
+    public final CsmFile findFile(Object absolutePathOrNativeFileItem) {
         if (absolutePathOrNativeFileItem instanceof CharSequence) {
             return findFileByPath((CharSequence) absolutePathOrNativeFileItem);
         } else if (absolutePathOrNativeFileItem instanceof NativeFileItem) {
@@ -1598,7 +1598,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return findFile(file, FileImpl.UNDEFINED_FILE, preprocHandler, true, null, null);
     }
 
-    protected FileImpl findFile(File file, int fileType, APTPreprocHandler preprocHandler,
+    protected final FileImpl findFile(File file, int fileType, APTPreprocHandler preprocHandler,
             boolean scheduleParseIfNeed, APTPreprocHandler.State initial, NativeFileItem nativeFileItem) {
         FileImpl impl = getFile(file);
         if (impl == null){
@@ -1647,7 +1647,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 //	assert file != null;
 //	return createOrFindFileImpl(ModelSupport.instance().getFileBuffer(file), nativeFile);
 //    }
-    protected FileImpl createOrFindFileImpl(final FileBuffer buf, final NativeFileItem nativeFile) {
+    protected final FileImpl createOrFindFileImpl(final FileBuffer buf, final NativeFileItem nativeFile) {
         return createOrFindFileImpl(buf, nativeFile, getFileType(nativeFile)).fileImpl;
     }
 
@@ -1683,15 +1683,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return new FileAndHandler(impl, preprocHandler);
     }
 
-    public FileImpl getFile(File file) {
+    public final FileImpl getFile(File file) {
         return getFileContainer().getFile(file);
     }
 
-    protected void removeFile(File file) {
+    protected final void removeFile(File file) {
         getFileContainer().removeFile(file);
     }
 
-    protected void putFile(File file, FileImpl impl, APTPreprocHandler.State state) {
+    protected final void putFile(File file, FileImpl impl, APTPreprocHandler.State state) {
         if (state != null && !state.isCleaned()) {
             state = APTHandlersSupport.createCleanPreprocState(state);
         }
@@ -1744,7 +1744,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return res;
     }
 
-    public List<ProjectBase> getDependentProjects() {
+    public final List<ProjectBase> getDependentProjects() {
         List<ProjectBase> res = new ArrayList<ProjectBase>();
         for (CsmProject prj : model.projects()) {
             if (prj instanceof ProjectBase) {
@@ -1762,7 +1762,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * @param file file that contains unresolved name (used for the purpose of statictics)
      * @param name offset that contains unresolved name (used for the purpose of statictics)
      */
-    public CsmClass getDummyForUnresolved(CharSequence[] nameTokens, CsmFile file, int offset) {
+    public final CsmClass getDummyForUnresolved(CharSequence[] nameTokens, CsmFile file, int offset) {
         if (Diagnostic.needStatistics()) {
             Diagnostic.onUnresolvedError(nameTokens, file, offset);
         }
@@ -1776,15 +1776,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * it does not gather statistics!
      * @param nameTokens name
      */
-    public CsmClass getDummyForUnresolved(String name) {
+    public final CsmClass getDummyForUnresolved(String name) {
         return getUnresolved().getDummyForUnresolved(name);
     }
 
-    public CsmNamespace getUnresolvedNamespace() {
+    public final CsmNamespace getUnresolvedNamespace() {
         return getUnresolved().getUnresolvedNamespace();
     }
 
-    public CsmFile getUnresolvedFile() {
+    public final CsmFile getUnresolvedFile() {
         return getUnresolved().getUnresolvedFile();
     }
 
@@ -1797,7 +1797,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return unresolved;
     }
 
-    public boolean isValid() {
+    public final boolean isValid() {
         return platformProject != null && !disposing;
     }
 
@@ -1813,11 +1813,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         ParserQueue.instance().removeAll(this);
     }
 
-    public boolean isDisposing() {
+    public final boolean isDisposing() {
         return disposing;
     }
 
-    public void dispose(final boolean cleanPersistent) {
+    public final void dispose(final boolean cleanPersistent) {
 
         long time = 0;
         if (TraceFlags.TIMING) {
@@ -1850,7 +1850,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    protected Set<String> getRequiredUnits() {
+    protected final Set<String> getRequiredUnits() {
         Set<String> requiredUnits = new HashSet<String>();
         for (Key dependent : this.getLibrariesKeys()) {
             requiredUnits.add(dependent.getUnit().toString());
@@ -1901,7 +1901,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         RepositoryUtils.remove(nsUID);
     }
 
-    protected ModelImpl getModel() {
+    protected final ModelImpl getModel() {
         return model;
     }
 
@@ -1926,7 +1926,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return false;
     }
 
-    public void onParseFinish(boolean libsAlreadyParsed) {
+    public final void onParseFinish(boolean libsAlreadyParsed) {
         synchronized (waitParseLock) {
             waitParseLock.notifyAll();
         }
@@ -1961,14 +1961,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    public void onLibParseFinish() {
+    public final void onLibParseFinish() {
         onParseFinish(true);
     }
 
     /**
      * CsmProject implementation
      */
-    public Collection<CsmFile> getAllFiles() {
+    public final Collection<CsmFile> getAllFiles() {
         return getFileContainer().getFiles();
     }
 
@@ -1977,11 +1977,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * but unfortunately there already is such method,
      * and it is used intensively
      */
-    public Collection<FileImpl> getAllFileImpls() {
+    public final Collection<FileImpl> getAllFileImpls() {
         return getFileContainer().getFileImpls();
     }
 
-    public Collection<CsmFile> getSourceFiles() {
+    public final Collection<CsmFile> getSourceFiles() {
         List<CsmUID<CsmFile>> uids = new ArrayList<CsmUID<CsmFile>>();
         for (FileImpl file : getAllFileImpls()) {
             if (file.isSourceFile()) {
@@ -1991,7 +1991,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return new LazyCsmCollection<CsmFile, CsmFile>(uids, TraceFlags.SAFE_UID_ACCESS);
     }
 
-    public Collection<CsmFile> getHeaderFiles() {
+    public final Collection<CsmFile> getHeaderFiles() {
         List<CsmUID<CsmFile>> uids = new ArrayList<CsmUID<CsmFile>>();
         for (FileImpl file : getAllFileImpls()) {
             if (!file.isSourceFile()) {
@@ -2001,13 +2001,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return new LazyCsmCollection<CsmFile, CsmFile>(uids, TraceFlags.SAFE_UID_ACCESS);
     }
 
-    public long getMemoryUsageEstimation() {
+    public final long getMemoryUsageEstimation() {
         //TODO: replace with some smart algorythm
         return getFileContainer().getSize();
     }
 
     @Override
-    public String toString() {
+    public final String toString() {
         return getName().toString() + ' ' + getClass().getName() + " @" + hashCode(); // NOI18N
     }
 
@@ -2301,13 +2301,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return prj;
     }
 
-    public APTFile getAPTLight(CsmFile csmFile) throws IOException {
+    public final APTFile getAPTLight(CsmFile csmFile) throws IOException {
         APTFile aptLight = null;
         aptLight = APTDriver.getInstance().findAPTLight(((FileImpl) csmFile).getBuffer());
         return aptLight;
     }
 
-    public GraphContainer getGraph() {
+    public final GraphContainer getGraph() {
         return getGraphStorage();
     }
 
@@ -2469,8 +2469,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     //private NamespaceImpl fakeNamespace;
 
     // test variables.
-    private static final boolean TRACE_PP_STATE_OUT = DebugUtils.getBoolean("cnd.dump.preproc.state", false);
-    private static final boolean REMEMBER_RESTORED = TraceFlags.CLEAN_MACROS_AFTER_PARSE && (DebugUtils.getBoolean("cnd.remember.restored", false) || TRACE_PP_STATE_OUT);
+    private static final boolean TRACE_PP_STATE_OUT = DebugUtils.getBoolean("cnd.dump.preproc.state", false); // NOI18N
+    private static final boolean REMEMBER_RESTORED = TraceFlags.CLEAN_MACROS_AFTER_PARSE && (DebugUtils.getBoolean("cnd.remember.restored", false) || TRACE_PP_STATE_OUT);// NOI18N
     public static final int GATHERING_MACROS = 0;
     public static final int GATHERING_TOKENS = 1;
 
@@ -2557,7 +2557,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return fc != null ? fc : FileContainer.empty();
     }
 
-    public GraphContainer getGraphStorage() {
+    public final GraphContainer getGraphStorage() {
         GraphContainer gc = (GraphContainer) RepositoryUtils.get(graphStorageKey);
         if (gc == null) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get GraphContainer by key " + graphStorageKey)); // NOI18N
