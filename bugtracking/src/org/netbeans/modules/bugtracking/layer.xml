@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+
+    <folder name="Actions">
+        <folder name="Bugtracking">
+            <file name="org-netbeans-modules-bugtracking-ui-query-QueryAction.instance"/>
+        </folder>
+        <folder name="Window">
+            <file name="org-netbeans-modules-bugtracking-ui-query-QueryAction.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bugtracking.Bundle"/>
+                <attr name="component" methodvalue="org.netbeans.modules.bugtracking.ui.query.QueryTopComponent.findInstance"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.bugtracking.ui.query.Bundle#CTL_QueryAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
+            </file>
+        </folder>
+    </folder>
+
+    <folder name="Menu">
+        <folder name="Bugtracking">
+            <attr name="position" intvalue="960"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bugtracking.Bundle"/>
+            <file name="org-netbeans-modules-bugtracking-ui-query-QueryAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Bugtracking/org-netbeans-modules-bugtracking-ui-query-QueryAction.instance"/>
+                <attr name="position" intvalue="100"/>
+            </file>
+        </folder>
+    </folder>
+    
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="QueryTopComponent.settings" url="QueryTopComponentSettings.xml"/>
+        </folder>
+        <folder name="Modes">
+            <folder name="editor">
+                <file name="QueryTopComponent.wstcref" url="QueryTopComponentWstcref.xml"/>
+            </folder>
+        </folder>
+    </folder>
+
+</filesystem>
