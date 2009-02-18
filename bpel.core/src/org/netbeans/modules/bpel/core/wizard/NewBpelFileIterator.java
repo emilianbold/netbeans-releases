@@ -67,7 +67,7 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.bpel.model.api.support.Utils;
+//import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.openide.ErrorManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.soa.ui.SoaUtil;
@@ -86,8 +86,9 @@ public class NewBpelFileIterator implements TemplateWizard.Iterator {
     
     protected WizardDescriptor.Panel[] createPanels(Project project, TemplateWizard wizard) {
         Sources sources = (Sources) project.getLookup().lookup(Sources.class);
-        sourceGroups = sources.getSourceGroups(Utils.SOURCES_TYPE_BPELPRO);
-        
+        //sourceGroups = sources.getSourceGroups(Utils.SOURCES_TYPE_BPELPRO);
+        sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+
         if(sourceGroups.length == 0 ) {  
             sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         }
