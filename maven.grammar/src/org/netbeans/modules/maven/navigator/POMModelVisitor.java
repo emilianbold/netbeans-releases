@@ -717,10 +717,14 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
         @Override
         protected Node[] createNodes(Object key) {
-           visitor.reset();
+            boolean hasNonNullValue = false;
+            visitor.reset();
             try {
                 Method m = POMModelVisitor.class.getMethod("visit", type); //NOI18N
                 for (Object comp : holder.getCutValues()) {
+                    if (comp != null) {
+                        hasNonNullValue = true;
+                    }
                     try {
                         m.invoke(visitor, comp);
                     } catch (Exception ex) {
@@ -730,7 +734,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
-            return visitor.getChildNodes();
+            return hasNonNullValue ? visitor.getChildNodes() : new Node[0];
         }
 
 
@@ -762,13 +766,9 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             LinkedHashMap<Object, List<T>> cut = new LinkedHashMap<Object, List<T>>();
 
             int level = 0;
-            int firstLevel = -1;
             for (Object comp : holder.getCutValues()) {
                 if (comp == null) {
                     continue;
-                }
-                if (override && firstLevel == -1) {
-                    firstLevel = level;
                 }
                 @SuppressWarnings("unchecked")
                 List<T> lst = (List<T>) comp;
