@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import java.util.Set;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -47,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +63,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver.SafeTemplateBasedProvider;
 import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
@@ -755,7 +758,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         }
     }
     
-    private static class Type implements CsmType, Resolver.SafeClassifierProvider {
+    private static class Type implements CsmType, Resolver.SafeClassifierProvider, SafeTemplateBasedProvider {
         protected final CsmType originalType;
         protected final CsmInstantiation instantiation;
         protected final CsmType instantiatedType;
@@ -828,7 +831,21 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         }
 
         public boolean isTemplateBased() {
-            return (instantiatedType == null) ? true : instantiatedType.isTemplateBased();
+            return isTemplateBased(new HashSet<CsmType>());
+        }
+
+        public boolean isTemplateBased(Set<CsmType> visited) {
+            if (instantiatedType == null) {
+                return true;
+            }
+            if (visited.contains(this)) {
+                return false;
+            }
+            visited.add(this);
+            if (instantiatedType instanceof SafeTemplateBasedProvider) {
+                return ((SafeTemplateBasedProvider)instantiatedType).isTemplateBased(visited);
+            }
+            return instantiatedType.isTemplateBased();
         }
 
         public boolean isReference() {
