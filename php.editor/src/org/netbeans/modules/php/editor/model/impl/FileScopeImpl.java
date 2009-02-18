@@ -45,10 +45,10 @@ import java.util.HashMap;
 import org.netbeans.modules.php.editor.model.*;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
@@ -65,7 +65,7 @@ import org.openide.util.Union2;
 final class FileScopeImpl extends ScopeImpl implements FileScope, VariableContainerImpl {
 
     private CachingSupport cachedModelSupport;
-    private CompilationInfo info;
+    private ParserResult info;
     private Map<ModelElement, List<Occurence>> occurences =
             new HashMap<ModelElement, List<Occurence>>();
     private List<CodeMarkerImpl> codeMarkers = new ArrayList<CodeMarkerImpl>();
@@ -93,7 +93,7 @@ final class FileScopeImpl extends ScopeImpl implements FileScope, VariableContai
     }
 
     private FileScopeImpl(ParserResult info, String name, PhpKind kind) {
-        super(null, name, Union2.<String, FileObject>createSecond(info != null ? info.getFileObject() : null), new OffsetRange(0, 0), kind);//NOI18N
+        super(null, name, Union2.<String, FileObject>createSecond(info != null ? info.getSnapshot().getSource().getFileObject() : null), new OffsetRange(0, 0), kind);//NOI18N
         this.info = info;
     }
 

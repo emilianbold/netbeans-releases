@@ -599,7 +599,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         if (!classLocation) {
             if (DeclarationLocation.NONE == methodLocation && !requireDeclaredClass) {
                 // the test method is not defined in the class
-                methodLocation = getLocation(index.getMethods(methodName, NameKind.EXACT_NAME));
+                methodLocation = getLocation(index.getMethods(methodName, QuerySupport.Kind.EXACT));
             }
             return methodLocation;
         }

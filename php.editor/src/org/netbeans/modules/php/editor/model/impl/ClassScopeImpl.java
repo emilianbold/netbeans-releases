@@ -209,7 +209,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
         PHPIndex index = indexScope.getIndex();
         ClassScope clz = ModelUtils.getFirst(getSuperClasses());
         while(clz != null) {
-            Collection<IndexedConstant> indexedConsts = index.getFields(null, clz.getName(), "", NameKind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
+            Collection<IndexedConstant> indexedConsts = index.getFields(null, clz.getName(), "", QuerySupport.Kind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
             for (IndexedConstant indexedConstant : indexedConsts) {
                 allFlds.add(new FieldElementImpl((ClassScopeImpl) clz, indexedConstant));
             }

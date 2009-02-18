@@ -41,7 +41,6 @@ package org.netbeans.modules.php.editor.model.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -896,7 +895,7 @@ class OccurenceBuilder {
             methods = new ArrayList<MethodScope>();
             for (MethodScope methodScope : methodsSuggestions) {
                 List<? extends Parameter> parameters = methodScope.getParameters();
-                if (ModelElementImpl.nameKindMatch(name, QuerySupport.Kind.EXACT_NAME, methodScope.getName())
+                if (ModelElementImpl.nameKindMatch(name, QuerySupport.Kind.EXACT, methodScope.getName())
                         && paramCount >= numberOfMandatoryParams(parameters) && paramCount <= parameters.size() ) {
                     methods.add(methodScope);
                 }

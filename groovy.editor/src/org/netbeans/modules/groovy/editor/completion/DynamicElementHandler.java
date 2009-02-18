@@ -89,6 +89,8 @@ public final class DynamicElementHandler {
             return Collections.emptyMap();
         }
 
+        CompletionContext context = new CompletionContext(anchor, classSource,
+                sourceClassName, className, prefix, false, getProperties(className), leaf, nameOnly);
 
         Map<MethodSignature, CompletionItem> resultDynamic =
                 new HashMap<MethodSignature, CompletionItem>();
@@ -111,6 +113,8 @@ public final class DynamicElementHandler {
             return Collections.emptyMap();
         }
         
+        CompletionContext context = new CompletionContext(anchor, classSource,
+                sourceClassName, className, prefix, false, getProperties(className), leaf, false);
 
         Map<FieldSignature, CompletionItem> resultDynamic =
                 new HashMap<FieldSignature, CompletionItem>();

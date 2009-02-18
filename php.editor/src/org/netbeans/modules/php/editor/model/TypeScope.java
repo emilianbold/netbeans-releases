@@ -67,7 +67,7 @@ public interface TypeScope extends Scope {
     Collection<? extends ClassConstantElement> findInheritedConstants(String constName);
     Collection<? extends MethodScope> findInheritedMethods(final String queryName);
     Collection<? extends MethodScope> findDeclaredMethods(final String queryName, final int... modifiers);
-    Collection<? extends MethodScope> findDeclaredMethods(final NameKind nameKind, final String queryName, final int... modifiers);
+    Collection<? extends MethodScope> findDeclaredMethods(final QuerySupport.Kind nameKind, final String queryName, final int... modifiers);
     Collection<? extends ClassConstantElement> findDeclaredConstants(final String... queryName);
-    Collection<? extends ClassConstantElement> findDeclaredConstants(final NameKind nameKind, final String... queryName);
+    Collection<? extends ClassConstantElement> findDeclaredConstants(final QuerySupport.Kind nameKind, final String... queryName);
 }

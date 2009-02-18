@@ -40,13 +40,12 @@ package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ConstantElement;
