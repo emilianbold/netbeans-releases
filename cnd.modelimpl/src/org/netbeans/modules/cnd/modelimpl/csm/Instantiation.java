@@ -1051,4 +1051,22 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             this.ref = null;
         }
     }
+
+    public static CharSequence getInstantiationCanonicalText(List<CsmType> params) {
+        StringBuilder sb = new StringBuilder();
+        if (!params.isEmpty()) {
+            sb.append('<');
+            boolean first = true;
+            for (CsmType param : params) {
+                if (first) {
+                    first = false;
+                } else {
+                    sb.append(',');
+                }
+                sb.append(TypeImpl.getCanonicalText(param));
+            }
+            sb.append('>');
+        }
+        return sb;
+    }
 }
