@@ -1,4 +1,3 @@
-// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -39,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-//</editor-fold>
+
 package org.netbeans.modules.glassfish.javaee;
 
 import java.io.File;
@@ -50,7 +49,9 @@ import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.glassfish.eecommon.api.JDBCDriverDeployHelper;
+import org.netbeans.modules.glassfish.javaee.ide.MonitorProgressObject;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
@@ -61,8 +62,10 @@ public class JDBCDriverDeployerImpl implements JDBCDriverDeployer {
     final private File driverLoc;
     final private GlassfishModule commonSupport;
     final private boolean isLocal;
+    private Hk2DeploymentManager dm;
 
     public JDBCDriverDeployerImpl(Hk2DeploymentManager dm, OptionalDeploymentManagerFactory odmf) {
+        this.dm = dm;
         commonSupport = dm.getCommonServerSupport();
         String domainDir = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR);
         if (null == domainDir || domainDir.trim().length() < 1) {
@@ -85,6 +88,7 @@ public class JDBCDriverDeployerImpl implements JDBCDriverDeployer {
 
     public ProgressObject deployJDBCDrivers(Target target, Set<Datasource> datasources) {
         List urls = JDBCDriverDeployHelper.getMissingDrivers(getDriverLocations(), datasources);
+        final MonitorProgressObject startProgress = new MonitorProgressObject(dm,null);
         ProgressObject retVal = JDBCDriverDeployHelper.getProgressObject(driverLoc, urls);
         if (urls.size() > 0) {
             retVal.addProgressListener(new ProgressListener() {
@@ -92,13 +96,17 @@ public class JDBCDriverDeployerImpl implements JDBCDriverDeployer {
                 public void handleProgressEvent(ProgressEvent arg0) {
                     // todo -- enable when this is ready
                     if (arg0.getDeploymentStatus().isCompleted()) {
-                        commonSupport.restartServer(null);
+                        commonSupport.restartServer(startProgress);
+                    } else {
+                        startProgress.fireHandleProgressEvent(arg0.getDeploymentStatus());
                     }
                 }
             });
+        } else {
+            startProgress.operationStateChanged(OperationState.COMPLETED, "no deployment necessary");
         }
         RequestProcessor.getDefault().post((Runnable) retVal);
-        return retVal; // new JDBCDriverDeployHelper.getProgressObject(dmp.getDriverLocation(), datasources);
+        return startProgress; // new JDBCDriverDeployHelper.getProgressObject(dmp.getDriverLocation(), datasources);
     }
 
     private File[] getDriverLocations(){

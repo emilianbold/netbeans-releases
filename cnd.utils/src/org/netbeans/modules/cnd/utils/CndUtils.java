@@ -39,11 +39,20 @@
 
 package org.netbeans.modules.cnd.utils;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
+
 /**
  *
  * @author Alexey Vladykin
  */
 public class CndUtils {
+
+    private static Logger LOG = Logger.getLogger("cnd.logger"); // NOI18N
+
+    private CndUtils() {
+    }
 
     public static boolean isStandalone() {
         return !CndUtils.class.getClassLoader().getClass().getName().startsWith("org.netbeans."); // NOI18N
@@ -72,5 +81,31 @@ public class CndUtils {
         }
         return result;
     }
+
+   public static void assertTrue(boolean value) {
+       if ( isReleaseMode()) {
+           assertTrue(value, "Assertion error"); //NOI18N
+       }
+   }
+
+   public static void assertFalse(boolean value) {
+       if ( isReleaseMode()) {
+           assertTrue(!value, "Assertion error"); //NOI18N
+       }
+   }
+
+   public static void assertFalse(boolean value, String message) {
+       assertTrue(!value, message);
+   }
+
+   public static void assertTrue(boolean value, String message) {
+       if ( isReleaseMode() && !value) {
+           LOG.log(Level.SEVERE, message, new Exception(message));
+       }
+   }
+
+   public static final void assertNonUiThread() {
+       assertFalse(SwingUtilities.isEventDispatchThread(), "Should not be called from UI thread"); //NOI18N
+   }
 
 }

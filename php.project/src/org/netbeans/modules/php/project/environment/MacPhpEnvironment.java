@@ -54,7 +54,7 @@ final class MacPhpEnvironment extends PhpEnvironment {
     }
 
     @Override
-    public List<DocumentRoot> getDocumentRoots(String projectName) {
+    protected List<DocumentRoot> getDocumentRoots(String projectName) {
         // MAMP
         File mamp = new File("/Applications/MAMP/htdocs"); // NOI18N
         if (mamp.isDirectory()) {

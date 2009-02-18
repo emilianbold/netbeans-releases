@@ -159,12 +159,22 @@ public class Utils {
      * @param file file/directory to delete
      */
     public static void deleteRecursively(File file) {
+        deleteRecursively(file, Level.WARNING);
+    }
+
+    /**
+     * Recursively deletes the file or directory.
+     *
+     * @param file file/directory to delete
+     * @param level log level
+     */
+    public static void deleteRecursively(File file, Level level) {
         FileObject fo = FileUtil.toFileObject(file);
         if (fo == null) return;
         try {
             fo.delete();
         } catch (IOException e) {
-            Logger.getLogger(Utils.class.getName()).log(Level.WARNING, "", e);
+            Logger.getLogger(Utils.class.getName()).log(level, "", e);
         }
     }
 

@@ -6,12 +6,12 @@
 
 # Macros
 TOP=`pwd`
-PLATFORM=SunStudio-Solaris-x86
-TMPDIR=build/SUN-x86-64/${PLATFORM}/tmp-packaging
+CND_PLATFORM=
+TMPDIR=build/SUN-x86-64/${CND_PLATFORM}/tmp-packaging
 TMPDIRNAME=tmp-packaging
-OUTPUT_PATH=dist/SUN/${PLATFORM}/profiler_simple_tests
-OUTPUT_BASENAME=profiler_simple_tests
-PACKAGE_TOP_DIR=profilersimpletests/
+OUTPUT_PATH=dist/SUN-x86-64/${CND_PLATFORM}/dlight_simple_tests
+OUTPUT_BASENAME=dlight_simple_tests
+PACKAGE_TOP_DIR=dlightsimpletests/
 
 # Functions
 function checkReturnCode
@@ -50,21 +50,21 @@ function copyFileToTmpDir
 
 # Setup
 cd "${TOP}"
-mkdir -p dist/SUN/${PLATFORM}/package
+mkdir -p dist/SUN-x86-64/${CND_PLATFORM}/package
 rm -rf ${TMPDIR}
 mkdir -p ${TMPDIR}
 
 # Copy files and create directories and links
 cd "${TOP}"
-makeDirectory ${TMPDIR}/profilersimpletests/bin
+makeDirectory ${TMPDIR}/dlightsimpletests/bin
 copyFileToTmpDir "${OUTPUT_PATH}" "${TMPDIR}/${PACKAGE_TOP_DIR}bin/${OUTPUT_BASENAME}" 0755
 
 
 # Generate tar file
 cd "${TOP}"
-rm -f dist/SUN/${PLATFORM}/package/profilersimpletests.tar
+rm -f dist/SUN-x86-64/${CND_PLATFORM}/package/dlightsimpletests.tar
 cd ${TMPDIR}
-tar -vcf ../../../../dist/SUN/${PLATFORM}/package/profilersimpletests.tar *
+tar -vcf ../../../../dist/SUN-x86-64/${CND_PLATFORM}/package/dlightsimpletests.tar *
 checkReturnCode
 
 # Cleanup

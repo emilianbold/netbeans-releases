@@ -123,7 +123,8 @@ public final class EditorContextDispatcher {
         }
         return context;
     }
-    
+
+    private final EditorLookupListener editorLookupListener;
     
     private final RequestProcessor refreshProcessor;
     private final Lookup.Result<FileObject> resFileObject;
@@ -151,9 +152,12 @@ public final class EditorContextDispatcher {
         
         resFileObject = Utilities.actionsGlobalContext().lookupResult(FileObject.class);
         resFileObject.addLookupListener(new EditorLookupListener(FileObject.class));
+        resFileObject.allItems();
         
         resEditorCookie = Utilities.actionsGlobalContext().lookupResult(EditorCookie.class);
-        resEditorCookie.addLookupListener(new EditorLookupListener(EditorCookie.class));
+        editorLookupListener = new EditorLookupListener(EditorCookie.class);
+        resEditorCookie.addLookupListener(editorLookupListener);
+        resEditorCookie.allItems();
 
         tcListener = new EditorLookupListener(TopComponent.class);
         TopComponent.getRegistry ().addPropertyChangeListener (WeakListeners.propertyChange(

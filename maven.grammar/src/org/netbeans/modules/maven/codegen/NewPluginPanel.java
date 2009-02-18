@@ -418,6 +418,7 @@ public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener
             btv = new BeanTreeView();
             btv.setRootVisible(false);
             btv.setDefaultActionAllowed(false);
+            btv.setUseSubstringInQuickSearch(true);
             manager = new ExplorerManager();
             manager.setRootContext(getNoResultsRoot());
             setLayout(new BorderLayout());

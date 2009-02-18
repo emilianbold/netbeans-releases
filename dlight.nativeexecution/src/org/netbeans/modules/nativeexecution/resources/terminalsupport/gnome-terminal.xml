@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
     </searchpaths>
     <command stringvalue="gnome-terminal"/>
     <arguments>
-        <arg>--hide-menu</arg>
+        <arg>--hide-menubar</arg>
         <arg>--disable-factory</arg>
         <arg>--title=$title</arg>
         <arg>--execute</arg>

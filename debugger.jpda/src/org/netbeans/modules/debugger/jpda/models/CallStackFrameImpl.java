@@ -579,6 +579,10 @@ public class CallStackFrameImpl implements CallStackFrame {
     public void makeCurrent () {
         debugger.setCurrentCallStackFrame (this);
     }
+
+    public boolean isCurrent() {
+        return this.equals(debugger.getCurrentCallStackFrameOrNull());
+    }
     
     /**
      * Returns <code>true</code> if the method in this frame is obsoleted.

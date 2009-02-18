@@ -50,7 +50,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 
 /**
  * Method, which contains it's body right at throws POD (point of declaration)
@@ -60,12 +59,11 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
 
     private final CsmCompoundStatement body;
     
-    public MethodDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
-        super(ast, cls, visibility, false);
+    public MethodDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register, boolean global) throws AstRendererException {
+        super(ast, cls, visibility, false, global);
         body = AstRenderer.findCompoundStatement(ast, getContainingFile(), this);
         boolean assertionCondition = body != null;
         if (!assertionCondition) {
-            RepositoryUtils.hang(this);
             throw new AstRendererException((FileImpl)getContainingFile(), getStartOffset(),
                     "Null body in function definition."); // NOI18N
             //assert body != null : "null body in function definition, line " + getStartPosition().getLine() + ":" + getContainingFile().getAbsolutePath();

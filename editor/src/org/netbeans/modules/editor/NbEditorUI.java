@@ -80,13 +80,16 @@ import javax.swing.border.Border;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.editor.StatusBar;
 import org.netbeans.modules.editor.impl.CustomizableSideBar;
 import org.netbeans.modules.editor.impl.CustomizableSideBar.SideBarPosition;
 import org.netbeans.modules.editor.impl.SearchBar;
+import org.netbeans.modules.editor.impl.StatusLineFactories;
 import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
+import org.openide.windows.WindowManager;
 
 /**
 * Editor UI
@@ -113,26 +116,40 @@ public class NbEditorUI extends EditorUI {
 
     public NbEditorUI() {
         focusL = new FocusAdapter() {
-                     public @Override void focusGained(FocusEvent evt) {
-                         // Refresh file object when component made active
-                         Document doc = getDocument();
-                         if (doc != null) {
-                             DataObject dob = NbEditorUtilities.getDataObject(doc);
-                             if (dob != null) {
-                                 final FileObject fo = dob.getPrimaryFile();
-                                 if (fo != null) {
-                                     // Fixed #48151 - posting the refresh outside of AWT thread
-                                     RequestProcessor.getDefault().post(new Runnable() {
-                                         public void run() {
-                                             fo.refresh();
-                                         }
-                                     });
-                                 }
-                             }
-                         }
-                     }
-                 };
+            public @Override void focusGained(FocusEvent evt) {
+                // Refresh file object when component made active
+                Document doc = getDocument();
+                if (doc != null) {
+                    DataObject dob = NbEditorUtilities.getDataObject(doc);
+                    if (dob != null) {
+                        final FileObject fo = dob.getPrimaryFile();
+                        if (fo != null) {
+                            // Fixed #48151 - posting the refresh outside of AWT thread
+                            RequestProcessor.getDefault().post(new Runnable() {
+                                public void run() {
+                                    fo.refresh();
+                                }
+                            });
+                        }
+                    }
+                }
 
+                // Check if editor is docked and if so then use global status bar.
+                JTextComponent component = getComponent();
+                // Check if component is inside main window
+                boolean underMainWindow = (SwingUtilities.isDescendingFrom(component,
+                WindowManager.getDefault().getMainWindow()));
+                getStatusBar().setVisible(!underMainWindow); // Note: no longer checking the preferences settting
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                // Clear global panel
+                StatusLineFactories.clearStatusLine();
+            }
+
+
+        };
     }
     
     

@@ -78,7 +78,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         public class TabServerTypeActionListener extends ServerTypeActionListener{
             public void actionPerformed(ActionEvent e) {
                 super.actionPerformed(e);
-                isValid();
+                hasValidData();
             }
         }
     }
@@ -246,7 +246,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
      *
      * @return true if the path is the valid domain root, false otherwise
      */
-    public boolean isValid() {
+    public boolean hasValidData() {
         
         // if the server instance is local, then check the profile root
         // directory for validity
@@ -560,7 +560,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
                 //portField.setEditable(true);
             }
             
-            isValid();
+            hasValidData();
         }
     }
     /**

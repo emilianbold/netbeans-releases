@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.api.compilers;
 
 import java.util.regex.Matcher;
@@ -48,13 +47,14 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolchainDescriptor;
 
-
 /**
  *
  * @author Alexander Simon
  */
 public class ReadRegistryTestCase extends NbTestCase {
-    
+
+    private static final boolean TRACE = false;
+
     public ReadRegistryTestCase(String testName) {
         super(testName);
     }
@@ -75,20 +75,26 @@ public class ReadRegistryTestCase extends NbTestCase {
         assertTrue("Cygwin".equals(d.getName()));
         String base = d.getBaseFolderPattern();
         assertNotNull(base);
-        System.out.println("Search for ["+base+"]");
+        if (TRACE) {
+            System.out.println("Search for [" + base + "]");
+        }
         Pattern p = Pattern.compile(base);
         String result = null;
-        for(String line : getCygwinRegestry().split("\n")){
-           Matcher m = p.matcher(line);
-           if (m.find() && m.groupCount()==1){
-               result = m.group(1).trim();
-               System.out.println("Found ["+result+"]");
-           }
+        for (String line : getCygwinRegestry().split("\n")) {
+            Matcher m = p.matcher(line);
+            if (m.find() && m.groupCount() == 1) {
+                result = m.group(1).trim();
+                if (TRACE) {
+                    System.out.println("Found [" + result + "]");
+                }
+            }
         }
         assertNotNull(result);
-        result += "\\"+d.getBaseFolderSuffix();
+        result += "\\" + d.getBaseFolderSuffix();
         assertTrue("D:\\cygwin\\bin".equals(result));
-        System.out.println("Compiler path ["+result+"]");
+        if (TRACE) {
+            System.out.println("Compiler path [" + result + "]");
+        }
         p = Pattern.compile(d.getBaseFolderPathPattern(), Pattern.CASE_INSENSITIVE);
         assertTrue(p.matcher(result).find());
     }
@@ -99,39 +105,51 @@ public class ReadRegistryTestCase extends NbTestCase {
         assertTrue("MinGW".equals(d.getName()));
         String base = d.getBaseFolderPattern();
         assertNotNull(base);
-        System.out.println("Search for ["+base+"]");
+        if (TRACE) {
+            System.out.println("Search for [" + base + "]");
+        }
         Pattern p = Pattern.compile(base);
         String result = null;
-        for(String line : getMingwRegestry().split("\n")){
-           Matcher m = p.matcher(line);
-           if (m.find() && m.groupCount()==1){
-               result = m.group(1).trim();
-               System.out.println("Found ["+result+"]");
-           }
+        for (String line : getMingwRegestry().split("\n")) {
+            Matcher m = p.matcher(line);
+            if (m.find() && m.groupCount() == 1) {
+                result = m.group(1).trim();
+                if (TRACE) {
+                    System.out.println("Found [" + result + "]");
+                }
+            }
         }
         assertNotNull(result);
-        result += "\\"+d.getBaseFolderSuffix();
+        result += "\\" + d.getBaseFolderSuffix();
         assertTrue("d:\\MinGW\\bin".equals(result));
-        System.out.println("Compiler path ["+result+"]");
+        if (TRACE) {
+            System.out.println("Compiler path [" + result + "]");
+        }
         p = Pattern.compile(d.getBaseFolderPathPattern(), Pattern.CASE_INSENSITIVE);
         assertTrue(p.matcher(result).find());
-        
+
         String command = d.getCommandFolderPattern();
         assertNotNull(command);
-        System.out.println("Search for ["+command+"]");
+        if (TRACE) {
+            System.out.println("Search for [" + command + "]");
+        }
         p = Pattern.compile(command);
         result = null;
-        for(String line : getMsysRegestry().split("\n")){
-           Matcher m = p.matcher(line);
-           if (m.find() && m.groupCount()==1){
-               result = m.group(1).trim();
-               System.out.println("Found ["+result+"]");
-           }
+        for (String line : getMsysRegestry().split("\n")) {
+            Matcher m = p.matcher(line);
+            if (m.find() && m.groupCount() == 1) {
+                result = m.group(1).trim();
+                if (TRACE) {
+                    System.out.println("Found [" + result + "]");
+                }
+            }
         }
         assertNotNull(result);
-        result += "\\"+d.getCommandFolderSuffix();
+        result += "\\" + d.getCommandFolderSuffix();
         assertTrue("d:\\msys\\1.0\\bin".equals(result));
-        System.out.println("Command path ["+result+"]");
+        if (TRACE) {
+            System.out.println("Command path [" + result + "]");
+        }
         p = Pattern.compile(d.getCommandFolderPathPattern(), Pattern.CASE_INSENSITIVE);
         assertTrue(p.matcher(result).find());
     }
@@ -160,22 +178,21 @@ public class ReadRegistryTestCase extends NbTestCase {
 //        p = Pattern.compile(d.getBaseFolderPathPattern(), Pattern.CASE_INSENSITIVE);
 //        assertTrue(p.matcher(result).find());
 //    }
-
     public void testGNU() throws Exception {
         String[] DEVELOPMENT_MODE_OPTIONS = {
-        "",  // Fast Build // NOI18N
-        "-g", // Debug" // NOI18N
-        "-g -O", // Performance Debug" // NOI18N
-        "-g", // Test Coverage // NOI18N
-        "-g -O2", // Dianosable Release // NOI18N
-        "-O2", // Release // NOI18N
-        "-O3", // Performance Release // NOI18N
+            "", // Fast Build // NOI18N
+            "-g", // Debug" // NOI18N
+            "-g -O", // Performance Debug" // NOI18N
+            "-g", // Test Coverage // NOI18N
+            "-g -O2", // Dianosable Release // NOI18N
+            "-O2", // Release // NOI18N
+            "-O3", // Performance Release // NOI18N
         };
         String[] WARNING_LEVEL_OPTIONS = {
-        "-w", // No Warnings // NOI18N
-        "", // Default // NOI18N
-        "-Wall", // More Warnings // NOI18N
-        "-Werror", // Convert Warnings to Errors // NOI18N
+            "-w", // No Warnings // NOI18N
+            "", // Default // NOI18N
+            "-Wall", // More Warnings // NOI18N
+            "-Werror", // Convert Warnings to Errors // NOI18N
         };
         ToolchainDescriptor d = ToolchainManager.getInstance().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
         assertNotNull(d);
@@ -193,39 +210,39 @@ public class ReadRegistryTestCase extends NbTestCase {
         assertTrue(checkArrays(DEVELOPMENT_MODE_OPTIONS, c.getDevelopmentModeFlags()));
         assertTrue(checkArrays(WARNING_LEVEL_OPTIONS, c.getWarningLevelFlags()));
     }
-    
+
     public void testSunStudioC() throws Exception {
         String[] DEVELOPMENT_MODE_OPTIONS = {
-        "",  // Fast Build // NOI18N
-        "-g", // Debug" // NOI18N
-        "-g -xO3 -xhwcprof", // Performance Debug" // NOI18N
-        "-xprofile=tcov -xinline=", // Test Coverage // NOI18N
-        "-g -xO2", // Dianosable Release // NOI18N
-        "-fast", // Release // NOI18N
-        "-xO5 -xipo=1 -xdepend -fsimple=1 -xlibmil -xlibmopt -xvector -xbuiltin", // Performance Release // NOI18N
+            "", // Fast Build // NOI18N
+            "-g", // Debug" // NOI18N
+            "-g -xO3 -xhwcprof", // Performance Debug" // NOI18N
+            "-xprofile=tcov -xinline=", // Test Coverage // NOI18N
+            "-g -xO2", // Dianosable Release // NOI18N
+            "-fast", // Release // NOI18N
+            "-xO5 -xipo=1 -xdepend -fsimple=1 -xlibmil -xlibmopt -xvector -xbuiltin", // Performance Release // NOI18N
         };
         String[] WARNING_LEVEL_OPTIONS = {
-        "-w", // No Warnings // NOI18N
-        "", // Default // NOI18N
-        "+w", // More Warnings // NOI18N
-        "-errwarn=%all", // Convert Warnings to Errors // NOI18N
+            "-w", // No Warnings // NOI18N
+            "", // Default // NOI18N
+            "+w", // More Warnings // NOI18N
+            "-errwarn=%all", // Convert Warnings to Errors // NOI18N
         };
         String[] MT_LEVEL_OPTIONS = {
-        "", // None // NOI18N
-        "-mt", // Safe // NOI18N
-        "-xautopar -xvector -xreduction -xloopinfo", // Automatic // NOI18N
-        "-xopenmp", // Open MP // NOI18N
+            "", // None // NOI18N
+            "-mt", // Safe // NOI18N
+            "-xautopar -xvector -xreduction -xloopinfo", // Automatic // NOI18N
+            "-xopenmp", // Open MP // NOI18N
         };
         String[] STANDARD_OPTIONS = {
-        "-xc99=none", // Old // NOI18N
-        "-xc99=none", // Legacy // NOI18N
-        "", // Default // NOI18N
-        "-xstrconst -xc99", // Modern // NOI18N
+            "-xc99=none", // Old // NOI18N
+            "-xc99=none", // Legacy // NOI18N
+            "", // Default // NOI18N
+            "-xstrconst -xc99", // Modern // NOI18N
         };
         String[] LANGUAGE_EXT_OPTIONS = {
-        "-Xc", // None // NOI18N
-        "", // Default // NOI18N
-        "", // All // NOI18N
+            "-Xc", // None // NOI18N
+            "", // Default // NOI18N
+            "", // All // NOI18N
         };
         ToolchainDescriptor d = ToolchainManager.getInstance().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
         assertNotNull(d);
@@ -238,46 +255,46 @@ public class ReadRegistryTestCase extends NbTestCase {
         assertTrue(checkArrays(STANDARD_OPTIONS, c.getStandardFlags()));
         assertTrue(checkArrays(LANGUAGE_EXT_OPTIONS, c.getLanguageExtensionFlags()));
     }
-    
+
     public void testSunStudioCpp() throws Exception {
         String[] DEVELOPMENT_MODE_OPTIONS = {
-        "",  // Fast Build // NOI18N
-        "-g", // Debug" // NOI18N
-        "-g0 -xO3 -xhwcprof", // Performance Debug" // NOI18N
-        "-xprofile=tcov +d -xinline=", // Test Coverage // NOI18N
-        "-g0 -xO2", // Dianosable Release // NOI18N
-        "-fast", // Release // NOI18N
-        "-xO5 -xipo=1 -xdepend -fsimple=1 -xlibmil -xlibmopt -xvector -xbuiltin -sync_stdio=no", // Performance Release // NOI18N
+            "", // Fast Build // NOI18N
+            "-g", // Debug" // NOI18N
+            "-g0 -xO3 -xhwcprof", // Performance Debug" // NOI18N
+            "-xprofile=tcov +d -xinline=", // Test Coverage // NOI18N
+            "-g0 -xO2", // Dianosable Release // NOI18N
+            "-fast", // Release // NOI18N
+            "-xO5 -xipo=1 -xdepend -fsimple=1 -xlibmil -xlibmopt -xvector -xbuiltin -sync_stdio=no", // Performance Release // NOI18N
         };
         String[] WARNING_LEVEL_OPTIONS = {
-        "-w", // No Warnings // NOI18N
-        "", // Default // NOI18N
-        "+w", // More Warnings // NOI18N
-        "-xwe", // Convert Warnings to Errors // NOI18N
+            "-w", // No Warnings // NOI18N
+            "", // Default // NOI18N
+            "+w", // More Warnings // NOI18N
+            "-xwe", // Convert Warnings to Errors // NOI18N
         };
         String[] LIBRARY_LEVEL_OPTIONS = {
-        "-library=no%Cstd,no%Crun -filt=no%stdlib", // NOI18N
-        "-library=no%Cstd -filt=no%stdlib", // NOI18N
-        "-library=iostream,no%Cstd -filt=no%stdlib", // NOI18N
-        "", // NOI18N
-        "-library=stlport4,no%Cstd", // NOI18N
+            "-library=no%Cstd,no%Crun -filt=no%stdlib", // NOI18N
+            "-library=no%Cstd -filt=no%stdlib", // NOI18N
+            "-library=iostream,no%Cstd -filt=no%stdlib", // NOI18N
+            "", // NOI18N
+            "-library=stlport4,no%Cstd", // NOI18N
         };
         String[] MT_LEVEL_OPTIONS = {
-        "", // None // NOI18N
-        "-mt", // Safe // NOI18N
-        "-xautopar -xvector -xreduction -xloopinfo", // Automatic // NOI18N
-        "-xopenmp", // Open MP // NOI18N
+            "", // None // NOI18N
+            "-mt", // Safe // NOI18N
+            "-xautopar -xvector -xreduction -xloopinfo", // Automatic // NOI18N
+            "-xopenmp", // Open MP // NOI18N
         };
         String[] STANDARD_OPTIONS = {
-        "-compat", // Old // NOI18N
-        "-features=no%localfor,no%extinl,no%conststrings", // Legacy // NOI18N
-        "", // Default // NOI18N
-        "-features=no%anachronisms,no%transitions,tmplife", // Modern // NOI18N
+            "-compat", // Old // NOI18N
+            "-features=no%localfor,no%extinl,no%conststrings", // Legacy // NOI18N
+            "", // Default // NOI18N
+            "-features=no%anachronisms,no%transitions,tmplife", // Modern // NOI18N
         };
         String[] LANGUAGE_EXT_OPTIONS = {
-        "-features=no%longlong", // None // NOI18N
-        "", // Default // NOI18N
-        "-features=extensions,tmplrefstatic,iddollar", // All // NOI18N
+            "-features=no%longlong", // None // NOI18N
+            "", // Default // NOI18N
+            "-features=extensions,tmplrefstatic,iddollar", // All // NOI18N
         };
         ToolchainDescriptor d = ToolchainManager.getInstance().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
         assertNotNull(d);
@@ -293,19 +310,19 @@ public class ReadRegistryTestCase extends NbTestCase {
 
     public void testSunStudioFortran() throws Exception {
         String[] DEVELOPMENT_MODE_OPTIONS = {
-        "",  // Fast Build // NOI18N
-        "-g", // Debug" // NOI18N
-        "-g -O", // Performance Debug" // NOI18N
-        "-g", // Test Coverage // NOI18N
-        "-g -O2", // Dianosable Release // NOI18N
-        "-fast", // Release // NOI18N
-        "-O4", // Performance Release // NOI18N
+            "", // Fast Build // NOI18N
+            "-g", // Debug" // NOI18N
+            "-g -O", // Performance Debug" // NOI18N
+            "-g", // Test Coverage // NOI18N
+            "-g -O2", // Dianosable Release // NOI18N
+            "-fast", // Release // NOI18N
+            "-O4", // Performance Release // NOI18N
         };
         String[] WARNING_LEVEL_OPTIONS = {
-        "-w", // No Warnings // NOI18N
-        "-w1", // Default // NOI18N
-        "-w2", // More Warnings // NOI18N
-        "-errwarn", // Convert Warnings to Errors // NOI18N
+            "-w", // No Warnings // NOI18N
+            "-w1", // Default // NOI18N
+            "-w2", // More Warnings // NOI18N
+            "-errwarn", // Convert Warnings to Errors // NOI18N
         };
         ToolchainDescriptor d = ToolchainManager.getInstance().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
         assertNotNull(d);
@@ -369,50 +386,50 @@ public class ReadRegistryTestCase extends NbTestCase {
         assertTrue("Unknown".equals(f.toString()));
         assertTrue(f.isGnuCompiler());
     }
-    
+
     public void testVersionPattern() throws Exception {
-        String output = 
-            "Intel(R) C++ Compiler for applications running on IA-32, Version 10.1    Build 20080312 Package ID: w_cc_p_10.1.021\n"+
-            "Copyright (C) 1985-2008 Intel Corporation.  All rights reserved.\n"+
-            "30 DAY EVALUATION LICENSE\n"+
-            "\n"+
-            "icl: NOTE: The evaluation period for this product ends on 9-aug-2008 UTC.\n"+
-            "icl: command line error: no files specified; for help type \"icl /help\"\n";
+        String output =
+                "Intel(R) C++ Compiler for applications running on IA-32, Version 10.1    Build 20080312 Package ID: w_cc_p_10.1.021\n" +
+                "Copyright (C) 1985-2008 Intel Corporation.  All rights reserved.\n" +
+                "30 DAY EVALUATION LICENSE\n" +
+                "\n" +
+                "icl: NOTE: The evaluation period for this product ends on 9-aug-2008 UTC.\n" +
+                "icl: command line error: no files specified; for help type \"icl /help\"\n";
         Pattern pattern = Pattern.compile(".*Intel\\(R\\) C\\+\\+ Compiler");
         assertTrue(pattern.matcher(output).find());
     }
 
     public void testIntelErrorPattern() throws Exception {
-        String output = 
-            "icpc    -c -g -o build/Debug/Intel-Linux-x86/main.o main.cc\n"+
-            "/usr/include/c++/4.1.3/backward/backward_warning.h(32): warning #1224: #warning directive: This file includes at least one deprecated or antiquated header. Please consider using one of the 32 headers found in section 17.4.1.2 of the C++ standard. Examples include substituting the <X> header for the <X.h> header for C++ includes, or <iostream> instead of the deprecated header <iostream.h>. To disable this warning use -Wno-deprecated.\n"+
-            " #warning This file includes at least one deprecated or antiquated header. \\\n"+
-            "  ^\n"+
-            "\n"+
-            "main.cc(56): error: identifier \"lll\" is undefined\n"+
-            "     lll\n"+
-            "     ^\n"+
-            "\n"+
-            "main.cc(58): error: expected a \";\"\n"+
-            "     if (argc > 1) {\n"+
-            "     ^\n"+
-            "\n"+
-            "main.cc(65): warning #12: parsing restarts here after previous syntax error\n"+
-            "     return 0;\n"+
-            "             ^\n"+
-            "\n"+
-            "compilation aborted for main.cc (code 2)\n"+
-            "make[1]: *** [build/Debug/Intel-Linux-x86/main.o] Error 2\n"+
-            "make[1]: Leaving directory `/set/ide/mars/NetBeansProjects/HelloApp_2/helloapp'\n"+
-            "make: *** [.build-impl] Error 2\n"+
-            "\n"+
-            "Build failed. Exit value 2.\n";
+        String output =
+                "icpc    -c -g -o build/Debug/Intel-Linux-x86/main.o main.cc\n" +
+                "/usr/include/c++/4.1.3/backward/backward_warning.h(32): warning #1224: #warning directive: This file includes at least one deprecated or antiquated header. Please consider using one of the 32 headers found in section 17.4.1.2 of the C++ standard. Examples include substituting the <X> header for the <X.h> header for C++ includes, or <iostream> instead of the deprecated header <iostream.h>. To disable this warning use -Wno-deprecated.\n" +
+                " #warning This file includes at least one deprecated or antiquated header. \\\n" +
+                "  ^\n" +
+                "\n" +
+                "main.cc(56): error: identifier \"lll\" is undefined\n" +
+                "     lll\n" +
+                "     ^\n" +
+                "\n" +
+                "main.cc(58): error: expected a \";\"\n" +
+                "     if (argc > 1) {\n" +
+                "     ^\n" +
+                "\n" +
+                "main.cc(65): warning #12: parsing restarts here after previous syntax error\n" +
+                "     return 0;\n" +
+                "             ^\n" +
+                "\n" +
+                "compilation aborted for main.cc (code 2)\n" +
+                "make[1]: *** [build/Debug/Intel-Linux-x86/main.o] Error 2\n" +
+                "make[1]: Leaving directory `/set/ide/mars/NetBeansProjects/HelloApp_2/helloapp'\n" +
+                "make: *** [.build-impl] Error 2\n" +
+                "\n" +
+                "Build failed. Exit value 2.\n";
         Pattern pattern1 = Pattern.compile("([a-zA-Z]:[^:\n]*|[^:\n]*):([^:\n]*):([^:\n]*):([^\n]*)");
         Pattern pattern2 = Pattern.compile("([^:\n]*):([0-9]+): ([a-zA-Z]*):*.*");
         Pattern pattern3 = Pattern.compile("([^\\(\n]*)\\(([0-9]+)\\): ([^:\n]*): ([^\n]*)");
         String golden = "/usr/include/c++/4.1.3/backward/backward_warning.h(32);main.cc(56);main.cc(58);main.cc(65);";
         StringBuilder buf = new StringBuilder();
-        for(String s :output.split("\n")){
+        for (String s : output.split("\n")) {
             buf.append(getFile(pattern1, "1", s));
             buf.append(getFile(pattern2, "2", s));
             buf.append(getFile(pattern3, "3", s));
@@ -426,108 +443,117 @@ public class ReadRegistryTestCase extends NbTestCase {
             int i = 0;
             try {
                 i = Integer.valueOf(m.group(2));
-            }  catch (NumberFormatException e) {
-               return "";
+            } catch (NumberFormatException e) {
+                return "";
             }
-            System.out.println("String "+s);
-            System.out.println("Pattern "+prefix);
-            System.out.println("\tFile "+m.group(1)+"\n\tLine "+i+"\n\tSeverity "+m.group(3)+"\n\tMessage "+m.group(4));
-            return m.group(1)+"("+i+");";
+            if (TRACE) {
+                System.out.println("String " + s);
+            }
+            if (TRACE) {
+                System.out.println("Pattern " + prefix);
+            }
+            if (TRACE) {
+                System.out.println("\tFile " + m.group(1) + "\n\tLine " + i + "\n\tSeverity " + m.group(3) + "\n\tMessage " + m.group(4));
+            }
+            return m.group(1) + "(" + i + ");";
         }
         return "";
     }
 
-    
-    private boolean checkArrays(String[] g, String[] f){
+    private boolean checkArrays(String[] g, String[] f) {
         if (g.length != f.length) {
-            System.out.println("Expected length "+g.length+" found "+f.length);
+            if (TRACE) {
+                System.out.println("Expected length " + g.length + " found " + f.length);
+            }
             return false;
         }
-        for(int i = 0 ; i < g.length; i++){
+        for (int i = 0; i < g.length; i++) {
             if (!g[i].equals(f[i])) {
-                System.out.println("Expected flag["+i+"]:\n\t["+g[i]+"]\nfound\t["+f[i]+"]");
+                if (TRACE) {
+                    System.out.println("Expected flag[" + i + "]:\n\t[" + g[i] + "]\nfound\t[" + f[i] + "]");
+                }
                 return false;
             }
         }
         return true;
     }
-    
-    private String getMsysRegestry(){
-        return "\n"+
-               "! REG.EXE VERSION 3.0\n"+
-               "\n"+
-               "HKEY_LOCAL_MACHINE\\software\\microsoft\\windows\\currentversion\\uninstall\\msys-1.0_is1\n"+
-               "   Inno Setup: Setup Version   REG_SZ  2.0.19\n"+
-               "   Inno Setup: App Path        REG_SZ  d:\\msys\\1.0\n"+
-               "   Inno Setup: Icon Group      REG_SZ  MinGW\n"+
-               "   Inno Setup: User    REG_SZ  Alex\n"+
-               "   Inno Setup: Setup Type      REG_SZ  i386\n"+
-               "   Inno Setup: Selected Components     REG_SZ  i386\n"+
-               "   Inno Setup: Deselected Components   REG_SZ\n"+
-               "   DisplayName REG_SZ  \"Minimal SYStem 1.0.10\"\n"+
-               "   UninstallString     REG_SZ  d:\\msys\\1.0\\uninstall\\unins000.exe\n"+
-               "   DisplayVersion      REG_SZ  1.0.10\n"+
-               "   Publisher   REG_SZ  MinGW\n"+
-               "   URLInfoAbout        REG_SZ  http://www.mingw.org/\n"+
-               "   HelpLink    REG_SZ  mailto:mingw-msys@lists.sf.net\n"+
-               "   URLUpdateInfo       REG_SZ  http://sf.net/projects/mingw/\n"+
-               "\n";
-        
-    }
-    private String getMingwRegestry(){
-        return "\n"+
-               "! REG.EXE VERSION 3.0\n"+
-               "\n"+
-               "HKEY_LOCAL_MACHINE\\software\\microsoft\\windows\\currentversion\\uninstall\\MinGW\n"+
-               "   NSIS:StartMenuDir   REG_SZ  MinGW\n"+
-               "   DisplayName REG_SZ  MinGW 5.1.3\n"+
-               "   UninstallString     REG_SZ  d:\\MinGW\\uninst.exe\n"+
-               "   InstallLocation     REG_SZ  d:\\MinGW\n"+
-               "   DisplayVersion      REG_SZ  5.1.3\n"+
-               "   URLInfoAbout        REG_SZ  http://www.mingw.org\n"+
-               "   Publisher   REG_SZ  MinGW\n"+
-               "\n";
+
+    private String getMsysRegestry() {
+        return "\n" +
+                "! REG.EXE VERSION 3.0\n" +
+                "\n" +
+                "HKEY_LOCAL_MACHINE\\software\\microsoft\\windows\\currentversion\\uninstall\\msys-1.0_is1\n" +
+                "   Inno Setup: Setup Version   REG_SZ  2.0.19\n" +
+                "   Inno Setup: App Path        REG_SZ  d:\\msys\\1.0\n" +
+                "   Inno Setup: Icon Group      REG_SZ  MinGW\n" +
+                "   Inno Setup: User    REG_SZ  Alex\n" +
+                "   Inno Setup: Setup Type      REG_SZ  i386\n" +
+                "   Inno Setup: Selected Components     REG_SZ  i386\n" +
+                "   Inno Setup: Deselected Components   REG_SZ\n" +
+                "   DisplayName REG_SZ  \"Minimal SYStem 1.0.10\"\n" +
+                "   UninstallString     REG_SZ  d:\\msys\\1.0\\uninstall\\unins000.exe\n" +
+                "   DisplayVersion      REG_SZ  1.0.10\n" +
+                "   Publisher   REG_SZ  MinGW\n" +
+                "   URLInfoAbout        REG_SZ  http://www.mingw.org/\n" +
+                "   HelpLink    REG_SZ  mailto:mingw-msys@lists.sf.net\n" +
+                "   URLUpdateInfo       REG_SZ  http://sf.net/projects/mingw/\n" +
+                "\n";
+
     }
 
-    private String getCygwinRegestry(){
-        return "\n"+
-               "! REG.EXE VERSION 3.0\n"+
-               "\n"+
-               "HKEY_LOCAL_MACHINE\\software\\cygnus solutions\\cygwin\\mounts v2\\/\n"+
-               "   native      REG_SZ  D:\\cygwin\n"+
-               "   flags       REG_DWORD       0xa\n"+
-               "\n";
+    private String getMingwRegestry() {
+        return "\n" +
+                "! REG.EXE VERSION 3.0\n" +
+                "\n" +
+                "HKEY_LOCAL_MACHINE\\software\\microsoft\\windows\\currentversion\\uninstall\\MinGW\n" +
+                "   NSIS:StartMenuDir   REG_SZ  MinGW\n" +
+                "   DisplayName REG_SZ  MinGW 5.1.3\n" +
+                "   UninstallString     REG_SZ  d:\\MinGW\\uninst.exe\n" +
+                "   InstallLocation     REG_SZ  d:\\MinGW\n" +
+                "   DisplayVersion      REG_SZ  5.1.3\n" +
+                "   URLInfoAbout        REG_SZ  http://www.mingw.org\n" +
+                "   Publisher   REG_SZ  MinGW\n" +
+                "\n";
     }
 
-    private String getIntelRegestry(){
-        return "\n"+
+    private String getCygwinRegestry() {
+        return "\n" +
+                "! REG.EXE VERSION 3.0\n" +
+                "\n" +
+                "HKEY_LOCAL_MACHINE\\software\\cygnus solutions\\cygwin\\mounts v2\\/\n" +
+                "   native      REG_SZ  D:\\cygwin\n" +
+                "   flags       REG_DWORD       0xa\n" +
+                "\n";
+    }
 
-               "! REG.EXE VERSION 3.0\n"+
-               "\n"+
-               "HKEY_LOCAL_MACHINE\\software\\INTEL\\Compilers\\C++\n"+
-               "\n"+
-               "HKEY_LOCAL_MACHINE\\software\\INTEL\\Compilers\\C++\\101.021\n"+
-               "   Revision    REG_DWORD       0x15\n"+
-               "   Major Version       REG_DWORD       0xa\n"+
-               "   Minor Version       REG_DWORD       0x1\n"+
-               "\n"+
-               "HKEY_LOCAL_MACHINE\\software\\INTEL\\Compilers\\C++\\101.021\\IA32\n"+
-               "   ProductDir  REG_SZ  C:\\Program Files\\Intel\\Compiler\\C++\\10.1.021\\IA32\n"+
-               "   BinDir      REG_SZ  $(ICInstallDir)Bin;C:\\Program Files\\Common Files\\Intel\\Shared Files\\Ia32\\Bin\n"+
-               "   IncludeDir  REG_SZ  $(ICInstallDir)Include\n"+
-               "   LibDir      REG_SZ  $(ICInstallDir)Lib\n"+
-               "   TargetPlatform      REG_SZ  Win32\n"+
-               "   DocumentationDir    REG_SZ  C:\\Program Files\\Intel\\Compiler\\C++\\10.1.021\\Docs\n"+
-               "   CompilerInfo        REG_SZ\n"+
-               "\n"+
-               "HKEY_LOCAL_MACHINE\\software\\INTEL\\Compilers\\C++\\101.021\\IA32\\VSNet2003\n"+
-               "   DefaultOptions      REG_SZ  /Qvc7.1 /Qlocation,link,\"$(VCInstallDir)bin\"\n"+
-               "\n"+
-               "HKEY_LOCAL_MACHINE\\software\\INTEL\\Compilers\\C++\\101.021\\IA32\\VSNet2005\n"+
-               "   DefaultOptions      REG_SZ  /Qvc8 /Qlocation,link,\"$(VCInstallDir)bin\"\n"+
-               "\n"+
-               "HKEY_LOCAL_MACHINE\\software\\INTEL\\Compilers\\C++\\101.021\\IA32\\VSNet2008\n"+
-               "   DefaultOptions      REG_SZ  /Qvc9 /Qlocation,link,\"$(VCInstallDir)bin\"\n"+
-               "\n";
+    private String getIntelRegestry() {
+        return "\n" +
+                "! REG.EXE VERSION 3.0\n" +
+                "\n" +
+                "HKEY_LOCAL_MACHINE\\software\\INTEL\\Compilers\\C++\n" +
+                "\n" +
+                "HKEY_LOCAL_MACHINE\\software\\INTEL\\Compilers\\C++\\101.021\n" +
+                "   Revision    REG_DWORD       0x15\n" +
+                "   Major Version       REG_DWORD       0xa\n" +
+                "   Minor Version       REG_DWORD       0x1\n" +
+                "\n" +
+                "HKEY_LOCAL_MACHINE\\software\\INTEL\\Compilers\\C++\\101.021\\IA32\n" +
+                "   ProductDir  REG_SZ  C:\\Program Files\\Intel\\Compiler\\C++\\10.1.021\\IA32\n" +
+                "   BinDir      REG_SZ  $(ICInstallDir)Bin;C:\\Program Files\\Common Files\\Intel\\Shared Files\\Ia32\\Bin\n" +
+                "   IncludeDir  REG_SZ  $(ICInstallDir)Include\n" +
+                "   LibDir      REG_SZ  $(ICInstallDir)Lib\n" +
+                "   TargetPlatform      REG_SZ  Win32\n" +
+                "   DocumentationDir    REG_SZ  C:\\Program Files\\Intel\\Compiler\\C++\\10.1.021\\Docs\n" +
+                "   CompilerInfo        REG_SZ\n" +
+                "\n" +
+                "HKEY_LOCAL_MACHINE\\software\\INTEL\\Compilers\\C++\\101.021\\IA32\\VSNet2003\n" +
+                "   DefaultOptions      REG_SZ  /Qvc7.1 /Qlocation,link,\"$(VCInstallDir)bin\"\n" +
+                "\n" +
+                "HKEY_LOCAL_MACHINE\\software\\INTEL\\Compilers\\C++\\101.021\\IA32\\VSNet2005\n" +
+                "   DefaultOptions      REG_SZ  /Qvc8 /Qlocation,link,\"$(VCInstallDir)bin\"\n" +
+                "\n" +
+                "HKEY_LOCAL_MACHINE\\software\\INTEL\\Compilers\\C++\\101.021\\IA32\\VSNet2008\n" +
+                "   DefaultOptions      REG_SZ  /Qvc9 /Qlocation,link,\"$(VCInstallDir)bin\"\n" +
+                "\n";
     }
 }

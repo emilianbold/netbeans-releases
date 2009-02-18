@@ -38,31 +38,33 @@
  */
 package org.netbeans.modules.dlight.api.support;
 
+import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
-import org.netbeans.modules.dlight.api.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.dlight.api.execution.SubstitutableTarget;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeProcess.Listener;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.util.ExternalTerminalProvider;
 import org.openide.util.RequestProcessor;
-import org.netbeans.modules.dlight.util.Util;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
+
 /**
  * Wrapper of {@link @org-netbeans-modules-nativexecution@org/netbeans/modules/nativexecution/api/NativeTask.html}
  *
  */
-public final class NativeExecutableTarget extends DLightTarget implements SubstitutableTarget, AttachableTarget, Listener {
+public final class NativeExecutableTarget extends DLightTarget implements SubstitutableTarget, AttachableTarget, ChangeListener {
 
     private static final Logger log =
             DLightLogger.getLogger(NativeExecutableTarget.class);
@@ -71,6 +73,9 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     private String cmd;
     private String templateCMD;
     private String[] args;
+    private Map<String, String> envs;
+    private String workingDirectory;
+    private ExternalTerminal externalTerminal;
     private String[] templateArgs;
     private String extendedCMD;
     private String[] extendedCMDArgs;
@@ -81,6 +86,10 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         super(new NativeExecutableTargetExecutionService());
         this.execEnv = configuration.getExecutionEvnitoment();
         this.cmd = configuration.getCmd();
+        this.workingDirectory = configuration.getWorkingDirectory();
+        this.envs = new HashMap<String, String>();
+        this.envs.putAll(configuration.getEnv());
+        this.externalTerminal = configuration.getExternalTerminal();
         this.templateCMD = this.cmd;
         this.args = configuration.getArgs();
         if (this.args != null) {
@@ -104,7 +113,15 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         return "Executable target: " + cmd; // NOI18N
     }
 
-    public void processStateChanged(NativeProcess process, NativeProcess.State oldState, NativeProcess.State newState) {
+    public void stateChanged(ChangeEvent e) {
+        final Object src = e.getSource();
+
+        if (!(src instanceof NativeProcess)) {
+            return;
+        }
+
+        final NativeProcess process = (NativeProcess) src;
+        final NativeProcess.State newState = process.getState();
         final DLightTarget.State prevState = state;
 
         switch (newState) {
@@ -163,21 +180,22 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     }
 
     private void start(ExecutionEnvVariablesProvider executionEnvProvider) {
+        ExecutionDescriptor descr = new ExecutionDescriptor();
+        descr = descr.controllable(true).frontWindow(true);
+        
         NativeProcessBuilder pb = new NativeProcessBuilder(execEnv, cmd);
         pb = pb.setArguments(args);
         pb = pb.addNativeProcessListener(NativeExecutableTarget.this);
-        if (executionEnvProvider != null && executionEnvProvider.getExecutionEnv() != null){
-            pb.addEnvironmentVariables(executionEnvProvider.getExecutionEnv());
+        pb = pb.setWorkingDirectory(workingDirectory);
+        pb = pb.addEnvironmentVariables(envs);
+        
+        if (externalTerminal != null) {
+            pb = pb.useExternalTerminal(externalTerminal);
+            descr = descr.inputVisible(false);
         }
-        ExecutionDescriptor descr = new ExecutionDescriptor();
-        descr = descr.controllable(true).frontWindow(true);
-
-        boolean useTerm = Util.getBoolean("dlight.use.terminal", true);
-
-        if (useTerm) {
-            pb = pb.useExternalTerminal(
-                    ExternalTerminalProvider.getTerminal("gnome-terminal"));
-            descr.inputVisible(false);
+        
+        if (executionEnvProvider != null && executionEnvProvider.getExecutionEnv() != null) {
+            pb = pb.addEnvironmentVariables(executionEnvProvider.getExecutionEnv());
         }
 
         final ExecutionService es = ExecutionService.newService(

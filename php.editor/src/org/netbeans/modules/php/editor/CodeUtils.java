@@ -141,8 +141,11 @@ public class CodeUtils {
         } else if (var.getName() instanceof Variable) {
             Variable name = (Variable) var.getName();
             return extractVariableName(name);
+        } else if (var.getName() instanceof MethodInvocation){
+            // no variable name
+            return null; 
         }
-        assert false : var.getClass().toString();
+        assert false : var.getName().getClass().toString();
         return null;
     }
 

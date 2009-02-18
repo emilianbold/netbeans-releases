@@ -43,8 +43,10 @@ package org.netbeans.modules.debugger.jpda.ui.actions;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -72,7 +74,49 @@ PropertyChangeListener {
     }
     
     protected abstract void checkEnabled (int debuggerState);
-    
+
+    private boolean canApplyLazyEnabled = false;
+
+    /**
+     * Call this from {@link #checkEnabled(int)} when the code needs to be run outside of AWT.
+     * Override {@link #checkEnabledLazyImpl(int)} method, which will be called
+     * in the provided RequestProcessor. The returned enabled status is set through
+     * {@link #setEnabledSingleAction(boolean)}.
+     * <p>
+     * Do not call {@link #setEnabled(java.lang.Object, boolean)} method! When
+     * you also need to set the status directly, use {@link #setEnabledSingleAction(boolean)},
+     * which correctly cooperates with the lazy code.
+     * 
+     * @param debuggerState
+     * @param rp
+     */
+    protected final void checkEnabledLazySingleAction(final int debuggerState, RequestProcessor rp) {
+        canApplyLazyEnabled = true;
+        rp.post(new Runnable() {
+            public void run() {
+                final boolean enabled = checkEnabledLazyImpl(debuggerState);
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        if (canApplyLazyEnabled) {
+                            setEnabledSingleAction(enabled);
+                            canApplyLazyEnabled = true; // In case there were several lazy invocations
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    /** Do not call setEnabled(), return the enabled state instead. */
+    protected boolean checkEnabledLazyImpl (int debuggerState) {
+        return false;
+    }
+
+    protected final void setEnabledSingleAction(boolean enabled) {
+        canApplyLazyEnabled = false;
+        setEnabled(getActions().iterator().next(), enabled);
+    }
+
     JPDADebugger getDebuggerImpl () {
         return debugger;
     }

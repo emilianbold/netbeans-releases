@@ -166,7 +166,7 @@ public final class PtyProcess extends java.lang.Process {
             // System.out.printf("No PID -- will try terminating\n");
             process.destroy();
         } else {
-            ProcessLibrary.INSTANCE.kill(pid, ProcessLibrary.SIGHUP);
+            CLibrary.INSTANCE.kill(pid, CLibrary.INSTANCE.SIGHUP());
         }
     }
 
@@ -188,7 +188,7 @@ public final class PtyProcess extends java.lang.Process {
             // System.out.printf("No PID -- will try terminating\n");
             process.destroy();
         } else {
-            ProcessLibrary.INSTANCE.kill(pid, ProcessLibrary.SIGTERM);
+            CLibrary.INSTANCE.kill(pid, CLibrary.INSTANCE.SIGTERM());
         }
     }
 

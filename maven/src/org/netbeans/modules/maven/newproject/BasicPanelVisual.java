@@ -119,6 +119,25 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
         } else {
 
         }
+
+        txtArtifactId.getAccessibleContext().setAccessibleDescription(
+                lblArtifactId.getAccessibleContext().getAccessibleName());
+        txtGroupId.getAccessibleContext().setAccessibleDescription(
+                lblGroupId.getAccessibleContext().getAccessibleName());
+        txtVersion.getAccessibleContext().setAccessibleDescription(
+                lblVersion.getAccessibleContext().getAccessibleName());
+        txtPackage.getAccessibleContext().setAccessibleDescription(
+                lblPackage.getAccessibleContext().getAccessibleName());
+        projectLocationTextField.getAccessibleContext().setAccessibleDescription(
+                projectLocationLabel.getAccessibleContext().getAccessibleName());
+        projectNameTextField.getAccessibleContext().setAccessibleDescription(
+                projectNameLabel.getAccessibleContext().getAccessibleName());
+        createdFolderTextField.getAccessibleContext().setAccessibleDescription(
+                createdFolderLabel.getAccessibleContext().getAccessibleName());
+        browseButton.getAccessibleContext().setAccessibleDescription(
+                browseButton.getAccessibleContext().getAccessibleName());
+        getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(BasicPanelVisual.class, "LBL_CreateProjectStep2"));
     }
     
     
@@ -209,7 +228,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
             pnlAdditionalsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(pnlAdditionalsLayout.createSequentialGroup()
                 .add(lblAdditionalProps)
-                .addContainerGap(423, Short.MAX_VALUE))
+                .addContainerGap(434, Short.MAX_VALUE))
             .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 468, Short.MAX_VALUE)
         );
         pnlAdditionalsLayout.setVerticalGroup(
@@ -245,13 +264,13 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
                     .add(projectNameLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
-                    .add(txtPackage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
-                    .add(txtVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
-                    .add(txtGroupId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
-                    .add(txtArtifactId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
+                    .add(txtPackage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
+                    .add(txtVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
+                    .add(txtGroupId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
+                    .add(txtArtifactId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(browseButton)
@@ -413,6 +432,9 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
                     NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Folder_exists"));
             return false;
         }
+        if (containsMultiByte(projName, wizardDescriptor)) {
+            return false;
+        }
 
         String coord = txtArtifactId.getText().trim();
         if (coord.length() == 0) {
@@ -421,6 +443,9 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
             return false;
         }
         if (!EAVisualPanel.validateCoordinate(coord, wizardDescriptor)) {
+            return false;
+        }
+        if (containsMultiByte(coord, wizardDescriptor)) {
             return false;
         }
 
@@ -433,6 +458,9 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
         if (!EAVisualPanel.validateCoordinate(coord, wizardDescriptor)) {
             return false;
         }
+        if (containsMultiByte(coord, wizardDescriptor)) {
+            return false;
+        }
 
         coord = txtVersion.getText().trim();
         if (coord.length() == 0) {
@@ -443,9 +471,24 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
         if (!EAVisualPanel.validateCoordinate(coord, wizardDescriptor)) {
             return false;
         }
+        if (containsMultiByte(coord, wizardDescriptor)) {
+            return false;
+        }
 
         wizardDescriptor.putProperty(ERROR_MSG, ""); //NOI18N
         return true;
+    }
+
+    private boolean containsMultiByte (String text, WizardDescriptor wd) {
+        char[] textChars = text.toCharArray();
+        for (int i = 0; i < textChars.length; i++) {
+            if ((int)textChars[i] > 255) {
+                wd.putProperty(ERROR_MSG, NbBundle.getMessage(BasicPanelVisual.class, "ERR_multibyte"));
+                return true;
+            }
+
+        }
+        return false;
     }
     
     void store(WizardDescriptor d) {

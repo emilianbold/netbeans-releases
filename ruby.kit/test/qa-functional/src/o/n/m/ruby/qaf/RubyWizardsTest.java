@@ -41,7 +41,7 @@ package o.n.m.ruby.qaf;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.modules.ruby.NewFileNameLocationStepOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;

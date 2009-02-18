@@ -83,6 +83,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="build-pkg" depends="init, build-app,build-servicetag">
         <echo file="${scriptsdir}/env.sh"><![CDATA[
 NETBEANS_INSTALL_DIR="${app.name}"
+NETBEANS_BUILDNUMBER="${buildnumber}"
 GLASSFISH_INSTALL_DIR="${glassfish.install.dir}"
 TOMCAT_INSTALL_DIR="${tomcat.install.dir}"
 NB_CLUSTER_DIR="${nbClusterDir}"

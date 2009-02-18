@@ -254,6 +254,7 @@ public class ConfigurationDescriptorProvider {
                 boolean cLang = false;
                 boolean ccLang = false;
                 boolean fLang = false;
+                boolean aLang = false;
                 for (Item item : projectItems) {
                     ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration);
                     if (!itemConfiguration.getExcluded().getValue()) {
@@ -268,12 +269,16 @@ public class ConfigurationDescriptorProvider {
                             case Tool.FortranCompiler:
                                 fLang = true;
                                 break;
+                            case Tool.Assembler:
+                                aLang = true;
+                                break;
                         }
                     }
                 }
                 String ccUsage = ccLang ? "USE_CPP" : "NO_CPP"; // NOI18N
                 String cUsage = cLang ? "USE_C" : "NO_C"; // NOI18N
                 String fUsage = fLang ? "USE_FORTRAN" : "NO_FORTRAN"; // NOI18N
+                String aUsage = aLang ? "USE_ASM" : "NO_ASM"; // NOI18N
                 rec.setParameters(new Object[] { type, flavor, family, host, platform, toSizeString(allItems), toSizeString(size), ccUsage, cUsage, fUsage});
                 rec.setLoggerName(logger.getName());
                 logger.log(rec);

@@ -44,6 +44,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -68,7 +71,7 @@ public final class RepositoryUtils {
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 53;
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 54;
 
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
@@ -150,6 +153,9 @@ public final class RepositoryUtils {
             assert uid != null;
             Key key = UIDtoKey(uid);
             put(key, (Persistent) csmObj);
+            if (!((csmObj instanceof CsmNamespace)||(csmObj instanceof CsmProject))){
+                assert uid.getObject() != null;
+            }
         }
         return uid;
     }
@@ -185,6 +191,9 @@ public final class RepositoryUtils {
             assert uid != null;
             Key key = UIDtoKey(uid);
             hang(key, (Persistent) csmObj);
+            if (!((csmObj instanceof CsmNamespace)||(csmObj instanceof CsmProject))){
+                assert uid.getObject() != null;
+            }
         }
     }
 
@@ -215,6 +224,12 @@ public final class RepositoryUtils {
         return uids;
     }
 
+    public static <T extends CsmDeclaration> void setSelfUIDs(Collection<T> decls) {
+        assert decls != null;
+        for (T decl : decls) {
+            org.netbeans.modules.cnd.modelimpl.csm.core.Utils.setSelfUID(decl);
+        }
+    }
     ////////////////////////////////////////////////////////////////////////////
     //
     public static Key UIDtoKey(CsmUID uid) {
@@ -247,6 +262,10 @@ public final class RepositoryUtils {
 
     public static void cleanCashes() {
         repository.cleanCaches();
+    }
+
+    public static void debugClear() {
+        repository.debugClear();
     }
 
     public static void closeUnit(CsmUID uid, Set<String> requiredUnits, boolean cleanRepository) {

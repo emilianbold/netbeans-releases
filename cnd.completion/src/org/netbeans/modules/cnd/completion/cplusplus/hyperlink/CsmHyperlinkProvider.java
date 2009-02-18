@@ -40,7 +40,9 @@
  */
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
+import java.awt.event.InputEvent;
 import java.util.Collection;
+import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -52,14 +54,19 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
+import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.services.CsmFunctionDefinitionResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.openide.util.NbBundle;
 
 /**
  * Implementation of the hyperlink provider for C/C++ language.
@@ -75,16 +82,20 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     public CsmHyperlinkProvider() {
     }
 
-    protected void performAction(final Document doc, final JTextComponent target, final int offset) {
-        goToDeclaration(doc, target, offset);
+    protected void performAction(final Document doc, final JTextComponent target, final int offset, final HyperlinkType type) {
+        goToDeclaration(doc, target, offset, type);
     }
 
-    protected boolean isValidToken(TokenItem<CppTokenId> token) {
-        return isSupportedToken(token);
+    protected boolean isValidToken(TokenItem<CppTokenId> token, HyperlinkType type) {
+        return isSupportedToken(token, type);
     }
 
-    public static boolean isSupportedToken(TokenItem<CppTokenId> token) {
+    public static boolean isSupportedToken(TokenItem<CppTokenId> token, HyperlinkType type) {
         if (token != null) {
+            if (type == HyperlinkType.ALT_HYPERLINK) {
+                return !CppTokenId.WHITESPACE_CATEGORY.equals(token.id().primaryCategory()) &&
+                        !CppTokenId.COMMENT_CATEGORY.equals(token.id().primaryCategory());
+            }
             switch (token.id()) {
                 case IDENTIFIER:
                 case PREPROCESSOR_IDENTIFIER:
@@ -95,8 +106,8 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         return false;
     }
 
-    public boolean goToDeclaration(Document doc, JTextComponent target, int offset) {
-        if (!preJump(doc, target, offset, "opening-csm-element")) { //NOI18N
+    public boolean goToDeclaration(Document doc, JTextComponent target, int offset, HyperlinkType type) {
+        if (!preJump(doc, target, offset, "opening-csm-element", type)) { //NOI18N
             return false;
         }
         TokenItem<CppTokenId> jumpToken = getJumpToken();
@@ -190,10 +201,18 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         return item;
     }
 
-    protected String getTooltipText(Document doc, TokenItem<CppTokenId> token, int offset) {
+    protected String getTooltipText(Document doc, TokenItem<CppTokenId> token, int offset, HyperlinkType type) {
         CsmObject item = findTargetObject(doc, token, offset, false);
         CharSequence msg = item == null ? null : CsmDisplayUtilities.getTooltipText(item);
+        if (msg != null && CsmKindUtilities.isMacro(item)) {
+            msg = getAlternativeHyperlinkTip(doc, msg);
+        }
         return msg == null ? null : msg.toString();
     }
 
+    private CharSequence getAlternativeHyperlinkTip(Document doc, CharSequence tooltip) {
+        Preferences prefs = MimeLookup.getLookup(NbEditorUtilities.getMimeType(doc)).lookup(Preferences.class);
+        int shortCut = prefs.getInt(SimpleValueNames.ALT_HYPERLINK_ACTIVATION_MODIFIERS, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK);
+        return NbBundle.getMessage(CsmHyperlinkProvider.class, "AltHyperlinkHint", tooltip, InputEvent.getModifiersExText(shortCut)); // NOI18N
+    }
 }

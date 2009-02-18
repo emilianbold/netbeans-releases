@@ -273,6 +273,29 @@ public class ContainerCPModifierImpl implements ContainerClassPathModifier {
         item.classToCheck = "javax/annotation/Resource.class"; //NOI18N
         toRet.put(key, item);
 
+
+        key = ContainerClassPathModifier.API_EJB + ":" + J2eeModule.J2EE_13;//NOI18N
+        item = new Item();
+        // oh well does it matter? where is 2.0 stuff to be found?
+        item.groupId = "org.apache.geronimo.specs";//NOI18N
+        item.artifactId = "geronimo-ejb_2.1_spec";//NOI18N
+        item.version = "1.0";//NOI18N
+        item.classToCheck = "javax/ejb/EJB.class"; //NOI18N
+        toRet.put(key, item);
+        key = ContainerClassPathModifier.API_EJB + ":" + J2eeModule.J2EE_14;//NOI18N
+        item = new Item();
+        item.groupId = "org.apache.geronimo.specs";//NOI18N
+        item.artifactId = "geronimo-ejb_2.1_spec";//NOI18N
+        item.version = "1.1";//NOI18N
+        item.classToCheck = "javax/ejb/EJB.class"; //NOI18N
+        toRet.put(key, item);
+        key = ContainerClassPathModifier.API_EJB + ":" + J2eeModule.JAVA_EE_5;//NOI18N
+        item = new Item();
+        item.groupId = "org.apache.geronimo.specs";//NOI18N
+        item.artifactId = "geronimo-ejb_3.0_spec";//NOI18N
+        item.version = "1.0.1";//NOI18N
+        item.classToCheck = "javax/ejb/EJB.class"; //NOI18N
+        toRet.put(key, item);
         return toRet;
     }
 

@@ -73,6 +73,8 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
 
     public static final String PROP_MAIN_PROJECT = "mainProject";   // NOI18N
 
+    public static final String PROP_SELECTED_PROJECT = "selectedProject";   // NOI18N
+
     private static MainProjectManager mainProjectManager = new MainProjectManager ();
 
     public static MainProjectManager getDefault () {
@@ -109,8 +111,10 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
             !isDependent(lastSelectedProject, currentProject)) {
             // If there's a main project set, but the current project has no
             // dependency on it, return the current project.
+            //System.err.println("getMainProject() = (LS) "+lastSelectedProject);
             return lastSelectedProject;
         }
+        //System.err.println("getMainProject() = "+currentProject);
         return currentProject;
     }
 
@@ -120,7 +124,11 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
 
     public boolean enable (Project p) {
         Project old = p;
+        Project oldSelected = p;
         synchronized (this) {
+            if (isMainProject) {
+                oldSelected = lastSelectedProjectRef.get();
+            }
             lastSelectedProjectRef = new WeakReference(p);
             if (!isMainProject) {
                 if (currentProject != p) {
@@ -129,8 +137,12 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
                 }
             }
         }
+        //System.err.println("MainProjectManager.enable("+p+") old = "+old+", oldSelected = "+oldSelected);
         if (old != p) {
             pcs.firePropertyChange (PROP_MAIN_PROJECT, old, p);
+        }
+        if (oldSelected != p) {
+            pcs.firePropertyChange (PROP_SELECTED_PROJECT, oldSelected, p);
         }
         return true; // unused
     }
@@ -189,6 +201,7 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
+        //System.err.println("MainProjectManager.propertyChange("+evt+") name = "+evt.getPropertyName());
         if (OpenProjects.PROPERTY_MAIN_PROJECT.equals(evt.getPropertyName())) {
             Project theMainProject = OpenProjects.getDefault().getMainProject();
             Project old = theMainProject;
@@ -201,6 +214,7 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
                     currentProject = lastSelectedProjectRef.get();
                 }
             }
+            //System.err.println(" main project = "+theMainProject+", old = "+old);
             if (old != theMainProject) {
                 pcs.firePropertyChange (PROP_MAIN_PROJECT, old, theMainProject);
             }

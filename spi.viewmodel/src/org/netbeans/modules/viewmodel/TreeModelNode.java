@@ -1108,24 +1108,33 @@ public class TreeModelNode extends AbstractNode {
             }
         }
         
-        public void setValue (Object v) throws IllegalAccessException, 
+        public void setValue (final Object value) throws IllegalAccessException,
         IllegalArgumentException, java.lang.reflect.InvocationTargetException {
-            try {
-                model.setValueAt (object, id, v);
-                v = model.getValueAt(object, id); // Store the new value
-                synchronized (properties) {
-                    if (v instanceof String) {
-                        properties.put (id, removeHTML ((String) v));
-                        properties.put (id + "#html", htmlValue ((String) v));
-                    } else {
-                        properties.put (id, v);
+            RequestProcessor prefferedRequestProcessor = treeModelRoot.getRequestProcessor();
+            if (prefferedRequestProcessor == null) {
+                prefferedRequestProcessor = new RequestProcessor("Debugger Values Setter", 1); // NOI18N
+            }
+            prefferedRequestProcessor.post(new Runnable() {
+                public void run() {
+                    try {
+                        Object v = value;
+                        model.setValueAt (object, id, v);
+                        v = model.getValueAt(object, id); // Store the new value
+                        synchronized (properties) {
+                            if (v instanceof String) {
+                                properties.put (id, removeHTML ((String) v));
+                                properties.put (id + "#html", htmlValue ((String) v));
+                            } else {
+                                properties.put (id, v);
+                            }
+                        }
+                        firePropertyChange (id, null, null);
+                    } catch (UnknownTypeException e) {
+                        Throwable t = ErrorManager.getDefault().annotate(e, "Column id:" + columnModel.getID ()+"\nModel: "+model);
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
                     }
                 }
-                firePropertyChange (id, null, null);
-            } catch (UnknownTypeException e) {
-                Throwable t = ErrorManager.getDefault().annotate(e, "Column id:" + columnModel.getID ()+"\nModel: "+model);
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
-            }
+            });
         }
         
         public PropertyEditor getPropertyEditor () {
