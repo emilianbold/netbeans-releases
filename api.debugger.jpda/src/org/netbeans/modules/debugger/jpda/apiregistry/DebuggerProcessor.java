@@ -135,7 +135,12 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
         if (!isClassOf(e, providerClass)) {
             throw new IllegalArgumentException("Annotated element "+e+" is not an instance of " + providerClass);
         }
-        layer(e).instanceFile("Debugger/"+path, null, providerClass).
+        if (path != null && path.length() > 0) {
+            path = "Debugger/"+path;
+        } else {
+            path = "Debugger";
+        }
+        layer(e).instanceFile(path, null, providerClass).
                 stringvalue(SERVICE_NAME, className).
                 stringvalue("serviceClass", providerClass.getName()).
                 methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService").

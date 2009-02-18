@@ -136,7 +136,6 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
         for (Element e : env.getElementsAnnotatedWith(DebuggerServiceRegistration.class)) {
             DebuggerServiceRegistration reg = e.getAnnotation(DebuggerServiceRegistration.class);
 
-            final String path = reg.path();
             // Class[] classes = reg.types(); - Cant NOT do that, classes are not created at compile time.
             // e.getAnnotationMirrors() - use this not to generate MirroredTypeException
             String classNames = null;
@@ -171,7 +170,13 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
                 classNames = tm.toString();
             }
             */
-            layer(e).instanceFile("Debugger/"+path, null, null).
+            String path = reg.path();
+            if (path != null && path.length() > 0) {
+                path = "Debugger/"+path;
+            } else {
+                path = "Debugger";
+            }
+            layer(e).instanceFile(path, null, null).
                     stringvalue(ContextAwareServiceHandler.SERVICE_NAME, instantiableClassOrMethod(e)).
                     stringvalue(ContextAwareServiceHandler.SERVICE_CLASSES, classNames).
                     methodvalue("instanceCreate", "org.netbeans.spi.debugger.ContextAwareSupport", "createService").
@@ -186,7 +191,12 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
         if (!isClassOf(e, providerClass)) {
             throw new IllegalArgumentException("Annotated element "+e+" is not an instance of " + providerClass);
         }
-        layer(e).instanceFile("Debugger/"+path, null, providerClass).
+        if (path != null && path.length() > 0) {
+            path = "Debugger/"+path;
+        } else {
+            path = "Debugger";
+        }
+        layer(e).instanceFile(path, null, providerClass).
                 stringvalue("serviceName", className).
                 stringvalue("serviceClass", providerClass.getName()).
                 methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService").
