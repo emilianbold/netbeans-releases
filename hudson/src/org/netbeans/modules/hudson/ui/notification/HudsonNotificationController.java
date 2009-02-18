@@ -120,7 +120,7 @@ public class HudsonNotificationController implements ChangeListener {
             boolean exists = false;
             boolean passed = false;
             Collection<HudsonJob> instjobs = hudsonInstance.getPreferredJobs();
-            if (instjobs == null || instjobs.size() == 0) {
+            if (instjobs.isEmpty()) {
                 instjobs = hudsonInstance.getJobs();
             }
             

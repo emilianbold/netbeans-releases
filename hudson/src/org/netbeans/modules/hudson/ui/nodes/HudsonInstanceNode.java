@@ -234,11 +234,8 @@ public class HudsonInstanceNode extends AbstractNode {
         private void refreshKeys() {
             List<Node> l = new ArrayList<Node>();
 
-            Collection<HudsonJob> prefs = instance.getPreferredJobs();
-            if (prefs != null && prefs.size() > 0) {
-                for (HudsonJob jb : prefs) {
-                    l.add(HudsonNodesFactory.getDefault().getHudsonJobNode(this, (HudsonJobImpl)jb));
-                }
+            for (HudsonJob jb : instance.getPreferredJobs()) {
+                l.add(HudsonNodesFactory.getDefault().getHudsonJobNode(this, (HudsonJobImpl)jb));
             }
 
             l.add(queue);
