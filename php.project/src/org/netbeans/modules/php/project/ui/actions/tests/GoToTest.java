@@ -115,22 +115,20 @@ public class GoToTest implements TestLocator {
 
     private LocationResult findSource(PhpProject project, FileObject testFo) {
         FileObject sources = getSources(project);
-        if (sources != null) {
-            PhpUnitSupport unitSupport = Lookup.getDefault().lookup(PhpUnitSupport.class);
-            if (unitSupport != null) {
-                Collection<? extends String> classNames = unitSupport.getClassNames(testFo);
-                for (String clsName : classNames) {
-                    if (clsName.endsWith(PhpUnit.TEST_CLASS_SUFFIX)) {
-                        int lastIndexOf = clsName.lastIndexOf(PhpUnit.TEST_CLASS_SUFFIX);
-                        assert lastIndexOf != -1;
-                        String srcClassName = clsName.substring(0, lastIndexOf);
-                        Collection<? extends FileObject> files = unitSupport.filesForClassName(testFo, srcClassName);
-                        for (FileObject fileObject : files) {
-                            if (CommandUtils.isPhpFile(fileObject)
-                                    && FileUtil.isParentOf(sources, fileObject)) {
-                                return new LocationResult(files.iterator().next(), -1);
-                            }
-                        }
+        assert sources != null : "Project sources must be found";
+        PhpUnitSupport unitSupport = Lookup.getDefault().lookup(PhpUnitSupport.class);
+        assert unitSupport != null : "PhpUnitSupport must be found in default lookup";
+        Collection<? extends String> classNames = unitSupport.getClassNames(testFo);
+        for (String clsName : classNames) {
+            if (clsName.endsWith(PhpUnit.TEST_CLASS_SUFFIX)) {
+                int lastIndexOf = clsName.lastIndexOf(PhpUnit.TEST_CLASS_SUFFIX);
+                assert lastIndexOf != -1;
+                String srcClassName = clsName.substring(0, lastIndexOf);
+                Collection<? extends FileObject> files = unitSupport.filesForClassName(testFo, srcClassName);
+                for (FileObject fileObject : files) {
+                    if (CommandUtils.isPhpFile(fileObject)
+                            && FileUtil.isParentOf(sources, fileObject)) {
+                        return new LocationResult(files.iterator().next(), -1);
                     }
                 }
             }
@@ -140,20 +138,18 @@ public class GoToTest implements TestLocator {
 
     public static LocationResult findTest(PhpProject project, FileObject srcFo) {
         FileObject tests = getTests(project);
-
         if (tests != null) {
             PhpUnitSupport unitSupport = Lookup.getDefault().lookup(PhpUnitSupport.class);
-            if (unitSupport != null) {
-                Collection<? extends String> classNames = unitSupport.getClassNames(srcFo);
-                for (String clsName : classNames) {
-                    String testClsName = clsName + PhpUnit.TEST_CLASS_SUFFIX;
-                    Collection<? extends FileObject> files = unitSupport.filesForClassName(srcFo, testClsName);
-                        for (FileObject fileObject : files) {
-                            if (CommandUtils.isPhpFile(fileObject)
-                                    && FileUtil.isParentOf(tests, fileObject)) {
-                                return new LocationResult(files.iterator().next(), -1);
-                            }
-                        }
+            assert unitSupport != null : "PhpUnitSupport must be found in default lookup";
+            Collection<? extends String> classNames = unitSupport.getClassNames(srcFo);
+            for (String clsName : classNames) {
+                String testClsName = clsName + PhpUnit.TEST_CLASS_SUFFIX;
+                Collection<? extends FileObject> files = unitSupport.filesForClassName(srcFo, testClsName);
+                for (FileObject fileObject : files) {
+                    if (CommandUtils.isPhpFile(fileObject)
+                            && FileUtil.isParentOf(tests, fileObject)) {
+                        return new LocationResult(files.iterator().next(), -1);
+                    }
                 }
             }
         }
