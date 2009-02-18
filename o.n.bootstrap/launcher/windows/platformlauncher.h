@@ -84,6 +84,10 @@ public:
     void appendToHelp(const char *msg);
     void onExit();
 
+    void setSuppressConsole(bool val) {
+        suppressConsole = val;
+    }
+
 private:
     PlatformLauncher(const PlatformLauncher& orig);
     bool parseArgs(int argc, char *argv[]);
@@ -103,6 +107,7 @@ private:
 
 private:
     bool separateProcess;
+    bool suppressConsole;
     std::string platformDir;
     std::string userDir;
     std::string clusters;
@@ -112,6 +117,7 @@ private:
     std::string cpAfter;
     std::string auClusters;
     std::string nextAction;
+    std::string parentProcID;
 
     std::list<std::string> javaOptions;
     std::list<std::string> progArgs;

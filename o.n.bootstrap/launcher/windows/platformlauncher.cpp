@@ -87,7 +87,8 @@ const char *PlatformLauncher::UPDATER_MAIN_CLASS = "org/netbeans/updater/Updater
 const char *PlatformLauncher::IDE_MAIN_CLASS = "org/netbeans/Main";
 
 PlatformLauncher::PlatformLauncher()
-    : separateProcess(false) {
+    : separateProcess(false)
+    , suppressConsole(false) {
 }
 
 PlatformLauncher::PlatformLauncher(const PlatformLauncher& orig) {
@@ -163,6 +164,8 @@ bool PlatformLauncher::run(bool updater, DWORD *retCode) {
     string option = OPT_CLASS_PATH;
     option += classPath;
     javaOptions.push_back(option);
+
+    jvmLauncher.setSuppressConsole(suppressConsole);
     bool rc = jvmLauncher.start(mainClass, progArgs, javaOptions, separateProcess, retCode);
     javaOptions.pop_back();
     return rc;
@@ -212,6 +215,11 @@ bool PlatformLauncher::parseArgs(int argc, char *argv[]) {
                 || strcmp(ARG_NAME_LA_START_AU, argv[i]) == 0) {
             nextAction = argv[i++];
             logMsg("Next launcher action: %s", nextAction.c_str());
+        } else if (strcmp(ARG_NAME_LA_PPID, argv[i]) == 0) {
+            CHECK_ARG;
+            suppressConsole = false;
+            parentProcID = argv[++i];
+            logMsg("Parent process ID found: %s", parentProcID.c_str());
         } else if (strcmp(ARG_NAME_USER_DIR, argv[i]) == 0) {
             CHECK_ARG;
             char tmp[MAX_PATH + 1] = {0};
@@ -645,6 +653,12 @@ void PlatformLauncher::onExit() {
             cmdLine += ' ';
         }
         cmdLine += nextAction;
+        if (!parentProcID.empty() && cmdLine.find(ARG_NAME_LA_PPID) == string::npos) {
+            cmdLine += ' ';
+            cmdLine += ARG_NAME_LA_PPID;
+            cmdLine += ' ';
+            cmdLine += parentProcID;
+        }
         logMsg("New command line: %s", cmdLine.c_str());
 
         char cmdLineStr[32 * 1024] = "";
@@ -656,8 +670,6 @@ void PlatformLauncher::onExit() {
             logErr(true, true, "Failed to create process.");
             return;
         }
-        // wait for a while so our child process can attach our console
-        Sleep(1000);
         CloseHandle(pi.hThread);
         CloseHandle(pi.hProcess);
     }
