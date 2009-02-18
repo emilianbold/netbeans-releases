@@ -43,10 +43,13 @@ package org.netbeans.modules.mobility.svgcore.view.source;
 
 import org.netbeans.modules.mobility.svgcore.palette.SVGPaletteFactory;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
+import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.netbeans.modules.mobility.svgcore.view.svg.SelectionCookie;
 import org.netbeans.modules.xml.multiview.XmlMultiViewElement;
 import org.netbeans.spi.palette.PaletteController;
@@ -64,6 +67,7 @@ import org.openide.windows.TopComponent;
  */
 public class SVGSourceMultiViewElement extends XmlMultiViewElement {
     private static final long serialVersionUID = 7525761714575627761L;        
+    private static final Logger LOG = Logger.getLogger(SVGSourceMultiViewElement.class.getName());
     
     /** Creates a new instance of SVGXmlMultiViewElement */
     public SVGSourceMultiViewElement( SVGDataObject dObj) {
@@ -99,7 +103,12 @@ public class SVGSourceMultiViewElement extends XmlMultiViewElement {
     @Override
     public void componentOpened() {
         super.componentOpened();
-        ((SVGDataObject) dObj).getModel().attachToOpenedDocument();
+        SVGFileModel svgModel = ((SVGDataObject) dObj).getModel();
+        if (svgModel.getModel() != null){
+            svgModel.attachToOpenedDocument();
+        } else {
+            LOG.log(Level.WARNING, "Can not attachToOpenedDocument. document model is not loaded.");
+        }
     }
 
     @Override

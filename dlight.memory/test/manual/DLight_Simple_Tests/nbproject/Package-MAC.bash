@@ -6,12 +6,12 @@
 
 # Macros
 TOP=`pwd`
-PLATFORM=GNU-MacOSX
-TMPDIR=build/MAC/${PLATFORM}/tmp-packaging
+CND_PLATFORM=GNU-MacOSX
+TMPDIR=build/MAC/${CND_PLATFORM}/tmp-packaging
 TMPDIRNAME=tmp-packaging
-OUTPUT_PATH=dist/MAC/${PLATFORM}/profiler_simple_tests
-OUTPUT_BASENAME=profiler_simple_tests
-PACKAGE_TOP_DIR=profilersimpletests/
+OUTPUT_PATH=dist/MAC/${CND_PLATFORM}/dlight_simple_tests
+OUTPUT_BASENAME=dlight_simple_tests
+PACKAGE_TOP_DIR=dlightsimpletests/
 
 # Functions
 function checkReturnCode
@@ -50,21 +50,21 @@ function copyFileToTmpDir
 
 # Setup
 cd "${TOP}"
-mkdir -p dist/MAC/${PLATFORM}/package
+mkdir -p dist/MAC/${CND_PLATFORM}/package
 rm -rf ${TMPDIR}
 mkdir -p ${TMPDIR}
 
 # Copy files and create directories and links
 cd "${TOP}"
-makeDirectory ${TMPDIR}/profilersimpletests/bin
+makeDirectory ${TMPDIR}/dlightsimpletests/bin
 copyFileToTmpDir "${OUTPUT_PATH}" "${TMPDIR}/${PACKAGE_TOP_DIR}bin/${OUTPUT_BASENAME}" 0755
 
 
 # Generate tar file
 cd "${TOP}"
-rm -f dist/MAC/${PLATFORM}/package/profilersimpletests.tar
+rm -f dist/MAC/${CND_PLATFORM}/package/dlightsimpletests.tar
 cd ${TMPDIR}
-tar -vcf ../../../../dist/MAC/${PLATFORM}/package/profilersimpletests.tar *
+tar -vcf ../../../../dist/MAC/${CND_PLATFORM}/package/dlightsimpletests.tar *
 checkReturnCode
 
 # Cleanup

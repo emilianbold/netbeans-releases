@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,10 +41,13 @@
 package org.netbeans.modules.collab.ui.wizard;
 
 import java.awt.Dimension;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.event.*;
-
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -78,10 +81,10 @@ public class AccountWizardIterator extends Object implements WizardDescriptor.It
         this.settings = settings;
 
         newAccountPanels = new WizardPanelBase[] {
-                new AccountTypePanel(), new AccountDisplayNamePanel(), new AccountServerPanel(),
+                new AccountTypeWizardPanel(), new AccountDisplayNameWizardPanel(), new AccountServerWizardPanel(),
                 
                 //			new AccountProxyPanel(),
-                new AccountUserInfoPanel(), new AccountInfoPanel()
+                new AccountUserInfoWizardPanel(), new AccountInfoWizardPanel()
             };
 
         existingAccountPanels = new WizardPanelBase[] {
@@ -97,20 +100,20 @@ public class AccountWizardIterator extends Object implements WizardDescriptor.It
         JPanel tempPanel = new JPanel();
 
         for (int i = 0; i < newAccountPanels.length; i++) {
-            tempPanel.add(newAccountPanels[i]);
-            newAccountPanels[i].validate();
+            tempPanel.add(newAccountPanels[i].getComponent());
+            newAccountPanels[i].getComponent().validate();
 
             tempPanel.doLayout();
 
-            Dimension dimension = newAccountPanels[i].getSize();
-            Dimension preferredDimension = newAccountPanels[i].getPreferredSize();
+            Dimension dimension = newAccountPanels[i].getComponent().getSize();
+            Dimension preferredDimension = newAccountPanels[i].getComponent().getPreferredSize();
             maxWidth = Math.max(maxWidth, dimension.width);
 
             //			maxWidth=Math.max(maxWidth,preferredDimension.width);
             maxHeight = Math.max(maxHeight, dimension.height);
 
             //			maxHeight=Math.max(maxHeight,preferredDimension.height);
-            tempPanel.remove(newAccountPanels[i]);
+            tempPanel.remove(newAccountPanels[i].getComponent());
         }
 
         settings.setPreferredPanelSize(new Dimension(maxWidth, maxHeight));
@@ -177,9 +180,12 @@ public class AccountWizardIterator extends Object implements WizardDescriptor.It
      *
      */
     protected void updateCurrentPanel() {
-        currentPanels[index].setPreferredSize(settings.getPreferredPanelSize());
-        currentPanels[index].putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(index)); // NOI18N
-        currentPanels[index].putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, getSteps()); // NOI18N
+        currentPanels[index].getComponent().setPreferredSize(settings.getPreferredPanelSize());
+        if (currentPanels[index].getComponent() instanceof JComponent) {
+            JComponent c = (JComponent) currentPanels[index].getComponent();
+            c.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(index)); // NOI18N
+            c.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, getSteps()); // NOI18N
+        }
     }
 
     /**
@@ -188,14 +194,14 @@ public class AccountWizardIterator extends Object implements WizardDescriptor.It
      */
     public String[] getSteps() {
         if (index == 0) {
-            return new String[] { currentPanels[0].getName(), "..." };
+            return new String[] { currentPanels[0].getComponent().getName(), "..." };
         }
 
         if (steps == null) {
             steps = new String[currentPanels.length];
 
             for (int i = 0; i < steps.length; i++)
-                steps[i] = currentPanels[i].getName();
+                steps[i] = currentPanels[i].getComponent().getName();
         }
 
         return steps;
@@ -225,7 +231,7 @@ public class AccountWizardIterator extends Object implements WizardDescriptor.It
         if (++index < currentPanels.length) {
             if (index == 1) {
                 // Check if account is new, switch panels
-                if (((AccountTypePanel) currentPanels[0]).isExistingAccountSelected()) {
+                if (((AccountTypePanel) currentPanels[0].getComponent()).isExistingAccountSelected()) {
                     currentPanels = existingAccountPanels;
                 } else {
                     currentPanels = newAccountPanels;

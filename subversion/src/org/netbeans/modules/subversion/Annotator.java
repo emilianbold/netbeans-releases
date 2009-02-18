@@ -700,37 +700,45 @@ public class Annotator {
             if (VersioningSupport.isFlat(file)) {
                 for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
                     File mf = (File) j.next();
-                    if (mf.getParentFile().equals(file)) {
-                        FileInformation info = (FileInformation) modifiedFiles.get(mf);
-                        if (info.isDirectory()) {
-                            continue;
+                    if (mf == null) {
+                        Subversion.LOG.log(Level.WARNING, "null File entry returned from getAllModifiedFiles");
+                    } else {
+                        if (file.equals(mf.getParentFile())) {
+                            FileInformation info = (FileInformation) modifiedFiles.get(mf);
+                            if (info.isDirectory()) {
+                                continue;
+                            }
+                            int status = info.getStatus();
+                            if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
+                                Image badge = ImageUtilities.assignToolTipToImage(
+                                        ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict); // NOI18N
+                                return ImageUtilities.mergeImages(icon, badge, 16, 9);
+                            }
+                            modified = true;
+                            allExcluded &= config.isExcludedFromCommit(mf.getAbsolutePath());
                         }
-                        int status = info.getStatus();
-                        if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                            Image badge = ImageUtilities.assignToolTipToImage(
-                                    ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict); // NOI18N
-                            return ImageUtilities.mergeImages(icon, badge, 16, 9);
-                        }
-                        modified = true;
-                        allExcluded &= config.isExcludedFromCommit(mf.getAbsolutePath());
                     }
                 }
             } else {
                 for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
                     File mf = (File) j.next();
-                    if (Utils.isAncestorOrEqual(file, mf)) {
-                        FileInformation info = (FileInformation) modifiedFiles.get(mf);
-                        int status = info.getStatus();
-                        if ((status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY || status == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) && file.equals(mf)) {
-                            continue;
+                    if (mf == null) {
+                        Subversion.LOG.log(Level.WARNING, "null File entry returned from getAllModifiedFiles");
+                    } else {
+                        if (Utils.isAncestorOrEqual(file, mf)) {
+                            FileInformation info = (FileInformation) modifiedFiles.get(mf);
+                            int status = info.getStatus();
+                            if ((status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY || status == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) && file.equals(mf)) {
+                                continue;
+                            }
+                            if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
+                                Image badge = ImageUtilities.assignToolTipToImage(
+                                        ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict); // NOI18N
+                                return ImageUtilities.mergeImages(icon, badge, 16, 9);
+                            }
+                            modified = true;
+                            allExcluded &= config.isExcludedFromCommit(mf.getAbsolutePath());
                         }
-                        if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                            Image badge = ImageUtilities.assignToolTipToImage(
-                                    ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict); // NOI18N
-                            return ImageUtilities.mergeImages(icon, badge, 16, 9);
-                        }
-                        modified = true;
-                        allExcluded &= config.isExcludedFromCommit(mf.getAbsolutePath());
                     }
                 }
             }

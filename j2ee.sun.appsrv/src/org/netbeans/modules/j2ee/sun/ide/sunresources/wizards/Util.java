@@ -49,6 +49,7 @@ import javax.swing.text.PlainDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import java.awt.Toolkit;
+import java.util.ResourceBundle;
 
 
 /**
@@ -84,5 +85,11 @@ public class Util {
         }
     } // class NumericDocument
     
- 
+    public static String getCorrectedLabel(ResourceBundle bundle, String key){
+        String val = bundle.getString("LBL_" + key); //NOI18N
+        int i = val.indexOf("&"); // NOI18N
+        String result = val.substring(0, i);
+        result = result.concat(val.substring(i+1, val.length()));
+        return result;
+    }
 }

@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -61,6 +62,7 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.spi.PhpUnitSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.project.util.PhpUnit;
@@ -74,6 +76,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
@@ -248,49 +251,62 @@ public final class CreateTestsAction extends NodeAction {
         }
         proceeded.add(sourceFo);
 
+        final String paramSkeleton = phpUnit.supportedVersionFound() ? PhpUnit.PARAM_SKELETON : PhpUnit.PARAM_SKELETON_OLD;
         final File parent = FileUtil.toFile(sourceFo.getParent());
-        final File generatedFile = getGeneratedFile(sourceFo, parent);
-        final File testFile = getTestFile(sourceFo, phpProject);
-        if (testFile.isFile()) {
-            // already exists
-            toOpen.add(testFile);
+
+        // find out the name of a class(es)
+        PhpUnitSupport phpUnitSupport = Lookup.getDefault().lookup(PhpUnitSupport.class);
+        assert phpUnitSupport != null : "PHP unit support must exist";
+        Collection<? extends String> classNames = phpUnitSupport.getClassNames(sourceFo);
+        if (classNames.size() == 0) {
+            // run phpunit in order to have some output
+            generateSkeleton(phpUnit, sourceFo.getName(), sourceFo, parent, paramSkeleton);
+            failed.add(sourceFo);
             return;
         }
+        for (String className : classNames) {
+            final File testFile = getTestFile(phpProject, sourceFo, className);
+            if (testFile.isFile()) {
+                // already exists
+                toOpen.add(testFile);
+                continue;
+            }
+            final File generatedFile = getGeneratedFile(className, parent);
 
-        // test does not exist yet
-        String paramSkeleton = phpUnit.supportedVersionFound() ? PhpUnit.PARAM_SKELETON : PhpUnit.PARAM_SKELETON_OLD;
-        Future<Integer> result = generateSkeleton(phpUnit, sourceFo, parent, paramSkeleton);
-        try {
-            if (result.get() != 0) {
-                // test not generated
-                failed.add(sourceFo);
-                return;
+            // test does not exist yet
+            Future<Integer> result = generateSkeleton(phpUnit, className, sourceFo, parent, paramSkeleton);
+            try {
+                if (result.get() != 0) {
+                    // test not generated
+                    failed.add(sourceFo);
+                    continue;
+                }
+                File moved = moveAndAdjustGeneratedFile(generatedFile, testFile, getTestDirectory(phpProject));
+                if (moved == null) {
+                    failed.add(sourceFo);
+                } else {
+                    toOpen.add(moved);
+                }
+            } catch (InterruptedException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
             }
-            File moved = moveAndAdjustGeneratedFile(generatedFile, testFile, getTestDirectory(phpProject));
-            if (moved == null) {
-                failed.add(sourceFo);
-            } else {
-                toOpen.add(moved);
-            }
-        } catch (InterruptedException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
         }
     }
 
-    private Future<Integer> generateSkeleton(PhpUnit phpUnit, FileObject sourceFo, File parent, String paramSkeleton) {
+    private Future<Integer> generateSkeleton(PhpUnit phpUnit, String className, FileObject sourceFo, File parent, String paramSkeleton) {
         // test does not exist yet
         ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getProgram())
                 .workingDirectory(parent)
                 .addArgument(paramSkeleton)
-                .addArgument(sourceFo.getName())
+                .addArgument(className)
                 .addArgument(sourceFo.getNameExt());
         ExecutionService service = ExecutionService.newService(externalProcessBuilder, EXECUTION_DESCRIPTOR,
-                String.format("%s %s %s %s", phpUnit.getProgram(), paramSkeleton, sourceFo.getName(), sourceFo.getNameExt())); // NOI18N
+                String.format("%s %s %s %s", phpUnit.getProgram(), paramSkeleton, className, sourceFo.getNameExt())); // NOI18N
         return service.run();
     }
 
-    private File getGeneratedFile(FileObject source, File parent) {
-        return new File(parent, source.getName() + PhpUnit.TEST_FILE_SUFFIX);
+    private File getGeneratedFile(String className, File parent) {
+        return new File(parent, className + PhpUnit.TEST_FILE_SUFFIX);
     }
 
     private File getTestDirectory(PhpProject phpProject) {
@@ -299,9 +315,17 @@ public final class CreateTestsAction extends NodeAction {
         return FileUtil.toFile(testDirectory);
     }
 
-    private File getTestFile(FileObject source, PhpProject phpProject) {
-        String relTestPath = GoToTest.findRelativeTestFileName(phpProject, source);
-        return new File(getTestDirectory(phpProject), relTestPath);
+    private File getTestFile(PhpProject project, FileObject source, String className) {
+        assert project != null;
+        assert source != null;
+
+        FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(project);
+        String relativeSourcePath = FileUtil.getRelativePath(sourcesDirectory, source.getParent());
+        assert relativeSourcePath != null : String.format("Relative path must be found for sources %s and folder %s", sourcesDirectory, source.getParent());
+
+        File relativeTestDirectory = new File(getTestDirectory(project), relativeSourcePath.replaceAll("/", File.separator)); // NOI18N
+
+        return new File(relativeTestDirectory, className + PhpUnit.TEST_FILE_SUFFIX);
     }
 
     private File moveAndAdjustGeneratedFile(File generatedFile, File testFile, File testDirectory) {

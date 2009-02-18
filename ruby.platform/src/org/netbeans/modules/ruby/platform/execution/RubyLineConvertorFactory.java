@@ -61,6 +61,8 @@ public final class RubyLineConvertorFactory implements LineConvertorFactory {
     private static final String SEP = "\\:"; // NOI18N
     private static final String STD_SUFFIX = FILE + SEP + LINE + ROL;
     static final Pattern RUBY_COMPILER = Pattern.compile(".*?" + STD_SUFFIX); // NOI18N
+    // see #157616
+    static final Pattern JRUBY_COMPILER = Pattern.compile(":.*:\\s.*?" + STD_SUFFIX); // NOI18N
     static final Pattern RUBY_COMPILER_WIN_MY = Pattern.compile(".*?" + FILE_WIN + SEP + LINE + ROL); // NOI18N
 
     /* Keeping old one. Get rid of this with more specific recongizers? */
@@ -120,6 +122,7 @@ public final class RubyLineConvertorFactory implements LineConvertorFactory {
         List<LineConvertor> result = new ArrayList<LineConvertor>(4);
         result.add(LineConvertors.filePattern(locator, RAILS_RECOGNIZER, null, 1, 2));
         result.add(LineConvertors.filePattern(locator, RUBY_COMPILER_WIN_MY, null, 1, 2));
+        result.add(LineConvertors.filePattern(locator, JRUBY_COMPILER, null, 1, 2));
         result.add(LineConvertors.filePattern(locator, RUBY_COMPILER, null, 1, 2));
         result.add(LineConvertors.filePattern(locator, RUBY_COMPILER_WIN, null, 1, 2));
         return result;

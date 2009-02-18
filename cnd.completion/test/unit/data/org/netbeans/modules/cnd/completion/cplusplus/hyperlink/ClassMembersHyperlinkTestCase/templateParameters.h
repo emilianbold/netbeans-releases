@@ -120,3 +120,14 @@ public:
         resolution_adjust++;
     }
 };
+
+// IZ#156679 : Constant in template is highlighted as invalid identifier
+template <class T, const int i> // 'i' is highlighted as invalid identifier
+class iz156679_A {
+public:
+    int foo() {
+        i++;
+    }
+    T t;
+};
+

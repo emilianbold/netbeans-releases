@@ -132,7 +132,7 @@ public class Utils {
 //    }
     
     public static ImageIcon getIcon (String iconBase) {
-        return ImageUtilities.loadImageIcon(iconBase + ".gif", false);
+        return ImageUtilities.loadImageIcon(iconBase + ".gif", false); //NOI18N
     }
     
     /**

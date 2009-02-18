@@ -67,6 +67,7 @@ import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -111,6 +112,11 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     public void uninitialize(WizardDescriptor wizard) {
+        Panel current = current();
+        // #158483
+        if (current instanceof CancelablePanel) {
+            ((CancelablePanel) current).cancel();
+        }
         panels = null;
         descriptor = null;
     }
@@ -222,9 +228,12 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     public WizardDescriptor.Panel current() {
-        // wizard title
-        String title = NbBundle.getMessage(NewPhpProjectWizardIterator.class, wizardType == WizardType.NEW ? "TXT_PhpProject" : "TXT_ExistingPhpProject");
-        descriptor.putProperty("NewProjectWizard_Title", title); // NOI18N
+        // #158483
+        if (descriptor != null) {
+            // wizard title
+            String title = NbBundle.getMessage(NewPhpProjectWizardIterator.class, wizardType == WizardType.NEW ? "TXT_PhpProject" : "TXT_ExistingPhpProject");
+            descriptor.putProperty("NewProjectWizard_Title", title); // NOI18N
+        }
         return panels[index];
     }
 

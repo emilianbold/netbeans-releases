@@ -163,7 +163,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             }
             if (!overriddenByMethods.isEmpty()) {
                 String msg = new MessageFormat(getString("ERR_IsOverridden")).format(
-                        new Object[] {SourceUtils.getEnclosingTypeElement(el).getSimpleName().toString()});
+                        new Object[] {info.getElementUtilities().enclosingTypeElement(el).getSimpleName().toString()});
                 preCheckProblem = createProblem(preCheckProblem, false, msg);
             }
             for (ExecutableElement e : overriddenByMethods) {
@@ -198,7 +198,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             fireProgressListenerStep();
             if (hiddenField != null) {
                 String msg = new MessageFormat(getString("ERR_Hides")).format(
-                        new Object[] {SourceUtils.getEnclosingTypeElement(hiddenField)}
+                        new Object[] {info.getElementUtilities().enclosingTypeElement(hiddenField)}
                 );
                 preCheckProblem = createProblem(preCheckProblem, false, msg);
             }
@@ -352,7 +352,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             fireProgressListenerStep();
             if (hiddenField != null) {
                 msg = new MessageFormat(getString("ERR_WillHide")).format(
-                        new Object[] {SourceUtils.getEnclosingTypeElement(hiddenField).toString()}
+                        new Object[] {info.getElementUtilities().enclosingTypeElement(hiddenField).toString()}
                 );
                 checkProblem = createProblem(checkProblem, false, msg);
             }
@@ -393,7 +393,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                     if (el instanceof TypeElement) {
                          enclosingType = ElementHandle.create((TypeElement)el);
                     } else {
-                         enclosingType = ElementHandle.create(SourceUtils.getEnclosingTypeElement(el));
+                         enclosingType = ElementHandle.create(info.getElementUtilities().enclosingTypeElement(el));
                     }
                     set.add(SourceUtils.getFile(el, info.getClasspathInfo()));
                     if (el.getModifiers().contains(Modifier.PRIVATE)) {
@@ -434,7 +434,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     
     private void addMethods(ExecutableElement e, Set set, CompilationInfo info, ClassIndex idx) {
         set.add(SourceUtils.getFile(e, info.getClasspathInfo()));
-        ElementHandle<TypeElement> encl = ElementHandle.create(SourceUtils.getEnclosingTypeElement(e));
+        ElementHandle<TypeElement> encl = ElementHandle.create(info.getElementUtilities().enclosingTypeElement(e));
         set.addAll(idx.getResources(encl, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
         allMethods.add(ElementHandle.create(e));
     }
@@ -522,9 +522,9 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         }
     }
     private Element hides(Element field, String name, CompilationInfo info) {
-        TypeElement jc = SourceUtils.getEnclosingTypeElement(field);
         Elements elements = info.getElements();
         ElementUtilities utils = info.getElementUtilities();
+        TypeElement jc = utils.enclosingTypeElement(field);
         for (Element el:elements.getAllMembers(jc)) {
 //TODO:
 //            if (utils.willHide(el, field, name)) {

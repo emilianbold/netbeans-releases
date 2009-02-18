@@ -141,7 +141,10 @@
                 <attr name="position" intvalue="458"/>
             </file>
         </folder>
-        <folder name="CndExtensions">
+    </folder>
+
+    <folder name="CND">
+        <folder name="Extensions">
             <file name="Assembler">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.asm.core.resources.Bundle"/>
                 <attr name="mimeType" stringvalue="text/x-asm"/>

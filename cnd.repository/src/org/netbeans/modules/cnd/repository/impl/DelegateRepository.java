@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.repository.impl;
 
 import java.util.Set;
@@ -48,28 +47,20 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
+import org.netbeans.modules.cnd.repository.translator.RepositoryTranslatorImpl;
 import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.repository.api.Repository.class)
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.repository.api.Repository.class)
 public final class DelegateRepository implements Repository {
-    
-    private final Repository delegate;
-    
+
+    private Repository delegate;
+
     public DelegateRepository() {
-        if (Stats.validateKeys) {
-            Stats.log("Testing keys using KeyValidatorRepository."); // NOI18N
-            delegate = new KeyValidatorRepository();
-        } else if (Stats.useHardRefRepository) {
-            Stats.log("Using HashMapRepository."); // NOI18N
-            delegate = new HashMapRepository ();
-        } else {
-            Stats.log("by default using HybridRepository."); // NOI18N
-            delegate = new DiskRepositoryManager();
-        }        
     }
 
     public void hang(Key key, Persistent obj) {
@@ -82,20 +73,20 @@ public final class DelegateRepository implements Repository {
 
     public Persistent get(Key key) {
         Persistent result = delegate.get(key);
-	if( result == null && Stats.useNullWorkaround ) {
-	    String keyClassName = key.getClass().getName();
-	    // repository is often asked for projects when theis persistence just does not exist
-	    if( ! keyClassName.endsWith(".ProjectKey") && ! keyClassName.endsWith(".OffsetableDeclarationKey") ) { // NOI18N
-		System.err.printf("NULL returned for key %s on attempt 1\n", key);
-		result = delegate.get(key);
-		System.err.printf("%s value returned for key %s on attempt 2\n", (result == null) ? "NULL" : "NON-NULL", key);
-	    }
-	}
-	return result;
+        if (result == null && Stats.useNullWorkaround) {
+            String keyClassName = key.getClass().getName();
+            // repository is often asked for projects when theis persistence just does not exist
+            if (!keyClassName.endsWith(".ProjectKey") && !keyClassName.endsWith(".OffsetableDeclarationKey")) { // NOI18N
+                System.err.printf("NULL returned for key %s on attempt 1\n", key);
+                result = delegate.get(key);
+                System.err.printf("%s value returned for key %s on attempt 2\n", (result == null) ? "NULL" : "NON-NULL", key);
+            }
+        }
+        return result;
     }
-    
+
     public Persistent tryGet(Key key) {
-	return delegate.tryGet(key);
+        return delegate.tryGet(key);
     }
 
     public void remove(Key key) {
@@ -104,21 +95,24 @@ public final class DelegateRepository implements Repository {
 
     public void debugClear() {
         delegate.debugClear();
+        delegate = null;
     }
 
     public void shutdown() {
-        delegate.shutdown();
+        Repository aDelegate = delegate;
+        if (aDelegate != null) {
+            aDelegate.shutdown();
+        }
     }
 
-    
     public void openUnit(int unitId, String unitName) {
         delegate.openUnit(unitId, unitName);
     }
-    
+
     public void closeUnit(String unitName, boolean cleanRepository, Set<String> requiredUnits) {
         delegate.closeUnit(unitName, cleanRepository, requiredUnits);
     }
-    
+
     public void removeUnit(String unitName) {
         delegate.removeUnit(unitName);
     }
@@ -136,6 +130,25 @@ public final class DelegateRepository implements Repository {
     }
 
     public void startup(int persistMechanismVersion) {
+        initDelegate();
+        RepositoryTranslatorImpl.startup(persistMechanismVersion);
         delegate.startup(persistMechanismVersion);
+    }
+
+    private synchronized void initDelegate() {
+        if (delegate == null) {
+            // we have to ask sys property each time, because tests changes
+            // settings in runtime
+            if (CndUtils.getBoolean("cnd.repository.validate.keys", false)) {
+                Stats.log("Testing keys using KeyValidatorRepository."); // NOI18N
+                delegate = new KeyValidatorRepository();
+            } else if (CndUtils.getBoolean("cnd.repository.hardrefs", false)) { // NOI18N
+                Stats.log("Using HashMapRepository."); // NOI18N
+                delegate = new HashMapRepository();
+            } else {
+                Stats.log("by default using HybridRepository."); // NOI18N
+                delegate = new DiskRepositoryManager();
+            }
+        }
     }
 }

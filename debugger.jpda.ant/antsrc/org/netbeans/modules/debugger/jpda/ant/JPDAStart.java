@@ -360,6 +360,9 @@ public class JPDAStart extends Task implements Runnable {
                 properties.put ("name", getName ()); // NOI18N
                 properties.put ("jdksources", jdkSourcePath); // NOI18N
                 properties.put ("listeningCP", listeningCP); // NOI18N
+                properties.put ("baseDir", getProject().getBaseDir()); // NOI18N
+
+                logger.fine("JPDAStart: properties = "+properties);
                 
                 final ListeningConnector flc = lc;
                 final WeakReference<Session> startedSessionRef[] = new WeakReference[] { new WeakReference<Session>(null) };

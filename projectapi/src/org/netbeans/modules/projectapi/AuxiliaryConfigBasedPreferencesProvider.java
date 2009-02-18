@@ -429,7 +429,7 @@ public class AuxiliaryConfigBasedPreferencesProvider {
             super(parent, name);
             this.path = path;
         }
-
+        
         @Override
         protected void putSpi(String key, String value) {
             synchronized (AuxiliaryConfigBasedPreferencesProvider.this) {
@@ -626,7 +626,21 @@ public class AuxiliaryConfigBasedPreferencesProvider {
         public void put(final String key, final String value) {
             ProjectManager.mutex().writeAccess(new Action<Void>() {
                 public Void run() {
-                    AuxiliaryConfigBasedPreferences.super.put(key, value);
+                    //#151856
+                    String oldValue = getSpi(key);
+                    if (value.equals(oldValue)) {
+                        return null;
+                    }
+                    try {
+                        AuxiliaryConfigBasedPreferences.super.put(key, value);
+                    } catch (IllegalArgumentException iae) {
+                        if (iae.getMessage().contains("too long")) {
+                            // Not for us!
+                            putSpi(key, value);
+                        } else {
+                            throw iae;
+                        }
+                    }
                     return null;
                 }
             });

@@ -113,6 +113,7 @@ public class NbModuleSuite {
         final boolean reuseUserDir;
         final boolean gui;
         final boolean enableClasspathModules;
+        final boolean honorAutoEager;
 
         private Configuration(
             List<String> clusterRegExp,
@@ -122,7 +123,8 @@ public class NbModuleSuite {
             Class<? extends TestCase> latestTestCase,
             boolean reuseUserDir,
             boolean gui,
-            boolean enableCPModules
+            boolean enableCPModules,
+            boolean honorAutoEager
         ) {
             this.clusterRegExp = clusterRegExp;
             this.moduleRegExp = moduleRegExp;
@@ -132,12 +134,13 @@ public class NbModuleSuite {
             this.latestTestCaseClass = latestTestCase;
             this.gui = gui;
             this.enableClasspathModules = enableCPModules;
+            this.honorAutoEager = honorAutoEager;
         }
 
         static Configuration create(Class<? extends TestCase> clazz) {            
             return new Configuration(
                 null, null, ClassLoader.getSystemClassLoader().getParent(),
-                Collections.<Item>emptyList(), clazz, false, true, true
+                Collections.<Item>emptyList(), clazz, false, true, true, false
             );
         }
         
@@ -165,7 +168,8 @@ public class NbModuleSuite {
             }
             return new Configuration(
                 list, moduleRegExp, parentClassLoader, tests,
-                latestTestCaseClass, reuseUserDir, gui, enableClasspathModules
+                latestTestCaseClass, reuseUserDir, gui, enableClasspathModules,
+                honorAutoEager
             );
         }
 
@@ -206,14 +210,14 @@ public class NbModuleSuite {
             return new Configuration(
                 this.clusterRegExp, arr, parentClassLoader,
                 tests, latestTestCaseClass, reuseUserDir, gui,
-                enableClasspathModules
-            );
+                enableClasspathModules, honorAutoEager);
         }
 
         Configuration classLoader(ClassLoader parent) {
             return new Configuration(
                 clusterRegExp, moduleRegExp, parent, tests,
-                latestTestCaseClass, reuseUserDir, gui, enableClasspathModules
+                latestTestCaseClass, reuseUserDir, gui, enableClasspathModules,
+                honorAutoEager
             );
         }
 
@@ -237,8 +241,7 @@ public class NbModuleSuite {
             return new Configuration(
                 clusterRegExp, moduleRegExp, parentClassLoader,
                 newTests, latestTestCaseClass, reuseUserDir, gui,
-                enableClasspathModules
-            );
+                enableClasspathModules, honorAutoEager);
         }
         
         /** Adds new test class to run, together with a list of its methods
@@ -263,7 +266,8 @@ public class NbModuleSuite {
             }
             return new Configuration(
                 clusterRegExp, moduleRegExp, parentClassLoader,
-                newTests, test, reuseUserDir, gui, enableClasspathModules
+                newTests, test, reuseUserDir, gui, enableClasspathModules,
+                honorAutoEager
             );
         }
         
@@ -288,7 +292,7 @@ public class NbModuleSuite {
             return new Configuration(
                 clusterRegExp, moduleRegExp, parentClassLoader,
                 newTests, latestTestCaseClass, reuseUserDir,
-                gui, enableClasspathModules
+                gui, enableClasspathModules, honorAutoEager
             );
         }
 
@@ -305,7 +309,25 @@ public class NbModuleSuite {
             return new Configuration(
                 clusterRegExp, moduleRegExp, parentClassLoader,
                 tests, latestTestCaseClass, reuseUserDir,
-                gui, enable
+                gui, enable, honorAutoEager);
+        }
+
+        /** By default the {@link #enableModules(java.lang.String)} method
+         * converts all autoloads into regular modules and enables them. This
+         * is maybe useful in certain situations, but does not really mimic the
+         * real behaviour of the system when it is executed. Those who need
+         * to as closely as possible simulate the real run, can use
+         * <code>honorAutoloadEager(true)</code>.
+         *
+         * @param honor true in case autoloads shall remain autoloads and eager modules eager
+         * @return new configuration filled with this data
+         * @since 1.57
+         */
+        public Configuration honorAutoloadEager(boolean honor) {
+            return new Configuration(
+                clusterRegExp, moduleRegExp, parentClassLoader,
+                tests, latestTestCaseClass, reuseUserDir,
+                gui, enableClasspathModules, honor
             );
         }
 
@@ -328,7 +350,7 @@ public class NbModuleSuite {
                 clusterRegExp, moduleRegExp, parentClassLoader,
                 newTests, latestTestCaseClass, reuseUserDir, gui,
                 enableClasspathModules
-            );
+            ,honorAutoEager);
         }
         
         /** Should the system run with GUI or without? The default behaviour
@@ -345,7 +367,7 @@ public class NbModuleSuite {
                 clusterRegExp, moduleRegExp, parentClassLoader,
                 tests, latestTestCaseClass, reuseUserDir, gui,
                 enableClasspathModules
-            );
+            ,honorAutoEager);
         }
 
         /**
@@ -358,7 +380,7 @@ public class NbModuleSuite {
             return new Configuration(
                 clusterRegExp, moduleRegExp, parentClassLoader, tests,
                 latestTestCaseClass, reuse, gui, enableClasspathModules
-            );
+            ,honorAutoEager);
         }
     }
 
@@ -568,7 +590,7 @@ public class NbModuleSuite {
             modules.remove("org.netbeans.insane");
             modules.add("org.netbeans.core.startup");
             modules.add("org.netbeans.bootstrap");
-            turnModules(ud, modules, config.moduleRegExp, platform);
+            turnModules(ud, !config.honorAutoEager, modules, config.moduleRegExp, platform);
             if (config.enableClasspathModules) {
                 turnClassPathModules(ud, NbTestSuite.class.getClassLoader());
             }
@@ -576,7 +598,7 @@ public class NbModuleSuite {
             StringBuilder sb = new StringBuilder();
             String sep = "";
             for (File f : findClusters()) {
-                turnModules(ud, modules, config.moduleRegExp, f);
+                turnModules(ud, !config.honorAutoEager, modules, config.moduleRegExp, f);
                 sb.append(sep);
                 sb.append(f.getPath());
                 sep = File.pathSeparator;
@@ -882,7 +904,7 @@ public class NbModuleSuite {
         private static Pattern AUTO = Pattern.compile("<param name=[\"']autoload[\"']>([^<]*)</param>", Pattern.MULTILINE);
         private static Pattern EAGER = Pattern.compile("<param name=[\"']eager[\"']>([^<]*)</param>", Pattern.MULTILINE);
         
-        private static void turnModules(File ud, TreeSet<String> modules, List<String> regExp, File... clusterDirs) throws IOException {
+        private static void turnModules(File ud, boolean autoloads, TreeSet<String> modules, List<String> regExp, File... clusterDirs) throws IOException {
             if (regExp == null) {
                 return;
             }
@@ -923,16 +945,16 @@ public class NbModuleSuite {
                         if (!contains) {
                             continue;
                         }
-                        enableModule(xml, contains, new File(config, m.getName()));
+                        enableModule(xml, autoloads, contains, new File(config, m.getName()));
                     }
                 }
             }
         }
         
-        private static void enableModule(String xml, boolean enable, File target) throws IOException {
+        private static void enableModule(String xml, boolean autoloads, boolean enable, File target) throws IOException {
             boolean toEnable = false;
             {
-                Matcher matcherEnabled = ENABLED.matcher(xml);
+                  Matcher matcherEnabled = ENABLED.matcher(xml);
                 if (matcherEnabled.find()) {
                     toEnable = "false".equals(matcherEnabled.group(1));
                 }
@@ -940,6 +962,14 @@ public class NbModuleSuite {
                 if (matcherEager.find()) {
                     if ("true".equals(matcherEager.group(1))) {
                         return;
+                    }
+                }
+                if (!autoloads) {
+                    Matcher matcherAuto = AUTO.matcher(xml);
+                    if (matcherAuto.find()) {
+                        if ("true".equals(matcherAuto.group(1))) {
+                            return;
+                        }
                     }
                 }
                 if (toEnable) {

@@ -63,7 +63,8 @@ public final class PhpUnit extends PhpProgram {
     // minimum supported version
     public static final int[] MINIMAL_VERSION = new int[] {3, 3, 0};
     // test files suffix
-    public static final String TEST_FILE_SUFFIX = "Test.php"; // NOI18N
+    public static final String TEST_CLASS_SUFFIX = "Test"; // NOI18N
+    public static final String TEST_FILE_SUFFIX = TEST_CLASS_SUFFIX+".php"; // NOI18N
     // cli options
     public static final String PARAM_VERSION = "--version"; // NOI18N
     public static final String PARAM_XML_LOG = "--log-xml"; // NOI18N

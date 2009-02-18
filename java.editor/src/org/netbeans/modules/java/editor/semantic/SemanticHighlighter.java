@@ -180,17 +180,23 @@ public class SemanticHighlighter extends JavaParserResultTask {
         
         cancel.set(false);
         
-        Document doc = result.getSnapshot().getSource().getDocument(false);
+        final Document doc = result.getSnapshot().getSource().getDocument(false);
 
         if (doc == null) {
             Logger.getLogger(SemanticHighlighter.class.getName()).log(Level.FINE, "SemanticHighlighter: Cannot get document!");
             return ;
         }
 
-        if (TokenHierarchy.get(doc).tokenSequence() == null) {
-            return ;
+        final boolean[] tokenSequenceNull =  new boolean[1];
+        doc.render(new Runnable() {
+            public void run() {
+                tokenSequenceNull[0] = (TokenHierarchy.get(doc).tokenSequence() == null);
+            }
+        });
+        if (tokenSequenceNull[0]) {
+            return;
         }
-        
+
         if (process(info, doc)/* && fact != null*/) {
 //            fact.rescheduleImpl(file);
         }

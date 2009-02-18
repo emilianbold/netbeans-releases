@@ -156,6 +156,29 @@ public class FileUtils {
     }
 
     /**
+     * Reads the data from the <code>file</code> and returns it as an array of bytes.
+     * @param file file to be read
+     * @return file contents as a byte array
+     * @throws java.io.IOException
+     */
+    public static byte[] getFileContentsAsByteArray (File file) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(1024 * 5);
+        BufferedInputStream bis = null;
+        try {
+        bis = createInputStream(file);
+        byte[] buffer = new byte[1024];
+        for (int byteRead = bis.read(buffer); byteRead > 0; byteRead = bis.read(buffer)) {
+            baos.write(buffer, 0, byteRead);
+        }
+        } finally {
+            if (bis != null) {
+                bis.close();
+            }
+        }
+        return baos.toByteArray();
+    }
+
+    /**
      * Recursively deletes all files and directories under a given file/directory.
      *
      * @param file file/directory to delete

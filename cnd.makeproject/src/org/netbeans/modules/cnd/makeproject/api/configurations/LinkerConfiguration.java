@@ -210,7 +210,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
     // Clone and assign
     public void assign(LinkerConfiguration conf) {
         // LinkerConfiguration
-        setMakeConfiguration(conf.getMakeConfiguration());
+        //setMakeConfiguration(conf.getMakeConfiguration()); // MakeConfiguration should not be assigned
         getOutput().assign(conf.getOutput());
         getAdditionalLibs().assign(conf.getAdditionalLibs());
         getDynamicSearch().assign(conf.getDynamicSearch());

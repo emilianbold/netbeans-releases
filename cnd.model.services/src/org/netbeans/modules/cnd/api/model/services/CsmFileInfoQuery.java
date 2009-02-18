@@ -115,6 +115,14 @@ public abstract class CsmFileInfoQuery {
      */
     public abstract List<CsmInclude> getIncludeStack(CsmFile file);
 
+    /**
+     * Attempts to get the version of a file.
+     * @param file - the file to get a version for.
+     * @return The file's version or 0 if the document does not
+     *   support versioning
+     */
+    public abstract long getFileVersion(CsmFile file);
+
     //
     // Implementation of the default query
     //
@@ -150,6 +158,11 @@ public abstract class CsmFileInfoQuery {
         @Override
         public List<CsmInclude> getIncludeStack(CsmFile file) {
             return Collections.<CsmInclude>emptyList();
+        }
+
+        @Override
+        public long getFileVersion(CsmFile file) {
+            return 0;
         }
     } 
 }

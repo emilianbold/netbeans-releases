@@ -346,6 +346,8 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel imp
 
     static Color getTextBackground () {
         Color textB = UIManager.getColor("TextPane.background");
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
+            textB = UIManager.getColor("NbExplorerView.background"); //NOI18N
         return textB != null ? textB : Color.WHITE;
     }
 

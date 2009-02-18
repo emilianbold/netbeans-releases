@@ -247,7 +247,7 @@ public class PackagingConfiguration {
     
     // Clone and assign
     public void assign(PackagingConfiguration conf) {
-        setMakeConfiguration(conf.getMakeConfiguration());
+        //setMakeConfiguration(conf.getMakeConfiguration()); // MakeConfiguration should not be assigned
         getType().assign(conf.getType());
         getVerbose().assign(conf.getVerbose());
         getInfo().assign(conf.getInfo());

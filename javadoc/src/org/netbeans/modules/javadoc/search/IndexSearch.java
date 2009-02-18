@@ -55,7 +55,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.javahelp.Help;
 import org.netbeans.modules.javadoc.settings.DocumentationSettings;
 import org.openide.awt.HtmlBrowser;
@@ -567,7 +567,7 @@ public final class IndexSearch
             if ( e != null ) {
                 FileObject toOpen = (FileObject) e[0];
                 ElementHandle eh = (ElementHandle) e[1];
-                UiUtils.open(toOpen, eh);
+                ElementOpen.open(toOpen, eh);
             }
             else {
                 NotifyDescriptor.Message nd = new NotifyDescriptor.Message( NbBundle.getMessage(IndexSearch.class, "MSG_SEARCH_SrcNotFound" ) );   //NOI18N
@@ -686,7 +686,7 @@ public final class IndexSearch
             refIndexSearch = new SoftReference(indexSearch);
 
             indexSearch.setName( NbBundle.getMessage(IndexSearch.class, "CTL_SEARCH_WindowTitle") );   //NOI18N
-            indexSearch.setIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/searchDoc.gif")); // NOI18N
+            indexSearch.setIcon(ImageUtilities.loadImage("org/netbeans/modules/javadoc/resources/searchDoc.gif")); // NOI18N
         }
         return indexSearch;
     }

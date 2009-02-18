@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="51">
+<configurationDescriptor version="57">
   <logicalFolder name="root" displayName="root" projectFiles="true">
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -40,60 +40,6 @@
           <commandLine>-lmalloc</commandLine>
         </linkerTool>
       </compileType>
-      <item path="condition.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="deadlock.cpp">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="mutex.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="pi.c">
-        <itemTool>0</itemTool>
-      </item>
-      <item path="pi.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="profiler_tests_main.c">
-        <itemTool>0</itemTool>
-      </item>
-      <item path="queue.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="test_alloc.c">
-        <itemTool>0</itemTool>
-      </item>
-      <item path="test_alloc.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="test_dl.c">
-        <itemTool>0</itemTool>
-      </item>
-      <item path="test_dl.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="test_sync.cpp">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="test_sync.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="test_sync_trivial.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="test_write.cpp">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="test_write.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="worker.cpp">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="worker.h">
-        <itemTool>3</itemTool>
-      </item>
     </conf>
     <conf name="SUN" type="1">
       <toolsSet>
@@ -117,60 +63,6 @@
           <commandLine>-lmalloc</commandLine>
         </linkerTool>
       </compileType>
-      <item path="condition.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="deadlock.cpp">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="mutex.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="pi.c">
-        <itemTool>0</itemTool>
-      </item>
-      <item path="pi.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="profiler_tests_main.c">
-        <itemTool>0</itemTool>
-      </item>
-      <item path="queue.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="test_alloc.c">
-        <itemTool>0</itemTool>
-      </item>
-      <item path="test_alloc.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="test_dl.c">
-        <itemTool>0</itemTool>
-      </item>
-      <item path="test_dl.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="test_sync.cpp">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="test_sync.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="test_sync_trivial.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="test_write.cpp">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="test_write.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="worker.cpp">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="worker.h">
-        <itemTool>3</itemTool>
-      </item>
     </conf>
     <conf name="MAC" type="1">
       <toolsSet>
@@ -184,60 +76,6 @@
           </linkerLibItems>
         </linkerTool>
       </compileType>
-      <item path="condition.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="deadlock.cpp">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="mutex.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="pi.c">
-        <itemTool>0</itemTool>
-      </item>
-      <item path="pi.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="profiler_tests_main.c">
-        <itemTool>0</itemTool>
-      </item>
-      <item path="queue.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="test_alloc.c">
-        <itemTool>0</itemTool>
-      </item>
-      <item path="test_alloc.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="test_dl.c">
-        <itemTool>0</itemTool>
-      </item>
-      <item path="test_dl.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="test_sync.cpp">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="test_sync.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="test_sync_trivial.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="test_write.cpp">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="test_write.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="worker.cpp">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="worker.h">
-        <itemTool>3</itemTool>
-      </item>
     </conf>
     <conf name="SUN-x86-64" type="1">
       <toolsSet>
@@ -261,60 +99,6 @@
           <commandLine>-lmalloc</commandLine>
         </linkerTool>
       </compileType>
-      <item path="condition.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="deadlock.cpp">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="mutex.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="pi.c">
-        <itemTool>0</itemTool>
-      </item>
-      <item path="pi.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="profiler_tests_main.c">
-        <itemTool>0</itemTool>
-      </item>
-      <item path="queue.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="test_alloc.c">
-        <itemTool>0</itemTool>
-      </item>
-      <item path="test_alloc.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="test_dl.c">
-        <itemTool>0</itemTool>
-      </item>
-      <item path="test_dl.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="test_sync.cpp">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="test_sync.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="test_sync_trivial.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="test_write.cpp">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="test_write.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="worker.cpp">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="worker.h">
-        <itemTool>3</itemTool>
-      </item>
     </conf>
   </confs>
 </configurationDescriptor>

@@ -76,7 +76,6 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.netbeans.spi.jumpto.type.TypeProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -93,7 +92,6 @@ public class JavaTypeProvider implements TypeProvider {
     private volatile boolean isCanceled = false;
     private final TypeElementFinder.Customizer customizer;
     private ClasspathInfo cpInfo;
-    private GlobalPathRegistryListener pathListener;
 
     public String name() {
         return "java"; // NOI18N
@@ -107,8 +105,6 @@ public class JavaTypeProvider implements TypeProvider {
     public void cleanup() {
         isCanceled = false;
         cache = null;
-        if (pathListener != null)
-            GlobalPathRegistry.getDefault().removeGlobalPathRegistryListener(pathListener);
     }
 
     public void cancel() {
@@ -124,23 +120,6 @@ public class JavaTypeProvider implements TypeProvider {
         this.customizer = customizer;
     }
     
-//    // This is essentially the code from OpenDeclAction
-//    // TODO: Was OpenDeclAction used for anything else?
-//    public void gotoType(TypeDescriptor type) {
-//    //public void actionPerformed(ActionEvent e) {
-//        Lookup lkp = WindowManager.getDefault().getRegistry().getActivated().getLookup();
-//        DataObject activeFile = (DataObject) lkp.lookup(DataObject.class);
-//        Element value = (Element) lkp.lookup(Element.class);
-//        if (activeFile != null && value != null) {
-//            JavaSource js = JavaSource.forFileObject(activeFile.getPrimaryFile());
-//            if (js != null) {
-//                ClasspathInfo cpInfo = js.getClasspathInfo();
-//                assert cpInfo != null;
-//                UiUtils.open(cpInfo,value);
-//            }
-//        }
-//    }
-
     public void computeTypeNames(Context context, final Result res) {
         isCanceled = false;
         String text = context.getText();
@@ -159,11 +138,6 @@ public class JavaTypeProvider implements TypeProvider {
         default: throw new RuntimeException("Unexpected search type: " + searchType);
         }
         
-        long time = 0;
-
-        long cp, gss, gsb, sfb, gtn, add, sort;
-        cp = gss = gsb = sfb = gtn = add = sort = 0;
-
         Future<Project[]> openProjectsTask = OpenProjects.getDefault().openProjects();
         try {
             openProjectsTask.get();
@@ -178,13 +152,10 @@ public class JavaTypeProvider implements TypeProvider {
 
             if (cpInfo == null) {
                 // Sources
-                time = System.currentTimeMillis();
                 ClassPath scp = RepositoryUpdater.getDefault().getScannedSources();
                 List<ClassPath.Entry> entries = scp.entries();
-                gss += System.currentTimeMillis() - time; 
                 sources = new HashSet<CacheItem>(entries.size());
                 for (ClassPath.Entry entry : entries) {                    
-                    time = System.currentTimeMillis();                
                     ClasspathInfo ci = ClasspathInfo.create( EMPTY_CLASSPATH, EMPTY_CLASSPATH, ClassPathSupport.createClassPath(entry.getURL()));
                     if ( isCanceled ) {
                         return;
@@ -192,33 +163,24 @@ public class JavaTypeProvider implements TypeProvider {
                     else {
                         sources.add( new CacheItem( entry.getURL(), ci, false ) );
                     }                        
-                    cp += System.currentTimeMillis() - time;
                 }
 
-
-
                 // Binaries
-                time = System.currentTimeMillis();                
                 scp = RepositoryUpdater.getDefault().getScannedBinaries();
                 entries = scp.entries();
-                gsb += System.currentTimeMillis() - time;
                 for (ClassPath.Entry entry : entries) {
                     try {
                         if ( isCanceled ) {
                             return;
                         }
-                        time = System.currentTimeMillis();
                         if (!hasBinaryOpen) {
                         SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(entry.getURL());
                         if ( result.getRoots().length == 0 ) {
                             continue;
                         }       
                         }
-                        sfb += System.currentTimeMillis() - time;                        
-                        time = System.currentTimeMillis();                        
                         ClasspathInfo ci = ClasspathInfo.create(ClassPathSupport.createClassPath(entry.getURL()), EMPTY_CLASSPATH, EMPTY_CLASSPATH );//create(roots[i]);                                
                         sources.add( new CacheItem( entry.getURL(), ci, true ) );                                                
-                        cp += System.currentTimeMillis() - time;
                     }                                       
                     finally {
                         if ( isCanceled ) {
@@ -235,7 +197,6 @@ public class JavaTypeProvider implements TypeProvider {
 
                 // bootPath
                 for (ClassPath.Entry entry : bootRoots) {                    
-                    time = System.currentTimeMillis();                
                     ClasspathInfo ci = ClasspathInfo.create(ClassPathSupport.createClassPath(entry.getURL()), EMPTY_CLASSPATH, EMPTY_CLASSPATH);
                     if ( isCanceled ) {
                         return;
@@ -243,12 +204,10 @@ public class JavaTypeProvider implements TypeProvider {
                     else {
                         sources.add( new CacheItem( entry.getURL(), ci, true ) );
                     }                        
-                    cp += System.currentTimeMillis() - time;
                 }
 
                 // classPath
                 for (ClassPath.Entry entry : compileRoots) {                    
-                    time = System.currentTimeMillis();                
                     ClasspathInfo ci = ClasspathInfo.create(EMPTY_CLASSPATH, ClassPathSupport.createClassPath(entry.getURL()), EMPTY_CLASSPATH);
                     if ( isCanceled ) {
                         return;
@@ -256,12 +215,10 @@ public class JavaTypeProvider implements TypeProvider {
                     else {
                         sources.add( new CacheItem( entry.getURL(), ci, true ) );
                     }                        
-                    cp += System.currentTimeMillis() - time;
                 }
 
                 // sourcePath
                 for (ClassPath.Entry entry : sourceRoots) {                    
-                    time = System.currentTimeMillis();                
                     ClasspathInfo ci = ClasspathInfo.create(EMPTY_CLASSPATH, EMPTY_CLASSPATH, ClassPathSupport.createClassPath(entry.getURL()));
                     if ( isCanceled ) {
                         return;
@@ -269,7 +226,6 @@ public class JavaTypeProvider implements TypeProvider {
                     else {
                         sources.add( new CacheItem( entry.getURL(), ci, false ) );
                     }                        
-                    cp += System.currentTimeMillis() - time;
                 }
 
             }
@@ -310,7 +266,6 @@ public class JavaTypeProvider implements TypeProvider {
         LOGGER.fine("Text For Query '" + text + "'.");
         if (customizer != null) {
             for(final CacheItem ci : cache) {
-                time = System.currentTimeMillis();
                 Set<ElementHandle<TypeElement>> names = customizer.query(
                         ci.classpathInfo, textForQuery, nameKind,
                         EnumSet.of(ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE)
@@ -366,34 +321,16 @@ public class JavaTypeProvider implements TypeProvider {
             if ( isCanceled ) {
                 return;
             }
-
-            gtn += System.currentTimeMillis() - time;            
-            time = System.currentTimeMillis();
-
-            add += System.currentTimeMillis() - time;
         }
         
         if ( !isCanceled ) {            
-            time = System.currentTimeMillis();
             // Sorting is now done on the Go To Tpe dialog side
             // Collections.sort(types);
-            sort += System.currentTimeMillis() - time;
-            LOGGER.fine("PERF - " + " GSS:  " + gss + " GSB " + gsb + " CP: " + cp + " SFB: " + sfb + " GTN: " + gtn + "  ADD: " + add + "  SORT: " + sort );
             res.addResult(types);
         }
         
     }
     
-    private static boolean isAllUpper( String text ) {
-        for( int i = 0; i < text.length(); i++ ) {
-            if ( !Character.isUpperCase( text.charAt( i ) ) ) {
-                return false;
-            }
-        }
-        
-        return true;
-    }
-   
     private static String removeNonJavaChars(String text) {
        StringBuilder sb = new StringBuilder();
 

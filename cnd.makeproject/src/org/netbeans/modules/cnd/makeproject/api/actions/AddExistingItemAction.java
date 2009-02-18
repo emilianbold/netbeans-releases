@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.FortranSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.HeaderSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.api.utils.QtFileFilter;
 import org.netbeans.modules.cnd.api.utils.ResourceFileFilter;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.openide.DialogDisplayer;
@@ -122,6 +123,7 @@ public class AddExistingItemAction extends NodeAction {
         fileChooser.addChoosableFileFilter(HeaderSourceFileFilter.getInstance());
         fileChooser.addChoosableFileFilter(FortranSourceFileFilter.getInstance());
         fileChooser.addChoosableFileFilter(ResourceFileFilter.getInstance());
+        fileChooser.addChoosableFileFilter(QtFileFilter.getInstance());
         fileChooser.addChoosableFileFilter(AllSourceFileFilter.getInstance());
         fileChooser.addChoosableFileFilter(AllFileFilter.getInstance());
         fileChooser.setFileFilter(fileChooser.getAcceptAllFileFilter());

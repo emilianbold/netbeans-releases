@@ -456,18 +456,6 @@ public class RMIPanel extends javax.swing.JPanel {
         getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_PANEL"));// NOI18N
     }
     
-    
-    
-    /**
-     * Checks if all the user inputs are valid.
-     * @return <CODE>boolean</CODE> true if user inputs are valid
-     */
-    public boolean isValid() {
-        if(authSelected)
-            return tableModel.isValid();
-        return true;
-    }
-    
     /*
      * update all the selected flags
      */

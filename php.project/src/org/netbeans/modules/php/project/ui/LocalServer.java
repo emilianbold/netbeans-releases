@@ -54,6 +54,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
+import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.openide.util.ChangeSupport;
 
 // XXX should be replaced (?) by PhpEnvironment.DocumentRoot
@@ -61,6 +62,7 @@ import org.openide.util.ChangeSupport;
  * @author Tomas Mysik
  */
 public class LocalServer implements Comparable<LocalServer> {
+    public static final LocalServer PENDING_LOCAL_SERVER = new LocalServer(PhpEnvironment.PENDING_DOCUMENT_ROOT.getDocumentRoot());
 
     private final String virtualHost;
     private final String url;
@@ -88,6 +90,7 @@ public class LocalServer implements Comparable<LocalServer> {
     public LocalServer(String virtualHost, String documentRoot, String srcRoot, boolean editable) {
         this(virtualHost, null, documentRoot, srcRoot, editable);
     }
+
     public LocalServer(String virtualHost, String url, String documentRoot, String srcRoot, boolean editable) {
         this.virtualHost = virtualHost;
         this.url = url;
@@ -121,6 +124,10 @@ public class LocalServer implements Comparable<LocalServer> {
 
     public boolean isEditable() {
         return editable;
+    }
+
+    public boolean isPending() {
+        return this == PENDING_LOCAL_SERVER;
     }
 
     public String getHint() {
