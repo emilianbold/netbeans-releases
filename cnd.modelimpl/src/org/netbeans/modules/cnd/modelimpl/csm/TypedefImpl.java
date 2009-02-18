@@ -98,7 +98,42 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
         } else {
             this.type = type;
         }
+        if (name.length()==0) {
+            name = fixBuiltInTypedef(ast);
+        }
         this.name = QualifiedNameCache.getManager().getString(name);
+    }
+
+    private String fixBuiltInTypedef(AST ast){
+        // typedef cannot be unnamed
+        AST first = ast.getFirstChild();
+        if (first != null) {
+            AST last = null;
+            while(first != null) {
+                if (first.getType() == CPPTokenTypes.COMMA || first.getType() == CPPTokenTypes.SEMICOLON) {
+                    break;
+                }
+                last = first;
+                first = first.getNextSibling();
+            }
+            if (last != null) {
+                first = last.getFirstChild();
+                while(first != null) {
+                    if (first.getText() != null && first.getText().length()>0) {
+                        if (Character.isJavaIdentifierStart(first.getText().charAt(0))){
+                            last = first;
+                        }
+                    }
+                    first = first.getNextSibling();
+                }
+                if (last.getText() != null && last.getText().length()>0) {
+                   if (Character.isJavaIdentifierStart(last.getText().charAt(0))){
+                        return last.getText();
+                    }
+                }
+            }
+        }
+        return "";
     }
 
     public boolean isTypeUnnamed() {
