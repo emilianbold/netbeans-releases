@@ -280,7 +280,9 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.bugtracking.bridge</friend>
+                <friend>org.netbeans.modules.kenai.ui</friend>
                 <package>org.netbeans.modules.mercurial.hooks.spi</package>
+                <package>org.netbeans.modules.mercurial.api</package>
             </friend-packages>
         </data>
     </configuration>

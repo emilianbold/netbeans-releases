@@ -95,7 +95,15 @@ public abstract class AbstractHgTest extends NbTestCase {
         
 //        workDir = new File(System.getProperty("work.dir")); 
 //        FileUtil.refreshFor(workDir);          
-        HgCommand.doCreate(getWorkDir(), null);
+        try {
+            HgCommand.doCreate(getWorkDir(), null);
+        } catch (IOException iOException) {
+            throw iOException;
+        } catch (HgException hgException) {
+//            if(!hgException.getMessage().contains("already exists")) {
+//                throw hgException;
+//            }
+        }
 //        wc = new File(workDir, getName() + "_wc");        
         cache = Mercurial.getInstance().getFileStatusCache();
     }
@@ -140,7 +148,13 @@ public abstract class AbstractHgTest extends NbTestCase {
         for (File file : filesToCommit) {
             assertStatus(file, FileInformation.STATUS_VERSIONED_UPTODATE);
         }        
-    }    
+    }
+
+    protected File clone(File file) throws HgException, IOException {
+        String path = file.getAbsolutePath() + "_cloned";
+        HgCommand.doClone(getWorkDir(), path, null);
+        return new File(path);
+    }
     
     protected  void assertStatus(File f, int status) throws HgException, IOException {
         FileInformation s = HgCommand.getSingleStatus(getWorkDir(), f.getParentFile().getAbsolutePath(), f.getName());

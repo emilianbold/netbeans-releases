@@ -418,7 +418,8 @@ public class CommitAction extends ContextAction {
             }
             HgCommand.doCommit(repository, commitCandidates, message, logger);
 
-            HgRepositoryContextCache.setHasHistory(ctx);
+            HgRepositoryContextCache.getInstance().setHasHistory(ctx);
+            
             HgLogMessage tip = HgCommand.doTip(repository, logger);
 
             context = new HgHookContext(hookFiles, message, new HgHookContext.LogEntry(tip));

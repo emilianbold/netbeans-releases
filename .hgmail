@@ -69,3 +69,4 @@ cvs@websvc.netbeans.org=websvc.*/*,j2ee.dd.webservice/*
 cvs@xml.netbeans.org=api.xml/*,editor.structure/*,libs.jxpath/*,o.n.xml.libs.jxpath/*,visdev.prefuse/*,xml*/*,xsl/*
 cvs@xtest.netbeans.org=xtest/*,nbjunit/*,nbjunit.ide/*
 dkonecny@netbeans.org=css.visual/*,css.editor/*,html/*,html.editor/*,html.editor.lib/*,html.lexer/*,web.jspparser/*,web.core/*,web.core.syntax/*,jsp.lexer/*,editor.structure/*,gsf/*,gsf.api/*,gsfpath.api/*
+jglick@netbeans.org=hudson*/*

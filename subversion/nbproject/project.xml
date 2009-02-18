@@ -306,8 +306,11 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+            <friend-packages>
                 <friend>org.netbeans.modules.bugtracking.bridge</friend>
+                <friend>org.netbeans.modules.kenai.ui</friend>                
                 <package>org.netbeans.modules.subversion.hooks.spi</package>
+                <package>org.netbeans.modules.subversion.api</package>
             </friend-packages>
         </data>
     </configuration>

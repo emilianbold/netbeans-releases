@@ -358,8 +358,12 @@ public abstract class BaseFileObj extends FileObject {
             }
         } else if (attrName.equals("ExistsParentNoPublicAPI")) {
             return getExistingParent() != null;
-        } 
-                
+        } else if (attrName.startsWith("ProvidedExtensions")) {  //NOI18N
+            // #158600 - delegate to ProvidedExtensions if attrName starts with ProvidedExtensions prefix
+            ProvidedExtensions extension = getProvidedExtensions();
+            return extension.getAttribute(getFileName().getFile(), attrName);
+        }
+   
         return BaseFileObj.attribs.readAttribute(getFileName().getFile().getAbsolutePath().replace('\\', '/'), attrName);//NOI18N
     }
 
