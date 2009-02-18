@@ -1,116 +1,116 @@
 #  stub => ""
-  ==> []
+  ==> [String]
 
 #  stub => []
-  ==> []
+  ==> [Array]
 
 #  stub => $_
   ==> []
 
 #  stub => 0
-  ==> []
+  ==> [Fixnum]
 
 #  stub => 0.0
   ==> []
 
 #  stub => 0, 1
-  ==> []
+  ==> [Fixnum]
 
 #  stub => 0 or false
-  ==> [FalseClass]
+  ==> [Fixnum, FalseClass]
 
 #  stub => 0 or nil
-  ==> [NilClass]
+  ==> [Fixnum, NilClass]
 
 #  stub => 100, "b" => 200 }
-  ==> []
+  ==> [Fixnum]
 
 #  stub => 100, "b" => 200 }     #=> {"a"=>100, "b"=>200}
-  ==> []
+  ==> [Hash]
 
 #  stub => 100, "b" => 200 }   #=> {"a"=>100, "b"=>200}
-  ==> []
+  ==> [Hash]
 
 #  stub => 100, "b" => 200]   #=> {"a"=>100, "b"=>200}
-  ==> []
+  ==> [Hash]
 
 #  stub => 100, "b" => 200, "c" => 300 }
-  ==> []
+  ==> [Fixnum]
 
 #  stub => 100, c => 300 }
-  ==> []
+  ==> [Fixnum]
 
 #  stub => -1, 0, 1
-  ==> []
+  ==> [Fixnum]
 
 #  stub => -1, 0, +1
-  ==> []
+  ==> [Fixnum]
 
 #  stub => -1, 0, +1, or nil
-  ==> [NilClass]
+  ==> [Fixnum, NilClass]
 
 #  stub => [[1,1],[1,2],[2,1],[2,2]]
-  ==> []
+  ==> [Array]
 
 #  stub => [[1],[2]]
-  ==> []
+  ==> [Array]
 
 #  stub => [1, 2]
-  ==> []
+  ==> [Array]
 
 #  stub => [1, 2, 3]
-  ==> []
+  ==> [Array]
 
 #  stub => 12345
-  ==> []
+  ==> [Fixnum]
 
 #  stub => 123 Maple, Anytown NC
   ==> [Anytown NC]
 
 #  stub => [[1,3,5],[1,3,6],[1,4,5],[1,4,6],
-  ==> []
+  ==> [Fixnum]
 
 #  stub => [[1,4],[1,5],[2,4],[2,5],[3,4],[3,5]]
-  ==> []
+  ==> [Array]
 
 #  stub => 1, "c" => 2 }
-  ==> []
+  ==> [Fixnum]
 
 #  stub => 1, "c" => 2, 7 => 35 }
-  ==> []
+  ==> [Fixnum]
 
 #  stub => 1, "d" => 2, "f" => 35 }
-  ==> []
+  ==> [Fixnum]
 
 #  stub => 2
-  ==> []
+  ==> [Fixnum]
 
 #  stub => 20, "b" => 30, "c" => 10  }
-  ==> []
+  ==> [Fixnum]
 
 #  stub => 254, "c" => 300 }
-  ==> []
+  ==> [Fixnum]
 
 #  stub => 3
-  ==> []
+  ==> [Fixnum]
 
 #  stub => 300, "d" => 400 })   #=> {"c"=>300, "d"=>400}
-  ==> []
+  ==> [Hash]
 
 #  stub => [3, 4, 5, 0]
-  ==> []
+  ==> [Array]
 
 #  stub => 35, "c" => 2, "a" => 1 }
-  ==> []
+  ==> [Fixnum]
 
 #  stub => 4
-  ==> []
+  ==> [Fixnum]
 
 #  stub => [4, 5, 0]
-  ==> []
+  ==> [Array]
 
 #  stub => "a", 2 => "b", 3 => "c" }
-  ==> []
+  ==> [String]
 
 #  stub => a_class
   ==> [Class]
@@ -161,7 +161,7 @@
   ==> []
 
 #  stub => "b"
-  ==> []
+  ==> [String]
 
 #  stub => binding
   ==> [Binding]
@@ -179,7 +179,7 @@
   ==> []
 
 #  stub => [cur_limit, max_limit]
-  ==> []
+  ==> [Array]
 
 #  stub => detail
   ==> []
@@ -197,10 +197,10 @@
   ==> [FalseClass]
 
 #  stub => "false"
-  ==> []
+  ==> [String]
 
 #  stub => "feline", "dog" => "canine", "cow" => "bovine" }
-  ==> []
+  ==> [String]
 
 #  stub => file
   ==> [File]
@@ -227,13 +227,13 @@
   ==> [Symbol]
 
 #  stub => [ fraction, exponent ]
-  ==> []
+  ==> [Array]
 
 #  stub => hash
   ==> [Hash]
 
 #  stub => [head, sep, tail]
-  ==> []
+  ==> [Array]
 
 #  stub => hsh
   ==> [Hash]
@@ -293,10 +293,10 @@
   ==> [Method]
 
 #  stub => [min, max]
-  ==> []
+  ==> [Array]
 
 #  stub => [min,max]
-  ==> []
+  ==> [Array]
 
 #  stub => mod
   ==> [Module]
@@ -323,7 +323,7 @@
   ==> [NilClass]
 
 #  stub => "nil"
-  ==> []
+  ==> [String]
 
 #  stub => no_method_error
   ==> []
@@ -374,10 +374,10 @@
   ==> []
 
 #  stub => [ [pid1,status1], ...]
-  ==> []
+  ==> [Array]
 
 #  stub => [pid, status]
-  ==> []
+  ==> [Array]
 
 #  stub => prc
   ==> [Proc]
@@ -437,7 +437,7 @@
   ==> []
 
 #  stub => sym
-  ==> [Sumbol]
+  ==> [Symbol]
 
 #  stub => symbol
   ==> [Symbol]
@@ -467,10 +467,10 @@
   ==> [TrueClass]
 
 #  stub => "true"
-  ==> []
+  ==> [String]
 
 #  stub => [ true_array, false_array ]
-  ==> []
+  ==> [Array]
 
 #  stub => true, false or nil
   ==> [TrueClass, FalseClass, NilClass]
@@ -497,14 +497,14 @@
   ==> []
 
 #  stub => 100, "m" => 100, "y" => 300, "d" => 200, "a" => 0 }
-  ==> []
+  ==> [Fixnum]
 
 #  stub => 300, "a" => 100, "d" => 400, "c" => 300  }
-  ==> []
+  ==> [Fixnum]
 
 #  stub => 100, "a" => 200, "v" => 300, "e" => 400 }
-  ==> []
+  ==> [Fixnum]
 
 #  stub => 100, "b" => 200, "c" => 300, "d" => 400 }
-  ==> []
+  ==> [Fixnum]
 
