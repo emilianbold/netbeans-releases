@@ -142,7 +142,8 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         checkChildObject(names.SCM, Scm.class, "Scm", t != null ? t.getScm() : null);
         checkChildObject(names.ORGANIZATION, Organization.class, "Organization", t != null ? t.getOrganization() : null);
 
-        this.<MailingList>checkListObject(names.MAILINGLISTS, MailingList.class, "Mailing Lists",
+        this.<MailingList>checkListObject(names.MAILINGLISTS, names.MAILINGLIST,
+                MailingList.class, "Mailing Lists",
                 t != null ? t.getMailingLists() : null,
                 new IdentityKeyGenerator<MailingList>() {
                     public String createName(MailingList c) {
@@ -150,14 +151,16 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                     }
                 });
 
-        this.<Developer>checkListObject(names.DEVELOPERS, Developer.class, "Developers",
+        this.<Developer>checkListObject(names.DEVELOPERS, names.DEVELOPER,
+                Developer.class, "Developers",
                 t != null ? t.getDevelopers() : null,
                 new IdentityKeyGenerator<Developer>() {
                     public String createName(Developer c) {
                         return c.getId() != null ? c.getId() : "Developer";
                     }
                 });
-        this.<Contributor>checkListObject(names.CONTRIBUTORS, Contributor.class, "Contributors",
+        this.<Contributor>checkListObject(names.CONTRIBUTORS, names.CONTRIBUTOR,
+                Contributor.class, "Contributors",
                 t != null ? t.getContributors() : null,
                 new IdentityKeyGenerator<Contributor>() {
                     public String createName(Contributor c) {
@@ -165,7 +168,8 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                     }
                 });
 
-        this.<License>checkListObject(names.LICENSES, License.class, "Licenses",
+        this.<License>checkListObject(names.LICENSES, names.LICENSE,
+                License.class, "Licenses",
                 t != null ? t.getLicenses() : null,
                 new IdentityKeyGenerator<License>() {
                     public String createName(License c) {
@@ -173,7 +177,8 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                     }
                 });
 
-        this.<Dependency>checkListObject(names.DEPENDENCIES, Dependency.class, "Dependencies",
+        this.<Dependency>checkListObject(names.DEPENDENCIES, names.DEPENDENCY,
+                Dependency.class, "Dependencies",
                 t != null ? t.getDependencies() : null,
                 new KeyGenerator<Dependency>() {
                     public Object generate(Dependency c) {
@@ -184,7 +189,8 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                     }
                 });
 
-        this.<Repository>checkListObject(names.REPOSITORIES, Repository.class, "Repositories",
+        this.<Repository>checkListObject(names.REPOSITORIES, names.REPOSITORY,
+                Repository.class, "Repositories",
                 t != null ? t.getRepositories() : null,
                 new KeyGenerator<Repository>() {
                     public Object generate(Repository c) {
@@ -450,7 +456,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     private void checkChildString(POMQName qname, String displayName, String value) {
         Node nd = childs.get(qname);
         if (nd == null) {
-            nd = new SingleFieldNode(Lookups.singleton(new POMCutHolder()), displayName);
+            nd = new SingleFieldNode(Lookups.fixed(new POMCutHolder(), qname), displayName);
             childs.put(qname, nd);
         }
         fillValues(count, nd.getLookup().lookup(POMCutHolder.class), value);
@@ -460,18 +466,18 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         Node nd = childs.get(qname);
         if (nd == null) {
             POMCutHolder cutter = new POMCutHolder();
-            nd = new ObjectNode(Lookups.singleton(cutter), new PomChildren(cutter, names, type), displayName);
+            nd = new ObjectNode(Lookups.fixed(cutter, qname), new PomChildren(cutter, names, type), displayName);
             childs.put(qname, nd);
         }
         fillValues(count, nd.getLookup().lookup(POMCutHolder.class), value);
     }
 
 
-    private <T extends POMComponent> void checkListObject(POMQName qname, Class type, String displayName, List<T> values, KeyGenerator<T> keygen) {
+    private <T extends POMComponent> void checkListObject(POMQName qname, POMQName childName, Class type, String displayName, List<T> values, KeyGenerator<T> keygen) {
         Node nd = childs.get(qname);
         if (nd == null) {
             POMCutHolder cutter = new POMCutHolder();
-            nd = new ListNode(Lookups.singleton(cutter), new PomListChildren<T>(cutter, names, type, keygen, true), displayName);
+            nd = new ListNode(Lookups.fixed(cutter, qname), new PomListChildren<T>(cutter, names, type, keygen, true, childName), displayName);
             childs.put(qname, nd);
         }
         fillValues(count, nd.getLookup().lookup(POMCutHolder.class), values);
@@ -747,13 +753,15 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         private Class type;
         private KeyGenerator<T> keyGenerator;
         private boolean override;
-        public PomListChildren(POMCutHolder holder, POMQNames names, Class type, KeyGenerator<T> generator, boolean override) {
+        private POMQName childName;
+        public PomListChildren(POMCutHolder holder, POMQNames names, Class type, KeyGenerator<T> generator, boolean override, POMQName childName) {
             setKeys(one);
             this.holder = holder;
             this.names = names;
             this.type = type;
             this.keyGenerator = generator;
             this.override = override;
+            this.childName = childName;
         }
 
         public void reshow() {
@@ -779,7 +787,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                         currentCut = new ArrayList<T>();
                         cut.put(keyGen, currentCut);
                     }
-                    fillValues(count, currentCut, c);
+                    fillValues(level, currentCut, c);
                 }
                 level++;
             }
@@ -796,7 +804,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                 }
 
                 String itemName = keyGenerator.createName(topMost);
-                toRet.add(new ObjectNode(Lookups.singleton(cutHolder), new PomChildren(cutHolder, names, type), itemName));
+                toRet.add(new ObjectNode(Lookups.fixed(cutHolder, childName), new PomChildren(cutHolder, names, type), itemName));
             }
 
             return toRet.toArray(new Node[0]);
