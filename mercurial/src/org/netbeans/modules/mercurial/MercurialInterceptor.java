@@ -296,13 +296,22 @@ public class MercurialInterceptor extends VCSInterceptor {
         }
     }
 
-    public String getRemoteRepository(File file) {
+    private String getRemoteRepository(File file) {
         if(file == null) return null;
         String remotePath = HgRepositoryContextCache.getInstance().getPullDefault(file);
-        if(remotePath == null) {
+        if(remotePath == null || remotePath.trim().equals("")) {
+            Mercurial.LOG.log(Level.FINE, "No defalt pull available for managed file : [" + file + "]");
             remotePath = HgRepositoryContextCache.getInstance().getPushDefault(file);
 
-            Mercurial.LOG.log(Level.WARNING, "No defalt pull available for managed file : [" + file + "]");
+            Mercurial.LOG.log(Level.WARNING, "No defalt pull or push available for managed file : [" + file + "]");
+        }
+        if(remotePath != null) {
+            remotePath = remotePath.trim();
+            remotePath = HgUtils.removeHttpCredentials(remotePath);
+            if(remotePath.equals("")) {
+                // return null if empty
+                remotePath = null;
+            }
         }
         return remotePath;
     }
