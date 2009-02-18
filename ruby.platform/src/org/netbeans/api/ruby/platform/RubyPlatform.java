@@ -116,6 +116,9 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     /** 'autotest' executable for this platform. */
     private String autotest;
 
+    /** 'autospec' executable for this platform. */
+    private String autospec;
+
     RubyPlatform(String id, String interpreterPath, Info info) {
         this.id = id;
         this.interpreter = interpreterPath;
@@ -193,12 +196,27 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
      *        valid autotest installed
      */
     public boolean hasValidAutoTest(boolean warn) {
-        String autoTest = getAutoTest();
-        boolean valid = (autoTest != null) && new File(autoTest).exists();
+        boolean valid = isValidFile(getAutoTest());
         possiblyNotifyUser(warn, valid, "autotest"); // NOI18N
         return valid;
     }
 
+    /**
+     * Checks whether the platform has a valid autotest installed.
+     *
+     * @param warn whether to show warning message to the user if ther is no
+     *        valid autotest installed
+     */
+    public boolean hasValidAutoSpec(boolean warn) {
+        boolean valid = isValidFile(getAutoSpec());
+        possiblyNotifyUser(warn, valid, "autospec"); // NOI18N
+        return valid;
+    }
+
+    private boolean isValidFile(String path) {
+        return path != null && new File(path).exists();
+    }
+    
     /**
      * Checks whether project has a valid platform and in turn whether the
      * platform has a valid Rake installed.
@@ -256,6 +274,13 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
             autotest = findExecutable("autotest"); // NOI18N
         }
         return autotest;
+    }
+
+    public String getAutoSpec() {
+        if (autospec == null) {
+            autospec = findExecutable("autospec"); // NOI18N
+        }
+        return autospec;
     }
 
     public String getID() {

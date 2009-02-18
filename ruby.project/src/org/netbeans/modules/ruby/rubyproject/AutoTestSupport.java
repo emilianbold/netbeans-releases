@@ -49,6 +49,7 @@ import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -76,15 +77,23 @@ public class AutoTestSupport {
         this.classPath = classPath;
     }
     
-    public static boolean isInstalled(final Project project) {
+    public static boolean isInstalled(final Project project, TestRunner.TestType type) {
         RubyPlatform platform = RubyPlatform.platformFor(project);
-        return platform != null && platform.hasValidAutoTest(false);
+        if (platform == null) {
+            return false;
+        }
+        if (type == TestRunner.TestType.AUTOTEST) {
+            return platform.hasValidAutoTest(false);
+        } else if (type == TestRunner.TestType.AUTOSPEC) {
+            return platform.hasValidAutoSpec(false);
+        }
+        return false;
     }
 
-    public void start() {
+    public void start(TestRunner.TestType type) {
 
         // use the ui test runner if available
-        TestRunner autotestRunner = Util.getTestRunner(TestRunner.TestType.AUTOTEST);
+        TestRunner autotestRunner = Util.getTestRunner(type);
         if (autotestRunner != null) {
             autotestRunner.runAllTests(project, false);
             return;
@@ -104,9 +113,11 @@ public class AutoTestSupport {
         // task listener and stash these references per project.
         File pwd = FileUtil.toFile(project.getProjectDirectory());
 
+        String executable = TestType.AUTOSPEC == type ? platform.getAutoSpec() : platform.getAutoTest();
+        String bundleKey = TestType.AUTOSPEC == type ? "AutoSpec" : "AutoTest"; //NOI18N
         RubyFileLocator fileLocator = new RubyFileLocator(context, project);
-        String displayName = NbBundle.getMessage(AutoTestSupport.class, "AutoTest");
-        RubyExecutionDescriptor desc = new RubyExecutionDescriptor(platform, displayName, pwd, platform.getAutoTest());
+        String displayName = NbBundle.getMessage(AutoTestSupport.class, bundleKey);
+        RubyExecutionDescriptor desc = new RubyExecutionDescriptor(platform, displayName, pwd, executable);
         desc.additionalArgs("-v"); // NOI18N
         desc.fileLocator(fileLocator);
         desc.classPath(classPath); // Applies only to JRuby
