@@ -144,24 +144,43 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
         this.<MailingList>checkListObject(names.MAILINGLISTS, MailingList.class, "Mailing Lists",
                 t != null ? t.getMailingLists() : null,
-                new IdentityKeyGenerator<MailingList>());
+                new IdentityKeyGenerator<MailingList>() {
+                    public String createName(MailingList c) {
+                        return c.getName() != null ? c.getName() : "Mailing List";
+                    }
+                });
 
         this.<Developer>checkListObject(names.DEVELOPERS, Developer.class, "Developers",
                 t != null ? t.getDevelopers() : null,
-                new IdentityKeyGenerator<Developer>());
+                new IdentityKeyGenerator<Developer>() {
+                    public String createName(Developer c) {
+                        return c.getId() != null ? c.getId() : "Developer";
+                    }
+                });
         this.<Contributor>checkListObject(names.CONTRIBUTORS, Contributor.class, "Contributors",
                 t != null ? t.getContributors() : null,
-                new IdentityKeyGenerator<Contributor>());
+                new IdentityKeyGenerator<Contributor>() {
+                    public String createName(Contributor c) {
+                        return c.getName() != null ? c.getName() : "Contributor";
+                    }
+                });
 
         this.<License>checkListObject(names.LICENSES, License.class, "Licenses",
                 t != null ? t.getLicenses() : null,
-                new IdentityKeyGenerator<License>());
+                new IdentityKeyGenerator<License>() {
+                    public String createName(License c) {
+                        return c.getName() != null ? c.getName() : "License";
+                    }
+                });
 
         this.<Dependency>checkListObject(names.DEPENDENCIES, Dependency.class, "Dependencies",
                 t != null ? t.getDependencies() : null,
                 new KeyGenerator<Dependency>() {
                     public Object generate(Dependency c) {
                         return c.getGroupId() + ":" + c.getArtifactId();
+                    }
+                    public String createName(Dependency c) {
+                        return c.getArtifactId() != null ? c.getArtifactId() : "Dependency";
                     }
                 });
 
@@ -171,102 +190,10 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                     public Object generate(Repository c) {
                         return c.getId();
                     }
+                    public String createName(Repository c) {
+                        return c.getId() != null ? c.getId() : "Repository";
+                    }
                 });
-
-//            @SuppressWarnings("unchecked")
-//            List<List> repositories = getValue(models, "getRepositories", Project.class);
-//            addListNode(mods, repositories, new ChildrenCreator2() {
-//                public Children createChildren(List value, List<POMModel> lineage) {
-//                    @SuppressWarnings("unchecked")
-//                    List<Repository> lst = value;
-//                    return new RepositoryChildren(lst, lineage);
-//                }
-//
-//                public String createName(Object value) {
-//                    String[] name = getStringValue(new Object[] {value}, "getId", Repository.class);
-//                    return name.length > 0 ? name[0] : "Repository";
-//                }
-//
-//                public boolean objectsEqual(Object value1, Object value2) {
-//                    Repository d1 = (Repository)value1;
-//                    Repository d2 = (Repository)value2;
-//                    return d1.getId() != null && d1.getId().equals(d2.getId());
-//                }
-//            }, "Repositories", nds);
-
-//            @SuppressWarnings("unchecked")
-//            List<List> dependencies = getValue(models, "getDependencies", Project.class);
-//            addListNode(mods, dependencies, new ChildrenCreator2() {
-//                public Children createChildren(List value, List<POMModel> lineage) {
-//                    @SuppressWarnings("unchecked")
-//                    List<Dependency> lst = value;
-//                    return new DependencyChildren(lst, lineage);
-//                }
-//
-//                public String createName(Object value) {
-//                    String[] name = getStringValue(new Object[] {value}, "getArtifactId", Dependency.class);
-//                    return name.length > 0 ? name[0] : "Dependency";
-//                }
-//
-//                public boolean objectsEqual(Object value1, Object value2) {
-//                    Dependency d1 = (Dependency)value1;
-//                    Dependency d2 = (Dependency)value2;
-//                    String grId1 = d1.getGroupId();
-//                    String grId2 = d2.getGroupId();
-//                    String artId1 = d1.getArtifactId();
-//                    String artId2 = d2.getArtifactId();
-//                    return (grId1 + ":" + artId1).equals(grId2 + ":" + artId2);
-//                }
-//            }, "Dependencies", nds);
-
-//            @SuppressWarnings("unchecked")
-//            List<List> licenses = getValue(models, "getLicenses", Project.class);
-//            addListNode(mods, licenses, new ChildrenCreator() {
-//                public Children createChildren(List value, List<POMModel> lineage) {
-//                    @SuppressWarnings("unchecked")
-//                    List<License> lst = value;
-//                    return new LicenseChildren(lst, lineage);
-//                }
-//
-//                public String createName(Object value) {
-//                    String[] name = getStringValue(new Object[] {value}, "getName", License.class);
-//                    return name.length > 0 ? name[0] : "License";
-//                }
-//            }, "Licenses", nds);
-
-//            @SuppressWarnings("unchecked")
-//            List<List> contributors = getValue(models, "getContributors", Project.class);
-//            addListNode(mods, contributors, new ChildrenCreator() {
-//                public Children createChildren(List value, List<POMModel> lineage) {
-//                    @SuppressWarnings("unchecked")
-//                    List<Contributor> lst = value;
-//                    return new ContributorChildren(lst, lineage);
-//                }
-//
-//                public String createName(Object value) {
-//                    String[] name = getStringValue(new Object[] {value}, "getName", Contributor.class);
-//                    return name.length > 0 ? name[0] : "Contributor";
-//                }
-//            }, "Contributors", nds);
-
-//            @SuppressWarnings("unchecked")
-//            List<List> developers = getValue(models, "getDevelopers", Project.class);
-//            addListNode(mods, developers, new ChildrenCreator() {
-//                public Children createChildren(List value, List<POMModel> lineage) {
-//                    @SuppressWarnings("unchecked")
-//                    List<Developer> lst = value;
-//                    return new DeveloperChildren(lst, lineage);
-//                }
-//
-//                public String createName(Object value) {
-//                    String[] name = getStringValue(new Object[] {value}, "getName", Developer.class);
-//                    String[] id = getStringValue(new Object[] {value}, "getId", Developer.class);
-//                    return name.length > 0 ? name[0] : (id.length > 0 ? id[0] : "Developer");
-//                }
-//            }, "Developers", nds);
-//
-
-
         count++;
     }
 
@@ -605,9 +532,11 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
     private interface KeyGenerator<T extends POMComponent> {
         Object generate(T c);
+
+        String createName(T c);
     }
 
-    private class IdentityKeyGenerator<T extends POMComponent> implements  KeyGenerator<T> {
+    private abstract class IdentityKeyGenerator<T extends POMComponent> implements  KeyGenerator<T> {
         public Object generate(T c) {
             return c;
         }
@@ -857,11 +786,17 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             for (List<T> lst : cut.values()) {
                 int cutLevel = 0;
                 POMCutHolder cutHolder = new POMCutHolder();
+                T topMost = null;
                 for (T c : lst) {
                     cutHolder.addCut(c);
+                    if (topMost == null) {
+                        topMost = c;
+                    }
                     cutLevel++;
                 }
-                toRet.add(new ObjectNode(Lookups.singleton(cutHolder), new PomChildren(cutHolder, names, type), type.getName()));
+
+                String itemName = keyGenerator.createName(topMost);
+                toRet.add(new ObjectNode(Lookups.singleton(cutHolder), new PomChildren(cutHolder, names, type), itemName));
             }
 
             return toRet.toArray(new Node[0]);
