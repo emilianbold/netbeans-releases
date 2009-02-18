@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -80,6 +80,7 @@ public class TCRefConfig {
         previousIndex = -1;
     }
     
+    @Override
     public boolean equals (Object obj) {
         if (this == obj) {
             return true;
@@ -96,6 +97,7 @@ public class TCRefConfig {
         return false;
     }
     
+    @Override
     public int hashCode() {
         int hash = 17;
         hash = 37 * hash + tc_id.hashCode();
@@ -107,11 +109,13 @@ public class TCRefConfig {
         return hash;
     }
     
+    @Override
     public String toString () {
         return "TCRefConfig: tc_id=" + tc_id + ", opened=" + opened 
                 + ", maximizedMode=" + dockedInMaximizedMode
                 + ", defaultMode=" + dockedInDefaultMode
-                + ", slidedInMaximized=" + slidedInMaximized;
+                + ", slidedInMaximized=" + slidedInMaximized
+                + ", previousMode=" + previousMode;
     }
     
 }
