@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -200,7 +200,7 @@ final public class PersistenceHandler implements PersistenceObserver {
         for(Iterator it = mode2config.keySet().iterator(); it.hasNext(); ) {
             ModeImpl mode = (ModeImpl)it.next();
             ModeConfig mc = (ModeConfig)mode2config.get(mode);
-            initModeFromConfig(mode, mc);
+            initModeFromConfig(mode, mc, false);
             initPreviousModes(mode, mc, mode2config);
             
             // Set selected TopComponent.
@@ -341,7 +341,7 @@ final public class PersistenceHandler implements PersistenceObserver {
      */
     private void initPreviousModes(ModeImpl mode, ModeConfig mc, Map modes) {
         for (int j = 0; j < mc.tcRefConfigs.length; j++) {
-            TCRefConfig tcRefConfig = (TCRefConfig) mc.tcRefConfigs[j];
+            TCRefConfig tcRefConfig = mc.tcRefConfigs[j];
             if(DEBUG) {
                 debugLog("\tTopComponent[" + j + "] id=\"" // NOI18N
                     + tcRefConfig.tc_id + "\", \topened=" + tcRefConfig.opened); // NOI18N
@@ -369,11 +369,44 @@ final public class PersistenceHandler implements PersistenceObserver {
             }
         }
     }
+
+    /**
+     * find the the previous mode for tc if exists and set it in the model..
+     */
+    private void initPreviousMode (ModeImpl mode, TCRefConfig tcRefConfig) {
+        if(DEBUG) {
+            debugLog("\tTopComponent id=\"" // NOI18N
+                + tcRefConfig.tc_id + "\", \topened=" + tcRefConfig.opened); // NOI18N
+        }
+        if (tcRefConfig.previousMode == null) {
+            return;
+        }
+        Set<? extends ModeImpl> modes = WindowManagerImpl.getInstance().getModes();
+        Iterator it = modes.iterator();
+        ModeImpl previous = null;
+        while (it.hasNext()) {
+            ModeImpl md = (ModeImpl) it.next();
+
+            if (tcRefConfig.previousMode.equals(md.getName())) {
+                previous = md;
+                break;
+            }
+        }
+        if (previous != null) {
+            WindowManagerImpl.getInstance().setPreviousModeForTopComponent
+            (tcRefConfig.tc_id, mode, previous, tcRefConfig.previousIndex);
+        } else {
+            Logger.getLogger(PersistenceHandler.class.getName()).log(Level.INFO, null,
+                              new java.lang.NullPointerException("Cannot find previous mode named \'" +
+                                                                 tcRefConfig.previousMode +
+                                                                 "\'"));
+        }
+    }
     
-    private ModeImpl initModeFromConfig(ModeImpl mode, ModeConfig mc) {
+    private ModeImpl initModeFromConfig(ModeImpl mode, ModeConfig mc, boolean initPrevModes) {
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
         for (int j = 0; j < mc.tcRefConfigs.length; j++) {
-            TCRefConfig tcRefConfig = (TCRefConfig) mc.tcRefConfigs[j];
+            TCRefConfig tcRefConfig = mc.tcRefConfigs[j];
             if(DEBUG) {
                 debugLog("\tTopComponent[" + j + "] id=\"" // NOI18N
                     + tcRefConfig.tc_id + "\", \topened=" + tcRefConfig.opened); // NOI18N
@@ -391,6 +424,9 @@ final public class PersistenceHandler implements PersistenceObserver {
             wm.setTopComponentDockedInMaximizedMode( tcRefConfig.tc_id, tcRefConfig.dockedInMaximizedMode );
             wm.setTopComponentSlidedInDefaultMode( tcRefConfig.tc_id, !tcRefConfig.dockedInDefaultMode );
             wm.setTopComponentMaximizedWhenSlidedIn( tcRefConfig.tc_id, tcRefConfig.slidedInMaximized );
+            if (initPrevModes) {
+                initPreviousMode(mode, tcRefConfig);
+            }
         }
 
         // PENDING Refine the unneded computing.
@@ -765,7 +801,7 @@ final public class PersistenceHandler implements PersistenceObserver {
             debugLog("WMI.modeConfigAdded mo:" + modeConfig.name); // NOI18N
         }
         ModeImpl mode = getModeFromConfig(modeConfig);
-        initModeFromConfig(mode, modeConfig);
+        initModeFromConfig(mode, modeConfig, true);
     }
     
     /** Handles removing mode from model.
@@ -797,17 +833,20 @@ final public class PersistenceHandler implements PersistenceObserver {
         if(DEBUG) {
             debugLog("WMI.topComponentRefConfigAdded mo:" + modeName + " tcRef:" + tcRefConfig.tc_id); // NOI18N
         }
-        
+
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
         wm.setTopComponentDockedInMaximizedMode( tcRefConfig.tc_id, tcRefConfig.dockedInMaximizedMode );
         wm.setTopComponentSlidedInDefaultMode( tcRefConfig.tc_id, !tcRefConfig.dockedInDefaultMode );
         wm.setTopComponentMaximizedWhenSlidedIn( tcRefConfig.tc_id, tcRefConfig.slidedInMaximized );
+        ModeImpl mode = (ModeImpl) name2mode.get(modeName);
+        if (mode != null) {
+            initPreviousMode(mode, tcRefConfig);
+        }
         
         TopComponent tc = getTopComponentForID(tcRefConfig.tc_id,true);
-        if(tc != null) {
-            ModeImpl mode = (ModeImpl)name2mode.get(modeName);
-            if(mode != null) {
-                if(tcRefConfig.opened) {
+        if (tc != null) {
+            if (mode != null) {
+                if (tcRefConfig.opened) {
                     mode.addOpenedTopComponent(tc);
                 } else {
                     mode.addClosedTopComponent(tc);
