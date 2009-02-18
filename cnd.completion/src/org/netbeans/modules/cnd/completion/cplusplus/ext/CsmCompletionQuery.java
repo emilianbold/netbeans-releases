@@ -899,7 +899,8 @@ abstract public class CsmCompletionQuery {
         }
 
         @SuppressWarnings({"fallthrough", "unchecked"})
-        boolean resolveExp(CsmCompletionExpression exp) {            boolean lastDot = false; // dot at the end of the whole expression?
+        boolean resolveExp(CsmCompletionExpression exp) {
+            boolean lastDot = false; // dot at the end of the whole expression?
             boolean ok = true;
 
             switch (exp.getExpID()) {
