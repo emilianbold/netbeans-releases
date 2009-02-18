@@ -84,7 +84,7 @@ final class RDocAnalyzer {
         List<TypeCommentAnalyzer> result = new ArrayList<TypeCommentAnalyzer>();
         result.add(new ClassNameAnalyzer());
         result.add(new CustomClassNameAnalyzer());
-        result.add(new FixnumAnalyzer());
+        result.add(new NumericAnalyzer());
         result.add(new TrueFalseAnalyzer());
         result.add(new StringAnalyzer());
         return result;
@@ -342,15 +342,38 @@ final class RDocAnalyzer {
     }
 
 
-    private static final class FixnumAnalyzer extends TypeCommentAnalyzer {
+    private static final class NumericAnalyzer extends TypeCommentAnalyzer {
 
         protected String doGetType(String typeInComment) {
-            for (int i = 0; i < typeInComment.length(); i++) {
-                if (!Character.isDigit(typeInComment.charAt(i))) {
-                    return null;
-                }
+            if (isFixnum(typeInComment)) {
+                return "Fixnum";
             }
-            return "Fixnum";
+            if (isFloat(typeInComment)) {
+                return "Float";
+            }
+            return null;
+        }
+        
+        private boolean isFixnum(String str) {
+            try {
+                Integer.parseInt(str);
+                return true;
+            } catch (NumberFormatException nfe) {
+                // check for +, otherwise e.g. +5 is not recognized correctly
+                if (str.startsWith("+") && str.length() > 1) {
+                    return isFixnum(str.substring(1));
+                }
+                return false;
+            }
+        }
+
+        private boolean isFloat(String str) {
+            try {
+                Float.parseFloat(str);
+                return true;
+            } catch (NumberFormatException nfe) {
+                return false;
+            }
         }
     }
 

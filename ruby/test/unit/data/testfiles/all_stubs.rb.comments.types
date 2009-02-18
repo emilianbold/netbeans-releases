@@ -11,7 +11,7 @@
   ==> [Fixnum]
 
 #  stub => 0.0
-  ==> []
+  ==> [Float]
 
 #  stub => 0, 1
   ==> [Fixnum]
