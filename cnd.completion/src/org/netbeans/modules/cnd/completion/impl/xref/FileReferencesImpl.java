@@ -410,7 +410,7 @@ public class FileReferencesImpl extends CsmFileReferences  {
         }
 
         public ReferenceContextBuilder(ReferenceContextBuilder b) {
-            context = new ReferenceContextImpl(b.context);
+            context = new ReferenceContextImpl(b.context, true);
             brackets = new ArrayList<CppTokenId>(b.brackets);
             pushes = new ArrayList<Integer>(b.pushes);
             snapshots = b.snapshots;
