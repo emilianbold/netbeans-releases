@@ -105,7 +105,9 @@ public class UninitializedVariableRule  extends PHPRule implements VarStackReadi
             if (context.path.size() > 1) {
                 ASTNode grandpa = context.path.get(1);
                 
-                if (grandpa instanceof FieldAccess || grandpa instanceof StaticFieldAccess) {
+                if (grandpa instanceof FieldAccess || grandpa instanceof StaticFieldAccess
+                        // issue #157823
+                        || grandpa instanceof ArrayAccess) {
                     return;
                 }
             }
