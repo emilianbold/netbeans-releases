@@ -63,7 +63,7 @@ import org.w3c.dom.svg.SVGRect;
  *           &lt;set attributeName="visibility" attributeType="XML" begin="age_spinner.focusin" fill="freeze" to="visible"/>
  *           &lt;set attributeName="visibility" attributeType="XML" begin="age_spinner.focusout" fill="freeze" to="hidden"/>
  *       &lt;/rect>
- *       &lt;rect  x="5.0" y="0.0" width="33" height="20" fill="none" stroke="black" stroke-width="2"/>
+ *       &lt;rect id="age_spinner_border" x="5.0" y="0.0" width="33" height="20" fill="none" stroke="black" stroke-width="2"/>
  *   &lt;g id="age_spinner_editor">
  *       &lt;!-- this editor is SVGTextField component -->
  *
@@ -78,12 +78,6 @@ import org.w3c.dom.svg.SVGRect;
  *           &lt;!-- Metadata information. Please don't edit. -->
  *           &lt;text display="none">type=text&lt;/text>
  *       &lt;/g>
- *       
- *       &lt;!-- The rectangle below is difference between rectangle that bounds spinner and spinner buttons ( the latter 
- *       has id = age_spinner_up and age_spinner_down ). It needed for counting bounds of input text area .
- *       It should be created programatically or SVGTextField should have API for dealing with "width"
- *       of editor not based only on width of text field component.-->
- *       &lt;rect visibility="hidden" x="5.0" y="0" width="33" height="20"/>
  *   &lt;/g>
  *   &lt;g>
  *       &lt;!-- Metadata information. Please don't edit. -->
@@ -197,16 +191,28 @@ public class SVGSpinner extends SVGComponent implements DataListener {
 
     private void initEditor() {
         SVGLocatableElement editor =null;
+        SVGLocatableElement border = null;
         if ( getElement().getId() != null ){
             editor = (SVGLocatableElement)getElementById( getElement(), 
                     getElement().getId()+EDITOR_SUFFIX);
+            border = (SVGLocatableElement)getElementById( getElement(),
+                    getElement().getId()+SVGTextField.BORDER_SUFFIX);
         }
         if (editor == null) {
             editor = (SVGLocatableElement) getElementByMeta(getElement(), TYPE,
                     EDITOR);
         }
-        if (editor != null) {
-            setEditor(new DefaultSpinnerEditor(getForm(), editor, myUILock));
+        if (editor != null && border != null ) {
+            float buttonWidth = 0;
+            if ( myDownButton != null ){
+                buttonWidth = ((SVGLocatableElement)myDownButton).getBBox().getWidth();
+            }
+            else if (myUpButton != null ){
+                buttonWidth = ((SVGLocatableElement)myUpButton).getBBox().getWidth();
+            }
+            setEditor(new DefaultSpinnerEditor(getForm(), editor,
+                    border.getBBox().getWidth() -buttonWidth,
+                    border.getBBox().getX(), myUILock));
         }
     }
     
@@ -425,9 +431,9 @@ public class SVGSpinner extends SVGComponent implements DataListener {
     private class DefaultSpinnerEditor extends SVGTextField {
 
         DefaultSpinnerEditor( SVGForm form, SVGLocatableElement element ,
-                Object lock )
+                float width, float x,Object lock )
         {
-            super(form, element);
+            super(form, element, width, x);
             myLock = lock;
             SVGSpinner.this.addActionListener(new SVGActionListener() {
 

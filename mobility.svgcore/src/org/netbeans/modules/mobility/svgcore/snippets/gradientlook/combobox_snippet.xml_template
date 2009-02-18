@@ -4,7 +4,7 @@
                     <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%.focusin"                 fill="freeze" to="visible"/>
                     <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%.focusout"                 fill="freeze" to="hidden"/>
                 </rect>
-                <rect id="_22" transform=""   x="5.0" y="0.0" rx="4" ry="4" width="80" height="20" fill="none" stroke="rgb(73,46,55)" stroke-width="1.5"/>
+                <rect id="%%COMPONENT_ID%%_border" transform=""   x="5.0" y="0.0" rx="4" ry="4" width="80" height="20" fill="none" stroke="rgb(73,46,55)" stroke-width="1.5"/>
                 <g>
                     <g>
                         <image width="334" height="125" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAVIAAAB9CAYAAADwWOu4AAAACXBIWXMAAC4jAAAuIwF4pT92AAAA
@@ -42,7 +42,6 @@
                         <text id="%%COMPONENT_ID%%_editor_text" x="10.0" y="16.0" font-size="16" >Item 1		    </text>                    <!-- Metadata information. Please don't edit. -->
                         <text display="none">type=text</text>
                     </g>
-                    <rect visibility="hidden" x="5.0" y="0" width="60" height="20" />
                 </g>
             </g>
             <g id="%%COMPONENT_ID%%_list" visibility="hidden"   transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)">		<!-- Metadata information. Please don't edit. -->
