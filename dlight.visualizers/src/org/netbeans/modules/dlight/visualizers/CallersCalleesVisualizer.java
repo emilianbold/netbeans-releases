@@ -48,20 +48,25 @@ import javax.swing.JButton;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
-import org.netbeans.modules.dlight.core.stack.api.Function;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
+import org.netbeans.modules.dlight.core.stack.spi.SourceFileInfoProvider;
 import org.netbeans.modules.dlight.util.UIThread;
+import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.TreeTableVisualizerConfiguration;
+import org.netbeans.modules.dlight.visualizers.api.impl.OpenFunctionInEditorActionProvider;
 import org.netbeans.modules.dlight.visualizers.api.impl.TreeTableVisualizerConfigurationAccessor;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
@@ -81,6 +86,7 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
     CallersCalleesVisualizer(StackDataProvider dataProvider, TreeTableVisualizerConfiguration configuration) {
         super(configuration, dataProvider);
         this.configuration = (CallersCalleesVisualizerConfiguration) configuration;
+        this.configuration.setNodeActionProvider(new NodeActionsProviderImpl());
         this.dataProvider = dataProvider;
         isCalls = NbPreferences.forModule(CallersCalleesVisualizer.class).getBoolean(IS_CALLS, true);
         setEmptyContent();
@@ -310,29 +316,6 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
         updateList(res);
     }
 
-
-//  private void updateList(List<FunctionCall> list) {
-//    TREE_ROOT.removeAllChildren();
-//
-//    UIThread.invoke(new Runnable() {
-//      public void run() {
-//        treeModelImpl.fireTreeModelChanged();
-//      }
-//    });
-//
-//    if (list != null) {
-//      for (FunctionCall call : list) {
-//        TREE_ROOT.add(new DefaultMutableTreeNode(call));
-//      }
-//    }
-//
-//    UIThread.invoke(new Runnable() {
-//      public void run() {
-//        treeModelImpl.fireTreeModelChanged();
-//      }
-//    });
-//
-//  }
     @Override
     protected void updateButtons() {
         if (TreeTableVisualizerConfigurationAccessor.getDefault().isTableView(getConfiguration())) {
@@ -370,38 +353,44 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
     class NodeActionsProviderImpl implements NodeActionsProvider {
 
         public void performDefaultAction(Object node) throws UnknownTypeException {
-            if (!(node instanceof Function)) {
+            if (!(node instanceof DefaultMutableTreeNode)) {
                 throw new UnknownTypeException(node);
             }
+            DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) node;
+            Object nodeObject = treeNode.getUserObject();
+            if (!(nodeObject instanceof FunctionCallTreeTableNode)) {
+                return;
+            }
+            //find function name
+            OpenFunctionInEditorActionProvider.getInstance().openFunction(((FunctionCallTreeTableNode) nodeObject).getValue() + "");
+//                return (nodeObject instanceof FunctionCallTreeTableNode) ? ((TreeTableNode) nodeObject).getValue() + " " : nodeObject.toString();
+
         }
 
         public Action[] getActions(Object node) throws UnknownTypeException {
-            if (!(node instanceof Function)) {
+            if (!(node instanceof DefaultMutableTreeNode)) {
                 throw new UnknownTypeException(node);
             }
+            DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) node;
+            Object nodeObject = treeNode.getUserObject();
+            if (!(nodeObject instanceof FunctionCallTreeTableNode)) {
+                return null;
+            }
+            final String functionName = ((FunctionCallTreeTableNode) nodeObject).getValue() + "";
             //final TableVisualizerEvent event = (TableVisualizerEvent)node;
-            AbstractAction openAnnotatedSourceAction = new AbstractAction("Go To Source") {
+            AbstractAction goToSourceAction = new AbstractAction(NbBundle.getMessage(CallersCalleesVisualizer.class, "GoToSourceActionName") + " " + functionName) {
 
                 public void actionPerformed(ActionEvent e) {
-//          ExplorerManager manager = ExplorerManager.find(ObjectTableTreeRepresentation.this);
-//          if (manager == null){
-//            throw new UnsupportedOperationException("Not supported yet.");
-//          }
-//          Node node = manager.getRootContext();
-//          SourceSupportProvider sourceSupportProvider = node.getLookup().lookup(SourceSupportProvider.class);
-//          if (sourceSupportProvider == null){
-//            return;
-//          }
-//          DLightDataProvider dtraceExecutor = node.getLookup().lookup(DLightDataProvider.class);
-//          if (dtraceExecutor == null){
-//            return;
-//          }
-//          sourceSupportProvider.showAnnotatedSource(
-//                  dtraceExecutor.getFunctionTableLineInfo(Integer.valueOf(event.getX())),
-//                  METRIC_ANNOTATION_TYPE, event.getY() + "");
+                    OpenFunctionInEditorActionProvider.getInstance().openFunction(functionName);
+                }
+
+                @Override
+                public boolean isEnabled() {
+                    return Lookup.getDefault().lookup(SourceSupportProvider.class) != null &&
+                        Lookup.getDefault().lookup(SourceFileInfoProvider.class) != null;
                 }
             };
-            return new Action[]{openAnnotatedSourceAction};
+            return new Action[]{goToSourceAction};
         }
     }
 
