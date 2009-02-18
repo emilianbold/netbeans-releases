@@ -57,9 +57,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.platform.gems.GemInfo;
-import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.platform.gems.GemManager.VersionPredicate;
-import org.netbeans.napi.gsfret.source.Source;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -849,21 +848,22 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     }
 
     private void updateIndexRoots() {
-        if (!indexInitialized) {
-            indexInitialized = true;
-            // HACK, fix soon
-            // Let RepositoryUpdater and friends know where they can root preindexing
-            // This should be done in a cleaner way.
-            //org.netbeans.modules.gsfret.source.usages.Index.setPreindexRootUrl(getHomeUrl());
-
-            org.netbeans.modules.gsfret.source.usages.Index.addPreindexRoot(FileUtil.toFileObject(getHome(true)));
-
-            if (hasRubyGemsInstalled()) {
-                FileObject gemFo = getGemManager().getGemHomeFO();
-                org.netbeans.modules.gsfret.source.usages.Index.addPreindexRoot(gemFo);
-            }
-
-        }
+        // XXX - Parsing API
+//        if (!indexInitialized) {
+//            indexInitialized = true;
+//            // HACK, fix soon
+//            // Let RepositoryUpdater and friends know where they can root preindexing
+//            // This should be done in a cleaner way.
+//            //org.netbeans.modules.gsfret.source.usages.Index.setPreindexRootUrl(getHomeUrl());
+//
+//            org.netbeans.modules.gsfret.source.usages.Index.addPreindexRoot(FileUtil.toFileObject(getHome(true)));
+//
+//            if (hasRubyGemsInstalled()) {
+//                FileObject gemFo = getGemManager().getGemHomeFO();
+//                org.netbeans.modules.gsfret.source.usages.Index.addPreindexRoot(gemFo);
+//            }
+//
+//        }
     }
 
     /**
@@ -874,7 +874,8 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         updateIndexRoots();
 
         // Ensure that source cache is wiped and classpaths recomputed for existing files
-        Source.clearSourceCache();
+        // XXX - Parsing API
+//        Source.clearSourceCache();
 
         if (pcs != null) {
             pcs.firePropertyChange("roots", null, null); // NOI18N

@@ -32,26 +32,15 @@
                         <specification-version>1.8</specification-version>
                     </run-dependency>
                 </dependency>
-                 <!--
                 <dependency>
-                    <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
+                    <code-name-base>org.netbeans.modules.csl.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.27</specification-version>
+                        <specification-version>1.8</specification-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.editor.lib2</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.4</specification-version>
-                    </run-dependency>
-                </dependency>
-                -->
                 <dependency>
                     <code-name-base>org.netbeans.modules.extexecution</code-name-base>
                     <build-prerequisite/>
@@ -59,24 +48,6 @@
                     <run-dependency>
                         <release-version>2</release-version>
                         <specification-version>1.13</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.gsf.api</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>2</release-version>
-                        <specification-version>1.7.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.gsfpath.api</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>0.30</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -88,17 +59,6 @@
                         <specification-version>1.4</specification-version>
                     </run-dependency>
                 </dependency>
-                <!--
-                <dependency>
-                    <code-name-base>org.netbeans.modules.options.editor</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.10</specification-version>
-                    </run-dependency>
-                </dependency>
-                -->
                 <dependency>
                     <code-name-base>org.netbeans.modules.projectapi</code-name-base>
                     <build-prerequisite/>
@@ -402,7 +362,7 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-	    <public-packages/>
+            <public-packages/>
             <!--
 	    <friend-packages/>
                 <friend>org.netbeans.modules.ruby.debugger</friend>

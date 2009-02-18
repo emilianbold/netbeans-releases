@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.php.editor.parser;
 
-import org.netbeans.modules.gsf.GsfTestCompilationInfo;
-import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 
@@ -179,31 +177,32 @@ public class SanitizeSourceTest extends ParserTestBase {
     }
 
     protected String getTestResult(String filename) throws Exception {
-        GsfTestCompilationInfo info = getInfo("testfiles/" + filename + ".php");
-        StringBuffer textresult = new StringBuffer();
-        int offset = info.getText().indexOf('^');
-        if (offset > -1) {
-            String content = info.getText();
-            content = content.substring(0, offset) + content.substring(offset+1, content.length()-1);
-            info = getInfoForText(content, "testFile.php");
-            info.setCaretOffset(offset);
-        }
-
-        ParserResult result = info.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, 0);
-
-        if (result == null) {
-            textresult.append("Not possible to parse");
-        } else {
-            PHPParseResult phpResult = (PHPParseResult)result;
-            Program program = phpResult.getProgram();
-
-            if (program != null){
-                textresult.append((new PrintASTVisitor()).printTree(program, 0));
-            }
-            else {
-                textresult.append("Program is null");
-            }
-        }
-        return textresult.toString();
+        return null;
+//        GsfTestCompilationInfo info = getInfo("testfiles/" + filename + ".php");
+//        StringBuffer textresult = new StringBuffer();
+//        int offset = info.getText().indexOf('^');
+//        if (offset > -1) {
+//            String content = info.getText();
+//            content = content.substring(0, offset) + content.substring(offset+1, content.length()-1);
+//            info = getInfoForText(content, "testFile.php");
+//            info.setCaretOffset(offset);
+//        }
+//
+//        ParserResult result = info.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, 0);
+//
+//        if (result == null) {
+//            textresult.append("Not possible to parse");
+//        } else {
+//            PHPParseResult phpResult = (PHPParseResult)result;
+//            Program program = phpResult.getProgram();
+//
+//            if (program != null){
+//                textresult.append((new PrintASTVisitor()).printTree(program, 0));
+//            }
+//            else {
+//                textresult.append("Program is null");
+//            }
+//        }
+//        return textresult.toString();
     }
 }

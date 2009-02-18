@@ -41,7 +41,7 @@ package org.netbeans.modules.ruby.testrunner.ui;
 import java.awt.event.ActionEvent;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.ruby.RubyDeclarationFinder;
 import org.netbeans.modules.ruby.platform.execution.ExecutionUtils.FileLocation;

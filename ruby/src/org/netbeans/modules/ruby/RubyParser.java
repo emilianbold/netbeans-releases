@@ -41,11 +41,13 @@
 package org.netbeans.modules.ruby;
 
 import org.jruby.nb.common.IRubyWarnings.ID;
-import org.netbeans.modules.gsf.api.ParserResult.AstTreeNode;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.RootNode;
@@ -56,20 +58,18 @@ import org.jruby.nb.lexer.yacc.SyntaxException;
 import org.jruby.nb.parser.DefaultRubyParser;
 import org.jruby.nb.parser.ParserConfiguration;
 import org.jruby.nb.parser.RubyParserResult;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.Error;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParseEvent;
-import org.netbeans.modules.gsf.api.ParseListener;
-import org.netbeans.modules.gsf.api.Parser;
-import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.PositionManager;
-import org.netbeans.modules.gsf.api.Severity;
-import org.netbeans.modules.gsf.api.SourceFileReader;
-import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.ParserFactory;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.RubyElement;
 import org.openide.filesystems.FileObject;
@@ -93,8 +93,9 @@ import org.openide.util.NbBundle;
  * 
  * @author Tor Norbye
  */
-public final class RubyParser implements Parser {
-    private final PositionManager positions = createPositionManager();
+public final class RubyParser extends Parser {
+
+    private RubyParseResult lastResult;
 
     /**
      * Creates a new instance of RubyParser
@@ -102,48 +103,59 @@ public final class RubyParser implements Parser {
     public RubyParser() {
     }
 
+    // ------------------------------------------------------------------------
+    // o.n.m.p.spi.Parser implementation
+    // ------------------------------------------------------------------------
+
+    public @Override void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
+        Context context = new Context(snapshot, event);
+        final List<Error> errors = new ArrayList<Error>();
+        context.errorHandler = new ParseErrorHandler() {
+            public void error(Error error) {
+                errors.add(error);
+            }
+        };
+        lastResult = parseBuffer(context, Sanitize.NONE);
+        lastResult.setErrors(errors);
+    }
+
+    public @Override Result getResult(Task task) throws ParseException {
+        assert lastResult != null : "getResult() called prior parse()"; //NOI18N
+        return lastResult;
+    }
+
+    public @Override void cancel() {
+    }
+
+    public @Override void addChangeListener(ChangeListener changeListener) {
+        // no-op, we don't support state changes
+    }
+
+    public @Override void removeChangeListener(ChangeListener changeListener) {
+        // no-op, we don't support state changes
+    }
+
+
+    // ------------------------------------------------------------------------
+    // o.n.m.p.spi.ParserFactory implementation
+    // ------------------------------------------------------------------------
+
+    private static final class Factory extends ParserFactory {
+
+        @Override
+        public Parser createParser(Collection<Snapshot> snapshots) {
+            return new RubyParser();
+        }
+
+    } // End of Factory class
+
+
     private static String asString(CharSequence sequence) {
         if (sequence instanceof String) {
             return (String)sequence;
         } else {
             return sequence.toString();
         }
-    }
-
-    /** Parse the given set of files, and notify the parse listener for each transition
-     * (compilation results are attached to the events )
-     */
-    public void parseFiles(Parser.Job job) {
-        ParseListener listener = job.listener;
-        SourceFileReader reader = job.reader;
-        
-        for (ParserFile file : job.files) {
-            ParseEvent beginEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, null);
-            listener.started(beginEvent);
-            
-            ParserResult result = null;
-
-            try {
-                CharSequence buffer = reader.read(file);
-                String source = asString(buffer);
-                int caretOffset = reader.getCaretOffset(file);
-                if (caretOffset != -1 && job.translatedSource != null) {
-                    caretOffset = job.translatedSource.getAstOffset(caretOffset);
-                }
-                Context context = new Context(file, listener, source, caretOffset, job.translatedSource);
-                result = parseBuffer(context, Sanitize.NONE);
-            } catch (IOException ioe) {
-                listener.exception(ioe);
-                result = createParseResult(file, null, null, null, null);
-            }
-
-            ParseEvent doneEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, result);
-            listener.finished(doneEvent);
-        }
-    }
-
-    protected PositionManager createPositionManager() {
-        return new RubyPositionManager();
     }
 
     /**
@@ -342,12 +354,11 @@ public final class RubyParser implements Parser {
     }
     
     @SuppressWarnings("fallthrough")
-    private RubyParseResult sanitize(final Context context,
-        final Sanitize sanitizing) {
+    private RubyParseResult sanitize(final Context context, final Sanitize sanitizing) {
 
         switch (sanitizing) {
         case NEVER:
-            return createParseResult(context.file, null, null, null, null);
+            return createParseResult(context.snapshot, null);
 
         case NONE:
 
@@ -405,7 +416,7 @@ public final class RubyParser implements Parser {
         case MISSING_END:
         default:
             // We're out of tricks - just return the failed parse result
-            return createParseResult(context.file, null, null, null, null);
+            return createParseResult(context.snapshot, null);
         }
     }
     
@@ -437,8 +448,7 @@ public final class RubyParser implements Parser {
             }
         }
         
-        Error error = new RubyError(description, id, context.file.getFileObject(), offset, offset, severity, data);
-        context.listener.error(error);
+        Error error = new RubyError(description, id, context.snapshot.getSource().getFileObject(), offset, offset, severity, data);
 
         if (sanitizing == Sanitize.NONE) {
             context.errorOffset = offset;
@@ -529,8 +539,9 @@ public final class RubyParser implements Parser {
 
             String fileName = "";
 
-            if ((context.file != null) && (context.file.getFileObject() != null)) {
-                fileName = context.file.getFileObject().getNameExt();
+            final FileObject fo = context.snapshot.getSource().getFileObject();
+            if (fo != null) {
+                fileName = fo.getNameExt();
             }
 
             ParserConfiguration configuration = new ParserConfiguration(0, true, false, true);
@@ -616,7 +627,7 @@ public final class RubyParser implements Parser {
         if (root != null) {
             context.sanitized = sanitizing;
             AstNodeAdapter ast = new AstNodeAdapter(null, root);
-            RubyParseResult r = createParseResult(context.file, ast, root, realRoot, result);
+            RubyParseResult r = createParseResult(context.snapshot, root);
             r.setSanitized(context.sanitized, context.sanitizedRange, context.sanitizedContents);
             r.setSource(source);
             return r;
@@ -625,19 +636,14 @@ public final class RubyParser implements Parser {
         }
     }
     
-    protected RubyParseResult createParseResult(ParserFile file, AstTreeNode ast, Node root,
-        RootNode realRoot, RubyParserResult jrubyResult) {
-        return new RubyParseResult(this, file, ast, root, realRoot, jrubyResult);
+    protected RubyParseResult createParseResult(Snapshot snapshots, Node rootNode) {
+        return new RubyParseResult(this, snapshots, rootNode);
     }
     
-    public PositionManager getPositionManager() {
-        return positions;
-    }
-
-    public static RubyElement resolveHandle(CompilationInfo info, ElementHandle handle) {
+    public static RubyElement resolveHandle(ParserResult info, ElementHandle handle) {
         if (handle instanceof AstElement) {
             AstElement element = (AstElement)handle;
-            CompilationInfo oldInfo = element.getInfo();
+            ParserResult oldInfo = element.getInfo();
             if (oldInfo == info) {
                 return element;
             }
@@ -724,8 +730,8 @@ public final class RubyParser implements Parser {
 
     /** Parsing context */
     public static class Context {
-        private final ParserFile file;
-        private final ParseListener listener;
+        private final Snapshot snapshot;
+        private final SourceModificationEvent event;
         private int errorOffset;
         private String source;
         private String sanitizedSource;
@@ -733,19 +739,18 @@ public final class RubyParser implements Parser {
         private String sanitizedContents;
         private int caretOffset;
         private Sanitize sanitized = Sanitize.NONE;
-        private TranslatedSource translatedSource;
+        private ParseErrorHandler errorHandler;
         
-        public Context(ParserFile parserFile, ParseListener listener, String source, int caretOffset, TranslatedSource translatedSource) {
-            this.file = parserFile;
-            this.listener = listener;
-            this.source = source;
-            this.caretOffset = caretOffset;
-            this.translatedSource = translatedSource;
+        public Context(Snapshot snapshot, SourceModificationEvent event) {
+            this.snapshot = snapshot;
+            this.event = event;
+            this.source = asString(snapshot.getText());
+            this.caretOffset = GsfUtilities.getLastKnownCaretOffset(snapshot, event);
         }
         
         @Override
         public String toString() {
-            return "RubyParser.Context(" + file.toString() + ")"; // NOI18N
+            return "RubyParser.Context(" + snapshot.getSource().getFileObject() + ")"; // NOI18N
         }
         
         public OffsetRange getSanitizedRange() {
@@ -764,8 +769,13 @@ public final class RubyParser implements Parser {
             return errorOffset;
         }
     }
-    
+
+    private static interface ParseErrorHandler {
+        void error(Error error);
+    }
+
     public static class RubyError implements Error {
+        
         private final String displayName;
         private final ID id;
         private final FileObject file;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,13 +46,20 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.SymbolNode;
 import org.jruby.nb.ast.types.INameNode;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.ruby.AstUtilities;
+import org.netbeans.modules.ruby.RubyParseResult;
+import org.netbeans.modules.ruby.RubyParser;
 import org.netbeans.modules.ruby.RubyType;
+import org.netbeans.modules.ruby.lexer.LexUtilities;
 
 /**
  * A Ruby element coming from a JRuby parse tree.
@@ -62,14 +69,14 @@ import org.netbeans.modules.ruby.RubyType;
 public abstract class AstElement extends RubyElement {
 
     protected Node node;
-    protected CompilationInfo info;
+    protected ParserResult info;
     protected ArrayList<AstElement> children;
     protected String name;
     private String in;
     protected Set<Modifier> modifiers;
     private RubyType type;
 
-    public AstElement(CompilationInfo info, Node node) {
+    public AstElement(ParserResult info, Node node) {
         super();
         this.info = info;
         this.node = node;
@@ -93,6 +100,7 @@ public abstract class AstElement extends RubyElement {
     //
     //        return name;
     //    }
+
     public String getDisplayName() {
         return getName();
     }
@@ -126,7 +134,7 @@ public abstract class AstElement extends RubyElement {
         children.add(child);
     }
 
-    public static AstElement create(CompilationInfo info, Node node) {
+    public static AstElement create(ParserResult info, Node node) {
         switch (node.nodeId) {
         case DEFNNODE:
         case DEFSNODE:
@@ -185,7 +193,7 @@ public abstract class AstElement extends RubyElement {
         return Collections.emptySet();
     }
 
-    public CompilationInfo getInfo() {
+    public ParserResult getInfo() {
         return info;
     }
 
@@ -197,4 +205,40 @@ public abstract class AstElement extends RubyElement {
     public RubyType getType() {
         return type;
     }
+
+    @Override
+    public OffsetRange getOffsetRange(ParserResult result) {
+        RubyParseResult parserResult = AstUtilities.getParseResult(result);
+        Element object = RubyParser.resolveHandle(parserResult, this);
+
+        if (object instanceof AstElement) {
+            Node target = ((AstElement) object).getNode();
+            if (target != null) {
+                OffsetRange range = AstUtilities.getRange(node);
+                return LexUtilities.getLexerOffsets(parserResult, range);
+            } else {
+                return OffsetRange.NONE;
+            }
+        } else if (object != null) {
+            Logger logger = Logger.getLogger(AstElement.class.getName());
+            logger.log(Level.WARNING, "Foreign element: " + object + " of type " + //NOI18N
+                    ((object != null) ? object.getClass().getName() : "null")); //NOI18N
+        } else {
+            if (getNode() != null) {
+                OffsetRange astRange = AstUtilities.getRange(getNode());
+                if (astRange != OffsetRange.NONE) {
+                    ParserResult oldInfo = info;
+                    if (oldInfo == null) {
+                        oldInfo = parserResult;
+                    }
+                    return LexUtilities.getLexerOffsets(oldInfo, astRange);
+                } else {
+                    return OffsetRange.NONE;
+                }
+            }
+        }
+
+        return OffsetRange.NONE;
+    }
+
 }

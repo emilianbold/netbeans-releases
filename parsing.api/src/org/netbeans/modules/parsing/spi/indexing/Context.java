@@ -39,13 +39,13 @@
 
 package org.netbeans.modules.parsing.spi.indexing;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.net.URI;
-import org.netbeans.modules.parsing.impl.indexing.IndexingSPIAccessor;
-import org.netbeans.modules.parsing.spi.Parser.Result;
+import java.net.URL;
+import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
 
 /**
  * Represents a context of indexing given root.
@@ -54,33 +54,37 @@ import org.openide.util.Exceptions;
 //@NotThreadSafe
 public final class Context {
 
-    private final URI rootURI;
+    private final URL rootURL;
+    private final FileObject indexBaseFolder;
     private final FileObject indexFolder;
     private final String indexerName;
     private final int indexerVersion;
     private FileObject root;
 
-    static {
-        IndexingSPIAccessor.setInstance(new MyAccessor());
-    }
+    //unit test
+    final IndexFactoryImpl factory;
 
-    Context (final FileObject indexFolder,
-             final URI rootURI, String indexerName, int indexerVersion) {
-        assert indexFolder != null;
-        assert rootURI != null;
+    Context (final FileObject indexBaseFolder,
+             final URL rootURL, final String indexerName, final int indexerVersion,
+             final IndexFactoryImpl factory) throws IOException {
+        assert indexBaseFolder != null;
+        assert rootURL != null;
         assert indexerName != null;
-        this.indexFolder = indexFolder;
-        this.rootURI = rootURI;
+        this.indexBaseFolder = indexBaseFolder;
+        this.rootURL = rootURL;
         this.indexerName = indexerName;
         this.indexerVersion = indexerVersion;
+        this.factory = factory;
+        final String path = getIndexerPath(indexerName, indexerVersion); //NOI18N
+        this.indexFolder = FileUtil.createFolder(this.indexBaseFolder,path);
     }
 
     /**
      * Returns the cache folder where the indexer may store language metadata.
      * For each root and indexer there exist a separate cache folder.
-     * @return The cahce folder
+     * @return The cache folder
      */
-    public FileObject getIndexFolder () {
+    public FileObject getIndexFolder () {        
         return this.indexFolder;
     }
 
@@ -88,8 +92,8 @@ public final class Context {
      * Return the {@link URI} of the processed root
      * @return the absolute URI
      */
-    public URI getRootURI () {
-        return this.rootURI;
+    public URL getRootURI () {
+        return this.rootURL;
     }
 
     /**
@@ -100,35 +104,21 @@ public final class Context {
      * @return the root or null when the root doesn't exist
      */
     public FileObject getRoot () {
-        if (root == null) {
-            try {
-                root = URLMapper.findFileObject(this.rootURI.toURL());
-            } catch (MalformedURLException e) {
-                //Never thrown
-                Exceptions.printStackTrace(e);
-                return null;
-            }
+        if (root == null) {            
+            root = URLMapper.findFileObject(this.rootURL);
         }
         return root;
     }
 
+    String getIndexerName () {
+        return this.indexerName;
+    }
 
+    int getIndexerVersion () {
+        return this.indexerVersion;
+    }
 
-    private static class MyAccessor extends IndexingSPIAccessor {
-
-        @Override
-        public void index(EmbeddingIndexer indexer, Result parserResult, Context ctx) {
-            indexer.index(parserResult, ctx);
-        }
-
-        @Override
-        public String getIndexerName(final Context ctx) {
-            return ctx.indexerName;
-        }
-
-        @Override
-        public int getIndexerVersion(final Context ctx) {
-            return ctx.indexerVersion;
-        }
+    static String getIndexerPath (final String indexerName, final int indexerVersion) {
+        return indexerName+"/"+indexerVersion;
     }
 }

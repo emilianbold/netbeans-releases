@@ -31,9 +31,9 @@ import java.io.IOException;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
+import org.netbeans.modules.csl.core.Language;
+import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.editor.bracesmatching.api.BracesMatchingTestUtils;
-import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.html.editor.test.TestBase;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
