@@ -59,6 +59,7 @@ class PlatformLauncher {
 
     static const char *PROXY_DIRECT;
     static const char *HEAP_DUMP_PATH;
+    static const char *RESTART_FILE_PATH;
 
     static const char *OPT_JDK_HOME;
     static const char *OPT_NB_PLATFORM_HOME;
@@ -104,6 +105,7 @@ private:
     void addToClassPath(const char *path, bool onlyIfExists = false);
     void addJarsToClassPathFrom(const char *dir);
     bool run(bool updater, DWORD *retCode);
+    bool restartRequested();
 
 private:
     bool separateProcess;
