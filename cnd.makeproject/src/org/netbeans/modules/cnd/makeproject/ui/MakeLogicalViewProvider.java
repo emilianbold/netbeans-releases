@@ -1216,7 +1216,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                         String toFolderPath = IpeUtils.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
                         FileObject toFolderFO = FileUtil.toFileObject(new File(toFolderPath));
                         String newName = IpeUtils.createUniqueFileName(toFolderPath, fo.getName(), ext);
-                        FileObject copiedFileObject = fo.copy(toFolderFO, newName, ext);
+                        fo.copy(toFolderFO, newName, ext);
                     } else if (IpeUtils.isPathAbsolute(item.getPath())) {
                         toFolder.addItem(new Item(item.getPath()));
                     } else if (item.getPath().startsWith("..")) { // NOI18N
@@ -1233,7 +1233,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                         FileObject fo = item.getFileObject();
                         String ext = fo.getExt();
                         String newName = IpeUtils.createUniqueFileName(parent, fo.getName(), ext);
-                        //FileObject copy = fo.copy(toProject.getProjectDirectory(), newName, ext);
+                        fo.copy(toProject.getProjectDirectory(), newName, ext);
                         String newPath = newName;
                         if (ext.length() > 0) {
                             newPath = newPath + "." + ext; // NOI18N

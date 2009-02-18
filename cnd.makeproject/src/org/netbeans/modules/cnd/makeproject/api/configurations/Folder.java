@@ -793,15 +793,6 @@ public class Folder implements FileChangeListener, ChangeListener {
         return new LinkedHashSet<DataObject>(files);
     }
 
-    public String[] getItemNamesAsArray() {
-        Item[] items = getItemsAsArray();
-        String[] names = new String[items.length];
-        for (int i = 0; i < items.length; i++) {
-            names[i] = items[i].getPath();
-        }
-        return names;
-    }
-
     /*
      * Returns a set of all logical folder in this folder as an array
      */
