@@ -48,10 +48,9 @@ import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
-
-// TODO: implement SessionListener - kill idbe on Session closure
 public final class PerfanDataStorage extends DataStorage {
 
+    private final Object lock = new String(PerfanDataStorage.class.getName());
     private static final Logger log = DLightLogger.getLogger(PerfanDataStorage.class);
     private Erprint erprint;
 
@@ -60,22 +59,36 @@ public final class PerfanDataStorage extends DataStorage {
     }
 
     public void init(ExecutionEnvironment execEnv, String sproHome, String experimentDirectory) {
+        if (erprint != null) {
+            erprint.stop();
+        }
+        
         erprint = new Erprint(execEnv, sproHome, experimentDirectory);
     }
 
+    // TODO: implement!
     public Object[] getCallees(long ref) {
         return null;
     }
 
+    // TODO: implement!
     public Object[] getCallers(long ref) {
         return null;
     }
 
+    /**
+     * For now assume that getTopFunctions is a method that forces er_print restart...
+     * TODO: change the behavior later...
+     */
     public String[] getTopFunctions(String mspec, String msort, int limit) {
-        System.out.println("Actual metrics: " + erprint.setMetrics(mspec));
-        System.out.println("Actual sort by: " + erprint.setSortBy(msort));
-
-        return erprint.getHotFunctions(limit);
+        String[] result = null;
+        synchronized (lock) {
+            erprint.restart();
+            erprint.setMetrics(mspec);
+            erprint.setSortBy(msort);
+            result = erprint.getHotFunctions(limit);
+        }
+        return result;
     }
 
     @Override

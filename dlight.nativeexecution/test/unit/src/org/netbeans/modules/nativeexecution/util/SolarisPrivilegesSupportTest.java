@@ -49,7 +49,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.support.ObservableAction;
+import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 
 /**
  *
@@ -135,10 +135,8 @@ public class SolarisPrivilegesSupportTest {
         ExecutionEnvironment execEnv = new ExecutionEnvironment();
         List<String> requestedPrivileges = Arrays.asList("dtrace_proc", "dtrace_kernel");
         SolarisPrivilegesSupport instance = SolarisPrivilegesSupport.getInstance();
-        ObservableAction<Boolean> action = instance.requestPrivilegesAction(execEnv, requestedPrivileges);
-
-        boolean result = action.invoke();
-        System.out.println("Action's result is " + result);
+        AsynchronousAction action = instance.requestPrivilegesAction(execEnv, requestedPrivileges, null);
+        action.invoke();
 
         List<String> privs = instance.getExecutionPrivileges(execEnv);
 

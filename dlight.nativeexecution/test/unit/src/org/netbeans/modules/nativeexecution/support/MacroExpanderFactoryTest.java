@@ -83,7 +83,7 @@ public class MacroExpanderFactoryTest {
         System.out.println("getExpander");
         ExecutionEnvironment execEnv = new ExecutionEnvironment("ak119685", "brighton.russia.sun.com");
 //        ExecutionEnvironment execEnv = new ExecutionEnvironment();
-        ConnectionManager.getInstance().getConnectToAction(execEnv).invoke();
+        ConnectionManager.getInstance().getConnectToAction(execEnv, null).invoke();
         MacroExpander expander = MacroExpanderFactory.getExpander(execEnv, "SunStudio");
         try {
             System.out.println("$osname-${platform}$_isa -> " + expander.expandMacros("$osname-$platform$_isa"));

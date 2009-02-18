@@ -60,8 +60,9 @@ import org.openide.windows.InputOutput;
 /**
  *
  */
-public class Erprint {
+public final class Erprint {
 
+    private final Object lock = new String(Erprint.class.getName());
     private final ExecutionEnvironment execEnv;
     private final String er_printCmd;
     private final String experimentDirectory;
@@ -76,37 +77,12 @@ public class Erprint {
         this.erOutputProcessor = new FilteredInputProcessor();
     }
 
-    synchronized void start() {
+    private final void start() {
         final CountDownLatch doneSignal = new CountDownLatch(1);
 
         NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, er_printCmd);
-        npb = npb.setArguments(experimentDirectory).addNativeProcessListener(new ChangeListener() {
-
-            public void stateChanged(ChangeEvent e) {
-                NativeProcess process = (NativeProcess) e.getSource();
-                if (process.getState() == NativeProcess.State.RUNNING) {
-                    final PrintWriter writer = new PrintWriter(process.getOutputStream());
-                    new Thread(new Runnable() {
-
-                        public void run() {
-                            writer.write("limit -1\n");
-                            writer.flush();
-                            String[] er_output;
-                            while (true) {
-                                Thread.yield();
-                                er_output = erOutputProcessor.getBuffer();
-                                if (er_output.length > 0) {
-                                    erOutputProcessor.setPrompt(er_output[0]);
-                                    break;
-                                }
-                            }
-                            in = writer;
-                            doneSignal.countDown();
-                        }
-                    }).start();
-                }
-            }
-        });
+        npb = npb.addNativeProcessListener(new ErprintListener(doneSignal));
+        npb = npb.setArguments(experimentDirectory);
 
         ExecutionDescriptor descr = new ExecutionDescriptor();
         descr = descr.inputOutput(InputOutput.NULL);
@@ -118,95 +94,100 @@ public class Erprint {
             }
         });
 
-        ExecutionService service = ExecutionService.newService(npb, descr, "collect"); // NOI18N
+        ExecutionService service = ExecutionService.newService(npb, descr, "er_print"); // NOI18N
         er_printTask = service.run();
 
         try {
+            // Wait until prompt received ...
+            // comes from the listener (ErprintListener)
             doneSignal.await();
         } catch (InterruptedException ex) {
         }
     }
 
-    synchronized void stop() {
+    final void stop() {
         // TODO: do it more gracefully
-        er_printTask.cancel(true);
-        er_printTask = null;
+        if (er_printTask != null) {
+            er_printTask.cancel(true);
+            er_printTask = null;
+            erOutputProcessor.reset(null);
+        }
     }
 
-    synchronized void refresh() {
-        stop();
-        start();
+    final void restart() {
+        synchronized (lock) {
+            stop();
+            start();
+        }
     }
 
-    synchronized private String[] exec(String command) {
+    private String[] exec(String command) {
         return exec(command, -1);
     }
 
-    synchronized private String[] exec(String command, int limit) {
-        if (er_printTask == null || er_printTask.isDone()) {
-            start();
-        }
+    private String[] exec(String command, int limit) {
+        String[] result = null;
 
-        if (in == null) {
-            return null;
-        }
+        synchronized (lock) {
+            if (er_printTask == null || er_printTask.isDone()) {
+                restart();
+            }
 
-        CountDownLatch doneSignal = new CountDownLatch(limit > 0 ? 3 : 2);
-        erOutputProcessor.reset(doneSignal);
+            if (in == null) {
+                return null;
+            }
 
-        if (limit > 0) {
-            in.write("limit " + limit + "\n");
+            final CountDownLatch doneSignal = new CountDownLatch(limit > 0 ? 3 : 2);
+            erOutputProcessor.reset(doneSignal);
+
+            if (limit > 0) {
+                in.println("limit " + limit); // NOI18N
+                in.flush();
+            }
+
+            in.println(command);
             in.flush();
+            in.println("limit -1"); // NOI18N
+            in.flush();
+
+            try {
+                doneSignal.await();
+            } catch (InterruptedException ex) {
+            }
+
+            result = erOutputProcessor.getBuffer();
         }
 
-        in.write(command + "\n");
-        in.flush();
-        in.write("limit -1\n");
-        in.flush();
-
-        try {
-            doneSignal.await();
-        } catch (InterruptedException ex) {
-        }
-
-        return erOutputProcessor.getBuffer();
+        return result;
     }
 
     String setMetrics(String mspec) {
-        String[] result = exec("metrics " + mspec); // NOI18N
-        return result == null ? "" // NOI18N
+        String[] result = null;
+        result = exec("metrics " + mspec); // NOI18N
+        return (result == null || result.length == 0) ? "" // NOI18N
                 : result[0].substring(result[0].indexOf(':') + 1); // NOI18N
     }
 
     String setSortBy(String msort) {
         String[] result = exec("sort " + msort); // NOI18N
-        return result == null ? "" // NOI18N
+        return (result == null || result.length == 0) ? "" // NOI18N
                 : result[0].substring(result[0].indexOf(':') + 1); // NOI18N
     }
 
     String[] getHotFunctions(int limit) {
-        erOutputProcessor.setFilterType(FilterType.onlyContainsNumbers);
-        String[] result = exec("functions", limit);
-        erOutputProcessor.setFilterType(FilterType.noFiltering);
+        String[] result = null;
+        synchronized (lock) {
+            erOutputProcessor.setFilterType(FilterType.onlyContainsNumbers);
+            result = exec("functions", limit);
+            erOutputProcessor.setFilterType(FilterType.noFiltering);
+        }
         return result;
     }
 
     String[] getCallersCallees(int limit) {
-        String[] ccOut = exec("callers-callees", limit);
-        ArrayList<String> result = new ArrayList<String>();
-
-        for (String s : ccOut) {
-            if (s.length() == 0) {
-                result.add(s);
-            } else {
-                char c = s.charAt(0);
-                if ((c >= '0' && c <= '9') || c == '\n') {
-                    result.add(s);
-                }
-            }
-        }
-
-        return result.toArray(new String[0]);
+        String[] ccOut = exec("callers-callees", limit); // NOI18N
+        // TODO: process output
+        return new String[0];
     }
 
     private static class ErprintErrorRedirectorFactory
@@ -216,7 +197,7 @@ public class Erprint {
             return InputProcessors.copying(new OutputStreamWriter(System.err) {
 
                 final StringBuilder sb = new StringBuilder();
-                final static String prefix = "!!!!! ER_PRINT !!!! : ";
+                final static String prefix = "!!!!! ER_PRINT SAYS !!!! : ";
 
                 @Override
                 public void write(char[] chars) throws IOException {
@@ -252,7 +233,7 @@ public class Erprint {
         @Override
         public void processInput(char[] chars) throws IOException {
             String data = new String(chars, 0, chars.length);
-            String[] lines = data.split("\n");
+            String[] lines = data.split("\n"); // NOI18N
 
             for (String line : lines) {
                 if (prompt != null && line.startsWith(prompt)) {
@@ -264,12 +245,13 @@ public class Erprint {
 
                 if (line.length() != 0) {
                     switch (filterType) {
+                        // TODO: fixme Need correct filtering.
                         case onlyContainsNumbers:
-                            if (!line.contains("0")) {
+                            if (!line.contains(",")) {
                                 continue;
                             }
                     }
-                    buffer.add(line);
+                    buffer.add(line.trim());
                 }
             }
         }
@@ -285,9 +267,21 @@ public class Erprint {
             return buffer.toArray(new String[0]);
         }
 
-        private void reset(CountDownLatch doneSignal) {
+        private void reset(CountDownLatch doneSignal) throws IllegalThreadStateException {
+            if (this.doneSignal != null && this.doneSignal.getCount() > 0) {
+                String message = "SYNCHRONIZATION PROBLEM!!!\n" +
+                        "An attempt to reset er_print input processor \n" +
+                        "BEFORE previous output is processed"; // NOI18N
+
+                throw new IllegalThreadStateException(message);
+            }
             buffer.clear();
             this.doneSignal = doneSignal;
+            // null - a special case. This means that er_print process has
+            // changed. So, prompt will be fetched again.... 
+            if (doneSignal == null) {
+                prompt = null;
+            }
         }
     }
 
@@ -295,5 +289,54 @@ public class Erprint {
 
         noFiltering,
         onlyContainsNumbers,
+    }
+
+    private final class ErprintListener implements ChangeListener {
+
+        private final CountDownLatch doneSignal;
+
+        public ErprintListener(CountDownLatch doneSignal) {
+            this.doneSignal = doneSignal;
+        }
+
+        public void stateChanged(ChangeEvent e) {
+            NativeProcess process = (NativeProcess) e.getSource();
+
+            switch (process.getState()) {
+                case RUNNING:
+                    final PrintWriter writer = new PrintWriter(process.getOutputStream());
+                    final Runnable onStart = new Runnable() {
+
+                        public void run() {
+                            writer.println("limit -1"); // NOI18N
+                            writer.flush();
+                            String[] er_output;
+                            while (true) {
+                                er_output = erOutputProcessor.getBuffer();
+                                if (er_output.length == 1) {
+                                    erOutputProcessor.setPrompt(er_output[0]);
+                                    break;
+                                } else {
+                                    try {
+                                        Thread.sleep(100);
+                                    } catch (InterruptedException ex) {
+                                    }
+                                }
+                            }
+
+                            in = writer;
+                            doneSignal.countDown();
+                        }
+                    };
+
+                    Thread promptReaderThread = new Thread(onStart);
+                    promptReaderThread.start();
+
+                    break;
+                case ERROR:
+                    doneSignal.countDown();
+                    break;
+            }
+        }
     }
 }

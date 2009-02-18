@@ -59,6 +59,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
+import org.netbeans.modules.nativeexecution.support.InputRedirectorFactory;
 import org.openide.windows.InputOutput;
 
 /**
@@ -141,15 +142,18 @@ public final class CommonTasksSupport {
 
         ExecutionDescriptor descriptor =
                 new ExecutionDescriptor().inputOutput(
-                InputOutput.NULL).outProcessorFactory(
-                new InputProcessorFactory() {
+                InputOutput.NULL);
+        if (error != null) {
+            descriptor = descriptor.outProcessorFactory(
+                    new InputProcessorFactory() {
 
-                    public InputProcessor newInputProcessor(
-                            InputProcessor defaultProcessor) {
-                        return new FilterInputProcessor(
-                                InputProcessors.copying(error));
-                    }
-                });
+                        public InputProcessor newInputProcessor(
+                                InputProcessor defaultProcessor) {
+                            return new FilterInputProcessor(
+                                    InputProcessors.copying(error));
+                        }
+                    });
+        }
 
         ExecutionService execService = ExecutionService.newService(
                 npb, descriptor, "Upload file " + srcFileName + // NOI18N
@@ -158,20 +162,52 @@ public final class CommonTasksSupport {
         return execService.run();
     }
 
-    public static Future<Integer> rmFile(ExecutionEnvironment execEnv, String fname) {
+    /**
+     * Creates a task for removing a file <tt>fname</tt> from the host
+     * identified by the <tt>execEnv</tt>.
+     * @param execEnv execution environment to delete file from
+     * @param fname the file name with the full path to it
+     * @param error if not <tt>NULL</tt> and some error occurs during file 
+     *        removing, an error message will be written to this <tt>Writer</tt>.
+     * @return a <tt>Future&lt;Integer&gt;</tt> representing pending completion
+     *         of the file removing task. The result of this Future indicates
+     *         whether the file was removed (0) or not.
+     */
+    public static Future<Integer> rmFile(
+            ExecutionEnvironment execEnv,
+            String fname, final Writer error) {
         NativeProcessBuilder npb =
                 new NativeProcessBuilder(execEnv, "/bin/rm"); // NOI18N
-        npb = npb.setArguments("-f", fname);
-        
+        npb = npb.setArguments("-f", fname); // NOI18N
+
         ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
                 InputOutput.NULL);
+
+        if (error != null) {
+            descriptor = descriptor.errProcessorFactory(
+                    new InputRedirectorFactory(error));
+        }
+
         ExecutionService execService = ExecutionService.newService(
                 npb, descriptor, "Remove file " + fname); // NOI18N
         return execService.run();
     }
 
-    public static Future<Integer> rmDir(ExecutionEnvironment execEnv,
-            String dirname, boolean recursively) {
+    /**
+     * Creates a task for removing a directory <tt>dirname</tt> from the host
+     * identified by the <tt>execEnv</tt>.
+     * @param execEnv execution environment to delete the directory from
+     * @param dirname the file name with the full path to it
+     * @param recursively if set to <tt>true</tt> then directory is to be
+     *        removed recursively.
+     * @param error if not <tt>NULL</tt> and some error occurs during directory
+     *        removing, an error message will be written to this <tt>Writer</tt>.
+     * @return a <tt>Future&lt;Integer&gt;</tt> representing pending completion
+     *         of the directory removing task. The result of this Future indicates
+     *         whether the directory was removed (0) or not.
+     */
+    public static Future<Integer> rmDir(final ExecutionEnvironment execEnv,
+            String dirname, boolean recursively, final Writer error) {
         String cmd = recursively ? "/bin/rm" : "/bin/rmdir";
 
         String[] args = recursively
@@ -183,6 +219,12 @@ public final class CommonTasksSupport {
 
         ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
                 InputOutput.NULL);
+
+        if (error != null) {
+            descriptor = descriptor.errProcessorFactory(
+                    new InputRedirectorFactory(error));
+        }
+
         ExecutionService execService = ExecutionService.newService(
                 npb, descriptor, "Remove directory " + dirname); // NOI18N
 
