@@ -334,11 +334,13 @@ public final class ParserQueue {
         builder.append(file);
         builder.append("\n of project ").append(file.getProjectImpl(true)); // NOI18N
         builder.append("\n content of projects files set:\n"); // NOI18N
-        builder.append(files);
-        builder.append("\nqueue content is:\n"); // NOI18N
-        builder.append(toString(queue, false));
-        builder.append("\nprojectData content is:\n"); // NOI18N
-        builder.append(projectData);
+        if (files != null) {
+            builder.append(files);
+            builder.append("\nqueue content is:\n"); // NOI18N
+            builder.append(toString(queue, false));
+            builder.append("\nprojectData content is:\n"); // NOI18N
+            builder.append(projectData);
+        }
         return builder.toString();
     }
 
@@ -401,6 +403,8 @@ public final class ParserQueue {
                     } else {
                         CndUtils.assertTrue(false, "ProjectData contains another instance of file " + file + ", so there is no matching entry in the queue"); // NOI18N
                     }
+                    traceState4File(file, files);
+                    traceState4File(findFile, null);
                 } else {
                     if (clearPrevState) {
                         entry.setStates(ppStates);
