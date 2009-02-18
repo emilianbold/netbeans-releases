@@ -128,7 +128,7 @@ public class GoToTest implements TestLocator {
                 for (FileObject fileObject : files) {
                     if (CommandUtils.isPhpFile(fileObject)
                             && FileUtil.isParentOf(sources, fileObject)) {
-                        return new LocationResult(files.iterator().next(), -1);
+                        return new LocationResult(fileObject, -1);
                     }
                 }
             }
@@ -148,7 +148,7 @@ public class GoToTest implements TestLocator {
                 for (FileObject fileObject : files) {
                     if (CommandUtils.isPhpFile(fileObject)
                             && FileUtil.isParentOf(tests, fileObject)) {
-                        return new LocationResult(files.iterator().next(), -1);
+                        return new LocationResult(fileObject, -1);
                     }
                 }
             }
