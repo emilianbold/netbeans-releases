@@ -403,8 +403,8 @@ public final class ParserQueue {
                     } else {
                         CndUtils.assertTrue(false, "ProjectData contains another instance of file " + file + ", so there is no matching entry in the queue"); // NOI18N
                     }
-                    traceState4File(file, files);
-                    traceState4File(findFile, null);
+                    System.err.println(traceState4File(file, files));
+                    System.err.println(traceState4File(findFile, null));
                 } else {
                     if (clearPrevState) {
                         entry.setStates(ppStates);
