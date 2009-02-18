@@ -233,11 +233,16 @@ public final class CreateHostVisualPanel2 extends JPanel {
 
     private ProgressHandle phandle;
     
-    /* package-local */String hostFound() {
+    /* package-local */ String hostFound() {
         return hostFound;
     }
 
+    /* package-local */ Runnable getRunOnFinish() {
+        return runOnFinish;
+    }
+
     private String hostFound = null;
+    private Runnable runOnFinish = null;
 
     private String getHostKey() {
         return getLoginName() + '@' + hostname;
@@ -292,8 +297,13 @@ public final class CreateHostVisualPanel2 extends JPanel {
                         public void close() throws IOException {
                         }
                     });
-                    CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(hostKey);
-                    csm.initialize(false);
+                    final CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(hostKey);
+                   csm.initialize(false, false);
+                    runOnFinish = new Runnable() {
+                        public void run() {
+                            csm.finishInitialization();
+                        }
+                    };
                     hostFound = csm.getHost(); //TODO: no validations, pure cheat
                     wizardListener.stateChanged(null);
                 } else {
