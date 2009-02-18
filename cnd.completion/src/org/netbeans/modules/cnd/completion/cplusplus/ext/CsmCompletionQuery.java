@@ -1754,7 +1754,7 @@ abstract public class CsmCompletionQuery {
                     }
                 }
                 CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
-                return ip.instantiate(template, params);
+                return ip.instantiate(template, params, getFinder().getCsmFile());
             }
             return null;
         }
