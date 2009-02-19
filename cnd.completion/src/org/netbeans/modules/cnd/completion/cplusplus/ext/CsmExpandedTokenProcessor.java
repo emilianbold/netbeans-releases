@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
  *
  * @author Nick Krasilnikov
  */
-public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<CppTokenId>> {
+public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<CppTokenId>>, MacroCallback {
 
     private final CndTokenProcessor<Token<CppTokenId>> tp;
     private final Document doc;
@@ -106,7 +106,7 @@ public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<
         return tp.isStopped();
     }
 
-    public boolean isInMacro() {
+    public boolean isMacroExpansion() {
         return inMacro;
     }
 
@@ -148,15 +148,15 @@ public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<
                             if (!expTS.moveNext()) {
                                 if (expToken.text().toString().equals(token.text().toString()) &&
                                         expToken.id().equals(token.id())) {
-                                    res = processMacroToken(token, tokenOffset);
+                                    res = tp.token(token, tokenOffset);
                                 } else {
-                                    res = processMacroToken(expToken, tokenOffset);
+                                    res = tp.token(expToken, tokenOffset);
                                 }
                             } else {
-                                res = processMacroToken(expToken, tokenOffset);
-                                res = processMacroToken(expTS.token(), tokenOffset);
+                                res = tp.token(expToken, tokenOffset);
+                                res = tp.token(expTS.token(), tokenOffset);
                                 while (expTS.moveNext()) {
-                                    res = processMacroToken(expTS.token(), tokenOffset);
+                                    res = tp.token(expTS.token(), tokenOffset);
                                 }
                             }
                             return res;
@@ -169,14 +169,6 @@ public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<
             inMacro = false;
         }
         return tp.token(token, tokenOffset);
-    }
-
-    private boolean processMacroToken(Token<CppTokenId> token, int tokenOffset) {
-        int macroOffset = tokenOffset;
-        if (offset != -1 && macroOffset + token.length() >= offset) {
-            macroOffset = offset - token.length() - 1;
-        }
-        return tp.token(token, macroOffset);
     }
 
     private boolean isWhitespace(Token<CppTokenId> docToken) {

@@ -240,7 +240,7 @@ public class FileReferencesImpl extends CsmFileReferences  {
             } else {
                 res = expandedTokenProcessor.token(token, tokenOffset);
             }
-            if (inMacro && !expandedTokenProcessor.isInMacro()) {
+            if (inMacro && !expandedTokenProcessor.isMacroExpansion()) {
                 // end of macro
                 originalReferencesProcessor.references.addAll(macroReferencesProcessor.references);
                 inMacro = false;
