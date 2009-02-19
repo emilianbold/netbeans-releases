@@ -195,6 +195,9 @@ public class ConfigActionTest extends ConfigAction {
         assert testDirectory != null : "Test directory should be defined for running a test file";
         FileObject fileObj = CommandUtils.fileForContextOrSelectedNodes(context, testDirectory);
         assert fileObj != null : "Fileobject not found for context: " + context;
+        if (!fileObj.isValid()) {
+            return null;
+        }
         return Pair.of(fileObj.getParent(), fileObj.getName());
     }
 
