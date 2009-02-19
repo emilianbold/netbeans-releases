@@ -173,6 +173,9 @@ public final class AquaLFCustoms extends LFCustoms {
             SPLIT_PANE_DIVIDER_SIZE_VERTICAL, new Integer(3),
             SPLIT_PANE_DIVIDER_SIZE_HORIZONTAL, new Integer(3),
 
+            "NbExplorerView.quicksearch.border", new Color(64,64,64),
+            "NbExplorerView.quicksearch.background.top", new Color(197,197,197),
+            "NbExplorerView.quicksearch.background.bottom", new Color(150,150,150),
             "NbExplorerView.background", new Color(226,226,226),
             "NbEditorStatusBar.background", new Color(226,226,226),
             "NbEditorGlyphGutter.background", new Color(255,255,255),
