@@ -6,10 +6,10 @@
 
 # Macros
 TOP=`pwd`
-CND_PLATFORM=SunStudio-Solaris-x86
-TMPDIR=build/SUN/${CND_PLATFORM}/tmp-packaging
+CND_PLATFORM=GNU-Solaris-x86
+TMPDIR=build/GNU-64/${CND_PLATFORM}/tmp-packaging
 TMPDIRNAME=tmp-packaging
-OUTPUT_PATH=dist/SUN/${CND_PLATFORM}/dlight_simple_tests
+OUTPUT_PATH=dist/GNU-64/${CND_PLATFORM}/dlight_simple_tests
 OUTPUT_BASENAME=dlight_simple_tests
 PACKAGE_TOP_DIR=dlightsimpletests/
 
@@ -50,7 +50,7 @@ function copyFileToTmpDir
 
 # Setup
 cd "${TOP}"
-mkdir -p dist/SUN/${CND_PLATFORM}/package
+mkdir -p dist/GNU-64/${CND_PLATFORM}/package
 rm -rf ${TMPDIR}
 mkdir -p ${TMPDIR}
 
@@ -62,9 +62,9 @@ copyFileToTmpDir "${OUTPUT_PATH}" "${TMPDIR}/${PACKAGE_TOP_DIR}bin/${OUTPUT_BASE
 
 # Generate tar file
 cd "${TOP}"
-rm -f dist/SUN/${CND_PLATFORM}/package/dlightsimpletests.tar
+rm -f dist/GNU-64/${CND_PLATFORM}/package/dlightsimpletests.tar
 cd ${TMPDIR}
-tar -vcf ../../../../dist/SUN/${CND_PLATFORM}/package/dlightsimpletests.tar *
+tar -vcf ../../../../dist/GNU-64/${CND_PLATFORM}/package/dlightsimpletests.tar *
 checkReturnCode
 
 # Cleanup
