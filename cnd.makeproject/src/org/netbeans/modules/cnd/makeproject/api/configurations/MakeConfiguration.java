@@ -795,6 +795,8 @@ public class MakeConfiguration extends Configuration {
         val = IpeUtils.expandMacro(val, "${OUTPUT_BASENAME}", IpeUtils.getBaseName(getOutputValue())); // NOI18N
         val = IpeUtils.expandMacro(val, "${PLATFORM}", getVariant()); // Backward compatibility // NOI18N
         val = IpeUtils.expandMacro(val, "${CND_PLATFORM}", getVariant()); // NOI18N
+        val = IpeUtils.expandMacro(val, "${CND_CONF}", getName()); // NOI18N
+        val = IpeUtils.expandMacro(val, "${CND_DISTDIR}", MakeConfiguration.DIST_FOLDER); // NOI18N
         return val;
     }
 //

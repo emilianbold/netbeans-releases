@@ -286,7 +286,7 @@ public class ArchiverConfiguration implements AllOptionsProvider {
                 break;
         }
         outputName = ConfigurationSupport.makeNameLegal(outputName);
-        return MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + "${CND_PLATFORM}" + "/" + outputName; // UNIX path // NOI18N
+        return "${CND_DISTDIR}" + "/" + "${CND_CONF}" + "/" + "${CND_PLATFORM}" + "/" + outputName; // UNIX path // NOI18N
     }
     
     /*
