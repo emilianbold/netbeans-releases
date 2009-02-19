@@ -170,8 +170,13 @@ public class QueryPanel extends javax.swing.JPanel {
         criteriaPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
         queryHeaderPanel = new javax.swing.JPanel();
         lastRefreshLabel = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
 
         byLastChangePanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
@@ -240,7 +245,7 @@ public class QueryPanel extends javax.swing.JPanel {
                         .add(changedBlaBlaLabel)
                         .add(newValueTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 71, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                .addContainerGap(25, Short.MAX_VALUE))
         );
 
         byPeoplePanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
@@ -552,7 +557,7 @@ public class QueryPanel extends javax.swing.JPanel {
             tableHeaderPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(tableHeaderPanelLayout.createSequentialGroup()
                 .add(tableSummaryLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 525, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 557, Short.MAX_VALUE)
                 .add(filterLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(filterComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 137, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -572,7 +577,7 @@ public class QueryPanel extends javax.swing.JPanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, tableFieldsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(tableFieldsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, tablePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 748, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, tablePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 780, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, tableHeaderPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -581,7 +586,7 @@ public class QueryPanel extends javax.swing.JPanel {
             .add(tableFieldsPanelLayout.createSequentialGroup()
                 .add(tableHeaderPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(tablePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 101, Short.MAX_VALUE)
+                .add(tablePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 113, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -637,7 +642,7 @@ public class QueryPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(jLabel2)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 633, Short.MAX_VALUE)
+                .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 665, Short.MAX_VALUE)
                 .addContainerGap())
         );
         urlPanelLayout.setVerticalGroup(
@@ -657,16 +662,16 @@ public class QueryPanel extends javax.swing.JPanel {
             .add(criteriaPanelLayout.createSequentialGroup()
                 .add(byLastChangeLabel)
                 .addContainerGap())
-            .add(byTextContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 746, Short.MAX_VALUE)
-            .add(byLastChangeContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 746, Short.MAX_VALUE)
+            .add(byTextContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 778, Short.MAX_VALUE)
+            .add(byLastChangeContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 778, Short.MAX_VALUE)
             .add(criteriaPanelLayout.createSequentialGroup()
                 .add(byDetailsLabel)
                 .addContainerGap())
-            .add(byDetailsContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 746, Short.MAX_VALUE)
+            .add(byDetailsContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 778, Short.MAX_VALUE)
             .add(criteriaPanelLayout.createSequentialGroup()
                 .add(byPeopleLabel)
                 .addContainerGap())
-            .add(byPeopleContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 746, Short.MAX_VALUE)
+            .add(byPeopleContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 778, Short.MAX_VALUE)
             .add(urlPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         criteriaPanelLayout.setVerticalGroup(
@@ -719,7 +724,7 @@ public class QueryPanel extends javax.swing.JPanel {
                 .add(idTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 191, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(gotoIssueButton)
-                .addContainerGap(385, Short.MAX_VALUE))
+                .addContainerGap(417, Short.MAX_VALUE))
         );
         gotoPanelLayout.setVerticalGroup(
             gotoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -728,6 +733,12 @@ public class QueryPanel extends javax.swing.JPanel {
                 .add(jLabel1))
             .add(idTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
         );
+
+        jLabel7.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel7.text")); // NOI18N
+        jLabel7.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        jLabel8.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel8.text")); // NOI18N
+        jLabel8.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
         org.jdesktop.layout.GroupLayout searchPanelLayout = new org.jdesktop.layout.GroupLayout(searchPanel);
         searchPanel.setLayout(searchPanelLayout);
@@ -742,11 +753,15 @@ public class QueryPanel extends javax.swing.JPanel {
                         .add(saveChangesButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(cancelChangesButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 92, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 96, Short.MAX_VALUE)
                         .add(saveButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jLabel7)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(webButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(6, 6, 6)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jLabel8)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(urlToggleButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(criteriaPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -767,9 +782,13 @@ public class QueryPanel extends javax.swing.JPanel {
                     .add(searchPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                         .add(urlToggleButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(webButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(saveButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(saveButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(jLabel7)
+                        .add(jLabel8)))
                 .addContainerGap())
         );
+
+        searchPanelLayout.linkSize(new java.awt.Component[] {jLabel7, jLabel8, saveButton, urlToggleButton, webButton}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         queryHeaderPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
 
@@ -807,6 +826,15 @@ public class QueryPanel extends javax.swing.JPanel {
             }
         });
 
+        jLabel4.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel4.text_1")); // NOI18N
+        jLabel4.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        jLabel5.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel5.text")); // NOI18N
+        jLabel5.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        jLabel6.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel6.text")); // NOI18N
+        jLabel6.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
         org.jdesktop.layout.GroupLayout queryHeaderPanelLayout = new org.jdesktop.layout.GroupLayout(queryHeaderPanel);
         queryHeaderPanel.setLayout(queryHeaderPanelLayout);
         queryHeaderPanelLayout.setHorizontalGroup(
@@ -816,16 +844,22 @@ public class QueryPanel extends javax.swing.JPanel {
                 .add(queryHeaderPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(queryHeaderPanelLayout.createSequentialGroup()
                         .add(nameLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 595, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 627, Short.MAX_VALUE)
                         .add(lastRefreshLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(lastRefreshDateLabel))
                     .add(queryHeaderPanelLayout.createSequentialGroup()
                         .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jLabel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(modifyButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(7, 7, 7)
+                        .add(jLabel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(seenButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(5, 5, 5)
+                        .add(jLabel6)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
@@ -833,19 +867,28 @@ public class QueryPanel extends javax.swing.JPanel {
         queryHeaderPanelLayout.setVerticalGroup(
             queryHeaderPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(queryHeaderPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(queryHeaderPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(nameLabel)
-                    .add(lastRefreshDateLabel)
-                    .add(lastRefreshLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(queryHeaderPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(queryHeaderPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(queryHeaderPanelLayout.createSequentialGroup()
+                        .add(11, 11, 11)
+                        .add(nameLabel))
+                    .add(queryHeaderPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(queryHeaderPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(lastRefreshDateLabel)
+                            .add(lastRefreshLabel))))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 10, Short.MAX_VALUE)
+                .add(queryHeaderPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                    .add(jLabel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 11, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 11, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel6)
                     .add(modifyButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(seenButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(removeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(removeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
+
+        queryHeaderPanelLayout.linkSize(new java.awt.Component[] {jLabel4, jLabel5, jLabel6, modifyButton, removeButton, seenButton}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -934,6 +977,11 @@ public class QueryPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
     private javax.swing.JScrollPane jScrollPane1;
     final javax.swing.JScrollPane jScrollPane2 = new javax.swing.JScrollPane();
     final javax.swing.JScrollPane jScrollPane3 = new javax.swing.JScrollPane();
