@@ -18,14 +18,14 @@
 #
 #  Available make variable:
 #
+#     CND_BASEDIR                base directory for relative paths
+#     CND_DISTDIR                default top distribution directory (build artifacts)
+#     CND_BUILDDIR               default top build directory (object files, ...)
 #     CONF                       name of current configuration
-#     CND_DIST_DIR_NAME          default top distribution directory (build targets)
-#     CND_BUILD_DIR_NAME         default top build directory (object files, ...)
-#     CND_BUILD_DIR_PATH_${CONF} path to directory for tmp build files (object files, ...)
 #     CND_PLATFORM_${CONF}       platform name (current configuration)
-#     CND_TARGET_DIR_${CONF}     target directory (current configuration)
-#     CND_TARGET_NAME_${CONF}    name of target (current configuration)
-#     CND_TARGET_PATH_${CONF}    path to target (current configuration)
+#     CND_ARTIFACT_DIR_${CONF}   directory of build artifact (current configuration)
+#     CND_ARTIFACT_NAME_${CONF}  name of build artifact (current configuration)
+#     CND_ARTIFACT_PATH_${CONF}  path to build artifact (current configuration)
 #
 #  Main targets can be executed directly, and they are:
 #  

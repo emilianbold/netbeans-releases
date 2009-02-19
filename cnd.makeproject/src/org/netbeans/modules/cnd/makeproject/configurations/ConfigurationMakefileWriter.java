@@ -696,18 +696,15 @@ public class ConfigurationMakefileWriter {
         bw.write("#\n"); // NOI18N
         bw.write("# NOCDDL\n"); // NOI18N
         bw.write("#\n"); // NOI18N
-        bw.write("CND_BUILD_DIR_NAME=build\n"); // NOI18N
-        bw.write("CND_DIST_DIR_NAME=dist\n"); // NOI18N
+        bw.write("CND_BASEDIR=`pwd`\n"); // NOI18N
+        bw.write("CND_BUILDDIR=build\n"); // NOI18N
+        bw.write("CND_DISTDIR=dist\n"); // NOI18N
 
         Configuration[] confs = projectDescriptor.getConfs().getConfs();
         for (int i = 0; i < confs.length; i++) {
             MakeConfiguration makeConf = (MakeConfiguration) confs[i];
             bw.write("# " + makeConf.getName() + " configuration"); // NOI18N
             bw.write("\n"); // NOI18N // NOI18N
-            if (!makeConf.isMakefileConfiguration()) {
-                bw.write("CND_BUILD_DIR_PATH_" + makeConf.getName() + "=" + makeConf.expandMacros(getObjectDir(makeConf))); // NOI18N
-                bw.write("\n"); // NOI18N
-            }
             bw.write("CND_PLATFORM_" + makeConf.getName() + "=" + makeConf.getVariant()); // NOI18N
             bw.write("\n"); // NOI18N // NOI18N
             String outputPath = makeConf.expandMacros(makeConf.getOutputValue());
@@ -718,11 +715,11 @@ public class ConfigurationMakefileWriter {
             String outputName = IpeUtils.getBaseName(outputPath);
 //            outputPath = FilePathAdaptor.naturalize(outputPath);
 //            outputDir = FilePathAdaptor.naturalize(outputDir);
-            bw.write("CND_TARGET_DIR_" + makeConf.getName() + "=" + outputDir); // NOI18N
+            bw.write("CND_ARTIFACT_DIR_" + makeConf.getName() + "=" + outputDir); // NOI18N
             bw.write("\n"); // NOI18N
-            bw.write("CND_TARGET_NAME_" + makeConf.getName() + "=" + outputName); // NOI18N
+            bw.write("CND_ARTIFACT_NAME_" + makeConf.getName() + "=" + outputName); // NOI18N
             bw.write("\n"); // NOI18N
-            bw.write("CND_TARGET_PATH_" + makeConf.getName() + "=" + outputPath); // NOI18N
+            bw.write("CND_ARTIFACT_PATH_" + makeConf.getName() + "=" + outputPath); // NOI18N
             bw.write("\n"); // NOI18N
         }
     }
