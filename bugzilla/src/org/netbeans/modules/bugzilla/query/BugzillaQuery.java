@@ -39,18 +39,11 @@
 
 package org.netbeans.modules.bugzilla.query;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map;
 import org.netbeans.modules.bugzilla.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
-import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
