@@ -53,8 +53,11 @@ import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.collab.im.KenaiConnection;
+import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import org.omg.CORBA.Request;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -86,6 +89,11 @@ public class PresenceIndicator {
     public static synchronized PresenceIndicator getDefault() {
         if (instance == null) {
             instance = new PresenceIndicator();
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    KenaiConnection.getDefault();
+                }
+            });
         }
         return instance;
     }

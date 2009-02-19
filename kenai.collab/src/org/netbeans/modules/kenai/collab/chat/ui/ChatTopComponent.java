@@ -40,8 +40,8 @@
 package org.netbeans.modules.kenai.collab.chat.ui;
 
 import java.awt.BorderLayout;
-import java.awt.CardLayout;
 import java.awt.Component;
+import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.Serializable;
@@ -51,18 +51,18 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JToggleButton;
-import javax.swing.SwingConstants;
+import javax.swing.JTabbedPane;
+import javax.swing.OverlayLayout;
+import javax.swing.SwingUtilities;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.collab.im.KenaiConnection;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
-import org.openide.util.Exceptions;
+import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -84,56 +84,8 @@ public class ChatTopComponent extends TopComponent {
 
     private static final String PREFERRED_ID = "ChatTopComponent";
 
-    private JToggleButton activeButton;
-
-    private void setActive(String chat, JToggleButton b) {
-        if (activeButton!=null)
-            activeButton.setSelected(false);
-        b.setSelected(true);
-        activeButton=b;
-        ((CardLayout) chats.getLayout()).show(chats, chat);
-    }
-
-    public void setActive(String chat) {
-        for (Component c:buttonsGroup.getComponents()) {
-            JToggleButton b=(JToggleButton)c;
-            if (b.getText().equals(chat)) {
-                setActive(chat, b);
-                return;
-            }
-        }
-        try {
-            addChats(chat, new ChatPanel(KenaiConnection.getDefault().getChat(Kenai.getDefault().getProject(chat))));
-        } catch (KenaiException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-
-
-    void addChats(final String string, ChatPanel chatPanel) {
-        chats.add(chatPanel,string);
-        final JToggleButton jToggleButton = new JToggleButton(string, ONLINE);
-        jToggleButton.setSelected(true);
-        jToggleButton.setHorizontalTextPosition(SwingConstants.LEFT);
-        jToggleButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setActive(string, (JToggleButton) e.getSource());
-            }
-        });
-        buttonsGroup.add(jToggleButton);
-        open.add(string);
-        setActive(string, jToggleButton);
-        validate();
-    }
-
-    void showPopup() {
-        JPopupMenu menu = new JPopupMenu();
-        for (KenaiProject prj : KenaiConnection.getDefault().getMyProjects()) {
-            menu.add(new OpenChatAction(prj));
-        }
-        menu.show(addChat, 0, addChat.getSize().height);
-    }
+    //open chats
+    private HashSet<String> open = new HashSet<String>();
 
     private ChatTopComponent() {
         initComponents();
@@ -141,12 +93,27 @@ public class ChatTopComponent extends TopComponent {
         setToolTipText(NbBundle.getMessage(ChatTopComponent.class, "HINT_ChatTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
 
-        if (Kenai.getDefault().getPasswordAuthentication()==null) {
+        JPanel panel = new JPanel() {
+            @Override
+            public boolean isOptimizedDrawingEnabled() {
+                return false;
+            }
+        };
+        LayoutManager overlay = new OverlayLayout(panel);
+        panel.setLayout(overlay);
+        glassPane.setAlignmentX(0);
+        glassPane.setAlignmentY(0);
+        chats.setAlignmentX(0);
+        chats.setAlignmentY(0);
+        panel.add(glassPane);
+        panel.add(chats);
+        add(panel, BorderLayout.CENTER);
+
+        if (!KenaiConnection.getDefault().isConnected()) {
             retry.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    if (Kenai.getDefault().getPasswordAuthentication()==null) {
+                    if (!KenaiConnection.getDefault().isConnected()) {
                         UIUtils.showLogin();
-                        KenaiConnection.getDefault();
                         putChats();
                     }
                 }
@@ -158,32 +125,58 @@ public class ChatTopComponent extends TopComponent {
         //putClientProperty("netbeans.winsys.tc.keep_preferred_size_when_slided_in", Boolean.TRUE);
     }
 
+    public void reload() {
+        open.clear();
+        putChats();
+    }
+
+    public void setActive(String parseName) {
+        chats.setSelectedIndex(chats.indexOfTab(parseName));
+    }
+
+
+    void addChat(final String string, ChatPanel chatPanel) {
+        chats.addTab(string, ONLINE, chatPanel);
+        open.add(string);
+    }
+
+    void removeChat(Component chatPanel) {
+// currently does not work
+//        open.remove(chats.getTitleAt(chats.indexOfTabComponent(chatPanel)));
+//        chats.remove(chatPanel);
+    }
+
+    void showPopup() {
+        JPopupMenu menu = new JPopupMenu();
+        for (KenaiProject prj : KenaiConnection.getDefault().getMyProjects()) {
+            if (!open.contains(prj.getName())) {
+                menu.add(new OpenChatAction(prj));
+            }
+        }
+        menu.show(addChat, 0, addChat.getSize().height);
+    }
+
+
+
     public boolean isHandled(Message msg) {
         return open.contains(StringUtils.parseName(msg.getFrom()));
     }
 
-    private HashSet<String> open = new HashSet<String>();
-
     private void putChats() {
-        remove(retry);
         final Collection<MultiUserChat> chs = KenaiConnection.getDefault().getChats();
         if (chs.size()==1) {
             final MultiUserChat next = chs.iterator().next();
             ChatPanel chatPanel = new ChatPanel(next);
-            addChats(next.getRoom(), chatPanel);
+            addChat(next.getRoom(), chatPanel);
         } else if (chs.size()!=0) {
-//            SwingUtilities.invokeLater(new Runnable(){
-//                public void run() {
-//                    //showPopup();
-//                }
-//            });
+            SwingUtilities.invokeLater(new Runnable(){
+                public void run() {
+                    showPopup();
+                }
+            });
         }
-        
-        add(chats, BorderLayout.CENTER);
         validate();
     }
-
-
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -193,55 +186,61 @@ public class ChatTopComponent extends TopComponent {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        chats = new javax.swing.JPanel();
-        topPanel = new javax.swing.JPanel();
-        buttonsGroup = new javax.swing.JPanel();
+        chats = TabbedPaneFactory.createCloseButtonTabbedPane();
+        glassPane = new javax.swing.JPanel();
         addChat = new javax.swing.JButton();
 
-        setLayout(new java.awt.BorderLayout());
+        chats.setTabLayoutPolicy(javax.swing.JTabbedPane.SCROLL_TAB_LAYOUT);
+        chats.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                chatsPropertyChange(evt);
+            }
+        });
 
-        chats.setLayout(new java.awt.CardLayout());
-        add(chats, java.awt.BorderLayout.CENTER);
-
-        buttonsGroup.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+        glassPane.setOpaque(false);
 
         addChat.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/collab/resources/plus.gif"))); // NOI18N
         addChat.setIconTextGap(0);
+        addChat.setPreferredSize(new java.awt.Dimension(15, 15));
         addChat.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addChatActionPerformed(evt);
             }
         });
 
-        org.jdesktop.layout.GroupLayout topPanelLayout = new org.jdesktop.layout.GroupLayout(topPanel);
-        topPanel.setLayout(topPanelLayout);
-        topPanelLayout.setHorizontalGroup(
-            topPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, topPanelLayout.createSequentialGroup()
-                .add(buttonsGroup, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(addChat))
+        org.jdesktop.layout.GroupLayout glassPaneLayout = new org.jdesktop.layout.GroupLayout(glassPane);
+        glassPane.setLayout(glassPaneLayout);
+        glassPaneLayout.setHorizontalGroup(
+            glassPaneLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, glassPaneLayout.createSequentialGroup()
+                .addContainerGap(179, Short.MAX_VALUE)
+                .add(addChat, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
-        topPanelLayout.setVerticalGroup(
-            topPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.CENTER, buttonsGroup, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 28, Short.MAX_VALUE)
-            .add(org.jdesktop.layout.GroupLayout.CENTER, addChat)
+        glassPaneLayout.setVerticalGroup(
+            glassPaneLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(glassPaneLayout.createSequentialGroup()
+                .add(addChat, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(129, Short.MAX_VALUE))
         );
 
-        add(topPanel, java.awt.BorderLayout.NORTH);
+        setLayout(new java.awt.BorderLayout());
     }// </editor-fold>//GEN-END:initComponents
 
     private void addChatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addChatActionPerformed
         showPopup();
 }//GEN-LAST:event_addChatActionPerformed
 
-    private JButton retry = new JButton("Login");
+    private void chatsPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_chatsPropertyChange
+        if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName())) {
+            this.removeChat((Component) evt.getNewValue());
+        }
+    }//GEN-LAST:event_chatsPropertyChange
 
+     private JButton retry = new JButton("Login");
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addChat;
-    private javax.swing.JPanel buttonsGroup;
-    private javax.swing.JPanel chats;
-    private javax.swing.JPanel topPanel;
+    private javax.swing.JTabbedPane chats;
+    private javax.swing.JPanel glassPane;
     // End of variables declaration//GEN-END:variables
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
@@ -319,8 +318,7 @@ public class ChatTopComponent extends TopComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            addChats(prj.getName(), new ChatPanel(KenaiConnection.getDefault().getChat(prj)));
+            addChat(prj.getName(), new ChatPanel(KenaiConnection.getDefault().getChat(prj)));
         }
-
     }
 }
