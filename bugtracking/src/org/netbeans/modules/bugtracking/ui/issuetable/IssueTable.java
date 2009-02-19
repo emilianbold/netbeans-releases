@@ -54,6 +54,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.Color;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -97,6 +98,9 @@ public class IssueTable implements MouseListener, AncestorListener {
 
     private Filter filter;
 
+    private static MessageFormat issueUnseenFormat = getFormat("issueUnseenFormat");     // NOI18N
+    private static MessageFormat issueObsoleteFormat = getFormat("issueObsoleteFormat");           // NOI18N
+    private static MessageFormat issueModifiedFormat = getFormat("issueModifiedFormat"); // NOI18N
 
     private static Icon seenHeaderIcon;
     private static Icon seenValueIcon;
@@ -282,6 +286,11 @@ public class IssueTable implements MouseListener, AncestorListener {
             }
         }
     }
+
+    private static MessageFormat getFormat(String key) {
+        String format = NbBundle.getMessage(IssueTable.class, key);
+        return new MessageFormat(format);
+    }
     
     private class CellRenderer extends DefaultTableCellRenderer {
         private JLabel seenCell = new JLabel();
@@ -307,21 +316,14 @@ public class IssueTable implements MouseListener, AncestorListener {
                     if(!issue.wasSeen() || status == Query.ISSUE_STATUS_OBSOLETE) {
                         sb.append("<html>");
                         switch(status) {
-                            // XXX use format;
                             case Query.ISSUE_STATUS_NEW :
-                                sb.append("<font color=\"#008000\">");
-                                sb.append(s);
-                                sb.append("</font>");
+                                issueUnseenFormat.format(new Object[] {s}, sb, null);
                                 break;
                             case Query.ISSUE_STATUS_OBSOLETE :
-                                sb.append("<font color=\"#999999\"><s>");
-                                sb.append(s);
-                                sb.append("</s></font>");
+                                issueObsoleteFormat.format(new Object[] {s}, sb, null);
                                 break;
                             case Query.ISSUE_STATUS_MODIFIED :
-                                sb.append("<font color=\"#0000FF\">");
-                                sb.append(s);
-                                sb.append("</font>");
+                                issueModifiedFormat.format(new Object[] {s}, sb, null);
                                 break;
                         }
                         sb.append("</html>");
