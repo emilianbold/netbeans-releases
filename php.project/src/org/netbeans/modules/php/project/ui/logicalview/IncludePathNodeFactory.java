@@ -95,7 +95,7 @@ public class IncludePathNodeFactory implements NodeFactory {
 
         private PhpProject project;
         private static final String RESOURCE_ICON_CLASSPATH = "org/netbeans/modules/php/project/ui/resources/referencedClasspath.gif"; //NOI18N
-        private static final ImageIcon ICON_CLASSPATH = new ImageIcon(ImageUtilities.loadImage(RESOURCE_ICON_CLASSPATH));
+        private static final ImageIcon ICON_CLASSPATH = ImageUtilities.loadImageIcon(RESOURCE_ICON_CLASSPATH, false);
 
         public IncludePathRootNode(PhpProject project) {
             super(createChildren(project));
@@ -171,7 +171,7 @@ public class IncludePathNodeFactory implements NodeFactory {
     private static class IncludePathNode extends DummyNode {
 
         private static final String ICON_PATH = "org/netbeans/modules/php/project/ui/resources/libraries.gif"; //NOI18N
-        private static final ImageIcon ICON = new ImageIcon(ImageUtilities.loadImage(ICON_PATH));
+        private static final ImageIcon ICON = ImageUtilities.loadImageIcon(ICON_PATH, false);
 
         public IncludePathNode(DataObject dobj, PhpProject project) {
             super(dobj.getNodeDelegate(), (dobj instanceof DataFolder) ?

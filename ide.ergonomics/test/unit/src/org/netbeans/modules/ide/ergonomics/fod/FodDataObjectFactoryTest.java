@@ -161,6 +161,8 @@ public class FodDataObjectFactoryTest extends NbTestCase {
         FileUtil.setMIMEType("huh", "text/x-huh");
         FileObject fo = FileUtil.createData(FileUtil.getConfigRoot(), "test/my.huh");
         DataObject obj = DataObject.find(fo);
+        FileObject fo2 = FileUtil.createData(FileUtil.getConfigRoot(), "test/subdir/my.huh");
+        DataObject obj2 = DataObject.find(fo2);
         OpenCookie oc = obj.getLookup().lookup(OpenCookie.class);
         assertNotNull("Open cookie found", oc);
         assertEquals("Cookie is OK too", oc, obj.getCookie(OpenCookie.class));
@@ -176,6 +178,11 @@ public class FodDataObjectFactoryTest extends NbTestCase {
             fail("New object shall be created: " + newObj);
         }
         assertFalse("Old is no longer valid", obj.isValid());
+
+        DataObject newObj2 = DataObject.find(fo2);
+        if (obj2 == newObj2) {
+            fail("New object shall be created for all objects: " + newObj2);
+        }
 
         DataObject folder = FodDataObjectFactory.create(fo).findDataObject(fo.getParent(), new HashSet<FileObject>());
         assertNull("Folders are not recognized", folder);

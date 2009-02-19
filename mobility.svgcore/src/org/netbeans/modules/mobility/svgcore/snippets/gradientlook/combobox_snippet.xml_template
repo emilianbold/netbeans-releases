@@ -49,16 +49,16 @@
                 <text display="none">ref=%%COMPONENT_ID%%</text>
                 <text display="none">type=list</text>
                 <g>
-                    <text id="%%COMPONENT_ID%%_list_hidden_text" visibility="hidden" x="10" y="13" font-size="16">			HIDDEN TEXT		        </text>                       <!-- Metadata information. Please don't edit. -->
+                    <text id="%%COMPONENT_ID%%_list_hidden_text" visibility="hidden" x="10" y="13" font-size="16">HIDDEN TEXT</text>                       <!-- Metadata information. Please don't edit. -->
                     <text display="none">type=hidden_text</text>
                 </g>
                 <g>			<!-- Metadata information. Please don't edit. -->
                     <text display="none">type=bound</text>
-                    <rect transform="matrix(1.0165975,0.0,0.0,1.0,0.8810551,0.33333588)"  id="%%COMPONENT_ID%%_list_bound" rx="5" ry="5" x="-32.666664" y="4.333336" width="80" height="60" fill="white" stroke="black" stroke-width="2" visibility="inherit"/>
+                    <rect transform="matrix(1.0165975,0.0,0.0,1.0,0.8810551,0.33333588)"  id="%%COMPONENT_ID%%_list_bound" rx="5" ry="5" x="5.0" y="0" width="80" height="60" fill="white" stroke="black" stroke-width="2" visibility="inherit"/>
                 </g>
                 <g>			<!-- Metadata information. Please don't edit. -->
                     <text display="none">type=selection</text>
-                    <rect id="%%COMPONENT_ID%%_list_selection" x="5" y="0" stroke="black"  stroke-width="1" fill="rgb(200,200,255)" visibility="inherit" width="80" height="0"/>
+                    <rect id="%%COMPONENT_ID%%_list_selection" x="6.0" y="0" stroke="black"  stroke-width="1" fill="rgb(200,200,255)" visibility="inherit" width="80" height="0"/>
                 </g>
                 <g  id="%%COMPONENT_ID%%_list_current_selection" visibility="inherit">			<!-- Metadata information. Please don't edit. -->
                     <text display="none">type=current_selection</text>

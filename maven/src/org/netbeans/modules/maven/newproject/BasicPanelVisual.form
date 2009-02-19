@@ -27,13 +27,13 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="projectNameTextField" alignment="1" pref="268" max="32767" attributes="0"/>
-                  <Component id="projectLocationTextField" alignment="1" pref="268" max="32767" attributes="0"/>
-                  <Component id="createdFolderTextField" alignment="1" pref="268" max="32767" attributes="0"/>
-                  <Component id="txtPackage" pref="268" max="32767" attributes="0"/>
-                  <Component id="txtVersion" pref="268" max="32767" attributes="0"/>
-                  <Component id="txtGroupId" pref="268" max="32767" attributes="0"/>
-                  <Component id="txtArtifactId" pref="268" max="32767" attributes="0"/>
+                  <Component id="projectNameTextField" alignment="1" pref="298" max="32767" attributes="0"/>
+                  <Component id="projectLocationTextField" alignment="1" pref="298" max="32767" attributes="0"/>
+                  <Component id="createdFolderTextField" alignment="1" pref="298" max="32767" attributes="0"/>
+                  <Component id="txtPackage" pref="298" max="32767" attributes="0"/>
+                  <Component id="txtVersion" pref="298" max="32767" attributes="0"/>
+                  <Component id="txtGroupId" pref="298" max="32767" attributes="0"/>
+                  <Component id="txtArtifactId" pref="298" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
@@ -228,7 +228,7 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
                   <Component id="lblAdditionalProps" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="423" max="32767" attributes="0"/>
+                  <EmptySpace pref="434" max="32767" attributes="0"/>
               </Group>
               <Component id="jScrollPane1" alignment="0" pref="468" max="32767" attributes="0"/>
           </Group>

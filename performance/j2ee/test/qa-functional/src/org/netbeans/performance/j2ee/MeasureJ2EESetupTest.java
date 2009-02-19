@@ -60,8 +60,7 @@ public class MeasureJ2EESetupTest {
         System.setProperty("suitename", MeasureJ2EESetupTest.class.getCanonicalName());
         System.setProperty("suite", "UI Responsiveness J2EE Setup suite");
 
-       // suite.addTest(NbModuleSuite.create(J2EESetup.class, ".*", ".*"));
-suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class).enableModules(".*").clusters("ergonomics[0-9]*").reuseUserDir(false)));
+	suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class).enableModules(".*").clusters(".*").reuseUserDir(false)));
         return suite;
     }
     

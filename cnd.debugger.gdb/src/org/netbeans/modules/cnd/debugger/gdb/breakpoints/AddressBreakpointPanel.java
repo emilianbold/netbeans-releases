@@ -233,18 +233,6 @@ public class AddressBreakpointPanel extends JPanel implements Controller {
         return true;
     }
     
-    /**
-     * Return <code>true</code> whether value of this customizer 
-     * is valid (and OK button can be enabled).
-     *
-     * @return <code>true</code> whether value of this customizer 
-     * is valid
-     */
-    @Override
-    public boolean isValid() {
-        return true;
-    }
-    
     private String valiadateMsg() {
         String function = tfAddress.getText().trim();
         // Empty string is not a valid function name

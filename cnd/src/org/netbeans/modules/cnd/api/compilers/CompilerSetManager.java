@@ -81,7 +81,12 @@ import org.openide.util.Utilities;
  */
 public class CompilerSetManager {
 
-    private static enum State { 
+    // Legacy defines for CND 5.5 compiler set definitions
+    // used in DBX, so don't remove please!
+    public static final int SUN_COMPILER_SET = 0;
+    public static final int GNU_COMPILER_SET = 1;
+    
+    private static enum State {
         STATE_PENDING,
         STATE_COMPLETE,
         STATE_UNINITIALIZED
@@ -218,7 +223,9 @@ public class CompilerSetManager {
             ToolchainDescriptor td = tcm.getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS); // NOI18N
             if (td != null) {
                 String cygwinBin = tcm.getBaseFolder(td, PlatformTypes.PLATFORM_WINDOWS);
-                cygwinBase = cygwinBin.substring(0, cygwinBin.length() - 4).replace("\\", "/"); // NOI18N
+                if (cygwinBase != null) {
+                    cygwinBase = cygwinBin.substring(0, cygwinBin.length() - 4).replace("\\", "/"); // NOI18N
+                }
             }
             if (cygwinBase == null) {
                 for (String dir : Path.getPath()) {

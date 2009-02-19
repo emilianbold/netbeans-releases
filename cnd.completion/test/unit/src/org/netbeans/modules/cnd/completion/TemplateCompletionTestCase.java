@@ -95,5 +95,13 @@ public class TemplateCompletionTestCase extends CompletionBaseTestCase  {
     public void testTemplates10() throws Exception {
         super.performTest("template.cc", 37, 5, "((T4<int>) 0).");
     }
+
+    public void testIZ150843() throws Exception {
+        super.performTest("template.cc", 37, 5, "select<Person>().");
+    }
+
+    public void testTemplateFunInstDeref() throws Exception {
+        super.performTest("template.cc", 37, 5, "select<Person>().one().");
+    }
 }
 

@@ -194,4 +194,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // IZ#157836 : parser incorrectly handles expression in else without {}
         performTest("iz157836.cc");
     }
+
+    public void testIZ156004() throws Exception {
+        // IZ#156004 : Unexpected token = in variable declaration
+        performTest("iz156004.cc");
+    }
 }

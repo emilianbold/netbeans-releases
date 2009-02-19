@@ -161,7 +161,12 @@ public final class ModuleActions implements ActionProvider {
         Set<String> supportedActionsSet = new HashSet<String>();
         globalCommands.put(ActionProvider.COMMAND_BUILD, new String[] {"netbeans"}); // NOI18N
         globalCommands.put(ActionProvider.COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
-        globalCommands.put(ActionProvider.COMMAND_REBUILD, new String[] {"clean", "netbeans"}); // NOI18N
+        //a gross hack to prevent 158481 and the like
+        if ("mkleint".equals(System.getProperty("user.name"))) {
+            globalCommands.put(ActionProvider.COMMAND_REBUILD, new String[] {"clean", "netbeans", "do-test-build"}); // NOI18N
+        } else {
+            globalCommands.put(ActionProvider.COMMAND_REBUILD, new String[] {"clean", "netbeans"}); // NOI18N
+        }
         globalCommands.put(ActionProvider.COMMAND_RUN, new String[] {"run"}); // NOI18N
         globalCommands.put(ActionProvider.COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
         globalCommands.put("profile", new String[] {"profile"}); // NOI18N

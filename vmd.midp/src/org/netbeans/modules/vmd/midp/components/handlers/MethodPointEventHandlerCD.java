@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.vmd.midp.components.handlers;
 
+import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.codegen.CodeMultiGuardedLevelPresenter;
 import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
@@ -54,6 +55,8 @@ import org.openide.util.NbBundle;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.netbeans.modules.vmd.midp.actions.GoToSourcePresenter;
 
 /**
  * @author David Kaspar
@@ -79,6 +82,12 @@ public final class MethodPointEventHandlerCD extends ComponentDescriptor {
         );
     }
 
+    @Override
+    protected void gatherPresenters(ArrayList<Presenter> presenters) {
+        DocumentSupport.removePresentersOfClass(presenters, GoToSourcePresenter.class);
+        super.gatherPresenters(presenters);
+    }
+
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // info
@@ -98,7 +107,9 @@ public final class MethodPointEventHandlerCD extends ComponentDescriptor {
                 }
             },
             // delete
-            DeleteDependencyPresenter.createDependentOnPropertyPresenter (PROP_METHOD_POINT)
+            DeleteDependencyPresenter.createDependentOnPropertyPresenter (PROP_METHOD_POINT),
+            //actions
+            GoToSourcePresenter.createParentForwarder(GoToSourcePresenter.Relationship.GrandParent)
         );
     }
 

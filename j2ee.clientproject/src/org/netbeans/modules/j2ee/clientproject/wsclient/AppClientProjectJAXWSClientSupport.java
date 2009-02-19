@@ -94,27 +94,4 @@ public class AppClientProjectJAXWSClientSupport extends ProjectJAXWSClientSuppor
     protected FileObject getXmlArtifactsRoot() {
         return project.getCarModule().getMetaInf();
     }
-
-    @Override
-    public String addServiceClient(String clientName, String wsdlUrl, String packageName, boolean isJsr109) {
-        
-        String finalClientName = super.addServiceClient(clientName, wsdlUrl, packageName, isJsr109);
-        
-        // copy resources to META-INF/wsdl/client/${clientName}
-        JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
-        Client client = jaxWsModel.findClientByName(finalClientName);
-        if (client!=null) {
-            try {
-                FileObject wsdlFolder = getWsdlFolderForClient(finalClientName);
-                FileObject xmlResorcesFo = getLocalWsdlFolderForClient(finalClientName,false);
-                if (xmlResorcesFo!=null) {
-                    WSUtils.copyFiles(xmlResorcesFo, wsdlFolder);
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return finalClientName;
-    }
-    
 }

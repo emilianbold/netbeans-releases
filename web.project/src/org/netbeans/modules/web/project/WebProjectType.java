@@ -95,6 +95,6 @@ public final class WebProjectType implements AntBasedProjectType2 {
     }
 
     public Icon getIcon() {
-        return ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif", true));
+        return ImageUtilities.loadImageIcon("org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif", true);
     }
 }

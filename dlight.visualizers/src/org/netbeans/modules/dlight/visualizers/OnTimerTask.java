@@ -11,4 +11,5 @@ package org.netbeans.modules.dlight.visualizers;
 interface OnTimerTask {
 
     int onTimer();
+    void timerStopped();
 }

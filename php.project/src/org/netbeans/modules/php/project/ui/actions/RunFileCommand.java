@@ -64,11 +64,12 @@ public class RunFileCommand extends Command implements Displayable {
             ConfigAction.get(ConfigAction.Type.TEST, getProject()).runFile(context);
         } else {
             // source
-            if (!isRunConfigurationValid(false)) {
+            ConfigAction configAction = getConfigAction();
+            if (!configAction.isValid(false)) {
                 // property not set yet
                 return;
             }
-            getConfigAction().runFile(context);
+            configAction.runFile(context);
         }
     }
 

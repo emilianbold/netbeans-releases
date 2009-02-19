@@ -331,6 +331,7 @@ made subject to such option by the copyright holder.
             <file name="callstackView.settings" url="components/callstack.settings"/>
             <file name="breakpointsView.settings" url="components/breakpoints.settings"/>
             <file name="sources.settings" url="components/sources.settings"/>
+            <file name="resultsView.settings" url="components/results.settings"/>
         </folder>
 
         <folder name="Modes">
@@ -343,6 +344,9 @@ made subject to such option by the copyright holder.
                 </file>
                 <file name="localsView.wstcref" url="modes/output/locals.wstcref">
                     <attr name="position" intvalue="200"/>
+                </file>
+                <file name="resultsView.wstcref" url="modes/output/results.wstcref">
+                    <attr name="position" intvalue="250"/>
                 </file>
                 <file name="callstackView.wstcref" url="modes/output/callstack.wstcref">
                     <attr name="position" intvalue="300"/>
@@ -369,6 +373,7 @@ made subject to such option by the copyright holder.
                 <file name="callstackView.wstcgrp" url="groups/debugger/callstack.wstcgrp"/>
                 <file name="breakpointsView.wstcgrp" url="groups/debugger/breakpoints.wstcgrp"/>
                 <file name="sources.wstcgrp" url="groups/debugger/sources.wstcgrp"/>
+                <file name="resultsView.wstcgrp" url="groups/debugger/results.wstcgrp"/>
             </folder>
         </folder>
 

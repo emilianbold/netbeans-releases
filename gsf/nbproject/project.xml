@@ -324,7 +324,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.15</specification-version>
+                        <specification-version>7.22</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -394,6 +394,7 @@
                 <friend>org.netbeans.modules.groovy.refactoring</friend>
                 <friend>org.netbeans.modules.javafx.dataloader</friend>
                 <friend>org.netbeans.modules.languages.php</friend>
+                <friend>org.netbeans.modules.php.editor</friend>
                 <friend>org.netbeans.modules.php.refactoring</friend>
                 <friend>org.netbeans.modules.python.editor</friend>
                 <friend>org.netbeans.modules.ruby.rhtml</friend>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -40,36 +40,28 @@
  */
 package org.netbeans.modules.collab.ui.wizard;
 
-import java.awt.Cursor;
-import java.io.*;
-import java.net.MalformedURLException;
-
-import java.awt.event.*;
-
-import org.openide.awt.HtmlBrowser;
-import org.openide.util.NbBundle;
-
 import com.sun.collablet.Account;
+import java.awt.Cursor;
+import java.net.MalformedURLException;
 import java.net.URL;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.KeyStroke;
-import org.netbeans.modules.collab.core.Debug;
+import javax.swing.JPanel;
+import org.openide.util.NbBundle;
 
 /**
  *
  *
  */
-public class AccountTypePanel extends WizardPanelBase {
+public class AccountTypePanel extends JPanel {
+
+    private WizardPanelBase wizardPanel;
 
     /**
      *
      *
      */
-    public AccountTypePanel() {
-        super(NbBundle.getMessage(AccountTypePanel.class, "LBL_AccountTypePanel_Name")); // NOI18N
+    public AccountTypePanel (WizardPanelBase wizardPanel) {
+        this.wizardPanel = wizardPanel;
+        setName(NbBundle.getMessage(AccountTypePanel.class, "LBL_AccountTypePanel_Name"));
         initComponents();
         lblAddtionalInfoLnk.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         initAccessibility();
@@ -95,24 +87,24 @@ public class AccountTypePanel extends WizardPanelBase {
      *
      *
      */
-    public void readSettings(Object object) {
+    void readSettings(Object object) {
         AccountWizardSettings settings = AccountWizardSettings.narrow(object);
 
         switch (settings.getAccount().getAccountType()) {
         case Account.NEW_ACCOUNT:
             newAccountBtn.setSelected(true);
-            setValid(true);
+            wizardPanel.setValid(true);
 
             break;
 
         case Account.EXISTING_ACCOUNT:
             existingAccountBtn.setSelected(true);
-            setValid(true);
+            wizardPanel.setValid(true);
 
             break;
 
         default:
-            setValid(false);
+            wizardPanel.setValid(false);
         }
 
         messageLbl.setText(settings.getMessage());
@@ -122,7 +114,7 @@ public class AccountTypePanel extends WizardPanelBase {
      *
      *
      */
-    public void storeSettings(Object object) {
+    void storeSettings(Object object) {
         AccountWizardSettings settings = AccountWizardSettings.narrow(object);
 
         if (existingAccountBtn.isSelected()) {
@@ -134,7 +126,7 @@ public class AccountTypePanel extends WizardPanelBase {
         }
     }
 
-    public void initAccessibility() {
+    private void initAccessibility() {
         existingAccountBtn.getAccessibleContext().setAccessibleDescription(
             NbBundle.getMessage(AccountTypePanel.class, "ACSD_DESC_AccountTypePanel_ExistingAccount")
         ); // NOI18N     

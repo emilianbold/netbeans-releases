@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.nativeexecution.util;
 
+import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupport;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.After;
@@ -48,7 +49,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ObservableAction;
+import org.netbeans.modules.nativeexecution.support.ObservableAction;
 
 /**
  *
@@ -61,6 +62,8 @@ public class SolarisPrivilegesSupportTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        String dirs = System.getProperty("netbeans.dirs", "");
+        System.setProperty("netbeans.dirs", "/export/home/ak119685/netbeans-src/main/dlight.suite/build/cluster:" + dirs);
     }
 
     @AfterClass
@@ -130,7 +133,7 @@ public class SolarisPrivilegesSupportTest {
     public void testRequestPrivilegesAction() {
         System.out.println("----- requestPrivilegesAction");
         ExecutionEnvironment execEnv = new ExecutionEnvironment();
-        List<String> requestedPrivileges = Arrays.asList("dtrace_proc, dtrace_kernel");
+        List<String> requestedPrivileges = Arrays.asList("dtrace_proc", "dtrace_kernel");
         SolarisPrivilegesSupport instance = SolarisPrivilegesSupport.getInstance();
         ObservableAction<Boolean> action = instance.requestPrivilegesAction(execEnv, requestedPrivileges);
 

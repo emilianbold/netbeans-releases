@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.refactoring.support;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -61,7 +62,9 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
+import org.openide.util.UserQuestionException;
 
 /**
  *
@@ -99,6 +102,40 @@ public final class CsmContext {
             return new CsmContext(csmFile, ref, CsmUtilities.getFileObject(doc), doc, start, end, offset);
         }
         return null;
+    }
+
+    public static CsmContext create(final CsmFile csmFile, int offset) {
+        final DataObject dob = CsmUtilities.getDataObject(csmFile);
+        final Document doc = getDocument(dob);
+        if (doc != null) {
+            final CsmReference ref = CsmReferenceResolver.getDefault().findReference(doc, offset);
+            return new CsmContext(csmFile, ref, CsmUtilities.getFileObject(doc), doc, offset, offset, offset);
+        }
+        return null;
+    }
+
+    private static Document getDocument(DataObject dataObject) {
+        if (dataObject == null) {
+            return null;
+        }
+        EditorCookie cookie = dataObject.getCookie(EditorCookie.class);
+        if (cookie == null) {
+            throw new IllegalStateException("Given file (\"" + dataObject.getName() + "\") does not have EditorCookie."); // NOI18N
+        }
+
+        Document doc = null;
+        try {
+            try {
+                doc = cookie.openDocument();
+            } catch (UserQuestionException ex) {
+                ex.confirmed();
+                doc = cookie.openDocument();
+            }
+        } catch (IOException ie) {
+            doc = null;
+        }
+
+        return doc;
     }
 
     public static CsmContext create(final Lookup context) {

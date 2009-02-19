@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.repository.sfs;
 
 import org.netbeans.modules.cnd.repository.test.TestObject;
@@ -54,8 +53,10 @@ import org.netbeans.junit.NbTestCase;
  */
 public class DefragmentationTest extends NbTestCase {
 
+    private static final boolean TRACE = false;
+
     public DefragmentationTest(String testName) {
-	super(testName);
+        super(testName);
     }
 
 //    @Override
@@ -67,62 +68,68 @@ public class DefragmentationTest extends NbTestCase {
 //    protected void tearDown() throws Exception {
 //	super.tearDown();
 //    }
-    
     private DoubleFileStorage createStorage() throws IOException {
-	File file = new File(getWorkDir(), "double_file_storage.dat");
-	DoubleFileStorage dfs = new DoubleFileStorage(file, true);
-	return dfs;
-    }
-    
-    private void fillData(DoubleFileStorage dfs) throws IOException {
-	String dataPath = getDataDir().getAbsolutePath().replaceAll("repository", "modelimpl"); //NOI18N
-	Collection<TestObject> objects = new TestObjectCreator().createTestObjects(dataPath);
-	for (int i = 0; i < 3; i++) {
-	    for( TestObject obj : objects ) {
-		dfs.write(obj.getKey(), obj);
-	    }
-	}
-    }
-    
-    private DoubleFileStorage createAndFillStorage() throws IOException {
-	DoubleFileStorage dfs = createStorage();
-	fillData(dfs);
-	return dfs;
-    }
-    
-    public void testFullDeframentation() throws IOException {
-	DoubleFileStorage dfs = createAndFillStorage();
-	assertTrue(dfs.getFragmentationPercentage() > 50);
-	System.out.printf("--- Before defragmentation\n");
-	dfs.dumpSummary(System.out);
-	dfs.defragment(0);
-	System.out.printf("--- After defragmentation\n");
-	dfs.dumpSummary(System.out);
-	assertTrue(dfs.getFragmentationPercentage() == 0);
-    }
-    
-    public void testPartialDeframentation() throws IOException {
-	DoubleFileStorage dfs = createAndFillStorage();
-	assertTrue(dfs.getFragmentationPercentage() > 50);
-	long timeToDefragment = System.currentTimeMillis();
-	dfs.defragment(0);
-	timeToDefragment = System.currentTimeMillis() - timeToDefragment;
-	System.err.printf("Full defragmentation took %d ms\n", timeToDefragment);
-	
-	dfs = createAndFillStorage();
-	long slice = Math.max(timeToDefragment / 100, 1);
-	long count = 1000;
-	
-	for (int i = 0; i < count; i++) {
-	    int oldFragmentation = dfs.getFragmentationPercentage();
-	    dfs.defragment(slice);
-	    int newFragmentation = dfs.getFragmentationPercentage();
-	    System.err.printf("Partial defragmentation %4d: %d -> %d\n", i, oldFragmentation, newFragmentation);
-	    if( newFragmentation == 0 ) {
-		break;
-	    }
-	}
-	assertTrue(dfs.getFragmentationPercentage() == 0);
+        File file = new File(getWorkDir(), "double_file_storage.dat");
+        DoubleFileStorage dfs = new DoubleFileStorage(file, true);
+        return dfs;
     }
 
+    private void fillData(DoubleFileStorage dfs) throws IOException {
+        String dataPath = getDataDir().getAbsolutePath().replaceAll("repository", "modelimpl"); //NOI18N
+        Collection<TestObject> objects = new TestObjectCreator().createTestObjects(dataPath);
+        for (int i = 0; i < 3; i++) {
+            for (TestObject obj : objects) {
+                dfs.write(obj.getKey(), obj);
+            }
+        }
+    }
+
+    private DoubleFileStorage createAndFillStorage() throws IOException {
+        DoubleFileStorage dfs = createStorage();
+        fillData(dfs);
+        return dfs;
+    }
+
+    public void testFullDeframentation() throws IOException {
+        DoubleFileStorage dfs = createAndFillStorage();
+        assertTrue(dfs.getFragmentationPercentage() > 50);
+        if (TRACE) {
+            System.out.printf("--- Before defragmentation\n");
+            dfs.dumpSummary(System.out);
+        }
+        dfs.defragment(0);
+        if (TRACE) {
+            System.out.printf("--- After defragmentation\n");
+            dfs.dumpSummary(System.out);
+        }
+        assertTrue(dfs.getFragmentationPercentage() == 0);
+    }
+
+    public void testPartialDeframentation() throws IOException {
+        DoubleFileStorage dfs = createAndFillStorage();
+        assertTrue(dfs.getFragmentationPercentage() > 50);
+        long timeToDefragment = System.currentTimeMillis();
+        dfs.defragment(0);
+        timeToDefragment = System.currentTimeMillis() - timeToDefragment;
+        if (TRACE) {
+            System.err.printf("Full defragmentation took %d ms\n", timeToDefragment);
+        }
+
+        dfs = createAndFillStorage();
+        long slice = Math.max(timeToDefragment / 100, 1);
+        long count = 1000;
+
+        for (int i = 0; i < count; i++) {
+            int oldFragmentation = dfs.getFragmentationPercentage();
+            dfs.defragment(slice);
+            int newFragmentation = dfs.getFragmentationPercentage();
+            if (TRACE) {
+                System.err.printf("Partial defragmentation %4d: %d -> %d\n", i, oldFragmentation, newFragmentation);
+            }
+            if (newFragmentation == 0) {
+                break;
+            }
+        }
+        assertTrue(dfs.getFragmentationPercentage() == 0);
+    }
 }

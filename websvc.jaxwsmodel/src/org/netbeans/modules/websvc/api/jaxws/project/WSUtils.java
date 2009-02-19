@@ -76,7 +76,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Mutex;
@@ -522,5 +521,26 @@ public class WSUtils {
             return null;
         }
     }
-    
+
+    public static FileObject retrieveJaxWsCatalogFromResource(final FileObject webInf) throws IOException {
+        assert  webInf != null : "WEB-INF (META-INF) directory"; //NOI18N
+        final String jaxWsContent =
+                readResource(WSUtils.class.getResourceAsStream("/org/netbeans/modules/websvc/jaxwsmodel/resources/jax-ws-catalog.xml")); //NOI18N
+        FileSystem fs = webInf.getFileSystem();
+        fs.runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                FileObject jaxWsCatalog = FileUtil.createData(webInf, "jax-ws-catalog.xml");//NOI18N
+                FileLock lock = jaxWsCatalog.lock();
+                try {
+                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(jaxWsCatalog.getOutputStream(lock)));
+                    bw.write(jaxWsContent);
+                    bw.close();
+                } finally {
+                    lock.releaseLock();
+                }
+            }
+        });
+        return webInf.getFileObject("jax-ws-catalog.xml");
+    }
+
 }

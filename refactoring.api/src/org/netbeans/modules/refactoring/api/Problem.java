@@ -40,6 +40,9 @@
  */
 package org.netbeans.modules.refactoring.api;
 
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.Parameters;
 
 /** Class used to represent problems encountered when performing
  * various refactoring calls. Problems can be chained (using setNext method)
@@ -57,9 +60,8 @@ public final class Problem {
      * @param fatal Indicates whether the problem is fatal.
      * @param message Textual description of the problem.
      */
-    public Problem(boolean fatal, String message) {
-        this.fatal = fatal;
-        this.message = message;
+    public Problem(boolean fatal, @NonNull String message) {
+        this(fatal, message, null);
     }
     
     /** Creates new instance of Problem class.
@@ -68,8 +70,10 @@ public final class Problem {
      * @param details Problem details
      * @see ProblemDetails
      */
-    public Problem(boolean fatal, String message, ProblemDetails details) {
-        this(fatal, message);
+    public Problem(boolean fatal, @NonNull String message, ProblemDetails details) {
+        Parameters.notNull("message", message); // NOI18N
+        this.fatal = fatal;
+        this.message = message;
         this.details = details;
     }
     
@@ -83,6 +87,7 @@ public final class Problem {
     /** Returns textual description of the problem.
      * @return Textual description of the problem.
      */
+    @NonNull
     public String getMessage() {
         return message;
     }
@@ -90,6 +95,7 @@ public final class Problem {
     /** Returns the following problem (or <code>null</code> if there none).
      * @return The following problem.
      */
+    @CheckForNull
     public Problem getNext() {
         return next;
     }
@@ -100,7 +106,8 @@ public final class Problem {
      * @param next The following problem.
      * @throws java.lang.IllegalStateException subsequent attempts to call this method will result in IllegalStateException.
      */
-    public void setNext(Problem next) throws IllegalStateException {
+    public void setNext(@NonNull Problem next) throws IllegalStateException {
+        Parameters.notNull("next", next); // NOI18N
         if (this.next != null) {
             throw new IllegalStateException("Cannot change \"next\" property of Problem."); //NOI18N
         }
@@ -111,6 +118,7 @@ public final class Problem {
      * Getter for ProblemDetails
      * @return instance of ProblemDetails or null
      */
+    @CheckForNull
     public ProblemDetails getDetails() {
         return details;
     }

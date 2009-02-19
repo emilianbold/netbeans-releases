@@ -154,6 +154,8 @@ public class UIDUtilities {
         if (uid instanceof KeyBasedUID) {
             Key key = ((KeyBasedUID) uid).getKey();
             return KeyUtilities.getKeyKind(key);
+        } else if (UIDProviderIml.isSelfUID(uid)) {
+            return uid.getObject().getKind();
         }
         return null;
     }
@@ -178,6 +180,8 @@ public class UIDUtilities {
         if (uid instanceof KeyBasedUID) {
             Key key = ((KeyBasedUID) uid).getKey();
             return KeyUtilities.getKeyName(key);
+        } else if (UIDProviderIml.isSelfUID(uid)) {
+            return uid.getObject().getName();
         }
         return null;
     }
@@ -186,6 +190,8 @@ public class UIDUtilities {
         if (uid instanceof KeyBasedUID) {
             Key key = ((KeyBasedUID) uid).getKey();
             return KeyUtilities.getKeyStartOffset(key);
+        } else if (UIDProviderIml.isSelfUID(uid)) {
+            return uid.getObject().getStartOffset();
         }
         return -1;
     }
@@ -194,17 +200,12 @@ public class UIDUtilities {
         if (uid instanceof KeyBasedUID) {
             Key key = ((KeyBasedUID) uid).getKey();
             return KeyUtilities.getKeyEndOffset(key);
+        } else if (UIDProviderIml.isSelfUID(uid)) {
+            return uid.getObject().getEndOffset();
         }
         return -1;
     }
 
-//    public static <T extends CsmOffsetableDeclaration> void sort(List<CsmUID<T>> list) {
-//        Collections.sort(list, new Comparator<CsmUID<T>>() {
-//            public int compare(CsmUID<T> d1, CsmUID<T> d2) {
-//                return UIDUtilities.compare(d1, d2);
-//            }
-//        });
-//    }
     /**
      * Compares UIDs of the two declarationds within the same file
      * @return a negative integer, zero, or a positive integer as the
@@ -498,6 +499,31 @@ public class UIDUtilities {
         protected String getToStringPrefix() {
             return "<UNRESOLVED UID>"; // NOI18N
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final UnresolvedUIDBase<?> other = (UnresolvedUIDBase<?>) obj;
+            if (this.projectUID != other.projectUID && (this.projectUID == null || !this.projectUID.equals(other.projectUID))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 43 * hash + (this.projectUID != null ? this.projectUID.hashCode() : 0);
+            return hash;
+        }
+
+
+
     }
 
     /* package */ static final class UnresolvedClassUID<T> extends UnresolvedUIDBase<CsmClass> {
@@ -523,6 +549,26 @@ public class UIDUtilities {
             super.write(output);
             PersistentUtils.writeUTF(name, output);
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj)) {
+                return false;
+            }
+            final UnresolvedClassUID<?> other = (UnresolvedClassUID<?>) obj;
+            if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = super.hashCode();
+            hash = 53 * hash + (this.name != null ? this.name.hashCode() : 0);
+            return hash;
+        }
+
     }
 
     /* package */ static final class UnresolvedNamespaceUID extends UnresolvedUIDBase<CsmNamespace> {

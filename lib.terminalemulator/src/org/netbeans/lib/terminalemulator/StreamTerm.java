@@ -40,52 +40,61 @@
  *
  * Contributor(s): Ivan Soleimanipour.
  */
-
 package org.netbeans.lib.terminalemulator;
 
 import java.io.*;
-import java.awt.*;
 import javax.swing.SwingUtilities;
 
 public class StreamTerm extends Term {
 
     static class Fmt {
-	public static String pad(int what, int width) {
-	    return pad("" + what, width);
-	}
-	public static String pad(byte what, int width) {
-	    return pad("" + (char) what, width);
-	}
-	public static String pad0(String what, int width) {
-	    return padwith(what, width, '0');
-	}
-	public static String pad(String what, int width) {
-	    return padwith(what, width, ' ');
-	}
-	private static String padwith(String what, int width, char with) {
-	    boolean left = false;
-	    if (width < 0) {
-		left = true;
-		width = -width;
-	    }
-	    String sub;
-	    if (what.length() > width)
-		sub = what.substring(0, width);     // prevent overflow
-	    else
-		sub = what;
-	    int pad = width - sub.length();
-	    StringBuffer buf = new StringBuffer(sub);
-	    if (left) {
-		while(pad-- > 0)
-		    buf.append(with);
-	    } else {
-		while(pad-- > 0)
-		    buf.insert(0, with);
-	    }
-	    return new String(buf);
-	}
-    }
 
+        private Fmt() {
+        }
+
+        public static String pad(int what, int width) {
+            return pad("" + what, width);
+        }
+
+        public static String pad(byte what, int width) {
+            return pad("" + (char) what, width);
+        }
+
+        public static String pad0(String what, int width) {
+            return padwith(what, width, '0');
+        }
+
+        public static String pad(String what, int width) {
+            return padwith(what, width, ' ');
+        }
+
+        private static String padwith(String what, int width, char with) {
+            boolean left = false;
+            if (width < 0) {
+                left = true;
+                width = -width;
+            }
+            String sub;
+            if (what.length() > width) {
+                sub = what.substring(0, width);     // prevent overflow
+            } else {
+                sub = what;
+            }
+            int pad = width - sub.length();
+            StringBuffer buf = new StringBuffer(sub);
+            if (left) {
+                while (pad-- > 0) {
+                    buf.append(with);
+                }
+            } else {
+                while (pad-- > 0) {
+                    buf.insert(0, with);
+                }
+            }
+            return new String(buf);
+        }
+
+    }
     private OutputStreamWriter writer;	// writes to child process
 
     /*
@@ -95,100 +104,108 @@ public class StreamTerm extends Term {
      * as if they were typed at the keyboard.
      */
     public OutputStreamWriter getOutputStreamWriter() {
-	return writer;
-    } 
+        return writer;
+    }
 
     public StreamTerm() {
-	super();
+        super();
 
-	addInputListener(new TermInputListener() {
-	    public void sendChars(char c[], int offset, int count) {
-		if (writer == null)
-		    return;
-		try {
-		    writer.write(c, offset, count);
-		    writer.flush();
-		} catch(Exception x) {
-		    x.printStackTrace();
-		} 
-	    }
+        addInputListener(new TermInputListener() {
 
-	    public void sendChar(char c) {
-		if (writer == null)
-		    return;
-		try {
-		    writer.write(c);
-		    // writer is buffered, need to use flush!
-		    // perhaps SHOULD use an unbuffered writer?
-		    // Also fix send_chars()
-		    writer.flush();
-		} catch(Exception x) {
-		    x.printStackTrace();
-		} 
-	    }
-	} );
+            public void sendChars(char c[], int offset, int count) {
+                if (writer == null) {
+                    return;
+                }
+                try {
+                    writer.write(c, offset, count);
+                    writer.flush();
+                } catch (Exception x) {
+                    x.printStackTrace();
+                }
+            }
+
+            public void sendChar(char c) {
+                if (writer == null) {
+                    return;
+                }
+                try {
+                    writer.write(c);
+                    // writer is buffered, need to use flush!
+                    // perhaps SHOULD use an unbuffered writer?
+                    // Also fix send_chars()
+                    writer.flush();
+                } catch (Exception x) {
+                    x.printStackTrace();
+                }
+            }
+        });
     }
 
     /*
      * Monitor output from process and forward to terminal
      */
     private class OutputMonitor extends Thread {
-	private static final int BUFSZ = 1024;
-	private char[] buf = new char[BUFSZ];
-	private Term term;
-	private InputStreamReader reader;
 
-	OutputMonitor(InputStreamReader reader, Term term) {
-	    super("StreamTerm.OutputMonitor");	// NOI18N
-	    this.reader = reader;
-	    this.term = term;
+        private static final int BUFSZ = 1024;
+        private char[] buf = new char[BUFSZ];
+        private Term term;
+        private InputStreamReader reader;
 
-	    // Fix for bug 4921071
-	    // NetBeans has many request processors running at P1 so
-	    // a default priority of this thread will swamp all the RPs
-	    // if we have a firehose sub-process.
-	    setPriority(1);
-	} 
+        OutputMonitor(InputStreamReader reader, Term term) {
+            super("StreamTerm.OutputMonitor");	// NOI18N
+            this.reader = reader;
+            this.term = term;
 
-	private void db_echo_receipt(char buf[], int offset, int count) {
-	    /*
-	     * Debugging function
-	     */
-	    System.out.println("Received:");	// NOI18N
-	    final int width = 20;
-	    int cx = 0;
-	    while (cx < count) {
-		// print numbers
-		int cx0 = cx;
-		System.out.print(Fmt.pad(cx, 4) + ": ");	// NOI18N
-		for (int x = 0; x < width && cx < count; cx++, x++) {
-		    String hex = Integer.toHexString(buf[offset+cx]);
-		    System.out.print(Fmt.pad0(hex, 2) + " ");	// NOI18N
-		}
-		System.out.println();
+            // Fix for bug 4921071
+            // NetBeans has many request processors running at P1 so
+            // a default priority of this thread will swamp all the RPs
+            // if we have a firehose sub-process.
+            setPriority(1);
+        }
 
-		// print charcters
-		cx = cx0;
-		System.out.print("      ");	// NOI18N
-		for (int x = 0; x < width && cx < count; cx++, x++) {
-		    char c = (char) buf[offset+cx];
-		    if (Character.isISOControl(c))
-			c = ' ';
-		    System.out.print(Fmt.pad((byte)c, 2) + " ");	// NOI18N
-		}
-		System.out.println();
-	    } 
-	}
+        private void db_echo_receipt(char buf[], int offset, int count) {
+            /*
+             * Debugging function
+             */
+            System.out.println("Received:");	// NOI18N
+            final int width = 20;
+            int cx = 0;
+            while (cx < count) {
+                // print numbers
+                int cx0 = cx;
+                System.out.print(Fmt.pad(cx, 4) + ": ");	// NOI18N
+                for (int x = 0; x < width && cx < count; cx++, x++) {
+                    String hex = Integer.toHexString(buf[offset + cx]);
+                    System.out.print(Fmt.pad0(hex, 2) + " ");	// NOI18N
+                }
+                System.out.println();
 
-	final private class Trampoline implements Runnable {
-	    public int nread;
-	    public void run() {
-		term.putChars(buf, 0, nread);
-	    }
-	}
+                // print charcters
+                cx = cx0;
+                System.out.print("      ");	// NOI18N
+                for (int x = 0; x < width && cx < count; cx++, x++) {
+                    char c = buf[offset + cx];
+                    if (Character.isISOControl(c)) {
+                        c = ' ';
+                    }
+                    System.out.print(Fmt.pad((byte) c, 2) + " ");	// NOI18N
+                }
+                System.out.println();
+            }
+        }
 
-	public void run() {
-	    Trampoline tramp = new Trampoline();
+        final private class Trampoline implements Runnable {
+
+            public int nread;
+
+            public void run() {
+                term.putChars(buf, 0, nread);
+            }
+        }
+
+        @Override
+        public void run() {
+            Trampoline tramp = new Trampoline();
 
             // A note on catching IOExceptions:
             //
@@ -206,40 +223,41 @@ public class StreamTerm extends Term {
             // At least one java based termulator I've seen also doesn't
             // bother with -1 and silently handles IOException as here.
 
-	    try {
-		while(true) {
-		    int nread = -1;
+            try {
+                while (true) {
+                    int nread = -1;
                     try {
                         nread = reader.read(buf, 0, BUFSZ);
                     } catch (IOException x) {
                     }
-		    if (nread == -1) {
-			// This happens if someone closes the input stream,
-			// say the master end of the pty.
+                    if (nread == -1) {
+                        // This happens if someone closes the input stream,
+                        // say the master end of the pty.
 			/* When we clean up this gets closed so it's not
-			   always an error.
-			System.err.println("com.sun.spro.Term.OutputMonitor: " +	// NOI18N
-			    "Input stream closed");inp	// NOI18N
-			*/
-			break;
-		    }
-		    if (debugInput())
-			db_echo_receipt(buf, 0, nread);
+                        always an error.
+                        System.err.println("com.sun.spro.Term.OutputMonitor: " +	// NOI18N
+                        "Input stream closed");inp	// NOI18N
+                         */
+                        break;
+                    }
+                    if (debugInput()) {
+                        db_echo_receipt(buf, 0, nread);
+                    }
 
-		    if (false) {
-			term.putChars(buf, 0, nread);
-		    } else {
-			// InvokeAndWait() is surprisingly fast and
-			// eliminates one whole set of MT headaches.
-			tramp.nread = nread;
-			SwingUtilities.invokeAndWait(tramp);
-		    }
-		} 
-		reader.close();
-	    } catch(Exception x) {
-		x.printStackTrace();
-	    }
-	} 
+                    if (false) {
+                        term.putChars(buf, 0, nread);
+                    } else {
+                        // InvokeAndWait() is surprisingly fast and
+                        // eliminates one whole set of MT headaches.
+                        tramp.nread = nread;
+                        SwingUtilities.invokeAndWait(tramp);
+                    }
+                }
+                reader.close();
+            } catch (Exception x) {
+                x.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -255,21 +273,21 @@ public class StreamTerm extends Term {
      */
     public void connect(OutputStream pin, InputStream pout, InputStream perr) {
 
-	// Now that we have a stream force resize notifications to be sent out.
-	updateTtySize();
+        // Now that we have a stream force resize notifications to be sent out.
+        updateTtySize();
 
-	if (pin != null)
-	    writer = new OutputStreamWriter(pin);
+        if (pin != null) {
+            writer = new OutputStreamWriter(pin);
+        }
 
-	InputStreamReader out_reader = new InputStreamReader(pout);
-	OutputMonitor out_monitor = new OutputMonitor(out_reader, this);
-	out_monitor.start();
+        InputStreamReader out_reader = new InputStreamReader(pout);
+        OutputMonitor out_monitor = new OutputMonitor(out_reader, this);
+        out_monitor.start();
 
-	if (perr != null) {
-	    InputStreamReader err_reader = new InputStreamReader(perr);
-	    OutputMonitor err_monitor = new OutputMonitor(err_reader, this);
-	    err_monitor.start();
-	}
+        if (perr != null) {
+            InputStreamReader err_reader = new InputStreamReader(perr);
+            OutputMonitor err_monitor = new OutputMonitor(err_reader, this);
+            err_monitor.start();
+        }
     }
-
 }

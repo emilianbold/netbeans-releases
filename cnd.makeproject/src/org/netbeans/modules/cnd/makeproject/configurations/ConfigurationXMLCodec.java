@@ -243,7 +243,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 // FIXUP
             }
         } else if (element.equals(COMPILERTOOL_ELEMENT)) {
-        } else if (element.equals(CCOMPILERTOOL_ELEMENT) || element.equals(SUN_CCOMPILERTOOL_OLD_ELEMENT)) { // FIXUP: <= 23
+        } else if (element.equals(CCOMPILERTOOL_ELEMENT2) || element.equals(CCOMPILERTOOL_ELEMENT) || element.equals(SUN_CCOMPILERTOOL_OLD_ELEMENT)) { // FIXUP: <= 23
             if (currentItemConfiguration != null) {
                 currentCCompilerConfiguration = currentItemConfiguration.getCCompilerConfiguration();
             } else if (currentFolderConfiguration != null) {
@@ -253,7 +253,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             }
             currentCCCCompilerConfiguration = currentCCompilerConfiguration;
             currentBasicCompilerConfiguration = currentCCompilerConfiguration;
-        } else if (element.equals(CCCOMPILERTOOL_ELEMENT) || element.equals(SUN_CCCOMPILERTOOL_OLD_ELEMENT)) { // FIXUP: <= 23
+        } else if (element.equals(CCCOMPILERTOOL_ELEMENT2) || element.equals(CCCOMPILERTOOL_ELEMENT) || element.equals(SUN_CCCOMPILERTOOL_OLD_ELEMENT)) { // FIXUP: <= 23
             if (currentItemConfiguration != null) {
                 currentCCCompilerConfiguration = currentItemConfiguration.getCCCompilerConfiguration();
             } else if (currentFolderConfiguration != null) {
@@ -290,7 +290,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             }
         } else if (element.equals(ARCHIVERTOOL_ELEMENT)) {
             currentArchiverConfiguration = ((MakeConfiguration) currentConf).getArchiverConfiguration();
-        } else if (element.equals(INCLUDE_DIRECTORIES_ELEMENT)) {
+        } else if (element.equals(INCLUDE_DIRECTORIES_ELEMENT2) || element.equals(INCLUDE_DIRECTORIES_ELEMENT)) {
             if (currentCCCCompilerConfiguration != null) {
                 currentList = currentCCCCompilerConfiguration.getIncludeDirectories().getValue();
             }
@@ -502,11 +502,11 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             currentFolderConfiguration.clearChanged();
             currentFolderConfiguration = null;
         } else if (element.equals(COMPILERTOOL_ELEMENT)) { // FIXUP: < 10
-        } else if (element.equals(CCOMPILERTOOL_ELEMENT) || element.equals(SUN_CCOMPILERTOOL_OLD_ELEMENT)) { // FIXUP: <=23
+        } else if (element.equals(CCOMPILERTOOL_ELEMENT2) || element.equals(CCOMPILERTOOL_ELEMENT) || element.equals(SUN_CCOMPILERTOOL_OLD_ELEMENT)) { // FIXUP: <=23
             currentCCompilerConfiguration = null;
             currentCCCCompilerConfiguration = null;
             currentBasicCompilerConfiguration = null;
-        } else if (element.equals(CCCOMPILERTOOL_ELEMENT) || element.equals(SUN_CCCOMPILERTOOL_OLD_ELEMENT)) { // FIXUP: <= 23
+        } else if (element.equals(CCCOMPILERTOOL_ELEMENT2) || element.equals(CCCOMPILERTOOL_ELEMENT) || element.equals(SUN_CCCOMPILERTOOL_OLD_ELEMENT)) { // FIXUP: <= 23
             currentCCCompilerConfiguration = null;
             currentCCCCompilerConfiguration = null;
             currentBasicCompilerConfiguration = null;
@@ -527,7 +527,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 currentArchiverConfiguration.getOutput().setValue(currentArchiverConfiguration.getOutputDefault27());
             }
             currentArchiverConfiguration = null;
-        } else if (element.equals(INCLUDE_DIRECTORIES_ELEMENT)) {
+        } else if (element.equals(INCLUDE_DIRECTORIES_ELEMENT2) || element.equals(INCLUDE_DIRECTORIES_ELEMENT)) {
             currentList = null;
         } else if (element.equals(PREPROCESSOR_LIST_ELEMENT)) {
             currentList = null;
@@ -542,7 +542,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 ((MakeConfigurationDescriptor) projectDescriptor).addSourceRootRaw(sf);
             }
             currentList = null;
-        } else if (element.equals(DIRECTORY_PATH_ELEMENT)) {
+        } else if (element.equals(DIRECTORY_PATH_ELEMENT) || element.equals(PATH_ELEMENT)) {
             if (currentList != null) {
                 String path = getString(adjustOffset(currentText));
                 currentList.add(path);

@@ -71,6 +71,7 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import org.netbeans.Module.PackageExport;
+import org.netbeans.Util.FileWithSuffix;
 import org.openide.modules.Dependency;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -332,21 +333,16 @@ final class StandardModule extends Module {
                     Util.err.warning("Class-Path value " + ext + " from " + jar + " is illegal according to the Java Extension Mechanism: must be relative and not move up directories");
                 }
                 File extfile = new File(jar.getParentFile(), ext.replace('/', File.separatorChar));
-                if (! extfile.exists()) {
-                    // Ignore unloadable extensions.
-                    Util.err.warning("Class-Path value " + ext + " from " + jar + " cannot be found at " + extfile);
-                    continue;
-                }
                 //No need to sync on extensionOwners - we are in write mutex
-                    Set<File> owners = extensionOwners.get(extfile);
-                    if (owners == null) {
-                        owners = new HashSet<File>(2);
-                        owners.add(jar);
-                        extensionOwners.put(extfile, owners);
-                    } else if (! owners.contains(jar)) {
-                        owners.add(jar);
-                        events.log(Events.EXTENSION_MULTIPLY_LOADED, extfile, owners);
-                    } // else already know about it (OK or warned)
+                Set<File> owners = extensionOwners.get(extfile);
+                if (owners == null) {
+                    owners = new HashSet<File>(2);
+                    owners.add(jar);
+                    extensionOwners.put(extfile, owners);
+                } else if (! owners.contains(jar)) {
+                    owners.add(jar);
+                    events.log(Events.EXTENSION_MULTIPLY_LOADED, extfile, owners);
+                } // else already know about it (OK or warned)
                 // Also check to make sure it is not a module JAR! See constructor for the reverse case.
                 if (moduleJARs.contains(extfile)) {
                     Util.err.warning("Class-Path value " + ext + " from " + jar + " illegally refers to another module; use OpenIDE-Module-Module-Dependencies instead");
@@ -383,10 +379,12 @@ final class StandardModule extends Module {
                 }
             }
         }
-        Util.err.fine("localeVariants of " + jar + ": " + localeVariants);
-        Util.err.fine("plainExtensions of " + jar + ": " + plainExtensions);
-        Util.err.fine("localeExtensions of " + jar + ": " + localeExtensions);
-        Util.err.fine("patches of " + jar + ": " + patches);
+        if (Util.err.isLoggable(Level.FINE)) {
+            Util.err.fine("localeVariants of " + jar + ": " + localeVariants);
+            Util.err.fine("plainExtensions of " + jar + ": " + plainExtensions);
+            Util.err.fine("localeExtensions of " + jar + ": " + localeExtensions);
+            Util.err.fine("patches of " + jar + ": " + patches);
+        }
         if (patches != null) {
             for (File patch : patches) {
                 events.log(Events.PATCH, patch);
@@ -561,7 +559,9 @@ final class StandardModule extends Module {
      * The parents should already have had their classloaders initialized.
      */
     protected void classLoaderUp(Set<Module> parents) throws IOException {
-        Util.err.fine("classLoaderUp on " + this + " with parents " + parents);
+        if (Util.err.isLoggable(Level.FINE)) {
+            Util.err.fine("classLoaderUp on " + this + " with parents " + parents);
+        }
         // Find classloaders for dependent modules and parent to them.
         List<ClassLoader> loaders = new ArrayList<ClassLoader>(parents.size() + 1);
         // This should really be the base loader created by org.nb.Main for loading openide etc.:
@@ -589,7 +589,7 @@ final class StandardModule extends Module {
             }
             ClassLoader l = parent.getClassLoader();
             if (parent.isFixed() && loaders.contains(l)) {
-                Util.err.fine("#24996: skipping duplicate classloader from " + parent);
+                Util.err.log(Level.FINE, "#24996: skipping duplicate classloader from {0}", parent);
                 continue;
             }
             loaders.add(l);
@@ -725,7 +725,7 @@ final class StandardModule extends Module {
         }
         
         public @Override String toString() {
-            return super.toString() + "[" + getCodeNameBase() + "]"; // NOI18N
+            return "ModuleCL@" + Integer.toHexString(System.identityHashCode(this)) + "[" + getCodeNameBase() + "]"; // NOI18N
         }
 
         protected @Override void finalize() throws Throwable {

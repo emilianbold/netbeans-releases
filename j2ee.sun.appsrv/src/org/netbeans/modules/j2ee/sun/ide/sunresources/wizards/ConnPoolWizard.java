@@ -89,7 +89,7 @@ public final class ConnPoolWizard implements WizardDescriptor.InstantiatingItera
     
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
-            new CPVendorPanel(this.helper, this.wizardInfo),
+            new CPVendor(this.helper, this.wizardInfo),
             new CPPropertiesPanelPanel(this.helper, this.wizardInfo),
             new CommonAttributePanel(this.helper, this.wizardInfo,  new String[] {"pool-setting", "pool-setting-2", "pool-setting-3"}), //NOI18N
         };

@@ -74,7 +74,7 @@ public final class EtlproProject implements Project, AntProjectListener, Project
 
     private static transient final Logger mLogger = Logger.getLogger(EtlproProject.class.getName());
     //private static transient final Localizer mLoc = Localizer.get();
-    private static final Icon PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/etl/project/ui/resources/etlproProjectIcon.gif")); // NOI18N
+    private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/etl/project/ui/resources/etlproProjectIcon.gif", false); // NOI18N
     public static final String SOURCES_TYPE_ICANPRO = "BIZPRO";
     public static final String MODULE_INSTALL_NAME = "modules/org-netbeans-modules-etl-project.jar";
     public static final String MODULE_INSTALL_CBN = "org.netbeans.modules.etl.project";

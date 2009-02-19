@@ -83,12 +83,13 @@ public abstract class BreakpointType {
     }
 
     /**
-     * Returns visual customizer for this breakpoint type. Customizer can 
-     * optionally implement {@link Controller} interface. In that case please
-     * notice the clash of {@link Controller#isValid()} method with
-     * {@link javax.swing.JComponent#isValid()} and consider extending
-     * {@link #getController()} method in case you need to provide
-     * false validity in some cases.
+     * Returns visual customizer for this breakpoint type.
+     * <pre style="background-color: rgb(255, 255, 102);">
+     * Customizer can not implement the {@link Controller} interface any more,
+     * due to a clash of {@link Controller#isValid()} method with
+     * {@link javax.swing.JComponent#isValid()}.
+     * Override {@link #getController()} method instead.
+     * </pre>
      *
      * @return visual customizer for this breakpoint type
      */
@@ -96,13 +97,13 @@ public abstract class BreakpointType {
 
     /**
      * Return the implementation of {@link Controller} interface.<br/>
-     * In cases when it's not desired to implement {@link Controller} interface
-     * by the JComponent returned from {@link #getCustomizer()} method, because
+     * It's not desired to implement the {@link Controller} interface
+     * by JComponent returned from {@link #getCustomizer()} method, because
      * of the clash of {@link Controller#isValid()} method with
-     * {@link javax.swing.JComponent#isValid()}, an explicit implementation
-     * can be returned by overriding this method.
-     * The default implementation returns  <code>null</code>, in which case
-     * the customizer component is cast to {@link Controller}.
+     * {@link javax.swing.JComponent#isValid()}. An explicit implementation
+     * should be returned by overriding this method.
+     * The default implementation returns <code>null</code>, in which case
+     * no {@link Controller} is used.
      *
      * @return Controller implementation or <code>null</code>.
      * @since 2.14
@@ -140,10 +141,18 @@ public abstract class BreakpointType {
          * @return The display name or resource bundle reference
          */
         String displayName();
+        
         /**
          * An optional path to register this implementation in.
          */
         String path() default "";
+
+        /**
+         * An optional position in which to register this service relative to others.
+         * Lower-numbered services are returned in the lookup result first.
+         * Services with no specified position are returned last.
+         */
+        int position() default Integer.MAX_VALUE;
     }
 
     static class ContextAware extends BreakpointType implements ContextAwareService<BreakpointType> {

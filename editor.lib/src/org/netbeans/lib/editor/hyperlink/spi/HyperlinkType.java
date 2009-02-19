@@ -40,17 +40,22 @@
  */
 package org.netbeans.lib.editor.hyperlink.spi;
 
-/**A type of work for hyperlinks. Currently, there is only one hyperlink type
- * (go to declaration), but more can be introduced in the future.
+/**A type of work for hyperlinks. 
  *
  * @since 1.18
  * @author Jan Lahoda
  */
 public enum HyperlinkType {
     
-    /**
+    /** 
+     * go to declaration
      * @since 1.18
      */
     GO_TO_DECLARATION,
-    
+
+    /**
+     * alternative hyperlink action
+     * @since 1.33
+     */
+    ALT_HYPERLINK,
 }

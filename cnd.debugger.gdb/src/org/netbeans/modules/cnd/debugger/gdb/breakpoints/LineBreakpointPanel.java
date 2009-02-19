@@ -320,18 +320,6 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
         return true;
     }
     
-    /**
-     * Return <code>true</code> whether value of this customizer 
-     * is valid (and OK button can be enabled).
-     *
-     * @return <code>true</code> whether value of this customizer 
-     * is valid
-     */
-    @Override
-    public boolean isValid() {
-        return true;
-    }
-    
     private String validateBreakpoint() {
 	String path = tfFileName.getText();
 	File file;

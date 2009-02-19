@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JToggleButton;
 import javax.swing.Action;
 
@@ -62,11 +61,11 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
-import org.openide.util.Utilities;
 
 import org.netbeans.modules.debugger.jpda.ui.models.DebuggingMonitorModel;
 import org.netbeans.modules.debugger.jpda.ui.models.DebuggingNodeModel;
 import org.netbeans.modules.debugger.jpda.ui.models.DebuggingTreeModel;
+import org.openide.util.ImageUtilities;
 import org.openide.util.actions.Presenter;
 
 
@@ -212,7 +211,7 @@ public final class FiltersDescriptor {
     }
     
     private static Icon loadIcon(String iconName) {
-        return new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/" + iconName));
+        return ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/" + iconName, false);
     }
     
     private static String getString(String label) {

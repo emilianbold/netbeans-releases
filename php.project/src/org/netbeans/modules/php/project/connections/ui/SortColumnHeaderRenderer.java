@@ -111,16 +111,14 @@ public class SortColumnHeaderRenderer implements TableCellRenderer {
         
     private ImageIcon getSortAscIcon () {
         if (sortAscIcon == null) {
-            sortAscIcon = new ImageIcon (ImageUtilities.loadImage (
-                    "org/netbeans/modules/php/project/ui/resources/columnsSortedDesc.gif")); // NOI18N
+            sortAscIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/php/project/ui/resources/columnsSortedDesc.gif", false); // NOI18N
         }
         return sortAscIcon;
     }
     
     private ImageIcon getSortDescIcon () {
         if (sortDescIcon == null) {
-            sortDescIcon = new ImageIcon (ImageUtilities.loadImage (
-                    "org/netbeans/modules/php/project/ui/resources/columnsSortedAsc.gif")); // NOI18N
+            sortDescIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/php/project/ui/resources/columnsSortedAsc.gif", false); // NOI18N
         }
         return sortDescIcon;
     }

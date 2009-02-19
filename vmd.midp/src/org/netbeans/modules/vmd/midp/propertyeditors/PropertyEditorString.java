@@ -228,6 +228,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
             databindingElement.clean(component);
             databindingElement = null;
         }
+        super.cleanUp(component);
     }
 
     @Override

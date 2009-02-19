@@ -60,6 +60,7 @@ import org.netbeans.modules.editor.lib2.highlighting.HighlightingManager;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
+import org.openide.awt.StatusDisplayer;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -108,11 +109,12 @@ public class NextErrorAction extends AbstractAction implements PropertyChangeLis
                     if (errorOffset != (-1) && (errorOffset < unusedOffset || unusedOffset == (-1))) {
                         comp.getCaret().setDot(errorOffset);
 
-                        Utilities.setStatusText(comp, buildText(errors));
+                        Utilities.setStatusText(comp, buildText(errors), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
                     } else {
                         comp.getCaret().setDot(unusedOffset);
 
-                        Utilities.setStatusText(comp,NbBundle.getMessage(NextErrorAction.class, "LBL_UnusedElement"));
+                        Utilities.setStatusText(comp,NbBundle.getMessage(NextErrorAction.class, "LBL_UnusedElement"),
+                                StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
                     }
                 }
             }

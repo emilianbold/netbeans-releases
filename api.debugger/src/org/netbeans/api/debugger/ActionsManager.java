@@ -117,7 +117,7 @@ public final class ActionsManager {
     private Lookup                  lookup;
     private boolean                 doiingDo = false;
     private boolean                 destroy = false;
-
+    private List<? extends ActionsProvider> aps;
     
     /**
      * Create a new instance of ActionManager.
@@ -427,7 +427,7 @@ public final class ActionsManager {
 
     private void initActionImpls () {
         actionProviders = new HashMap ();
-        final List<? extends ActionsProvider> aps = lookup.lookup(null, ActionsProvider.class);
+        aps = lookup.lookup(null, ActionsProvider.class);
         ((Customizer) aps).addPropertyChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     synchronized (actionProvidersLock) {

@@ -74,7 +74,7 @@ public class StopAction extends AbstractAction {
   
   /** Creates a new instance of StopAction */
   public StopAction(final ProcessInstance provider) {
-    super(java.util.ResourceBundle.getBundle("org/netbeans/modules/loadgenerator/actions/Bundle").getString("Stop"), new ImageIcon(ImageUtilities.loadImage(ICON)));
+    super(java.util.ResourceBundle.getBundle("org/netbeans/modules/loadgenerator/actions/Bundle").getString("Stop"),ImageUtilities.loadImageIcon(ICON, false));
     this.provider = provider;
     this.provider.addPropertyChangeListener(ProcessInstance.STATE, WeakListeners.propertyChange(listener, provider));
   }

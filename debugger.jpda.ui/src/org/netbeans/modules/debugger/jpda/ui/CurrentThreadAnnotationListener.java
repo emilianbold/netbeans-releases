@@ -385,8 +385,10 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         public AllThreadsAnnotator(JPDADebugger debugger) {
             this.debugger = debugger;
             try {
-                task = ((Session) debugger.getClass().getMethod("getSession").invoke(debugger)).
-                        lookupFirst(null, RequestProcessor.class).create(this);
+                RequestProcessor rp = ((Session) debugger.getClass().getMethod("getSession").invoke(debugger)).
+                        lookupFirst(null, RequestProcessor.class);
+                if (rp == null) return ; // Session is finishing
+                task = rp.create(this);
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
                 task = rp.create(this);

@@ -1,7 +1,7 @@
 # platform cluster first
 platform10
 # application cluster second
-nb7.0
+nb6.7
 # ergonomics cluster if present
 ergonomics1
 # and now the rest

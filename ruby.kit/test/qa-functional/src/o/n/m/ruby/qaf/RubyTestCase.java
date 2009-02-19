@@ -50,7 +50,7 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.modules.ruby.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -270,7 +270,7 @@ public abstract class RubyTestCase extends JellyTestCase {
         // wait project appear in projects view
         ProjectRootNode node = ProjectsTabOperator.invoke().getProjectRootNode(name);
         // wait classpath scanning finished
-        org.netbeans.junit.ide.ProjectSupport.waitScanFinished();
+      //  org.netbeans.junit.ide.ProjectSupport.waitScanFinished();
         // get a project instance to return
         Project p = ((org.openide.nodes.Node) node.getOpenideNode()).getLookup().lookup(Project.class);
         assertNotNull("Project instance has not been found", p); //NOI18N

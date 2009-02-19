@@ -45,7 +45,7 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.SimpleBeanInfo;
 import org.openide.loaders.UniFileLoader;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -66,10 +66,10 @@ final class BIDataLoaderBeanInfo extends SimpleBeanInfo {
     public Image getIcon(int type) {
         if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
             // XXX new icons would be great!
-            return Utilities.loadImage("org/netbeans/modules/java/resources/class.png"); // NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/java/resources/class.png"); // NOI18N
         }
         else {
-            return Utilities.loadImage("org/netbeans/modules/java/resources/class.png"); // NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/java/resources/class.png"); // NOI18N
         }
 
     }

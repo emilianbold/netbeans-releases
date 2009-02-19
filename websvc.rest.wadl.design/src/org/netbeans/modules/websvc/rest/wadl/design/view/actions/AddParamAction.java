@@ -76,8 +76,7 @@ public class AddParamAction<T extends WadlComponent> extends AbstractAction impl
      */
     public AddParamAction(ParamStyle type, T parent, T ancestor, WadlModel model) {
         super(getName());
-        putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage
-            ("org/netbeans/modules/websvc/rest/wadl/design/view/resources/method.png")));
+        putValue(SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/websvc/rest/wadl/design/view/resources/method.png", false));
         putValue(SHORT_DESCRIPTION, NbBundle.getMessage(AddParamAction.class, "Hint_AddParam"));
         putValue(MNEMONIC_KEY, Integer.valueOf(NbBundle.getMessage(AddParamAction.class, "LBL_AddParam_mnem_pos")));
         this.type = type;

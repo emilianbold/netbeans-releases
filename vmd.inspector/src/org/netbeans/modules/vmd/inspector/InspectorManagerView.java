@@ -105,11 +105,15 @@ public final class InspectorManagerView implements DesignDocumentAwareness, Acti
         } else if (this.document != null && document == null) {
             ActiveDocumentSupport.getDefault().removeActiveDocumentListener(this);
             this.document.getListenerManager().removeDesignListener(this);
-            folderWrapperTree.terminate();
+            if (folderWrapperTree != null) {
+                folderWrapperTree.terminate();
+            }
             ui = null;
             folderWrapperTree = null;
             this.document = null;
-            INSTANCES.remove(context);
+            if (INSTANCES != null) {
+                INSTANCES.remove(context);
+            }
             context = null;
         }
     }

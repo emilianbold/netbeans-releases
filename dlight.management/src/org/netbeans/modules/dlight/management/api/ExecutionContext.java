@@ -54,7 +54,7 @@ import org.netbeans.modules.dlight.management.api.ExecutionContextEvent.Type;
 import org.netbeans.modules.dlight.management.api.impl.DLightToolAccessor;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.nativeexecution.api.ObservableAction;
+import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.openide.util.Exceptions;
 
 
@@ -149,11 +149,10 @@ final class ExecutionContext {
 
                     if (performRequiredActions) {
                         if (!toolNewStatus.isKnown()) {
-                            Collection<ObservableAction> actions =
-                                toolNewStatus.getRequiredActions();
+                            Collection<AsynchronousAction> actions = toolNewStatus.getRequiredActions();
                             
                             if (actions != null) {
-                                for (ObservableAction a : actions) {
+                                for (AsynchronousAction a : actions) {
                                     try {
                                         a.invoke();
                                     } catch (Exception ex) {

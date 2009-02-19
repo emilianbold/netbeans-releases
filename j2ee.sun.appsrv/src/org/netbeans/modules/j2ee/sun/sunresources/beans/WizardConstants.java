@@ -88,12 +88,7 @@ public interface WizardConstants {
     public static final String __NotApplicable = "NA";
     public static final String __IsXA = "isXA";  
     public static final String __IsCPExisting = "is-cp-existing";
-    
-
-    
-    //CommonAttributesPanel
-    static final String[] COMMON_ATTR_INTEGER = {"Steady Pool Size:", "Max Pool Size:", "Max Wait time:", "Pool Resize Quantity:", "Idle Timeout (secs):" }; //NOI18N
-    
+        
     //jdbc-resource
     //Contains __Description
     public static final String __JndiName = "jndi-name";

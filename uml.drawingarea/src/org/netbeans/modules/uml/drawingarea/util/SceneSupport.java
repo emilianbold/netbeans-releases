@@ -41,6 +41,7 @@
 package org.netbeans.modules.uml.drawingarea.util;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -66,6 +67,8 @@ public class SceneSupport
         JComponent sceneView = scene.getView ();
         if (sceneView == null)
             sceneView = scene.createView ();
+        scene.getView().setMaximumSize(new Dimension(Integer.MAX_VALUE,Integer.MAX_VALUE));
+
         show (sceneView);
     }
 

@@ -55,6 +55,7 @@ import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
  *
  * @author schmidtm, Petr Hejl
  */
+// FIXME move this to project support
 public final class GrailsProjectConfig {
 
     public static final String GRAILS_PORT_PROPERTY = "grails.port"; // NOI18N
@@ -311,4 +312,5 @@ public final class GrailsProjectConfig {
         }
         propertyChangeSupport.firePropertyChange(GRAILS_DISPLAY_BROWSER_PROPERTY, oldValue, displayBrowser);
     }
+
 }

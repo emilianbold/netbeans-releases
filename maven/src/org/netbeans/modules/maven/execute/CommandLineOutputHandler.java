@@ -73,17 +73,27 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
     Task outTask;
     private MavenEmbedderLogger logger;
     private Input inp;
+    private ProgressHandle handle;
 
-    CommandLineOutputHandler() {
+    CommandLineOutputHandler(ProgressHandle hand) {
+        super(hand);
+        handle = hand;
     }
 
     public CommandLineOutputHandler(InputOutput io, Project proj, ProgressHandle hand, RunConfig config) {
-        this();
+        this(hand);
         inputOutput = io;
         stdOut = inputOutput.getOut();
         logger = new Logger();
         initProcessorList(proj, config);
     }
+
+    @Override
+    protected final void checkSleepiness() {
+        handle.progress("");
+        super.checkSleepiness();
+    }
+
 
     void setStdOut(InputStream inStr) {
         outTask = PROCESSOR.post(new Output(inStr));
