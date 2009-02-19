@@ -142,6 +142,9 @@ public class ContextAwareServiceHandler implements InvocationHandler {
         //} else if (methodValues.containsKey(methodName) && args.length == 0) {
         //    return methodValues.get(methodName);
         } else {
+            if (method.getName().equals("toString")) {
+                return ContextAwareServiceHandler.class.getSimpleName()+" for "+serviceName;
+            }
             /*
             try {
                 return method.invoke(getDelegate(), args);
@@ -154,7 +157,8 @@ public class ContextAwareServiceHandler implements InvocationHandler {
              */
             throw new UnsupportedOperationException(
                     "Method "+method.getName()+                             // NOI18N
-                    " with arguments "+java.util.Arrays.asList(args)+       // NOI18N
+                    " with arguments "+                                   // NOI18N
+                    ((args == null) ? null : java.util.Arrays.asList(args))+
                     " can not be called on this virtual object!");     // NOI18N
         }
     }

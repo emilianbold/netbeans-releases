@@ -71,7 +71,7 @@ public abstract class CndDataObject extends MultiDataObject {
     /** Serial version number */
     static final long serialVersionUID = -6788084224129713370L;
     private Reference<CppEditorSupport> cppEditorSupport;
-    private ReadOnlySupportImpl readOnlySupport = new ReadOnlySupportImpl(false);
+    private final ReadOnlySupportImpl readOnlySupport = new ReadOnlySupportImpl(false);
     private BinaryExecSupport binaryExecSupport;
 
     public CndDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {

@@ -219,6 +219,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         state = State.INITIAL;
         setBuffer(fileBuffer);
         this.projectUID = UIDCsmConverter.projectToUID(project);
+        if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().endsWith("cpu.cc")) {
+            new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prj@"  + System.identityHashCode(project) + ":UID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err);
+        }
         this.projectRef = new WeakReference<ProjectBase>(project); // Suppress Warnings
         this.fileType = fileType;
         if (nativeFileItem != null) {
@@ -1524,12 +1527,17 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public 
     @Override
     String toString() {
-        return "FileImpl @" + hashCode() + ":" + super.hashCode() + ' ' + getAbsolutePath(); // NOI18N
+        return "FileImpl @" + hashCode() + ":" + super.hashCode() + ' ' + getAbsolutePath() + " prj:" + System.identityHashCode(this.projectUID) + this.projectUID; // NOI18N
     }
 
-    public CsmUID<CsmFile> getUID() {
-        if (uid == null) {
-            uid = UIDUtilities.createFileUID(this);
+    public final CsmUID<CsmFile> getUID() {
+        CsmUID<CsmFile> out = uid;
+        if (out == null) {
+            synchronized (this) {
+                if (uid == null) {
+                    uid = out = UIDUtilities.createFileUID(this);
+                }
+            }
         }
         return uid;
     }
@@ -1568,6 +1576,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         // not null UID
         assert this.projectUID != null;
         UIDObjectFactory.getDefaultFactory().writeUID(this.projectUID, output);
+        if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().endsWith("cpu.cc")) {
+            new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prjUID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err);
+        }
         output.writeLong(lastParsed);
         output.writeUTF(state.toString());
         try {
@@ -1593,6 +1604,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         fileType = input.readInt();
 
         this.projectUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().endsWith("cpu.cc")) {
+            new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prjUID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err);
+        }
         // not null UID
         assert this.projectUID != null;
         this.projectRef = null;

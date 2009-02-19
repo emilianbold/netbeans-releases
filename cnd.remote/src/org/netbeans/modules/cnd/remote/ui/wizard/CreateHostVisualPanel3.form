@@ -165,8 +165,8 @@
         <Component class="javax.swing.JTextArea" name="jTextArea1">
           <Properties>
             <Property name="columns" type="int" value="20"/>
+            <Property name="editable" type="boolean" value="false"/>
             <Property name="rows" type="int" value="1"/>
-            <Property name="focusable" type="boolean" value="false"/>
             <Property name="opaque" type="boolean" value="false"/>
           </Properties>
         </Component>

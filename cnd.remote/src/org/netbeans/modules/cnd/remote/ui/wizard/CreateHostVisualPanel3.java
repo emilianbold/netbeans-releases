@@ -123,8 +123,8 @@ public final class CreateHostVisualPanel3 extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.jLabel3.text")); // NOI18N
 
         jTextArea1.setColumns(20);
+        jTextArea1.setEditable(false);
         jTextArea1.setRows(1);
-        jTextArea1.setFocusable(false);
         jTextArea1.setOpaque(false);
         jScrollPane1.setViewportView(jTextArea1);
 

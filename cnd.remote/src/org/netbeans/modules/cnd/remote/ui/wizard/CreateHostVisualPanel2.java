@@ -160,8 +160,8 @@ public final class CreateHostVisualPanel2 extends JPanel {
         pbarStatusPanel.setMinimumSize(new java.awt.Dimension(100, 10));
         pbarStatusPanel.setLayout(new java.awt.BorderLayout());
 
+        tpOutput.setEditable(false);
         tpOutput.setText(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.tpOutput.text")); // NOI18N
-        tpOutput.setFocusable(false);
         tpOutput.setOpaque(false);
         jScrollPane1.setViewportView(tpOutput);
 
@@ -174,7 +174,7 @@ public final class CreateHostVisualPanel2 extends JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
+                    .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, cbSavePassword)
@@ -191,10 +191,10 @@ public final class CreateHostVisualPanel2 extends JPanel {
                                     .add(btConnect, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 90, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                                 .add(45, 45, 45)
                                 .add(btDetails))
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE))
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
-                        .add(pbarStatusPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+                        .add(pbarStatusPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
                         .addContainerGap())))
         );
         layout.setVerticalGroup(

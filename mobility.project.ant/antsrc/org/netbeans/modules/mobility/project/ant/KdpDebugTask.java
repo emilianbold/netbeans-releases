@@ -225,6 +225,7 @@ public class KdpDebugTask extends Task {
         //J2ME specific - disables STEP-INTO on smart-stepping, instead if no source is found does a STEP_OUT
         properties.put("SS_ACTION_STEPOUT", Boolean.TRUE); //NOI18N
         properties.put("J2ME_DEBUGGER", Boolean.TRUE); //NOI18N
+        properties.put ("baseDir", getProject().getBaseDir()); // NOI18N
         
         
         //sleep for defined delay
