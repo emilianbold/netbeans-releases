@@ -2008,7 +2008,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     @Override
     public final String toString() {
-        return getName().toString() + ' ' + getClass().getName() + " @" + hashCode(); // NOI18N
+        return getName().toString() + ' ' + getClass().getName() + " @" + hashCode() + ":" + super.hashCode(); // NOI18N
     }
 
     /**

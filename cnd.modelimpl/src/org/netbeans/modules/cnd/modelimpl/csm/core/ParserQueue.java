@@ -275,12 +275,12 @@ public final class ParserQueue {
 
     private static final class ProjectData {
 
-        public Set<FileImpl> filesInQueue = new HashSet<FileImpl>();
+        private final Set<FileImpl> filesInQueue = new HashSet<FileImpl>();
 
         // there are no more simultaneously parsing files than threads, so LinkedList suites even better
-        public Collection<FileImpl> filesBeingParsed = new LinkedList<FileImpl>();
+        private final Collection<FileImpl> filesBeingParsed = new LinkedList<FileImpl>();
 
-        public boolean notifyListeners;
+        private volatile boolean notifyListeners;
 
         ProjectData(boolean notifyListeners) {
             this.notifyListeners = notifyListeners;
@@ -301,21 +301,21 @@ public final class ParserQueue {
 
     private static ParserQueue instance = new ParserQueue(false);
 
-    private PriorityQueue<Entry> queue = new PriorityQueue<Entry>();
+    private final PriorityQueue<Entry> queue = new PriorityQueue<Entry>();
 
     private volatile State state;
     private final Object suspendLock = new Object();
 
     // do not need UIDs for ProjectBase in parsing data collection
-    private Map<ProjectBase, ProjectData> projectData = new HashMap<ProjectBase, ProjectData>();
+    private final Map<ProjectBase, ProjectData> projectData = new HashMap<ProjectBase, ProjectData>();
     private final Map<CsmProject, Object> projectLocks = new HashMap<CsmProject, Object>();
-    private AtomicInteger serial = new AtomicInteger(0);
+    private final AtomicInteger serial = new AtomicInteger(0);
 
     private final Object lock = new Object();
 
     private final boolean addAlways;
 
-    private Diagnostic.StopWatch stopWatch = TraceFlags.TIMING ? new Diagnostic.StopWatch(false) : null;
+    private final Diagnostic.StopWatch stopWatch = TraceFlags.TIMING ? new Diagnostic.StopWatch(false) : null;
 
     private ParserQueue(boolean addAlways) {
         this.addAlways = addAlways;
