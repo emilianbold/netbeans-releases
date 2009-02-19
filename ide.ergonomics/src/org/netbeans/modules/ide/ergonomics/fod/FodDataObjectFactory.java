@@ -97,6 +97,7 @@ public class FodDataObjectFactory implements DataObject.Factory {
             return null;
         }
         if (fo.getMIMEType().endsWith("+xml")) {
+            OpenAdvancedAction.registerCandidate(fo);
             return null;
         }
         if (delegate == null) {
