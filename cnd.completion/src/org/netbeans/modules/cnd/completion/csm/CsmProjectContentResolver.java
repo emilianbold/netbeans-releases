@@ -81,6 +81,7 @@ import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.services.CsmFriendResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilterBuilder;
@@ -1048,9 +1049,10 @@ public final class CsmProjectContentResolver {
             return Collections.<CharSequence, CsmMember>emptyMap();
         }
 
-        VisibilityInfoPair visibilityInfo = getContextVisibility(clazz, contextDeclaration, minVisibility, inheritanceLevel);
+        VisibilityInfo visibilityInfo = getContextVisibility(clazz, contextDeclaration, minVisibility, inheritanceLevel);
         minVisibility = visibilityInfo.visibility;
         inheritanceLevel = visibilityInfo.inheritanceLevel;
+        boolean friend = visibilityInfo.friend;
         Map<CharSequence, CsmMember> res = new HashMap<CharSequence, CsmMember>();
         CsmFilter memberFilter = CsmContextUtilities.createFilter(kinds,
                 strPrefix, match, caseSensitive, returnUnnamedMembers);
@@ -1123,7 +1125,7 @@ public final class CsmProjectContentResolver {
                     CsmInheritance inherit = it2.next();
                     CsmClass baseClass = CsmInheritanceUtilities.getCsmClass(inherit);
                     if (baseClass != null) {
-                        VisibilityInfoPair nextInfo = getNextInheritanceInfo(minVisibility, inherit, inheritanceLevel);
+                        VisibilityInfo nextInfo = getNextInheritanceInfo(minVisibility, inherit, inheritanceLevel, friend);
                         CsmVisibility nextMinVisibility = nextInfo.visibility;
                         int nextInheritanceLevel = nextInfo.inheritanceLevel;
 
@@ -1155,9 +1157,10 @@ public final class CsmProjectContentResolver {
             return new HashMap<CharSequence, CsmClass>();
         }
 
-        VisibilityInfoPair visibilityInfo = getContextVisibility(csmClass, contextDeclaration, minVisibility, inheritanceLevel);
+        VisibilityInfo visibilityInfo = getContextVisibility(csmClass, contextDeclaration, minVisibility, inheritanceLevel);
         minVisibility = visibilityInfo.visibility;
         inheritanceLevel = visibilityInfo.inheritanceLevel;
+        boolean friend = visibilityInfo.friend;
 
         Map<CharSequence, CsmClass> res = new HashMap<CharSequence, CsmClass>();
         // handle base classes in context of original class/function
@@ -1165,7 +1168,7 @@ public final class CsmProjectContentResolver {
             CsmInheritance inherit = it2.next();
             CsmClass baseClass = CsmInheritanceUtilities.getCsmClass(inherit);
             if (baseClass != null) {
-                VisibilityInfoPair nextInfo = getNextInheritanceInfo(minVisibility, inherit, inheritanceLevel);
+                VisibilityInfo nextInfo = getNextInheritanceInfo(minVisibility, inherit, inheritanceLevel, friend);
                 CsmVisibility nextMinVisibility = nextInfo.visibility;
                 int nextInheritanceLevel = nextInfo.inheritanceLevel;
                 if (nextMinVisibility != CsmVisibility.NONE) {
@@ -1319,18 +1322,21 @@ public final class CsmProjectContentResolver {
 
     ////////////////////////////////////////////////////////////////////////////
     // staff to help with visibility handling
-    private static final class VisibilityInfoPair {
+    private static final class VisibilityInfo {
 
         private final int inheritanceLevel;
         private final CsmVisibility visibility;
+        private final boolean friend;
 
-        public VisibilityInfoPair(int inheritanceLevel, CsmVisibility visibility) {
+        public VisibilityInfo(int inheritanceLevel, CsmVisibility visibility, boolean friend) {
             this.inheritanceLevel = inheritanceLevel;
             this.visibility = visibility;
+            this.friend = friend;
         }
     }
 
-    private VisibilityInfoPair getContextVisibility(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, CsmVisibility minVisibility, int inheritanceLevel) {
+    private VisibilityInfo getContextVisibility(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, CsmVisibility minVisibility, int inheritanceLevel) {
+        boolean friend = false;
         if (inheritanceLevel == INIT_INHERITANCE_LEVEL) {
             inheritanceLevel = NO_INHERITANCE;
             CsmClass contextClass = CsmBaseUtilities.getContextClass(contextDeclaration);
@@ -1344,19 +1350,29 @@ public final class CsmProjectContentResolver {
             // TODO: think about opposite usage C extends B extends A; C is used in A context
             // what is by spec? Are there additional visibility for A about C?
             }
+            if (inheritanceLevel == NO_INHERITANCE && contextDeclaration != null) {
+                friend = CsmFriendResolver.getDefault().isFriend(contextDeclaration, clazz);
+            }
         } else if (contextDeclaration != null) {
             // min visibility can be changed by context declaration properties
-            minVisibility = CsmInheritanceUtilities.getContextVisibility(clazz, contextDeclaration, minVisibility, inheritanceLevel == CHILD_INHERITANCE);
+            CsmInheritanceUtilities.ContextVisibilityInfo cvi = CsmInheritanceUtilities.getContextVisibilityInfo(clazz, contextDeclaration, minVisibility, inheritanceLevel == CHILD_INHERITANCE);
+            minVisibility = cvi.visibility;
+            friend = cvi.friend;
         }
-        return new VisibilityInfoPair(inheritanceLevel, minVisibility);
+        return new VisibilityInfo(inheritanceLevel, minVisibility, friend);
     }
 
-    private VisibilityInfoPair getNextInheritanceInfo(CsmVisibility curMinVisibility, CsmInheritance inherit, int curInheritanceLevel) {
+    private VisibilityInfo getNextInheritanceInfo(CsmVisibility curMinVisibility, CsmInheritance inherit, int curInheritanceLevel, boolean friend) {
         CsmVisibility nextMinVisibility;
         int nextInheritanceLevel = curInheritanceLevel;
         if (curInheritanceLevel == NO_INHERITANCE) {
-            nextMinVisibility = CsmInheritanceUtilities.mergeExtInheritedVisibility(curMinVisibility, inherit.getVisibility());
-            nextInheritanceLevel = NO_INHERITANCE;
+            if(friend) {
+                nextMinVisibility = CsmInheritanceUtilities.mergeInheritedVisibility(curMinVisibility, inherit.getVisibility());
+                nextInheritanceLevel = CHILD_INHERITANCE;
+            } else {
+                nextMinVisibility = CsmInheritanceUtilities.mergeExtInheritedVisibility(curMinVisibility, inherit.getVisibility());
+                nextInheritanceLevel = NO_INHERITANCE;
+            }
         } else if (curInheritanceLevel == EXACT_CLASS) {
             // create merged visibility based on direct inheritance
             nextMinVisibility = CsmInheritanceUtilities.mergeInheritedVisibility(curMinVisibility, inherit.getVisibility());
@@ -1367,6 +1383,6 @@ public final class CsmProjectContentResolver {
             nextMinVisibility = CsmInheritanceUtilities.mergeChildInheritanceVisibility(curMinVisibility, inherit.getVisibility());
             nextInheritanceLevel = CHILD_INHERITANCE;
         }
-        return new VisibilityInfoPair(nextInheritanceLevel, nextMinVisibility);
+        return new VisibilityInfo(nextInheritanceLevel, nextMinVisibility, false);
     }
 }

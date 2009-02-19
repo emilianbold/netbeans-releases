@@ -225,6 +225,9 @@ abstract public class CsmCompletionQuery {
             final int lastSepOffset = sup.getLastCommandSeparator(offset);
             final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset, lastSepOffset);
             final CndTokenProcessor<Token<CppTokenId>> etp = CsmExpandedTokenProcessor.create(doc, tp, offset);
+            if(etp instanceof CsmExpandedTokenProcessor) {
+                tp.setMacroCallback((CsmExpandedTokenProcessor)etp);
+            }
             tp.enableTemplateSupport(true);
             doc.readLock();
             try {
