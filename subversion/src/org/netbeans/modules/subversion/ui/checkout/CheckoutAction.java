@@ -52,6 +52,7 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.CallableSystemAction;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -73,43 +74,21 @@ public final class CheckoutAction extends CallableSystemAction {
         CheckoutWizard wizard = new CheckoutWizard();
         if (!wizard.show()) return;
         
-        final SVNUrl repository = wizard.getRepositoryRoot();
-        final RepositoryFile[] repositoryFiles = wizard.getRepositoryFiles();
-        final File workDir = wizard.getWorkdir();
-        final boolean atWorkingDirLevel = wizard.isAtWorkingDirLevel();
-        
-        SvnProgressSupport support = new SvnProgressSupport() {
-            public void perform() {
-                final SvnClient client;
-                try {
-                    client = Subversion.getInstance().getClient(repository);
-                } catch (SVNClientException ex) {
-                    SvnClientExceptionHandler.notifyException(ex, true, true); // should not happen
-                    return;
-                }
-        
-                try {
-                    setDisplayName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_Checkout_Progress"));
-                    checkout(client, repository, repositoryFiles, workDir, atWorkingDirLevel, this);
-                } catch (SVNClientException ex) {
-                    annotate(ex);
-                    return;
-                } finally {
-                    Subversion.getInstance().versionedFilesChanged();
-                }
-                if(isCanceled()) {
-                    return;
-                }
-                
-                setDisplayName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_ScanFolders_Progress"));
-                if (SvnModuleConfig.getDefault().getShowCheckoutCompleted()) {
-                    showCheckoutCompletet(repository, repositoryFiles, workDir, atWorkingDirLevel, this);
-                }
-            }
+        SVNUrl repository = wizard.getRepositoryRoot();
+        RepositoryFile[] repositoryFiles = wizard.getRepositoryFiles();
+        File workDir = wizard.getWorkdir();
+        boolean atWorkingDirLevel = wizard.isAtWorkingDirLevel();
+        boolean showCheckoutCompleted = SvnModuleConfig.getDefault().getShowCheckoutCompleted();
 
-        };
-        support.start(Subversion.getInstance().getRequestProcessor(repository), repository, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_Checkout_Progress"));
+        SvnClient client;
+        try {
+            client = Subversion.getInstance().getClient(repository);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true); // should not happen
+            return;
+        }
 
+        performCheckout(repository, client, repositoryFiles, workDir, atWorkingDirLevel, showCheckoutCompleted);
     }
     
     public String getName() {
@@ -127,6 +106,35 @@ public final class CheckoutAction extends CallableSystemAction {
     
     protected boolean asynchronous() {
         return false;
+    }
+
+    public static RequestProcessor.Task performCheckout(
+        final SVNUrl repository,
+        final SvnClient client,
+        final RepositoryFile[] repositoryFiles,
+        final File workingDir,
+        final boolean atWorkingDirLevel,
+        final boolean showCheckoutCompleted)
+    {
+        SvnProgressSupport support = new SvnProgressSupport() {
+            public void perform() {
+                try {
+                    setDisplayName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_Checkout_Progress"));
+                    checkout(client, repository, repositoryFiles, workingDir, atWorkingDirLevel, this);
+                } catch (SVNClientException ex) {
+                    annotate(ex);
+                    return;
+                } finally {
+                    Subversion.getInstance().versionedFilesChanged();
+                }
+                if(isCanceled()) {
+                    return;
+                }
+                setDisplayName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_ScanFolders_Progress"));
+                if(showCheckoutCompleted) showCheckoutCompletet(repositoryFiles, workingDir, atWorkingDirLevel, this);
+            }
+        };
+        return support.start(Subversion.getInstance().getRequestProcessor(repository), repository, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_Checkout_Progress"));
     }
 
     public static void checkout(final SvnClient client,
@@ -158,11 +166,12 @@ public final class CheckoutAction extends CallableSystemAction {
         }
     }
 
-    public static void showCheckoutCompletet(final SVNUrl repository,
-                                        final RepositoryFile[] repositoryFiles,
-                                        final File workingDir,
-                                        final boolean atWorkingDirLevel,
-                                        final SvnProgressSupport support) {
+    private static void showCheckoutCompletet(
+        final RepositoryFile[] repositoryFiles,
+        final File workingDir,
+        final boolean atWorkingDirLevel,
+        final SvnProgressSupport support)
+    {
         String[] folders;
         if (atWorkingDirLevel) {
             folders = new String[1];
