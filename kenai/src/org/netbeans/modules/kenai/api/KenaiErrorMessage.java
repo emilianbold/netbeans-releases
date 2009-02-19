@@ -39,6 +39,11 @@
 
 package org.netbeans.modules.kenai.api;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.codeviation.pojson.PojsonLoad;
 
 /**
@@ -47,6 +52,8 @@ import org.codeviation.pojson.PojsonLoad;
  */
 public class KenaiErrorMessage extends KenaiException {
     private String errorResponse;
+    private String status;
+    private HashMap<String,String> errors;
 
     public KenaiErrorMessage(String message, Throwable cause, String errorResponse) {
         super(message, cause);
@@ -63,8 +70,45 @@ public class KenaiErrorMessage extends KenaiException {
         return load.load(errorResponse, clazz);
     }
 
+    private void fillErrorData() {
+        PojsonLoad load =PojsonLoad.create();
+        try {
+            final HashMap toCollections = (HashMap) load.toCollections(errorResponse);
+            status = (String) toCollections.get("status");
+            errors = (HashMap<String, String>) toCollections.get("errors");
+        } catch (IOException ex) {
+            Logger.getLogger(KenaiErrorMessage.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+
+    /**
+     * get error response as string
+     * @return
+     */
     public String getAsString() {
         return errorResponse;
     }
 
+    /**
+     * get status according to
+     * <a href="http://kenai.com/projects/kenai/pages/API#Errors">spec</a>
+     * @return
+     */
+    public String getStatus() {
+        if (status==null)
+            fillErrorData();
+        return status;
+    }
+
+    /**
+     * get errors according to
+     * <a href="http://kenai.com/projects/kenai/pages/API#Errors">spec</a>
+     * @return
+     */
+    public Map<String,String> getErrors() {
+        if (errors==null)
+            fillErrorData();
+        return errors;
+    }
 }

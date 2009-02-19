@@ -40,8 +40,10 @@
  */
 package org.netbeans.modules.kenai.collab.im;
 
+import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.logging.Level;
@@ -61,9 +63,11 @@ import org.netbeans.modules.kenai.api.KenaiEvent;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiListener;
 import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.collab.chat.ui.ChatTopComponent;
 import org.netbeans.modules.kenai.collab.chat.ui.PresenceIndicator;
 import org.netbeans.modules.kenai.collab.chat.ui.PresenceIndicator.PresenceListener;
 import org.netbeans.modules.kenai.collab.chat.ui.PresenceIndicator.Status;
+import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.util.Exceptions;
 
 /**
@@ -89,6 +93,26 @@ public class KenaiConnection implements KenaiListener {
 
     private static PrivateChatNotification privateNotification = new PrivateChatNotification();
     private static GroupChatNotification groupNotification = new GroupChatNotification();
+
+    /**
+     * Default singleton instance representing XMPP connection to kenai server
+     * @return
+     */
+    public static synchronized KenaiConnection getDefault() {
+        if (instance == null) {
+            instance = new KenaiConnection();
+            Kenai.getDefault().addKenaiListener(instance);
+            instance.tryConnect();
+        }
+        return instance;
+    }
+
+    /**
+     * private constructor to prevent mulitple instances
+     */
+    private KenaiConnection() {
+    }
+
 
     private void join(MultiUserChat chat) {
         try {
@@ -116,30 +140,16 @@ public class KenaiConnection implements KenaiListener {
 
     private void tryConnect() {
         try {
-            connect();
-            initChats();
-            PresenceIndicator.getDefault().setStatus(Status.ONLINE);
+            if (UIUtils.tryLogin()) {
+                connect();
+                initChats();
+                PresenceIndicator.getDefault().setStatus(Status.ONLINE);
+            }
         } catch (XMPPException ex) {
             XMPPLOG.log(Level.WARNING, ex.getMessage());
         }
     }
 
-
-    /**
-     * Default singleton instance representing XMPP connection to kenai server
-     * @return
-     */
-    public static synchronized KenaiConnection getDefault() {
-        if (instance == null) {
-            instance = new KenaiConnection();
-            Kenai.getDefault().addKenaiListener(instance);
-            instance.tryConnect();
-        }
-        return instance;
-    }
-
-    private KenaiConnection() {
-    }
 
     /**
      * is connection to kenai xmpp up and living?
@@ -215,16 +225,14 @@ public class KenaiConnection implements KenaiListener {
     }
 
     public void stateChanged(KenaiEvent e) {
-//        if (e.getType()==e.LOGIN) {
-//            final PasswordAuthentication pa = (PasswordAuthentication) e.getSource();
-//            if (pa.getUserName()!=null) {
-//                try {
-//                    connection.login(pa.getUserName(), pa.getPassword().toString());
-//                } catch (XMPPException ex) {
-//                    Exceptions.printStackTrace(ex);
-//                }
-//            }
-//        }
+        if (e.getType() == KenaiEvent.LOGIN) {
+            final PasswordAuthentication pa = (PasswordAuthentication) e.getSource();
+            if (pa.getUserName() != null) {
+                myProjects = null;
+                tryConnect();
+                ChatTopComponent.getDefault().reload();
+            }
+        }
     }
     
 //------------------------------------------
@@ -265,16 +273,11 @@ public class KenaiConnection implements KenaiListener {
     public Collection<KenaiProject> getMyProjects() {
         if (myProjects == null) {
             try {
-                myProjects = new ArrayList();
-                myProjects.add(Kenai.getDefault().getProject("kenai"));
-                myProjects.add(Kenai.getDefault().getProject("ndc"));
-                myProjects.add(Kenai.getDefault().getProject("alligator"));
+                myProjects = Kenai.getDefault().getMyProjects();
             } catch (KenaiException ex) {
-                Exceptions.printStackTrace(ex);
+                myProjects = Collections.emptyList();
             }
         }
         return myProjects;
     }
-
-
 }

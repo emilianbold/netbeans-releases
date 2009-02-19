@@ -110,6 +110,12 @@ public class KenaiREST extends KenaiImpl {
 
     }
 
+    @Override
+    public Collection<ProjectData> getMyProjects() throws KenaiException {
+        ProjectsListData pld = loadPage(baseURL.toString() + "/api/projects/mine.json", ProjectsListData.class);
+        return new LazyList(pld, ProjectsListData.class);
+    }
+
     private static <T> T loadPage(String url, Class<T> clazz) throws KenaiException {
 
         RestConnection conn = new RestConnection(url);

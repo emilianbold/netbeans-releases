@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.MissingResourceException;
 import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.html.HTMLDocument;
@@ -99,6 +100,7 @@ public class ChatPanel extends javax.swing.JPanel {
         inbox.setBackground(Color.WHITE);
         outbox.setBackground(Color.WHITE);
         splitter.setResizeWeight(0.9);
+        refreshOnlineStatus();
 //        setUpPrivateMessages();
     }
 
@@ -164,6 +166,19 @@ public class ChatPanel extends javax.swing.JPanel {
         }
     }
 
+    private void refreshOnlineStatus() throws MissingResourceException {
+        online.setText(NbBundle.getMessage(ChatPanel.class, "CTL_PresenceOnline", muc.getOccupantsCount()));
+        Iterator<String> string = muc.getOccupants();
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("<html><body>");
+        while (string.hasNext()) {
+            buffer.append(StringUtils.parseResource(string.next()) + "<br>");
+        }
+        buffer.append("</body></html>");
+        online.setToolTipText(buffer.toString());
+    //setEndSelection();
+    //insertPresence(presence);
+    }
 
     private class PresenceListener implements PacketListener {
 
@@ -172,15 +187,7 @@ public class ChatPanel extends javax.swing.JPanel {
             java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                online.setText(NbBundle.getMessage(ChatPanel.class, "CTL_PresenceOnline", muc.getOccupantsCount()));
-                Iterator<String> string = muc.getOccupants();
-                StringBuffer buffer = new StringBuffer();
-                buffer.append("<html><body>");
-                while (string.hasNext()) {
-                    buffer.append(StringUtils.parseResource(string.next()) + "<br>");
-                }
-                buffer.append("</body></html>");
-                online.setToolTipText(buffer.toString());
+                 refreshOnlineStatus();
                 //setEndSelection();
                 //insertPresence(presence);
             }

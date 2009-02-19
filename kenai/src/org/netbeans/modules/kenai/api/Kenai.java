@@ -80,8 +80,7 @@ public final class Kenai {
     public static synchronized Kenai getDefault() {
         if (instance == null) {
             try {
-                if (Kenai.url == null)
-                    Kenai.url = new URL("https://kenai.com");
+                Kenai.url = new URL(System.getProperty("kenai.com.url", "https://kenai.com"));
                 KenaiImpl impl = new KenaiREST(Kenai.url);
                 instance = new Kenai(impl);
             } catch (MalformedURLException ex) {
@@ -89,10 +88,6 @@ public final class Kenai {
             }
         }
         return instance;
-    }
-
-    public static void setURL(URL url) {
-        Kenai.url=url;
     }
 
     private final KenaiImpl     impl;
@@ -320,9 +315,14 @@ public final class Kenai {
         return Collections.unmodifiableCollection(openProjects);
     }
 
-    public Collection<KenaiProject> getMyProjects() {
-        //TODO: must return my projects
-        return getOpenProjects();
+    /**
+     * get my projects of logged user
+     * @return collection of projects
+     * @throws org.netbeans.modules.kenai.api.KenaiException
+     */
+    public Collection<KenaiProject> getMyProjects() throws KenaiException {
+        Collection<ProjectData> prjs = impl.getMyProjects();
+        return new LazyCollection(prjs);
     }
 
     Collection<KenaiProject> loadProjects() {
