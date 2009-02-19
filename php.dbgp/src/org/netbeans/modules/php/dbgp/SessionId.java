@@ -227,7 +227,7 @@ public class SessionId {
                 retval = getDebugFile();
             } else if (myRemoteBase != null && myLocalBase != null && uri.startsWith(myRemoteBase)) {
                 String relativePath = uri.substring(myRemoteBase.length());
-                relativePath = relativePath.replace(myRemoteSeparator, File.separator);
+                relativePath = relativePath.replace(BACK_SLASH, SLASH);//NOI18N
                 retval = myLocalBase.getFileObject(relativePath);
             }
         }
@@ -253,7 +253,7 @@ public class SessionId {
         else if( getFileUri().lastIndexOf( BACK_SLASH ) != -1 ) {
             indx = getFileUri().lastIndexOf( BACK_SLASH );
             myRemoteSeparator = BACK_SLASH;
-        }
+        }        
         else {
             assert false;
             return;
