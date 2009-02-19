@@ -159,7 +159,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     
     protected String findQualifiedName() {
         CsmObject owner = findOwner(null);
-        if( owner instanceof CsmQualifiedNamedElement  ) {
+        if(CsmKindUtilities.isQualified(owner)) {
             setFlags(QUALIFIED_NAME, false);
             return ((CsmQualifiedNamedElement) owner).getQualifiedName().toString() + getScopeSuffix() + "::" + getQualifiedNamePostfix(); // NOI18N
         }
