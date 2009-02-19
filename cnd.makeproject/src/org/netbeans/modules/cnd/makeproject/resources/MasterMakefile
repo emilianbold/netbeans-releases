@@ -11,10 +11,21 @@
 #     .clobber-post:           called after 'clobber' target
 #     .all-pre:                called before 'all' target
 #     .all-post:               called after 'all' target
-#     .help-pre:                called before 'help' target
-#     .help-post:               called after 'help' target
+#     .help-pre:               called before 'help' target
+#     .help-post:              called after 'help' target
 #
 #  Targets beginning with '.' are not intended to be called on their own.
+#
+#  Available make variable:
+#
+#     CONF                       name of current configuration
+#     CND_DIST_DIR_NAME          default top distribution directory (build targets)
+#     CND_BUILD_DIR_NAME         default top build directory (object files, ...)
+#     CND_BUILD_DIR_PATH_${CONF} path to directory for tmp build files (object files, ...)
+#     CND_PLATFORM_${CONF}       platform name (current configuration)
+#     CND_TARGET_DIR_${CONF}     target directory (current configuration)
+#     CND_TARGET_NAME_${CONF}    name of target (current configuration)
+#     CND_TARGET_PATH_${CONF}    path to target (current configuration)
 #
 #  Main targets can be executed directly, and they are:
 #  
@@ -90,3 +101,6 @@ help: .help-post
 
 # include project implementation makefile
 include nbproject/Makefile-impl.mk
+
+# include project make variables
+include nbproject/Makefile-variables.mk
