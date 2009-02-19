@@ -47,7 +47,6 @@ import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.browser.Browser;
 import org.netbeans.modules.subversion.ui.checkout.CheckoutAction;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
-import org.openide.ErrorManager;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -232,7 +231,7 @@ public class Subversion {
                                                                          : "") //NOI18N
                                : subversion.getClient(svnUrl);
         } catch (SVNClientException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+            SvnClientExceptionHandler.notifyException(ex, false, true);
             return false;
         }
 
@@ -246,17 +245,12 @@ public class Subversion {
                                      : svnUrl.appendPath(repoRelativePath);
 
             repositoryFiles[i] = new RepositoryFile(repoSvnUrl, repoRelativePath, svnRevision);
-//            client.checkout(repoSvnUrl, targetLocalFolder, svnRevision, true);
-
         }
         try {
-            // prepare local
-//        File targetLocalFolder = determineTargetFolder(repoRelativePath, localFolder);
-//        if (!prepareLocalFolder(targetLocalFolder)) {
-//            return false;
-//        }
             CheckoutAction.checkout(client, svnUrl, repositoryFiles, localFolder, false, null);
-            if(scanForNewProjects) CheckoutAction.showCheckoutCompletet(svnUrl, repositoryFiles, localFolder, false, null);
+            if(scanForNewProjects) {
+                CheckoutAction.showCheckoutCompletet(svnUrl, repositoryFiles, localFolder, false, null);
+            }
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, false, true);        
         } finally {
@@ -264,58 +258,6 @@ public class Subversion {
         }
 
         return true;
-    }
-
-//    private static boolean prepareLocalFolder(File targetLocalFolder) {
-//        boolean exists = targetLocalFolder.exists();
-//        if (!exists) {
-//            exists = targetLocalFolder.mkdirs();
-//        } else if (!targetLocalFolder.isDirectory()) {
-//            exists = false;
-//        }
-//        if (!exists) {
-//            ErrorManager.getDefault().log(
-//                    ErrorManager.EXCEPTION,
-//                    "Could not prepare target directory for the checkout.\n" //NOI18N
-//                    + "The directory does not exist and it could not be " //NOI18N
-//                    + "created.");                                      //NOI18N
-//
-//            return false;
-//        }
-//        if (!targetLocalFolder.canWrite()) {
-//            ErrorManager.getDefault().log(
-//                    ErrorManager.EXCEPTION,
-//                    "Could not prepare target directory for the checkout.\n" //NOI18N
-//                    + "The directory exists but it is not writeable."); //NOI18N
-//
-//            return false;
-//        }
-//        return true;
-//    }
-
-    /**
-     * Determines the target folder (the normalized, absolute path) where the
-     * given repository subfolder should be copied to.
-     * 
-     * @param  localFolder  preliminary specification of the target folder
-     *                      - the folder may be relative, it may not be
-     *                      normalized and it does not take the requested
-     *                      repository subfolder into account
-     * @param  folderInRepo   folder inside a Subversion repository that should
-     *                        be later copied to the local folder
-     * @return  absolute, normalized folder path that takes name
-     *          of the requested repository subfolder into account
-     */
-//    private static File determineTargetFolder(String repositorySubfolder,
-//                                              File targetLocalFolder) {
-//        File targetFolder = new File(targetLocalFolder, getLastPathSegment(repositorySubfolder));
-//        return FileUtil.normalizeFile(targetFolder.getAbsoluteFile());
-//    }
-
-    private static String getLastPathSegment(String path) {
-        int lastSlashPos = path.lastIndexOf('/');
-        return (lastSlashPos != -1) ? path.substring(lastSlashPos + 1)
-                                    : path;
     }
 
     private static String polishRelativePath(String path) {
