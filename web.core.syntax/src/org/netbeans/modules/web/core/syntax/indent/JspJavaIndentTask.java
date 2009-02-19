@@ -28,7 +28,14 @@
 package org.netbeans.modules.web.core.syntax.indent;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.modules.editor.indent.spi.Context;
@@ -36,7 +43,6 @@ import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.web.core.syntax.formatting.JspJavaFormatter;
-import org.openide.util.Exceptions;
 
 public class JspJavaIndentTask implements IndentTask {
 
@@ -47,11 +53,26 @@ public class JspJavaIndentTask implements IndentTask {
     }
 
     public void reindent() throws BadLocationException {
-        ExtFormatter formatter = new JspJavaFormatter(JavaKit.class);
-        try {
-            formatter.reformat((BaseDocument)context.document(), context.startOffset(), context.endOffset(), true);
-        }catch(IOException e) {
-            Exceptions.printStackTrace(e);
+        if (context.isIndent()){
+            enterPressed(context);
+        }
+    }
+
+    public void enterPressed(Context context) {
+        TokenHierarchy<Document> hi = TokenHierarchy.get(context.document());
+        List<TokenSequence<?>> sequences = hi.embeddedTokenSequences(context.caretOffset(), true);
+        if (!sequences.isEmpty()) {
+            TokenSequence mostEmbedded = sequences.get(sequences.size() - 1);
+            if(mostEmbedded.language() == JavaTokenId.language()) {
+                ExtFormatter formatter = new JspJavaFormatter(JavaKit.class);
+                try {
+                    formatter.reformat((BaseDocument)context.document(), context.caretOffset(), context.caretOffset() + 1, true);
+                }catch(BadLocationException e) {
+                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, e);
+                }catch(IOException e) {
+                    Logger.getLogger(this.getClass().getName()).log(Level.WARNING, null, e);
+                }
+            }
         }
     }
     

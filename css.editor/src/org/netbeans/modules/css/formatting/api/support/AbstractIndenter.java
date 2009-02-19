@@ -40,6 +40,7 @@
 package org.netbeans.modules.css.formatting.api.support;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -150,15 +151,21 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             System.err.println(">> AbstractIndenter based indenter: "+this.getClass().toString());
         }
 
+        boolean withinLanguage = isWithinLanguage(startOffset, endOffset);
+        boolean justAfterOurLanguage = isJustAfterOurLanguage();
+        if (DEBUG && !withinLanguage && justAfterOurLanguage) {
+            System.err.println("enabling formatter because it is justAfterOurLanguage case");
+        }
+
         // abort if formatting is not within our language
-        if (!isWithinLanguage(startOffset, endOffset)) {
+        if (!withinLanguage && !justAfterOurLanguage) {
             if (DEBUG) {
                 System.err.println("Nothing to be done by "+this.getClass().toString());
             }
             return;
         }
-        // quick check whether this is new line indent and if it is wihtin our language
-        if (endOffset-startOffset < 4) { // for line reindents etc.
+        // quick check whether this is new line indent and if it is within our language
+        if (endOffset-startOffset < 4 && !justAfterOurLanguage) { // for line reindents etc.
             boolean found = false;
             for (int offset = startOffset; offset <= endOffset; offset++) {
                 Language l = LexUtilities.getLanguage(doc, offset);
@@ -176,8 +183,8 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         }
 
         if (DEBUG) {
-            System.err.println(">> TokenHierarchy of file to be indented:");
-            System.err.println(TokenHierarchy.get(doc));
+            //System.err.println(">> TokenHierarchy of file to be indented:");
+            //System.err.println(TokenHierarchy.get(doc));
         }
 
         try {
@@ -189,7 +196,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 return;
             }
             if (DEBUG) {
-                System.err.println(">> Code blocks:\n"+blocks);
+                //System.err.println(">> Code blocks:\n"+blocks);
             }
 
             // create joined TokenSequence for our language
@@ -219,6 +226,9 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
 
             // get list of code blocks of our language in form of [line start number, line end number]
             List<LinePair> linePairs = calculateLinePairs(blocks, initialOffset, end);
+            if (DEBUG) {
+                System.err.println("line pairs to process="+linePairs);
+            }
 
             // process blocks of our language and record data for each line:
             processLanguage(joinedTS, linePairs, initialOffset, end, indentedLines);
@@ -226,11 +236,39 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             // apply line data into concrete indentation:
             int lineStart = Utilities.getLineOffset(doc, context.startOffset());
             int lineEnd = Utilities.getLineOffset(doc, context.endOffset());
-            applyIndents(indentedLines, lineStart, lineEnd);
+            applyIndents(indentedLines, lineStart, lineEnd, justAfterOurLanguage);
 
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
         }
+    }
+
+    private boolean isJustAfterOurLanguage() {
+        // get start of formatted area
+        int start = context.startOffset();
+        if (start > 0) {
+            start--;
+        }
+
+        while (start > 0) {
+            try {
+                String text = getDocument().getText(start, 1).trim();
+                if (text.length() > 0) {
+                    System.err.println("isJustAfterOurLanguage found: "+text+" at "+start);
+                    break;
+                }
+                start--;
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+                return false;
+            }
+        }
+        if (start == 0) {
+            return false;
+        }
+        Language l = LexUtilities.getLanguage(getDocument(), start);
+        System.err.println("isJustAfterOurLanguage lang:"+l);
+        return (l != null && l.equals(language));
     }
 
     private List<LinePair> calculateLinePairs(List<JoinedTokenSequence.CodeBlock<T1>> blocks, int startOffset, int endOffset) throws BadLocationException {
@@ -246,6 +284,9 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 LinePair lp = new LinePair();
                 lp.startingLine = Utilities.getLineOffset(getDocument(), LexUtilities.getTokenSequenceStartOffset(tsw.getTokenSequence()));
                 lp.endingLine = Utilities.getLineOffset(getDocument(), LexUtilities.getTokenSequenceEndOffset(tsw.getTokenSequence()));
+                if (lp.startingLine > endLine) {
+                    break;
+                }
                 if (lp.startingLine < startLine) {
                     if (startLine < lp.endingLine) {
                         lp.startingLine = startLine;
@@ -371,7 +412,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
 
                     Language l = LexUtilities.getLanguage(getDocument(), rowStartOffset);
                     if (l == null || !l.equals(language)) {
-                        // line is empty and first token on line is not from out language
+                        // line is empty and first token on line is not from our language
                         continue;
                     }
                 }
@@ -540,6 +581,12 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
 
     private static class ExtraResults {
         private int compoundLevel;
+
+        @Override
+        public String toString() {
+            return "ExtraResults[level="+compoundLevel+"]";
+        }
+
     }
 
     /**
@@ -550,11 +597,12 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
      */
     private int calculateLineIndent(int indentation, List<Line> lines, Line line, Line previousLine,
             List<IndentCommand> currentLineIndents, List<IndentCommand> allPreviousCommands,
-            boolean update, int lineStart, ExtraResults extraResults) throws BadLocationException {
+            boolean update, int lineStart, ExtraResults extraResults, boolean enforcePosition) throws BadLocationException {
 
         boolean beingFormatted = line != null ? line.index >= lineStart : false;
         int thisLineIndent = 0;
         int returnToLine = -1;
+        int originalIndentation = indentation;
         List<IndentCommand> allCommands = new ArrayList<IndentCommand>(allPreviousCommands);
 
         // if previous line ended with CONTINUE and current line is not CONTINUE
@@ -657,6 +705,11 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     break;
 
             }
+            if (enforcePosition && ii.getType() != IndentCommand.Type.RETURN) {
+                indentation = originalIndentation;
+                thisLineIndent = 0;
+                enforcePosition = false;
+            }
             ii.setCalculatedIndentation(indentation+thisLineIndent);
             allCommands.add(ii);
         }
@@ -692,13 +745,14 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                         assert l.existingLineIndent != -1 : "line is missing existingLineIndent "+l;
                         diff = l.existingLineIndent - l.indentation;
                     }
-                } else if (previousLine != null && previousLine.index+1 == lineStart) {
+                } else if (previousLine != null && line.index == lineStart) {
                     // variation on previous case (see above for more details):
                     // in this case previousLine was not formattable and so current line
                     // needs to be adjusted as well
                     diff = previousLine.existingLineIndent - previousLine.indentation;
                 }
                 indentation += diff;
+                line.indentationAdjustment = diff;
             }
 
             // store existing line indent:
@@ -712,6 +766,9 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
 
     private Line findLineByLineIndex(List<Line> lines, int index) {
         for (Line l : lines) {
+            if (l == null) {
+                continue;
+            }
             if (l.index == index) {
                 return l;
             } else if (l.index > index) {
@@ -722,11 +779,11 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
     }
 
     protected void applyIndents(final List<Line> indentedLines,
-            final int lineStart, final int lineEnd) {
+            final int lineStart, final int lineEnd, final boolean justAfterOurLanguage) {
         getDocument().runAtomic(new Runnable() {
             public void run() {
                 try {
-                    applyIndents0(indentedLines, lineStart, lineEnd);
+                    applyIndents0(indentedLines, lineStart, lineEnd, justAfterOurLanguage);
                 } catch (BadLocationException ble) {
                     Exceptions.printStackTrace(ble);
                 }
@@ -735,7 +792,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
     }
 
     protected void applyIndents0(List<Line> indentedLines,
-            int lineStart, int lineEnd) throws BadLocationException {
+            int lineStart, int lineEnd, boolean justAfterOurLanguage) throws BadLocationException {
 
         if (DEBUG) {
             System.err.println(">> reindentation done by "+this.getClass()+":");
@@ -757,7 +814,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
 
         // update indentedLines to contain
         // record per line (wihtin lineStart and End ) but leave some lines null
-        indentedLines = addNonLanguageLines(indentedLines);
+        indentedLines = addNonLanguageLines(indentedLines, lineEnd, justAfterOurLanguage);
 
         // iterate over lines indentation commands and calculate real indentation
         for (Line line : indentedLines) {
@@ -794,6 +851,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 continue;
             }
 
+            boolean enforcePosition = false;
             if (!context.isPrimaryFormatter()) {
                 // if this is not primary formatter and it is beginning of language block then
                 // check if previous formatter set initial indent for this line
@@ -802,6 +860,10 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     int ind = context.getLineInitialIndent(line.index);
                     if (ind != -1) {
                         indentation = ind;
+                        enforcePosition = true;
+                        if (compoundIndent && preliminaryResults.compoundLevel > 0) {
+                            indentation += preliminaryResults.compoundLevel * indentationSize;
+                        }
                     } else {
                         // TODO:
                         // problem is that sometimes I may want to continue with current indent
@@ -820,7 +882,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             }
 
             // calculate indentation:
-            indentation = calculateLineIndent(indentation, indentedLines, line, previousLine, line.lineIndent, commands, true, lineStart, results);
+            indentation = calculateLineIndent(indentation, indentedLines, line, previousLine, line.lineIndent, commands, true, lineStart, results, enforcePosition);
 
             // force zero indent if line is empty and empty lines should not be indented
             if (line.emptyLine && !indentEmptyLines) {
@@ -858,7 +920,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     List<IndentCommand> commands2 = new ArrayList<IndentCommand>(commands);
                     commands2.addAll(line.lineIndent);
                     preliminaryResults.compoundLevel = results.compoundLevel;
-                    int indent = calculateLineIndent(indentation, indentedLines, null, line, line.preliminaryNextLineIndent, commands2, false, lineStart, preliminaryResults);
+                    int indent = calculateLineIndent(indentation, indentedLines, null, line, line.preliminaryNextLineIndent, commands2, false, lineStart, preliminaryResults, false);
                     lineIndents.put(line.index+1, indent);
                 }
             }
@@ -866,6 +928,10 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             if (preserveThisLine) {
                 line.indentThisLine = true;
                 line.preserveThisLineIndent = true;
+            } else if (!line.indentThisLine && compoundIndent && results.compoundLevel > 0 && !line.emptyLine) {
+                line.compoundLevel = results.compoundLevel;
+                line.indentation = line.existingLineIndent + preliminaryResults.compoundLevel*indentationSize;
+                line.indentThisLine = true;
             }
 
             commands.addAll(line.lineIndent);
@@ -884,6 +950,16 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
 
         // set line indent for preserved lines:
         updateIndentationForPreservedLines(indentedLines);
+
+
+        if (indentEmptyLines && indentedLines.size() > 0) {
+            Line lastLine = indentedLines.get(indentedLines.size()-1);
+            Integer indent = lineIndents.get(lastLine.index+1);
+            if (indent != null && justAfterOurLanguage) {
+                indentedLines = updateForeignLanguageEmptyLineIndents(indentedLines,
+                        lastLine.index, lineEnd, indent.intValue());
+            }
+        }
 
        // DEBUG info:
         if (DEBUG) {
@@ -914,7 +990,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         applyIndentations(indentedLines, lineStart, lineEnd);
     }
 
-    private List<Line> addNonLanguageLines(List<Line> currentLines) {
+    private List<Line> addNonLanguageLines(List<Line> currentLines, int lineEnd, boolean extend) throws BadLocationException {
         List<Line> indents = new ArrayList<Line>();
         int lastLine = -1;
         for (Line line : currentLines) {
@@ -926,6 +1002,27 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             }
             indents.add(line);
             lastLine = line.index;
+        }
+        if (lastLine != -1 && extend) {
+            while (lastLine < lineEnd) {
+                indents.add(null);
+                lastLine++;
+            }
+        }
+        return indents;
+    }
+
+    private List<Line> updateForeignLanguageEmptyLineIndents(List<Line> currentLines, int lastLineIndex, int lineEnd, int indent) throws BadLocationException {
+        List<Line> indents = new ArrayList<Line>(currentLines);
+        while (lastLineIndex < lineEnd) {
+            lastLineIndex++;
+            Line line = generateBasicLine(lastLineIndex);
+            if (line.emptyLine) {
+                line.indentation = indent;
+                indents.add(line);
+            } else {
+                break;
+            }
         }
         return indents;
     }
@@ -1014,12 +1111,12 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         }
         StringBuilder sb = new StringBuilder();
         char ch = ' ';
-        if (ln.preserveThisLineIndent) {
+        if (indentable) {
+            ch = '*';
+        } else if (ln.preserveThisLineIndent) {
             ch = 'P';
         } else if (ln.compoundLevel > 0) {
             ch = 'C';
-        } else if (indentable) {
-            ch = '*';
         }
         sb.append(String.format("%1c[%4d]", ch, ln.index+1));
         for (int i=0; i<ln.indentation; i++) {
@@ -1051,6 +1148,8 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         private int existingLineIndent = -1;
         // just for diagnostics:
         private int compoundLevel = -1;
+        // just for diagnostics:
+        private int indentationAdjustment = -1;
 
         public String dump() {
             return String.format("[%4d]", index+1)+
@@ -1058,6 +1157,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     " ("+lineStartOffset+
                     "-"+lineEndOffset+
                     ") indent=" +indentation+
+                    (indentationAdjustment > 0 ? "("+indentationAdjustment+")" : "") +
                     ((existingLineIndent != -1) ? " existingIndent="+existingLineIndent : "") +
                     (blockStart? " blockStart" : "") +
                     (blockEnd? " blockEnd" : "") +
@@ -1077,12 +1177,13 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     ",startOffset="+lineStartOffset+
                     ",endOffset="+lineEndOffset+
                     ",indentation=" +indentation+
-                    ((existingLineIndent != -1) ? " existingIndent="+existingLineIndent : "") +
+                    (indentationAdjustment > 0 ? "("+indentationAdjustment+")" : "") +
+                    ((existingLineIndent != -1) ? ",existingIndent="+existingLineIndent : "") +
                     (blockStart? ",blockStart" : "") +
                     (blockEnd? ",blockEnd" : "") +
                     (preserveThisLineIndent? ",preserveThisLineIndent" : "") +
                     (emptyLine? ",empty" : "") +
-                    (compoundLevel > 0 ? " compoundLevel="+compoundLevel : "") +
+                    (compoundLevel > 0 ? ",compoundLevel="+compoundLevel : "") +
                     (!indentThisLine? ",doNotIndentThisLine" : "") +
                     ",lineIndent=" +lineIndent+
                     "]";

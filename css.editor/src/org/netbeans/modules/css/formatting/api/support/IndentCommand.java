@@ -131,12 +131,10 @@ public final class IndentCommand {
     private int fixedIndentSize;
     private int lineOffset;
     private int indentation;
-    //private boolean blankLine;
 
-    public IndentCommand(Type type, int lineOffset/*, boolean blankLine*/) {
+    public IndentCommand(Type type, int lineOffset) {
         this.type = type;
         this.lineOffset = lineOffset;
-        //this.blankLine = blankLine;
         this.fixedIndentSize  = -1;
     }
 
@@ -164,15 +162,11 @@ public final class IndentCommand {
         return indentation;
     }
 
-//    public boolean isBlankLine() {
-//        return blankLine;
-//    }
-//
     @Override
     public String toString() {
-        return "IndentCommand[type="+type+",fixedIndentSize="+fixedIndentSize+
-                ",lineOffset="+lineOffset+//",blankLine="+blankLine+"," +
-                ",indentation="+indentation+"]"; // NOI18N
+        return "IndentCommand[type="+type+
+                (fixedIndentSize != -1 ? " fixedIndent="+fixedIndentSize : "")+
+                " lineOffset="+lineOffset+"]"; // NOI18N
     }
 
 }
