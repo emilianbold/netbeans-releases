@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.groovy.editor.actions;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -54,20 +53,17 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.InputMap;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
-import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 /**
@@ -84,12 +80,12 @@ public class ImportChooserInnerPanel extends javax.swing.JPanel{
         initComponents();
     }
     
-    public void initPanel(Map<String,List> multipleCandidates) {
+    public void initPanel(Map<String,List<FixImportsHelper.ImportCandidate>> multipleCandidates) {
         initComponentsMore(multipleCandidates);
         setAccessible();
     }
     
-    private void initComponentsMore(Map<String,List> multipleCandidates) {
+    private void initComponentsMore(Map<String,List<FixImportsHelper.ImportCandidate>> multipleCandidates) {
         contentPanel.setLayout( new GridBagLayout() );
         contentPanel.setBackground( UIManager.getColor("Table.background") ); //NOI18N
         jScrollPane1.setBorder( UIManager.getBorder("ScrollPane.border") ); //NOI18N
@@ -117,7 +113,7 @@ public class ImportChooserInnerPanel extends javax.swing.JPanel{
             
             int i = 0;
 
-            for (Map.Entry<String, List> entry : multipleCandidates.entrySet()) {
+            for (Map.Entry<String, List<FixImportsHelper.ImportCandidate>> entry : multipleCandidates.entrySet()) {
                 String  name = entry.getKey();
                 List<FixImportsHelper.ImportCandidate> importCandidates = entry.getValue();
                 
