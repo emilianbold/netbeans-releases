@@ -359,7 +359,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             public void run() {
                 String name = query.getDisplayName();
                 boolean firstTime = false;
-                if(query.getDisplayName() == null) { // XXX flag!!!
+                if(!query.isSaved()) {
                     firstTime = true;
                     if(BugzillaUtil.show(panel.savePanel, NbBundle.getMessage(QueryController.class, "LBL_SaveQuery"),  NbBundle.getMessage(QueryController.class, "LBL_Save"))) {
                         // XXX validate name
