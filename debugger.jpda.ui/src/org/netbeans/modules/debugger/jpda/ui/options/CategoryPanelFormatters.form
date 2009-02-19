@@ -196,6 +196,9 @@
           <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="CategoryPanelFormatters.formatChildrenAsCodeRadioButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="formatChildrenAsCodeRadioButtonStateChanged"/>
+      </Events>
     </Component>
     <Container class="javax.swing.JScrollPane" name="formatChildrenCodeScrollPane">
 
@@ -214,6 +217,9 @@
           <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="CategoryPanelFormatters.formatChildrenAsListRadioButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="formatChildrenAsListRadioButtonStateChanged"/>
+      </Events>
     </Component>
     <Container class="javax.swing.JScrollPane" name="formatChildrenListScrollPane">
 
