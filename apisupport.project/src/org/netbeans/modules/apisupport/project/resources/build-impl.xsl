@@ -93,8 +93,8 @@ made subject to such option by the copyright holder.
             </macrodef>
             <property file="${{user.properties.file}}"/>
             <nbmproject2:property name="harness.dir" value="nbplatform.${{nbplatform.active}}.harness.dir"/>
-            <nbmproject2:property name="netbeans.dest.dir" value="nbplatform.${{nbplatform.active}}.netbeans.dest.dir"/>
-            <nbmproject2:evalprops property="cluster.path.evaluated" value="${{cluster.path.raw}}"/>
+            <nbmproject2:property name="nbplatform.active.dir" value="nbplatform.${{nbplatform.active}}.netbeans.dest.dir"/>
+            <nbmproject2:evalprops property="cluster.path.evaluated" value="${{cluster.path}}"/>
             <fail message="You must specify path to 'platform' cluster in $${{cluster.path}} property.">
                 <condition>
                     <or>
