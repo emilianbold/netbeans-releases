@@ -125,6 +125,29 @@ public final class UIUtils {
         return hyperlink;
     }
 
+
+    /**
+     * will try to login using stored uname and password if not already logged in
+     * @return true if logged in, false otherwise
+     */
+    public static boolean tryLogin() {
+        if (Kenai.getDefault().getPasswordAuthentication()!=null) {
+            return true;
+        }
+        final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
+        String uname=preferences.get("kenai.username", null);
+        if (uname==null) {
+            return false;
+        }
+        byte[] password=preferences.getByteArray("kenai.password", null);
+        try {
+            Kenai.getDefault().login(uname, new String(decode(password)).toCharArray());
+        } catch (KenaiException ex) {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Invokes login dialog
      * @return true, if user was succesfully logged in
