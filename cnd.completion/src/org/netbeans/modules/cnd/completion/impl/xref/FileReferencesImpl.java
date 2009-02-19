@@ -48,7 +48,6 @@ import java.util.Set;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CndAbstractTokenProcessor;
-import org.netbeans.cnd.api.lexer.CndTokenProcessor;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
@@ -204,10 +203,11 @@ public class FileReferencesImpl extends CsmFileReferences  {
                 deadBlocks = Collections.<CsmOffsetable>emptyList();
             }
             ReferencesProcessor rp = new ReferencesProcessor(file, doc, skipPreprocDirectives, needAfterDereferenceUsages, deadBlocks, fileReferncesContext);
-            CndTokenProcessor<Token<CppTokenId>> etp = CsmExpandedTokenProcessor.create(doc, file, rp, -1, CsmFileInfoQuery.getDefault().getMacroUsages(file));
-            if (etp instanceof CsmExpandedTokenProcessor) {
-                return new ExpandedReferencesProcessor(rp, (CsmExpandedTokenProcessor) etp);
-            }
+            // disabling experimental macro context
+//            CndTokenProcessor<Token<CppTokenId>> etp = CsmExpandedTokenProcessor.create(doc, file, rp, -1, CsmFileInfoQuery.getDefault().getMacroUsages(file));
+//            if (etp instanceof CsmExpandedTokenProcessor) {
+//                return new ExpandedReferencesProcessor(rp, (CsmExpandedTokenProcessor) etp);
+//            }
             return new ExpandedReferencesProcessor(rp, null);
         }
 
@@ -227,6 +227,10 @@ public class FileReferencesImpl extends CsmFileReferences  {
             }
             boolean res;
             if (expandedTokenProcessor.isMacro(token, tokenOffset)) {
+                if (inMacro) {
+                    // end of previous macro and start of new one
+                    originalReferencesProcessor.references.addAll(macroReferencesProcessor.references);
+                }
                 // create additional references processor for macro
                 macroReferencesProcessor = new ReferencesProcessor(originalReferencesProcessor);
                 originalReferencesProcessor.skipReferences(true);
@@ -283,6 +287,9 @@ public class FileReferencesImpl extends CsmFileReferences  {
             this.doc = p.doc;
             this.fileReferncesContext = p.fileReferncesContext;
             this.contextBuilder = new ReferenceContextBuilder(p.contextBuilder);
+            this.derefToken = p.derefToken;
+            this.afterParen = p.afterParen;
+            this.skipReferences = p.skipReferences;
         }
 
         private void skipReferences(boolean skip) {
@@ -410,7 +417,7 @@ public class FileReferencesImpl extends CsmFileReferences  {
         }
 
         public ReferenceContextBuilder(ReferenceContextBuilder b) {
-            context = new ReferenceContextImpl(b.context, true);
+            context = new ReferenceContextImpl(b.context);
             brackets = new ArrayList<CppTokenId>(b.brackets);
             pushes = new ArrayList<Integer>(b.pushes);
             snapshots = b.snapshots;

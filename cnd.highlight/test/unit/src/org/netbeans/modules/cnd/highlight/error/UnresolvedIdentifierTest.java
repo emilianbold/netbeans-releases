@@ -112,11 +112,6 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("iz158216.cpp");
     }
 
-    public void testIZ158280() throws Exception {
-        // IZ#158280 : False positive error highlighting on templates in case of macro usage
-        performStaticTest("iz158280.cpp");
-    }
-    
     public void testIZ158730() throws Exception {
         // IZ#158730 : False positive error highlighting on nested types in templates
         performStaticTest("iz158730.cpp");
@@ -134,6 +129,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         @Override
         protected Class getTestCaseDataClass() {
             return UnresolvedIdentifierTest.class;
+        }
+
+        public void testIZ158280() throws Exception {
+            // IZ#158280 : False positive error highlighting on templates in case of macro usage
+            performStaticTest("iz158280.cpp");
         }
     }
 }
