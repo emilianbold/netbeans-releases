@@ -183,16 +183,17 @@ public class HgHookImpl extends HgHook {
 
     @Override
     public JPanel createComponent(HgHookContext context) {
+        Repository[] repos = support.getKnownRepositories(LOG);
         if(context.getFiles().length == 0) {
             LOG.warning("creating hg hook component for zero files");
-            panel = new HookPanel(null);
+            panel = new HookPanel(repos, null);
         } else {
             File file = context.getFiles()[0];
-            Repository repo = support.getRepository(file, LOG);
-            if(repo == null) {
+            Repository repoToSelect = support.getRepository(file, LOG);
+            if(repoToSelect == null) {
                 LOG.log(Level.FINE, " could not find repository for " + file);
             }
-            panel = new HookPanel(repo);
+            panel = new HookPanel(repos, repoToSelect);
         }
         panel.changeFormatButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {

@@ -113,7 +113,7 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
                 }
             });
 
-            Repository[] repos = BugtrackingManager.getInstance().getRepositories();
+            Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
             repositoryComboBox.setModel(new DefaultComboBoxModel(repos));
             repositoryComboBox.setRenderer(new DefaultListCellRenderer() {
                 @Override

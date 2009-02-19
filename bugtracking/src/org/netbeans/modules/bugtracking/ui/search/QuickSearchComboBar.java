@@ -70,9 +70,9 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
 
     public static String EVT_ISSUE_CHANGED = "QuickSearchComboBar.issue.changed";
 
-    public QuickSearchComboBar(JPanel caller, Repository repo) {
+    public QuickSearchComboBar(JPanel caller) {
         this.caller = caller;
-        displayer = new QuickSearchPopup(this, repo);
+        displayer = new QuickSearchPopup(this);
         initComponents();
         command.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent arg0) {

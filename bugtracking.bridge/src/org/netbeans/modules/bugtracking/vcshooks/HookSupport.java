@@ -77,4 +77,8 @@ public class HookSupport {
         }
         return repo;
     }
+
+    Repository[] getKnownRepositories(Logger log) {
+        return BugtrackingUtil.getKnownRepositories();
+    }
 }

@@ -110,11 +110,15 @@ public final class BugtrackingManager implements LookupListener {
      *
      * @return repositories
      */
-    public Repository[] getRepositories() {
+    public Repository[] getKnownRepositories() {
+        return getRepositories().toArray(new Repository[repos.size()]);
+    }
+
+    private Set<Repository> getRepositories() {
         if(repos == null) {
             initRepos();
         }
-        return repos.toArray(new Repository[repos.size()]);
+        return repos;
     }
 
     public RequestProcessor getRequestProcessor() {
@@ -162,7 +166,7 @@ public final class BugtrackingManager implements LookupListener {
     }
 
     public void addRepo(Repository repo) {
-        repos.add(repo);
+        getRepositories().add(repo);
     }
 
     private void initCacheStore() {

@@ -41,7 +41,7 @@ package org.netbeans.modules.bugtracking.ui.search;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +49,7 @@ import java.util.Set;
 import javax.swing.AbstractListModel;
 import javax.swing.Timer;
 import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.Repository;
 
 /**
  * Model of search results. Works as ListModel for JList which is displaying
@@ -71,7 +72,7 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
      * changes to listeners. */
     static final int COALESCE_TIME = 200;
 
-    private Set<Issue> issuesCached;
+    private Map<Repository, Set<Issue>> issuesCached = new HashMap<Repository, Set<Issue>>();
 
     /** Singleton */
     private ResultsModel () {
@@ -89,16 +90,18 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
         maybeFireChanges();
     }
 
-    synchronized void cacheIssues(Issue[] issues) {
-        issuesCached = new HashSet<Issue>();
+    synchronized void cacheIssues(Repository repo, Issue[] issues) {
+        HashSet<Issue> s = new HashSet<Issue>();
         for (Issue issue : issues) {
-            issuesCached.add(issue);
+            s.add(issue);
         }
+        issuesCached.put(repo, s);
     }
 
-    synchronized Issue[] getCachedIssues() {
+    synchronized Issue[] getCachedIssues(Repository repo) {
         if(issuesCached != null) {
-            return issuesCached.toArray(new Issue[issuesCached.size()]);
+            Set<Issue> s = issuesCached.get(repo);
+            if(s != null) return s.toArray(new Issue[issuesCached.size()]);
         }
         return new Issue[0];
     }

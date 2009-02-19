@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
@@ -133,6 +134,10 @@ public class BugtrackingUtil {
 
     public static Repository getBugtrackingOwner(File file) {
         return BugtrackingOwnerQuery.getBugtrackingOwner(file);
+    }
+
+    public static Repository[] getKnownRepositories() {
+        return BugtrackingManager.getInstance().getKnownRepositories();
     }
 
     public static String scramble(String str) {

@@ -54,6 +54,8 @@ import java.beans.PropertyChangeListener;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
+import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
@@ -92,14 +94,14 @@ public class HookPanel extends javax.swing.JPanel implements ItemListener, Prope
     private UpdateFiledsState updateFiledsState = null;
 
     /** Creates new form IzPanel */
-    public HookPanel(Repository repo) {
+    public HookPanel(Repository[] repos, Repository toSelect) {
         initComponents();
 
-        qs = new QuickSearchComboBar(this, repo);
+        qs = new QuickSearchComboBar(this);
         issuePanel.add(qs, BorderLayout.NORTH);
 
         // XXX merge with query
-        repositoryComboBox.setModel(new DefaultComboBoxModel(repo != null ? new Repository[] { repo } : new Repository[] {} ));
+        repositoryComboBox.setModel(new DefaultComboBoxModel(repos != null ? repos : new Repository[0]));
         repositoryComboBox.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -112,6 +114,10 @@ public class HookPanel extends javax.swing.JPanel implements ItemListener, Prope
         });
 
         repositoryComboBox.addItemListener(this);
+        if(toSelect != null) {
+            repositoryComboBox.setSelectedItem(toSelect);
+            qs.setRepository(toSelect);
+        }
         enableFields();        
         
     }

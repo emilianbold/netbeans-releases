@@ -102,14 +102,12 @@ public class QuickSearchPopup extends javax.swing.JPanel
     private List<PopupItem> currentHitlist;
 
     /** Creates new form SilverPopup */
-    public QuickSearchPopup (QuickSearchComboBar comboBar, Repository repo) {
+    public QuickSearchPopup (QuickSearchComboBar comboBar) {
         this.comboBar = comboBar;
-        this.repository = repo;
         initComponents();
         rModel = ResultsModel.getInstance();
         jList1.setModel(rModel);
         jList1.setCellRenderer(new SearchResultRender(comboBar, this));
-        repository = repo;
         rp = new RequestProcessor("", 1); // XXX throughput 1 ???
 
         updateStatusPanel();
@@ -226,25 +224,19 @@ public class QuickSearchPopup extends javax.swing.JPanel
         }
         currentHitlist = new ArrayList<PopupItem>();
 
-        // XXX very very dummy
-        Repository repo = BugtrackingUtil.getBugtrackingOwner(new File(""));
-        if(repo == null) {
-            return;
-        }
-
         // first add opened issues
         Set<String> ids = new HashSet<String>();
         addIssues(BugtrackingUtil.getByIdOrSummary(BugtrackingUtil.getOpenIssues(), criteria), ids);
 
         // all localy known issues
-        Query[] queries = repo.getQueries();
+        Query[] queries = repository.getQueries();
         for (Query q : queries) {
             Issue[] issues = q.getIssues(criteria);
             addIssues(issues, ids);
         }
 
         // or at least what's already cached
-        addIssues(BugtrackingUtil.getByIdOrSummary(ResultsModel.getInstance().getCachedIssues(), criteria), ids);
+        addIssues(BugtrackingUtil.getByIdOrSummary(ResultsModel.getInstance().getCachedIssues(repository), criteria), ids);
         populateModel(criteria, false);
     }
 
@@ -558,7 +550,7 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
                     addIssues(issues, ids);
                     populateModel(criteria, false);
 
-                    ResultsModel.getInstance().cacheIssues(issues); // XXX wasting response time?
+                    ResultsModel.getInstance().cacheIssues(repository, issues); // XXX wasting response time?
                 }
             });
         }
