@@ -136,6 +136,14 @@ public class QueryPanel extends javax.swing.JPanel {
         repaint();
     }
 
+    void setQueryRunning(boolean running) {
+        modifyButton.setEnabled(!running);
+        refreshButton.setEnabled(!running);
+        seenButton.setEnabled(!running);
+        filterLabel.setEnabled(!running);
+        filterComboBox.setEnabled(!running);
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

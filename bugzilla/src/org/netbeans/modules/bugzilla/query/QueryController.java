@@ -116,7 +116,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private final Map<String, QueryParameter> parameters;
 
-    private RequestProcessor rp = new RequestProcessor("Bugzilla queries", 10);
+    private RequestProcessor rp = new RequestProcessor("Bugzilla queries", 1);
+    private Task task;
 
     private final BugzillaRepository repository;
     private BugzillaQuery query;
@@ -214,12 +215,18 @@ public class QueryController extends BugtrackingController implements DocumentLi
     @Override
     public void opened() {
         super.opened();
+        if(!query.wasRun()) {
+            onRefresh();
+        }
     }
 
     @Override
     public void closed() {
         super.closed();
         onCancelChanges();
+        if(task != null) {
+            task.cancel();
+        }
     }
 
     public String getUrlParameters() {
@@ -456,18 +463,23 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private void onSearch() {
         post(new Runnable() {
             public void run() {
-                String lastChageFrom = panel.changedFromTextField.getText().trim();
-                if(lastChageFrom != null && !lastChageFrom.equals("")) {
-                    BugzillaConfig.getInstance().setLastChangeFrom(lastChageFrom);
-                }
-                // XXX isn't thread safe
-                if(panel.urlPanel.isVisible()) {
-                    // XXX check url format etc...
-                    // XXX what if there is a different host in queries repository as in the url?
-                    query.refresh(panel.urlTextField.getText());
-                } else {
-                    query.refresh(getUrlParameters());
-                    // XXX querydataChanged
+                try {
+                    String lastChageFrom = panel.changedFromTextField.getText().trim();
+                    if(lastChageFrom != null && !lastChageFrom.equals("")) {
+                        BugzillaConfig.getInstance().setLastChangeFrom(lastChageFrom);
+                    }
+                    // XXX isn't thread safe
+                    if(panel.urlPanel.isVisible()) {
+                        // XXX check url format etc...
+                        // XXX what if there is a different host in queries repository as in the url?
+                        query.refresh(panel.urlTextField.getText());
+                    } else {
+                        query.refresh(getUrlParameters());
+                        // XXX querydataChanged
+                    }
+                } finally {
+                    panel.setQueryRunning(false);
+                    task = null;
                 }
             }
         });
@@ -476,12 +488,18 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private void onRefresh() {
         post(new Runnable() {
             public void run() {
-                if(panel.urlPanel.isVisible()) {
-                    // XXX check url format etc...
-                    // XXX what if there is a different host in queries repository as in the url?
-                    query.refresh(panel.urlTextField.getText());
-                } else {
-                    query.refresh(getUrlParameters());
+                panel.setQueryRunning(true);
+                try {
+                    if(panel.urlPanel.isVisible()) {
+                        // XXX check url format etc...
+                        // XXX what if there is a different host in queries repository as in the url?
+                        query.refresh(panel.urlTextField.getText());
+                    } else {
+                        query.refresh(getUrlParameters());
+                    }
+                } finally {
+                    panel.setQueryRunning(false);
+                    task = null;
                 }
             }
         });        
@@ -510,6 +528,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
             Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
                 public void run() {
+                    if(task != null) {
+                        task.cancel();
+                    }
                     repository.removeQuery(query);
                     query.fireQueryRemoved();
                 }
@@ -518,8 +539,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void post(Runnable r) {
+        if(task != null) {
+            task.cancel();
+        }
         panel.enableFields(false);        
-        final Task task = rp.create(r);
+        task = rp.create(r);
 
         // XXX need progress suport
         // XXX need query lifecycle, isRunning, cancel, ...

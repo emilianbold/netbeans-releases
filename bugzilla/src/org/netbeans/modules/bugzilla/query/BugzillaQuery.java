@@ -118,7 +118,7 @@ public class BugzillaQuery extends Query {
 
                 if(isSaved()) {
                     List<String> ids;
-                    if(firstRun) {
+                    if(!wasRun()) {
                         firstRun = false;
                         ids = repository.getCache().readQuery(BugzillaQuery.this);
                     } else {
@@ -229,4 +229,7 @@ public class BugzillaQuery extends Query {
         return l.toArray(new Issue[l.size()]);
     }
 
+    boolean wasRun() {
+        return !firstRun;
+    }
 }
