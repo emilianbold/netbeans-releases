@@ -66,6 +66,8 @@ public abstract class KenaiImpl {
      */
     public abstract Collection<ProjectData> searchProjects(String pattern) throws KenaiException;
 
+    public abstract Collection<ProjectData> getMyProjects() throws KenaiException;
+
     /**
      * Retrieves all available information about a Kenai project.
      *

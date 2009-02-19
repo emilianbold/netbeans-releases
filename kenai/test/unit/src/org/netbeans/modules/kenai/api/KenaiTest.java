@@ -42,7 +42,6 @@ package org.netbeans.modules.kenai.api;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.net.URL;
 import java.util.Collection;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -74,8 +73,7 @@ public class KenaiTest {
     @Before
     public void setUp() {
         try {
-//            instance = new Kenai(new KenaiMockup());
-            Kenai.setURL(new URL("http://testkenai.com"));
+            System.setProperty("kenai.com.url","http://testkenai.com");
             instance = Kenai.getDefault();
             BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
             String username = br.readLine();
@@ -212,6 +210,15 @@ public class KenaiTest {
             System.out.println(ser.getDescription());
             System.out.println(ser.getDisplayName());
             System.out.println(ser.getType());
+        }
+    }
+
+    @Test
+    public void testGetMyProjects() throws Exception {
+        Collection<KenaiProject> result = instance.getMyProjects();
+
+        for (KenaiProject prj:result) {
+            System.out.println("My projects: " + prj.getDisplayName());
         }
     }
 }

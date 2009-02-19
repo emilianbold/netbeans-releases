@@ -69,8 +69,7 @@ public class KenaiProjectTest {
     @Before
     public void setUp() {
         try {
-//            instance = new Kenai(new KenaiMockup());
-            Kenai.setURL(new URL("http://testkenai.com"));
+            System.setProperty("kenai.com.url","http://testkenai.com");
             BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
             String username = br.readLine();
             String password = br.readLine();
