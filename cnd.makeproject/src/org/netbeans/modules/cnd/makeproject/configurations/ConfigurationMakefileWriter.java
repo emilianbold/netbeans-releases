@@ -713,8 +713,6 @@ public class ConfigurationMakefileWriter {
                 outputDir = ""; // NOI18N
             }
             String outputName = IpeUtils.getBaseName(outputPath);
-//            outputPath = FilePathAdaptor.naturalize(outputPath);
-//            outputDir = FilePathAdaptor.naturalize(outputDir);
             bw.write("CND_ARTIFACT_DIR_" + makeConf.getName() + "=" + outputDir); // NOI18N
             bw.write("\n"); // NOI18N
             bw.write("CND_ARTIFACT_NAME_" + makeConf.getName() + "=" + outputName); // NOI18N
