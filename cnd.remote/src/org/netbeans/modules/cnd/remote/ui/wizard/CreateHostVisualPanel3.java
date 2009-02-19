@@ -108,6 +108,9 @@ public final class CreateHostVisualPanel3 extends JPanel {
         labelHostnameValue = new javax.swing.JLabel();
         labelUsernameValue = new javax.swing.JLabel();
 
+        setPreferredSize(new java.awt.Dimension(534, 409));
+        setRequestFocusEnabled(false);
+
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.jLabel1.text")); // NOI18N
 
         textHostDisplayName.setText(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.textHostDisplayName.text")); // NOI18N
