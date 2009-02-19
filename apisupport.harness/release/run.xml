@@ -158,8 +158,12 @@ You must shut it down before trying to run it again.
             <condition>
                 <and>
                     <isset property="result.prop" />
-                    <!-- unknown option exit code as returned by org.netbeans.api.sendopts.CommandLine -->
-                    <equals arg1="${result.prop}" arg2="50346" />
+                    <or>
+                        <!-- unknown option exit code as returned from IDE by org.netbeans.api.sendopts.CommandLine -->
+                        <equals arg1="${result.prop}" arg2="50346" />
+                        <!-- unknown option exit code as returned from platform app by org.netbeans.CLIHandler -->
+                        <equals arg1="${result.prop}" arg2="2" />
+                    </or>
                 </and>
             </condition>
         </fail>
