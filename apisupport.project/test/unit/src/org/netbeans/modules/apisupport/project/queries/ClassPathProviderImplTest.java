@@ -61,6 +61,7 @@ import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.ui.customizer.ClusterUtils;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
@@ -505,7 +506,7 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForJar(modB.getModuleJarLocation().getPath()));
         expectedRoots.add(urlForJar(modC.getModuleJarLocation().getPath()));
         // path to compiled tests is a bit tricky, evaluator won't tell us path to testdist dir
-        File clusterPath = modA.getModuleJarLocation().getParentFile().getParentFile();
+        File clusterPath = ClusterUtils.getClusterDirectory(modA);
         String cluster = clusterPath.getName();
         File testDistJar = new File(clusterPath.getParentFile(), "/testdist/unit/" + cluster + "/org-example-a/tests.jar");
         expectedRoots.add(urlForJar(testDistJar.getPath()));

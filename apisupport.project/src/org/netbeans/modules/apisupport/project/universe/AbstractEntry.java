@@ -46,6 +46,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -233,5 +234,10 @@ abstract class AbstractEntry implements ModuleEntry {
             throw new IOException();
         }
     }
-    
+
+    public URL getJavadoc(final NbPlatform platform) {
+        String cnbdashes = getCodeNameBase().replace('.', '-');
+        URL[] roots = platform.getJavadocRoots();
+        return roots == null ? null : Util.findJavadocURL(cnbdashes, roots);
+    }
 }

@@ -771,6 +771,10 @@ public final class NbModuleProject implements Project {
             String suiteDir = evaluator().getProperty("suite.dir"); // NOI18N
             return suiteDir == null ? null : helper.resolveFile(suiteDir);
         }
+
+        public File getClusterDirectory() {
+            return getModuleJarLocation().getParentFile().getParentFile().getAbsoluteFile();
+        }
         
     }
     
@@ -844,6 +848,9 @@ public final class NbModuleProject implements Project {
             return NbModuleProject.this.getPlatformFile();
         }
 
+        public File getModuleJarLocation() {
+            return NbModuleProject.this.getModuleJarLocation();
+        }
         
     }
     

@@ -493,11 +493,7 @@ final class LibrariesNode extends AbstractNode {
         }
 
         public boolean isEnabled() {
-            if (Util.getModuleType(project) == NbModuleProvider.NETBEANS_ORG) {
-                currectJavadoc = Util.findJavadocForNetBeansOrgModules(dep);
-            } else {
-                currectJavadoc = Util.findJavadoc(dep, project.getPlatform(true));
-            }
+            currectJavadoc = dep.getModuleEntry().getJavadoc(project.getPlatform(true));
             return currectJavadoc != null;
         }
     }

@@ -347,7 +347,15 @@ public final class SuiteProject implements Project {
         public File getSuiteDirectory() {
             return getProjectDirectoryFile();
         }
-        
+
+        private static final String CLUSTER_PROP = "${cluster}";
+        public File getClusterDirectory() {
+            String clusterName = getEvaluator().evaluate(CLUSTER_PROP);
+            if (CLUSTER_PROP.equals(clusterName))
+                // not overriden, use default
+                clusterName = SuiteProperties.CLUSTER_DIR;
+            return getHelper().resolveFile(clusterName).getAbsoluteFile();
+        }
     }
     
     private static final class PrivilegedTemplatesImpl implements PrivilegedTemplates, RecommendedTemplates {

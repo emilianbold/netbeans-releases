@@ -42,6 +42,7 @@
 package org.netbeans.modules.apisupport.project.universe;
 
 import java.io.File;
+import java.net.URL;
 import java.util.Set;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 
@@ -148,7 +149,13 @@ public interface ModuleEntry extends Comparable {
      * @return array of public packages. May be empty but not <code>null</code>.
      */
     ManifestManager.PackageExport[] getPublicPackages();
-    
+
+    /**
+     * Returns javadoc for the module.
+     * @return Javadoc for the module. May be <tt>null</tt>.
+     */
+    URL getJavadoc(NbPlatform platform);
+
     /**
      * Get a set of names of all <em>nonempty</em> packages this module
      * contains.
