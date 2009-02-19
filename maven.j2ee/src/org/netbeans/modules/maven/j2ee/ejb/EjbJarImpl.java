@@ -209,16 +209,6 @@ public class EjbJarImpl implements EjbJarImplementation, J2eeModuleImplementatio
         return "/" + mavenproject.getMavenProject().getBuild().getFinalName(); //NOI18N
     }
     
-    /**
-     * Sets the location of the modules within the application archive.
-     * For example, a web module could be at "/wbmodule1.war" within the ear
-     * file. For standalone module the URL cannot be set to a different value
-     * then "/"
-     */
-    public void setUrl(String url) {
-        //
-        throw new IllegalStateException("not implemented for maven projects.."); //NOI18N
-    }
     
     /**
      * Returns the archive file for the module of null if the archive file
