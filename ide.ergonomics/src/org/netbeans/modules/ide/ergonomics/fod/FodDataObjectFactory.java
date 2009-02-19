@@ -43,7 +43,6 @@ import java.awt.EventQueue;
 import java.awt.Frame;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Set;
@@ -95,6 +94,9 @@ public class FodDataObjectFactory implements DataObject.Factory {
 
     public DataObject findDataObject(FileObject fo, Set<? super FileObject> recognized) throws IOException {
         if (fo.isFolder()) {
+            return null;
+        }
+        if (fo.getMIMEType().endsWith("+xml")) {
             return null;
         }
         if (delegate == null) {
