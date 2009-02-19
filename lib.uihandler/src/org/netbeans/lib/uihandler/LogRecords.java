@@ -145,11 +145,12 @@ public final class LogRecords {
             LOG.log(Level.WARNING, null, ex);
             throw (IOException)new IOException(ex.getMessage()).initCause(ex);
         } catch (InternalError error){
-            LOG.log(Level.WARNING, "INPUT FILE CORRUPTION", error);
+            LOG.log(Level.WARNING, "Input file corruption", error);
+            throw (IOException)new IOException(error.getMessage()).initCause(error);
         } catch (IOException ex) {
             throw ex;
         } catch (RuntimeException ex) {
-            LOG.log(Level.WARNING, "INPUT FILE CORRUPTION", ex);
+            LOG.log(Level.WARNING, "Input file corruption", ex);
         }
     }   
 
