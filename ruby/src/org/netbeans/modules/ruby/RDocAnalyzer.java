@@ -38,9 +38,12 @@
  */
 package org.netbeans.modules.ruby;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jruby.nb.ast.MethodDefNode;
 import org.jruby.nb.ast.Node;
 
@@ -56,77 +59,35 @@ import org.jruby.nb.ast.Node;
  */
 final class RDocAnalyzer {
 
-    private static final Map<String, String> COMMENT_TYPE_TO_REAL_TYPE = new HashMap<String, String>();
+    private static final Logger LOGGER = Logger.getLogger(RDocAnalyzer.class.getName());
 
     static final String PARAM_HINT_ARG = "#:arg:"; // NOI18N
     static final String PARAM_HINT_RETURN = "#:return:=>"; // NOI18N
 
-    static {
-        COMMENT_TYPE_TO_REAL_TYPE.put("a_class", "Class"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("aDir", "Dir"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("aFixnum", "Fixnum"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("a_hash", "Hash"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("aHash", "Hash"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("a_klass", "Class"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("an_array", "Array"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("anArray", "Array"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("anEnumerat", "Enumeration"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("anEnumerator", "Enumeration"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("anIO", "IO"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("a_proc", "Proc"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("array", "Array"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("a_str", "String"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("binding", "Binding"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("class", "Class"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("dir", "Dir"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("exception", "Exception"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("false", "FalseClass"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("file", "File"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("fixnum", "Fixnum"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("float", "Float"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("flt", "Float"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put(":foo", "Symbol"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("hash", "Hash"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("hsh", "Hash"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("integer", "Integer"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("int", "Integer"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("io", "IO"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("ios", "IO"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("matchdata", "MatchData"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("method", "Method"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("mod", "Module"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("new_method", "UnboundMethod"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("new_regexp", "Regexp"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("new_str", "String"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("new_time", "Time"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("nil", "NilClass"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("number", "Numeric"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("numeric", "Numeric"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("numeric_result", "Numeric"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("num", "Numeric"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("obj", "Object"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("prc", "Proc"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("proc", "Proc"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("range", "Range"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("regexp", "Regexp"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("rng", "Range"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("string", "String"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("str", "String"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("struct", "Struct"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("symbol", "Symbol"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("sym", "Sumbol"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("thgrp", "ThreadGroup"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("thread", "Thread"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("thr", "Thread"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("time", "Time"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("true", "TrueClass"); // NOI18N
-        COMMENT_TYPE_TO_REAL_TYPE.put("unbound_method", "UnboundMethod"); // NOI18N
-    }
+    private static final List<TypeCommentAnalyzer> RAW_TYPE_COMMENT_ANALYZERS = initRawTypeCommentAnalyzers();
+    private static final List<TypeCommentAnalyzer> TYPE_COMMENT_ANALYZERS = initTypeCommentAnalyzers();
 
     private final RubyType type;
 
     private RDocAnalyzer() {
         this.type = new RubyType();
+    }
+
+    private static List<TypeCommentAnalyzer> initRawTypeCommentAnalyzers() {
+        List<TypeCommentAnalyzer> result = new ArrayList<TypeCommentAnalyzer>();
+        result.add(new HashAnalyzer());
+        result.add(new ArrayAnalyzer());
+        return result;
+    }
+
+    private static List<TypeCommentAnalyzer> initTypeCommentAnalyzers() {
+        List<TypeCommentAnalyzer> result = new ArrayList<TypeCommentAnalyzer>();
+        result.add(new ClassNameAnalyzer());
+        result.add(new CustomClassNameAnalyzer());
+        result.add(new NumericAnalyzer());
+        result.add(new TrueFalseAnalyzer());
+        result.add(new StringAnalyzer());
+        return result;
     }
 
     static RubyType collectTypesFromComment(final List<? extends String> comment) {
@@ -142,7 +103,12 @@ final class RDocAnalyzer {
     }
 
     private void parseTypeFromLine(String line) {
-        int typeIndex = line.indexOf(" -> "); // NOI18N
+        // try '#=>' first since e.g. rdocs for hash use that to
+        // indicate return values
+        int typeIndex = line.indexOf(" #=> "); // NOI18N
+        if (typeIndex == -1) {
+            typeIndex = line.indexOf(" -> "); // NOI18N
+        }
         if (typeIndex == -1) {
             typeIndex = line.indexOf(" => "); // NOI18N
         }
@@ -153,28 +119,45 @@ final class RDocAnalyzer {
         if (rawCommentTypes.length() == 0) {
             return;
         }
+        boolean success = false;
         String[] rawCommentTypes2 = rawCommentTypes.split(" or "); // NOI18N
         for (String rawCommentType : rawCommentTypes2) {
+            // first try whether we have an array or a hash
+            for (TypeCommentAnalyzer analyzer : RAW_TYPE_COMMENT_ANALYZERS) {
+                String realType = analyzer.getType(rawCommentType);
+                if (realType != null) {
+                    type.add(realType);
+                    success = true;
+                    // return, the type was already recognized as hash/array/etc (doesn't
+                    // make sense to split these with ','
+                    return;
+                }
+            }
             String[] commentTypes = rawCommentType.split(","); // NOI18N
             for (String commentType : commentTypes) {
                 commentType = commentType.trim();
                 if (commentType.length() > 0) {
-                    addRealTypeForCommentType(commentType);
+                    success = addRealTypeForCommentType(commentType);
                 }
+            }
+            if (!success && LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.finer("Could not resolve type for " + line);
             }
         }
     }
 
-    private void addRealTypeForCommentType(final String commentType) {
-        String realType = COMMENT_TYPE_TO_REAL_TYPE.get(commentType);
-        if (realType == null && Character.isUpperCase(commentType.charAt(0))) {
-            // not in the map, but might be right type, e.g. String, Fixnum, ...
-            // TODO: check whether such type exist
-            realType = commentType;
+    private boolean addRealTypeForCommentType(final String commentType) {
+        boolean result = false;
+        for (TypeCommentAnalyzer analyzer : TYPE_COMMENT_ANALYZERS) {
+            String realType = analyzer.getType(commentType);
+            if (realType != null) {
+                type.add(realType);
+                result = true;
+            }
         }
-        if (realType != null) {
-            type.add(realType);
-        } /* TODO: uncomment else block and run the RDocAnalyzerTest, try to
+        return result;
+
+        /* TODO: uncomment else block and run the RDocAnalyzerTest, try to
          handle the unknown types like literals:
            * 1, -1, ...
            * "str"
@@ -261,4 +244,190 @@ final class RDocAnalyzer {
             }
         }
     }
+    
+    private static abstract class TypeCommentAnalyzer {
+        
+        final String getType(String comment) {
+            String result = doGetType(comment);
+            if (result != null && LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.finest("Resolved type [" + result + "] for comment: [" + comment + "]. " +
+                        "Analyzer: [" + getClass().getSimpleName() + "].");
+            } 
+            return result;
+        }
+
+        protected abstract String doGetType(String comment);
+    }
+
+    private static final class ClassNameAnalyzer extends TypeCommentAnalyzer {
+
+        private static final Map<String, String> COMMENT_TYPE_TO_REAL_TYPE = new HashMap<String, String>();
+
+        static {
+            COMMENT_TYPE_TO_REAL_TYPE.put("a_class", "Class"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("aDir", "Dir"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("aFixnum", "Fixnum"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("a_hash", "Hash"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("aHash", "Hash"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("a_klass", "Class"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("an_array", "Array"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("anArray", "Array"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("anEnumerat", "Enumeration"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("anEnumerator", "Enumeration"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("anIO", "IO"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("a_proc", "Proc"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("array", "Array"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("a_str", "String"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("binding", "Binding"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("class", "Class"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("dir", "Dir"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("exception", "Exception"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("false", "FalseClass"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("file", "File"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("fixnum", "Fixnum"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("float", "Float"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("flt", "Float"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put(":foo", "Symbol"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("hash", "Hash"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("hsh", "Hash"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("integer", "Integer"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("int", "Integer"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("io", "IO"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("ios", "IO"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("matchdata", "MatchData"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("method", "Method"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("mod", "Module"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("new_method", "UnboundMethod"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("new_regexp", "Regexp"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("new_str", "String"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("new_time", "Time"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("nil", "NilClass"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("number", "Numeric"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("numeric", "Numeric"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("numeric_result", "Numeric"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("num", "Numeric"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("obj", "Object"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("prc", "Proc"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("proc", "Proc"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("range", "Range"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("regexp", "Regexp"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("rng", "Range"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("string", "String"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("str", "String"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("struct", "Struct"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("symbol", "Symbol"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("sym", "Symbol"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("thgrp", "ThreadGroup"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("thread", "Thread"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("thr", "Thread"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("time", "Time"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("true", "TrueClass"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("unbound_method", "UnboundMethod"); // NOI18N
+        }
+
+        @Override
+        protected String doGetType(String comment) {
+            return COMMENT_TYPE_TO_REAL_TYPE.get(comment);
+        }
+        
+    }
+    
+    private static final class CustomClassNameAnalyzer extends TypeCommentAnalyzer {
+
+        protected String doGetType(String typeInComment) {
+            return typeInComment.length() > 0 && Character.isUpperCase(typeInComment.charAt(0))
+                    ? typeInComment
+                    : null;
+        }
+    }
+
+
+    private static final class NumericAnalyzer extends TypeCommentAnalyzer {
+
+        protected String doGetType(String typeInComment) {
+            if (isFixnum(typeInComment)) {
+                return "Fixnum";
+            }
+            if (isFloat(typeInComment)) {
+                return "Float";
+            }
+            return null;
+        }
+        
+        private boolean isFixnum(String str) {
+            try {
+                Integer.parseInt(str);
+                return true;
+            } catch (NumberFormatException nfe) {
+                // check for +, otherwise e.g. +5 is not recognized correctly
+                if (str.startsWith("+") && str.length() > 1) {
+                    return isFixnum(str.substring(1));
+                }
+                return false;
+            }
+        }
+
+        private boolean isFloat(String str) {
+            try {
+                Float.parseFloat(str);
+                return true;
+            } catch (NumberFormatException nfe) {
+                return false;
+            }
+        }
+    }
+
+    private static final class StringAnalyzer extends TypeCommentAnalyzer {
+
+        protected String doGetType(String typeInComment) {
+            return typeInComment.startsWith("\"") && typeInComment.endsWith("\"")
+                    ? "String"
+                    : null;
+        }
+    }
+
+    private static final class TrueFalseAnalyzer extends TypeCommentAnalyzer {
+
+        private static final String[] TRUE_TYPES = {"true"}; //NOI18N
+        private static final String[] FALSE_TYPES = {"false"}; //NOI18N
+
+        protected String doGetType(String typeInComment) {
+            for (String type : TRUE_TYPES) {
+                if (type.equalsIgnoreCase(typeInComment)) {
+                    return "TrueClass"; //NOI18N
+                }
+            }
+            for (String type : FALSE_TYPES) {
+                if (type.equalsIgnoreCase(typeInComment)) {
+                    return "FalseClass"; //NOI18N
+                }
+            }
+            return null;
+        }
+    }
+
+    private static final class ArrayAnalyzer extends TypeCommentAnalyzer {
+
+        protected String doGetType(String typeInComment) {
+            String trimmed = typeInComment.trim();
+            if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+                return "Array";
+            }
+            return null;
+
+        }
+    }
+
+    private static final class HashAnalyzer extends TypeCommentAnalyzer {
+
+        protected String doGetType(String typeInComment) {
+            String trimmed = typeInComment.trim();
+            if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+                return "Hash";
+            }
+            return null;
+
+        }
+    }
+
 }
