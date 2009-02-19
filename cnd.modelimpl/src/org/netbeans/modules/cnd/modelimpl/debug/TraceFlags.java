@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.apt.debug.DebugUtils;
  * @author Vladimir Kvashim
  */
 public class TraceFlags {
-    
+    public static final boolean TRACE_CPU_CPP = false;
     public static final boolean TRACE_PARSER_QUEUE_DETAILS = Boolean.getBoolean("cnd.parser.queue.trace.details"); // NOI18N
     public static final boolean TRACE_PARSER_QUEUE = TRACE_PARSER_QUEUE_DETAILS || Boolean.getBoolean("cnd.parser.queue.trace"); // NOI18N
     public static final boolean TRACE_PARSER_QUEUE_POLL = TRACE_PARSER_QUEUE || Boolean.getBoolean("cnd.parser.queue.trace.poll"); // NOI18N

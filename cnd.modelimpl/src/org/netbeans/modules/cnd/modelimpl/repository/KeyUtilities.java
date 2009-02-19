@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.repository.spi.Key;
 
 /**
@@ -74,15 +75,16 @@ public class KeyUtilities {
     }
 
     public static Key createProjectKey(ProjectBase project) {
-        return new ProjectKey(project);
+        return createProjectKey(project.getUniqueName().toString());
     }
 
     public static Key createProjectKey(String projectQualifiedName) {
-        return new ProjectKey(projectQualifiedName);
+        Key out = new ProjectKey(projectQualifiedName);
+        return out;
     }
 
     public static Key createProjectKey(NativeProject nativeProject) {
-        return new ProjectKey(ProjectBase.getUniqueName(nativeProject).toString());
+        return createProjectKey(ProjectBase.getUniqueName(nativeProject).toString());
     }
 
     public static Key createOffsetableDeclarationKey(OffsetableDeclarationBase obj) {

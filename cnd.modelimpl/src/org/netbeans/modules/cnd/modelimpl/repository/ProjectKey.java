@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Key.Behavior;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
@@ -54,11 +53,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
  */
 
 /*package*/
-final class ProjectKey extends ProjectNameBasedKey {
-    
-    public ProjectKey(ProjectBase project) {
-	super(project.getUniqueName().toString());
-    }
+final class ProjectKey extends ProjectNameBasedKey {    
     
     public ProjectKey(String projectUniqueName) {
 	super(projectUniqueName);
