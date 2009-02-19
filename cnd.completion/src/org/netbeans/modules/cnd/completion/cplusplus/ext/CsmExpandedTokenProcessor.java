@@ -148,15 +148,15 @@ public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<
                             if (!expTS.moveNext()) {
                                 if (expToken.text().toString().equals(token.text().toString()) &&
                                         expToken.id().equals(token.id())) {
-                                    res = tp.token(token, tokenOffset);
+                                    res = processMacroToken(token, tokenOffset);
                                 } else {
-                                    res = tp.token(expToken, tokenOffset);
+                                    res = processMacroToken(expToken, tokenOffset);
                                 }
                             } else {
-                                res = tp.token(expToken, tokenOffset);
-                                res = tp.token(expTS.token(), tokenOffset);
+                                res = processMacroToken(expToken, tokenOffset);
+                                res = processMacroToken(expTS.token(), tokenOffset);
                                 while (expTS.moveNext()) {
-                                    res = tp.token(expTS.token(), tokenOffset);
+                                    res = processMacroToken(expTS.token(), tokenOffset);
                                 }
                             }
                             return res;
@@ -169,6 +169,14 @@ public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<
             inMacro = false;
         }
         return tp.token(token, tokenOffset);
+    }
+
+    private boolean processMacroToken(Token<CppTokenId> token, int tokenOffset) {
+        int macroOffset = tokenOffset;
+        if (offset != -1 && macroOffset + token.length() >= offset) {
+            macroOffset = offset - token.length() - 1;
+        }
+        return tp.token(token, macroOffset);
     }
 
     private boolean isWhitespace(Token<CppTokenId> docToken) {
