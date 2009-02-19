@@ -98,7 +98,7 @@ public class Mercurial {
                                  true,
                                  null,
                                  pullUrl,
-                                 pushUrl);
+                                 pushUrl).waitFinished();
     }
 
 }
