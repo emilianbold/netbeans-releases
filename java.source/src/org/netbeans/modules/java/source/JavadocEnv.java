@@ -54,6 +54,7 @@ import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Name;
+import com.sun.tools.javac.util.Names;
 import com.sun.tools.javac.util.Position;
 import com.sun.tools.javadoc.AnnotationTypeDocImpl;
 import com.sun.tools.javadoc.AnnotationTypeElementDocImpl;
@@ -409,7 +410,7 @@ public class JavadocEnv extends DocEnv {
         }
         
         public ClassDoc findClass(String className) {
-            Name.Table nameTable = Name.Table.instance(ctx);
+            Names nameTable = Names.instance(ctx);
             StringTokenizer st = new StringTokenizer(className, "."); //NOI18N
             TypeSymbol s = sym;
             while(s != null && st.hasMoreTokens()) {

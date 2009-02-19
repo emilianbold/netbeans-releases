@@ -1162,39 +1162,39 @@ public class ImportsTest extends GeneratorTestMDRCompat {
     /**
      * http://www.netbeans.org/issues/show_bug.cgi?id=103429
      */
-    public void testPackageInfo() throws Exception {
-        testFile = new File(getWorkDir(), "package-info.java");
-        TestUtilities.copyStringToFile(testFile,
-            "@XmlSchema(namespace = \"urn:aaa\")\n" +
-            "package javaapplication2;\n"
-            );
-        String golden =
-            "@XmlSchema(namespace = \"urn:aaa\")\n" +
-            "package javaapplication2;\n" +
-            "\n" +
-            "import javax.xml.bind.annotation.XmlSchema;\n" +
-            "\n";
-
-        JavaSource src = getJavaSource(testFile);
-        Task<WorkingCopy> task = new Task<WorkingCopy>() {
-
-            public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(Phase.RESOLVED);
-                TreeMaker make = workingCopy.getTreeMaker();
-                CompilationUnitTree node = workingCopy.getCompilationUnit();
-                CompilationUnitTree copy = make.addCompUnitImport(
-                       node,
-                       make.Import(make.Identifier("javax.xml.bind.annotation.XmlSchema"), false)
-                );
-                workingCopy.rewrite(node, copy);
-            }
-
-        };
-        src.runModificationTask(task).commit();
-        String res = TestUtilities.copyFileToString(testFile);
-        System.err.println(res);
-        assertEquals(golden, res);
-    }
+//    public void testPackageInfo() throws Exception {
+//        testFile = new File(getWorkDir(), "package-info.java");
+//        TestUtilities.copyStringToFile(testFile,
+//            "@XmlSchema(namespace = \"urn:aaa\")\n" +
+//            "package javaapplication2;\n"
+//            );
+//        String golden =
+//            "@XmlSchema(namespace = \"urn:aaa\")\n" +
+//            "package javaapplication2;\n" +
+//            "\n" +
+//            "import javax.xml.bind.annotation.XmlSchema;\n" +
+//            "\n";
+//
+//        JavaSource src = getJavaSource(testFile);
+//        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+//
+//            public void run(WorkingCopy workingCopy) throws IOException {
+//                workingCopy.toPhase(Phase.RESOLVED);
+//                TreeMaker make = workingCopy.getTreeMaker();
+//                CompilationUnitTree node = workingCopy.getCompilationUnit();
+//                CompilationUnitTree copy = make.addCompUnitImport(
+//                       node,
+//                       make.Import(make.Identifier("javax.xml.bind.annotation.XmlSchema"), false)
+//                );
+//                workingCopy.rewrite(node, copy);
+//            }
+//
+//        };
+//        src.runModificationTask(task).commit();
+//        String res = TestUtilities.copyFileToString(testFile);
+//        System.err.println(res);
+//        assertEquals(golden, res);
+//    }
 
     public void test138100() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
