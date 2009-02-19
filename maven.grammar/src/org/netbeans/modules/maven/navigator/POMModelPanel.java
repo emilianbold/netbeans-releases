@@ -414,6 +414,20 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         return false;
     }
 
+    /**
+     * @return level where the last value is defined, 0 - current file, 1 - it's parent,... -1 not present..
+     *
+     */
+    static int currentValueDepth(Object[] values) {
+        for (int i = 0; i < values.length; i++) {
+            if (values[i] != null) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+
 
     /**
      * gets the first defined value from the list. Assuming the first index is the

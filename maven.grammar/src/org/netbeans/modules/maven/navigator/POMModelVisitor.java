@@ -630,10 +630,24 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         }
     }
 
+    private static Image[] ICONS = new Image[] {
+        ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/value.png"), // NOI18N
+        ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/value2.png"), // NOI18N
+        ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/value3.png"), // NOI18N
+        ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/value4.png"), // NOI18N
+    };
+
+    private static Image getIconForCutHolder(POMCutHolder holder) {
+        int level = POMModelPanel.currentValueDepth(holder.getCutValues());
+        if (level >= 0 && level < ICONS.length) {
+            return ICONS[level];
+        }
+        return ICONS[ICONS.length - 1];
+    }
+
 
     private static class SingleFieldNode extends AbstractNode {
 
-        private Image icon = ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/Maven2Icon.gif"); // NOI18N
         private String key;
         private SingleFieldNode(Lookup lkp, String key) {
             super(Children.LEAF, lkp);
@@ -665,7 +679,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
         @Override
         public Image getIcon(int type) {
-             return icon;
+             return getIconForCutHolder(getLookup().lookup(POMCutHolder.class));
         }
 
         @Override
@@ -677,7 +691,6 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
     private static class ObjectNode extends AbstractNode {
 
-        private Image icon = ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/Maven2Icon.gif"); // NOI18N
         private String key;
         private ObjectNode(Lookup lkp, Children children, String key) {
             super( children, lkp);
@@ -706,7 +719,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
         @Override
         public Image getIcon(int type) {
-             return icon;
+             return getIconForCutHolder(getLookup().lookup(POMCutHolder.class));
         }
 
         @Override
@@ -718,7 +731,6 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
     private static class ListNode extends AbstractNode {
 
-        private Image icon = ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/Maven2Icon.gif"); // NOI18N
         private String key;
 
         private ListNode(Lookup lkp, Children childs, String name) {
@@ -748,7 +760,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
         @Override
         public Image getIcon(int type) {
-             return icon;
+             return getIconForCutHolder(getLookup().lookup(POMCutHolder.class));
         }
 
         @Override
