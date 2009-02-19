@@ -45,8 +45,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.model.Dependency;
+import org.apache.maven.model.DependencyManagement;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.POMModelFactory;
 
 /**
  *
@@ -102,6 +110,11 @@ class GraphConstructor implements DependencyNodeVisitor {
             edges.add(ed);
         }
 
+        if (grNode.getArtifact() != null) {
+            grNode.setManagedState(
+                    obtainManagedState(grNode.getArtifact().getArtifact(), scene.getNbProject()));
+        }
+
         path.push(node);
 //        graphPath.push(grNode);
 
@@ -133,5 +146,43 @@ class GraphConstructor implements DependencyNodeVisitor {
             }
         }
         return true;
+    }
+
+    private static int obtainManagedState (Artifact artifact, Project nbProject) {
+        MavenProject proj = nbProject.getLookup().lookup(NbMavenProject.class).getMavenProject();
+        DependencyManagement dm = proj.getDependencyManagement();
+        List<Dependency> deps = dm.getDependencies();
+
+        boolean inDepMng = false;
+        String id = artifact.getArtifactId();
+        String groupId = artifact.getGroupId();
+        String version = artifact.getVersion();
+
+        for (Dependency dep : deps) {
+            if (id.equals(dep.getArtifactId()) && groupId.equals(dep.getGroupId())) {
+                if (!version.equals(dep.getVersion())) {
+                    return ArtifactGraphNode.OVERRIDES_MANAGED;
+                }
+                inDepMng = true;
+                break;
+            }
+        }
+
+        if (inDepMng) {
+            POMModel model = POMModelFactory.getDefault().getModel(
+                    Utilities.createModelSource(nbProject.getProjectDirectory().getFileObject("pom.xml")));
+            org.netbeans.modules.maven.model.pom.Dependency sourceDep =
+                    model.getProject().findDependencyById(groupId, id, null);
+            if (sourceDep != null) {
+                String sourceV = sourceDep.getVersion();
+                if (sourceV == null || sourceV.trim().length() == 0) {
+                    return ArtifactGraphNode.MANAGED;
+                } else {
+                    return ArtifactGraphNode.OVERRIDES_MANAGED;
+                }
+            }
+        }
+
+        return ArtifactGraphNode.UNMANAGED;
     }
 }
