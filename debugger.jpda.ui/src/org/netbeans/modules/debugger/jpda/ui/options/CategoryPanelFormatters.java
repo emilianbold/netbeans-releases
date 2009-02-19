@@ -376,15 +376,25 @@ class CategoryPanelFormatters extends StorablePanel {
     }//GEN-LAST:event_formattersRemoveButtonActionPerformed
 
     private void formattersMoveUpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_formattersMoveUpButtonActionPerformed
-        // TODO add your handling code here:
+        int index = formattersList.getSelectedIndex();
+        if (index <= 0) return ;
+        Object obj = ((DefaultListModel) formattersList.getModel()).remove(index);
+        ((DefaultListModel) formattersList.getModel()).insertElementAt(obj, index - 1);
+        formattersList.setSelectedIndex(index - 1);
     }//GEN-LAST:event_formattersMoveUpButtonActionPerformed
 
     private void formattersMoveDownButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_formattersMoveDownButtonActionPerformed
-        // TODO add your handling code here:
+        int index = formattersList.getSelectedIndex();
+        if (index < 0) return ;
+        DefaultListModel model = (DefaultListModel) formattersList.getModel();
+        if (index >= (model.getSize() - 1)) return ;
+        Object obj = model.remove(index);
+        model.insertElementAt(obj, index + 1);
+        formattersList.setSelectedIndex(index + 1);
     }//GEN-LAST:event_formattersMoveDownButtonActionPerformed
 
     private void variableAddButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_variableAddButtonActionPerformed
-        // TODO add your handling code here:
+        
     }//GEN-LAST:event_variableAddButtonActionPerformed
 
     private void variableRemoveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_variableRemoveButtonActionPerformed
@@ -441,6 +451,8 @@ class CategoryPanelFormatters extends StorablePanel {
                 //Remember the last selection, store values to the last selected format and load values for the new one.
                 int index = formattersList.getSelectedIndex();
                 formattersRemoveButton.setEnabled(index >= 0);
+                formattersMoveDownButton.setEnabled(index >= 0 && index < (formattersList.getModel().getSize() - 1));
+                formattersMoveUpButton.setEnabled(index >= 1);
                 if (selectedVariablesFormatter != null) {
                     storeSelectedFormatter(selectedVariablesFormatter);
                 }
