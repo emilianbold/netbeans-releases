@@ -49,12 +49,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -79,7 +74,6 @@ import org.netbeans.modules.maven.model.pom.POMModelFactory;
 import org.netbeans.modules.maven.model.pom.POMQName;
 import org.netbeans.modules.maven.model.pom.POMQNames;
 import org.netbeans.modules.maven.model.pom.Project;
-import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.cookies.EditorCookie;
 import org.openide.explorer.ExplorerManager;
@@ -378,111 +372,6 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         return an;
     }
 
-//    protected void addSingleFieldNode(List<POMModel> key, String[] vals, String dispName, List<Node> nds) {
-//        if (!filterIncludeUndefined || definesValue(vals)) {
-//            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, key, dispName, vals));
-//        }
-//    }
-//
-//    private void addObjectNode(List<POMModel> key, List sMan, Children sueManagementChildren, String displayName, List<Node> nds) {
-//        if (!filterIncludeUndefined || definesValue(sMan.toArray())) {
-//            nds.add(new ObjectNode(Lookup.EMPTY, sueManagementChildren, key, displayName, sMan));
-//        }
-//    }
-//
-//    private void addListNode(List<POMModel> key, List<List> sMan, ChildrenCreator chc, String displayName, List<Node> nds) {
-//        if (!filterIncludeUndefined || definesValue(sMan.toArray())) {
-//            nds.add(new ListNode(Lookup.EMPTY, chc, key, displayName, sMan));
-//        }
-//    }
-
-    
-    // <editor-fold defaultstate="collapsed" desc="POM Children">
-    private class PomChildren extends Children.Keys<Object> {
-        private List<POMModel> lin;
-        public PomChildren(List<POMModel> lineage) {
-            setKeys(new Object[] {lineage} );
-            this.lin = lineage;
-        }
-
-        public void reshow() {
-            this.refreshKey(lin);
-        }
-        
-        @Override
-        protected Node[] createNodes(Object key) {
-            @SuppressWarnings("unchecked")
-            List<POMModel> mods = (List<POMModel>) key;
-            Project[] models = new Project[mods.size()];
-            int index = 0;
-            for (POMModel md : mods) {
-                models[index] = md.getProject();
-                index++;
-            }
-
-            List<Node> nds = new ArrayList<Node>();
-
-//            @SuppressWarnings("unchecked")
-//            List<Properties> props = getValue(models, "getProperties", Project.class);
-//            addObjectNode(mods, props, new PropsChildren(props, mods), "Properties", nds);
-            return nds.toArray(new Node[0]);
-        }
-
-        
-    }
-    // </editor-fold>
-
- 
-
-//    // <editor-fold defaultstate="collapsed" desc="Properties Children">
-//    private static class PropsChildren extends Children.Keys<List<Properties>> {
-//        private List<POMModel> lineage;
-//        public PropsChildren(List<Properties> list, List<POMModel> lin) {
-//            setKeys(new List[] {list});
-//            lineage = lin;
-//        }
-//
-//        @Override
-//        protected Node[] createNodes(List<Properties> key) {
-//            Properties[] models = key.toArray(new Properties[key.size()]);
-//            List<Node> nds = new ArrayList<Node>();
-//            java.util.Map<String, List<String>> properties = getPropertyValues(models);
-//            for (java.util.Map.Entry<String, List<String>> entry : properties.entrySet()) {
-//                String[] vals = entry.getValue().toArray(new String[0]);
-//                nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, entry.getKey(), vals));
-//            }
-//            return nds.toArray(new Node[0]);
-//        }
-//    }
-//    // </editor-fold>
-
-
-
-    static Map<String, List<String>> getPropertyValues(Properties[] models) {
-        TreeMap<String, List<String>> toRet = new TreeMap<String, List<String>>();
-        int nulls = 0;
-        for (Properties prop : models) {
-            for (Object keyProp : prop.getProperties().keySet()) {
-                String k = (String) keyProp;
-                List<String> vals = toRet.get(k);
-                if (vals == null) {
-                    vals = new ArrayList<String>();
-                    toRet.put(k, vals);
-                }
-                if (vals.size() < nulls) {
-                    vals.addAll(Arrays.asList(new String[nulls - vals.size()]));
-                }
-                vals.add(prop.getProperty(k));
-            }
-            nulls = nulls + 1;
-        }
-        for (List<String> vals : toRet.values()) {
-            if (vals.size() < models.length) {
-                vals.addAll(Arrays.asList(new String[models.length - vals.size()]));
-            }
-        }
-        return toRet;
-    }
 
     /**
      * returns true if the value is defined in current pom. Assuming the first index is the
