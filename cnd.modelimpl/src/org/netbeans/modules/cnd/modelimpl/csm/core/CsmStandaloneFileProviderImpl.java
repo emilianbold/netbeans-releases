@@ -42,7 +42,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.BufferUnderflowException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.JEditorPane;
@@ -134,7 +133,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             }
             NativeProject platformProject = NativeProjectImpl.getNativeProjectImpl(FileUtil.toFile(file));
             if (platformProject != null) {
-                if (TRACE) trace("adding project %s", name); //NOI18N
+                if (TRACE) {trace("adding project %s", name);} //NOI18N
                 project = ModelImpl.instance().addProject(platformProject, name, true);
             }
         }
@@ -156,11 +155,11 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         if (projectOpened.getPlatformProject() instanceof NativeProjectImpl) {
             return;
         }
-        if (TRACE) trace("checking project %s", projectOpened.toString()); //NOI18N
+        if (TRACE) {trace("checking project %s", projectOpened.toString());} //NOI18N
         for (CsmProject dummy : ModelImpl.instance().projects()) {
             if (dummy.getPlatformProject() instanceof NativeProjectImpl) {
                 for (CsmFile file : dummy.getAllFiles()) {
-                    if (TRACE) trace("\nchecking file %s", file.getAbsolutePath()); //NOI18N
+                    if (TRACE) {trace("\nchecking file %s", file.getAbsolutePath());} //NOI18N
                     if (projectOpened.getFile(((FileImpl) file).getFile()) != null) {
                         scheduleProjectRemoval(dummy);
                         continue;
@@ -202,7 +201,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
     }
 
     synchronized public void notifyClosed(CsmFile csmFile) {
-        if (TRACE) trace("checking file %s", csmFile.toString()); //NOI18N
+        if (TRACE) {trace("checking file %s", csmFile.toString());} //NOI18N
         FileImpl fileImpl = (FileImpl) csmFile;
         for (CsmProject project : ModelImpl.instance().projects()) {
             Object platformProject = project.getPlatformProject();
@@ -225,11 +224,11 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
     }
 
     private void scheduleProjectRemoval(final CsmProject project) {
-        if (TRACE) trace("schedulling removal %s", project.toString()); //NOI18N
+        if (TRACE) {trace("schedulling removal %s", project.toString());} //NOI18N
         ModelImpl.instance().enqueueModelTask(new Runnable() {
             public void run() {
                 if (project.isValid()) {
-                    if (TRACE) trace("removing %s", project.toString()); //NOI18N
+                    if (TRACE) {trace("removing %s", project.toString());} //NOI18N
                     ProjectBase projectBase = (ProjectBase) project;
                     ModelImpl.instance().closeProjectBase(projectBase, false);
                 }
@@ -311,10 +310,6 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             if (dao instanceof CndDataObject) {
                 CndDataObject dataObject = (CndDataObject) dao;
                 NativeFileItemSet set = dataObject.getLookup().lookup(NativeFileItemSet.class);
-                if (set == null) {
-                    set = new MyNativeFileItemSet();
-                    dataObject.addCookie(set);
-                }
                 set.add(impl.findFileItem(file));
             }
             return impl;
@@ -513,25 +508,6 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
         public boolean isExcluded() {
             return false;
-        }
-    }
-
-    static private class MyNativeFileItemSet implements NativeFileItemSet {
-        private List<NativeFileItem> items = new ArrayList<NativeFileItem>(1);
-
-        public synchronized Collection<NativeFileItem> getItems() {
-            return new ArrayList<NativeFileItem>(items);
-        }
-        public synchronized void add(NativeFileItem item){
-            if (!items.contains(item)) {
-                items.add(item);
-            }
-        }
-        public synchronized void remove(NativeFileItem item){
-            items.remove(item);
-        }
-        public boolean isEmpty() {
-            return items.isEmpty();
         }
     }
 }

@@ -169,6 +169,40 @@ public class NestedType extends TypeImpl {
         }
     }
 
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        CsmType otherParent = ((NestedType)obj).parentType;
+        if (parentType == null) {
+            if(otherParent == null) {
+                return super.equals(obj);
+            } else {
+                return false;
+            }
+        } else {
+            if(otherParent == null) {
+                return false;
+            } else {
+                return super.equals(obj) && parentType.equals(otherParent);
+            }
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = super.hashCode();
+        if(parentType != null) {
+            hash = 47 * hash + parentType.hashCode();
+        }
+        return hash;
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
 

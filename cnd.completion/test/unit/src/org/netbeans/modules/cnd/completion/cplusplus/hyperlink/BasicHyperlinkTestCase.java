@@ -570,6 +570,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ151045.cc", 11, 21, "IZ151045.cc", 3, 5);
     }
 
+    public void testIZ158816() throws Exception {
+        // IZ#158816 : No hyperlink for ids after short macros
+        performTest("IZ158816.cc", 8, 16, "IZ158816.cc", 2, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

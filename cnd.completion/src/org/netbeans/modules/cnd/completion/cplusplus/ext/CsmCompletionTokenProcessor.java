@@ -82,6 +82,9 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
     private boolean supportTemplates;
     private int nrQuestions = 0;
 
+    // isMacro callback
+    private MacroCallback macroCallback = null;
+
     CsmCompletionTokenProcessor(int endScanOffset, int lastSeparatorOffset) {
         this.endScanOffset = endScanOffset;
         this.lastSeparatorOffset = lastSeparatorOffset;
@@ -157,6 +160,22 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                 return true;
         }
         return false;
+    }
+
+    /**
+     * Macro callback setter
+     */
+    public void setMacroCallback(MacroCallback callback) {
+        macroCallback = callback;
+    }
+
+    /** Returns is current token macro expansion or not */
+    private boolean isMacroExpansion() {
+        if(macroCallback != null) {
+            return macroCallback.isMacroExpansion();
+        } else {
+            return false;
+        }
     }
 
     /** Push exp to top of stack */
@@ -586,7 +605,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
         int tokenLen = token.length();
         tokenOffset += bufferOffsetDelta;
         CppTokenId tokenID = token.id();
-        if (tokenID != null) {
+        if (!isMacroExpansion() && tokenID != null) {
             String category = tokenID.primaryCategory();
             if (CppTokenId.KEYWORD_CATEGORY.equals(category)) {
                 if (tokenOffset + tokenLen == endScanOffset) {
@@ -612,7 +631,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
         curTokenPosition = bufferStartPos + tokenOffset;
         // System.err.printf("tokenOffset = %d, tokenLen = %d, tokenID = %s\n", tokenOffset, tokenLen, tokenID == null ? "null" : tokenID.toString());
         CharSequence txt = token.text();
-        if (tokenOffset + tokenLen > endScanOffset) {
+        if (!isMacroExpansion() && tokenOffset + tokenLen > endScanOffset) {
             assert (endScanOffset > tokenOffset) : "end - " + endScanOffset + " start - " + tokenOffset;
             txt = txt.subSequence(0, endScanOffset - tokenOffset);
         }
@@ -2043,7 +2062,9 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                 pushExp(createTokenExp(VARIABLE));
                 errorState = false;
             } else {
-                lastSeparatorOffset = tokenOffset;
+                if(!isMacroExpansion()) {
+                    lastSeparatorOffset = tokenOffset;
+                }
             }
         }
 

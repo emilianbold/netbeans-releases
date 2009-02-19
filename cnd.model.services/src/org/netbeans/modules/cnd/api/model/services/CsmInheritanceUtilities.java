@@ -270,24 +270,39 @@ public final class CsmInheritanceUtilities {
         return getContextVisibility(clazz, contextDeclaration, CsmVisibility.PUBLIC, false);
     }
     public static CsmVisibility getContextVisibility(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, CsmVisibility defVisibilityValue, boolean checkInheritance) {
+        return getContextVisibilityInfo(clazz, contextDeclaration, defVisibilityValue, checkInheritance).visibility;
+    }
+
+    public static class ContextVisibilityInfo {
+        public final  CsmVisibility visibility;
+        public final  boolean friend;
+
+        public ContextVisibilityInfo(CsmVisibility visibility, boolean friend) {
+            this.visibility = visibility;
+            this.friend = friend;
+        }
+    }
+
+    public static ContextVisibilityInfo getContextVisibilityInfo(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, CsmVisibility defVisibilityValue, boolean checkInheritance) {
         assert (clazz != null);
+
         CsmClass contextClass = CsmBaseUtilities.getContextClass(contextDeclaration);
         // if we are in the same class => we see everything
         if (areEqualClasses(clazz, contextClass)) {
-            return MAX_VISIBILITY;
+            return new ContextVisibilityInfo(MAX_VISIBILITY, false);
         }
         // friend has maximal visibility
         if (CsmFriendResolver.getDefault().isFriend(contextDeclaration, clazz)) {
-            return MAX_VISIBILITY;
+            return new ContextVisibilityInfo(MAX_VISIBILITY, true);
         }
         // nested classes should see at least themselves
         if (isNestedClass(contextClass, clazz)) {
-            return MAX_VISIBILITY;
+            return new ContextVisibilityInfo(MAX_VISIBILITY, false);
         }
         // from global context only public members are visible, friend is checked above
         // return passed default public visibility
         if (contextClass == null || !checkInheritance) {
-            return defVisibilityValue;
+            return new ContextVisibilityInfo(defVisibilityValue, false);
         }
 
         List<CsmInheritance> chain = findInheritanceChain(contextClass, clazz);
@@ -305,12 +320,12 @@ public final class CsmInheritanceUtilities {
                     // create merged visibility based on direct inheritance
                     mergedVisibility = CsmInheritanceUtilities.mergeChildInheritanceVisibility(mergedVisibility, inherit.getVisibility());
                 }
-            }          
-            return mergedVisibility;
+            }
+            return new ContextVisibilityInfo(mergedVisibility, false);
         } else {
             // not inherited class see only public, friend was checked above
             // return passed default public visibility
-            return defVisibilityValue;
+            return new ContextVisibilityInfo(defVisibilityValue, false);
         }
     }
     

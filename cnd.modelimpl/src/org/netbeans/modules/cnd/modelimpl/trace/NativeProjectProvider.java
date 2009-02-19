@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -280,36 +279,13 @@ public final class NativeProjectProvider {
         
     /*package*/ static void registerItemInDataObject(DataObject obj, NativeFileItem item) {
         if (obj != null) {
-            NativeFileItemSet set = obj.getLookup().lookup(NativeFileItemSet.class);
-            if (set == null) {
-                set = new NativeFileItemSetImpl();
-                if (obj instanceof CndDataObject) {
-                    ((CndDataObject)obj).addCookie(set);
-                }
+            if (obj instanceof CndDataObject) {
+                NativeFileItemSet set = obj.getLookup().lookup(NativeFileItemSet.class);
+                set.add(item);
             }
-            set.add(item);
         }
     }
     
-    private static class NativeFileItemSetImpl implements NativeFileItemSet {
-        private List<NativeFileItem> items = new ArrayList<NativeFileItem>(1);
-        
-        public synchronized Collection<NativeFileItem> getItems() {
-            return new ArrayList<NativeFileItem>(items);
-        }
-        public synchronized void add(NativeFileItem item){
-            if (!items.contains(item)) {
-                items.add(item);
-            }
-        }
-        public synchronized void remove(NativeFileItem item){
-            items.remove(item);
-        }
-        public boolean isEmpty() {
-            return items.isEmpty();
-        }
-    }
-
     private static final class NativeFileItemImpl implements NativeFileItem {
 	
         private final File file;
