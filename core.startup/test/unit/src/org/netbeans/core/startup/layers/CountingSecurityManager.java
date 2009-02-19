@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.test.ide;
+package org.netbeans.core.startup.layers;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -446,31 +446,21 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         if (file.startsWith(System.getProperty("java.home").replaceAll("/[^/]*$", ""))) {
             return false;
         }
-        if (!acceptFileInDir(file, System.getProperty("netbeans.home"))) {
+        if (file.startsWith(System.getProperty("netbeans.home") + File.separator + "lib")) {
+            return false;
+        }
+        if (file.startsWith(System.getProperty("netbeans.home") + File.separator + "core")) {
             return false;
         }
         String dirs = System.getProperty("netbeans.dirs");
         if (dirs != null) {
             for (String dir : dirs.split(File.pathSeparator)) {
-                if (!acceptFileInDir(file, dir)) {
+                if (file.startsWith(dir + File.separator + "lib")) {
                     return false;
                 }
-            }
-        }
-        return true;
-    }
-
-    private static boolean acceptFileInDir(String file, String dir) {
-        if (file.startsWith(dir + File.separator + "lib")) {
-            return false;
-        }
-        if (file.startsWith(dir + File.separator + "core")) {
-            return false;
-        }
-        if (file.startsWith(dir)) {
-            String sub = file.substring(dir.length() + 1);
-            if (allowed.contains(sub)) {
-                return false;
+                if (file.startsWith(dir + File.separator + "core")) {
+                    return false;
+                }
             }
         }
         return true;
