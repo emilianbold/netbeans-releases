@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
+import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 
 /**
  * A class that 
@@ -72,7 +73,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     
     public FunctionImplEx(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
         super(ast, file, scope, false, global);
-        classOrNspNames = CastUtils.isCast(ast) ? CastUtils.getClassOrNspNames(ast) : initClassOrNspNames(ast);
+        classOrNspNames = CastUtils.isCast(ast) ? getClassOrNspNames(ast) : initClassOrNspNames(ast);
         if (register) {
             registerInProject();
         }
@@ -97,8 +98,36 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 	}
 	return null;
     }    
-    
-    public static String[] initClassOrNspNames(AST node) {
+
+
+    private static CharSequence[] getClassOrNspNames(AST ast) {
+	assert CastUtils.isCast(ast);
+	AST child = ast.getFirstChild();
+	if( child != null && child.getType() == CPPTokenTypes.ID ) {
+	    AST next = child.getNextSibling();
+	    if( next != null && next.getType() == CPPTokenTypes.SCOPE ) {
+		List<CharSequence> l = new ArrayList<CharSequence>();
+		l.add(child.getText());
+                APTStringManager manager = QualifiedNameCache.getManager();
+		begin:
+		for( next = next.getNextSibling(); next != null; next = next.getNextSibling() ) {
+		    switch( next.getType() ) {
+			case CPPTokenTypes.ID:
+			    l.add(manager.getString(next.getText()));
+                            break;
+			case CPPTokenTypes.SCOPE:
+			    break; // do nothing
+			default:
+			    break begin;
+		    }
+		}
+		return  l.toArray(new CharSequence[l.size()]);
+	    }
+	}
+	return null;
+    }
+
+    private static CharSequence[] initClassOrNspNames(AST node) {
         //qualified id
         AST qid = AstUtil.findMethodName(node);
         if( qid == null ) {
@@ -106,15 +135,16 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         }
         int cnt = qid.getNumberOfChildren();
         if( cnt >= 1 ) {
-            List<String> l = new ArrayList<String>();
+            List<CharSequence> l = new ArrayList<CharSequence>();
+            APTStringManager manager = QualifiedNameCache.getManager();
             for( AST token = qid.getFirstChild(); token != null; token = token.getNextSibling() ) {
                 if( token.getType() == CPPTokenTypes.ID ) {
                     if( token.getNextSibling() != null ) {
-                        l.add(token.getText());
+                        l.add(manager.getString(token.getText()));
                     }
                 }
             }
-            return l.toArray(new String[l.size()]);
+            return l.toArray(new CharSequence[l.size()]);
         }
         return null;
     }
