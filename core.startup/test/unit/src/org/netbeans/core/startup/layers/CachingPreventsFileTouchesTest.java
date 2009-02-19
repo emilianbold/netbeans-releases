@@ -72,7 +72,7 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
             NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
                 CachingPreventsFileTouchesTest.class
             ).reuseUserDir(false).enableModules(".*").enableClasspathModules(false);
-            conf = conf.addTest("testInitUserDir").gui(true);
+            conf = conf.addTest("testInitUserDir").gui(false);
             suite.addTest(NbModuleSuite.create(conf));
         }
 
@@ -80,7 +80,7 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
             NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
                 CachingPreventsFileTouchesTest.class
             ).reuseUserDir(true).enableModules(".*").enableClasspathModules(false);
-            conf = conf.addTest("testReadAccess").gui(true);
+            conf = conf.addTest("testReadAccess").gui(false);
             suite.addTest(NbModuleSuite.create(conf));
         }
 
