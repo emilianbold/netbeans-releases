@@ -116,10 +116,10 @@ public class BugzillaQuery extends Query {
 
     @Override
     public void refresh() {
+        // XXX do not refresh until populate!
+
         assert urlParameters != null;
         assert !SwingUtilities.isEventDispatchThread();
-
-        
 
         executeQuery(new Runnable() {
             public void run() {
