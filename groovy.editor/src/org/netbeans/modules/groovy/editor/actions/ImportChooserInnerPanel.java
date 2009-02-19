@@ -116,11 +116,10 @@ public class ImportChooserInnerPanel extends javax.swing.JPanel{
             };
             
             int i = 0;
-            
-            for (Iterator it = multipleCandidates.keySet().iterator(); it.hasNext();) {
-                String  name = (String)it.next();
-                
-                List<FixImportsHelper.ImportCandidate> importCandidates = multipleCandidates.get(name);
+
+            for (Map.Entry<String, List> entry : multipleCandidates.entrySet()) {
+                String  name = entry.getKey();
+                List<FixImportsHelper.ImportCandidate> importCandidates = entry.getValue();
                 
                 int size = importCandidates.size();
                 int iNum = 0;
