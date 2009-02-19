@@ -105,7 +105,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POMComponentVisitor {
 
-    private Map<POMQName, Node> childs = new LinkedHashMap<POMQName, Node>();
+    private Map<String, Node> childs = new LinkedHashMap<String, Node>();
     private int count = 0;
     private POMQNames names;
 
@@ -114,7 +114,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     }
 
     public void reset() {
-         childs = new LinkedHashMap<POMQName, Node>();
+         childs = new LinkedHashMap<String, Node>();
          count = 0;
     }
 
@@ -200,6 +200,19 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                         return c.getId() != null ? c.getId() : "Repository";
                     }
                 });
+        this.<Repository>checkListObject(names.PLUGINREPOSITORIES, names.PLUGINREPOSITORY,
+                Repository.class, "Plugin Repositories",
+                t != null ? t.getPluginRepositories() : null,
+                new KeyGenerator<Repository>() {
+                    public Object generate(Repository c) {
+                        return c.getId();
+                    }
+                    public String createName(Repository c) {
+                        return c.getId() != null ? c.getId() : "Repository";
+                    }
+                });
+        checkChildObject(names.PROPERTIES, Properties.class, "Properties", t != null ? t.getProperties() : null);
+
         count++;
     }
 
@@ -441,7 +454,28 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     }
 
     public void visit(Properties target) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Properties t = target;
+        if (t != null && !t.isInDocumentModel()) {
+            t = null;
+        }
+        if (t != null) {
+            Map<String, String> props = t.getProperties();
+            for (Map.Entry<String, String> ent : props.entrySet()) {
+                Node nd = childs.get(ent.getKey());
+                if (nd == null) {
+                    nd = new SingleFieldNode(Lookups.fixed(new POMCutHolder()), ent.getKey());
+                    childs.put(ent.getKey(), nd);
+                }
+                fillValues(count, nd.getLookup().lookup(POMCutHolder.class), ent.getValue());
+            }
+        }
+
+        for (Node prop : childs.values()) {
+            fillValues(count, prop.getLookup().lookup(POMCutHolder.class), null);
+        }
+
+        count++;
+
     }
 
     public void visit(StringList target) {
@@ -457,7 +491,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         Node nd = childs.get(qname);
         if (nd == null) {
             nd = new SingleFieldNode(Lookups.fixed(new POMCutHolder(), qname), displayName);
-            childs.put(qname, nd);
+            childs.put(qname.getName(), nd);
         }
         fillValues(count, nd.getLookup().lookup(POMCutHolder.class), value);
     }
@@ -467,7 +501,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (nd == null) {
             POMCutHolder cutter = new POMCutHolder();
             nd = new ObjectNode(Lookups.fixed(cutter, qname), new PomChildren(cutter, names, type), displayName);
-            childs.put(qname, nd);
+            childs.put(qname.getName(), nd);
         }
         fillValues(count, nd.getLookup().lookup(POMCutHolder.class), value);
     }
@@ -478,7 +512,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (nd == null) {
             POMCutHolder cutter = new POMCutHolder();
             nd = new ListNode(Lookups.fixed(cutter, qname), new PomListChildren<T>(cutter, names, type, keygen, true, childName), displayName);
-            childs.put(qname, nd);
+            childs.put(qname.getName(), nd);
         }
         fillValues(count, nd.getLookup().lookup(POMCutHolder.class), values);
     }

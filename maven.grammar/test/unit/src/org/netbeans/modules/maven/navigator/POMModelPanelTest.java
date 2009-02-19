@@ -39,10 +39,24 @@
 
 package org.netbeans.modules.maven.navigator;
 
+import hidden.org.codehaus.plexus.util.StringOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import org.junit.Test;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.POMModelFactory;
+import org.netbeans.modules.maven.model.pom.Project;
+import org.netbeans.modules.maven.model.pom.Properties;
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import static org.junit.Assert.*;
 
 /**
@@ -59,21 +73,27 @@ public class POMModelPanelTest {
      * Test of getPropertyValues method, of class POMModelPanel.
      */
     @Test
-    public void testGetPropertyValues() {
+    public void testGetPropertyValues() throws Exception {
+        ModelSource source = createModelSource();
+        try {
+            POMModel model = POMModelFactory.getDefault().getModel(source);
+            assertTrue(source.isEditable());
+            assertNotNull(model.getProject());
         System.out.println("getPropertyValues");
         Properties[] models = new Properties[4];
-        Properties one = new Properties();
-        Properties two = new Properties();
-        Properties three = new Properties();
-        Properties four = new Properties();
+            model.startTransaction();
+        Properties one = model.getFactory().createProperties();
+        Properties two = model.getFactory().createProperties();
+        Properties three = model.getFactory().createProperties();
+        Properties four = model.getFactory().createProperties();
         models[0] = one;
         models[1] = two;
         models[2] = three;
         models[3] = four;
 
         String prop = "propone";
-        one.put(prop, "val1");
-        three.put(prop, "zzz");
+        one.setProperty(prop, "val1");
+        three.setProperty(prop, "zzz");
         Map<String, List<String>> result = POMModelPanel.getPropertyValues(models);
         List<String> lst = result.get(prop);
         assertNotNull(lst);
@@ -83,8 +103,8 @@ public class POMModelPanelTest {
         assertNull(lst.get(3));
 
         prop = "proptwo";
-        two.put(prop, "val1");
-        three.put(prop, "zzz");
+        two.setProperty(prop, "val1");
+        three.setProperty(prop, "zzz");
         result = POMModelPanel.getPropertyValues(models);
         lst = result.get(prop);
         assertNotNull(lst);
@@ -93,7 +113,24 @@ public class POMModelPanelTest {
         assertNotNull(lst.get(2));
         assertNull(lst.get(3));
 
+            model.endTransaction();
+
+        } finally {
+            File file = source.getLookup().lookup(File.class);
+            file.deleteOnExit();
+        }
+
     }
 
+    private ModelSource createModelSource() throws FileNotFoundException, IOException, URISyntaxException {
+        String dir = System.getProperty("java.io.tmpdir");
+        File sourceFile = new File(dir, "pom.xml");
+        ModelSource source = Utilities.createModelSourceForMissingFile(sourceFile, true, 
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + 
+"<project xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd\"> </project>",
+                "text/xml");
+        assertTrue(source.isEditable());
+        return source;
+    }
 
 }

@@ -457,28 +457,6 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
 //    // </editor-fold>
 
 
-//    // <editor-fold defaultstate="collapsed" desc="Repository Children">
-//    private static class RepositoryChildren extends Children.Keys<List<Repository>> {
-//        private List<POMModel> lineage;
-//        public RepositoryChildren(List<Repository> list, List<POMModel> lin) {
-//            setKeys(new List[] {list});
-//            lineage = lin;
-//        }
-//
-//        @Override
-//        protected Node[] createNodes(List<Repository> key) {
-//            Repository[] models = key.toArray(new Repository[key.size()]);
-//            List<Node> nds = new ArrayList<Node>();
-//            String[] vals = getStringValue(models, "getId", Repository.class);
-//            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Id", vals));
-//            vals = getStringValue(models, "getName", Repository.class);
-//            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Name", vals));
-//            vals = getStringValue(models, "getUrl", Repository.class);
-//            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Url", vals));
-//            return nds.toArray(new Node[0]);
-//        }
-//    }
-//    // </editor-fold>
 
     static Map<String, List<String>> getPropertyValues(Properties[] models) {
         TreeMap<String, List<String>> toRet = new TreeMap<String, List<String>>();
