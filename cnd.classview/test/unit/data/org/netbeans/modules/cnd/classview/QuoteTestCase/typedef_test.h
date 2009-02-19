@@ -1,3 +1,4 @@
+static HashMap DDD(false,false);
 
 typedef struct {
     int left;

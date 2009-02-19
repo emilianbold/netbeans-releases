@@ -101,6 +101,7 @@ System / class_16.png
 Tangage / typedef_16.png
 	toDown / enumeration_item_16.png
 	toUp / enumeration_item_16.png
+DDD / global_variable.png
 main(int argc, char** argv) / global_function.png
 operator <<(ostream& , const Customer& ) / global_operator.png
 operator <<(ostream& , const Module& ) / global_operator.png

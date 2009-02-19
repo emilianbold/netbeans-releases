@@ -1361,6 +1361,10 @@ public class RADComponent {
         return accessibilityProperties;
     }
 
+    FormProperty[] getKnownAccessibilityProperties() {
+        return accessibilityProperties != null ? accessibilityProperties : NO_PROPERTIES;
+    }
+
     private void createAccessibilityProperties() {
         Object comp = getBeanInstance();
         if (comp instanceof Accessible

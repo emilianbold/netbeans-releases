@@ -430,23 +430,27 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                 case STRINGIZE_PARAM: // stringizing token after #
                 {  
                     token = null;                    
-                    // stringize next token, it must be param!
-                    assert (laToken.getType() == APTTokenTypes.ID);
-                    APTToken stringized = stringizeParam(paramsMap.get(laToken.getText()));
-                    laToken = body.nextToken(); 
-                    switch (laToken.getType()) {
-                        case APTTokenTypes.DBL_SHARP:
-                        {
-                            leftConcatToken = stringized;
-                            state = CONCATENATE;
-                            break;
-                        }                        
-                        default:    
-                        {
-                            token = stringized;                               
-                            state = BODY_STREAM;
+                    // stringize next token, it must be param
+                    // unless macro is incomplete
+                    if (laToken != null && laToken.getType() == APTTokenTypes.ID) {
+                        APTToken stringized = stringizeParam(paramsMap.get(laToken.getText()));
+                        laToken = body.nextToken();
+                        switch (laToken.getType()) {
+                            case APTTokenTypes.DBL_SHARP:
+                            {
+                                leftConcatToken = stringized;
+                                state = CONCATENATE;
+                                break;
+                            }
+                            default:
+                            {
+                                token = stringized;
+                                state = BODY_STREAM;
+                            }
                         }
-                    }   
+                    } else {
+                        state = BODY_STREAM;
+                    }
                     break;
                 }
             }

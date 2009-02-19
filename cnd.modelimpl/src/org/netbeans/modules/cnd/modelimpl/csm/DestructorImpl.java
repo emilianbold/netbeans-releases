@@ -51,8 +51,8 @@ import org.netbeans.modules.cnd.api.model.*;
  */
 public final class DestructorImpl extends MethodImpl<CsmMethod> {
 
-    public DestructorImpl(AST ast, ClassImpl cls, CsmVisibility visibility) throws AstRendererException {
-        super(ast, cls, visibility, true, true);
+    public DestructorImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
+        super(ast, cls, visibility, register, register);
     }
 
     @Override

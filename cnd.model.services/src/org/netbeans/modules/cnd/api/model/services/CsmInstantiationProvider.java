@@ -52,12 +52,9 @@
 package org.netbeans.modules.cnd.api.model.services;
 
 import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmInstantiation;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
-import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.openide.util.Lookup;
 
@@ -95,7 +92,7 @@ public abstract class CsmInstantiationProvider {
      * @param params - template paramrters
      * @return - instantiation
      */
-    public abstract CsmObject instantiate(CsmTemplate template, List<CsmType> params);
+    public abstract CsmObject instantiate(CsmTemplate template, List<CsmType> params, CsmFile contextFile);
 
     //
     // Implementation of the default provider
@@ -106,7 +103,7 @@ public abstract class CsmInstantiationProvider {
         }
 
         @Override
-        public CsmObject instantiate(CsmTemplate template, List<CsmType> params) {
+        public CsmObject instantiate(CsmTemplate template, List<CsmType> params, CsmFile contextFile) {
             return null;
         }
 
