@@ -90,7 +90,10 @@ public final class SourceGroupModifier {
         if (impl == null) {
             return null;
         }
-        return new Future(impl, type, hint);
+        if (impl.canCreateSourceGroup(type, hint)) {
+            return new Future(impl, type, hint);
+        }
+        return null;
     }
 
     /**
