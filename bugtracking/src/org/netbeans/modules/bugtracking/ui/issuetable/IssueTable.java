@@ -305,7 +305,7 @@ public class IssueTable implements MouseListener, AncestorListener {
                     sb = new StringBuffer();
                     Issue issue = p.getIssue();
                     int status = query.getIssueStatus(issue);
-                    if(status != Query.ISSUE_STATUS_UPTODATE) {
+                    if(!issue.wasSeen()) {
                         sb.append("<html>");
                         switch(status) {
                             // XXX use format;
