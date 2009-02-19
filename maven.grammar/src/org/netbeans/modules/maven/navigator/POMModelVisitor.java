@@ -188,6 +188,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                         return c.getArtifactId() != null ? c.getArtifactId() : "Dependency";
                     }
                 });
+        checkChildObject(names.DEPENDENCYMANAGEMENT, DependencyManagement.class, "DependencyManagement", t != null ? t.getDependencyManagement() : null);
 
         this.<Repository>checkListObject(names.REPOSITORIES, names.REPOSITORY,
                 Repository.class, "Repositories",
@@ -391,7 +392,23 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     }
 
     public void visit(DependencyManagement target) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        DependencyManagement t = target;
+        if (t != null && !t.isInDocumentModel()) {
+            t = null;
+        }
+        this.<Dependency>checkListObject(names.DEPENDENCIES, names.DEPENDENCY,
+                Dependency.class, "Dependencies",
+                t != null ? t.getDependencies() : null,
+                new KeyGenerator<Dependency>() {
+                    public Object generate(Dependency c) {
+                        return c.getGroupId() + ":" + c.getArtifactId();
+                    }
+                    public String createName(Dependency c) {
+                        return c.getArtifactId() != null ? c.getArtifactId() : "Dependency";
+                    }
+                });
+
+        count++;
     }
 
     public void visit(Build target) {
@@ -471,7 +488,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         }
 
         for (Node prop : childs.values()) {
-            fillValues(count, prop.getLookup().lookup(POMCutHolder.class), null);
+            growToSize(count, prop.getLookup().lookup(POMCutHolder.class));
         }
 
         count++;
@@ -488,7 +505,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
     @SuppressWarnings("unchecked")
     private void checkChildString(POMQName qname, String displayName, String value) {
-        Node nd = childs.get(qname);
+        Node nd = childs.get(qname.getName());
         if (nd == null) {
             nd = new SingleFieldNode(Lookups.fixed(new POMCutHolder(), qname), displayName);
             childs.put(qname.getName(), nd);
@@ -497,7 +514,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     }
 
     private void checkChildObject(POMQName qname, Class type, String displayName, POMComponent value) {
-        Node nd = childs.get(qname);
+        Node nd = childs.get(qname.getName());
         if (nd == null) {
             POMCutHolder cutter = new POMCutHolder();
             nd = new ObjectNode(Lookups.fixed(cutter, qname), new PomChildren(cutter, names, type), displayName);
@@ -508,7 +525,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
 
     private <T extends POMComponent> void checkListObject(POMQName qname, POMQName childName, Class type, String displayName, List<T> values, KeyGenerator<T> keygen) {
-        Node nd = childs.get(qname);
+        Node nd = childs.get(qname.getName());
         if (nd == null) {
             POMCutHolder cutter = new POMCutHolder();
             nd = new ListNode(Lookups.fixed(cutter, qname), new PomListChildren<T>(cutter, names, type, keygen, true, childName), displayName);
@@ -519,10 +536,14 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
 
     private void fillValues(int current, POMCutHolder cutHolder, Object value) {
-        while (cutHolder.getCutsSize() < current) {
+        growToSize(current, cutHolder);
+        cutHolder.addCut(value);
+    }
+
+    private void growToSize(int count, POMCutHolder cutHolder) {
+        while (cutHolder.getCutsSize() < count) {
             cutHolder.addCut(null);
         }
-        cutHolder.addCut(value);
     }
 
 //    private static Children createOverrideListChildren(ChildrenCreator subs, List<List> values) {
@@ -780,7 +801,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
     }
 
-    private class PomListChildren<T extends POMComponent> extends Children.Keys<Object> {
+    class PomListChildren<T extends POMComponent> extends Children.Keys<Object> {
         private Object[] one = new Object[] {new Object()};
         private POMCutHolder holder;
         private POMQNames names;
@@ -810,6 +831,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             int level = 0;
             for (Object comp : holder.getCutValues()) {
                 if (comp == null) {
+                    level++;
                     continue;
                 }
                 @SuppressWarnings("unchecked")
@@ -826,7 +848,6 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                 level++;
             }
             for (List<T> lst : cut.values()) {
-                int cutLevel = 0;
                 POMCutHolder cutHolder = new POMCutHolder();
                 T topMost = null;
                 for (T c : lst) {
@@ -834,8 +855,8 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                     if (topMost == null) {
                         topMost = c;
                     }
-                    cutLevel++;
                 }
+                growToSize(holder.getCutsSize(), cutHolder);
 
                 String itemName = keyGenerator.createName(topMost);
                 toRet.add(new ObjectNode(Lookups.fixed(cutHolder, childName), new PomChildren(cutHolder, names, type), itemName));
