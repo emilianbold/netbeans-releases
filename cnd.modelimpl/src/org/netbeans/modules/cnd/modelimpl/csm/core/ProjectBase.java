@@ -1666,7 +1666,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         File file = buf.getFile();
         FileImpl impl = getFile(file);
         if (impl == null) {
-            synchronized (getFileContainer()) {
+            synchronized (fileContainerLock) {
                 impl = getFile(file);
                 if (impl == null) {
                     preprocHandler = createPreprocHandler(nativeFile);
@@ -1913,8 +1913,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private CsmUID<CsmProject> uid = null;
 
     public final CsmUID<CsmProject> getUID() { // final because called from constructor
-        if (uid == null) {
-            uid = UIDUtilities.createProjectUID(this);
+        CsmUID<CsmProject> out = uid;
+        if (out == null) {
+            synchronized (this) {
+                if (uid == null) {
+                    uid = out = UIDUtilities.createProjectUID(this);
+                    System.err.println("getUID for project UID@"+System.identityHashCode(uid) + uid + "on prj@"+System.identityHashCode(this));
+                }
+            }
         }
         return uid;
     }
