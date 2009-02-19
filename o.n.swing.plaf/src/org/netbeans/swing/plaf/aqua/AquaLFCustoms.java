@@ -179,6 +179,7 @@ public final class AquaLFCustoms extends LFCustoms {
             "NbExplorerView.background", new Color(226,226,226),
             "NbEditorStatusBar.background", new Color(226,226,226),
             "NbEditorGlyphGutter.background", new Color(255,255,255),
+            "NbSlideBar.rollover", new Color(135,135,135),
 
             "NbBrushedMetal.darkShadow", new Color(49,49,49),
             "NbBrushedMetal.lightShadow", new Color(178,178,178),
