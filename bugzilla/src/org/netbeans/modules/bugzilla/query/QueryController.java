@@ -397,6 +397,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private void setAsSaved() {
         panel.setSaved(query.getDisplayName(), getLastRefresh());
         query.setSaved(true);
+        panel.setModifyVisible(false);
     } 
 
     private String getLastRefresh() throws MissingResourceException {
