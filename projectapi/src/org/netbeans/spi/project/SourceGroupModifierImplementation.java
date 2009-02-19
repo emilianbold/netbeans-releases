@@ -56,12 +56,23 @@ public interface SourceGroupModifierImplementation {
      * If the SourceGroup's type/hint is not supported, the implementation shall silently return null and not throw any exceptions.
      * If the SourceGroup of given type/hint already exists it shall be returned as well.
      *
-     * @param project
      * @param type constant for type of sources
      * @param hint
      * @return the created or existing SourceGroup or null
      */
 
-    public SourceGroup createSourceGroup(String type, String hint);
+    SourceGroup createSourceGroup(String type, String hint);
+
+    /**
+     * checks if {@link org.netbeans.api.project.SourceGroup} of the given type and hint can be created.
+     * Typically a type is a constant for java/groovy/ruby source roots and hint is a constant for main sources or test sources.
+     * Please consult specific APIs fro the supported types/hints. Eg. <code>JavaProjectConstants</code> for java related project sources.
+     * If the SourceGroup of given type/hint already exists it shall be return true as well.
+     *
+     * @param type constant for type of sources
+     * @param hint
+     * @return true if the SourceGroup exists or can be created.
+     */
+    boolean canCreateSourceGroup(String type, String hint);
 
 }

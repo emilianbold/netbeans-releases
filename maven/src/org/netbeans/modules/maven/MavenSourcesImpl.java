@@ -424,6 +424,14 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
 
         return null;
     }
+
+    public boolean canCreateSourceGroup(String type, String hint) {
+        if ((JavaProjectConstants.SOURCES_TYPE_RESOURCES.equals(type) || JavaProjectConstants.SOURCES_TYPE_JAVA.equals(type))
+                && (JavaProjectConstants.SOURCES_HINT_MAIN.equals(hint) || JavaProjectConstants.SOURCES_HINT_TEST.equals(hint))) {
+            return true;
+        }
+        return false;
+    }
     
     
     public static final class OtherGroup implements SourceGroup {
