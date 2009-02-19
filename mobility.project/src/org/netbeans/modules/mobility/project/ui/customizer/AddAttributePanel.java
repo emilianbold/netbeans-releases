@@ -126,7 +126,7 @@ public class AddAttributePanel extends javax.swing.JPanel implements ActionListe
         if (comp instanceof JTextComponent)
             ((JTextComponent) comp).getDocument().addDocumentListener(this);
         tValue.getDocument().addDocumentListener(this);
-        isValid();
+        isStateValid();
         final Boolean b = tableModel.getPlacement(key);
         cPlacement.setSelectedIndex(b == null ? 0 : (b.booleanValue() ? 1 : 2));
     }
@@ -150,7 +150,7 @@ public class AddAttributePanel extends javax.swing.JPanel implements ActionListe
         actionPerformed(null);
     }
     
-    public boolean isValid() {
+    public boolean isStateValid() {
         if (allNames.contains(getKey())) {
             cPlacement.setEnabled(false);
             cPlacement.setSelectedIndex(0);
@@ -315,7 +315,7 @@ public class AddAttributePanel extends javax.swing.JPanel implements ActionListe
     
     public void actionPerformed(@SuppressWarnings("unused")
 	final java.awt.event.ActionEvent e) {
-        dd.setValid(isValid());
+        dd.setValid(isStateValid());
     }
     
     public void changedUpdate(@SuppressWarnings("unused")

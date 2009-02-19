@@ -168,11 +168,14 @@ public class MercurialAnnotator extends VCSAnnotator {
     }
 
     public void refresh() {
-        String string = HgModuleConfig.getDefault().getAnnotationFormat(); 
+        String string = HgModuleConfig.getDefault().getAnnotationFormat();
         if (string != null && !string.trim().equals("")) { // NOI18N
-            string = Utils.skipUnsupportedVariables(string, new String[] {"{status}", "{folder}"});     // NOI18N
-            string = string.replaceAll("\\{status\\}", "\\{0\\}");                                      // NOI18N
-            string = string.replaceAll("\\{folder\\}", "\\{1\\}");                                      // NOI18N
+            string = HgUtils.createAnnotationFormat(string);
+            if (!HgUtils.isAnnotationFormatValid(string))   {
+                // see #136440
+                Mercurial.LOG.log(Level.WARNING, "Bad annotation format, switching to defaults");
+                string = org.openide.util.NbBundle.getMessage(MercurialAnnotator.class, "MercurialAnnotator.defaultFormat"); // NOI18N
+            }
             format = new MessageFormat(string);
             emptyFormat = format.format(new String[] {"", "", ""} , new StringBuffer(), null).toString().trim(); // NOI18N
         }

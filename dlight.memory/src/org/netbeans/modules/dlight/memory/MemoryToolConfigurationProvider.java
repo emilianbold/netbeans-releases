@@ -57,6 +57,8 @@ import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
+import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
+import org.openide.util.NbBundle;
 
 /**
  * 
@@ -77,14 +79,14 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         DataTableMetadata rawTableMetadata = null;
         if (useCollector) {
             Column timestampColumn = new Column("timestamp", Long.class, "Timestamp", null);
-            Column timeColumn = new Column("kind", Integer.class, "Kind", null);
+            Column kindColumn = new Column("kind", Integer.class, "Kind", null);
             Column sizeColumn = new Column("size", Integer.class, "Size", null);
-            Column addressColumn = new Column("address", Integer.class, "Address", null);
+            Column addressColumn = new Column("address", Long.class, "Address", null);
             Column stackColumn = new Column("stackid", Integer.class, "Stack ID", null);
 
             List<Column> columns = Arrays.asList(
                     timestampColumn,
-                    timeColumn,
+                    kindColumn,
                     sizeColumn,
                     addressColumn,
                     totalColumn,
@@ -145,7 +147,11 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
             "GROUP BY node.func_id, func.func_name";
 
         DataTableMetadata viewTableMetadata = new DataTableMetadata("mem", viewColumns, sql, Arrays.asList(rawTableMetadata));
-        return new TableVisualizerConfiguration(viewTableMetadata);
+        AdvancedTableViewVisualizerConfiguration tableVisualizerConfiguration = new AdvancedTableViewVisualizerConfiguration(viewTableMetadata, "func_name");
+        tableVisualizerConfiguration.setEmptyAnalyzeMessage(NbBundle.getMessage(MemoryToolConfigurationProvider.class, "DetailedView.EmptyAnalyzeMessage"));
+        tableVisualizerConfiguration.setEmptyRunningMessage(NbBundle.getMessage(MemoryToolConfigurationProvider.class, "DetailedView.EmptyRunningMessage"));
+        tableVisualizerConfiguration.setDefaultActionProvider();
+        return  tableVisualizerConfiguration;
     }
 
     private static class MAgentClioParser implements CLIOParser {

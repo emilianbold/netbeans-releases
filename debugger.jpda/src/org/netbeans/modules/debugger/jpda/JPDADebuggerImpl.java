@@ -207,6 +207,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
     public JPDADebuggerImpl (ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
+        
+        Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
+        suspend = p.getInt("StepResume", suspend);
+
         pcs = new PropertyChangeSupport (this);
         List l = lookupProvider.lookup (null, DebuggerEngineProvider.class);
         int i, k = l.size ();
@@ -314,6 +318,28 @@ public class JPDADebuggerImpl extends JPDADebugger {
             } catch (Exception ex) {
             } finally {
                 t.getReadAccessLock().unlock();
+            }
+        }
+        return csf;
+    }
+
+    /**
+     * Returns current stack frame or null.
+     *
+     * @return current stack frame or null
+     */
+    public CallStackFrame getCurrentCallStackFrameOrNull () {
+        CallStackFrame csf = null;
+        synchronized (currentThreadAndFrameLock) {
+            if (currentCallStackFrame != null) {
+                try {
+                    if (!currentCallStackFrame.getThread().isSuspended()) {
+                        currentCallStackFrame = null;
+                    }
+                } catch (InvalidStackFrameException isfex) {
+                    currentCallStackFrame = null;
+                }
+                csf = currentCallStackFrame;
             }
         }
         return csf;

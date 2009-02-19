@@ -49,6 +49,21 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="ImageUtilities.loadImageIcon">
+        <api name="util"/>
+        <summary>Added <code>loadImageIcon(String resource, boolean localized)</code></summary>
+        <version major="7" minor="22"/>
+        <date day="26" month="1" year="2009"/>
+        <author login="t_h"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Convenient method for loading icons.
+            </p>
+        </description>
+        <class package="org.openide.util" name="ImageUtilities"/>
+        <issue number="157254"/>
+    </change>
     <change id="Utilities.keyToString">
         <api name="util"/>
         <summary>Added <code>keyToString(KeyStroke stroke, boolean portable)</code></summary>

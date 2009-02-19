@@ -40,6 +40,7 @@
 package org.netbeans.modules.groovy.grailsproject.commands;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -120,16 +121,20 @@ public final class GrailsCommandSupport {
         return commands;
     }
 
-    public ExecutionDescriptor getRunDescriptor(InputProcessorFactory outFactory) {
-        return getDescriptor("run-app", outFactory); // NOI18N
+    public ExecutionDescriptor getRunDescriptor() {
+        return getDescriptor(GrailsRuntime.IDE_RUN_COMMAND);
     }
 
     public ExecutionDescriptor getDescriptor(String command) {
-        return getDescriptor(command, null);
+        return getDescriptor(command, null, false);
     }
 
     public ExecutionDescriptor getDescriptor(String command, InputProcessorFactory outFactory) {
-        if (GrailsRuntime.KNOWN_RUN_COMMANDS.contains(command)) {
+        return getDescriptor(command, outFactory, false);
+    }
+
+    public ExecutionDescriptor getDescriptor(String command, InputProcessorFactory outFactory, final boolean debug) {
+        if (GrailsRuntime.IDE_RUN_COMMAND.equals(command)) {
             Runnable runnable = new Runnable() {
                 public void run() {
                     final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
@@ -141,8 +146,17 @@ public final class GrailsCommandSupport {
             };
 
             ExecutionDescriptor descriptor = RUN_DESCRIPTOR.postExecution(runnable);
+            InputProcessorFactory urlFactory = new InputProcessorFactory() {
+                public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                    return InputProcessors.proxy(defaultProcessor,
+                            InputProcessors.bridge(new ServerURLProcessor(project, debug)));
+                }
+            };
+
             if (outFactory != null) {
-                descriptor = descriptor.outProcessorFactory(new ProxyInputProcessorFactory(outFactory));
+                descriptor = descriptor.outProcessorFactory(new ProxyInputProcessorFactory(urlFactory, outFactory));
+            } else {
+                descriptor = descriptor.outProcessorFactory(urlFactory);
             }
             return descriptor;
         } else if ("shell".equals(command)) { // NOI18N
@@ -305,6 +319,46 @@ public final class GrailsCommandSupport {
 
         public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
             return InputProcessors.ansiStripping(defaultProcessor);
+        }
+    }
+
+    private static class ServerURLProcessor implements LineProcessor {
+
+        private final GrailsProject project;
+        private final boolean debug;
+
+        public ServerURLProcessor(GrailsProject project, boolean debug) {
+            this.project = project;
+            this.debug = debug;
+        }
+
+        public void processLine(String line) {
+            if (line.contains("Browse to http:/")) {
+                String urlString = line.substring(line.indexOf("http://"));
+
+                URL url;
+                try {
+                    url = new URL(urlString);
+                } catch (MalformedURLException ex) {
+                    LOGGER.log(Level.WARNING, "Could not start browser", ex);
+                    return;
+                }
+
+                GrailsServerState state = project.getLookup().lookup(GrailsServerState.class);
+                if (state != null) {
+                    state.setRunningUrl(url);
+                }
+
+                GrailsCommandSupport.showURL(url, debug, project);
+            }
+        }
+
+        public void reset() {
+            // noop
+        }
+
+        public void close() {
+            // noop
         }
     }
 

@@ -100,6 +100,9 @@ public final class MainWindow extends JFrame {
 
     /** Constructs main window. */
     public MainWindow() {
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID())
+                && null == System.getProperty("apple.awt.brushMetalLook") ) //NOI18N
+            getRootPane().putClientProperty("apple.awt.brushMetalLook", Boolean.TRUE); //NOI18N
     }
     
     /** Overrides superclass method, adds help context to the new root pane. */
@@ -463,21 +466,6 @@ public final class MainWindow extends JFrame {
         if(!bounds.isEmpty()) {
             setBounds(bounds);
         }
-    }
-    
-    /**
-     * don't allow smaller bounds than the one constructed from preffered sizes, making sure everything is visible when
-     * in SDI. #40063
-     */
-    @Override
-    public void setBounds(Rectangle rect) {
-        Rectangle bounds = rect;
-        if (bounds != null) {
-            if (bounds.height < getPreferredSize().height) {
-                bounds = new Rectangle(bounds.x, bounds.y, bounds.width, getPreferredSize().height);
-            }
-        }
-        super.setBounds(bounds);
     }
     
     /** Prepares main window, has to be called after {@link initializeComponents()}. */

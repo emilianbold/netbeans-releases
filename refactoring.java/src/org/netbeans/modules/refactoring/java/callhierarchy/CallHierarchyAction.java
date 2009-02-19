@@ -60,8 +60,7 @@ import org.openide.util.Utilities;
 public final class CallHierarchyAction extends JavaRefactoringGlobalAction {
 
     public CallHierarchyAction() {
-        super(NbBundle.getMessage(CallHierarchyAction.class, "CTL_CallHierarchyAction"),
-                new ImageIcon(ImageUtilities.loadImage(CallHierarchyTopComponent.ICON_PATH, true)));
+        super(NbBundle.getMessage(CallHierarchyAction.class, "CTL_CallHierarchyAction"),ImageUtilities.loadImageIcon(CallHierarchyTopComponent.ICON_PATH, true));
     }
 
     public void performAction(Lookup context) {

@@ -90,7 +90,7 @@ public class GrailsCommandAction extends AbstractAction {
         String displayName = inf.getDisplayName() + " (" + commandDescriptor.getGrailsCommand().getCommand() + ")"; // NOI18N
 
 
-        String[] params;
+        final String[] params;
         // FIXME all parameters in one String should we split it ?
         if (commandDescriptor.getCommandParams() != null && !"".equals(commandDescriptor.getCommandParams().trim())) {
             params = new String[] {commandDescriptor.getCommandParams()};
@@ -98,11 +98,39 @@ public class GrailsCommandAction extends AbstractAction {
             params = new String[] {};
         }
 
-        Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
-                commandDescriptor.getGrailsCommand().getCommand(), GrailsProjectConfig.forProject(project), params);
 
-        ExecutionDescriptor descriptor = project.getCommandSupport().getDescriptor(commandDescriptor.getGrailsCommand().getCommand());
+        Callable<Process> callable;
+        ExecutionDescriptor descriptor;
 
+        if (GrailsRuntime.IDE_RUN_COMMAND.equals(commandDescriptor.getGrailsCommand().getCommand())) {
+            final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
+            if (serverState != null && serverState.isRunning()) {
+                URL url = serverState.getRunningUrl();
+                if (url != null) {
+                    GrailsCommandSupport.showURL(url, false, project);
+                }
+                return;
+            }
+
+            callable = new Callable<Process>() {
+                public Process call() throws Exception {
+                    Callable<Process> inner = ExecutionSupport.getInstance().createRunApp(
+                            GrailsProjectConfig.forProject(project), params);
+                    Process process = inner.call();
+                    final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
+                    if (serverState != null) {
+                        serverState.setProcess(process);
+                    }
+                    return process;
+                }
+            };
+
+            descriptor = project.getCommandSupport().getRunDescriptor();
+        } else {
+            callable = ExecutionSupport.getInstance().createSimpleCommand(
+                    commandDescriptor.getGrailsCommand().getCommand(), GrailsProjectConfig.forProject(project), params);
+            descriptor = project.getCommandSupport().getDescriptor(commandDescriptor.getGrailsCommand().getCommand());
+        }
         ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
         service.run();
     }

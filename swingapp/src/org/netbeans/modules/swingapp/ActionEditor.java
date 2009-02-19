@@ -87,10 +87,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     private Map<ProxyAction.Scope,List<ProxyAction>> actionMap;
     private ActionPropertyEditorPanel panel;
     private ProxyAction action;
-    private Class componentClass;
     private boolean scannedOnce = false;
-    private boolean globalMode = false;
-    private boolean globalCreateMode = false;
     private FileObject sourceFile;
     // disabled for 6.0 release: private String NEW_ACTION = "Create new action...";
     private String GLOBAL_SUFFIX = "(global)";
@@ -102,18 +99,11 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         this.sourceFile = sourceFile;
     }
     
-    public ActionEditor(FileObject sourceDir, boolean globalCreate) {
-        this();
-        this.sourceFile = sourceDir;
-        globalCreateMode = globalCreate;
-    }
-    
     public ActionEditor() {
         actionNames = new ArrayList<String>();
         actionMap = new HashMap<ProxyAction.Scope,List<ProxyAction>>();
         actionMap.put(ProxyAction.Scope.Application,new ArrayList<ProxyAction>());
         actionMap.put(ProxyAction.Scope.Form,new ArrayList<ProxyAction>());
-        componentClass = JComponent.class;
     }
     
     // property editor impl
@@ -146,7 +136,6 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         ActionManager.registerFormModel(formModel,getSourceFile());
         this.formProperty = (RADProperty)property;
         this.radComponent = formProperty.getRADComponent();
-        this.componentClass = formProperty.getRADComponent().getBeanInstance().getClass();
         FormEditor formEditor = FormEditor.getFormEditor(formModel);
         if (formEditor != null) {
             if (jumpToSourceAction == null) {
@@ -168,12 +157,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         return radComponent.getName();
     }
     
-    // determines if this Action property editor is being launched from the GlobalACtionPanel
-    // or directly from a form
-    public void setGlobalMode(boolean globalMode) {
-        this.globalMode = true;
-    }
-    
+   
     // property editor impl. returns the ActionPropertyEditorPanel to go in a dialog
     @Override
     public Component getCustomEditor() {
@@ -190,11 +174,9 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         }
         FileObject srcFile = getSourceFile();
         Map<ProxyAction.Scope, String> scopeMap = new HashMap<ProxyAction.Scope, String>();
-        if(!globalCreateMode) {
-            scanForActions();
-            scopeMap.put(ProxyAction.Scope.Application, AppFrameworkSupport.getApplicationClassName(srcFile));
-            scopeMap.put(ProxyAction.Scope.Form, AppFrameworkSupport.getClassNameForFile(srcFile));
-        }
+        scanForActions();
+        scopeMap.put(ProxyAction.Scope.Application, AppFrameworkSupport.getApplicationClassName(srcFile));
+        scopeMap.put(ProxyAction.Scope.Form, AppFrameworkSupport.getClassNameForFile(srcFile));
         panel.resetFields();
         if (action != null) {
             ActionManager.initActionFromSource(action, sourceFile);
@@ -293,8 +275,8 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
             ProxyAction oldAction = action;
             action = (ProxyAction)object;
             ActionManager am = ActionManager.getActionManager(getSourceFile());
-            action.setResourceMap(ResourceUtils.getDesignResourceMap(getSourceFile(), true));
-            if(!am.actionsMatch(oldAction,action)){
+            action.setResourceMap(getResourceMapForAction(action));
+            if(!ActionManager.actionsMatch(oldAction,action)){
                 if (oldAction != null) {
                     am.removeRADComponent(oldAction, radComponent);
                 }
@@ -360,17 +342,20 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     private List<ProxyAction> getApplicationActions() {
         String appClassName = AppFrameworkSupport.getApplicationClassName(getSourceFile());
         assert(appClassName != null);
-        return ActionManager.getActionManager(getSourceFile()).getActions(appClassName, !scannedOnce);
+        FileObject appSourceFile = AppFrameworkSupport.getFileForClass(getSourceFile(), appClassName);
+        return ActionManager.getActions(appSourceFile, !scannedOnce);
     }
 
-    public void setSourceFile(FileObject sourceFile) {
-        this.sourceFile = sourceFile;
-    }
     private FileObject getSourceFile() {
         if (sourceFile == null && formModel != null) {
             sourceFile = FormEditor.getFormDataObject(formModel).getPrimaryFile();
         }
         return sourceFile;
+    }
+
+    private DesignResourceMap getResourceMapForAction(ProxyAction act) {
+        FileObject actFile = AppFrameworkSupport.getFileForClass(getSourceFile(), act.getClassname());
+        return ResourceUtils.getDesignResourceMap(actFile != null ? actFile : getSourceFile(), true);
     }
 
     public void readFromXML(Node element) throws IOException {
@@ -387,7 +372,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
                         || (className.length() != srcFile.getName().length()
                         && className.charAt(className.length() - srcFile.getName().length() - 1) != '.');
                 action.setAppWide(appWide);
-                action.setResourceMap(ResourceUtils.getDesignResourceMap(srcFile, true));
+                action.setResourceMap(getResourceMapForAction(action));
                 action.loadFromResourceMap();
                 setValue(action);
             } else {
@@ -479,13 +464,17 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
             ProxyAction act = panel.getUpdatedAction();
             saveChangedActionProperties(act);
             panel.resetFields();
-            ActionManager.getActionManager(getSourceFile()).updateAction(act);
+            FileObject actFile = AppFrameworkSupport.getFileForClass(getSourceFile(), act.getClassname());
+            ActionManager.getActionManager(actFile != null ? actFile : getSourceFile()).updateAction(act);
             setValue(act);
         }
     }
     
     private void saveChangedActionProperties(ProxyAction action) {
-        FileObject fileInProject = getSourceFile();
+        FileObject fileInProject = AppFrameworkSupport.getFileForClass(getSourceFile(), action.getClassname());
+        if (fileInProject == null) {
+            fileInProject = getSourceFile();
+        }
         DesignResourceMap map = ResourceUtils.getDesignResourceMap(fileInProject, true);
         
         String actionKey = action.getId() + ".Action"; // NOI18N
@@ -573,7 +562,6 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     
 
     private boolean isAppFramework() {
-        if(globalCreateMode) { return true; }
         return AppFrameworkSupport.isFrameworkEnabledProject(getSourceFile());
     }
 

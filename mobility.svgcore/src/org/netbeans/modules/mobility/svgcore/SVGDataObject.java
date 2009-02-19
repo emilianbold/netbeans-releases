@@ -49,6 +49,7 @@ import java.io.OutputStreamWriter;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import javax.swing.text.BadLocationException;
@@ -67,6 +68,8 @@ import org.netbeans.modules.xml.multiview.XmlMultiViewEditorSupport;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -113,7 +116,9 @@ public final class SVGDataObject extends XmlMultiViewDataObject {
 
     private final class SVGEditorSupport extends XmlMultiViewEditorSupport {
         private static final long  serialVersionUID = 123471457562776148L;
-        
+        private Logger LOG = Logger.getLogger(SVGDataObject.SVGEditorSupport.class.getName());
+        private String m_errorMessage = null;
+
         public SVGEditorSupport() {
             super(SVGDataObject.this);
         }
@@ -123,7 +128,37 @@ public final class SVGDataObject extends XmlMultiViewDataObject {
             super.notifyClosed();
             release();
         }
-        
+
+        @Override
+        public void open() {
+            if (getModel().getModel() != null){
+                super.open();
+            } else {
+                showErrorDialog(m_errorMessage);
+            }
+        }
+
+        @Override
+        public void edit() {
+            if (getModel().getModel() != null){
+                super.edit();
+            } else {
+                showErrorDialog(m_errorMessage);
+            }
+        }
+
+        @Override
+        public StyledDocument openDocument() throws IOException {
+            m_errorMessage = null;
+            try{
+                return super.openDocument();
+            } catch (IOException io){
+                m_errorMessage = "Could not open the document: " + io.getMessage();
+                LOG.log(Level.WARNING, io.getMessage());
+                throw io;
+            }
+        }
+
         @Override
         protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream)
             throws IOException, BadLocationException {
@@ -141,6 +176,16 @@ public final class SVGDataObject extends XmlMultiViewDataObject {
                 kit.write(new OutputStreamWriter(stream, getEncodingHelper().getEncoding()), doc, 0, doc.getLength());                
             }
         }
+
+        private void showErrorDialog(String message) {
+            if (message != null) {
+                NotifyDescriptor.Message e = new NotifyDescriptor.Message(
+                        message,
+                        NotifyDescriptor.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(e);
+            }
+        }
+
     }
     
     private static final class VisualView extends DesignMultiViewDesc {

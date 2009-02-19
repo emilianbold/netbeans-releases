@@ -76,7 +76,7 @@ public class RelocateAction extends ContextAction {
         if(nodes.length != 1) {
             return false;
         }
-        final Context ctx = getContext(nodes);
+        final Context ctx = getCachedContext(nodes);
         File[] roots = ctx.getRootFiles();
         if(roots == null || roots.length < 1) {
             return false;

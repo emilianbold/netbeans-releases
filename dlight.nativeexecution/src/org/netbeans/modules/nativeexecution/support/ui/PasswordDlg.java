@@ -70,8 +70,12 @@ public class PasswordDlg extends javax.swing.JPanel {
         return dd.getValue() == DialogDescriptor.OK_OPTION;
     }
 
-    public String getPassword() {
-        return String.valueOf(tfPassword.getPassword());
+    public void clearPassword() {
+        tfPassword.setText(null);
+    }
+
+    public char[] getPassword() {
+        return tfPassword.getPassword();
     }
 
     public boolean isRememberPassword() {

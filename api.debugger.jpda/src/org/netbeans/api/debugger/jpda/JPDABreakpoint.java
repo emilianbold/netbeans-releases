@@ -49,6 +49,7 @@ import java.util.Iterator;
 
 import java.util.prefs.Preferences;
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.openide.util.NbPreferences;
@@ -90,7 +91,11 @@ public class JPDABreakpoint extends Breakpoint {
    
     JPDABreakpoint () {
         Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
-        int num = preferences.getInt("default.suspend.action", 1); // NOI18N [TODO] create property name constant, use it in ActionsPanel
+        int num = preferences.getInt("default.suspend.action", -1); // NOI18N [TODO] create property name constant, use it in ActionsPanel
+        if (num == -1) {
+            Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
+            num = p.getInt("BreakpointSuspend", JPDABreakpoint.SUSPEND_EVENT_THREAD);
+        }
         switch (num) {
             case 0: suspend = SUSPEND_NONE; break;
             case 1: suspend = SUSPEND_EVENT_THREAD; break;

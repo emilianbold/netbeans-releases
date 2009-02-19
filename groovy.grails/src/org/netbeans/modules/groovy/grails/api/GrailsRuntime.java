@@ -84,7 +84,7 @@ import org.openide.util.Utilities;
 // TODO more appropriate would be getDefault and forProject
 public final class GrailsRuntime {
 
-    public static final Set<String> KNOWN_RUN_COMMANDS = new HashSet<String>();
+    public static final String IDE_RUN_COMMAND = "run-app"; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(GrailsRuntime.class.getName());
 
@@ -99,7 +99,6 @@ public final class GrailsRuntime {
             }
         };
 
-        Collections.addAll(KNOWN_RUN_COMMANDS, "run-app", "run-app-https", "run-war"); // NOI18N
         Collections.addAll(GUARDED_COMMANDS, "run-app", "run-app-https", "run-war", "shell"); //NOI18N
     }
 
@@ -263,7 +262,7 @@ public final class GrailsRuntime {
     }
 
     private static void checkForServer(CommandDescriptor descriptor, Process process) {
-        if (KNOWN_RUN_COMMANDS.contains(descriptor.getName())) { // NOI18N
+        if (IDE_RUN_COMMAND.equals(descriptor.getName())) { // NOI18N
             Project project = FileOwnerQuery.getOwner(
                     FileUtil.toFileObject(descriptor.getDirectory()));
             if (project != null) {
@@ -396,7 +395,7 @@ public final class GrailsRuntime {
                 props.setProperty("grails.env", env.toString()); // NOI18N
             }
 
-            if (descriptor.getProjectConfig() != null) {
+            if (descriptor.getProjectConfig() != null && IDE_RUN_COMMAND.equals(descriptor.getName())) {
                 String port = descriptor.getProjectConfig().getPort();
                 if (port != null) {
                     props.setProperty("server.port", port); // NOI18N

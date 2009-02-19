@@ -346,6 +346,8 @@ public class FeatureProjectFactory implements ProjectFactory {
                     ModulesActivator enabler = new ModulesActivator (toEnable, findModules);
                     enabler.getEnableTask ().waitFinished ();
                     success = true;
+                } else if (toEnable == null || toInstall == null) {
+                    success = true;
                 } else if (toEnable.isEmpty() && toInstall.isEmpty()) {
                     success = true;
                 }
@@ -401,9 +403,9 @@ public class FeatureProjectFactory implements ProjectFactory {
             if (info != this) {
                 return info.getIcon();
             }
-            return ImageUtilities.image2Icon(
-                ImageUtilities.loadImage("org/netbeans/modules/ide/ergonomics/fod/project.png") // NOI18N
-            );
+            return ImageUtilities.loadImageIcon(
+                "org/netbeans/modules/ide/ergonomics/fod/project.png" // NOI18N
+            , false);
         }
 
         public Project getProject() {

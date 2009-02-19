@@ -116,7 +116,8 @@ public class HtmlStructureScanner implements StructureScanner {
         AstNode root = ((HtmlParserResult) presult).root();
 
         final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
-        final List<OffsetRange> foldRange = new ArrayList<OffsetRange>();
+        final List<OffsetRange> tags = new ArrayList<OffsetRange>();
+        final List<OffsetRange> comments = new ArrayList<OffsetRange>();
 
         AstNodeVisitor foldsSearch = new AstNodeVisitor() {
 
@@ -136,7 +137,11 @@ public class HtmlStructureScanner implements StructureScanner {
                         if (Utilities.getLineOffset(doc, so) < Utilities.getLineOffset(doc, eo)) {
                             //do not creare one line folds
                             //XXX this logic could possibly seat in the GSF folding impl.
-                            foldRange.add(new OffsetRange(so, eo));
+                            if(node.type() == AstNode.NodeType.TAG) {
+                                tags.add(new OffsetRange(so, eo));
+                            } else {
+                                comments.add(new OffsetRange(so, eo));
+                            }
                         }
                     } catch (BadLocationException ex) {
                         LOGGER.log(Level.INFO, null, ex);
@@ -152,7 +157,8 @@ public class HtmlStructureScanner implements StructureScanner {
         } finally {
             doc.readUnlock();
         }
-        folds.put("codeblocks", foldRange);
+        folds.put("tags", tags);
+        folds.put("comments", comments);
 
         return folds;
     }

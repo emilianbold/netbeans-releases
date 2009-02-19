@@ -237,8 +237,10 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
             FileObject file2 = CsmUtilities.getFileObject(doc2);
             if (file2 != null) {
                 JEditorPane ep = MacroExpansionViewUtils.getEditor(doc2);
-                int doc2CarretPosition = ep.getCaretPosition();
-                return doc2CarretPosition;
+                if(ep != null) {
+                    int doc2CarretPosition = ep.getCaretPosition();
+                    return doc2CarretPosition;
+                }
             }
         }
         return 0;
@@ -493,12 +495,14 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
     private void fileContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileContextActionPerformed
         fileContext.setSelected(true);
         localContext.setSelected(false);
+        MacroExpansionTopComponent.setLocalContext(false);
         update();
 }//GEN-LAST:event_fileContextActionPerformed
 
     private void localContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_localContextActionPerformed
         localContext.setSelected(true);
         fileContext.setSelected(false);
+        MacroExpansionTopComponent.setLocalContext(true);
         update();
 }//GEN-LAST:event_localContextActionPerformed
 

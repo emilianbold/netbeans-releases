@@ -420,7 +420,7 @@ public class JsTypeSearcher implements IndexSearcher {
                 initProjectInfo();
             }
             if (isLibrary) {
-                return new ImageIcon(ImageUtilities.loadImage(ICON_PATH));
+                return ImageUtilities.loadImageIcon(ICON_PATH, false);
             }
             return projectIcon;
         }

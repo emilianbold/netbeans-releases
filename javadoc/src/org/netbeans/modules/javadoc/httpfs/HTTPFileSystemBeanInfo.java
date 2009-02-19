@@ -52,7 +52,7 @@ import java.awt.Image;
 
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 
 
 /**
@@ -127,7 +127,7 @@ public class HTTPFileSystemBeanInfo extends SimpleBeanInfo {
      *  @since 1.0
      */
     public Image getIcon (int kind) {
-        return Utilities.loadImage( "org/netbeans/modules/javadoc/httpfs/resources/BeanIcon16C.gif" );    // NOI18N
+        return ImageUtilities.loadImage( "org/netbeans/modules/javadoc/httpfs/resources/BeanIcon16C.gif" );    // NOI18N
     }
 
 }

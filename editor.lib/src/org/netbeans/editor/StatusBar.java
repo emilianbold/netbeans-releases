@@ -265,6 +265,9 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
             if (compoennt != null && compoennt.hasFocus()) {
                 // Update all cell mappings
                 for (Map.Entry<String,JLabel> e : cellName2GlobalCell.entrySet()) {
+                    if (CELL_MAIN.equals(e.getKey())) { // Do not sync main cell into global panel
+                        continue;
+                    }
                     String s = getText(e.getKey());
                     e.getValue().setText(s);
                 }
@@ -558,7 +561,9 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
                         org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(editorUI.getComponent()), 
                         FontColorNames.STATUS_BAR_COLORING
                     );
-                    applyColoring((Cell) c, col);
+                    if (col != null) {
+                        applyColoring((Cell) c, col);
+                    }
                 }
             }
 

@@ -90,7 +90,11 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     private GlassfishInstanceProvider gip;
 
     public ServerWizardIterator(GlassfishInstanceProvider gip) {
+        assert null != gip;
         this.gip = gip;
+    }
+
+    private ServerWizardIterator() {
     }
     
     public void removeChangeListener(ChangeListener l) {

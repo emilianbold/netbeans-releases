@@ -51,6 +51,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import javax.swing.MutableComboBoxModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -67,7 +68,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor>,
-        SourcesFolderProvider, ChangeListener {
+        SourcesFolderProvider, ChangeListener, CancelablePanel {
 
     static final String PROJECT_NAME = "projectName"; // NOI18N
     static final String PROJECT_DIR = "projectDir"; // NOI18N
@@ -91,6 +92,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     private WizardDescriptor descriptor = null;
     private String originalProjectName = null;
     private String originalSources = null;
+    private volatile boolean canceled;
 
     public ConfigureProjectPanel(String[] steps, NewPhpProjectWizardIterator.WizardType wizardType) {
         this.steps = steps;
@@ -134,9 +136,14 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
                     configureProjectPanelVisual.setLocalServerModel(new LocalServer.ComboBoxModel(LocalServer.PENDING_LOCAL_SERVER));
                     configureProjectPanelVisual.setState(false);
                     fireChangeEvent();
+                    canceled = false;
                     PhpEnvironment.get().readDocumentRoots(new PhpEnvironment.ReadDocumentRootsNotifier() {
-                        public void finished(List<DocumentRoot> documentRoots) {
-                            initLocalServers(documentRoots);
+                        public void finished(final List<DocumentRoot> documentRoots) {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    initLocalServers(documentRoots);
+                                }
+                            });
                         }
                     });
                 }
@@ -336,6 +343,9 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private void initLocalServers(List<DocumentRoot> documentRoots) {
+        if (canceled) {
+            return;
+        }
         // first, get preferred document root because we need to find free folder name for project
         File preferredRoot = ProjectChooser.getProjectsFolder();
         for (DocumentRoot root : documentRoots) {
@@ -638,5 +648,9 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         }
         addListeners();
         fireChangeEvent();
+    }
+
+    public void cancel() {
+        canceled = true;
     }
 }

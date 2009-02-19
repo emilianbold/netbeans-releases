@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.compilers.DefaultCompilerProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
@@ -129,6 +130,10 @@ public class CompilerSetManager {
     private Task remoteInitialization;
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
+    public static CompilerSetManager getDefault(String key) {
+        return getDefault(key, true);
+    }
+
     /**
      * Find or create a default CompilerSetManager for the given key. A default
      * CSM is one which is active in the system. A non-default is one which gets
@@ -141,7 +146,7 @@ public class CompilerSetManager {
      * @param key Either user@host or localhost
      * @return A default CompilerSetManager for the given key
      */
-    public static CompilerSetManager getDefault(String key) {
+   public static CompilerSetManager getDefault(String key, boolean runCompilerSetDataLoader) {
         CompilerSetManager csm = null;
         boolean no_compilers = false;
 
@@ -155,7 +160,7 @@ public class CompilerSetManager {
                 }
             }
             if (csm == null) {
-                csm = new CompilerSetManager(key);
+                csm = new CompilerSetManager(key, runCompilerSetDataLoader);
                 if (csm.isValid()) {
                     csm.saveToDisk();
                 } else if (!csm.isPending() && !csm.isUninitialized()) {
@@ -223,7 +228,9 @@ public class CompilerSetManager {
             ToolchainDescriptor td = tcm.getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS); // NOI18N
             if (td != null) {
                 String cygwinBin = tcm.getBaseFolder(td, PlatformTypes.PLATFORM_WINDOWS);
-                cygwinBase = cygwinBin.substring(0, cygwinBin.length() - 4).replace("\\", "/"); // NOI18N
+                if (cygwinBase != null) {
+                    cygwinBase = cygwinBin.substring(0, cygwinBin.length() - 4).replace("\\", "/"); // NOI18N
+                }
             }
             if (cygwinBase == null) {
                 for (String dir : Path.getPath()) {
@@ -305,9 +312,13 @@ public class CompilerSetManager {
     }
 
     private CompilerSetManager(String key) {
+        this(key, true);
+    }
+
+    private CompilerSetManager(String key, boolean runCompilerSetDataLoader) {
         hkey = key;
         state = State.STATE_PENDING;
-        init();
+        init(runCompilerSetDataLoader);
     }
 
     private CompilerSetManager(String hkey, List<CompilerSet> sets, int platform) {
@@ -323,14 +334,14 @@ public class CompilerSetManager {
         }
     }
 
-    private void init() {
+    private void init(boolean runCompilerSetDataLoader) {
         if (hkey.equals(LOCALHOST)) {
             platform = computeLocalPlatform();
             initCompilerSets(Path.getPath());
             state = State.STATE_COMPLETE;
         } else {
             log.fine("CSM.init: initializing remote compiler set for: " + hkey);
-            initRemoteCompilerSets(hkey, false);
+            initRemoteCompilerSets(hkey, false, runCompilerSetDataLoader);
         }
     }
 
@@ -350,11 +361,11 @@ public class CompilerSetManager {
         return state == State.STATE_COMPLETE;
     }
 
-    public synchronized void initialize(boolean save) {
+    public synchronized void initialize(boolean save, boolean runCompilerSetDataLoader) {
         if (isUninitialized()) {
             log.fine("CSM.getDefault: Doing remote setup from EDT?" + SwingUtilities.isEventDispatchThread());
             this.sets.clear();
-            initRemoteCompilerSets(this.hkey, true);
+            initRemoteCompilerSets(this.hkey, true, runCompilerSetDataLoader);
             if (remoteInitialization != null) {
                 remoteInitialization.waitFinished();
                 remoteInitialization = null;
@@ -608,7 +619,8 @@ public class CompilerSetManager {
     }
 
     /** Initialize remote CompilerSets */
-    private synchronized void initRemoteCompilerSets(final String key, boolean connect) {
+    private synchronized void initRemoteCompilerSets(final String key, boolean connect,
+            final boolean runCompilerSetDataLoader) {
         if (state == State.STATE_COMPLETE) {
             return;
         }
@@ -654,14 +666,6 @@ public class CompilerSetManager {
                         }
                     }
                     completeCompilerSets(platform);
-                    List<CompilerSet> setsCopy;
-                    if (sets instanceof ArrayList) {
-                        setsCopy = (List<CompilerSet>) ((ArrayList<CompilerSet>) sets).clone();
-                    } else {
-                        // this will never be called in current impl but interface allows any List so:
-                        setsCopy = new ArrayList<CompilerSet>();
-                        setsCopy.addAll(sets);
-                    }
                     log.fine("CSM.initRemoteCompilerSets: Found " + sets.size() + " compiler sets");
                     if (sets.size() == 0) {
                         CompilerSetReporter.report("CSM_Done_NF"); //NOI18N
@@ -671,14 +675,11 @@ public class CompilerSetManager {
                     state = State.STATE_COMPLETE;
 
                     CompilerSetReporter.report("CSM_Conigured");//NOI18N
-                    provider.loadCompilerSetData(setsCopy).addTaskListener(new TaskListener() {
-
-                        public void taskFinished(org.openide.util.Task task) {
-                            log.fine("Code Model Ready for " + CompilerSetManager.this.toString());
-                            CompilerSetManagerEvents.get(hkey).runTasks();
-                        }
-                    });
+                    if (runCompilerSetDataLoader) {
+                        finishInitialization();
+                    }
                 }
+
             });
         } else {
             CompilerSetReporter.report("CSM_Fail");//NOI18N
@@ -686,6 +687,23 @@ public class CompilerSetManager {
             log.fine("CSM.initRemoteCompilerSets: Adding empty CS to OFFLINE host " + key);
             add(CompilerSet.createEmptyCompilerSet(PlatformTypes.PLATFORM_NONE));
             state = State.STATE_UNINITIALIZED;
+        }
+    }
+
+    public void finishInitialization() {
+        CompilerSetProvider provider = Lookup.getDefault().lookup(CompilerSetProvider.class);
+        List<CompilerSet> setsCopy = new ArrayList<CompilerSet>(sets);
+        Runnable compilerSetDataLoader = provider.createCompilerSetDataLoader(setsCopy);
+        CndUtils.assertFalse(compilerSetDataLoader == null);
+        if (compilerSetDataLoader != null) {
+            RequestProcessor.Task task = RequestProcessor.getDefault().create(compilerSetDataLoader);
+            task.addTaskListener(new TaskListener() {
+                public void taskFinished(org.openide.util.Task task) {
+                    log.fine("Code Model Ready for " + CompilerSetManager.this.toString());
+                    CompilerSetManagerEvents.get(hkey).runTasks();
+                }
+            });
+            task.schedule(0);
         }
     }
 

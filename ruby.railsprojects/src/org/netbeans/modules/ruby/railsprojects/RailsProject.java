@@ -79,7 +79,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class RailsProject extends RubyBaseProject {
     
-    private static final Icon RUBY_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/ruby/railsprojects/ui/resources/rails.png")); // NOI18N
+    private static final Icon RUBY_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/ruby/railsprojects/ui/resources/rails.png", false); // NOI18N
 
     protected SourceRoots sourceRoots;
     protected SourceRoots testRoots;

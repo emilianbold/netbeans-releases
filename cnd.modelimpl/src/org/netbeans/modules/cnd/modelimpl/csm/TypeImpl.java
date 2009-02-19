@@ -231,30 +231,12 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
     public CharSequence getCanonicalText() {
         CharSequence text = getClassifierText();
         if (isInstantiationOrSpecialization()) {
-            text = text.toString() + getInstantiationCanonicalText();
+            text = text.toString() + Instantiation.getInstantiationCanonicalText(this.instantiationParams);
         }
 	return decorateText(text, this, true, null);
     }
     
-    private CharSequence getInstantiationCanonicalText() {
-        StringBuilder sb = new StringBuilder();
-        if ( ! instantiationParams.isEmpty()) {
-            sb.append('<');
-            boolean first = true;
-            for (CsmType param : instantiationParams) {
-                if (first) {
-                    first = false;
-                } else {
-                    sb.append(',');
-                }
-                sb.append(getCanonicalText(param));
-            }
-            sb.append('>');
-        }
-	return sb;
-    }
-    
-    private CharSequence getCanonicalText(CsmType type) {
+    /*package*/static CharSequence getCanonicalText(CsmType type) {
         CharSequence canonicalText = null;
         if (type instanceof CsmTemplateParameterType) {
             CsmTemplateParameterType parType = (CsmTemplateParameterType) type;
@@ -413,16 +395,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
             CharSequence[] specializationQname = new CharSequence[qname.length];
             final int last = qname.length - 1;
             StringBuilder sb = new StringBuilder(qname[last]);
-            sb.append('<');
-            for (int i = 0; i < instantiationParams.size(); i++) {
-                CsmType type = instantiationParams.get(i);
-                if (i > 0) {
-                    sb.append(',');
-                }
-                CharSequence canonicalText = getCanonicalText(type);
-                sb.append(canonicalText);
-            }
-            sb.append('>');
+            sb.append(Instantiation.getInstantiationCanonicalText(this.instantiationParams));
             specializationQname[last] = sb.toString();
             for (int i = 0; i < last; i++) {
                 specializationQname[i] = qname[i];

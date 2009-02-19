@@ -564,7 +564,7 @@ final class NbInstaller extends ModuleInstaller {
             ClassLoader cl = m.getClassLoader();
             String s = layers.get(m);
             if (s != null) {
-                Util.err.fine("loadLayer: " + s + " load=" + load);
+                Util.err.log(Level.FINE, "loadLayer: {0} load={1}", new Object[] { s, load });
                 // Actually add a sequence of layers, in locale order.
                 String base, ext;
                 int idx = s.lastIndexOf('.'); // NOI18N
@@ -608,7 +608,7 @@ final class NbInstaller extends ModuleInstaller {
         for (Map.Entry<ModuleLayeredFileSystem,Collection<URL>> entry: urls.entrySet()) {
             ModuleLayeredFileSystem host = entry.getKey();
             Collection<URL> theseurls = entry.getValue();
-            Util.err.fine("Adding/removing layer URLs: host=" + host + " urls=" + theseurls);
+            Util.err.log(Level.FINE, "Adding/removing layer URLs: host={0} urls={1}", new Object[] { host, theseurls });
             try {
                 if (load) {
                     host.addURLs(theseurls);

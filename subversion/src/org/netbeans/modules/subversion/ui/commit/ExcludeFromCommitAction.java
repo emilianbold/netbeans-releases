@@ -87,7 +87,7 @@ public final class ExcludeFromCommitAction extends ContextAction {
     
     public int getActionStatus(Node[] nodes) {
         SvnModuleConfig config = SvnModuleConfig.getDefault();
-        File [] files = getContext(nodes).getFiles();
+        File [] files = getCachedContext(nodes).getFiles();
         int status = UNDEFINED;
         for (int i = 0; i < files.length; i++) {
             if (config.isExcludedFromCommit(files[i].getAbsolutePath())) {

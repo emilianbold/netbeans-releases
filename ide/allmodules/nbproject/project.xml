@@ -394,6 +394,7 @@ made subject to such option by the copyright holder.
                 <project>../../maven.persistence</project>
                 <project>../../maven.profiler</project>
                 <project>../../maven.repository</project>
+                <project>../../maven.samples</project>
                 <project>../../maven.spring</project>
                 <project>../../mercurial</project>
                 <project>../../mobility.antext</project>
@@ -481,6 +482,7 @@ made subject to such option by the copyright holder.
                 <project>../../profiler.attach.impl</project>
                 <project>../../profiler.freeform</project>
                 <project>../../profiler.j2ee</project>
+                <project>../../profiler.j2ee.generic</project>
                 <project>../../profiler.j2ee.jboss</project>
                 <project>../../profiler.j2ee.sunas</project>
                 <project>../../profiler.j2ee.tomcat</project>
@@ -611,6 +613,7 @@ made subject to such option by the copyright holder.
                 <project>../../web.jsf.kit</project>
                 <project>../../web.jsf.navigation</project>
                 <project>../../web.jsf12</project>
+                <project>../../web.jsf12ri</project>
                 <project>../../web.jspparser</project>
                 <project>../../web.jstl11</project>
                 <project>../../web.kit</project>

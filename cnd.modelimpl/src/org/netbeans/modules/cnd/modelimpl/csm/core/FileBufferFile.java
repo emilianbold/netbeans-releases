@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.*;
 import java.lang.ref.SoftReference;
+import java.nio.charset.Charset;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.openide.filesystems.FileObject;
@@ -55,44 +57,58 @@ import org.openide.filesystems.FileUtil;
  */
 public class FileBufferFile extends AbstractFileBuffer {
     
-    private SoftReference<byte[]> bytes;
+    private SoftReference<String> cachedString;
     
     public FileBufferFile(File file) {
         super(file);
     }
     
     public String getText() throws IOException {
-        return new String(getBytes());
+        return asString();
     }
     
     public String getText(int start, int end) {
         try {
-            byte[] b = getBytes();
-            if( end > b.length ) {
+            String b = asString();
+            if( end > b.length() ) {
                 new IllegalArgumentException("").printStackTrace(System.err);
-                end = b.length;
+                end = b.length();
             }
-            return new String(b, start, end-start);
+            return b.substring(start, end);
         } catch( IOException e ) {
             DiagnosticExceptoins.register(e);
             return "";
         }
     }
+
+    private String getEncoding() {
+        File file = getFile();
+        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        Charset cs = null;
+        if (fo != null) {
+            cs = FileEncodingQuery.getEncoding(fo);
+        }
+        if (cs == null) {
+            cs = FileEncodingQuery.getDefaultEncoding();
+        }
+        return cs.name();
+    }
     
-    public synchronized byte[] getBytes() throws IOException {
+    private synchronized String asString() throws IOException {
         byte[] b;
-        if( bytes != null  ) {
-            Object o = bytes.get();
+        if( cachedString != null  ) {
+            Object o = cachedString.get();
             if( o != null ) {
-                return (byte[]) o;
+                return (String) o;
             }
         }
         // either bytes == null or bytes.get() == null
         b = doGetBytes();
-        bytes = new SoftReference<byte[]>(b);
-        return b;
+        String str = new String(b, getEncoding());
+        cachedString = new SoftReference<String>(str);
+        return str;
     }
-    
+
     private byte[] doGetBytes() throws IOException {
         File file = getFile();
         long length = file.length();

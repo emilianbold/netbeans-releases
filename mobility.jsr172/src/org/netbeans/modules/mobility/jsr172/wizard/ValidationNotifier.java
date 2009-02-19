@@ -121,8 +121,8 @@ public class ValidationNotifier extends javax.swing.JPanel {
         }
     }
     
-    private static final Icon ICON_WARNING  = new ImageIcon( ImageUtilities.loadImage( "org/netbeans/modules/mobility/jsr172/resources/warning.png" ));
-    private static final Icon ICON_ERROR    = new ImageIcon( ImageUtilities.loadImage( "org/netbeans/modules/mobility/jsr172/resources/error.png" ));
+    private static final Icon ICON_WARNING  = ImageUtilities.loadImageIcon("org/netbeans/modules/mobility/jsr172/resources/warning.png", false);
+    private static final Icon ICON_ERROR    = ImageUtilities.loadImageIcon("org/netbeans/modules/mobility/jsr172/resources/error.png", false);
     
     private static final class IconListRenderer implements ListCellRenderer {
     

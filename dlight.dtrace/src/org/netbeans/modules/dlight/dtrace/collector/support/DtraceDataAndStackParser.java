@@ -86,10 +86,8 @@ final class DtraceDataAndStackParser extends DtraceParser {
     private State state;
 
     List<String> currData;
-    int currCpu;
-    int currThread;
     long currTimeStamp;
-    long prevTimeStamp;
+    long currSampleDuration;
     private List<CharSequence> currStack = new ArrayList<CharSequence>(32);
 
     private List<String> colNames;
@@ -124,29 +122,28 @@ final class DtraceDataAndStackParser extends DtraceParser {
                 //TODO:error-processing
                 DLightLogger.assertTrue(currStack.isEmpty());
                 DLightLogger.assertFalse(Character.isWhitespace(line.charAt(0)), "Data row shouldn't start with ' '");
-                currData = processDataLine(line);
-                DLightLogger.assertTrue(currData != null, "could not parse line " + line);
-                //currStack.clear();
-                if (!isProfiler) {
-                    state = State.WAITING_STACK;
-                    return null;
+                if (isProfiler) {
+                    try {
+                        currSampleDuration = Long.parseLong(line);
+                    } catch (NumberFormatException ex) {
+                        DLightLogger.instance.log(Level.WARNING, "error parsing line " + line, ex);
+                    }
+                } else {
+                    currData = processDataLine(line);
+                    DLightLogger.assertTrue(currData != null, "could not parse line " + line);
                 }
-                // fallthrough
+                //currStack.clear();
+                state = State.WAITING_STACK;
+                return null;
             case WAITING_STACK:
                 if (line.length() == 0) {
                     state = State.WAITING_DATA;
                     return null;
                 }
                 String[] stackData = line.split("[ \t]+");
-                if (!isProfiler) {
-                    DLightLogger.assertTrue(stackData.length == 3, "stack marker should consist of CPU-id, thread-id and timestamp");
-                }
-                try {
-                    currCpu = Integer.parseInt(stackData[0]);
-                    currThread = Integer.parseInt(stackData[1]);
-                    currTimeStamp = Long.parseLong(stackData[2]);
-                } catch (NumberFormatException nfe) {
-                    DLightLogger.instance.log(Level.WARNING, "error parsing line " + line, nfe); //TODO:error-processing
+                DLightLogger.assertTrue(stackData.length == 3, "stack marker should consist of CPU-id, thread-id and timestamp");
+                if (isProfiler) {
+                    currData = processDataLine(line);
                 }
                 state = State.IN_STACK;
                 return null;
@@ -163,10 +160,7 @@ final class DtraceDataAndStackParser extends DtraceParser {
                     StackDataStorage sds = (StackDataStorage)DataStorageManager.getInstance().getDataStorage(DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
                     DLightLogger.assertTrue(sds != null); //TODO:error-processing
                     Collections.reverse(currStack);
-                    int stackId;
-                    long sampleDuration = (isProfiler && 0 < prevTimeStamp)? currTimeStamp - prevTimeStamp : 0;
-                    stackId = sds.putStack(currStack, sampleDuration);
-                    prevTimeStamp = currTimeStamp;
+                    int stackId = sds.putStack(currStack, currSampleDuration);
                     currStack.clear();
                     //colNames.get(colNames.size()-1);
                     state = State.WAITING_DATA;

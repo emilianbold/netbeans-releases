@@ -46,6 +46,8 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -63,6 +65,8 @@ import org.openide.filesystems.FileObject;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.groovy.editor.spi.completion.DynamicCompletionProvider.class)
 public class DomainCompletionProvider extends DynamicCompletionProvider {
+
+    private static final Logger LOGGER = Logger.getLogger(DomainCompletionProvider.class.getName());
 
     private static final Map<MethodSignature, String> INSTANCE_METHODS = new HashMap<MethodSignature, String>();
 
@@ -247,6 +251,10 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
     }
 
     private Map<MethodSignature, CompletionItem> getQueryMethods(CompletionContext context) {
+        if (context.getProperties().isEmpty()) {
+            return Collections.emptyMap();
+        }
+
         Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
 
         Matcher matcher = getQueryMethodPattern(context).matcher(context.getPrefix());
@@ -379,6 +387,8 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
         builder.append(")?"); // NOI18N
 
         builder.append("(.*)"); // NOI18N
+
+        LOGGER.log(Level.FINE, "Method pattern is {0}", builder.toString());
         return Pattern.compile(builder.toString());
     }
 

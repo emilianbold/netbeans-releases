@@ -432,6 +432,9 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
                     NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Folder_exists"));
             return false;
         }
+        if (containsMultiByte(projName, wizardDescriptor)) {
+            return false;
+        }
 
         String coord = txtArtifactId.getText().trim();
         if (coord.length() == 0) {
@@ -440,6 +443,9 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
             return false;
         }
         if (!EAVisualPanel.validateCoordinate(coord, wizardDescriptor)) {
+            return false;
+        }
+        if (containsMultiByte(coord, wizardDescriptor)) {
             return false;
         }
 
@@ -452,6 +458,9 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
         if (!EAVisualPanel.validateCoordinate(coord, wizardDescriptor)) {
             return false;
         }
+        if (containsMultiByte(coord, wizardDescriptor)) {
+            return false;
+        }
 
         coord = txtVersion.getText().trim();
         if (coord.length() == 0) {
@@ -462,9 +471,24 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
         if (!EAVisualPanel.validateCoordinate(coord, wizardDescriptor)) {
             return false;
         }
+        if (containsMultiByte(coord, wizardDescriptor)) {
+            return false;
+        }
 
         wizardDescriptor.putProperty(ERROR_MSG, ""); //NOI18N
         return true;
+    }
+
+    private boolean containsMultiByte (String text, WizardDescriptor wd) {
+        char[] textChars = text.toCharArray();
+        for (int i = 0; i < textChars.length; i++) {
+            if ((int)textChars[i] > 255) {
+                wd.putProperty(ERROR_MSG, NbBundle.getMessage(BasicPanelVisual.class, "ERR_multibyte"));
+                return true;
+            }
+
+        }
+        return false;
     }
     
     void store(WizardDescriptor d) {

@@ -106,6 +106,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
     public void testIZ155112() throws Exception {
         performStaticTest("iz155112.cpp");
     }
+
+    public void testIZ158216() throws Exception {
+        // IZ#158216 : Unresolved ids in compiler extensions
+        performStaticTest("iz158216.cpp");
+    }
     
     /////////////////////////////////////////////////////////////////////
     // FAILS

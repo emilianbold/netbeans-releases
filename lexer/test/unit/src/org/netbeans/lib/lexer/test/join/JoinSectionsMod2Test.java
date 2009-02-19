@@ -231,4 +231,29 @@ public class JoinSectionsMod2Test extends NbTestCase {
         doc.remove(8, 10);
     }
 
+    public void testJoinEmbeddingDynamicCreationAndRemoval() throws Exception {
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        String text = "a(x)b(y)c";
+        ModificationTextDocument doc = new ModificationTextDocument();
+        doc.insertString(0, text, null);
+        doc.putProperty(Language.class, TestJoinTextTokenId.language);
+//        LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
+
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        TokenSequence<?> ts = hi.tokenSequence();
+        assertTrue(ts.moveNext());
+        assertTrue(ts.moveNext()); // on "(x)"
+        // Create embedding that joins sections
+        ts.createEmbedding(TestPlainTokenId.language(), 1, 1, true);
+        assertTrue(ts.moveNext()); // on "b"
+        assertTrue(ts.moveNext()); // on "(y)"
+        hi.tokenSequenceList(LanguagePath.get(TestJoinTextTokenId.language).
+                embedded(TestPlainTokenId.language()), 0, Integer.MAX_VALUE);
+        // Create embedding that joins sections
+        ts.createEmbedding(TestPlainTokenId.language(), 1, 1, true);
+
+        doc.remove(0, doc.getLength());
+    }
+
 }

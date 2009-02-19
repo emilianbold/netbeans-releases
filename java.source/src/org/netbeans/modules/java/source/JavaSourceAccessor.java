@@ -188,8 +188,8 @@ public abstract class JavaSourceAccessor {
         final Collection<Source> sources = getSources(js);
         assert sources.size() == 1;
         final ParserResultTask<?> hanz = tasks.get(task);
-        assert hanz != null;
-        Utilities.rescheduleTask(hanz, sources.iterator().next());
+        if (hanz != null)
+            Utilities.rescheduleTask(hanz, sources.iterator().next());
     }
     
     public abstract Collection<Source> getSources(final JavaSource js);

@@ -89,7 +89,7 @@ public class ConfigActionLocal extends ConfigAction {
         boolean valid = true;
         if (indexFileNeeded && !isIndexFileValid(webRoot)) {
             valid = false;
-        } if (RunAsValidator.validateWebFields(
+        } else if (RunAsValidator.validateWebFields(
                 ProjectPropertiesSupport.getUrl(project),
                 FileUtil.toFile(webRoot),
                 null,

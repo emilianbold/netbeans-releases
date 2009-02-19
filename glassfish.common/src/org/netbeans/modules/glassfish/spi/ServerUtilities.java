@@ -80,12 +80,13 @@ public final class ServerUtilities {
     
     
     private ServerUtilities(GlassfishInstanceProvider gip) {
+        assert null != gip;
         this.gip = gip;
     }
 
     public static ServerUtilities getPreludeUtilities() {
         GlassfishInstanceProvider gip = GlassfishInstanceProvider.getPrelude();
-        return null == gip? null : new ServerUtilities(gip);
+        return null == gip ? null : new ServerUtilities(gip);
     }
     
     public static ServerUtilities getEe6Utilities() {

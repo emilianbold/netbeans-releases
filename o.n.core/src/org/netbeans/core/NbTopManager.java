@@ -82,6 +82,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -548,7 +549,7 @@ public abstract class NbTopManager {
      * Default implementation of the lifecycle manager interface that knows
      * how to save all modified DataObject's, and to exit the IDE safely.
      */
-    @org.openide.util.lookup.ServiceProvider(service=org.openide.LifecycleManager.class)
+    @ServiceProvider(service=LifecycleManager.class, supersedes="org.netbeans.core.startup.ModuleLifecycleManager")
     public static final class NbLifecycleManager extends LifecycleManager {
         /** Default constructor for lookup. */
         public NbLifecycleManager() {}
