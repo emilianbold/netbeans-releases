@@ -74,6 +74,7 @@ import org.netbeans.modules.ruby.rubyproject.IrbAction;
 import org.netbeans.modules.ruby.rubyproject.RSpecSupport;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeRunnerAction;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
 import org.netbeans.modules.ruby.rubyproject.ui.RubyBaseLogicalViewProvider;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectEvent;
 import org.netbeans.spi.project.ActionProvider;
@@ -370,8 +371,11 @@ public final class RailsLogicalViewProvider extends RubyBaseLogicalViewProvider 
             actions.add(SystemAction.get(PluginAction.class));
             actions.add(null);
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, bundle.getString("LBL_RunAction_Name"), null)); // NOI18N
-            if (AutoTestSupport.isInstalled(getProject())) {
+            if (AutoTestSupport.isInstalled(getProject(), TestType.AUTOTEST)) {
                 actions.add(ProjectSensitiveActions.projectCommandAction(RailsActionProvider.COMMAND_AUTOTEST, bundle.getString("LBL_AutoTest"), null)); // NOI18N
+            }
+            if (AutoTestSupport.isInstalled(getProject(), TestType.AUTOSPEC)) {
+                actions.add(ProjectSensitiveActions.projectCommandAction(RailsActionProvider.COMMAND_AUTOSPEC, bundle.getString("LBL_AutoSpec"), null)); // NOI18N
             }
             if (rspecSupport.isRSpecInstalled()) {
                 actions.add(ProjectSensitiveActions.projectCommandAction(RailsActionProvider.COMMAND_RSPEC, bundle.getString("LBL_RSpec"), null)); // NOI18N

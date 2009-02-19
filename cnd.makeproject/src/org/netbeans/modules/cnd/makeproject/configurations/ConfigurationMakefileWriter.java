@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
@@ -90,6 +91,7 @@ public class ConfigurationMakefileWriter {
             writeMakefileConf((MakeConfiguration) confs[i]);
             writePackagingScript((MakeConfiguration) confs[i]);
         }
+        writeMakefileVariables(projectDescriptor);
     }
 
     private void cleanup() {
@@ -666,6 +668,58 @@ public class ConfigurationMakefileWriter {
             }
         }
         return false;
+    }
+
+    private void writeMakefileVariables(MakeConfigurationDescriptor conf) {
+        String outputFileName = projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "Makefile-variables.mk"; // UNIX path // NOI18N
+
+
+        FileOutputStream os = null;
+        try {
+            os = new FileOutputStream(outputFileName);
+        } catch (Exception e) {
+            // FIXUP
+        }
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
+        try {
+            writeMakefileVariablesBody(bw, conf);
+            bw.flush();
+            bw.close();
+        } catch (IOException e) {
+            // FIXUP
+        }
+    }
+
+    private void writeMakefileVariablesBody(BufferedWriter bw, MakeConfigurationDescriptor conf) throws IOException {
+        bw.write("#\n"); // NOI18N
+        bw.write("# Generated - do not edit!\n"); // NOI18N
+        bw.write("#\n"); // NOI18N
+        bw.write("# NOCDDL\n"); // NOI18N
+        bw.write("#\n"); // NOI18N
+        bw.write("CND_BASEDIR=`pwd`\n"); // NOI18N
+        bw.write("CND_BUILDDIR=build\n"); // NOI18N
+        bw.write("CND_DISTDIR=dist\n"); // NOI18N
+
+        Configuration[] confs = projectDescriptor.getConfs().getConfs();
+        for (int i = 0; i < confs.length; i++) {
+            MakeConfiguration makeConf = (MakeConfiguration) confs[i];
+            bw.write("# " + makeConf.getName() + " configuration"); // NOI18N
+            bw.write("\n"); // NOI18N // NOI18N
+            bw.write("CND_PLATFORM_" + makeConf.getName() + "=" + makeConf.getVariant()); // NOI18N
+            bw.write("\n"); // NOI18N // NOI18N
+            String outputPath = makeConf.expandMacros(makeConf.getOutputValue());
+            String outputDir = IpeUtils.getDirName(outputPath);
+            if (outputDir == null) {
+                outputDir = ""; // NOI18N
+            }
+            String outputName = IpeUtils.getBaseName(outputPath);
+            bw.write("CND_ARTIFACT_DIR_" + makeConf.getName() + "=" + outputDir); // NOI18N
+            bw.write("\n"); // NOI18N
+            bw.write("CND_ARTIFACT_NAME_" + makeConf.getName() + "=" + outputName); // NOI18N
+            bw.write("\n"); // NOI18N
+            bw.write("CND_ARTIFACT_PATH_" + makeConf.getName() + "=" + outputPath); // NOI18N
+            bw.write("\n"); // NOI18N
+        }
     }
 
     private void writePackagingScript(MakeConfiguration conf) {

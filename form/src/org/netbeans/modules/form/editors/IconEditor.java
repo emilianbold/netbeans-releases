@@ -42,6 +42,7 @@
 package org.netbeans.modules.form.editors;
 
 import java.awt.Component;
+import java.awt.Image;
 import java.beans.*;
 import java.util.*;
 import java.io.File;
@@ -401,8 +402,10 @@ public class IconEditor extends PropertyEditorSupport
         }
         if (fo != null) {
             try {
-                Icon icon = new ImageIcon(ImageIO.read(fo.getURL()));
-                return new NbImageIcon(TYPE_CLASSPATH, resName, icon);
+                Image image = ImageIO.read(fo.getURL());
+                if (image != null) { // issue 157546
+                    return new NbImageIcon(TYPE_CLASSPATH, resName, new ImageIcon(image));
+                }
             } catch (IOException ex) { // should not happen
                 Logger.getLogger(IconEditor.class.getName()).log(Level.WARNING, null, ex);
             }

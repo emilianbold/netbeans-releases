@@ -39,29 +39,54 @@
 package org.netbeans.modules.dlight.visualizers;
 
 import java.awt.BorderLayout;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.spi.impl.TableDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
-import org.netbeans.modules.dlight.visualizers.api.impl.TableVisualizerConfigurationAccessor;
+import org.netbeans.modules.dlight.visualizers.api.impl.AdvancedTableViewVisualizerConfigurationAccessor;
+import org.netbeans.spi.viewmodel.ColumnModel;
+import org.netbeans.spi.viewmodel.ExtendedNodeModel;
+import org.netbeans.spi.viewmodel.Model;
+import org.netbeans.spi.viewmodel.ModelEvent;
+import org.netbeans.spi.viewmodel.ModelListener;
+import org.netbeans.spi.viewmodel.Models;
+import org.netbeans.spi.viewmodel.TableModel;
+import org.netbeans.spi.viewmodel.TreeExpansionModel;
+import org.netbeans.spi.viewmodel.TreeModel;
+import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.RequestProcessor;
+import org.openide.util.datatransfer.PasteType;
 
 /**
  *
  * @author mt154047
  */
-final class AdvancedTableViewVisualizer extends JPanel implements Visualizer<AdvancedTableViewVisualizerConfiguration>, OnTimerTask {
+final class AdvancedTableViewVisualizer extends JPanel implements
+    Visualizer<AdvancedTableViewVisualizerConfiguration>, OnTimerTask, ComponentListener {
 
+    private DefaultTreeModel treeModel = null;
+    protected final DefaultMutableTreeNode TREE_ROOT = new DefaultMutableTreeNode("ROOT");
+    private TreeModelImpl treeModelImpl;
+    private TableModel tableModelImpl;
+    private Models.CompoundModel compoundModel;
     private TableDataProvider provider;
     private AdvancedTableViewVisualizerConfiguration configuration;
     private final List<DataRow> data = new ArrayList<DataRow>();
@@ -72,49 +97,50 @@ final class AdvancedTableViewVisualizer extends JPanel implements Visualizer<Adv
 //    private TableSorter tableSorterModel = new TableSorter();
     private OnTimerRefreshVisualizerHandler timerHandler;
     private boolean isEmptyContent;
+    private boolean isShown = true;
 
     AdvancedTableViewVisualizer(TableDataProvider provider, final AdvancedTableViewVisualizerConfiguration configuration) {
         timerHandler = new OnTimerRefreshVisualizerHandler(this, 5);
         this.provider = provider;
         this.configuration = configuration;
+        treeModel = new DefaultTreeModel(TREE_ROOT);
         setEmptyContent();
-     //   add
+        setModels();
+        addComponentListener(this);
+        VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
+
     }
 
     @Override
     public void addNotify() {
         super.addNotify();
-
+        addComponentListener(this);
+        VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
+        onTimer();
         if (timerHandler.isSessionRunning()) {
             timerHandler.startTimer();
             return;
         }
 
-        if (timerHandler.isSessionAnalyzed() ||
-            timerHandler.isSessionPaused()) {
-            onTimer();
-        }
+
     }
 
     @Override
     public void removeNotify() {
         super.removeNotify();
         timerHandler.stopTimer();
+        removeComponentListener(this);
+        VisualizerTopComponentTopComponent.findInstance().removeComponentListener(this);
+
     }
 
     private void setEmptyContent() {
         isEmptyContent = true;
         this.removeAll();
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-//        table = null;
-//        if (tableSorterModel != null) {
-////            tableSorterModel.removeTableModelListener(this);
-//            tableSorterModel = null;
-//        }
-//        JLabel label = new JLabel(timerHandler.isSessionAnalyzed() ? TableVisualizerConfigurationAccessor.getDefault().getEmptyAnalyzeMessage(configuration) :
-//            TableVisualizerConfigurationAccessor.getDefault().getEmptyRunningMessage(configuration)); // NOI18N
-//        label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
-//        this.add(label);
+        JLabel label = new JLabel(timerHandler.isSessionAnalyzed() ? AdvancedTableViewVisualizerConfigurationAccessor.getDefault().getEmptyAnalyzeMessage(configuration) : AdvancedTableViewVisualizerConfigurationAccessor.getDefault().getEmptyRunningMessage(configuration)); // NOI18N
+        label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+        this.add(label);
         repaint();
         revalidate();
     }
@@ -134,41 +160,130 @@ final class AdvancedTableViewVisualizer extends JPanel implements Visualizer<Adv
 
     }
 
+    protected void updateList(List<DataRow> list) {
+        //if there is no elements in the list
+        synchronized (TREE_ROOT) {
+            TREE_ROOT.removeAllChildren();
+        }
+        UIThread.invoke(new Runnable() {
+
+            public void run() {
+                treeModelImpl.fireTreeModelChanged();
+            }
+        });
+        if (list != null) {
+            synchronized (TREE_ROOT) {
+                for (DataRow value : list) {
+                    TREE_ROOT.add(new DefaultMutableTreeNode(value));
+                }
+
+            }
+        }
+        UIThread.invoke(new Runnable() {
+
+            public void run() {
+                treeModelImpl.fireTreeModelChanged();
+            }
+        });
+
+    }
+
+    private void setModels() {
+        List<ColumnModel> columns = new ArrayList<ColumnModel>();
+        List<Column> tableColumns = configuration.getMetadata().getColumns();
+        for (final Column f : tableColumns) {
+            ColumnModel column = new ColumnModel() {
+
+                boolean isVisible = true;
+                boolean isSorted = false;
+                boolean isSortedDescending = false;
+                int currentOrderNumber = -1;
+
+                public String getID() {
+                    return f.getColumnName();
+                }
+
+                public String getDisplayName() {
+                    return f.getColumnUName();
+                }
+
+                public Class getType() {
+                    if (f.getColumnName().equals(AdvancedTableViewVisualizerConfigurationAccessor.getDefault().getNodeColumnName(configuration))) {
+                        return null;
+                    }
+                    return f.getColumnClass();
+                }
+
+                @Override
+                public void setCurrentOrderNumber(int newOrderNumber) {
+                    this.currentOrderNumber = newOrderNumber;
+                }
+
+                @Override
+                public int getCurrentOrderNumber() {
+                    return currentOrderNumber;
+                }
+
+                @Override
+                public void setVisible(boolean arg0) {
+                    this.isVisible = arg0;
+                }
+
+                @Override
+                public boolean isVisible() {
+                    return isVisible;
+                }
+
+                @Override
+                public boolean isSortable() {
+                    return true;
+                }
+
+                @Override
+                public boolean isSorted() {
+                    return isSorted;
+                }
+
+                @Override
+                public void setSorted(boolean sorted) {
+                    this.isSorted = sorted;
+                }
+
+                @Override
+                public void setSortedDescending(boolean sortedDescending) {
+                    this.isSortedDescending = sortedDescending;
+                }
+
+                @Override
+                public boolean isSortedDescending() {
+                    return isSortedDescending;
+                }
+            };
+
+            columns.add(column);
+        }
+
+        List<Model> models = new ArrayList<Model>();
+        treeModelImpl =
+            new TreeModelImpl();
+
+        models.add(treeModelImpl);//tree model
+        tableModelImpl =
+            AdvancedTableViewVisualizerConfigurationAccessor.getDefault().getTableModel(configuration) != null ? AdvancedTableViewVisualizerConfigurationAccessor.getDefault().getTableModel(configuration) : new TableModelImpl();
+        models.add(tableModelImpl);
+        models.addAll(columns);
+        models.add(new NodeModelImpl());
+        if (AdvancedTableViewVisualizerConfigurationAccessor.getDefault().getNodeActionProvider(configuration) != null) {
+            models.add(AdvancedTableViewVisualizerConfigurationAccessor.getDefault().getNodeActionProvider(configuration));
+        }
+        compoundModel =
+            Models.createCompoundModel(models);
+    }
+
     private void setNonEmptyContent() {
         isEmptyContent = false;
         this.removeAll();
-//        tableModel = new AbstractTableModel() {
-//
-//            public int getRowCount() {
-//                return data.size();
-//            }
-//
-//            public int getColumnCount() {
-//                return configuration.getMetadata().getColumnsCount();
-//            }
-//
-//            @Override
-//            public Class getColumnClass(int columnIndex) {
-//                return configuration.getMetadata().getColumns().get(columnIndex).getColumnClass();
-//            }
-//
-//            public Object getValueAt(int rowIndex, int columnIndex) {
-//                Object x = data.get(rowIndex).getData().get(columnIndex);
-//                return x;
-//            }
-//
-//            @Override
-//            public String getColumnName(int column) {
-//                return configuration.getMetadata().getColumns().get(column).getColumnUName();
-//            }
-//        };
-//        tableSorterModel = new TableSorter(tableModel);
-//        table = new JTable(tableSorterModel);
-//        tableSorterModel.addMouseListenerToHeaderInTable(table);
-//        //mainPanel.add(new JScrollPane(table), BorderLayout.CENTER);
-//        //table = new JTable(tableModel);
-//        setLayout(new BorderLayout());
-//        add(new JScrollPane(table), BorderLayout.CENTER);
+        this.setLayout(new BorderLayout());
         buttonsToolbar = new JToolBar();
         refresh = new JButton();
 
@@ -178,7 +293,6 @@ final class AdvancedTableViewVisualizer extends JPanel implements Visualizer<Adv
 
         // Refresh button...
         refresh.setIcon(ImageLoader.loadIcon("refresh.png")); // NOI18N
-//    refresh.setToolTipText(org.openide.util.NbBundle.getMessage(PerformanceMonitorViewTopComponent.class, "RefreshActionTooltip")); // NOI18N
         refresh.setFocusable(false);
         refresh.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         refresh.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -194,6 +308,13 @@ final class AdvancedTableViewVisualizer extends JPanel implements Visualizer<Adv
 
 
         add(buttonsToolbar, BorderLayout.LINE_START);
+        JComponent treeTableView =
+            Models.createView(compoundModel);
+        add(treeTableView, BorderLayout.CENTER);
+
+        treeModelImpl.fireTreeModelChanged();
+        repaint();
+
         repaint();
         validate();
 
@@ -204,32 +325,28 @@ final class AdvancedTableViewVisualizer extends JPanel implements Visualizer<Adv
     }
 
     public int onTimer() {
+        if (!isShown || !isShowing()) {
+            return 0;
+        }
         load();
         return 0;
     }
 
     private void load() {
-
-
         RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {
-                List<DataRow> dataRow = provider.queryData(configuration.getMetadata());
-                boolean isEmpty;
-                synchronized (data) {
-                    data.clear();
-                    data.addAll(dataRow);
-                    isEmpty = data.isEmpty();
-                //in case there is no data create fake model
-                }
-                final boolean isEmptyConent = isEmpty;
+                final List<DataRow> list = provider.queryData(configuration.getMetadata());
+                final boolean isEmptyConent = list == null || list.isEmpty();
                 UIThread.invoke(new Runnable() {
 
                     public void run() {
-//                        if (tableModel != null){
-//                            tableModel.fireTableDataChanged();
-//                        }
                         setContent(isEmptyConent);
+                        if (isEmptyConent) {
+                            return;
+                        }
+
+                        updateList(list);
                     }
                 });
             }
@@ -250,4 +367,248 @@ final class AdvancedTableViewVisualizer extends JPanel implements Visualizer<Adv
             setEmptyContent();
         }
     }
+
+    public void componentResized(ComponentEvent e) {
+    }
+
+    public void componentMoved(ComponentEvent e) {
+    }
+
+    public void componentShown(ComponentEvent e) {
+        if (isShown) {
+            return;
+        }
+        isShown = isShowing();
+        if (isShown) {
+            onTimer();
+        }
+    }
+
+    public void componentHidden(ComponentEvent e) {
+        isShown = false;
+    }
+
+    protected class TreeModelImpl implements TreeModel, TreeExpansionModel {
+
+        private final Object listenersLock = new Object();
+        private Vector<ModelListener> listeners = new Vector<ModelListener>();
+
+        public Object getRoot() {
+            return ROOT;
+        }
+
+        public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
+            //throw new UnsupportedOperationException("Not supported yet.");
+//      if (parent == ROOT) {
+            Object real_parent = parent;
+            if (parent == ROOT) {
+                real_parent = TREE_ROOT;
+            }
+            //return functionsList.getChildren(null).toArray();
+//        return functionsCallTreeModel.get`
+            if (real_parent instanceof DefaultMutableTreeNode) {
+                List<Object> result = new ArrayList<Object>();
+                for (int i = from; i <= to; i++) {
+                    if (i >= 0 && i < treeModel.getChildCount(real_parent)) {
+                        result.add(treeModel.getChild(real_parent, i));
+                    }
+                }
+                return result.toArray();
+            }
+
+            throw new UnknownTypeException(parent);
+        }
+
+        void fireTreeModelChanged(DefaultMutableTreeNode node) {
+            synchronized (listenersLock) {
+                for (ModelListener l : listeners) {
+                    l.modelChanged(new ModelEvent.NodeChanged(AdvancedTableViewVisualizer.this, node));
+                }
+            }
+        }
+
+        void fireTreeModelChanged() {
+            synchronized (listenersLock) {
+                for (ModelListener l : listeners) {
+                    l.modelChanged(new ModelEvent.TreeChanged(AdvancedTableViewVisualizer.this));
+                    l.modelChanged(new ModelEvent.NodeChanged(AdvancedTableViewVisualizer.this, ROOT));
+                }
+            }
+
+
+        }
+
+        public boolean isLeaf(Object node) {
+            if (node == ROOT) {
+                return false;
+            }
+            return true;
+        }
+
+        public int getChildrenCount(Object node) throws UnknownTypeException {
+            Object real_node = node;
+            if (node == ROOT) {
+                real_node = TREE_ROOT;
+                return treeModel.getChildCount(real_node);
+            }
+//
+//            if (real_node instanceof DefaultMutableTreeNode) {
+//                if (TreeTableVisualizerConfigurationAccessor.getDefault().isTableView(configuration)) {
+//                    return 0;
+//                }
+//                return 1;
+//            }
+            return 0;
+        }
+
+        public void addModelListener(ModelListener l) {
+            synchronized (listenersLock) {
+                listeners.add(l);
+            }
+        //throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void removeModelListener(ModelListener l) {
+            synchronized (listenersLock) {
+                listeners.remove(l);
+            }
+        }
+
+        public boolean isExpanded(Object node) throws UnknownTypeException {
+            //throw new UnsupportedOperationException("Not supported yet.");
+            return false;
+        }
+
+        public void nodeExpanded(Object node) {
+            if (node == ROOT) {
+                return;
+            }
+
+        }
+
+        public void nodeCollapsed(Object node) {
+            //System.out.println("nodeCollapsed invoked " + node);
+        }
+    }
+
+    class TableModelImpl implements TableModel {
+
+        private Vector<ModelListener> listeners = new Vector<ModelListener>();
+
+        public Object getValueAt(Object node, String columnID) throws UnknownTypeException {
+            if (!(node instanceof DefaultMutableTreeNode)) {
+                throw new UnknownTypeException(node);
+            }
+//      if ("iconID".equals(columnID)) {
+//        return new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/resources/who_calls.png"));
+//      }
+
+            DefaultMutableTreeNode theNode = (DefaultMutableTreeNode) node;
+            Object nodeObject = theNode.getUserObject();
+
+            if (nodeObject instanceof DataRow) {
+                //return ((T)nodeObject).getMetricValue(getMetricByID(columnID));
+                return ((DataRow) nodeObject).getStringValue(columnID);
+            }
+
+            return "";
+        }
+
+        public boolean isReadOnly(Object node, String columnID) throws UnknownTypeException {
+            //throw new UnsupportedOperationException("Not supported yet.");
+            return true;
+        }
+
+        public void setValueAt(Object node, String columnID, Object value) throws UnknownTypeException {
+            //throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void addModelListener(ModelListener l) {
+            //throw new UnsupportedOperationException("Not supported yet.");
+            listeners.add(l);
+        }
+
+        void fireTableValueChanged() {
+        }
+
+        public void removeModelListener(ModelListener l) {
+            listeners.remove(l);
+        //throw new UnsupportedOperationException("Not supported yet.");
+        }
+    }
+
+    class NodeModelImpl implements ExtendedNodeModel {
+
+        public String getDisplayName(Object node) {
+            if (node == TreeModel.ROOT) {
+                return configuration.getMetadata().getColumnByName(AdvancedTableViewVisualizerConfigurationAccessor.getDefault().getNodeColumnName(configuration)).getColumnUName();
+            }
+            if (node instanceof DefaultMutableTreeNode) {
+                DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) node;
+                Object nodeObject = treeNode.getUserObject();
+                return (nodeObject instanceof DataRow) ? ((DataRow) nodeObject).getStringValue(AdvancedTableViewVisualizerConfigurationAccessor.getDefault().getNodeColumnName(configuration))
+                    : nodeObject.toString();
+            }
+            return "Unknown";
+        }
+
+        public String getIconBase(Object node) {
+            return null;
+        }
+
+        public String getShortDescription(Object node) {
+            if (node == TreeModel.ROOT) {
+                return configuration.getMetadata().getColumnByName(AdvancedTableViewVisualizerConfigurationAccessor.getDefault().getNodeColumnName(configuration)).getColumnUName();
+            }
+            if (node instanceof DefaultMutableTreeNode) {
+                DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) node;
+                Object nodeObject = treeNode.getUserObject();
+                return (nodeObject instanceof DataRow) ? ((DataRow) nodeObject).getStringValue(AdvancedTableViewVisualizerConfigurationAccessor.getDefault().getNodeColumnName(configuration))
+                    : nodeObject.toString();
+            }
+            return "Unknown";
+        }
+
+        public void addModelListener(ModelListener arg0) {
+            //    throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void removeModelListener(ModelListener arg0) {
+            //  throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean canRename(Object arg0) throws UnknownTypeException {
+            return false;
+        }
+
+        public boolean canCopy(Object arg0) throws UnknownTypeException {
+            return false;
+        }
+
+        public boolean canCut(Object arg0) throws UnknownTypeException {
+            return false;
+        }
+
+        public Transferable clipboardCopy(Object arg0) throws IOException, UnknownTypeException {
+            return null;
+        }
+
+        public Transferable clipboardCut(Object arg0) throws IOException, UnknownTypeException {
+            return null;
+        }
+
+        public PasteType[] getPasteTypes(Object arg0, Transferable arg1) throws UnknownTypeException {
+            return null;
+        }
+
+        public void setName(Object arg0, String arg1) throws UnknownTypeException {
+            //throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public String getIconBaseWithExtension(Object arg0) throws UnknownTypeException {
+//      return CsmImageName.FUNCTION_GLOBAL;
+            return null;
+        }
+    }
+
 }

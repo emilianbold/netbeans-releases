@@ -47,17 +47,32 @@ BEGIN {
 	PRINT_STACK();
 
 
+/*
+By default $1 is the pid of process to trace.
+But you can change this via -DPID=pid\$target -
+and use -c or -p dtrace command line option
+*/
+#ifndef PID
+#define PID pid$1
+#endif
+
+/*---------------------------------------------------
+NB: the pattern
+    pid$1::*malloc:entry  / probefunc=="malloc" / { ...
+is a workaround for DTrace bug #6806913
+---------------------------------------------------*/
+
 /*---------- malloc ----------*/
 
-pid$1::malloc:entry
-/ !self->inside /
+PID::*malloc:entry
+/ !self->inside && probefunc=="malloc" /
 {
 	self->inside++;
 	ALLOC_ENTRY(arg0);
 }
 
-pid$1::malloc:return
-/ self->inside /
+PID::*malloc:return
+/ self->inside && probefunc=="malloc" /
 {
 	ALLOC_EXIT(arg1);
 	self->inside--;
@@ -65,15 +80,15 @@ pid$1::malloc:return
 
 /*---------- calloc ----------*/
 
-pid$1::calloc:entry
-/ !self->inside /
+PID::*calloc:entry
+/ !self->inside && probefunc=="calloc" /
 {
 	self->inside++;
 	ALLOC_ENTRY(arg0 * arg1);
 }
 
-pid$1::calloc:return
-/ self->inside /
+PID::*calloc:return
+/ self->inside && probefunc=="calloc" /
 {
 	ALLOC_EXIT(arg1);
 	self->inside--;
@@ -81,15 +96,15 @@ pid$1::calloc:return
 
 /*---------- memalign ----------*/
 
-pid$1::memalign:entry
-/ !self->inside /
+PID::*memalign:entry
+/ !self->inside && probefunc=="memalign" /
 {
 	self->inside++;
 	ALLOC_ENTRY(arg1);
 }
 
-pid$1::memalign:return
-/ self->inside /
+PID::*memalign:return
+/ self->inside && probefunc=="memalign" /
 {
 	ALLOC_EXIT(arg1);
 	self->inside--;
@@ -97,15 +112,15 @@ pid$1::memalign:return
 
 /*---------- valloc ----------*/
 
-pid$1::valloc:entry
-/ ! self->inside /
+PID::*valloc:entry
+/ ! self->inside && probefunc=="valloc" /
 {
 	self->inside++;
 	ALLOC_ENTRY(arg0);
 }
 
-pid$1::valloc:return
-/ self->inside /
+PID::*valloc:return
+/ self->inside && probefunc=="valloc" /
 {
 	ALLOC_EXIT(arg1);
 	self->inside--;
@@ -114,16 +129,16 @@ pid$1::valloc:return
 
 /*---------- realloc ----------*/
 
-pid$1::realloc:entry
-/ !self->inside /
+PID::*realloc:entry
+/ !self->inside && probefunc=="realloc" /
 {
 	self->inside++;
 	FREE_ENTRY(arg0); /* arg0 - address */
 	ALLOC_ENTRY(arg1); /* arg1 - size */
 }
 
-pid$1::realloc:return
-/ self->inside /
+PID::*realloc:return
+/ self->inside && probefunc=="realloc" /
 {
 	ALLOC_EXIT(arg1); /* arg1 - address */
 	self->inside--;
@@ -132,7 +147,8 @@ pid$1::realloc:return
 /*---------- free ----------*/
 
 
-pid$1::free:entry
+PID::*free:entry
+/ probefunc=="free" /
 {
 	FREE_ENTRY(arg0);
 }

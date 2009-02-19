@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Stack;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
@@ -30,8 +31,11 @@ import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.api.editor.fold.FoldUtilities;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.web.core.syntax.JSPKit;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.core.syntax.SyntaxElement;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
@@ -59,6 +63,12 @@ public class JspFoldManager implements FoldManager {
     private BaseDocument doc = null;
     
     private List<Fold> myFolds = new  ArrayList<Fold>(20);
+
+    private Preferences prefs;
+
+    public JspFoldManager() {
+        prefs = MimeLookup.getLookup(JSPKit.JSP_MIME_TYPE).lookup(Preferences.class);
+    }
 
     protected FoldOperation getOperation() {
         return operation;
@@ -462,7 +472,7 @@ public class JspFoldManager implements FoldManager {
                                         System.out.println("+ adding fold " + f);
                                     }
                                     if (f.startOffset >= 0 && f.endOffset >= 0 && f.startOffset < f.endOffset && f.endOffset <= getDocument().getLength()) {
-                                        myFolds.add(getOperation().addToHierarchy(f.foldType, f.description, false, 
+                                        myFolds.add(getOperation().addToHierarchy(f.foldType, f.description, isInitiallyCollapsed(f.foldType),
                                                 f.startOffset, f.endOffset, 0, 0, null, fhTran));
                                     }
                                 }
@@ -516,6 +526,21 @@ public class JspFoldManager implements FoldManager {
         long foldsGenerationTime = System.currentTimeMillis() - startTime;
         if (SHOW_TIMES) {
             System.out.println("jsp folding] folds for " + getDocument().getProperty(Document.TitleProperty) + " generated in " + foldsGenerationTime + " millis.");
+        }
+
+    }
+
+    private boolean isInitiallyCollapsed(FoldType foldType) {
+        String prefName = null;
+        if(foldType == JspFoldTypes.TAG) {
+            prefName = SimpleValueNames.CODE_FOLDING_COLLAPSE_TAGS;
+        } else if(foldType == JspFoldTypes.COMMENT) {
+            prefName = SimpleValueNames.CODE_FOLDING_COLLAPSE_JAVADOC;
+        }
+        if(prefName != null) {
+            return prefs.getBoolean(prefName, false);
+        } else {
+            return false;
         }
 
     }
