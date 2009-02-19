@@ -247,16 +247,20 @@ public class GeneralPHP extends JellyTestCase {
     JTextComponentOperator jtName = new JTextComponentOperator( jdNew, 0 );
 
     if( null != sProjectName )
+    {
+      int iSleeps = 0;
+      while( !jtName.isEnabled( ) )
+      {
+        if( 60 <= ++iSleeps )
+          fail( "Project name disabled during too long time." );
+        Sleep( 1000 );
+      }
       jtName.setText( sProjectName );
+    }
 
     String sProjectPath = GetWorkDir( ) + File.separator + jtName.getText( );
 
     JComboBoxOperator jcPath = new JComboBoxOperator( jdNew, 0 );
-
-    Timeouts t =  jcPath.getTimeouts( );
-    long lBack = t.getTimeout( "JTextComponentOperator.TypeTextTimeout" );
-    t.setTimeout( "JTextComponentOperator.TypeTextTimeout", 30000 );
-    jcPath.setTimeouts( t );
 
     int iSleeps = 0;
     while( !jcPath.isEnabled( ) )
@@ -265,6 +269,11 @@ public class GeneralPHP extends JellyTestCase {
         fail( "Project path disabled during too long time." );
       Sleep( 1000 );
     }
+
+    Timeouts t =  jcPath.getTimeouts( );
+    long lBack = t.getTimeout( "JTextComponentOperator.TypeTextTimeout" );
+    t.setTimeout( "JTextComponentOperator.TypeTextTimeout", 30000 );
+    jcPath.setTimeouts( t );
 
     jcPath.enterText( sProjectPath );
 

@@ -19,7 +19,7 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jLabel3" alignment="0" pref="390" max="32767" attributes="0"/>
+                  <Component id="jLabel3" alignment="0" pref="442" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Component id="cbSavePassword" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -41,12 +41,12 @@
                               <EmptySpace min="-2" pref="45" max="-2" attributes="0"/>
                               <Component id="btDetails" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="jScrollPane1" alignment="0" pref="380" max="32767" attributes="0"/>
+                          <Component id="jScrollPane1" alignment="0" pref="422" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="pbarStatusPanel" pref="380" max="32767" attributes="0"/>
+                      <Component id="pbarStatusPanel" pref="422" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -157,10 +157,10 @@
       <SubComponents>
         <Component class="javax.swing.JTextPane" name="tpOutput">
           <Properties>
+            <Property name="editable" type="boolean" value="false"/>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/cnd/remote/ui/wizard/Bundle.properties" key="CreateHostVisualPanel2.tpOutput.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
-            <Property name="focusable" type="boolean" value="false"/>
             <Property name="opaque" type="boolean" value="false"/>
           </Properties>
         </Component>

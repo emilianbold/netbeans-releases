@@ -275,12 +275,12 @@ public final class ParserQueue {
 
     private static final class ProjectData {
 
-        public Set<FileImpl> filesInQueue = new HashSet<FileImpl>();
+        private final Set<FileImpl> filesInQueue = new HashSet<FileImpl>();
 
         // there are no more simultaneously parsing files than threads, so LinkedList suites even better
-        public Collection<FileImpl> filesBeingParsed = new LinkedList<FileImpl>();
+        private final Collection<FileImpl> filesBeingParsed = new LinkedList<FileImpl>();
 
-        public boolean notifyListeners;
+        private volatile boolean notifyListeners;
 
         ProjectData(boolean notifyListeners) {
             this.notifyListeners = notifyListeners;
@@ -301,21 +301,21 @@ public final class ParserQueue {
 
     private static ParserQueue instance = new ParserQueue(false);
 
-    private PriorityQueue<Entry> queue = new PriorityQueue<Entry>();
+    private final PriorityQueue<Entry> queue = new PriorityQueue<Entry>();
 
     private volatile State state;
     private final Object suspendLock = new Object();
 
     // do not need UIDs for ProjectBase in parsing data collection
-    private Map<ProjectBase, ProjectData> projectData = new HashMap<ProjectBase, ProjectData>();
+    private final Map<ProjectBase, ProjectData> projectData = new HashMap<ProjectBase, ProjectData>();
     private final Map<CsmProject, Object> projectLocks = new HashMap<CsmProject, Object>();
-    private AtomicInteger serial = new AtomicInteger(0);
+    private final AtomicInteger serial = new AtomicInteger(0);
 
     private final Object lock = new Object();
 
     private final boolean addAlways;
 
-    private Diagnostic.StopWatch stopWatch = TraceFlags.TIMING ? new Diagnostic.StopWatch(false) : null;
+    private final Diagnostic.StopWatch stopWatch = TraceFlags.TIMING ? new Diagnostic.StopWatch(false) : null;
 
     private ParserQueue(boolean addAlways) {
         this.addAlways = addAlways;
@@ -334,11 +334,13 @@ public final class ParserQueue {
         builder.append(file);
         builder.append("\n of project ").append(file.getProjectImpl(true)); // NOI18N
         builder.append("\n content of projects files set:\n"); // NOI18N
-        builder.append(files);
-        builder.append("\nqueue content is:\n"); // NOI18N
-        builder.append(toString(queue, false));
-        builder.append("\nprojectData content is:\n"); // NOI18N
-        builder.append(projectData);
+        if (files != null) {
+            builder.append(files);
+            builder.append("\nqueue content is:\n"); // NOI18N
+            builder.append(toString(queue, false));
+            builder.append("\nprojectData content is:\n"); // NOI18N
+            builder.append(projectData);
+        }
         return builder.toString();
     }
 
@@ -401,6 +403,8 @@ public final class ParserQueue {
                     } else {
                         CndUtils.assertTrue(false, "ProjectData contains another instance of file " + file + ", so there is no matching entry in the queue"); // NOI18N
                     }
+                    System.err.println(traceState4File(file, files));
+                    System.err.println(traceState4File(findFile, null));
                 } else {
                     if (clearPrevState) {
                         entry.setStates(ppStates);

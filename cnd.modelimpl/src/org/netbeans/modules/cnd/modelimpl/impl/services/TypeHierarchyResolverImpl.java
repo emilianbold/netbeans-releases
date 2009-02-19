@@ -51,6 +51,7 @@ import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -142,7 +143,7 @@ public class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
             Collection<CsmInheritance> list = cls.getBaseClasses();
             if (list != null && list.size() >0){
                 for(CsmInheritance inh : list){
-                    CsmClass c = CsmInheritanceUtilities.getCsmClass(inh);
+                    CsmClass c = getClassDeclaration(inh);
                     if (c != null) {
                         back.add(c);
                         buildSuperHierarchy(c, map);
@@ -170,11 +171,22 @@ public class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
             }
         }
 
+        private CsmClass getClassDeclaration(CsmInheritance inh){
+            CsmClass c = CsmInheritanceUtilities.getCsmClass(inh);
+            if (CsmKindUtilities.isInstantiation(c)) {
+                CsmDeclaration d = ((CsmInstantiation)c).getTemplateDeclaration();
+                if (CsmKindUtilities.isClass(d)){
+                    c = (CsmClass) d;
+                }
+            }
+            return c;
+        }
+
         private void buildSubHierarchy(final Map<CsmClass, Set<CsmClass>> map, final CsmClass cls) {
             Collection<CsmInheritance> list = cls.getBaseClasses();
             if (list != null && list.size() >0){
                 for(CsmInheritance inh : list){
-                    CsmClass c = CsmInheritanceUtilities.getCsmClass(inh);
+                    CsmClass c = getClassDeclaration(inh);
                     if (c != null) {
                         Set<CsmClass> back = map.get(c);
                         if (back == null){

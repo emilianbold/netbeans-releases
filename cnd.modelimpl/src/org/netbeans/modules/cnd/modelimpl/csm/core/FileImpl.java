@@ -191,7 +191,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private final Collection<CsmUID<FunctionImplEx>> fakeRegistrationUIDs = new CopyOnWriteArrayList<CsmUID<FunctionImplEx>>();
     private long lastParsed = Long.MIN_VALUE;
     /** Cache the hash code */
-    private int hash; // Default to 0
+    private int hash = 0; // Default to 0
     /** 
      * Stores the UIDs of the static functions declarations (not definitions) 
      * This is necessary for finding definitions/declarations 
@@ -1524,7 +1524,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public 
     @Override
     String toString() {
-        return "FileImpl @" + hashCode() + ' ' + getAbsolutePath(); // NOI18N
+        return "FileImpl @" + hashCode() + ":" + super.hashCode() + ' ' + getAbsolutePath(); // NOI18N
     }
 
     public CsmUID<CsmFile> getUID() {

@@ -51,8 +51,10 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.SourceGroupModifier;
 import org.netbeans.modules.junit.GuiUtils;
 import org.netbeans.modules.junit.JUnitPluginTrampoline;
 import org.netbeans.modules.junit.JUnitSettings;
@@ -181,6 +183,11 @@ public class EmptyTestCaseWizardIterator
         final Project project = Templates.getProject(wizard);
         if (targetPanel == null || project != lastSelectedProject) {
             Collection<SourceGroup> sourceGroups = Utils.getTestTargets(project, true);
+            if (sourceGroups.isEmpty()) {
+                if (SourceGroupModifier.createSourceGroup(project, JavaProjectConstants.SOURCES_TYPE_JAVA, JavaProjectConstants.SOURCES_HINT_TEST) != null) {
+                    sourceGroups = Utils.getTestTargets(project, true);
+                }
+            }
             if (sourceGroups.isEmpty()) {
                 targetPanel = new StepProblemMessage(
                         project,

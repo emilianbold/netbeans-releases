@@ -183,8 +183,13 @@ public class Folder implements FileChangeListener, ChangeListener {
             log.finer("-----------attachFilterListener " + getPath()); // NOI18N
         }
 
-        FileUtil.addFileChangeListener(this, folderFile);
-        log.finer("-----------attachFileChangeListener " + getPath()); // NOI18N
+        try {
+            FileUtil.addFileChangeListener(this, folderFile);
+            log.finer("-----------attachFileChangeListener " + getPath()); // NOI18N
+        } catch (IllegalArgumentException iae) {
+            // Can happen if trying to attach twice...
+            log.finer("-----------attachFileChangeListener duplicate error" + getPath()); // NOI18N
+        }
 
         // Repeast for all sub folders
         Vector<Folder> subFolders = getFolders();
@@ -192,7 +197,6 @@ public class Folder implements FileChangeListener, ChangeListener {
             f.attachListeners();
         }
     }
-
 
     public void detachListener() {
         log.finer("-----------detachFileChangeListener " + getPath()); // NOI18N
@@ -621,6 +625,19 @@ public class Folder implements FileChangeListener, ChangeListener {
         return null;
     }
 
+    public Item findItemByName(String name) {
+        if (name == null) {
+            return null;
+        }
+        Item[] items = getItemsAsArray();
+        for (int i = 0; i < items.length; i++) {
+            if (name.equals(items[i].getName())) {
+                return items[i];
+            }
+        }
+        return null;
+    }
+
     public Folder findFolderByName(String name) {
         if (name == null) {
             return null;
@@ -776,15 +793,6 @@ public class Folder implements FileChangeListener, ChangeListener {
         return new LinkedHashSet<DataObject>(files);
     }
 
-    public String[] getItemNamesAsArray() {
-        Item[] items = getItemsAsArray();
-        String[] names = new String[items.length];
-        for (int i = 0; i < items.length; i++) {
-            names[i] = items[i].getPath();
-        }
-        return names;
-    }
-
     /*
      * Returns a set of all logical folder in this folder as an array
      */
@@ -914,6 +922,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public void fileDataCreated(FileEvent fe) {
+        boolean currentState = getConfigurationDescriptor().getModified();
         FileObject fileObject = fe.getFile();
         File file = FileUtil.toFile(fileObject);
         log.fine("------------fileDataCreated " + file + " in " + getThis().getPath()); // NOI18N
@@ -929,11 +938,12 @@ public class Folder implements FileChangeListener, ChangeListener {
         itemPath = IpeUtils.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath);
         itemPath = FilePathAdaptor.normalize(itemPath);
         Item item = new Item(itemPath);
-        getConfigurationDescriptor().setModified();
         addItemAction(item);
+        getConfigurationDescriptor().setModified(currentState);
     }
 
     public void fileFolderCreated(FileEvent fe) {
+        boolean currentState = getConfigurationDescriptor().getModified();
         FileObject fileObject = fe.getFile();
         File file = FileUtil.toFile(fileObject);
         log.fine("------------fileFolderCreated " + file.getPath() + " in " + getThis().getPath()); // NOI18N
@@ -943,10 +953,11 @@ public class Folder implements FileChangeListener, ChangeListener {
             return;
         }
         Folder top = ((MakeConfigurationDescriptor) getConfigurationDescriptor()).addSourceFilesFromFolder(getThis(), file, true);
-        getConfigurationDescriptor().setModified();
+        getConfigurationDescriptor().setModified(currentState);
     }
 
     public void fileDeleted(FileEvent fe) {
+        boolean currentState = getConfigurationDescriptor().getModified();
         FileObject fileObject = fe.getFile();
         File file = FileUtil.toFile(fileObject);
         log.fine("------------fileDeleted " + file.getPath() + " in " + getThis().getPath()); // NOI18N
@@ -959,19 +970,55 @@ public class Folder implements FileChangeListener, ChangeListener {
         Item item = findItemByPath(path);
         if (item != null) {
             removeItemAction(item);
-            getConfigurationDescriptor().setModified();
+            getConfigurationDescriptor().setModified(currentState);
             return;
         }
         // then folder
         Folder folder = findFolderByName(file.getName());
         if (folder != null) {
             removeFolderAction(folder);
-            getConfigurationDescriptor().setModified();
+            getConfigurationDescriptor().setModified(currentState);
             return;
         }
     }
 
+    public void copyConfigurations(Folder src) {
+        MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor) getConfigurationDescriptor();
+        if (makeConfigurationDescriptor == null) {
+            return;
+        }
+
+        for (Configuration conf : makeConfigurationDescriptor.getConfs().getConfs()) {
+            FolderConfiguration srcFolderConfiguration = src.getFolderConfiguration(conf);
+            FolderConfiguration dstFolderConfiguration = getFolderConfiguration(conf);
+            if (srcFolderConfiguration != null && dstFolderConfiguration != null) {
+                dstFolderConfiguration.assignValues(srcFolderConfiguration);
+            }
+        }
+    }
+
+    private static void copyConfigurations(Folder oldFolder, Folder newFolder) {
+        newFolder.copyConfigurations(oldFolder);
+        // Copy item configurations
+        Item oldItems[] = oldFolder.getItemsAsArray();
+        for (Item oldItem : oldItems) {
+            Item newItem = newFolder.findItemByName(oldItem.getName());
+            if (newItem != null) {
+                newItem.copyConfigurations(oldItem);
+            }
+        }
+        // copy subfolder cnfigurations
+        Folder srcFolders[] = oldFolder.getFoldersAsArray();
+        for (Folder srcFolder : srcFolders) {
+            Folder dstFolder = newFolder.findFolderByName(srcFolder.getName());
+            if (dstFolder != null) {
+                dstFolder.copyConfigurations(srcFolder);
+            }
+        }
+    }
+
     public void fileRenamed(FileRenameEvent fe) {
+        boolean currentState = getConfigurationDescriptor().getModified();
         FileObject fileObject = fe.getFile();
         File file = FileUtil.toFile(fileObject);
         log.fine("------------fileRenamed " + file.getPath() + " in " + getThis().getPath()); // NOI18N
@@ -980,11 +1027,11 @@ public class Folder implements FileChangeListener, ChangeListener {
         if (folder != null && folder.isDiskFolder()) {
             // Add new Folder
             Folder top = ((MakeConfigurationDescriptor) getConfigurationDescriptor()).addSourceFilesFromFolder(getThis(), file, true);
-            getConfigurationDescriptor().setModified();
             // Copy all configurations
-            // ???????????? // FIXUP
+            copyConfigurations(folder, top);
             // Remove old folder
             removeFolderAction(folder);
+            getConfigurationDescriptor().setModified(currentState);
             return;
         }
     }
@@ -997,11 +1044,9 @@ public class Folder implements FileChangeListener, ChangeListener {
         if (logProp != null) {
             if (logProp.equals("FINE")) { // NOI18N
                 log.setLevel(Level.FINE);
-            }
-            else if (logProp.equals("FINER")) { // NOI18N
+            } else if (logProp.equals("FINER")) { // NOI18N
                 log.setLevel(Level.FINER);
-            }
-            else if (logProp.equals("FINEST")) { // NOI18N
+            } else if (logProp.equals("FINEST")) { // NOI18N
                 log.setLevel(Level.FINEST);
             }
         }

@@ -68,15 +68,15 @@ class MemoryMonitorUtil {
         }
     }
 
-    private static String getPlatformPath(boolean is64bits) {
+    private static String getPlatformPath() {
 
         String result = null;
 
         String arch = System.getProperty("os.arch"); //NOI18N
         
-        if (Utilities.isWindows())
+        if (Utilities.isWindows()) {
             result = "Windows-x86"; //NOI18N
-        else if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
+        } else if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
             result = "Linux-x86"; //NOI18N
         } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
             if (arch.indexOf("86") >= 0) { //NOI18N
@@ -90,10 +90,6 @@ class MemoryMonitorUtil {
             }
         } else {
             DLightLogger.instance.warning("unknown platform"); //NOI18N
-        }
-
-        if (result != null && is64bits) {
-            result += "_64"; //NOI18N
         }
         return result;
     }
@@ -111,12 +107,12 @@ class MemoryMonitorUtil {
     }
 
     private static String getPlatformBinary(String nameWithSuffix) {
-        String platformPath = getPlatformPath(false); //TODO: process 64 bits!
+        String platformPath = getPlatformPath();
         if (platformPath != null) {
             String relativePath = "bin" + File.separator + platformPath + File.separator + nameWithSuffix; //NOI18N
             File file = InstalledFileLocator.getDefault().locate(relativePath, null, false);
             if (file != null && file.exists()) {
-                return file.getAbsolutePath();
+                return file.getParentFile().getAbsolutePath() + "${_isa}" + '/' + file.getName();
             }
         }
         return null;

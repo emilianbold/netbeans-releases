@@ -375,6 +375,8 @@ public class AstRenderer {
                 return false;
             }
             name = child.getFirstChild();
+        } else if(child.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
+            return true;
         }
 
         if (name == null) {

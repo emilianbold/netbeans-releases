@@ -43,7 +43,7 @@ public:
     }
 };
 
-int main_deadlock() {
+void main_deadlock() {
     DeadlockWorker w1, w2;
 //    barrier.lock();
     w1.start();
@@ -54,4 +54,3 @@ int main_deadlock() {
     w2.join();
     printf("Done\n");
 }
-
