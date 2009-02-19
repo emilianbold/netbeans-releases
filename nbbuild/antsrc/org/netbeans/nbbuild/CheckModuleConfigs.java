@@ -158,6 +158,9 @@ public final class CheckModuleConfigs extends Task {
     
     @SuppressWarnings("unchecked")
     private Set<String> split(String list, boolean warnIfUnsorted, String what) {
+        if (list.contains(" ")) {
+            throw new BuildException("remove spaces from " + what + ": " + list);
+        }
         List elements = Collections.list(new StringTokenizer(list, ", "));
         if (warnIfUnsorted) {
             List sorted = new ArrayList(elements);
