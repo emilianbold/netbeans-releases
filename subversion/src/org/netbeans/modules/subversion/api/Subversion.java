@@ -40,14 +40,14 @@
 package org.netbeans.modules.subversion.api;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.browser.Browser;
+import org.netbeans.modules.subversion.ui.checkout.CheckoutAction;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileUtil;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -113,6 +113,7 @@ public class Subversion {
             return null;
         }
 
+
         String[] relativePaths = makeRelativePaths(repositoryFile, selectedFiles);
         return relativePaths;
     }
@@ -170,101 +171,127 @@ public class Subversion {
     /**
      * Checks out a given folder from a given Subversion repository.
      * @param  repositoryUrl  URL of the Subversion repository
-     * @param  relativePath  relative path denoting folder the folder in the
+     * @param  relativePaths  relative paths denoting folder the folder in the
      *                       repository that is to be checked-out; to specify
      *                       that the whole repository folder should be
      *                       checked-out, use {@code &quot;/&quot;}
      * @param  localFolder  local folder to store the checked-out files to
+     * @param  scanForNewProjects scans the created working copy for netbenas projects
+     *                            and presents a dialog to open them eventually
      * @return  {@code true} if the checkout was successful,
      *          {@code false} otherwise
      */
     public static boolean checkoutRepositoryFolder(String repositoryUrl,
-                                                   String relativePath,
-                                                   File localFolder)
-            throws MalformedURLException, IOException {
+                                                   String[] relativePaths,
+                                                   File localFolder,
+                                                   boolean scanForNewProjects)
+            throws MalformedURLException {
         return checkoutRepositoryFolder(repositoryUrl,
-                                        relativePath,
+                                        relativePaths,
                                         localFolder,
                                         null,
-                                        null);
+                                        null,
+                                        scanForNewProjects);
     }
 
     /**
      * Checks out a given folder from a given Subversion repository.
      * @param  repositoryUrl  URL of the Subversion repository
-     * @param  relativePath  relative path denoting folder the folder in the
+     * @param  relativePaths  relative paths denoting folder the folder in the
      *                       repository that is to be checked-out; to specify
      *                       that the whole repository folder should be
      *                       checked-out, use {@code &quot;/&quot;}
      * @param  localFolder  local folder to store the checked-out files to
      * @param  username  username for access to the given repository
      * @param  password  password for access to the given repository
+     * @param  scanForNewProjects scans the created working copy for netbenas projects
+     *                            and presents a dialog to open them eventually
      * @return  {@code true} if the checkout was successful,
      *          {@code false} otherwise
      */
     public static boolean checkoutRepositoryFolder(String repositoryUrl,
-                                                   String repoRelativePath,
+                                                   String[] repoRelativePaths,
                                                    File localFolder,
                                                    String username,
-                                                   String password)
-            throws MalformedURLException, IOException {
+                                                   String password,
+                                                   boolean scanForNewProjects)
+            throws MalformedURLException {
         RepositoryConnection conn = new RepositoryConnection(repositoryUrl);
 
         SVNUrl svnUrl = conn.getSvnUrl();
         SVNRevision svnRevision = conn.getSvnRevision();
 
-        repoRelativePath = polishRelativePath(repoRelativePath);
-        SVNUrl repoSvnUrl = isRootRelativePath(repoRelativePath)
-                                 ? svnUrl
-                                 : svnUrl.appendPath(repoRelativePath);
-        File targetLocalFolder = determineTargetFolder(repoRelativePath, localFolder);
-        if (!prepareLocalFolder(targetLocalFolder)) {
-            return false;
-        }
-
         org.netbeans.modules.subversion.Subversion subversion
                 = org.netbeans.modules.subversion.Subversion.getInstance();
+        SvnClient client;
         try {
-            SvnClient client = (username != null)
+            client = (username != null)
                                ? subversion.getClient(svnUrl,
                                                       username,
                                                       (password != null) ? password
                                                                          : "") //NOI18N
                                : subversion.getClient(svnUrl);
-            client.checkout(repoSvnUrl, targetLocalFolder, svnRevision, true);
-            return true;
         } catch (SVNClientException ex) {
             ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
             return false;
         }
-    }
 
-    private static boolean prepareLocalFolder(File targetLocalFolder) {
-        boolean exists = targetLocalFolder.exists();
-        if (!exists) {
-            exists = targetLocalFolder.mkdirs();
-        } else if (!targetLocalFolder.isDirectory()) {
-            exists = false;
+        RepositoryFile[] repositoryFiles = new RepositoryFile[repoRelativePaths.length];
+        for (int i = 0; i < repoRelativePaths.length; i++) {
+            String repoRelativePath = repoRelativePaths[i];
+
+            repoRelativePath = polishRelativePath(repoRelativePath);
+            SVNUrl repoSvnUrl = isRootRelativePath(repoRelativePath)
+                                     ? svnUrl
+                                     : svnUrl.appendPath(repoRelativePath);
+
+            repositoryFiles[i] = new RepositoryFile(repoSvnUrl, repoRelativePath, svnRevision);
+//            client.checkout(repoSvnUrl, targetLocalFolder, svnRevision, true);
+
         }
-        if (!exists) {
-            ErrorManager.getDefault().log(
-                    ErrorManager.EXCEPTION,
-                    "Could not prepare target directory for the checkout.\n" //NOI18N
-                    + "The directory does not exist and it could not be " //NOI18N
-                    + "created.");                                      //NOI18N
-
-            return false;
+        try {
+            // prepare local
+//        File targetLocalFolder = determineTargetFolder(repoRelativePath, localFolder);
+//        if (!prepareLocalFolder(targetLocalFolder)) {
+//            return false;
+//        }
+            CheckoutAction.checkout(client, svnUrl, repositoryFiles, localFolder, false, null);
+            if(scanForNewProjects) CheckoutAction.showCheckoutCompletet(svnUrl, repositoryFiles, localFolder, false, null);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, false, true);        
+        } finally {
+            subversion.versionedFilesChanged();
         }
-        if (!targetLocalFolder.canWrite()) {
-            ErrorManager.getDefault().log(
-                    ErrorManager.EXCEPTION,
-                    "Could not prepare target directory for the checkout.\n" //NOI18N
-                    + "The directory exists but it is not writeable."); //NOI18N
 
-            return false;
-        } 
         return true;
     }
+
+//    private static boolean prepareLocalFolder(File targetLocalFolder) {
+//        boolean exists = targetLocalFolder.exists();
+//        if (!exists) {
+//            exists = targetLocalFolder.mkdirs();
+//        } else if (!targetLocalFolder.isDirectory()) {
+//            exists = false;
+//        }
+//        if (!exists) {
+//            ErrorManager.getDefault().log(
+//                    ErrorManager.EXCEPTION,
+//                    "Could not prepare target directory for the checkout.\n" //NOI18N
+//                    + "The directory does not exist and it could not be " //NOI18N
+//                    + "created.");                                      //NOI18N
+//
+//            return false;
+//        }
+//        if (!targetLocalFolder.canWrite()) {
+//            ErrorManager.getDefault().log(
+//                    ErrorManager.EXCEPTION,
+//                    "Could not prepare target directory for the checkout.\n" //NOI18N
+//                    + "The directory exists but it is not writeable."); //NOI18N
+//
+//            return false;
+//        }
+//        return true;
+//    }
 
     /**
      * Determines the target folder (the normalized, absolute path) where the
@@ -279,18 +306,11 @@ public class Subversion {
      * @return  absolute, normalized folder path that takes name
      *          of the requested repository subfolder into account
      */
-    private static File determineTargetFolder(String repositorySubfolder,
-                                              File targetLocalFolder) {
-        final boolean atWorkingDirLevel = false;
-
-        File targetFolder;
-        if (atWorkingDirLevel || isRootRelativePath(repositorySubfolder)) {
-            targetFolder = targetLocalFolder;
-        } else {
-            targetFolder = new File(targetLocalFolder, getLastPathSegment(repositorySubfolder));
-        }
-        return FileUtil.normalizeFile(targetFolder.getAbsoluteFile());
-    }
+//    private static File determineTargetFolder(String repositorySubfolder,
+//                                              File targetLocalFolder) {
+//        File targetFolder = new File(targetLocalFolder, getLastPathSegment(repositorySubfolder));
+//        return FileUtil.normalizeFile(targetFolder.getAbsoluteFile());
+//    }
 
     private static String getLastPathSegment(String path) {
         int lastSlashPos = path.lastIndexOf('/');

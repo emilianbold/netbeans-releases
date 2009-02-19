@@ -75,7 +75,7 @@ public final class CheckoutAction extends CallableSystemAction {
         
         final SVNUrl repository = wizard.getRepositoryRoot();
         final RepositoryFile[] repositoryFiles = wizard.getRepositoryFiles();
-        final File file = wizard.getWorkdir();        
+        final File workDir = wizard.getWorkdir();
         final boolean atWorkingDirLevel = wizard.isAtWorkingDirLevel();
         
         SvnProgressSupport support = new SvnProgressSupport() {
@@ -90,7 +90,7 @@ public final class CheckoutAction extends CallableSystemAction {
         
                 try {
                     setDisplayName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_Checkout_Progress"));
-                    checkout(client, repository, repositoryFiles, file, atWorkingDirLevel, this);
+                    checkout(client, repository, repositoryFiles, workDir, atWorkingDirLevel, this);
                 } catch (SVNClientException ex) {
                     annotate(ex);
                     return;
@@ -103,30 +103,10 @@ public final class CheckoutAction extends CallableSystemAction {
                 
                 setDisplayName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_ScanFolders_Progress"));
                 if (SvnModuleConfig.getDefault().getShowCheckoutCompleted()) {
-                    String[] folders;
-                    if(atWorkingDirLevel) {
-                        folders = new String[1];
-                        folders[0] = "."; // NOI18N
-                    } else {
-                        folders = new String[repositoryFiles.length];
-                        for (int i = 0; i < repositoryFiles.length; i++) {
-                            if(isCanceled()) {
-                                return;
-                            }
-                            if(repositoryFiles[i].isRepositoryRoot()) {
-                                folders[i] = "."; // NOI18N
-                            } else {
-                                folders[i] = repositoryFiles[i].getFileUrl().getLastPathSegment();
-                            }
-                        }
-                    }                    
-                    CheckoutCompleted cc = new CheckoutCompleted(file, folders, true);
-                    if(isCanceled()) {
-                        return;
-                    }
-                    cc.scanForProjects(this);
+                    showCheckoutCompletet(repository, repositoryFiles, workDir, atWorkingDirLevel, this);
                 }
             }
+
         };
         support.start(Subversion.getInstance().getRequestProcessor(repository), repository, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_Checkout_Progress"));
 
@@ -176,6 +156,36 @@ public final class CheckoutAction extends CallableSystemAction {
                 return;                
             }            
         }
+    }
+
+    public static void showCheckoutCompletet(final SVNUrl repository,
+                                        final RepositoryFile[] repositoryFiles,
+                                        final File workingDir,
+                                        final boolean atWorkingDirLevel,
+                                        final SvnProgressSupport support) {
+        String[] folders;
+        if (atWorkingDirLevel) {
+            folders = new String[1];
+            folders[0] = "."; // NOI18N
+        } else {
+            folders = new String[repositoryFiles.length];
+            for (int i = 0; i < repositoryFiles.length; i++) {
+                if (support != null && support.isCanceled()) {
+                    return;
+                }
+                if (repositoryFiles[i].isRepositoryRoot()) {
+                    folders[i] = "."; // NOI18N
+                } else {
+                    folders[i] = repositoryFiles[i].getFileUrl().getLastPathSegment();
+                }
+            }
+        }
+        CheckoutCompleted cc = new CheckoutCompleted(workingDir, folders, true);
+        if (support != null && support.isCanceled()) {
+            return;
+        }
+        cc.scanForProjects(support);
+        return;
     }
 
 }
