@@ -268,6 +268,10 @@ final class FileAssociationsModel {
                 String mimeType = entry.getKey();
                 Set<String> extensions = entry.getValue();
                 for (String extension : extensions) {
+                    if (extension.equalsIgnoreCase("xml") && !userDefined && "text/xml".equals(extensionToMimeAll.get(extension))) {  //NOI18N
+                        // #158563 - skip other MIME types associated to xml by non-extension-based resolvers (e.g. text/x-nbeditor-keybindingsettings)
+                        continue;
+                    }
                     extensionToMimeAll.put(extension, mimeType);
                     if (userDefined) {
                         extensionToMimeUser.put(extension, mimeType);
