@@ -39,35 +39,26 @@
 require 'rubygems'
 require 'autotest'
 
-Autotest.add_hook :initialize do |at|
-  load(__FILE__)
-end
+puts "loading rspec.."
 
 Autotest.add_hook :run_command do |at|
   puts "%AUTOTEST% reset"
 end
 
-# Loads NbTestRunner for test/unit tests
-class Autotest
-  remove_method :make_test_cmd
-  def make_test_cmd files_to_test
-    cmds = []
-    full, partial = reorder(files_to_test).partition { |k,v| v.empty? }
+# turn temporarily off warnings for method redefinitions
+org_verbose_level = $VERBOSE
+$VERBOSE = nil
 
-    test_runner = ENV['NB_TEST_RUNNER']
+# Loads NbRspecMediator for running specs.
+require 'autotest/rspec'
+class Autotest::Rspec < Autotest
 
-    unless full.empty? then
-      classes = full.map {|k,v| k}.flatten.uniq.join(' ')
-      cmds << "#{ruby} -I#{libs} -r\"#{test_runner}\" -rtest/unit -e \"%w[#{classes}].each { |f| require f }\""
-    end
-
-    partial.each do |klass, methods|
-      regexp = Regexp.union(*methods).source
-      cmds << "#{ruby} -I#{libs} -r\"#{test_runner}\" -rtest/unit #{klass} -n \"/^(#{regexp})$/\""
-    end
-
-    res = cmds.join("#{SEP} ")
-    return res
+  alias_method :nb_loader_existing_add_options_if_present, :add_options_if_present unless
+    instance_methods.include?("nb_loader_existing_add_options_if_present")
+  def add_options_if_present # :nodoc:
+    "#{ENV['NB_RSPEC_MEDIATOR']} #{nb_loader_existing_add_options_if_present}"
   end
 
 end
+$VERBOSE = org_verbose_level
+

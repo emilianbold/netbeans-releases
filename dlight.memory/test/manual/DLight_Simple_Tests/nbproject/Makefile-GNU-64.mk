@@ -25,7 +25,7 @@ CND_PLATFORM=GNU-Solaris-x86
 include Makefile
 
 # Object Directory
-OBJECTDIR=build/GNU/${CND_PLATFORM}
+OBJECTDIR=build/GNU-64/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
@@ -39,11 +39,11 @@ OBJECTFILES= \
 	${OBJECTDIR}/test_sync.o
 
 # C Compiler Flags
-CFLAGS=
+CFLAGS=-m64
 
 # CC Compiler Flags
-CCFLAGS=
-CXXFLAGS=
+CCFLAGS=-m64
+CXXFLAGS=-m64
 
 # Fortran Compiler Flags
 FFLAGS=
@@ -56,11 +56,11 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	${MAKE}  -f nbproject/Makefile-GNU.mk dist/GNU/GNU-Solaris-x86/dlight_simple_tests
+	${MAKE}  -f nbproject/Makefile-GNU-64.mk dist/GNU-64/GNU-Solaris-x86/dlight_simple_tests
 
-dist/GNU/GNU-Solaris-x86/dlight_simple_tests: ${OBJECTFILES}
-	${MKDIR} -p dist/GNU/GNU-Solaris-x86
-	${LINK.cc} -lmalloc -o dist/GNU/${CND_PLATFORM}/dlight_simple_tests ${OBJECTFILES} ${LDLIBSOPTIONS} 
+dist/GNU-64/GNU-Solaris-x86/dlight_simple_tests: ${OBJECTFILES}
+	${MKDIR} -p dist/GNU-64/GNU-Solaris-x86
+	${LINK.cc} -lmalloc -o dist/GNU-64/${CND_PLATFORM}/dlight_simple_tests ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 ${OBJECTDIR}/deadlock.o: deadlock.cpp 
 	${MKDIR} -p ${OBJECTDIR}
@@ -107,8 +107,8 @@ ${OBJECTDIR}/test_sync.o: test_sync.cpp
 
 # Clean Targets
 .clean-conf:
-	${RM} -r build/GNU
-	${RM} dist/GNU/GNU-Solaris-x86/dlight_simple_tests
+	${RM} -r build/GNU-64
+	${RM} dist/GNU-64/GNU-Solaris-x86/dlight_simple_tests
 
 # Subprojects
 .clean-subprojects:

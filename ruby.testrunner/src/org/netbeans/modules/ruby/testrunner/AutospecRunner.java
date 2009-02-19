@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.ruby.testrunner;
 
 import java.io.File;
@@ -59,22 +58,20 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 
 /**
- * Handles running the autotest command, hooks its execution with the
+ * Handles running the autospec command, hooks its execution with the
  * UI test runner.
  *
  * @author Erno Mononen
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.ruby.rubyproject.spi.TestRunner.class)
-public class AutotestRunner implements TestRunner {
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.ruby.rubyproject.spi.TestRunner.class)
+public class AutospecRunner implements TestRunner {
 
-    private static final Logger LOGGER = Logger.getLogger(AutotestRunner.class.getName());
-    
-    private static final TestRunner INSTANCE = new AutotestRunner();
+    private static final Logger LOGGER = Logger.getLogger(AutospecRunner.class.getName());
+    private static final TestRunner INSTANCE = new AutospecRunner();
+    private static final String NB_RSPEC_MEDIATOR = "NB_RSPEC_MEDIATOR"; //NOI18N
+    private static final String AUTOSPEC_LOADER = "nb_autospec_loader.rb"; //NOI18N
 
-    static final String AUTOTEST_LOADER = "nb_autotest_loader.rb"; //NOI18N
-
-    
-    public AutotestRunner() {
+    public AutospecRunner() {
     }
 
     public TestRunner getInstance() {
@@ -82,7 +79,7 @@ public class AutotestRunner implements TestRunner {
     }
 
     public boolean supports(TestType type) {
-        return TestType.AUTOTEST == type;
+        return TestType.AUTOSPEC == type;
     }
 
     public void runTest(FileObject testFile, boolean debug) {
@@ -96,22 +93,24 @@ public class AutotestRunner implements TestRunner {
     public void runAllTests(Project project, boolean debug) {
 
         RubyPlatform platform = RubyPlatform.platformFor(project);
-        if (!platform.hasValidAutoTest(true)) {
+        if (!platform.hasValidAutoSpec(true)) {
             return;
         }
 
-        String displayName = NbBundle.getMessage(AutotestRunner.class, "AutoTest", ProjectUtils.getInformation(project).getDisplayName());
+        String displayName = NbBundle.getMessage(AutospecRunner.class, "AutoSpec", ProjectUtils.getInformation(project).getDisplayName());
         FileLocator locator = project.getLookup().lookup(FileLocator.class);
 
+        String autospec = platform.getAutoTest();
         RubyExecutionDescriptor desc = new RubyExecutionDescriptor(platform,
                 displayName,
                 FileUtil.toFile(project.getProjectDirectory()),
-                platform.getAutoTest());
+                autospec);
 
         TestRunnerUtilities.addProperties(desc, project);
         desc.addInitialArgs("-r \"" + getLoaderScript().getAbsolutePath() + "\""); //NOI18N
         Map<String, String> env = new HashMap<String, String>(2);
-        TestUnitRunner.addTestUnitRunnerToEnv(env);
+        addRspecMediatorOptionsToEnv(env);
+        env.put("RSPEC", "true"); //NOI18N
         desc.addAdditionalEnv(env);
         desc.debug(debug);
         desc.allowInput();
@@ -129,16 +128,22 @@ public class AutotestRunner implements TestRunner {
                 new RubyTestRunnerNodeFactory());
         TestExecutionManager.getInstance().start(desc, new AutotestHandlerFactory(), session);
     }
-    
+
+    static void addRspecMediatorOptionsToEnv(Map<String, String> env) {
+        // referenced from nb_autotest_loader.rb
+        String options = "--require '" + RspecRunner.getMediatorScript().getAbsolutePath() + "' --runner NbRspecMediator";//NOI18N
+
+        env.put(NB_RSPEC_MEDIATOR, options);
+    }
+
     private static File getLoaderScript() {
         File mediatorScript = InstalledFileLocator.getDefault().locate(
-                AUTOTEST_LOADER, "org.netbeans.modules.ruby.testrunner", false);  // NOI18N
+                AUTOSPEC_LOADER, "org.netbeans.modules.ruby.testrunner", false);  // NOI18N
 
         if (mediatorScript == null) {
-            throw new IllegalStateException("Could not locate " + AUTOTEST_LOADER); // NOI18N
+            throw new IllegalStateException("Could not locate " + AUTOSPEC_LOADER); // NOI18N
 
         }
         return mediatorScript;
     }
-
 }
