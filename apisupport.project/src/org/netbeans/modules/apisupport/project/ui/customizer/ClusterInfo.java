@@ -82,6 +82,11 @@ public final class ClusterInfo {
     }
 
     @Override
+    public String toString() {
+        return clusterDir.getAbsolutePath() + (isEnabled() ? "" : " (DISABLED)");
+    }
+
+    @Override
     public int hashCode() {
         int hash = 3;
         hash = 37 * hash + (this.clusterDir != null ? this.clusterDir.hashCode() : 0);

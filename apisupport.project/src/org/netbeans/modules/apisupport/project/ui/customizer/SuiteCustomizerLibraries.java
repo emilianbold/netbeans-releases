@@ -286,7 +286,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             public void run() {
                 refreshModules();
                 loadClusterPath();
-                updateDependencyWarnings();
+                updateDependencyWarnings(true);
             }
         };
         if (TEST) {
@@ -298,20 +298,18 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
 
     private void addExtCluster(ClusterInfo ci) {
-        Map<String, ModuleEntry> entries = new HashMap<String, ModuleEntry>();
-        final File clusterDir = ci.getClusterDir();
+        Children.SortedArray moduleCh = new Children.SortedArray();
         try {
-            ModuleList.scanCluster(clusterDir, null, entries, false);
+            ModuleList ml = ModuleList.scanCluster(ci.getClusterDir(), null, false);
+            moduleCh.setComparator(MODULES_COMPARATOR);
+            for (ModuleEntry entry : ml.getAllEntries()) {
+                moduleCh.add(new Node[] { new BinaryModuleNode(entry, true) });
+            }
+            extraBinaryModules.addAll(ml.getAllEntries());
         } catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
         }
         initNodes();
-        Children.SortedArray moduleCh = new Children.SortedArray();
-        moduleCh.setComparator(MODULES_COMPARATOR);
-        for (ModuleEntry entry : entries.values()) {
-            moduleCh.add(new Node[] { new BinaryModuleNode(entry, true) });
-        }
-        extraBinaryModules.addAll(entries.values());
         libChildren.extraNodes.add(new ClusterNode(ci, moduleCh));
         libChildren.setMergedKeys();
     }
@@ -342,9 +340,9 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     private void refreshModules() {
         platformModules = getProperties().getActivePlatform().getModules();
         createPlatformModulesChildren();
-        synchronized (this) {
-            universe = null;
-        }
+//       XXX  synchronized (this) {
+//            universe = null;
+//        }
     }
     
     private void refreshJavaPlatforms() {
@@ -681,8 +679,9 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
 
     private static final Comparator<Node> MODULES_COMPARATOR = new Comparator<Node>() {
+        Collator COLL = Collator.getInstance();
         public int compare(Node n1, Node n2) {
-            return n1.getDisplayName().compareTo(n2.getDisplayName());
+            return COLL.compare(n1.getDisplayName(), n2.getDisplayName());
         }
     };
     
@@ -853,7 +852,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                     par.updateClusterState();
                     par.firePropertyChange(null, null, null);
                 }
-                updateDependencyWarnings();
+                updateDependencyWarnings(false);
             }
         }
 
@@ -1169,8 +1168,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         private void removeClusters(Node[] selectedNodes) {
             extraNodes.removeAll(Arrays.asList(selectedNodes));
             setMergedKeys();
-            universe = null;
-            updateDependencyWarnings();
+            updateDependencyWarnings(true);
         }
 
         private void setMergedKeys() {
@@ -1338,7 +1336,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
 
     private RequestProcessor.Task updateDependencyWarningsTask;
-    private void updateDependencyWarnings() {
+    private void updateDependencyWarnings(final boolean refreshUniverse) {
         if (TEST || ! cpLoaded) {
             return;
         }
@@ -1346,6 +1344,8 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         if (updateDependencyWarningsTask == null) {
             updateDependencyWarningsTask = RequestProcessor.getDefault().create(new Runnable() {
                 public void run() {
+                    if (refreshUniverse)
+                        universe = null;
                     doUpdateDependencyWarnings();
                 }
             });

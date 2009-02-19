@@ -232,7 +232,7 @@ public class SuiteCustomizerLibrariesTest extends TestBase {
         Category cat = Category.create("dummy", "dummy", null);
         SuiteCustomizerLibraries scl = new SuiteCustomizerLibraries(suiteProps, cat);
         SuiteCustomizerLibraries.TEST = true;
-        scl.refresh();
+        scl.refresh(false);
         
         ExplorerManager mgr = scl.getExplorerManager();
         assertNotNull(mgr);

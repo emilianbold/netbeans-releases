@@ -40,9 +40,21 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.io.File;
+import java.io.FilenameFilter;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Utility methods for cluster-related tasks.
@@ -72,4 +84,76 @@ public final class ClusterUtils {
             return sprv.getClusterDirectory();
         return null;
     }
+
+    /**
+     * Resolves single cluster path entry with respect to project root and ${nbplatform.active} root.
+     * @param rawEntry Single cluster.path entry as stored in platform.properties
+     * @param root Project root
+     * @param eval Project property evaluator
+     * @param nbPlatformRoot Platform root used to replace ${nbplatform.active} references in the entry
+     * @return Absolute path to entry
+     */
+    public static File evaluateClusterPathEntry(String rawEntry, File root, PropertyEvaluator eval, File nbPlatformRoot) {
+        // When cluster does not exist, it is either bare name or one with different number
+        final Pattern pat = Pattern.compile("(?:.*[\\\\/])?([^/\\\\]*?)([0-9.]+)?[/\\\\]?$");
+        final String nbDirProp = "${" + SuiteProperties.ACTIVE_NB_PLATFORM_DIR_PROPERTY + "}";
+        if (rawEntry.startsWith(nbDirProp)) {
+            rawEntry = nbPlatformRoot.getAbsolutePath()
+                    + rawEntry.substring(nbDirProp.length());
+        }
+
+        File path = PropertyUtils.resolveFile(root, eval.evaluate(rawEntry));
+        if (! path.exists()) {
+            // search for corresponding numbered cluster
+            final Matcher cm = pat.matcher(path.getAbsolutePath());
+            if (cm.matches()) {
+                File parent = path.getParentFile();
+                if (parent != null) {
+                    File[] alternate = parent.listFiles(new FilenameFilter() {
+
+                        public boolean accept(File dir, String name) {
+                            Matcher am = pat.matcher(name);
+                            return am.matches() && cm.group(1).equalsIgnoreCase(am.group(1));
+                        }
+                    });
+                    if (alternate == null) {
+                        // not found, just return what we have
+                        return path;
+                    }
+                    if (alternate.length > 0 && alternate[0].isDirectory()) {
+                        return alternate[0];
+                    }
+                }
+            }
+        }
+        return path;
+    }
+
+    public static Set<ClusterInfo> evaluateClusterPath(File root, PropertyEvaluator eval, File nbPlatformRoot) {
+        Set<ClusterInfo> clusterPath = new LinkedHashSet<ClusterInfo>();
+        String cpp = eval.getProperty(SuiteProperties.CLUSTER_PATH_PROPERTY);
+        String[] paths = PropertyUtils.tokenizePath(cpp != null ? cpp : "");
+        String cpwdcp = eval.getProperty(SuiteProperties.CLUSTER_PATH_WDC_PROPERTY);
+        String[] pathsWDC = cpwdcp != null ? PropertyUtils.tokenizePath(cpwdcp) : null;
+        String[] wp = (pathsWDC != null) ? pathsWDC : paths;
+        Set<String> enabledPaths = new HashSet<String>();
+        if (pathsWDC != null) {
+            enabledPaths.addAll(Arrays.asList(paths));
+        }
+
+        for (String path : wp) {
+            // TODO C.P sources/javadoc
+            boolean isPlaf = path.contains("${" + SuiteProperties.ACTIVE_NB_PLATFORM_DIR_PROPERTY + "}");
+            File cd = evaluateClusterPathEntry(path, root, eval, nbPlatformRoot);
+            FileObject fo = FileUtil.toFileObject(cd);
+            Project prj = FileOwnerQuery.getOwner(fo);
+            if (prj.getLookup().lookup(NbModuleProvider.class) == null && prj.getLookup().lookup(SuiteProvider.class) == null) {
+                // probably found nbbuild above the platform, use only regular NB module projects
+                prj = null;
+            }
+            boolean enabled = (pathsWDC == null) || enabledPaths.contains(path);
+            clusterPath.add(ClusterInfo.createFromCP(cd, prj, isPlaf, enabled));
+        }
+        return clusterPath;
+    }   // TODO C.P test non-existent project clusters
 }

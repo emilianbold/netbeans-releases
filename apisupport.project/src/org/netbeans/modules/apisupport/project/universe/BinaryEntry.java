@@ -101,7 +101,10 @@ final class BinaryEntry extends AbstractEntry {
     }
     
     //private boolean recurring;
+    // TODO C.P special class for external clusters (or adjust this one)?
     public File getSourceLocation() {
+        if (getDestDir() == null)
+            return null;
         NbPlatform platform = NbPlatform.getPlatformByDestDir(getDestDir());
             /*
             assert !recurring : jar;

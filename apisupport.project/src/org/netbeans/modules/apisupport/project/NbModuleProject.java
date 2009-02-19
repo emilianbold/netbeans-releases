@@ -774,7 +774,7 @@ public final class NbModuleProject implements Project {
         }
 
         public File getClusterDirectory() {
-            return getModuleJarLocation().getParentFile().getAbsoluteFile();
+            return getModuleJarLocation().getParentFile().getParentFile().getAbsoluteFile();
         }
         
     }
