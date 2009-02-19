@@ -138,11 +138,21 @@ class CategoryPanelFormatters extends StorablePanel {
 
         buttonGroup1.add(formatChildrenAsCodeRadioButton);
         formatChildrenAsCodeRadioButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatChildrenAsCodeRadioButton.text")); // NOI18N
+        formatChildrenAsCodeRadioButton.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                formatChildrenAsCodeRadioButtonStateChanged(evt);
+            }
+        });
 
         formatChildrenCodeScrollPane.setViewportView(formatChildrenCodeEditorPane);
 
         buttonGroup1.add(formatChildrenAsListRadioButton);
         formatChildrenAsListRadioButton.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatChildrenAsListRadioButton.text")); // NOI18N
+        formatChildrenAsListRadioButton.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                formatChildrenAsListRadioButtonStateChanged(evt);
+            }
+        });
 
         formatChildrenListTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -394,20 +404,60 @@ class CategoryPanelFormatters extends StorablePanel {
     }//GEN-LAST:event_formattersMoveDownButtonActionPerformed
 
     private void variableAddButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_variableAddButtonActionPerformed
-        
+        DefaultTableModel model = (DefaultTableModel) formatChildrenListTable.getModel();
+        model.addRow(new Object[] { "", "" });
+        int index = model.getRowCount() - 1;
+        formatChildrenListTable.getSelectionModel().setSelectionInterval(index, index);
+        formatChildrenListTable.editCellAt(index, 0);
+        formatChildrenListTable.requestFocus();
+         //DefaultCellEditor ed = (DefaultCellEditor)
+        formatChildrenListTable.getCellEditor(index, 0).shouldSelectCell(
+                new ListSelectionEvent(formatChildrenListTable,
+                                       index, index, true));
     }//GEN-LAST:event_variableAddButtonActionPerformed
 
     private void variableRemoveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_variableRemoveButtonActionPerformed
-        // TODO add your handling code here:
+        int index = formatChildrenListTable.getSelectedRow();
+        if (index < 0) return ;
+        DefaultTableModel model = (DefaultTableModel) formatChildrenListTable.getModel();
+        model.removeRow(index);
     }//GEN-LAST:event_variableRemoveButtonActionPerformed
 
     private void variableMoveUpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_variableMoveUpButtonActionPerformed
-        // TODO add your handling code here:
+        int index = formatChildrenListTable.getSelectedRow();
+        if (index <= 0) return ;
+        DefaultTableModel model = (DefaultTableModel) formatChildrenListTable.getModel();
+        Object[] row = new Object[] { model.getValueAt(index, 0), model.getValueAt(index, 1) };
+        model.removeRow(index);
+        model.insertRow(index - 1, row);
+        formatChildrenListTable.getSelectionModel().setSelectionInterval(index - 1, index - 1);
     }//GEN-LAST:event_variableMoveUpButtonActionPerformed
 
     private void variableMoveDownButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_variableMoveDownButtonActionPerformed
-        // TODO add your handling code here:
+        int index = formatChildrenListTable.getSelectedRow();
+        if (index < 0) return ;
+        DefaultTableModel model = (DefaultTableModel) formatChildrenListTable.getModel();
+        if (index >= (model.getRowCount() - 1)) return ;
+        Object[] row = new Object[] { model.getValueAt(index, 0), model.getValueAt(index, 1) };
+        model.removeRow(index);
+        model.insertRow(index + 1, row);
+        formatChildrenListTable.getSelectionModel().setSelectionInterval(index + 1, index + 1);
     }//GEN-LAST:event_variableMoveDownButtonActionPerformed
+
+    private void formatChildrenAsCodeRadioButtonStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_formatChildrenAsCodeRadioButtonStateChanged
+        boolean selected = formatChildrenAsCodeRadioButton.isSelected();
+        formatChildrenCodeEditorPane.setEditable(selected);
+        formatChildrenCodeEditorPane.setEnabled(selected);
+    }//GEN-LAST:event_formatChildrenAsCodeRadioButtonStateChanged
+
+    private void formatChildrenAsListRadioButtonStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_formatChildrenAsListRadioButtonStateChanged
+        boolean selected = formatChildrenAsListRadioButton.isSelected();
+        formatChildrenListTable.setEnabled(selected);
+        variableAddButton.setEnabled(selected);
+        variableRemoveButton.setEnabled(selected);
+        variableMoveUpButton.setEnabled(selected);
+        variableMoveDownButton.setEnabled(selected);
+    }//GEN-LAST:event_formatChildrenAsListRadioButtonStateChanged
 
     private void initFormattersList() {
         formattersList.setCellRenderer(new ListCellRenderer() {
@@ -466,6 +516,15 @@ class CategoryPanelFormatters extends StorablePanel {
         });
         formattersList.setModel(new DefaultListModel());
         formattersList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        formatChildrenListTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                int index = formatChildrenListTable.getSelectedRow();
+                variableRemoveButton.setEnabled(index >= 0);
+                variableMoveDownButton.setEnabled(index >= 0 && index < (formatChildrenListTable.getRowCount() - 1));
+                variableMoveUpButton.setEnabled(index >= 1);
+            }
+        });
     }
 
     private void loadSelectedFormatter(VariablesFormatter f) {
