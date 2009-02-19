@@ -1918,7 +1918,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             synchronized (this) {
                 if (uid == null) {
                     uid = out = UIDUtilities.createProjectUID(this);
-                    System.err.println("getUID for project UID@"+System.identityHashCode(uid) + uid + "on prj@"+System.identityHashCode(this));
+                    if (TraceFlags.TRACE_CPU_CPP) {System.err.println("getUID for project UID@"+System.identityHashCode(uid) + uid + "on prj@"+System.identityHashCode(this));}
                 }
             }
         }
