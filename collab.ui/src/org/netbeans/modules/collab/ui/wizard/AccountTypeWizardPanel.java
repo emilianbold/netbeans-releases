@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,107 +41,43 @@
 package org.netbeans.modules.collab.ui.wizard;
 
 import java.awt.Component;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
-
-import org.netbeans.modules.collab.core.Debug;
 
 /**
  *
- * @author  Todd Fast, todd.fast@sun.com
+ *
  */
-public abstract class WizardPanelBase implements WizardDescriptor.Panel {
-    ////////////////////////////////////////////////////////////////////////////
-    // Instance variables
-    ////////////////////////////////////////////////////////////////////////////
-    private boolean valid;
-    private Set changeListeners = new HashSet();
+public class AccountTypeWizardPanel extends WizardPanelBase {
 
-    /**
-     *
-     *
-     */
-    public WizardPanelBase() {
-        super();
+    private AccountTypePanel panelUI;
+
+    @Override
+    public synchronized Component getComponent() {
+        return getPanelUI();
     }
 
-    /**
-     *
-     *
-     */
-    public abstract Component getComponent();
-
-    /**
-     *
-     *
-     */
-    public HelpCtx getHelp() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    /**
-     *
-     *
-     */
-    public boolean isValid() {
-        return valid;
-    }
-
-    /**
-     *
-     *
-     */
-    public void setValid(boolean value) {
-        valid = value;
-        fireStateChanged();
-    }
-
-    /**
-     *
-     *
-     */
-    public abstract void readSettings(Object settings);
-
-    /**
-     *
-     *
-     */
-    public abstract void storeSettings(Object settings);
-
-    /**
-     *
-     *
-     */
-    public void addChangeListener(ChangeListener listener) {
-        changeListeners.add(listener);
-    }
-
-    /**
-     *
-     *
-     */
-    public void removeChangeListener(ChangeListener listener) {
-        changeListeners.remove(listener);
-    }
-
-    /**
-     *
-     *
-     */
-    public void fireStateChanged() {
-        ChangeEvent event = new ChangeEvent(this);
-
-        for (Iterator i = changeListeners.iterator(); i.hasNext();) {
-            try {
-                ((ChangeListener) i.next()).stateChanged(event);
-            } catch (Exception e) {
-                Debug.debugNotify(e);
-            }
+    private AccountTypePanel getPanelUI() {
+        if (panelUI == null) {
+            panelUI = new AccountTypePanel(this);
         }
+        return panelUI;
     }
+
+    /**
+     *
+     *
+     */
+    public void readSettings(Object object) {
+        AccountTypePanel p = getPanelUI();
+        p.readSettings(object);
+    }
+
+    /**
+     *
+     *
+     */
+    public void storeSettings(Object object) {
+        AccountTypePanel p = getPanelUI();
+        p.storeSettings(object);
+    }
+
 }
