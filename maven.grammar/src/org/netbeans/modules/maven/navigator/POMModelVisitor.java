@@ -56,6 +56,7 @@ import org.netbeans.modules.maven.model.pom.CiManagement;
 import org.netbeans.modules.maven.model.pom.Configuration;
 import org.netbeans.modules.maven.model.pom.Contributor;
 import org.netbeans.modules.maven.model.pom.Dependency;
+import org.netbeans.modules.maven.model.pom.DependencyContainer;
 import org.netbeans.modules.maven.model.pom.DependencyManagement;
 import org.netbeans.modules.maven.model.pom.DeploymentRepository;
 import org.netbeans.modules.maven.model.pom.Developer;
@@ -134,6 +135,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        //ordered by appearance in pom schema..
         checkChildString(names.MODELVERSION, "Model Version", t != null ? t.getModelVersion() : null);
         checkChildString(names.GROUPID, "GroupId", t != null ? t.getGroupId() : null);
         checkChildString(names.ARTIFACTID, "ArtifactId", t != null ? t.getArtifactId() : null);
@@ -142,13 +144,10 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         checkChildString(names.VERSION, "Version", t != null ? t.getVersion() : null);
         checkChildString(names.DESCRIPTION, "Description", t != null ? t.getDescription() : null);
         checkChildString(names.URL, "Url", t != null ? t.getURL() : null);
-        checkChildString(names.INCEPTIONYEAR, "Inception Year", t != null ? t.getInceptionYear() : null);
-
+        checkChildObject(names.PREREQUISITES, Prerequisites.class, "Prerequisites", t != null ? t.getPrerequisites() : null);
         checkChildObject(names.ISSUEMANAGEMENT, IssueManagement.class, "IssueManagement", t != null ? t.getIssueManagement() : null);
         checkChildObject(names.CIMANAGEMENT, CiManagement.class, "CiManagement", t != null ? t.getCiManagement() : null);
-        checkChildObject(names.SCM, Scm.class, "Scm", t != null ? t.getScm() : null);
-        checkChildObject(names.ORGANIZATION, Organization.class, "Organization", t != null ? t.getOrganization() : null);
-
+        checkChildString(names.INCEPTIONYEAR, "Inception Year", t != null ? t.getInceptionYear() : null);
         this.<MailingList>checkListObject(names.MAILINGLISTS, names.MAILINGLIST,
                 MailingList.class, "Mailing Lists",
                 t != null ? t.getMailingLists() : null,
@@ -157,7 +156,6 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                         return c.getName() != null ? c.getName() : "Mailing List";
                     }
                 });
-
         this.<Developer>checkListObject(names.DEVELOPERS, names.DEVELOPER,
                 Developer.class, "Developers",
                 t != null ? t.getDevelopers() : null,
@@ -174,7 +172,6 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                         return c.getName() != null ? c.getName() : "Contributor";
                     }
                 });
-
         this.<License>checkListObject(names.LICENSES, names.LICENSE,
                 License.class, "Licenses",
                 t != null ? t.getLicenses() : null,
@@ -183,20 +180,20 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                         return c.getName() != null ? c.getName() : "License";
                     }
                 });
-
-        this.<Dependency>checkListObject(names.DEPENDENCIES, names.DEPENDENCY,
-                Dependency.class, "Dependencies",
-                t != null ? t.getDependencies() : null,
-                new KeyGenerator<Dependency>() {
-                    public Object generate(Dependency c) {
-                        return c.getGroupId() + ":" + c.getArtifactId();
+        checkChildObject(names.SCM, Scm.class, "Scm", t != null ? t.getScm() : null);
+        checkChildObject(names.ORGANIZATION, Organization.class, "Organization", t != null ? t.getOrganization() : null);
+        checkChildObject(names.BUILD, Build.class, "Build", t != null ? t.getBuild() : null);
+        this.<Profile>checkListObject(names.PROFILES, names.PROFILE,
+                Profile.class, "Profiles",
+                t != null ? t.getProfiles() : null,
+                new KeyGenerator<Profile>() {
+                    public Object generate(Profile c) {
+                        return c.getId();
                     }
-                    public String createName(Dependency c) {
-                        return c.getArtifactId() != null ? c.getArtifactId() : "Dependency";
+                    public String createName(Profile c) {
+                        return c.getId() != null ? c.getId() : "Profile";
                     }
                 });
-        checkChildObject(names.DEPENDENCYMANAGEMENT, DependencyManagement.class, "DependencyManagement", t != null ? t.getDependencyManagement() : null);
-
         this.<Repository>checkListObject(names.REPOSITORIES, names.REPOSITORY,
                 Repository.class, "Repositories",
                 t != null ? t.getRepositories() : null,
@@ -219,6 +216,10 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                         return c.getId() != null ? c.getId() : "Repository";
                     }
                 });
+        checkDependencies(t);
+        checkChildObject(names.REPORTING, Reporting.class, "Reporting", t != null ? t.getReporting() : null);
+        checkChildObject(names.DEPENDENCYMANAGEMENT, DependencyManagement.class, "Dependency Management", t != null ? t.getDependencyManagement() : null);
+        checkChildObject(names.DISTRIBUTIONMANAGEMENT, DistributionManagement.class, "Distribution Management", t != null ? t.getDistributionManagement() : null);
         checkChildObject(names.PROPERTIES, Properties.class, "Properties", t != null ? t.getProperties() : null);
 
         count++;
@@ -239,19 +240,51 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     }
 
     public void visit(DistributionManagement target) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        DistributionManagement t = target;
+        if (t != null && !t.isInDocumentModel()) {
+            t = null;
+        }
+        checkChildObject(names.DIST_REPOSITORY, DeploymentRepository.class, "Repository", t != null ? t.getRepository() : null);
+        checkChildObject(names.DIST_SNAPSHOTREPOSITORY, DeploymentRepository.class, "Snapshot Repository", t != null ? t.getSnapshotRepository() : null);
+        checkChildObject(names.SITE, Site.class, "Site", t != null ? t.getSite() : null);
+        checkChildString(names.DOWNLOADURL, "Download Url", t != null ? t.getDownloadUrl() : null);
+
+        count++;
     }
 
     public void visit(Site target) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Site t = target;
+        if (t != null && !t.isInDocumentModel()) {
+            t = null;
+        }
+        checkChildString(names.ID, "Id", t != null ? t.getId() : null);
+        checkChildString(names.NAME, "Name", t != null ? t.getName() : null);
+        checkChildString(names.URL, "Url", t != null ? t.getUrl() : null);
+
+        count++;
     }
 
     public void visit(DeploymentRepository target) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        DeploymentRepository t = target;
+        if (t != null && !t.isInDocumentModel()) {
+            t = null;
+        }
+        checkChildString(names.ID, "Id", t != null ? t.getId() : null);
+        checkChildString(names.NAME, "Name", t != null ? t.getName() : null);
+        checkChildString(names.URL, "Url", t != null ? t.getUrl() : null);
+        checkChildString(names.LAYOUT, "Layout", t != null ? t.getLayout() : null);
+
+        count++;
     }
 
     public void visit(Prerequisites target) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Prerequisites t = target;
+        if (t != null && !t.isInDocumentModel()) {
+            t = null;
+        }
+        checkChildString(names.MAVEN, "Maven", t != null ? t.getMaven() : null);
+
+        count++;
     }
 
     public void visit(Contributor target) {
@@ -324,15 +357,115 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     }
 
     public void visit(Profile target) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Profile t = target;
+        if (t != null && !t.isInDocumentModel()) {
+            t = null;
+        }
+        checkChildString(names.ID, "Id", t != null ? t.getId() : null);
+        checkChildObject(names.ACTIVATION, Activation.class, "Activation", t != null ? t.getActivation() : null);
+        checkChildObject(names.BUILD, BuildBase.class, "Build", t != null ? t.getBuildBase() : null);
+        this.<Repository>checkListObject(names.REPOSITORIES, names.REPOSITORY,
+                Repository.class, "Repositories",
+                t != null ? t.getRepositories() : null,
+                new KeyGenerator<Repository>() {
+                    public Object generate(Repository c) {
+                        return c.getId();
+                    }
+                    public String createName(Repository c) {
+                        return c.getId() != null ? c.getId() : "Repository";
+                    }
+                });
+        this.<Repository>checkListObject(names.PLUGINREPOSITORIES, names.PLUGINREPOSITORY,
+                Repository.class, "Plugin Repositories",
+                t != null ? t.getPluginRepositories() : null,
+                new KeyGenerator<Repository>() {
+                    public Object generate(Repository c) {
+                        return c.getId();
+                    }
+                    public String createName(Repository c) {
+                        return c.getId() != null ? c.getId() : "Repository";
+                    }
+                });
+        checkDependencies(t);
+        checkChildObject(names.REPORTING, Reporting.class, "Reporting", t != null ? t.getReporting() : null);
+        checkChildObject(names.DEPENDENCYMANAGEMENT, DependencyManagement.class, "Dependency Management", t != null ? t.getDependencyManagement() : null);
+        checkChildObject(names.DISTRIBUTIONMANAGEMENT, DistributionManagement.class, "Distribution Management", t != null ? t.getDistributionManagement() : null);
+        checkChildObject(names.PROPERTIES, Properties.class, "Properties", t != null ? t.getProperties() : null);
+
+        count++;
     }
 
     public void visit(BuildBase target) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        BuildBase t = target;
+        if (t != null && !t.isInDocumentModel()) {
+            t = null;
+        }
+        checkChildString(names.DEFAULTGOAL, "Default Goal", t != null ? t.getDefaultGoal() : null);
+        this.<Resource>checkListObject(names.RESOURCES, names.RESOURCE,
+                Resource.class, "Resources",
+                t != null ? t.getResources() : null,
+                new IdentityKeyGenerator<Resource>() {
+                    public String createName(Resource c) {
+                        return c.getDirectory() != null ? c.getDirectory() : "Resource";
+                    }
+                });
+        this.<Resource>checkListObject(names.TESTRESOURCES, names.TESTRESOURCE,
+                Resource.class, "Test Resources",
+                t != null ? t.getTestResources() : null,
+                new IdentityKeyGenerator<Resource>() {
+                    public String createName(Resource c) {
+                        return c.getDirectory() != null ? c.getDirectory() : "Test Resource";
+                    }
+                });
+        checkChildString(names.DIRECTORY, "Directory", t != null ? t.getDirectory() : null);
+        checkChildString(names.FINALNAME, "Final Name", t != null ? t.getFinalName() : null);
+        //TODO filters
+        checkChildObject(names.PLUGINMANAGEMENT, PluginManagement.class, "Plugin Management", t != null ? t.getPluginManagement() : null);
+        this.<Plugin>checkListObject(names.PLUGINS, names.PLUGIN,
+                Plugin.class, "Plugins",
+                t != null ? t.getPlugins() : null,
+                new KeyGenerator<Plugin>() {
+                    public Object generate(Plugin c) {
+                        String gr = c.getGroupId();
+                        if (gr == null) {
+                            gr = "org.apache.maven.plugins"; //NOI18N
+                        }
+                        return gr + ":" + c.getArtifactId(); //NOI18N
+                    }
+                    public String createName(Plugin c) {
+                        return c.getArtifactId() != null ? c.getArtifactId() : "Plugin";
+                    }
+                });
+
+        count++;
     }
 
     public void visit(Plugin target) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Plugin t = target;
+        if (t != null && !t.isInDocumentModel()) {
+            t = null;
+        }
+        checkChildString(names.GROUPID, "GroupId", t != null ? t.getGroupId() : null);
+        checkChildString(names.ARTIFACTID, "ArtifactId", t != null ? t.getArtifactId() : null);
+        checkChildString(names.VERSION, "Version", t != null ? t.getVersion() : null);
+        checkChildString(names.EXTENSIONS, "Extensions", t != null ? (t.isExtensions() != null ? t.isExtensions().toString() : null) : null);
+        this.<PluginExecution>checkListObject(names.EXECUTIONS, names.EXECUTION,
+                PluginExecution.class, "Executions",
+                t != null ? t.getExecutions() : null,
+                new KeyGenerator<PluginExecution>() {
+                    public Object generate(PluginExecution c) {
+                        return c.getId(); //NOI18N
+                    }
+                    public String createName(PluginExecution c) {
+                        return c.getId() != null ? c.getId() : "Execution";
+                    }
+                });
+        checkDependencies(t);
+        //TODO goals.
+        checkChildString(names.INHERITED, "Inherited", t != null ? (t.isInherited() != null ? t.isInherited().toString() : null) : null);
+        checkChildObject(names.CONFIGURATION, Configuration.class, "Configuration", t != null ? t.getConfiguration() : null);
+
+        count++;
     }
 
     public void visit(Dependency target) {
@@ -346,40 +479,143 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         checkChildString(names.TYPE, "Type", t != null ? t.getType() : null);
         checkChildString(names.CLASSIFIER, "Classifier", t != null ? t.getClassifier() : null);
         checkChildString(names.SCOPE, "Scope", t != null ? t.getScope() : null);
-        count++;
 
+        count++;
     }
 
     public void visit(Exclusion target) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Exclusion t = target;
+        if (t != null && !t.isInDocumentModel()) {
+            t = null;
+        }
+        checkChildString(names.GROUPID, "GroupId", t != null ? t.getGroupId() : null);
+        checkChildString(names.ARTIFACTID, "ArtifactId", t != null ? t.getArtifactId() : null);
+
+        count++;
     }
 
     public void visit(PluginExecution target) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        PluginExecution t = target;
+        if (t != null && !t.isInDocumentModel()) {
+            t = null;
+        }
+        checkChildString(names.ID, "Id", t != null ? t.getId() : null);
+        checkChildString(names.PHASE, "Phase", t != null ? t.getPhase() : null);
+        //TODO goals.
+        checkChildString(names.INHERITED, "Inherited", t != null ? (t.isInherited() != null ? t.isInherited().toString() : null) : null);
+        checkChildObject(names.CONFIGURATION, Configuration.class, "Configuration", t != null ? t.getConfiguration() : null);
+
+        count++;
     }
 
     public void visit(Resource target) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Resource t = target;
+        if (t != null && !t.isInDocumentModel()) {
+            t = null;
+        }
+        checkChildString(names.TARGETPATH, "Target Path", t != null ? t.getTargetPath() : null);
+        //TODO filtering
+        checkChildString(names.DIRECTORY, "Directory", t != null ? t.getDirectory() : null);
+        //TODO includes, excludes
+
+        count++;
     }
 
     public void visit(PluginManagement target) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        PluginManagement t = target;
+        if (t != null && !t.isInDocumentModel()) {
+            t = null;
+        }
+        this.<Plugin>checkListObject(names.PLUGINS, names.PLUGIN,
+                Plugin.class, "Plugins",
+                t != null ? t.getPlugins() : null,
+                new KeyGenerator<Plugin>() {
+                    public Object generate(Plugin c) {
+                        String gr = c.getGroupId();
+                        if (gr == null) {
+                            gr = "org.apache.maven.plugins"; //NOI18N
+                        }
+                        return gr + ":" + c.getArtifactId(); //NOI18N
+                    }
+                    public String createName(Plugin c) {
+                        return c.getArtifactId() != null ? c.getArtifactId() : "Plugin";
+                    }
+                });
+
+        count++;
     }
 
     public void visit(Reporting target) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Reporting t = target;
+        if (t != null && !t.isInDocumentModel()) {
+            t = null;
+        }
+        checkChildString(names.EXCLUDEDEFAULTS, "Exclude Defaults", t != null ? (t.isExcludeDefaults() != null ? t.isExcludeDefaults().toString() : null) : null);
+        checkChildString(names.OUTPUTDIRECTORY, "Output Directory", t != null ? t.getOutputDirectory() : null);
+        this.<ReportPlugin>checkListObject(names.REPORTPLUGINS, names.REPORTPLUGIN,
+                ReportPlugin.class, "Report Plugins",
+                t != null ? t.getReportPlugins() : null,
+                new KeyGenerator<ReportPlugin>() {
+                    public Object generate(ReportPlugin c) {
+                        return c.getGroupId() + ":" + c.getArtifactId();
+                    }
+                    public String createName(ReportPlugin c) {
+                        return c.getArtifactId() != null ? c.getArtifactId() : "Report Plugin";
+                    }
+                });
+
+        count++;
     }
 
     public void visit(ReportPlugin target) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        ReportPlugin t = target;
+        if (t != null && !t.isInDocumentModel()) {
+            t = null;
+        }
+        checkChildString(names.GROUPID, "GroupId", t != null ? t.getGroupId() : null);
+        checkChildString(names.ARTIFACTID, "ArtifactId", t != null ? t.getArtifactId() : null);
+        checkChildString(names.VERSION, "Version", t != null ? t.getVersion() : null);
+        checkChildString(names.INHERITED, "Inherited", t != null ? (t.isInherited() != null ? t.isInherited().toString() : null) : null);
+        checkChildObject(names.CONFIGURATION, Configuration.class, "Configuration", t != null ? t.getConfiguration() : null);
+        this.<ReportSet>checkListObject(names.REPORTSETS, names.REPORTSET,
+                ReportSet.class, "ReportSets",
+                t != null ? t.getReportSets() : null,
+                new KeyGenerator<ReportSet>() {
+                    public Object generate(ReportSet c) {
+                        return c.getId(); //NOI18N
+                    }
+                    public String createName(ReportSet c) {
+                        return c.getId() != null ? c.getId() : "ReportSet";
+                    }
+                });
+
+        count++;
     }
 
     public void visit(ReportSet target) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        ReportSet t = target;
+        if (t != null && !t.isInDocumentModel()) {
+            t = null;
+        }
+        checkChildString(names.ID, "Id", t != null ? t.getId() : null);
+        checkChildObject(names.CONFIGURATION, Configuration.class, "Configuration", t != null ? t.getConfiguration() : null);
+        checkChildString(names.INHERITED, "Inherited", t != null ? (t.isInherited() != null ? t.isInherited().toString() : null) : null);
+        //TODO reports.
+
+        count++;
     }
 
     public void visit(Activation target) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Activation t = target;
+        if (t != null && !t.isInDocumentModel()) {
+            t = null;
+        }
+        checkChildObject(names.ACTIVATIONOS, ActivationOS.class, "Operating System", t != null ? t.getActivationOS() : null);
+        checkChildObject(names.ACTIVATIONPROPERTY, ActivationProperty.class, "Property", t != null ? t.getActivationProperty() : null);
+        checkChildObject(names.ACTIVATIONFILE, ActivationFile.class, "File", t != null ? t.getActivationFile() : null);
+        checkChildObject(names.ACTIVATIONCUSTOM, ActivationCustom.class, "Custom", t != null ? t.getActivationCustom() : null);
+
+        count++;
     }
 
     public void visit(ActivationProperty target) {
@@ -403,17 +639,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        this.<Dependency>checkListObject(names.DEPENDENCIES, names.DEPENDENCY,
-                Dependency.class, "Dependencies",
-                t != null ? t.getDependencies() : null,
-                new KeyGenerator<Dependency>() {
-                    public Object generate(Dependency c) {
-                        return c.getGroupId() + ":" + c.getArtifactId();
-                    }
-                    public String createName(Dependency c) {
-                        return c.getArtifactId() != null ? c.getArtifactId() : "Dependency";
-                    }
-                });
+        checkDependencies(t);
 
         count++;
     }
@@ -506,9 +732,6 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void visit(POMComponent target) {
-    }
-
 
     @SuppressWarnings("unchecked")
     private void checkChildString(POMQName qname, String displayName, String value) {
@@ -551,6 +774,21 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         while (cutHolder.getCutsSize() < count) {
             cutHolder.addCut(null);
         }
+    }
+
+    private void checkDependencies(DependencyContainer container) {
+        this.<Dependency>checkListObject(names.DEPENDENCIES, names.DEPENDENCY,
+                Dependency.class, "Dependencies",
+                container != null ? container.getDependencies() : null,
+                new KeyGenerator<Dependency>() {
+                    public Object generate(Dependency c) {
+                        return c.getGroupId() + ":" + c.getArtifactId();
+                    }
+                    public String createName(Dependency c) {
+                        return c.getArtifactId() != null ? c.getArtifactId() : "Dependency";
+                    }
+                });
+
     }
 
 //    private static Children createOverrideListChildren(ChildrenCreator subs, List<List> values) {
