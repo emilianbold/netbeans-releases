@@ -18,6 +18,7 @@
             </folder>
         </folder>
     </folder>
+    <!--
     <folder name="Actions">
         <folder name="DLight">
             <file name="org-netbeans-modules-cnd-gizmo-actions-StartGizmoAction.instance">
@@ -30,6 +31,7 @@
             </file>
         </folder>
     </folder>
+    -->
     <folder name="Toolbars">
         <folder name="Build">
             <file name="org-netbeans-modules-cnd-gizmo-actions-StartGizmoAction.shadow">
