@@ -41,16 +41,12 @@ package org.netbeans.modules.bugzilla;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 
 /**
  *
@@ -83,37 +79,29 @@ public class StorageTest extends NbTestCase implements TestConstants {
     }
 
     public void testStorage() throws MalformedURLException, CoreException, IOException {
-//        long ts = System.currentTimeMillis();
-//        String summary = "somary" + ts;
-//        BugzillaRepository repo = new BugzillaRepository(REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD);
-//        String id1 = TestUtil.createIssue(repo, summary);
-//        String id2 = TestUtil.createIssue(repo, summary);
-//        BugzillaQuery q = new BugzillaQuery(QUERY_NAME, repo, "&short_desc_type=allwordssubstr&short_desc=" + summary, -1);
-
-//        q.refresh();
-//        Issue[] issues = q.getIssues();
-//        assertEquals(2, issues.length);
         final IssueStorage storage = IssueStorage.getInstance();
 
         Map<String, Map<String, String>> m = new HashMap<String, Map<String, String>>();
-        Map<String, String> attr = new HashMap<String, String>();
-        attr.put("dummy", "dummy");
+        Map<String, String> attr1 = new HashMap<String, String>();
+        attr1.put("dummy", "dummy1");
+        Map<String, String> attr2 = new HashMap<String, String>();
+        attr2.put("dummy", "dummy2");
         String id1 = "id1";
         String id2 = "id2";
-        m.put(id1, attr);
-        m.put(id2, attr);
-
+        
         String url = "http://test/bugzilla";
         String qName = "SomeQuery";
-        storage.storeQuery(url, qName, m);
-        m = storage.readQuery(url, qName);
 
-        attr = m.get(id1);
+        storage.storeQuery(url, qName, new String[] {id1, id2});
+        storage.storeIssue(url, id1, true, attr1);
+        storage.storeIssue(url, id2, true, attr2);
+
+        Map<String, String> attr = storage.readIssue(url, id1);
         if(attr == null) fail("missing issue id [" + id1 + "]");
-        assertAttribute(attr, "dummy", "dummy");
-        attr = m.get(id2);
+        assertAttribute(attr1, "dummy", "dummy1");
+        attr = storage.readIssue(url, id2);
         if(attr == null) fail("missing issue id [" + id2 + "]");
-        assertAttribute(attr, "dummy", "dummy");
+        assertAttribute(attr2, "dummy", "dummy2");
 
     }
 
