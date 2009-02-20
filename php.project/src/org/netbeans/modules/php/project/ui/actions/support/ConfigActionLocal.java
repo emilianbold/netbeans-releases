@@ -189,7 +189,7 @@ class ConfigActionLocal extends ConfigAction {
             final URL url = CommandUtils.urlForContext(project, context);
             assert url != null;
 
-            preShowUrl(context);
+            preShowUrl();
 
             HtmlBrowser.URLDisplayer.getDefault().showURL(url);
         } catch (MalformedURLException ex) {
@@ -201,7 +201,6 @@ class ConfigActionLocal extends ConfigAction {
     @Override
     public void debugFile(Lookup context) {
         // need to fetch these vars _before_ focus changes (can happen in eventuallyUploadFiles() method)
-        final FileObject selectedFile = CommandUtils.fileForContextOrSelectedNodes(context, webRoot);
         URL url = null;
         try {
             url = CommandUtils.urlForDebugContext(project, context);
@@ -210,10 +209,14 @@ class ConfigActionLocal extends ConfigAction {
             Exceptions.printStackTrace(ex);
             return;
         }
-        assert url != null;
-        final URL debugUrl = url;
+        debugFile(CommandUtils.fileForContextOrSelectedNodes(context, webRoot), url);
+    }
 
-        preShowUrl(context);
+    void debugFile(final FileObject selectedFile, final URL debugUrl) {
+        assert selectedFile != null;
+        assert debugUrl != null;
+
+        preShowUrl();
 
         Runnable runnable = new Runnable() {
             public void run() {
@@ -248,7 +251,7 @@ class ConfigActionLocal extends ConfigAction {
                 if (dbgStarter.isAlreadyRunning()) {
                     if (CommandUtils.warnNoMoreDebugSession()) {
                         dbgStarter.stop();
-                        debugFile(context);
+                        debugFile(selectedFile, debugUrl);
                     }
                 } else {
                     startDebugger(dbgStarter, runnable, selectedFile);
@@ -259,7 +262,7 @@ class ConfigActionLocal extends ConfigAction {
         }
     }
 
-    protected void preShowUrl(Lookup context) {
+    protected void preShowUrl() {
         // hook for subclasses
     }
 
