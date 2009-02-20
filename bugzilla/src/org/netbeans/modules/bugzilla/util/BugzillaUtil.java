@@ -55,11 +55,10 @@ import org.openide.NotifyDescriptor;
  *
  * @author Tomas Stupka
  */
-// XXX get rid of this
 public class BugzillaUtil {
     public static boolean show(JPanel panel, String title, String okName) {
         JButton ok = new JButton(okName);
-        JButton cancel = new JButton("Cancel");
+        JButton cancel = new JButton(NBBundle.getMessage(BugzillaUtil.class, "LBL_Cancel"));
         NotifyDescriptor descriptor = new NotifyDescriptor (
                 panel,
                 title,
