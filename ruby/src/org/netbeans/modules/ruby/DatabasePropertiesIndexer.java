@@ -58,19 +58,26 @@ import org.netbeans.modules.ruby.elements.IndexedMethod;
 final class DatabasePropertiesIndexer {
 
     private final RubyIndex index;
+    private final String prefix;
+    private final NameKind kind;
+    private final String classFqn;
+    private final Set<IndexedMethod> methods;
 
-    private DatabasePropertiesIndexer(RubyIndex index) {
+    public DatabasePropertiesIndexer(RubyIndex index, String prefix, NameKind kind, String classFqn, Set<IndexedMethod> methods) {
         this.index = index;
+        this.prefix = prefix;
+        this.kind = kind;
+        this.classFqn = classFqn;
+        this.methods = methods;
     }
 
-    static void indexDatabaseProperties(RubyIndex index, String prefix, NameKind kind, 
+    static void indexDatabaseProperties(RubyIndex index, String prefix, NameKind kind,
             String classFqn, Set<IndexedMethod> methods) {
-        DatabasePropertiesIndexer indexer = new DatabasePropertiesIndexer(index);
-        indexer.addDatabaseProperties(prefix, kind, classFqn, methods);
+        DatabasePropertiesIndexer indexer = new DatabasePropertiesIndexer(index, prefix, kind, classFqn, methods);
+        indexer.addDatabaseProperties();
     }
-    
-    private void addDatabaseProperties(String prefix, NameKind kind, String classFqn,
-            Set<IndexedMethod> methods) {
+
+    private void addDatabaseProperties() {
         // Query index for database related properties
         if (classFqn.indexOf("::") != -1) {
             // Don't know how to handle this scenario
@@ -117,64 +124,143 @@ final class DatabasePropertiesIndexer {
             Map<String, String> fileUrls = new HashMap<String, String>();
             Set<String> currentCols = new HashSet<String>();
             if (schema != null) {
-                List<String> cols = schema.getColumns();
-                if (cols != null) {
-                    for (String col : cols) {
-                        int typeIndex = col.indexOf(';');
-                        if (typeIndex != -1) {
-                            String name = col.substring(0, typeIndex);
-                            if (typeIndex < col.length() - 1 && col.charAt(typeIndex + 1) == '-') {
-                                // Removing column - this is unlikely in a
-                                // schema.rb file!
-                                currentCols.remove(col);
-                            } else {
-                                currentCols.add(name);
-                                fileUrls.put(col, schema.getFileUrl());
-                                columnDefs.put(name, col);
-                            }
-                        } else {
-                            currentCols.add(col);
-                            columnDefs.put(col, col);
-                            fileUrls.put(col, schema.getFileUrl());
-                        }
-                    }
-                }
+                addColumnsFromSchema(schema, columnDefs, fileUrls, currentCols);
             } else {
                 // Apply migration files
-                Collections.sort(tableDefs);
-                for (TableDefinition def : tableDefs) {
-                    List<String> cols = def.getColumns();
-                    if (cols == null) {
-                        continue;
-                    }
-
-                    for (String col : cols) {
-                        int typeIndex = col.indexOf(';');
-                        if (typeIndex != -1) {
-                            String name = col.substring(0, typeIndex);
-                            if (typeIndex < col.length() - 1 && col.charAt(typeIndex + 1) == '-') {
-                                // Removing column
-                                currentCols.remove(name);
-                            } else {
-                                currentCols.add(name);
-                                fileUrls.put(col, def.getFileUrl());
-                                columnDefs.put(name, col);
-                            }
-                        } else {
-                            currentCols.add(col);
-                            columnDefs.put(col, col);
-                            fileUrls.put(col, def.getFileUrl());
-                        }
-                    }
-                }
+                addColumnsFromMigrations(tableDefs, columnDefs, fileUrls, currentCols);
             }
 
             // Finally, we've "applied" the migrations - just walk
             // through the datastructure and create completion matches
             // as appropriate
+            createMethodsForColumns(tableName, columnDefs, fileUrls, currentCols);
+
+            // dynamic finders
+            createDynamicFinders(tableName, columnDefs, fileUrls, currentCols);
+        }
+    }
+
+    private void addColumnsFromMigrations(List<TableDefinition> tableDefs,
+            Map<String, String> columnDefs,
+            Map<String, String> fileUrls,
+            Set<String> currentCols) {
+
+        // Apply migration files
+        Collections.sort(tableDefs);
+        for (TableDefinition def : tableDefs) {
+            List<String> cols = def.getColumns();
+            if (cols == null) {
+                continue;
+            }
+
+            for (String col : cols) {
+                int typeIndex = col.indexOf(';');
+                if (typeIndex != -1) {
+                    String name = col.substring(0, typeIndex);
+                    if (typeIndex < col.length() - 1 && col.charAt(typeIndex + 1) == '-') {
+                        // Removing column
+                        currentCols.remove(name);
+                    } else {
+                        currentCols.add(name);
+                        fileUrls.put(col, def.getFileUrl());
+                        columnDefs.put(name, col);
+                    }
+                } else {
+                    currentCols.add(col);
+                    columnDefs.put(col, col);
+                    fileUrls.put(col, def.getFileUrl());
+                }
+            }
+        }
+
+    }
+
+    private void addColumnsFromSchema(TableDefinition schema,
+            Map<String, String> columnDefs,
+            Map<String, String> fileUrls,
+            Set<String> currentCols) {
+
+        List<String> cols = schema.getColumns();
+        if (cols != null) {
+            for (String col : cols) {
+                int typeIndex = col.indexOf(';');
+                if (typeIndex != -1) {
+                    String name = col.substring(0, typeIndex);
+                    if (typeIndex < col.length() - 1 && col.charAt(typeIndex + 1) == '-') {
+                        // Removing column - this is unlikely in a
+                        // schema.rb file!
+                        currentCols.remove(col);
+                    } else {
+                        currentCols.add(name);
+                        fileUrls.put(col, schema.getFileUrl());
+                        columnDefs.put(name, col);
+                    }
+                } else {
+                    currentCols.add(col);
+                    columnDefs.put(col, col);
+                    fileUrls.put(col, schema.getFileUrl());
+                }
+            }
+        }
+
+    }
+
+    private void createMethodsForColumns(String tableName,
+            Map<String, String> columnDefs,
+            Map<String, String> fileUrls,
+            Set<String> currentCols) {
+
+        for (String column : currentCols) {
+            if (column.startsWith(prefix)) {
+                if (kind == NameKind.EXACT_NAME) {
+                    // Ensure that the method is not longer than the prefix
+                    if ((column.length() > prefix.length())) {
+                        continue;
+                    }
+                } else {
+                    // REGEXP, CAMELCASE filtering etc. not supported here
+                    assert (kind == NameKind.PREFIX) ||
+                            (kind == NameKind.CASE_INSENSITIVE_PREFIX);
+                }
+
+                String c = columnDefs.get(column);
+                String type = tableName;
+                int semicolonIndex = c.indexOf(';');
+                if (semicolonIndex != -1) {
+                    type = c.substring(semicolonIndex + 1);
+                }
+                String fileUrl = fileUrls.get(column);
+
+                String signature = column;
+                String fqn = tableName + "#" + column;
+                String clz = type;
+                String require = null;
+                String attributes = "";
+                int flags = 0;
+
+                IndexedMethod method =
+                        IndexedMethod.create(index, signature, fqn, clz, fileUrl, require, attributes, flags, index.getContext());
+                method.setMethodType(IndexedMethod.MethodType.DBCOLUMN);
+                method.setSmart(true);
+                methods.add(method);
+            }
+        }
+    }
+
+    private void createDynamicFinders(String tableName,
+            Map<String, String> columnDefs,
+            Map<String, String> fileUrls,
+            Set<String> currentCols) {
+
+        if ("find_by_".startsWith(prefix) ||
+                "find_all_by".startsWith(prefix)) {
+            // Generate dynamic finders
             for (String column : currentCols) {
-                if (column.startsWith(prefix)) {
+                String methodOneName = "find_by_" + column;
+                String methodAllName = "find_all_by_" + column;
+                if (methodOneName.startsWith(prefix) || methodAllName.startsWith(prefix)) {
                     if (kind == NameKind.EXACT_NAME) {
+// XXX methodOneName || methodAllName?
                         // Ensure that the method is not longer than the prefix
                         if ((column.length() > prefix.length())) {
                             continue;
@@ -185,79 +271,36 @@ final class DatabasePropertiesIndexer {
                                 (kind == NameKind.CASE_INSENSITIVE_PREFIX);
                     }
 
-                    String c = columnDefs.get(column);
-                    String type = tableName;
-                    int semicolonIndex = c.indexOf(';');
-                    if (semicolonIndex != -1) {
-                        type = c.substring(semicolonIndex + 1);
-                    }
+                    String type = columnDefs.get(column);
+                    type = type.substring(type.indexOf(';') + 1);
                     String fileUrl = fileUrls.get(column);
 
-                    String signature = column;
-                    String fqn = tableName + "#" + column;
-                    String clz = type;
+                    String clz = classFqn;
                     String require = null;
-                    String attributes = "";
-                    int flags = 0;
+                    int flags = IndexedElement.STATIC;
+                    String attributes = IndexedElement.flagToString(flags) + ";;;" + "options(:first|:all),args(=>conditions|order|group|limit|offset|joins|readonly:bool|include|select|from|readonly:bool|lock:bool)";
 
-                    IndexedMethod method =
-                            IndexedMethod.create(index, signature, fqn, clz, fileUrl, require, attributes, flags, index.getContext());
-                    method.setMethodType(IndexedMethod.MethodType.DBCOLUMN);
-                    method.setSmart(true);
-                    methods.add(method);
-                }
-            }
-
-            if ("find_by_".startsWith(prefix) ||
-                    "find_all_by".startsWith(prefix)) {
-                // Generate dynamic finders
-                for (String column : currentCols) {
-                    String methodOneName = "find_by_" + column;
-                    String methodAllName = "find_all_by_" + column;
-                    if (methodOneName.startsWith(prefix) || methodAllName.startsWith(prefix)) {
-                        if (kind == NameKind.EXACT_NAME) {
-// XXX methodOneName || methodAllName?
-                            // Ensure that the method is not longer than the prefix
-                            if ((column.length() > prefix.length())) {
-                                continue;
-                            }
-                        } else {
-                            // REGEXP, CAMELCASE filtering etc. not supported here
-                            assert (kind == NameKind.PREFIX) ||
-                                    (kind == NameKind.CASE_INSENSITIVE_PREFIX);
-                        }
-
-                        String type = columnDefs.get(column);
-                        type = type.substring(type.indexOf(';') + 1);
-                        String fileUrl = fileUrls.get(column);
-
-                        String clz = classFqn;
-                        String require = null;
-                        int flags = IndexedElement.STATIC;
-                        String attributes = IndexedElement.flagToString(flags) + ";;;" + "options(:first|:all),args(=>conditions|order|group|limit|offset|joins|readonly:bool|include|select|from|readonly:bool|lock:bool)";
-
-                        if (methodOneName.startsWith(prefix)) {
-                            String signature = methodOneName + "(" + column + ",*options)";
-                            String fqn = tableName + "#" + signature;
-                            IndexedMethod method =
-                                    IndexedMethod.create(index, signature, fqn, clz, fileUrl, require, attributes, flags, index.getContext());
-                            method.setInherited(false);
-                            method.setSmart(true);
-                            methods.add(method);
-                        }
-                        if (methodAllName.startsWith(prefix)) {
-                            String signature = methodAllName + "(" + column + ",*options)";
-                            String fqn = tableName + "#" + signature;
-                            IndexedMethod method =
-                                    IndexedMethod.create(index, signature, fqn, clz, fileUrl, require, attributes, flags, index.getContext());
-                            method.setInherited(false);
-                            method.setSmart(true);
-                            methods.add(method);
-                        }
+                    if (methodOneName.startsWith(prefix)) {
+                        String signature = methodOneName + "(" + column + ",*options)";
+                        String fqn = tableName + "#" + signature;
+                        IndexedMethod method =
+                                IndexedMethod.create(index, signature, fqn, clz, fileUrl, require, attributes, flags, index.getContext());
+                        method.setInherited(false);
+                        method.setSmart(true);
+                        methods.add(method);
+                    }
+                    if (methodAllName.startsWith(prefix)) {
+                        String signature = methodAllName + "(" + column + ",*options)";
+                        String fqn = tableName + "#" + signature;
+                        IndexedMethod method =
+                                IndexedMethod.create(index, signature, fqn, clz, fileUrl, require, attributes, flags, index.getContext());
+                        method.setInherited(false);
+                        method.setSmart(true);
+                        methods.add(method);
                     }
                 }
-
             }
+
         }
     }
 
