@@ -59,7 +59,6 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
-import org.netbeans.modules.cnd.loaders.CndDataObject;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -209,13 +208,10 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 File file = fileImpl.getFile();
                 if (((ProjectBase)project).getFile(file) != null) {
                     DataObject dao = NativeProjectImpl.getDataObject(file);
-                    if (dao instanceof CndDataObject) {
-                        CndDataObject dataObject = (CndDataObject) dao;
-                        NativeFileItemSet set = dataObject.getLookup().lookup(NativeFileItemSet.class);
-                        if (set != null) {
-                            NativeProjectImpl impl = (NativeProjectImpl) platformProject;
-                            set.remove(impl.findFileItem(file));
-                        }
+                    NativeFileItemSet set = dao == null ? null : dao.getLookup().lookup(NativeFileItemSet.class);
+                    if (set != null) {
+                        NativeProjectImpl impl = (NativeProjectImpl) platformProject;
+                        set.remove(impl.findFileItem(file));
                     }
                     scheduleProjectRemoval(project);
                 }
@@ -307,10 +303,11 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             }
             NativeProjectImpl impl = new NativeProjectImpl(file, sysIncludes, usrIncludes, sysMacros, usrMacros);
             impl.addFile(file);
-            if (dao instanceof CndDataObject) {
-                CndDataObject dataObject = (CndDataObject) dao;
-                NativeFileItemSet set = dataObject.getLookup().lookup(NativeFileItemSet.class);
-                set.add(impl.findFileItem(file));
+            if (dao != null) {
+                NativeFileItemSet set = dao.getLookup().lookup(NativeFileItemSet.class);
+                if (set != null) {
+                    set.add(impl.findFileItem(file));
+                }
             }
             return impl;
         }
