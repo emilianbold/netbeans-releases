@@ -44,6 +44,7 @@ package org.netbeans.modules.csl.api;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 
 /**
@@ -52,7 +53,8 @@ import org.netbeans.modules.parsing.spi.ParserResultTask;
  * 
  * @author Tor Norbye
  */
-public abstract class SemanticAnalyzer extends ParserResultTask {
+public abstract class SemanticAnalyzer<T extends Parser.Result> extends ParserResultTask<T> {
+    
     /**
      * Return a set of highlights computed by the last call to
      * Note - there are a number of EnumSet constants in the ColoringAttributes
