@@ -67,7 +67,7 @@ class BugtrackingOwnerQuery {
 //            }
 //        }
 //        return null;
-        Repository[] repos = BugtrackingManager.getInstance().getRepositories();
+        Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
 
         Repository repo = null;
         for (Repository r : repos) {

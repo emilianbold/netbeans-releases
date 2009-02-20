@@ -113,7 +113,7 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
                 }
             });
 
-            Repository[] repos = BugtrackingManager.getInstance().getRepositories();
+            Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
             repositoryComboBox.setModel(new DefaultComboBoxModel(repos));
             repositoryComboBox.setRenderer(new DefaultListCellRenderer() {
                 @Override
@@ -360,7 +360,7 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
 
     @Override
     protected String preferredID() {
-        return PREFERRED_ID;
+        return query != null && query.getDisplayName() != null ? query.getDisplayName() : PREFERRED_ID;
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -549,8 +549,13 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
                 public void actionPerformed(ActionEvent e) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            QueryTopComponent tc = new QueryTopComponent(query);
-                            tc.open();
+                            TopComponent tc = WindowManager.getDefault().findTopComponent(query.getDisplayName());
+                            if(tc == null) {
+                                tc = new QueryTopComponent(query);
+                            }
+                            if(!tc.isOpened()) {
+                                tc.open();
+                            }
                             tc.requestActive();
                         }
                     });

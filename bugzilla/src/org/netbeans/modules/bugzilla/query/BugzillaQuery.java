@@ -39,18 +39,11 @@
 
 package org.netbeans.modules.bugzilla.query;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map;
 import org.netbeans.modules.bugzilla.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
-import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
@@ -70,7 +63,6 @@ public class BugzillaQuery extends Query {
     private String name;
     private final BugzillaRepository repository;
     private QueryController controller;
-//    private final Map<String, IssueData> issues = new HashMap<String, IssueData>();
     private final List<String> issues = new ArrayList<String>();
     private final Set<String> obsoleteIssues = new HashSet<String>();
 
@@ -116,18 +108,17 @@ public class BugzillaQuery extends Query {
 
     @Override
     public void refresh() {
+        // XXX do not refresh until populate!
+
         assert urlParameters != null;
         assert !SwingUtilities.isEventDispatchThread();
-
-        
 
         executeQuery(new Runnable() {
             public void run() {
 
-//                preQuery();
                 if(isSaved()) {
                     List<String> ids;
-                    if(firstRun) {
+                    if(!wasRun()) {
                         firstRun = false;
                         ids = repository.getCache().readQuery(BugzillaQuery.this);
                     } else {
@@ -181,13 +172,6 @@ public class BugzillaQuery extends Query {
         } else {
             return repository.getCache().getStatus(id);
         }
-//        IssueData data = issues.get(issue.getID());
-//        if(data != null) {
-//            return data.status;
-//        } else {
-//            throw new IllegalStateException("No IssueData for issue: " + issue.getID());
-//            //return 0; // XXX WARNING
-//        }
     }
 
     int getSize() {
@@ -230,11 +214,6 @@ public class BugzillaQuery extends Query {
         }
         List<String> ids = new ArrayList<String>();
         synchronized (issues) {
-//            for (Entry<String, IssueData> e : issues.entrySet()) {
-//                if((e.getValue().status & includeStatus) != 0) {
-//                    ids.add(e.getKey());
-//                }
-//            }
             ids.addAll(issues);
         }
 
@@ -250,59 +229,7 @@ public class BugzillaQuery extends Query {
         return l.toArray(new Issue[l.size()]);
     }
 
-    // XXX add to Query
-    private synchronized void preQuery() {
-        if(!isSaved()) {
-            return;
-        }
-
-        repository.getCache().storeQuery(this, issues.toArray(new String[issues.size()]));
-        obsoleteIssues.clear();
-        obsoleteIssues.addAll(issues);
-        issues.clear();
-
-//        Map<String, Map<String, String>> m;
-//        if(firstRun) {
-//            firstRun = false;
-//            try {
-//                // XXX read and lock synchronized on repo
-//                m = IssueStorage.getInstance().readQuery(repository.getUrl(), getDisplayName());
-//            } catch (FileNotFoundException ex) {
-//                // isn't in store yet?
-//                Bugzilla.LOG.log(Level.FINE, null, ex);
-//                m = new HashMap<String, Map<String, String>>(); // try to make the best of it
-//            } catch (IOException ex) {
-//                Bugzilla.LOG.log(Level.SEVERE, null, ex);
-//                m = new HashMap<String, Map<String, String>>(); // try to make the best of it
-//            }
-//        } else {
-//            m = new HashMap<String, Map<String, String>>();
-//            Iterator<Entry<String, IssueData>> i = issues.entrySet().iterator();
-//            while(i.hasNext()) {
-//                Entry<String, IssueData> e = i.next();
-//                IssueData data = e.getValue();
-//                if(data.status == Query.ISSUE_STATUS_OBSOLETE) {
-//                    i.remove();
-//                } else {
-//                    String id = e.getKey();
-//                    data.status = Query.ISSUE_STATUS_OBSOLETE;
-//                    Issue issue = repository.getCachedIssue(id);
-//                    if(issue != null) {
-//                        Map<String, String> attr = issue.getAttributes();
-//                        if(attr != null) {
-//                            m.put(id, attr);
-//                        }
-//                    } else {
-//                        // XXX warning
-//                    }
-//                }
-//            }
-//        }
-//        try {
-//            // XXX read and lock synchronized on repo
-//            IssueStorage.getInstance().storeQuery(repository.getUrl(), getDisplayName(), m);
-//        } catch (IOException ex) {
-//            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-//        }
+    boolean wasRun() {
+        return !firstRun;
     }
 }

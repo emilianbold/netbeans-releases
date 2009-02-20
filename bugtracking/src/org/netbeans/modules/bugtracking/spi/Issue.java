@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.bugtracking.spi;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.Map;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
@@ -52,17 +54,22 @@ import org.openide.util.NbBundle;
  */
 public abstract class Issue {
 
+    private final PropertyChangeSupport support;
+    
     /**
      * Seen property id
      */
     public static String LABEL_NAME_SEEN = "issue.seen";
 
     private boolean seen;
+    private String EVENT_ISSUE_DATA_CHANGED = "issue.data_changed";
     
     /**
      * Creates an issue
      */
-    public Issue() { }
+    public Issue() { 
+        support = new PropertyChangeSupport(this);
+    }
 
     /**
      * Returns this issues display name
@@ -146,4 +153,15 @@ public abstract class Issue {
 
     public abstract Map<String, String> getAttributes();
 
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
+    }
+
+    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
+    }
+
+    protected void fireDataChanged() {
+        support.firePropertyChange(EVENT_ISSUE_DATA_CHANGED, null, null);
+    }
 }

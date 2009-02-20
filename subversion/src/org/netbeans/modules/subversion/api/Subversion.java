@@ -215,13 +215,18 @@ public class Subversion {
                                                    String password,
                                                    boolean scanForNewProjects)
             throws MalformedURLException {
+
+        org.netbeans.modules.subversion.Subversion subversion
+                = org.netbeans.modules.subversion.Subversion.getInstance();
+        if(!subversion.checkClientAvailable()) {
+            return false;
+        }
+
         RepositoryConnection conn = new RepositoryConnection(repositoryUrl);
 
         SVNUrl svnUrl = conn.getSvnUrl();
         SVNRevision svnRevision = conn.getSvnRevision();
 
-        org.netbeans.modules.subversion.Subversion subversion
-                = org.netbeans.modules.subversion.Subversion.getInstance();
         SvnClient client;
         try {
             client = (username != null)
@@ -246,16 +251,13 @@ public class Subversion {
 
             repositoryFiles[i] = new RepositoryFile(repoSvnUrl, repoRelativePath, svnRevision);
         }
-        try {
-            CheckoutAction.checkout(client, svnUrl, repositoryFiles, localFolder, false, null);
-            if(scanForNewProjects) {
-                CheckoutAction.showCheckoutCompletet(svnUrl, repositoryFiles, localFolder, false, null);
-            }
-        } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, false, true);        
-        } finally {
-            subversion.versionedFilesChanged();
-        }
+        CheckoutAction.performCheckout(
+                svnUrl,
+                client,
+                repositoryFiles,
+                localFolder,
+                false,             // do not checkout at working dir level
+                scanForNewProjects).waitFinished();
 
         return true;
     }

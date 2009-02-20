@@ -66,12 +66,6 @@ public abstract class Query implements Comparable<Query> {
     public static final int ISSUE_STATUS_OBSOLETE       = 16;
     public static final int ISSUE_STATUS_NOT_OBSOLETE   = 32;
 
-    private static Filter[] TABLE_FILTERS = new Filter[] {
-        new AllFilter(),
-        new UnseenFilter(),
-        new RemovedFilter()
-    };
-
     /**
      * queries data were changed
      */
@@ -118,6 +112,17 @@ public abstract class Query implements Comparable<Query> {
      */
     public abstract BugtrackingController getController();
 
+    /**
+     * Returns the issue table filters for this query
+     * @return
+     */
+    public Filter[] getFilters() {
+        return new Filter[] {
+            new AllFilter(),
+            new UnseenFilter(),
+            new RemovedFilter(this)
+        };    
+    }
 
     /*********
      * DATA
@@ -208,14 +213,6 @@ public abstract class Query implements Comparable<Query> {
      * @return
      */
     public abstract ColumnDescriptor[] getColumnDescriptors(); 
-
-    /**
-     * XXX move to tbla component
-     * @return
-     */
-    public Filter[] getFilters() {
-        return TABLE_FILTERS;
-    }
 
     public void setFilter(Filter filter) {
         issueTable.setFilter(filter);
@@ -346,13 +343,18 @@ public abstract class Query implements Comparable<Query> {
         }
     }
     private static class RemovedFilter extends Filter {
+        private final Query query;
+
+        public RemovedFilter(Query query) {
+            this.query = query;
+        }
         @Override
         public String getDisplayName() {
             return NbBundle.getMessage(Query.class, "LBL_RemovedIssuesFilter");
         }
         @Override
         public boolean accept(Issue issue) {
-            return true; // XXX TBD
+            return query.getIssueStatus(issue) == Query.ISSUE_STATUS_OBSOLETE;
         }
     }
 

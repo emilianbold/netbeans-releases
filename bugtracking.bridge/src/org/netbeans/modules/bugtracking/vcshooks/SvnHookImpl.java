@@ -140,16 +140,17 @@ public class SvnHookImpl extends SvnHook {
 
     @Override
     public JPanel createComponent(SvnHookContext context) {
+        Repository[] repos = support.getKnownRepositories(LOG);
         if(context.getFiles().length == 0) {
             LOG.warning("creating svn hook component for zero files");          // NOI18N
-            panel = new HookPanel(null);
+            panel = new HookPanel(repos, null);
         } else {
             File file = context.getFiles()[0];
-            Repository repo = support.getRepository(file, LOG);
-            if(repo == null) {
+            Repository repoToSelect = support.getRepository(file, LOG);
+            if(repoToSelect == null) {
                 LOG.log(Level.FINE, " could not find repository for " + file);  // NOI18N
             }
-            panel = new HookPanel(repo);
+            panel = new HookPanel(repos, repoToSelect);
         }
         panel.commitRadioButton.setVisible(false);
         panel.pushRadioButton.setVisible(false);
