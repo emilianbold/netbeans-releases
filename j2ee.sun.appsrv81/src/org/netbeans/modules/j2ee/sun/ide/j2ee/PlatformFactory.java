@@ -78,6 +78,7 @@ public final class PlatformFactory extends J2eePlatformFactory {
                 platform = new PlatformImpl90(rootDir,dmProps);
                 break;
             case ServerLocationManager.GF_V2: 
+            case ServerLocationManager.GF_V2point1:
                 platform = new PlatformImpl91(rootDir,dmProps);
                 break;
             default:
