@@ -272,25 +272,14 @@ public class Annotator {
     private void updateMessageFormat() {
         String taf = CvsModuleConfig.getDefault().getPreferences().get(CvsModuleConfig.PROP_ANNOTATIONS_FORMAT, CvsModuleConfig.DEFAULT_ANNOTATIONS_FORMAT);
         if (lastMessageFormat == null || !taf.equals(lastAnnotationsFormat)) {
-            for (;;) {  // executes at most 2 times
-                lastAnnotationsFormat = taf;
-                taf = org.netbeans.modules.versioning.util.Utils.skipUnsupportedVariables(
-                        taf, 
-                        new String[] {"{status}", "{tag}", "{revision}", "{binary}" }   // NOI18N
-                );     
-                taf = taf.replaceAll("\\{revision}", "{0}").                            // NOI18N
-                          replaceAll("\\{status}", "{1}").                              // NOI18N
-                          replaceAll("\\{tag}", "{2}").                                 // NOI18N
-                          replaceAll("\\{binary}", "{3}");                              // NOI18N
-                try {
-                    lastMessageFormat = new MessageFormat(taf);
-                    lastEmptyAnnotation = lastMessageFormat.format(new Object [] { "", "", "", "" }); // NOI18N
-                    break;
-                } catch (Exception e) {
-                    Logger.getLogger(Annotator.class.getName()).log(Level.SEVERE, lastAnnotationsFormat, e);
-                    taf = CvsModuleConfig.DEFAULT_ANNOTATIONS_FORMAT;
-                }
+            lastAnnotationsFormat = taf;
+            taf = Utils.createAnnotationFormat(taf);
+            if (!Utils.isAnnotationFormatValid(taf)) {
+                CvsVersioningSystem.LOG.log(Level.WARNING, "Bad annotation format, switching to defaults");
+                taf = org.openide.util.NbBundle.getMessage(Annotator.class, "Annotator.defaultFormat"); // NOI18N
             }
+            lastMessageFormat = new MessageFormat(taf);
+            lastEmptyAnnotation = lastMessageFormat.format(new Object[]{"", "", "", ""}); // NOI18N
         }
     }
 

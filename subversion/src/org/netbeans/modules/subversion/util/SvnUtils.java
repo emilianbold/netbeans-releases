@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.subversion.util;
 
+import java.net.MalformedURLException;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
@@ -56,6 +57,7 @@ import java.io.*;
 import java.io.File;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.MessageFormat;
 import java.util.*;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -91,6 +93,16 @@ public class SvnUtils {
     public static final String SVN_ENTRIES_DIR;
     private static final Pattern metadataPattern;
 
+    public static final HashSet<Character> autoEscapedCharacters = new HashSet<Character>(6);
+    static {
+        autoEscapedCharacters.add(';');
+        autoEscapedCharacters.add('?');
+        autoEscapedCharacters.add('#');
+        autoEscapedCharacters.add('%');
+        autoEscapedCharacters.add('[');
+        autoEscapedCharacters.add(']');
+    }
+
     static {
         if (Utilities.isWindows()) {
             String env = System.getenv("SVN_ASP_DOT_NET_HACK");
@@ -112,6 +124,56 @@ public class SvnUtils {
             return SharabilityQuery.getSharability(pathname) != SharabilityQuery.NOT_SHARABLE;
         }
     };
+
+    /**
+     * Creates annotation format string.
+     * @param format format specified by the user, e.g. [{status}]
+     * @return modified format, e.g. [{0}]
+     */
+    public static String createAnnotationFormat(final String format) {
+        String string = format;
+        string = Utils.skipUnsupportedVariables(string, new String[]{"{status}", "{folder}", "{revision}", "{mime_type}"});     // NOI18N
+        string = string.replaceAll("\\{revision\\}", "\\{0\\}");            // NOI18N
+        string = string.replaceAll("\\{status\\}", "\\{1\\}");              // NOI18N
+        string = string.replaceAll("\\{folder\\}", "\\{2\\}");              // NOI18N
+        string = string.replaceAll("\\{mime_type\\}", "\\{3\\}");           // NOI18N
+        return string;
+    }
+
+    /**
+     * Decodes and encodes given URL (e.g. xxx[] -> xxx%5B%5D)
+     * @param url url to be encoded
+     * @return encoded URL
+     * @throws java.net.MalformedURLException
+     */
+    public static SVNUrl decodeAndEncodeUrl(SVNUrl url) throws MalformedURLException {
+        return encodeUrl(decode(url));
+    }
+
+    /**
+     * Encodes the SVN url to an acceptable format. It encodes all non-standard characters to a '%XX' form.
+     * Unescaped characters: '/', ':', '@' (peg revision).
+     * @param url url to be encoded
+     * @return encoded URL
+     * @throws java.net.MalformedURLException encoded URL is of a bad format anyway
+     */
+    public static SVNUrl encodeUrl(final SVNUrl url) throws MalformedURLException {
+        String sUrl = url.toString();
+        StringBuilder sb = new StringBuilder(sUrl.length());
+        for (int i = 0; i < sUrl.length(); ++i) {
+            Character c = sUrl.charAt(i);
+            if (autoEscapedCharacters.contains(c)) {
+                char[] chars = Character.toChars(c);
+                for (int j = 0; j < chars.length; ++j) {
+                    sb.append('%');
+                    sb.append(Integer.toHexString(chars[j]).toUpperCase());
+                }
+            } else {
+                sb.append(c);
+            }
+        }
+        return new SVNUrl(sb.toString());
+    }
 
     /**
      * Semantics is similar to {@link org.openide.windows.TopComponent#getActivatedNodes()} except that this
@@ -181,6 +243,24 @@ public class SvnUtils {
      */
     public static Context getCurrentContext(Node[] nodes, int includingFileStatus, int includingFolderStatus) {
         return getCurrentContext(nodes, includingFileStatus, includingFolderStatus, false);
+    }
+
+    /**
+     * Validates annotation format text
+     * @param format format to be validatet
+     * @return <code>true</code> if the format is correct, <code>false</code> otherwise.
+     */
+    public static boolean isAnnotationFormatValid(final String format) {
+        boolean retval = true;
+        if (format != null) {
+            try {
+                new MessageFormat(format);
+            } catch (IllegalArgumentException ex) {
+                Subversion.LOG.log(Level.FINER, "Bad user input - annotation format", ex);
+                retval = false;
+            }
+        }
+        return retval;
     }
 
     /**
@@ -554,7 +634,7 @@ public class SvnUtils {
      * @param url url to decode
      * @return decoded url
      */
-    private static SVNUrl decode(SVNUrl url) {
+    public static SVNUrl decode(SVNUrl url) {
         if (url == null) return null;
         String s = url.toString();
         StringBuffer sb = new StringBuffer(s.length());
