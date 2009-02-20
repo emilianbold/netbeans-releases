@@ -158,7 +158,7 @@
   ==> [String]
 
 #  stub => aStructTms
-  ==> []
+  ==> [Struct::Tms]
 
 #  stub => "b"
   ==> [String]
@@ -209,7 +209,7 @@
   ==> [Fixnum]
 
 #  stub => fixnum, bignum
-  ==> [Fixnum]
+  ==> [Fixnum, Bignum]
 
 #  stub => fixnum or nil
   ==> [Fixnum, NilClass]
@@ -302,7 +302,7 @@
   ==> [Module]
 
 #  stub => name_error
-  ==> []
+  ==> [NameError]
 
 #  stub => new_method
   ==> [UnboundMethod]
@@ -353,10 +353,10 @@
   ==> [Object]
 
 #  stub => !obj
-  ==> []
+  ==> [FalseClass]
 
 #  stub => object
-  ==> []
+  ==> [Object]
 
 #  stub => obj or nil
   ==> [Object, NilClass]
@@ -368,7 +368,7 @@
   ==> [NilClass]
 
 #  stub => other_big
-  ==> []
+  ==> [Bignum]
 
 #  stub => outbuf
   ==> []
@@ -404,7 +404,7 @@
   ==> [NilClass]
 
 #  stub => stat
-  ==> []
+  ==> [File::Stat]
 
 #  stub => str
   ==> [String]
@@ -434,7 +434,7 @@
   ==> [StructClass]
 
 #  stub => struct_tms
-  ==> []
+  ==> [Struct::Tms]
 
 #  stub => sym
   ==> [Symbol]
