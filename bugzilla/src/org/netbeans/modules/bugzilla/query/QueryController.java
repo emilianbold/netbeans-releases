@@ -68,7 +68,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCustomField;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
@@ -78,7 +77,6 @@ import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.BugzillaRepository;
-import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.bugzilla.query.QueryParameter.CheckBoxParameter;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ComboParameter;
@@ -238,9 +236,15 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     void populate(final String urlParameters) {
-        panel.enableFields(false);        
-        rp.post(new Runnable() {
+        panel.enableFields(false);
+
+
+        ProgressHandle handle = ProgressHandleFactory.createHandle("Retrieving server data");
+        final JComponent progressBar = ProgressHandleFactory.createProgressComponent(handle);
+        
+        task = rp.post(new Runnable() {
             public void run() {
+                panel.showNoContentPanel(true, progressBar, NbBundle.getMessage(this.getClass(), "MSG_Searching"));
                 try {
                     Bugzilla.LOG.fine("Starting populate query controller");
 
@@ -545,8 +549,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.enableFields(false);        
         task = rp.create(r);
 
-        // XXX need progress suport
-        // XXX need query lifecycle, isRunning, cancel, ...
         Cancellable c = new Cancellable() {
             public boolean cancel() {
                 task.cancel();
