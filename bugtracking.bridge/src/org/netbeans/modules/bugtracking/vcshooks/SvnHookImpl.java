@@ -57,7 +57,7 @@ import org.netbeans.modules.subversion.hooks.spi.SvnHookContext.LogEntry;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * Subversion commit hook implementation
  * @author Tomas Stupka
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.subversion.hooks.spi.SvnHook.class)
@@ -113,7 +113,7 @@ public class SvnHookImpl extends SvnHook {
         }
         if(panel.addRevisionCheckBox.isSelected()) {
             LogEntry[] entries = context.getLogEntries();
-            LogEntry logEntry = entries[0]; // XXX now this is a problem ! there might be more than one log entry
+            LogEntry logEntry = entries[0]; 
 
             String author = logEntry.getAuthor();
             String revisions = getRevisions(entries);
@@ -121,7 +121,7 @@ public class SvnHookImpl extends SvnHook {
             String message = logEntry.getMessage();
 
             String formatString = VCSHooksConfig.getInstance().getSvnCommentFormat();
-            formatString = formatString.replaceAll("\\{revision\\}", "\\{0\\}");            // NOI18N
+            formatString = formatString.replaceAll("\\{revision\\}", "\\{0\\}");           // NOI18N
             formatString = formatString.replaceAll("\\{author\\}",   "\\{1\\}");           // NOI18N
             formatString = formatString.replaceAll("\\{date\\}",     "\\{2\\}");           // NOI18N
             formatString = formatString.replaceAll("\\{message\\}",  "\\{3\\}");           // NOI18N
@@ -172,14 +172,14 @@ public class SvnHookImpl extends SvnHook {
         for (int i = 0; i < entries.length; i++) {
             LogEntry logEntry = entries[i];
             sb.append(logEntry.getRevision());
-            if(i < entries.length -1) sb.append(", ");
+            if(i < entries.length -1) sb.append(", ");                          // NOI18N
         }
         return sb.toString();
     }
 
     private void onShowFormat() {
         FormatPanel p = new FormatPanel(VCSHooksConfig.getInstance().getSvnCommentFormat());
-        if(BugtrackingUtil.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"))) {
+        if(BugtrackingUtil.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"))) { // NOI18N
             VCSHooksConfig.getInstance().setSvnCommentFormat(p.getFormat());
         }
     }

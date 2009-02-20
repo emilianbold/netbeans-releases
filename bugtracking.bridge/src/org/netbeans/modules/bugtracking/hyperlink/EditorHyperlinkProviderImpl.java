@@ -58,17 +58,20 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
 /**
- *
- * @author tomas
+ * 
+ * Provides hyperlink functionality on issue reference in code comments
+ * 
+ * @author Tomas Stupka
  */
 public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt {
 
     private static Logger LOG = Logger.getLogger(EditorHyperlinkProviderImpl.class.getName());
 
     public Set<HyperlinkType> getSupportedHyperlinkTypes() {
-        return EnumSet.of(HyperlinkType.GO_TO_DECLARATION); // XXX
+        return EnumSet.of(HyperlinkType.GO_TO_DECLARATION); 
     }
 
     public boolean isHyperlinkPoint(Document doc, int offset, HyperlinkType type) {
@@ -102,7 +105,7 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt {
     }
 
     public String getTooltipText(Document doc, int offset, HyperlinkType type) {
-        return "Open Issue: " + getIssueId(doc, offset, type); // XXX
+        return NbBundle.getMessage(EditorHyperlinkProviderImpl.class, "LBL_OpenIssue", new Object[] { getIssueId(doc, offset, type) });
     }
 
     // XXX get/unify from/with hyperlink provider

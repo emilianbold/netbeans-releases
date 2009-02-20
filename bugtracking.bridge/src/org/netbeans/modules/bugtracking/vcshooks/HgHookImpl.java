@@ -45,8 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
@@ -59,19 +57,18 @@ import org.netbeans.modules.mercurial.hooks.spi.HgHookContext.LogEntry;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * Mercurial commit hook implementation
  * @author Tomas Stupka
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.mercurial.hooks.spi.HgHook.class)
 public class HgHookImpl extends HgHook {
     private HookPanel panel;
     private final String name;
-    private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.HgHook");
-    private Map<File, Repository> fileToRepo = new HashMap<File, Repository>(10);
+    private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.HgHook");   // NOI18N
     private HookSupport support;
 
     public HgHookImpl() {
-        this.name = NbBundle.getMessage(HgHookImpl.class, "LBL_VCSHook");
+        this.name = NbBundle.getMessage(HgHookImpl.class, "LBL_VCSHook");       // NOI18N
         support = HookSupport.getInstance();
     }
 
@@ -83,30 +80,30 @@ public class HgHookImpl extends HgHook {
     @Override
     public void afterCommit(HgHookContext context) {
         if(context.getFiles().length == 0) {
-            LOG.warning("calling hg afterCommit for zero files");
+            LOG.warning("calling hg afterCommit for zero files");               // NOI18N
             return;
         }
 
         File file = context.getFiles()[0];
-        LOG.log(Level.FINE, "hg afterCommit start for " + file);
+        LOG.log(Level.FINE, "hg afterCommit start for " + file);                // NOI18N
 
         if(!panel.addCommentCheckBox.isSelected() &&
            !panel.addRevisionCheckBox.isSelected() &&
            !panel.resolveCheckBox.isSelected())
         {
-            LOG.log(Level.FINER, " nothing to do in hg afterCommit for " + file);
+            LOG.log(Level.FINER, " nothing to do in hg afterCommit for " + file);   // NOI18N
             return;
         }
 
         Issue issue = panel.getIssue();
         if (issue == null) {
-            LOG.log(Level.FINE, " no issue set for " + file);
+            LOG.log(Level.FINE, " no issue set for " + file);                   // NOI18N
             return;
         }
         
         Repository repo = support.getRepository(file, LOG);
         if(repo == null) {
-            LOG.log(Level.FINE, " could not find repository for " + file);
+            LOG.log(Level.FINE, " could not find repository for " + file);      // NOI18N
             return;
         }
 
@@ -131,15 +128,15 @@ public class HgHookImpl extends HgHook {
                     new StringBuffer(),
                     null).toString();
 
-            LOG.log(Level.FINER, " hg afterCommit message '" + msg + "'");
+            LOG.log(Level.FINER, " hg afterCommit message '" + msg + "'");      // NOI18N
         }
         if(panel.commitRadioButton.isSelected()) {
             issue.addComment(msg, panel.resolveCheckBox.isSelected());
         } else {
             VCSHooksConfig.getInstance().setHgPushAction(context.getLogEntries()[0].getChangeset(), new PushAction(issue.getID(), msg, panel.resolveCheckBox.isSelected()));
-            LOG.log(Level.FINE, "schedulig issue  " + file);
+            LOG.log(Level.FINE, "schedulig issue  " + file);                    // NOI18N
         }
-        LOG.log(Level.FINE, "hg afterCommit end for " + file);
+        LOG.log(Level.FINE, "hg afterCommit end for " + file);                  // NOI18N
     }
 
     @Override
@@ -150,7 +147,7 @@ public class HgHookImpl extends HgHook {
     @Override
     public void afterPush(HgHookContext context) {
         if(context.getFiles().length == 0) {
-            LOG.warning("calling after push for zero files");
+            LOG.warning("calling after push for zero files");                   // NOI18N
             return;
         }
         File file = context.getFiles()[0];
@@ -158,7 +155,7 @@ public class HgHookImpl extends HgHook {
 
         Repository repo = support.getRepository(file, LOG);
         if(repo == null) {
-            LOG.log(Level.FINE, " could not find repository for " + file);
+            LOG.log(Level.FINE, " could not find repository for " + file);      // NOI18N
             return;
         }
         LogEntry[] entries = context.getLogEntries();
@@ -166,32 +163,32 @@ public class HgHookImpl extends HgHook {
 
             PushAction pa = VCSHooksConfig.getInstance().popHGPushAction(logEntry.getChangeset());
             if(pa == null) {
-                LOG.log(Level.FINE, " no push hook scheduled for " + file);
+                LOG.log(Level.FINE, " no push hook scheduled for " + file);     // NOI18N
                 continue;
             }
 
             Issue issue = repo.getIssue(pa.getIssueID());
             if(issue == null) {
-                LOG.log(Level.FINE, " no issue found with id " + pa.getIssueID());
+                LOG.log(Level.FINE, " no issue found with id " + pa.getIssueID());  // NOI18N
                 continue;
             }
 
             issue.addComment(pa.getMsg(), panel.resolveCheckBox.isSelected());
         }
-        LOG.log(Level.FINE, "push hook end for " + file);
+        LOG.log(Level.FINE, "push hook end for " + file);                       // NOI18N
     }
 
     @Override
     public JPanel createComponent(HgHookContext context) {
         Repository[] repos = support.getKnownRepositories(LOG);
         if(context.getFiles().length == 0) {
-            LOG.warning("creating hg hook component for zero files");
+            LOG.warning("creating hg hook component for zero files");           // NOI18N
             panel = new HookPanel(repos, null);
         } else {
             File file = context.getFiles()[0];
             Repository repoToSelect = support.getRepository(file, LOG);
             if(repoToSelect == null) {
-                LOG.log(Level.FINE, " could not find repository for " + file);
+                LOG.log(Level.FINE, " could not find repository for " + file);  // NOI18N
             }
             panel = new HookPanel(repos, repoToSelect);
         }
@@ -210,7 +207,7 @@ public class HgHookImpl extends HgHook {
 
     private void onShowFormat() {
         FormatPanel p = new FormatPanel(VCSHooksConfig.getInstance().getHgCommentFormat());
-        if(BugtrackingUtil.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"))) {
+        if(BugtrackingUtil.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"))) {  // NOI18N
             VCSHooksConfig.getInstance().setHgCommentFormat(p.getFormat());
         }
     }

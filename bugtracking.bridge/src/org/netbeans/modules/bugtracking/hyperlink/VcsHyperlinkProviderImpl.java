@@ -44,10 +44,12 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.versioning.util.HyperlinkProvider;
+import org.openide.util.NbBundle;
 
 /**
+ * Provides hyperlink functionality on issue reference in VCS artefects as e.g. log messages in Serach History
  *
- * @author tomas
+ * @author Tomas Stupka
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.util.HyperlinkProvider.class)
 public class VcsHyperlinkProviderImpl extends HyperlinkProvider {
@@ -59,7 +61,7 @@ public class VcsHyperlinkProviderImpl extends HyperlinkProvider {
 
     @Override
     public String getTooltip(String text, int offsetStart, int offsetEnd) {
-        return "Open Issue " + getIssueId(text, offsetStart, offsetEnd);
+        return NbBundle.getMessage(VcsHyperlinkProviderImpl.class, "LBL_OpenIssue", new Object[] { getIssueId(text, offsetStart, offsetEnd) });
     }
 
     @Override
