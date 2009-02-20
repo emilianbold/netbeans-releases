@@ -487,6 +487,15 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(ReportSet context) {
+        if (isElementQName(context.getModel().getPOMQNames().REPORTS)) {
+            created = new StringListImpl(context.getModel(), element, context.getModel().getPOMQNames().REPORT);
+            return;
+        }
+        if (isElementQName(context.getModel().getPOMQNames().CONFIGURATION)) {
+            created = new ConfigurationImpl(context.getModel(), element);
+            return;
+        }
+
         createExtensibilityElement(context);
     }
 
