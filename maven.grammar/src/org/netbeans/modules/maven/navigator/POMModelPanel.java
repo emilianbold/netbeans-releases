@@ -251,7 +251,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                             System.out.println("no fileobject for " + pom);
                         }
                     }
-                    final POMModelVisitor.PomChildren childs = new POMModelVisitor.PomChildren(hold, names, Project.class);
+                    final POMModelVisitor.PomChildren childs = new POMModelVisitor.PomChildren(hold, names, Project.class, filterIncludeUndefined);
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                            treeView.setRootVisible(false);
@@ -456,7 +456,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
             NbPreferences.forModule(POMModelPanel.class).putBoolean( NAVIGATOR_SHOW_UNDEFINED, filterIncludeUndefined);
 
             POMModelVisitor.PomChildren keys = (POMModelVisitor.PomChildren) explorerManager.getRootContext().getChildren();
-            keys.reshow();
+            keys.reshow(filterIncludeUndefined);
         }
         
     }

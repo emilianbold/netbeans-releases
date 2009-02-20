@@ -42,7 +42,6 @@ package org.netbeans.modules.maven.navigator;
 import java.awt.Image;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +70,6 @@ import org.netbeans.modules.maven.model.pom.Notifier;
 import org.netbeans.modules.maven.model.pom.Organization;
 import org.netbeans.modules.maven.model.pom.POMComponent;
 import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
-import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.POMQName;
 import org.netbeans.modules.maven.model.pom.POMQNames;
 import org.netbeans.modules.maven.model.pom.Parent;
@@ -108,9 +106,11 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     private Map<String, Node> childs = new LinkedHashMap<String, Node>();
     private int count = 0;
     private POMQNames names;
+    private boolean filterUndefined;
 
-    public POMModelVisitor(POMQNames names) {
+    public POMModelVisitor(POMQNames names, boolean filterUndefined) {
         this.names = names;
+        this.filterUndefined = filterUndefined;
     }
 
     public void reset() {
@@ -119,7 +119,14 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     }
 
     Node[] getChildNodes() {
-        return childs.values().toArray(new Node[0]);
+        List<Node> toRet = new ArrayList<Node>();
+        for (Node nd : childs.values()) {
+            POMCutHolder cut = nd.getLookup().lookup(POMCutHolder.class);
+            if (!filterUndefined || POMModelPanel.definesValue(cut.getCutValues())) {
+                toRet.add(nd);
+            }
+        }
+        return toRet.toArray(new Node[0]);
     }
 
     public void visit(Project target) {
@@ -517,7 +524,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         Node nd = childs.get(qname.getName());
         if (nd == null) {
             POMCutHolder cutter = new POMCutHolder();
-            nd = new ObjectNode(Lookups.fixed(cutter, qname), new PomChildren(cutter, names, type), displayName);
+            nd = new ObjectNode(Lookups.fixed(cutter, qname), new PomChildren(cutter, names, type, filterUndefined), displayName);
             childs.put(qname.getName(), nd);
         }
         fillValues(count, nd.getLookup().lookup(POMCutHolder.class), value);
@@ -776,22 +783,24 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         private POMQNames names;
         private POMModelVisitor visitor;
         private Class type;
-        public PomChildren(POMCutHolder holder, POMQNames names, Class type) {
+        private boolean filterUndefined;
+        public PomChildren(POMCutHolder holder, POMQNames names, Class type, boolean filterUndefined) {
             setKeys(one);
             this.holder = holder;
             this.names = names;
             this.type = type;
-            visitor = new POMModelVisitor(names);
+            this.filterUndefined = filterUndefined;
         }
 
-        public void reshow() {
-            this.refreshKey(one);
+        public void reshow(boolean filterUndefined) {
+            this.filterUndefined = filterUndefined;
+            this.refreshKey(one[0]);
         }
 
         @Override
         protected Node[] createNodes(Object key) {
             boolean hasNonNullValue = false;
-            visitor.reset();
+            visitor = new POMModelVisitor(names, filterUndefined);
             try {
                 Method m = POMModelVisitor.class.getMethod("visit", type); //NOI18N
                 for (Object comp : holder.getCutValues()) {
@@ -871,7 +880,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                 growToSize(holder.getCutsSize(), cutHolder);
 
                 String itemName = keyGenerator.createName(topMost);
-                toRet.add(new ObjectNode(Lookups.fixed(cutHolder, childName), new PomChildren(cutHolder, names, type), itemName));
+                toRet.add(new ObjectNode(Lookups.fixed(cutHolder, childName), new PomChildren(cutHolder, names, type, filterUndefined), itemName));
             }
 
             return toRet.toArray(new Node[0]);
