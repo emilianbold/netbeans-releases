@@ -87,7 +87,7 @@ public interface CsmFunction extends CsmOffsetableDeclaration, CsmScope {
         GREATER(">", true), // NOI18N
         GREATER_EQ(">=", true), // NOI18N
         RIGHT_SHIFT(">>", true), // NOI18N
-        RIGHT_EQ(">>=", true), // NOI18N
+        RIGHT_SHIFT_EQ(">>=", true), // NOI18N
         ARRAY("[]", null), // NOI18N
         XOR("^", true), // NOI18N
         XOR_EQ("^=", true), // NOI18N
@@ -116,18 +116,31 @@ public interface CsmFunction extends CsmOffsetableDeclaration, CsmScope {
         }
         
         private static boolean inited = false;
-        private static Map<String, OperatorKind> kinds = new HashMap<String, OperatorKind>();
+        private static Map<String, OperatorKind> binaryMap = new HashMap<String, OperatorKind>();
+        private static Map<String, OperatorKind> unaryMap = new HashMap<String, OperatorKind>();
         public static OperatorKind getKindByImage(String image) {
+            OperatorKind out = getKindByImage(image, true);
+            if (out == NONE) {
+                out = getKindByImage(image, false);
+            }
+            return out;
+        }
+        
+        public static OperatorKind getKindByImage(String image, boolean binary) {
             if (!inited) {
                 for (OperatorKind kind : OperatorKind.values()) {
                     String img = kind.getImage();
                     if (img.length() > 0) {
-                        kinds.put(img, kind);
+                        if (kind.isBinary()) {
+                            binaryMap.put(img, kind);
+                        } else {
+                            unaryMap.put(img, kind);
+                        }
                     }
                 }
                 inited = true;
             }
-            OperatorKind kind = kinds.get(image);
+            OperatorKind kind = binary ? binaryMap.get(image) : unaryMap.get(image);
             if (kind == null) {
                 kind = NONE;
             }
