@@ -773,12 +773,58 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     }
 
     public void visit(POMExtensibilityElement target) {
+        POMExtensibilityElement t = target;
+        if (t != null && !t.isInDocumentModel()) {
+            t = null;
+        }
+        if (t != null) {
+            doVisit(t.getAnyElements());
+        }
+        for (Node prop : childs.values()) {
+            growToSize(count, prop.getLookup().lookup(POMCutHolder.class));
+        }
+        count++;
     }
 
     public void visit(ModelList target) {
     }
 
     public void visit(Configuration target) {
+        Configuration t = target;
+        if (t != null && !t.isInDocumentModel()) {
+            t = null;
+        }
+        if (t != null) {
+            doVisit(t.getConfigurationElements());
+        }
+        for (Node prop : childs.values()) {
+            growToSize(count, prop.getLookup().lookup(POMCutHolder.class));
+        }
+
+        count++;
+    }
+
+    private void doVisit(List<POMExtensibilityElement> elems) {
+        for (POMExtensibilityElement el : elems) {
+            List<POMExtensibilityElement> any = el.getAnyElements();
+            if (any != null && !any.isEmpty()) {
+                Node nd = childs.get(el.getQName().getLocalPart());
+                if (nd == null) {
+                    POMCutHolder cutter = new POMCutHolder();
+                    nd = new ObjectNode(Lookups.fixed(cutter, el.getQName()), new PomChildren(cutter, names, POMExtensibilityElement.class, filterUndefined), el.getQName().getLocalPart());
+                    childs.put(el.getQName().getLocalPart(), nd);
+                }
+                fillValues(count, nd.getLookup().lookup(POMCutHolder.class), el);
+            } else {
+                Node nd = childs.get(el.getQName().getLocalPart());
+                if (nd == null) {
+                    nd = new SingleFieldNode(Lookups.fixed(new POMCutHolder()), el.getQName().getLocalPart());
+                    childs.put(el.getQName().getLocalPart(), nd);
+                }
+                fillValues(count, nd.getLookup().lookup(POMCutHolder.class), el.getElementText());
+            }
+        }
+
     }
 
     public void visit(Properties target) {
