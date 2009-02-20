@@ -91,6 +91,9 @@ public class ProxyURLStreamHandlerFactory implements URLStreamHandlerFactory, Lo
                             break;
                         }
                     }
+                    if (prev != null && prev.getClass().getName().equals(ProxyURLStreamHandlerFactory.class.getName())) {
+                        prev = null;
+                    }
                     URL.setURLStreamHandlerFactory(new ProxyURLStreamHandlerFactory(prev, originalJarHandler));
                 } catch (Throwable t) {
                     LOG.log(Level.SEVERE, "No way to register URLStreamHandlerFactory; NetBeans is unlikely to work", t); // NOI18N

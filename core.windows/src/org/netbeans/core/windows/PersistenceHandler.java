@@ -301,6 +301,7 @@ final public class PersistenceHandler implements PersistenceObserver {
             debugLog("## PersistenceHandler.save"); // NOI18N
         }
         
+        ToolbarPool.getDefault().waitFinished();
         WindowManagerConfig wmc = getConfig();
         PersistenceManager.getDefault().saveWindowSystem(wmc);
     }
@@ -503,7 +504,7 @@ final public class PersistenceHandler implements PersistenceObserver {
     
     private WindowManagerConfig getConfig() {
         WindowManagerConfig wmc = new WindowManagerConfig();
-        
+
         wmc.preferredToolbarIconSize = ToolbarPool.getDefault().getPreferredIconSize();
         
         WindowManagerImpl wmi = WindowManagerImpl.getInstance();
