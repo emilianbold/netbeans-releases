@@ -262,9 +262,11 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
                     }
                 });
             }
-            if(value.get() != null) break;
+            if (value.get() != null) {
+               return value.get();
+            }
         }
-        return value.get();
+        return null;
     }
     
     public static void checkReentrancy() {
