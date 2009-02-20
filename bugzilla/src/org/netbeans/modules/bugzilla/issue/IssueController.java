@@ -210,14 +210,14 @@ public class IssueController extends BugtrackingController implements ActionList
     private void onResolve() {
         Set<TaskAttribute> attrs;
         try {
-            BugzillaClient client = Bugzilla.getInstance().getRepositoryConnector().getClientManager().getClient(issue.getRepository(), new NullProgressMonitor());
+            BugzillaClient client = Bugzilla.getInstance().getRepositoryConnector().getClientManager().getClient(issue.getTaskRepository(), new NullProgressMonitor());
             List<String> res = client.getRepositoryConfiguration().getResolutions();
             resolvePanel.resolutionCBO.setModel(new DefaultComboBoxModel(res.toArray(new String[res.size()])));
             if (!BugzillaUtil.show(resolvePanel, "Got resolution?", "submit")) {
                 return;
             }
             attrs = issue.getResolveAttributes((String) resolvePanel.resolutionCBO.getSelectedItem());
-            RepositoryResponse rr = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(issue.getRepository(), issue.getData(), attrs, new NullProgressMonitor());
+            RepositoryResponse rr = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(issue.getTaskRepository(), issue.getData(), attrs, new NullProgressMonitor());
             issue.refresh();
             refreshViewData();
         } catch (MalformedURLException ex) {

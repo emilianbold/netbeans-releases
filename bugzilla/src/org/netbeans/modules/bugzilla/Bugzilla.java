@@ -44,6 +44,7 @@ import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -182,6 +183,17 @@ public class Bugzilla {
      */
     public List<String> getPlatforms(BugzillaRepository repository) throws IOException, CoreException {
         return getRepositoryConfiguration(repository).getPlatforms();
+    }
+
+    /**
+     * Returns all severities defined in the given repository
+     * @param repository
+     * @return
+     * @throws java.io.IOException
+     * @throws org.eclipse.core.runtime.CoreException
+     */
+    public List<String> getSeverities(BugzillaRepository repository) throws IOException, CoreException {
+        return getRepositoryConfiguration(repository).getSeverities();
     }
 
     /**

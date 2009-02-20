@@ -39,15 +39,21 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.logging.Level;
+import org.eclipse.core.runtime.CoreException;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.bugtracking.spi.IssueNode.SeenProperty;
+import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.BugzillaRepository;
 import org.openide.nodes.Node.Property;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author tomas
+ * @author Tomas Stupka
  */
 public class BugzillaIssueNode extends IssueNode {
     public BugzillaIssueNode(Issue issue) {
@@ -76,6 +82,50 @@ public class BugzillaIssueNode extends IssueNode {
         super.fireDataChanged();
     }
 
+    private Integer getSeveritySortKey(String severity) {
+        List<String> s = null;
+        try {
+            s = Bugzilla.getInstance().getSeverities(getBugzillaIssue().getRepository());
+        } catch (IOException iOException) {
+            Bugzilla.LOG.log(Level.SEVERE, null, iOException);
+        } catch (CoreException coreException) {
+            Bugzilla.LOG.log(Level.SEVERE, null, coreException);
+        }
+        if(s == null) {
+            return null;
+        }
+        return s.indexOf(severity);
+    }
+
+    private Integer getPrioritySortKey(String priority) {
+        List<String> p = null;
+        try {
+            p = Bugzilla.getInstance().getPriorities(getBugzillaIssue().getRepository());
+        } catch (IOException iOException) {
+            Bugzilla.LOG.log(Level.SEVERE, null, iOException);
+        } catch (CoreException coreException) {
+            Bugzilla.LOG.log(Level.SEVERE, null, coreException);
+        }
+        if(p == null) {
+            return null;
+        }
+        return p.indexOf(priority);
+    }
+
+    private Integer getResolutionSortKey(String resolution) {
+        List<String> r = null;
+        try {
+            r = Bugzilla.getInstance().getResolutions(getBugzillaIssue().getRepository());
+        } catch (IOException iOException) {
+            Bugzilla.LOG.log(Level.SEVERE, null, iOException);
+        } catch (CoreException coreException) {
+            Bugzilla.LOG.log(Level.SEVERE, null, coreException);
+        }
+        if(r == null) {
+            return null;
+        }
+        return r.indexOf(resolution);
+    }
 
     private class IDProperty extends IssueNode.IssueProperty {
         public IDProperty() {
@@ -87,6 +137,13 @@ public class BugzillaIssueNode extends IssueNode {
         public Object getValue() {
             return getBugzillaIssue().getID();
         }
+        @Override
+        public int compareTo(IssueProperty p) {
+            if(p == null) return 1;
+            Integer i1 = Integer.parseInt(getIssue().getID());
+            Integer i2 = Integer.parseInt(p.getIssue().getID());
+            return i1.compareTo(i2);
+        }
     }
 
     private class SeverityProperty extends IssueNode.IssueProperty {
@@ -95,6 +152,7 @@ public class BugzillaIssueNode extends IssueNode {
                   String.class,
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Severity_Title"), // NOI18N
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Severity_Desc")); // NOI18N
+            setValue("sortkey", getSeveritySortKey(getBugzillaIssue().getSeverity())); // NOI18N
         }
         public Object getValue() {
             return getBugzillaIssue().getSeverity();
@@ -107,6 +165,7 @@ public class BugzillaIssueNode extends IssueNode {
                   String.class,
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Priority_Title"), // NOI18N
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Priority_Desc")); // NOI18N
+            setValue("sortkey", getPrioritySortKey(getBugzillaIssue().getPriority())); // NOI18N
         }
         public Object getValue() {
             return getBugzillaIssue().getPriority();
@@ -123,6 +182,12 @@ public class BugzillaIssueNode extends IssueNode {
         public Object getValue() {
             return getBugzillaIssue().getStatus();
         }
+        public int compareTo(IssueProperty p) {
+            if(p == null) return 1;
+            String s1 = getBugzillaIssue().getStatus();
+            String s2 = ((BugzillaIssue)p.getIssue()).getStatus();
+            return s1.compareTo(s2);
+        }
     }
 
     private class ResolutionProperty extends IssueProperty {
@@ -131,6 +196,7 @@ public class BugzillaIssueNode extends IssueNode {
                   String.class,
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Resolution_Title"), // NOI18N
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_ID_Desc")); // NOI18N
+            setValue("sortkey", getResolutionSortKey(getBugzillaIssue().getResolution())); // NOI18N
         }
         public Object getValue() {
             return getBugzillaIssue().getResolution();
@@ -146,6 +212,12 @@ public class BugzillaIssueNode extends IssueNode {
         }
         public Object getValue() {
             return getBugzillaIssue().getSummary();
+        }
+        public int compareTo(IssueProperty p) {
+            if(p == null) return 1;
+            String s1 = getIssue().getSummary();
+            String s2 = p.getIssue().getSummary();
+            return s1.compareTo(s2);
         }
     }
 }

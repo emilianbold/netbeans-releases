@@ -113,22 +113,16 @@ public class IssueTable implements MouseListener, AncestorListener {
         public int compare(Object o1, Object o2) {
             Node.Property p1 = (Node.Property) o1;
             Node.Property p2 = (Node.Property) o2;
-            String sk1 = (String) p1.getValue("sortkey"); // NOI18N
+            Integer sk1 = (Integer) p1.getValue("sortkey"); // NOI18N
             if (sk1 != null) {
-                String sk2 = (String) p2.getValue("sortkey"); // NOI18N
-                return sk1.compareToIgnoreCase(sk2);
+                Integer sk2 = (Integer) p2.getValue("sortkey"); // NOI18N
+                return sk1.compareTo(sk2);
             } else {
                 try {
-                    assert p1.getValue() instanceof Comparable;
-                    if (p1.getValue() instanceof String) {
-                        String s1 = (String) p1.getValue();
-                        String s2 = (String) p2.getValue();
-                        return s1.compareToIgnoreCase(s2);
-                    } else {
-                        Comparable c1 = (Comparable) p1.getValue();
-                        Comparable c2 = (Comparable) p2.getValue();
-                        return c1.compareTo(c2);
-                    }
+                    assert p1 instanceof Comparable;
+                    Comparable c1 = (Comparable) p1;
+                    Comparable c2 = (Comparable) p2;
+                    return c1.compareTo(c2);
                 } catch (Exception e) {
                     BugtrackingManager.LOG.log(Level.SEVERE, null, e);
                     return 0;
