@@ -83,7 +83,7 @@ public abstract class Repository {
      * Creates a new query instance.
      * @return
      */
-    public abstract Query createQuery(); // XXX see that there is no uneccessary initition of controller & co.
+    public abstract Query createQuery(); 
 
     /**
      * Creates an issue
@@ -102,7 +102,6 @@ public abstract class Repository {
      * which applies that their ID or summary contains the given criteria string
      *
      * @param criteria
-     * // XXX return issues?
      */
     public abstract Issue[] simpleSearch(String criteria);
 

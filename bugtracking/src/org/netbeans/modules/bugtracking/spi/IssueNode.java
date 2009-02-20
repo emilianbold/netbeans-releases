@@ -61,6 +61,11 @@ public abstract class IssueNode extends AbstractNode {
 
 
     private String htmlDisplayName;
+    private Action preferedAction = new AbstractAction() {
+        public void actionPerformed(ActionEvent e) {
+            issue.open();
+        }
+    };
 
     /**
      * Creates a {@link IssueNode}
@@ -91,12 +96,7 @@ public abstract class IssueNode extends AbstractNode {
 
     @Override
     public Action getPreferredAction() {
-        // XXX
-        return new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                issue.open();
-            }
-        };
+        return preferedAction;
     }
 
     /**

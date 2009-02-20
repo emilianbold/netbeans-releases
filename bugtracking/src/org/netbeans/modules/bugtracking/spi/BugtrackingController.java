@@ -41,6 +41,7 @@ package org.netbeans.modules.bugtracking.spi;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
 import javax.swing.JComponent;
 import org.openide.util.HelpCtx;
 
@@ -86,7 +87,7 @@ public abstract class BugtrackingController {
     /**
      *
      */
-    public abstract void applyChanges(); // XXX thow exception
+    public abstract void applyChanges() throws IOException; 
 
     /**
      * Should be called when this controllers parent component is openened

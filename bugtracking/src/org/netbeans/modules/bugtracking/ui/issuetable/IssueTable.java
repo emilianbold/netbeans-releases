@@ -138,16 +138,12 @@ public class IssueTable implements MouseListener, AncestorListener {
     };
     
     public IssueTable(Query query) {
-        this.query = query; // XXX use this as a source of issues
+        this.query = query; 
         query.addNotifyListener(new NotifyListener());
 
         tableModel = new NodeTableModel();
         sorter = new TableSorter(tableModel);
-        tableModel.addTableModelListener(new TableModelListener() {
-            public void tableChanged(TableModelEvent e) {
 
-            }
-        });
         sorter.setColumnComparator(Node.Property.class, NodeComparator);
         table = new JTable(sorter);
         sorter.setTableHeader(table.getTableHeader());

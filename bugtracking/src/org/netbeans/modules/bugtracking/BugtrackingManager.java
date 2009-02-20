@@ -129,7 +129,7 @@ public final class BugtrackingManager implements LookupListener {
     }
 
     /**
-     * Read stored non-kenai repositories and retrieve known kenai ones (XXX)
+     * Read stored repositories
      */
     private void initRepos() {
         repos = new HashSet<Repository>(10); 

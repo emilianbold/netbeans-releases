@@ -59,7 +59,7 @@ public abstract class PopupItem {
 
         @Override
         void invoke() {
-            // XXX open issue
+            // do nothing
         }
 
         @Override

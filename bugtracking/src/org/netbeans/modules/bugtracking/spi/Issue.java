@@ -50,7 +50,6 @@ import org.openide.util.NbBundle;
  * Represens a bugtracking Issue
  *
  * @author Tomas Stupka
- * // XXX lifecycle not defined yet - might live in different queries etc. ...
  */
 public abstract class Issue {
 
