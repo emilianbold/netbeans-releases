@@ -40,26 +40,18 @@
  */
 package org.netbeans.modules.bugtracking;
 
-import org.eclipse.mylyn.commons.net.WebUtil;
-import org.openide.filesystems.FileUtil;
-
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.eclipse.mylyn.internal.tasks.core.RepositoryExternalizationParticipant;
-import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
-import org.eclipse.mylyn.internal.tasks.core.externalization.ExternalizationManager;
-import org.eclipse.mylyn.internal.tasks.core.externalization.IExternalizationParticipant;
+import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.RequestProcessor;
 
 /**
  * Top level class that manages issues from all repositories.  
@@ -69,26 +61,16 @@ import org.openide.util.RequestProcessor;
 public final class BugtrackingManager implements LookupListener {
     
     private static final BugtrackingManager instance = new BugtrackingManager();
-    
-    private final String            DATA_DIRECTORY = "issues";
-    
+        
     private boolean                 initialized;
-    private File                    cacheStore;
-    private ExternalizationManager  externalizationManager;
-    private TaskRepositoryManager   repositoryManager;
     private Set<Repository>         repos;
 
-    public static Logger LOG = Logger.getLogger("org.netbeans.modules.issues.IssueManager");
+    public static Logger LOG = Logger.getLogger("org.netbeans.modules.bugracking.BugtrackingManager");
 
     /**
      * Holds all registered connectors.
      */
     private final Collection<BugtrackingConnector> connectors = new ArrayList<BugtrackingConnector>(2);
-
-    /**
-     * Default bugtracking request processor
-     */
-    private RequestProcessor rp;
 
     /**
      * Result of Lookup.getDefault().lookup(new Lookup.Template<RepositoryConnector>(RepositoryConnector.class));
@@ -121,63 +103,19 @@ public final class BugtrackingManager implements LookupListener {
         return repos;
     }
 
-    public RequestProcessor getRequestProcessor() {
-        if(rp == null) {
-            rp = new RequestProcessor("Baqtracking tasks", 10); // XXX throughput???
-        }
-        return rp;
-    }
-
     private synchronized void init() {
         if (initialized) return;
 
         connectorsLookup.addLookupListener(this);
         refreshConnectors();
 
-        // XXX mylyn spacific init -> move to bugtracking libs.
-        WebUtil.init();
-        
-        initCacheStore();
-        externalizationManager = new ExternalizationManager(cacheStore.getAbsolutePath());
-
-        repositoryManager = new TaskRepositoryManager();
-        IExternalizationParticipant repositoryParticipant = new RepositoryExternalizationParticipant(externalizationManager, repositoryManager);
-        externalizationManager.addParticipant(repositoryParticipant);
-
-//        taskList = new TaskList();
-//        repositoryModel = new RepositoryModel(taskList, repositoryManager);
-//        taskListExternalizer = new TaskListExternalizer(repositoryModel, repositoryManager);
-////        TaskListElementImporter taskListImporter = new TaskListElementImporter(repositoryManager, repositoryModel);
-//
-//        taskListSaveParticipant = new TaskListExternalizationParticipant(repositoryModel, taskList,
-//                taskListExternalizer, externalizationManager, repositoryManager);
-//        externalizationManager.addParticipant(taskListSaveParticipant);
-//        taskList.addChangeListener(taskListSaveParticipant);
-//
-//        taskActivityManager = new TaskActivityManager(repositoryManager, taskList);
-//        taskActivityManager.addActivationListener(taskListSaveParticipant);
-     
-//        taskListManager = new TaskListManager(taskList, taskListSaveParticipant, taskListImporter);
-
-        
-
-        LOG.fine("Issue manager initialized");
+        BugtrackingRuntime.getInstance().init();
+        LOG.fine("Bugtracking manager initialized");
         initialized = true;
     }
 
     public void addRepo(Repository repo) {
         getRepositories().add(repo);
-    }
-
-    private void initCacheStore() {
-        String userDir = System.getProperty("netbeans.user"); // NOI18N
-        if (userDir != null) {
-            cacheStore = new File(new File(new File (userDir, "var"), "cache"), DATA_DIRECTORY); // NOI18N
-        } else {
-            File cachedir = FileUtil.toFile(org.openide.filesystems.Repository.getDefault().getDefaultFileSystem().getRoot());
-            cacheStore = new File(cachedir, DATA_DIRECTORY);
-        }
-        cacheStore.mkdirs();
     }
 
     public BugtrackingConnector[] getConnectors() {

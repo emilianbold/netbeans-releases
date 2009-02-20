@@ -42,7 +42,6 @@ package org.eclipse.core.internal.runtime;
 
 import org.osgi.framework.BundleContext;
 
-import java.util.*;
 
 /**
  * @author Maros Sandor

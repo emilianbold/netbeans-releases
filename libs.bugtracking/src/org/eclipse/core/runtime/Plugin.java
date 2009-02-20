@@ -42,7 +42,7 @@ package org.eclipse.core.runtime;
 
 import java.io.File;
 import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
@@ -51,8 +51,6 @@ import org.osgi.framework.BundleContext;
  */
 public class Plugin implements ILog {
     private IPath stateLocation;
-    // XXX
-    private static Logger LOG = Logger.getLogger("org.netbeans.modules.issues");
 
     public final Bundle getBundle() {
         return null;
@@ -75,10 +73,8 @@ public class Plugin implements ILog {
     }
     
     public final IPath getStateLocation() throws IllegalStateException {
-        // XXX
         if(stateLocation == null) {
-            String userdir = System.getProperty("netbeans.user");
-            File f = new File(userdir + "var/cache/jiracache");
+            File f = new File(BugtrackingRuntime.getInstance().getCacheStore(), "statelocation");
             stateLocation = new StateLocation(f);
         }
         return stateLocation;
@@ -100,7 +96,7 @@ public class Plugin implements ILog {
             default:
                 l = Level.INFO;
         }
-        LOG.log(l, status.getMessage() + " code: " + status.getCode(), status.getException());
+        BugtrackingRuntime.LOG.log(l, status.getMessage() + " code: " + status.getCode(), status.getException());
     }
 
     private class StateLocation implements IPath {

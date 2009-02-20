@@ -56,6 +56,14 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.filesystems</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.21</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.modules</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -65,11 +73,11 @@ made subject to such option by the copyright holder.
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.libs.jira</friend>
-                <friend>org.netbeans.modules.jira</friend>
                 <friend>org.netbeans.libs.bugzilla</friend>
-                <friend>org.netbeans.modules.bugzilla</friend>
+                <friend>org.netbeans.libs.jira</friend>
                 <friend>org.netbeans.modules.bugtracking</friend>
+                <friend>org.netbeans.modules.bugzilla</friend>
+                <friend>org.netbeans.modules.jira</friend>
                 <package>org.apache.commons.httpclient</package>
                 <package>org.apache.commons.httpclient.methods</package>
                 <package>org.apache.commons.httpclient.methods.multipart</package>
@@ -90,6 +98,7 @@ made subject to such option by the copyright holder.
                 <package>org.eclipse.mylyn.tasks.core.data</package>
                 <package>org.eclipse.mylyn.tasks.core.sync</package>
                 <package>org.eclipse.osgi.util</package>
+                <package>org.netbeans.libs.bugtracking</package>
                 <package>org.osgi.framework</package>
                 <package>org.osgi.util.tracker</package>
             </friend-packages>

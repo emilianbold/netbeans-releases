@@ -40,17 +40,14 @@
 package org.eclipse.mylyn.internal.tasks.ui;
 
 import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
+import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class TasksUiPlugin {
-    private static TaskRepositoryManager repositoryManager;
+public class TasksUiPlugin {    
     public static TaskRepositoryManager getRepositoryManager() {
-        if(repositoryManager == null) {
-            repositoryManager = new TaskRepositoryManager();
-        }
-        return repositoryManager;
+        return BugtrackingRuntime.getInstance().getTaskRepositoryManager();
     }
 }
