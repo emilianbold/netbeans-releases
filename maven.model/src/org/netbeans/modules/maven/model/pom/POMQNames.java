@@ -187,6 +187,8 @@ public final class POMQNames {
 
     public final POMQName DOWNLOADURL;
 
+    public final POMQName MAVEN;
+
 
     private boolean ns;
 
@@ -329,6 +331,8 @@ public final class POMQNames {
         ARCHIVE = new POMQName(POMQName.createQName("archive",ns), ns); //NOI18N
 
         DOWNLOADURL = new POMQName(POMQName.createQName("downloadUrl",ns), ns); //NOI18N
+
+        MAVEN = new POMQName(POMQName.createQName("maven",ns), ns); //NOI18N
     }
 
     public boolean isNSAware() {
@@ -449,7 +453,8 @@ public final class POMQNames {
             SUBSCRIBE.getQName(),
             UNSUBSCRIBE.getQName(),
             POST.getQName(),
-            DOWNLOADURL.getQName()
+            DOWNLOADURL.getQName(),
+            MAVEN.getQName()
         };
         List<QName> list = Arrays.asList(names);
         return new HashSet<QName>(list);
