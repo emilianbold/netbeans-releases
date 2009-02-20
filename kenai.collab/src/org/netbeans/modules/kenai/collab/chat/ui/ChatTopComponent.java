@@ -40,6 +40,7 @@
 package org.netbeans.modules.kenai.collab.chat.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
@@ -51,17 +52,21 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.OverlayLayout;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.collab.im.KenaiConnection;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import org.openide.awt.Actions.MenuItem;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -80,8 +85,6 @@ public class ChatTopComponent extends TopComponent {
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/kenai/collab/resources/online.gif";
 
-    private static ImageIcon ONLINE = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/online.gif"));
-
     private static final String PREFERRED_ID = "ChatTopComponent";
 
     //open chats
@@ -93,7 +96,7 @@ public class ChatTopComponent extends TopComponent {
         setToolTipText(NbBundle.getMessage(ChatTopComponent.class, "HINT_ChatTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
 
-        JPanel panel = new JPanel() {
+        final JPanel panel = new JPanel() {
             @Override
             public boolean isOptimizedDrawingEnabled() {
                 return false;
@@ -107,27 +110,42 @@ public class ChatTopComponent extends TopComponent {
         chats.setAlignmentY(0);
         panel.add(glassPane);
         panel.add(chats);
-        add(panel, BorderLayout.CENTER);
 
+        ChangeListener changeListener = new ChangeListener() {
+
+            public void stateChanged(ChangeEvent changeEvent) {
+                int index = chats.getSelectedIndex();
+                chats.setForegroundAt(index, Color.BLACK);
+            }
+        };
+
+        chats.addChangeListener(changeListener);
         if (!KenaiConnection.getDefault().isConnected()) {
             retry.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     if (!KenaiConnection.getDefault().isConnected()) {
                         UIUtils.showLogin();
+                        remove(retry);
+                        add(panel, BorderLayout.CENTER);
                         putChats();
                     }
                 }
             });
             add(retry, BorderLayout.CENTER);
         } else {
+            add(panel, BorderLayout.CENTER);
             putChats();
         }
         //putClientProperty("netbeans.winsys.tc.keep_preferred_size_when_slided_in", Boolean.TRUE);
     }
 
-    public void reload() {
-        open.clear();
-        putChats();
+    public static synchronized void reload() {
+        if (instance==null)
+            return;
+        else {
+            instance.open.clear();
+            instance.putChats();
+        }
     }
 
     public void setActive(String parseName) {
@@ -135,9 +153,9 @@ public class ChatTopComponent extends TopComponent {
     }
 
 
-    void addChat(final String string, ChatPanel chatPanel) {
-        chats.addTab(string, ONLINE, chatPanel);
-        open.add(string);
+    void addChat(ChatPanel chatPanel) {
+        chats.addTab(chatPanel.getName(),chatPanel);
+        open.add(chatPanel.getName());
     }
 
     void removeChat(Component chatPanel) {
@@ -146,12 +164,22 @@ public class ChatTopComponent extends TopComponent {
 //        chats.remove(chatPanel);
     }
 
+    void setModified(ChatPanel panel) {
+        int i=chats.indexOfComponent(panel);
+        chats.setForegroundAt(i, Color.BLUE);
+    }
+
     void showPopup() {
         JPopupMenu menu = new JPopupMenu();
         for (KenaiProject prj : KenaiConnection.getDefault().getMyProjects()) {
             if (!open.contains(prj.getName())) {
                 menu.add(new OpenChatAction(prj));
             }
+        }
+        if (menu.getComponentCount()==0) {
+            final JMenuItem jMenuItem = new JMenuItem("<empty>");
+            jMenuItem.setEnabled(false);
+            menu.add(jMenuItem);
         }
         menu.show(addChat, 0, addChat.getSize().height);
     }
@@ -167,11 +195,11 @@ public class ChatTopComponent extends TopComponent {
         if (chs.size()==1) {
             final MultiUserChat next = chs.iterator().next();
             ChatPanel chatPanel = new ChatPanel(next);
-            addChat(next.getRoom(), chatPanel);
+            addChat(chatPanel);
         } else if (chs.size()!=0) {
             SwingUtilities.invokeLater(new Runnable(){
                 public void run() {
-                    showPopup();
+                    //showPopup();
                 }
             });
         }
@@ -291,7 +319,7 @@ public class ChatTopComponent extends TopComponent {
     /** replaces this in object stream */
     @Override
     public Object writeReplace() {
-        return new ResolvableHelper();
+        return new ResolvableHelper(open);
     }
 
     @Override
@@ -303,8 +331,17 @@ public class ChatTopComponent extends TopComponent {
 
         private static final long serialVersionUID = 1L;
 
+        private final HashSet<String> open;
+        public ResolvableHelper(HashSet<String> open) {
+            this.open=open;
+        }
+
         public Object readResolve() {
-            return ChatTopComponent.getDefault();
+            final ChatTopComponent tc = ChatTopComponent.getDefault();
+            if (open!=null)
+                for (String chat:open)
+                    tc.addChat(new ChatPanel(KenaiConnection.getDefault().getChat(chat)));
+            return tc;
         }
     }
 
@@ -318,7 +355,7 @@ public class ChatTopComponent extends TopComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            addChat(prj.getName(), new ChatPanel(KenaiConnection.getDefault().getChat(prj)));
+            addChat(new ChatPanel(KenaiConnection.getDefault().getChat(prj)));
         }
     }
 }

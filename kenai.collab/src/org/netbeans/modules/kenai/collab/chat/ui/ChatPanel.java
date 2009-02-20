@@ -76,6 +76,7 @@ public class ChatPanel extends javax.swing.JPanel {
     public ChatPanel(MultiUserChat chat) {
         this.muc=chat;
         initComponents();
+        setName(StringUtils.parseName(chat.getRoom()));
         editorKit= (HTMLEditorKit) inbox.getEditorKit();
 
         Font font = UIManager.getFont("Label.font");
@@ -161,6 +162,9 @@ public class ChatPanel extends javax.swing.JPanel {
                 public void run() {
                     setEndSelection();
                     insertMessage(message);
+                    if (!ChatPanel.this.isVisible()) {
+                        ChatTopComponent.getDefault().setModified(ChatPanel.this);
+                    }
                 }
             });
         }
