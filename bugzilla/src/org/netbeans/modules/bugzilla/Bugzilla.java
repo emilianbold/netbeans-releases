@@ -174,6 +174,17 @@ public class Bugzilla {
     }
 
     /**
+     * Returns all platforms defined in the given repository
+     * @param repository
+     * @return
+     * @throws java.io.IOException
+     * @throws org.eclipse.core.runtime.CoreException
+     */
+    public List<String> getPlatforms(BugzillaRepository repository) throws IOException, CoreException {
+        return getRepositoryConfiguration(repository).getPlatforms();
+    }
+
+    /**
      * Returns all custom fields defined in the given repository
      * @param repository
      * @return

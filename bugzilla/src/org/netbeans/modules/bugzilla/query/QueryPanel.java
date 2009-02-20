@@ -84,7 +84,7 @@ public class QueryPanel extends javax.swing.JPanel {
 
         this.tableComponent = tableComponent;
         noContentPanel = new NoContentPanel();
-        tablePanel.add(noContentPanel, BorderLayout.CENTER);
+        tablePanel.add(tableComponent, BorderLayout.CENTER);
 
         JTree tv = new JTree();
         BasicTreeUI tvui = (BasicTreeUI) tv.getUI();
@@ -113,6 +113,8 @@ public class QueryPanel extends javax.swing.JPanel {
         cancelChangesButton.setVisible(false);
         filterComboBox.setVisible(false);
         filterLabel.setVisible(false);
+        noContentContainer.setVisible(false);
+        noContentContainer.add(noContentPanel);
 
         summaryComboBox.setModel(new DefaultComboBoxModel());
         commentComboBox.setModel(new DefaultComboBoxModel());
@@ -166,7 +168,6 @@ public class QueryPanel extends javax.swing.JPanel {
         tableFieldsPanel = new javax.swing.JPanel();
         tableHeaderPanel = new javax.swing.JPanel();
         filterLabel = new javax.swing.JLabel();
-        searchPanel = new javax.swing.JPanel();
         criteriaPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
@@ -177,6 +178,7 @@ public class QueryPanel extends javax.swing.JPanel {
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
+        noContentContainer = new javax.swing.JPanel();
 
         byLastChangePanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
@@ -586,7 +588,7 @@ public class QueryPanel extends javax.swing.JPanel {
             .add(tableFieldsPanelLayout.createSequentialGroup()
                 .add(tableHeaderPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(tablePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 113, Short.MAX_VALUE)
+                .add(tablePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 97, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -890,13 +892,17 @@ public class QueryPanel extends javax.swing.JPanel {
 
         queryHeaderPanelLayout.linkSize(new java.awt.Component[] {jLabel4, jLabel5, jLabel6, modifyButton, removeButton, seenButton}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
+        noContentContainer.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
+        noContentContainer.setLayout(new java.awt.BorderLayout());
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(searchPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(tableFieldsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .add(queryHeaderPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(noContentContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 820, Short.MAX_VALUE)
+            .add(tableFieldsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -905,7 +911,9 @@ public class QueryPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(searchPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(tableFieldsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(tableFieldsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(noContentContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -997,6 +1005,7 @@ public class QueryPanel extends javax.swing.JPanel {
     final org.netbeans.modules.bugtracking.util.LinkButton modifyButton = new org.netbeans.modules.bugtracking.util.LinkButton();
     final javax.swing.JLabel nameLabel = new javax.swing.JLabel();
     final javax.swing.JTextField newValueTextField = new javax.swing.JTextField();
+    private javax.swing.JPanel noContentContainer;
     final javax.swing.JComboBox peopleComboBox = new javax.swing.JComboBox();
     final javax.swing.JLabel peopleLabel = new javax.swing.JLabel();
     final javax.swing.JTextField peopleTextField = new javax.swing.JTextField();
@@ -1015,7 +1024,7 @@ public class QueryPanel extends javax.swing.JPanel {
     final javax.swing.JButton saveChangesButton = new javax.swing.JButton();
     final javax.swing.JPanel savePanel = new javax.swing.JPanel();
     final javax.swing.JButton searchButton = new javax.swing.JButton();
-    private javax.swing.JPanel searchPanel;
+    final javax.swing.JPanel searchPanel = new javax.swing.JPanel();
     final org.netbeans.modules.bugtracking.util.LinkButton seenButton = new org.netbeans.modules.bugtracking.util.LinkButton();
     final javax.swing.JLabel statusLabel = new javax.swing.JLabel();
     final javax.swing.JList statusList = new javax.swing.JList();
@@ -1097,27 +1106,41 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
 
-    void showNoContentPanel(boolean on, JComponent progressBar, String text) {
-        noContentPanel.setVisible(on);
+    void showSearchingProgress(boolean on, JComponent progressBar, String text) {
+        noContentContainer.setVisible(on);
         tableSummaryLabel.setVisible(!on);
-        noContentPanel.setVisible(on);
         tableFieldsPanel.setVisible(true);
-        if(on) {
-            tablePanel.add(noContentPanel, BorderLayout.CENTER);
-            tablePanel.remove(tableComponent);
-        } else {
-            tablePanel.remove(noContentPanel);
-            tablePanel.add(tableComponent, BorderLayout.CENTER);
-        }
-        if(text != null) {
+//        if(on) {
+//            tablePanel.add(noContentPanel, BorderLayout.CENTER);
+//            tablePanel.remove(tableComponent);
+//        } else {
+//            tablePanel.remove(noContentPanel);
+//            tablePanel.add(tableComponent, BorderLayout.CENTER);
+//        }
+        if(on && text != null) {
             noContentPanel.setText(text);
         }
         noContentPanel.setProgressComponent(on ? progressBar : null);
-        tablePanel.repaint();
+    }
+
+    void showRetrievingProgress(boolean on, JComponent progressBar, String text) {
+        noContentContainer.setVisible(on);
+        searchPanel.setVisible(!on);
+//        if(on) {
+//            tablePanel.add(noContentPanel, BorderLayout.CENTER);
+//            tablePanel.remove(tableComponent);
+//        } else {
+//            tablePanel.remove(noContentPanel);
+//            tablePanel.add(tableComponent, BorderLayout.CENTER);
+//        }
+        if(on && text != null) {
+            noContentPanel.setText(text);
+        }
+        noContentPanel.setProgressComponent(on ? progressBar : null);
     }
 
     void showNoContentPanel(boolean on) {
-        showNoContentPanel(on, null, null);
+        showSearchingProgress(on, null, null);
     }
 
     void setModifyVisible(boolean b) {

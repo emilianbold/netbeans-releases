@@ -865,18 +865,21 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Component id="searchPanel" alignment="0" max="32767" attributes="1"/>
-          <Component id="tableFieldsPanel" alignment="0" max="32767" attributes="2"/>
           <Component id="queryHeaderPanel" alignment="0" max="32767" attributes="2"/>
+          <Component id="noContentContainer" alignment="0" pref="820" max="32767" attributes="0"/>
+          <Component id="tableFieldsPanel" alignment="0" max="32767" attributes="2"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Component id="queryHeaderPanel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="searchPanel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="tableFieldsPanel" max="32767" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Component id="noContentContainer" pref="110" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -907,7 +910,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <Component id="tableHeaderPanel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
-                  <Component id="tablePanel" pref="113" max="32767" attributes="0"/>
+                  <Component id="tablePanel" pref="97" max="32767" attributes="0"/>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
@@ -998,6 +1001,9 @@
           <Color blue="ff" green="ff" id="EditorPane.background" palette="3" red="ff" type="palette"/>
         </Property>
       </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
+      </AuxValues>
 
       <Layout>
         <DimensionLayout dim="0">
@@ -1588,6 +1594,15 @@
           </Properties>
         </Component>
       </SubComponents>
+    </Container>
+    <Container class="javax.swing.JPanel" name="noContentContainer">
+      <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="ff" green="ff" id="EditorPane.background" palette="3" red="ff" type="palette"/>
+        </Property>
+      </Properties>
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
     </Container>
   </SubComponents>
 </Form>
