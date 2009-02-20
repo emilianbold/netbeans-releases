@@ -46,6 +46,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -357,8 +358,11 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                     Object o = ic.instanceCreate ();
                 }
             } catch (Exception ex) {
-                ex.printStackTrace();
-                errors.add ("File " + fo.getPath() + " threw " + ex);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                PrintStream ps = new PrintStream(baos);
+                ex.printStackTrace(ps);
+                ps.flush();
+                errors.add ("File " + fo.getPath() + " threw: " + baos);
             }
         }
         
