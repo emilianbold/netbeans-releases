@@ -187,7 +187,6 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                     // editor already opened, so just select
                     JTextComponent component = panes[0];
                     component.setCaretPosition(pos);
-                    System.out.println("opened, selecting " + pos );
                 } else  {
                     // editor not opened yet
                     ec.open();
@@ -197,7 +196,6 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                         if (panes != null && panes.length > 0) {
                             JTextComponent component = panes[0];
                             component.setCaretPosition(pos);
-                            System.out.println("opening, selecting " + pos );
                         }
                     } catch (IOException ioe) {
 
