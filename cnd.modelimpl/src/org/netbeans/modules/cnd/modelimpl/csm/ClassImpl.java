@@ -433,7 +433,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         private CsmVisibility visibility;
 
         public MemberTypedef(CsmClass containingClass, AST ast, CsmType type, String name, CsmVisibility curentVisibility) {
-            super(ast, containingClass.getContainingFile(), containingClass, type, name);
+            super(ast, containingClass.getContainingFile(), containingClass, type, name, true);
             visibility = curentVisibility;
         }
 
