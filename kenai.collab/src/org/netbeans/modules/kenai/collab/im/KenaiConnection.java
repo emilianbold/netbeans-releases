@@ -68,7 +68,6 @@ import org.netbeans.modules.kenai.collab.chat.ui.PresenceIndicator;
 import org.netbeans.modules.kenai.collab.chat.ui.PresenceIndicator.PresenceListener;
 import org.netbeans.modules.kenai.collab.chat.ui.PresenceIndicator.Status;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
-import sun.swing.SwingUtilities2;
 
 /**
  * Class representing connection to kenai xmpp server
