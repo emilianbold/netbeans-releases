@@ -473,7 +473,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                     }
                 });
         checkDependencies(t);
-        //TODO goals.
+        checkStringListObject(names.GOALS, names.GOAL, "Goals", t != null ? t.getGoals() : null);
         checkChildString(names.INHERITED, NbBundle.getMessage(POMModelVisitor.class, "INHERITED"), t != null ? (t.isInherited() != null ? t.isInherited().toString() : null) : null);
         checkChildObject(names.CONFIGURATION, Configuration.class, NbBundle.getMessage(POMModelVisitor.class, "CONFIGURATION"), t != null ? t.getConfiguration() : null);
 
@@ -522,7 +522,6 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         }
         checkChildString(names.ID, NbBundle.getMessage(POMModelVisitor.class, "ID"), t != null ? t.getId() : null);
         checkChildString(names.PHASE, NbBundle.getMessage(POMModelVisitor.class, "PHASE"), t != null ? t.getPhase() : null);
-        //TODO goals.
         checkChildString(names.INHERITED, NbBundle.getMessage(POMModelVisitor.class, "INHERITED"), t != null ? (t.isInherited() != null ? t.isInherited().toString() : null) : null);
         checkChildObject(names.CONFIGURATION, Configuration.class, NbBundle.getMessage(POMModelVisitor.class, "CONFIGURATION"), t != null ? t.getConfiguration() : null);
 
@@ -537,7 +536,8 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         checkChildString(names.TARGETPATH, NbBundle.getMessage(POMModelVisitor.class, "TARGET_PATH"), t != null ? t.getTargetPath() : null);
         //TODO filtering
         checkChildString(names.DIRECTORY, NbBundle.getMessage(POMModelVisitor.class, "DIRECTORY"), t != null ? t.getDirectory() : null);
-        //TODO includes, excludes
+        checkStringListObject(names.INCLUDES, names.INCLUDE, "Includes", t != null ? t.getIncludes() : null);
+        checkStringListObject(names.EXCLUDES, names.EXCLUDE, "Excludes", t != null ? t.getExcludes() : null);
 
         count++;
     }
@@ -621,7 +621,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         checkChildString(names.ID, NbBundle.getMessage(POMModelVisitor.class, "ID"), t != null ? t.getId() : null);
         checkChildObject(names.CONFIGURATION, Configuration.class, NbBundle.getMessage(POMModelVisitor.class, "CONFIGURATION"), t != null ? t.getConfiguration() : null);
         checkChildString(names.INHERITED, NbBundle.getMessage(POMModelVisitor.class, "INHERITED"), t != null ? (t.isInherited() != null ? t.isInherited().toString() : null) : null);
-        //TODO reports.
+        checkStringListObject(names.REPORTS, names.REPORT, "Reports", t != null ? t.getReports() : null);
 
         count++;
     }
@@ -886,6 +886,17 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         }
         fillValues(count, nd.getLookup().lookup(POMCutHolder.class), values);
     }
+
+    private void checkStringListObject(POMQName qname, POMQName childName, String displayName, List<String> values) {
+        Node nd = childs.get(qname.getName());
+        if (nd == null) {
+            POMCutHolder cutter = new POMCutHolder();
+            nd = new ListNode(Lookups.fixed(cutter, qname), new PomStringListChildren(cutter, childName), displayName);
+            childs.put(qname.getName(), nd);
+        }
+        fillValues(count, nd.getLookup().lookup(POMCutHolder.class), values);
+    }
+
 
 
     private void fillValues(int current, POMCutHolder cutHolder, Object value) {
@@ -1253,6 +1264,68 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             }
             list.add(value);
         }
+    }
+
+    class PomStringListChildren extends Children.Keys<Object> {
+        private Object[] one = new Object[] {new Object()};
+        private POMCutHolder holder;
+        private POMQName childName;
+        public PomStringListChildren(POMCutHolder holder, POMQName childName) {
+            setKeys(one);
+            this.holder = holder;
+            this.childName = childName;
+        }
+
+        public void reshow() {
+            this.refreshKey(one);
+        }
+
+        @Override
+        protected Node[] createNodes(Object key) {
+            List<Node> toRet = new ArrayList<Node>();
+            LinkedHashMap<String, List<String>> cut = new LinkedHashMap<String, List<String>>();
+
+            int level = 0;
+            for (Object comp : holder.getCutValues()) {
+                if (comp == null) {
+                    level++;
+                    continue;
+                }
+                @SuppressWarnings("unchecked")
+                List<String> lst = (List<String>) comp;
+                for (String c : lst) {
+                    List<String> currentCut = cut.get(c);
+                    if (currentCut == null) {
+                        currentCut = new ArrayList<String>();
+                        cut.put(c, currentCut);
+                    }
+                    fillValues(level, currentCut, c);
+                }
+                level++;
+            }
+            for (List<String> lst : cut.values()) {
+                POMCutHolder cutHolder = new POMCutHolder();
+                String topMost = null;
+                for (String c : lst) {
+                    cutHolder.addCut(c);
+                    if (topMost == null) {
+                        topMost = c;
+                    }
+                }
+                growToSize(holder.getCutsSize(), cutHolder);
+                toRet.add(new ObjectNode(Lookups.fixed(cutHolder, childName), Children.LEAF, topMost));
+            }
+
+            return toRet.toArray(new Node[0]);
+        }
+
+        private void fillValues(int current, List<String> list, String value) {
+            while (list.size() < current) {
+                list.add(null);
+            }
+            list.add(value);
+        }
+
     }
 
 
