@@ -383,7 +383,9 @@ public class Call {
                         }
 
                         String type = RubyUtils.RUBY_PREDEF_VARS_CLASSES.get(lhs);
-                        boolean isStatic = type == null; // predefined vars are instances
+                         // predefined vars are instances
+                        // also if it was a call to a constructor, the call is not static
+                        boolean isStatic = (type == null && constructorCallLength == -1);
 
                         boolean isLHSConstant = RubyUtils.isValidConstantFQN(lhs);
                         if (type == null /* not predef. var */ && isLHSConstant) {
