@@ -49,12 +49,12 @@ made subject to such option by the copyright holder.
     <folder name="JSP_Servlet">
         <attr name="position" intvalue="600"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/Web.html"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/WebInfo.html"/>
       <file name="JSP.jsp" url="templates/JSP.template">
         <attr name="position" intvalue="100"/>
         <attr name="template" boolvalue="true"/>
         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSPInfo.html"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.wizards.PageIterator.createJspIterator"/>
         <attr name="templateCategory" stringvalue="web-types"/>
