@@ -648,6 +648,10 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             created = new PluginImpl(context.getModel(), element);
             return;
         }
+        if (isElementQName(context.getModel().getPOMQNames().REPORTPLUGIN) && context.getListClass().equals(ReportPlugin.class)) {
+            created = new ReportPluginImpl(context.getModel(), element);
+            return;
+        }
         if (isElementQName(context.getModel().getPOMQNames().EXTENSION) && context.getListClass().equals(Extension.class)) {
             created = new ExtensionImpl(context.getModel(), element);
             return;

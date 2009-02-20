@@ -223,7 +223,7 @@ public final class POMQNames {
         TESTRESOURCE = new POMQName(POMQName.createQName("testResource",ns), ns); // NOI18N
         PLUGINMANAGEMENT = new POMQName(POMQName.createQName("pluginManagement",ns), ns); // NOI18N
         REPORTING = new POMQName(POMQName.createQName("reporting",ns), ns); // NOI18N
-        REPORTPLUGIN = new POMQName(POMQName.createQName("reportPlugin",ns), ns); // NOI18N
+        REPORTPLUGIN = new POMQName(POMQName.createQName("plugin",ns), ns); // NOI18N
         REPORTSET = new POMQName(POMQName.createQName("reportSet",ns), ns); // NOI18N
         ACTIVATION = new POMQName(POMQName.createQName("activation",ns), ns); // NOI18N
         ACTIVATIONPROPERTY = new POMQName(POMQName.createQName("property",ns), ns); // NOI18N
@@ -251,7 +251,7 @@ public final class POMQNames {
         EXTENSIONS = new POMQName(POMQName.createQName("extensions",ns), ns); // NOI18N
         RESOURCES = new POMQName(POMQName.createQName("resources",ns), ns); // NOI18N
         TESTRESOURCES = new POMQName(POMQName.createQName("testResources",ns), ns); // NOI18N
-        REPORTPLUGINS = new POMQName(POMQName.createQName("reportPlugins",ns), ns); // NOI18N
+        REPORTPLUGINS = new POMQName(POMQName.createQName("plugins",ns), ns); // NOI18N
         REPORTSETS = new POMQName(POMQName.createQName("reportSets",ns), ns); // NOI18N
 
 
