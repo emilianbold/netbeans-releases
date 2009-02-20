@@ -292,7 +292,12 @@ class OutputPane extends AbstractOutputPane {
         
         return result;
     }
-    
+
+    @Override
+    protected void changeFontSizeBy(int change) {
+        Controller.getDefault().changeFontSizeBy(change);
+    }
+
     //#83118 - remove the "control shift 0" from editor pane to lt the Open Project action through
     protected class MyInputMap extends  InputMap {
         

@@ -41,6 +41,7 @@
 
 package org.netbeans.core.output2;
 
+import java.awt.Font;
 import java.io.CharConversionException;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -53,7 +54,9 @@ import java.util.Set;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import org.openide.util.Exceptions;
+import org.openide.util.NbPreferences;
 import org.openide.windows.IOContainer;
 import org.openide.windows.OutputEvent;
 import org.openide.xml.XMLUtil;
@@ -125,6 +128,33 @@ public class Controller {
 
     void removeTab(NbIO io) {
         ioToTab.remove(io);
+    }
+
+    private static final String KEY_FONTSIZE = "fontsize";
+    void changeFontSizeBy(int change) {
+        Font oldFont = ioToTab.values().iterator().next().getOutputPane().getViewFont();
+        int fontSize = oldFont.getSize() + change;
+        if (fontSize < 7) {
+            fontSize = 7;
+        } else if (fontSize > 72) {
+            fontSize = 72;
+        }
+        NbPreferences.forModule(Controller.class).putInt(KEY_FONTSIZE, fontSize);
+        Font newFont = oldFont.deriveFont((float) fontSize);
+        for (OutputTab tab : ioToTab.values()) {
+            tab.getOutputPane().setViewFont(newFont);
+        }
+    }
+
+    public static int getDefaultFontSize() {
+        int result = NbPreferences.forModule(Controller.class).getInt(KEY_FONTSIZE, -1);
+        if (result == -1) {
+            result = UIManager.getInt("uiFontSize");
+            if (result < 7) {
+                result = -1;
+            }
+        }
+        return result;
     }
 
     void removeFromUpdater(OutputTab tab) {

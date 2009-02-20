@@ -103,6 +103,8 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         installKeyboardAction(findNextAction);
         installKeyboardAction(findPreviousAction);
         installKeyboardAction(wrapAction);
+        installKeyboardAction(largerFontAction);
+        installKeyboardAction(smallerFontAction);
         installKeyboardAction(saveAsAction);
         installKeyboardAction(closeAction);
         installKeyboardAction(copyAction);
@@ -725,6 +727,8 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     private static final int ACTION_CLEAR = 12;
     private static final int ACTION_NEXTTAB = 13;
     private static final int ACTION_PREVTAB = 14;
+    private static final int ACTION_LARGERFONT = 15;
+    private static final int ACTION_SMALLERFONT = 16;
 
     Action copyAction = new TabAction(ACTION_COPY, "ACTION_COPY"); //NOI18N
     Action wrapAction = new TabAction(ACTION_WRAP, "ACTION_WRAP"); //NOI18N
@@ -736,6 +740,9 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     Action findAction = new TabAction(ACTION_FIND, "ACTION_FIND"); //NOI18N
     Action findNextAction = new TabAction(ACTION_FINDNEXT, "ACTION_FIND_NEXT"); //NOI18N
     Action findPreviousAction = new TabAction(ACTION_FINDPREVIOUS, "ACTION_FIND_PREVIOUS"); //NOI18N
+    Action largerFontAction = new TabAction(ACTION_LARGERFONT, "ACTION_LARGER_FONT"); //NOI18N
+    Action smallerFontAction = new TabAction(ACTION_SMALLERFONT, "ACTION_SMALLER_FONT"); //NOI18N
+
     Action navToLineAction = new TabAction(ACTION_NAVTOLINE, "navToLine", //NOI18N
             KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
     Action postMenuAction = new TabAction(ACTION_POSTMENU, "postMenu", //NOI18N
@@ -747,7 +754,8 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
             (KeyStroke) null);
     private Object[] popupItems = new Object[]{
         copyAction, new JSeparator(), findAction, findNextAction, new JSeparator(),
-        wrapAction, new JSeparator(), saveAsAction, clearAction, closeAction,};
+        wrapAction, largerFontAction, smallerFontAction, new JSeparator(), saveAsAction,
+        clearAction, closeAction,};
 
     /**
      * A stateless action which will find the owning OutputTab's controller and call
@@ -877,6 +885,12 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                             Exceptions.printStackTrace(ioe);
                         }
                     }
+                    break;
+                case ACTION_SMALLERFONT:
+                    Controller.getDefault().changeFontSizeBy(-1);
+                    break;
+                case ACTION_LARGERFONT:
+                    Controller.getDefault().changeFontSizeBy(1);
                     break;
                 default:
                     assert false;
