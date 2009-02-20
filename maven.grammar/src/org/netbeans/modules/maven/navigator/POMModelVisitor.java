@@ -348,12 +348,23 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         checkChildString(names.ID, "Id", t != null ? t.getId() : null);
         checkChildString(names.NAME, "Name", t != null ? t.getName() : null);
         checkChildString(names.URL, "Url", t != null ? t.getUrl() : null);
+        checkChildString(names.LAYOUT, "Layout", t != null ? t.getLayout() : null);
+        checkChildObject(names.RELEASES, RepositoryPolicy.class, "Releases", t != null ? t.getReleases() : null);
+        checkChildObject(names.SNAPSHOTS, RepositoryPolicy.class, "Snapshots", t != null ? t.getSnapshots() : null);
 
         count++;
     }
 
     public void visit(RepositoryPolicy target) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        RepositoryPolicy t = target;
+        if (t != null && !t.isInDocumentModel()) {
+            t = null;
+        }
+        checkChildString(names.ENABLED, "Enabled", t != null ? (t.isEnabled() != null ? t.isEnabled().toString() : null) : null);
+        checkChildString(names.UPDATEPOLICY, "Update Policy", t != null ? t.getUpdatePolicy() : null);
+        checkChildString(names.CHECKSUMPOLICY, "Checksum Policy", t != null ? t.getChecksumPolicy() : null);
+
+        count++;
     }
 
     public void visit(Profile target) {
@@ -479,6 +490,15 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         checkChildString(names.TYPE, "Type", t != null ? t.getType() : null);
         checkChildString(names.CLASSIFIER, "Classifier", t != null ? t.getClassifier() : null);
         checkChildString(names.SCOPE, "Scope", t != null ? t.getScope() : null);
+
+        this.<Exclusion>checkListObject(names.EXCLUSIONS, names.EXCLUSION,
+                Exclusion.class, "Exclusions",
+                t != null ? t.getExclusions() : null,
+                new IdentityKeyGenerator<Exclusion>() {
+                    public String createName(Exclusion c) {
+                        return c.getArtifactId() != null ? c.getArtifactId() : "Exclusion";
+                    }
+                });
 
         count++;
     }
@@ -619,19 +639,15 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     }
 
     public void visit(ActivationProperty target) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public void visit(ActivationOS target) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public void visit(ActivationFile target) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public void visit(ActivationCustom target) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public void visit(DependencyManagement target) {
@@ -645,11 +661,75 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     }
 
     public void visit(Build target) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Build t = target;
+        if (t != null && !t.isInDocumentModel()) {
+            t = null;
+        }
+        checkChildString(names.SOURCEDIRECTORY, "Source Directory", t != null ? t.getSourceDirectory() : null);
+        //just ignore script directory
+        checkChildString(names.TESTSOURCEDIRECTORY, "Test Source Directory", t != null ? t.getTestSourceDirectory() : null);
+        checkChildString(names.OUTPUTDIRECTORY, "Output Directory", t != null ? t.getOutputDirectory() : null);
+        checkChildString(names.TESTOUTPUTDIRECTORY, "Test Output Directory", t != null ? t.getTestOutputDirectory() : null);
+        this.<Extension>checkListObject(names.EXTENSIONS, names.EXTENSION,
+                Extension.class, "Extensions",
+                t != null ? t.getExtensions() : null,
+                new KeyGenerator<Extension>() {
+                    public Object generate(Extension c) {
+                        String gr = c.getGroupId();
+                        return gr + ":" + c.getArtifactId(); //NOI18N
+                    }
+                    public String createName(Extension c) {
+                        return c.getArtifactId() != null ? c.getArtifactId() : "Plugin";
+                    }
+                });
+        checkChildString(names.DEFAULTGOAL, "Default Goal", t != null ? t.getDefaultGoal() : null);
+        this.<Resource>checkListObject(names.RESOURCES, names.RESOURCE,
+                Resource.class, "Resources",
+                t != null ? t.getResources() : null,
+                new IdentityKeyGenerator<Resource>() {
+                    public String createName(Resource c) {
+                        return c.getDirectory() != null ? c.getDirectory() : "Resource";
+                    }
+                });
+        this.<Resource>checkListObject(names.TESTRESOURCES, names.TESTRESOURCE,
+                Resource.class, "Test Resources",
+                t != null ? t.getTestResources() : null,
+                new IdentityKeyGenerator<Resource>() {
+                    public String createName(Resource c) {
+                        return c.getDirectory() != null ? c.getDirectory() : "Test Resource";
+                    }
+                });
+        checkChildString(names.DIRECTORY, "Directory", t != null ? t.getDirectory() : null);
+        checkChildString(names.FINALNAME, "Final Name", t != null ? t.getFinalName() : null);
+        //TODO filters
+        checkChildObject(names.PLUGINMANAGEMENT, PluginManagement.class, "Plugin Management", t != null ? t.getPluginManagement() : null);
+        this.<Plugin>checkListObject(names.PLUGINS, names.PLUGIN,
+                Plugin.class, "Plugins",
+                t != null ? t.getPlugins() : null,
+                new KeyGenerator<Plugin>() {
+                    public Object generate(Plugin c) {
+                        String gr = c.getGroupId();
+                        if (gr == null) {
+                            gr = "org.apache.maven.plugins"; //NOI18N
+                        }
+                        return gr + ":" + c.getArtifactId(); //NOI18N
+                    }
+                    public String createName(Plugin c) {
+                        return c.getArtifactId() != null ? c.getArtifactId() : "Plugin";
+                    }
+                });
+
+        count++;
     }
 
     public void visit(Extension target) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Extension t = target;
+        if (t != null && !t.isInDocumentModel()) {
+            t = null;
+        }
+        checkChildString(names.GROUPID, "GroupId", t != null ? t.getGroupId() : null);
+        checkChildString(names.ARTIFACTID, "ArtifactId", t != null ? t.getArtifactId() : null);
+        checkChildString(names.VERSION, "Version", t != null ? t.getVersion() : null);
     }
 
     public void visit(License target) {
@@ -692,15 +772,12 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     }
 
     public void visit(POMExtensibilityElement target) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public void visit(ModelList target) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public void visit(Configuration target) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public void visit(Properties target) {
@@ -729,7 +806,6 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     }
 
     public void visit(StringList target) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 
