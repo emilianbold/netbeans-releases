@@ -107,7 +107,9 @@ public class SelectionHintsTask extends ParserResultTask<ParserResult> {
                     }
 
                     HintsProvider provider = language.getHintsProvider();
-                    assert provider != null; // getHintsProviderLanguage will return null if there's no provider
+                    if (provider == null || isCancelled()) {
+                        return;
+                    }
 
                     GsfHintsManager manager = language.getHintsManager();
                     if (manager == null || isCancelled()) {
