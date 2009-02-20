@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.StringTokenizer;
@@ -57,9 +56,8 @@ public class QmakeConfiguration implements Cloneable {
 
     public static final int DEBUG_MODE = 0;
     public static final int RELEASE_MODE = 1;
-    private final String[] BUILD_MODE_NAMES = { "Debug", "Release" }; // NOI18N
-    private final String[] BUILD_NODE_OPTIONS = { "debug", "release" }; // NOI18N
-
+    private final String[] BUILD_MODE_NAMES = {"Debug", "Release"}; // NOI18N
+    private final String[] BUILD_NODE_OPTIONS = {"debug", "release"}; // NOI18N
     private static final String CORE = "core"; // NOI18N
     private static final String GUI = "gui"; // NOI18N
     private static final String NETWORK = "network"; // NOI18N
@@ -70,7 +68,6 @@ public class QmakeConfiguration implements Cloneable {
     private static final String SVG = "svg"; // NOI18N
     private static final String WEBKIT = "webkit"; // NOI18N
     private static final String XML = "xml"; // NOI18N
-
     private final MakeConfiguration makeConfiguration;
 
     // general
@@ -163,7 +160,7 @@ public class QmakeConfiguration implements Cloneable {
         expert.setName("QtExpert"); // NOI18N
         expert.setDisplayName(getString("QtExpertTxt")); // NOI18N
         expert.setShortDescription(getString("QtExpertHint")); // NOI18N
-        expert.put(new StringListNodeProp(customDefs, null, new String[] {"QtCustomDefs", getString("QtCustomDefsTxt"), getString("QtCustomDefsHint"), getString("QtCustomDefsLbl")}, false, HelpCtx.DEFAULT_HELP)); // NOI18N
+        expert.put(new StringListNodeProp(customDefs, null, new String[]{"QtCustomDefs", getString("QtCustomDefsTxt"), getString("QtCustomDefsHint"), getString("QtCustomDefsLbl")}, false, HelpCtx.DEFAULT_HELP)); // NOI18N
         sheet.put(expert);
 
         return sheet;
@@ -228,7 +225,7 @@ public class QmakeConfiguration implements Cloneable {
                 file = "lib" + file + ".a"; // NOI18N
                 break;
         }
-        return 0 < dir.length()? dir + "/" + file : file; // NOI18N
+        return 0 < dir.length() ? dir + "/" + file : file; // NOI18N
     }
 
     public IntConfiguration getBuildMode() {
@@ -487,5 +484,4 @@ public class QmakeConfiguration implements Cloneable {
         }
         buf.append(val);
     }
-
 }

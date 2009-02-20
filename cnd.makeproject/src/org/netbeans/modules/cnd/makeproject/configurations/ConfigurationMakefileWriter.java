@@ -730,8 +730,7 @@ public class ConfigurationMakefileWriter {
                     outputDir = ""; // NOI18N
                 }
                 outputName = IpeUtils.getBaseName(outputPath);
-            }
-            else {
+            } else {
                 outputDir = outputPath;
                 outputPath = ""; // NOI18N
                 outputName = ""; // NOI18N

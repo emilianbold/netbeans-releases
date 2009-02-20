@@ -422,7 +422,7 @@ public class PackagingConfiguration {
         String outputPath = "${CND_DISTDIR}" + "/" + "${CND_CONF}" + "/" + "${CND_PLATFORM}" + "/package"; // NOI18N
 //        String outputName = getOutputName();
         PackagerDescriptor packager = PackagerManager.getDefault().getPackager(getType().getValue());
-        
+
         if (!packager.isOutputAFolder()) {
             outputPath += "/" + packager.getOutputFileName(makeConfiguration, this) + "." + packager.getOutputFileSuffix(); // NOI18N
         }
