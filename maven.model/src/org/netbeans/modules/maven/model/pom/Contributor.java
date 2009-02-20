@@ -59,5 +59,45 @@ public interface Contributor extends POMComponent {
 //            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
 //    </xs:all>
 //  </xs:complexType-->
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getUrl();
+    void setUrl(String url);
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getName();
+    void setName(String name);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getEmail();
+    void setEmail(String email);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getOrganization();
+    void setOrganization(String organization);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getOrganizationUrl();
+    void setOrganizationUrl(String url);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getTimezone();
+    void setTimezone(String zone);
 }
