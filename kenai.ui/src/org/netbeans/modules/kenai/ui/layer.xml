@@ -5,10 +5,9 @@
         <folder name="Team">
             <file name="org-netbeans-modules-kenai-ui-LoginAction.instance">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.kenai.ui.Bundle"/>
-                <attr name="delegate" newvalue="org.netbeans.modules.kenai.ui.LoginAction"/>
+                <attr name="delegate" methodvalue="org.netbeans.modules.kenai.ui.LoginAction.getDefault"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.kenai.ui.Bundle#CTL_LoginAction"/>
-                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="noIconInMenu" stringvalue="false"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.kenai.ui.LoginAction.getDefault"/>
             </file>
         </folder>
         <folder name="Window">
