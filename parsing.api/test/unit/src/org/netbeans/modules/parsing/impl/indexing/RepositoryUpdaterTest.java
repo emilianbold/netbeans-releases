@@ -568,11 +568,15 @@ public class RepositoryUpdaterTest extends NbTestCase {
             public void publish(LogRecord record) {
                 String msg = record.getMessage();
                 if ("scanBinary".equals(msg)) {
-                    binaries = (Set<URL>) record.getParameters()[0];
+                    @SuppressWarnings("unchecked")
+                    Set<URL> b = (Set<URL>) record.getParameters()[0];
+                    binaries = b;
                     latch.countDown();
                 }
                 else if ("scanSources".equals(msg)) {
-                    sources = (List<URL>) record.getParameters()[0];
+                    @SuppressWarnings("unchecked")
+                    List<URL> s =(List<URL>) record.getParameters()[0];
+                    sources = s;
                     latch.countDown();
                 }
                 else if ("delete".equals(msg)) {

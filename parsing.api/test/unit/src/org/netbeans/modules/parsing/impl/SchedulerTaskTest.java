@@ -1648,7 +1648,7 @@ public class SchedulerTaskTest extends NbTestCase {
         }
 
         @Override
-        protected Lexer createLexer (LexerRestartInfo info) {
+        protected Lexer<ATokenId> createLexer (LexerRestartInfo<ATokenId> info) {
             return new ALexer (info);
         }
 
@@ -1659,9 +1659,9 @@ public class SchedulerTaskTest extends NbTestCase {
     
         private class ALexer implements Lexer<ATokenId> {
 
-            private LexerRestartInfo info;
+            private LexerRestartInfo<ATokenId> info;
 
-            public ALexer (LexerRestartInfo info) {
+            public ALexer (LexerRestartInfo<ATokenId> info) {
                 this.info = info;
             }
 

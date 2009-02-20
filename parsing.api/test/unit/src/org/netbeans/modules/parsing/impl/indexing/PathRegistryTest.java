@@ -449,7 +449,7 @@ public class PathRegistryTest extends NbTestCase {
 
         class L implements PropertyChangeListener {
 
-            Set ids = new HashSet ();
+            Set<Object> ids = new HashSet<Object> ();
 
             public void propertyChange(PropertyChangeEvent e) {
                 if (ClassPath.PROP_INCLUDES.equals(e.getPropertyName())) {
