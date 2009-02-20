@@ -127,18 +127,23 @@ public interface CsmFunction extends CsmOffsetableDeclaration, CsmScope {
         }
         
         public static OperatorKind getKindByImage(String image, boolean binary) {
-            if (!inited) {
-                for (OperatorKind kind : OperatorKind.values()) {
-                    String img = kind.getImage();
-                    if (img.length() > 0) {
-                        if (kind.isBinary()) {
-                            binaryMap.put(img, kind);
-                        } else {
-                            unaryMap.put(img, kind);
+            boolean wasInited = inited;
+            if (!wasInited) {
+                synchronized (CsmFunction.class) {
+                    if (!inited) {
+                        for (OperatorKind kind : OperatorKind.values()) {
+                            String img = kind.getImage();
+                            if (img.length() > 0) {
+                                if (kind.isBinary() != null && kind.isBinary()) {
+                                    binaryMap.put(img, kind);
+                                } else {
+                                    unaryMap.put(img, kind);
+                                }
+                            }
                         }
+                        inited = true;
                     }
                 }
-                inited = true;
             }
             OperatorKind kind = binary ? binaryMap.get(image) : unaryMap.get(image);
             if (kind == null) {
