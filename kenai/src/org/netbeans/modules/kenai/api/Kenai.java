@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.kenai.api;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.net.Authenticator;
 import java.net.MalformedURLException;
@@ -51,6 +52,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.codeviation.commons.patterns.Factory;
 import org.codeviation.commons.utils.Iterators;
 import org.netbeans.modules.kenai.FeatureData;
@@ -149,7 +152,11 @@ public final class Kenai {
     
     synchronized void fireKenaiEvent(KenaiEvent event) {
         for (KenaiListener l : listenerList) {
-            l.stateChanged(event);
+            try {
+                l.stateChanged(event);
+            } catch (Exception e) {
+                Logger.getLogger(Kenai.class.getName()).log(Level.SEVERE, null, e);
+            }
         }
     }
 

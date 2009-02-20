@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.kenai.api;
 
-import java.util.EventObject;
-
 /**
  * Kenai instance fires events of following types:
  * <pre>
@@ -58,7 +56,7 @@ import java.util.EventObject;
  * @see Kenai#getOpenProjects()
  * @author Jan Becicka
  */
- public final class KenaiEvent extends EventObject {
+ public final class KenaiEvent {
 
      /**
       * PasswordAuthentication getSource() logged in
@@ -79,6 +77,7 @@ import java.util.EventObject;
       */
      public static final int PROJECT_CHANGED = 4;
      private int type;
+     private Object source;
 
      /**
       * if type is LOGIN, than getSource returns instance of new
@@ -92,7 +91,11 @@ import java.util.EventObject;
      }
 
      KenaiEvent(Object source, int type) {
-         super(source);
+         this.source = source;
          this.type = type;
+     }
+     
+     public Object getSource() {
+         return this.source;
      }
 }

@@ -25,7 +25,7 @@
             <file name="ChatTopComponent.settings" url="ChatTopComponentSettings.xml"/>
         </folder>
         <folder name="Modes">
-            <folder name="rightSlidingSide">
+            <folder name="properties">
                 <file name="ChatTopComponent.wstcref" url="ChatTopComponentWstcref.xml">
                     <attr name="position" intvalue="1150"/>
                 </file>

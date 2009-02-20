@@ -44,6 +44,8 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.HashSet;
+import java.util.Iterator;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -51,10 +53,14 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.collab.im.KenaiConnection;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.omg.CORBA.Request;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -72,6 +78,7 @@ public class PresenceIndicator {
 
     private JLabel label;
     private MouseL helper;
+    private HashSet<String> onlineUsers = new HashSet();
 
     public static enum Status {
         ONLINE,
@@ -172,21 +179,35 @@ public class PresenceIndicator {
     }
 
     public class PresenceListener implements PacketListener, Runnable {
+        private String tip;
+
         /**
-         *
          * @param packet
          */
         public void processPacket(Packet packet) {
+            onlineUsers.clear();
+            StringBuffer tip = new StringBuffer();
+            tip.append("<html><body>");
+
+            for (MultiUserChat muc :KenaiConnection.getDefault().getChats()) {
+                String displayName = null;
+                displayName = StringUtils.parseName(muc.getRoom());
+                tip.append("<b>"+displayName+"</b><br>");
+                Iterator<String> i = muc.getOccupants();
+                while(i.hasNext()) {
+                    String uname = StringUtils.parseResource(i.next());
+                    onlineUsers.add(uname);
+                    tip.append(uname + "<br>");
+                }
+            }
+            tip.append("</body></html>");
+            this.tip=tip.toString();
             java.awt.EventQueue.invokeLater(this);
         }
 
         public void run() {
-            int online=0;
-            for (MultiUserChat muc :KenaiConnection.getDefault().getChats()) {
-                online+=muc.getOccupantsCount();
-            }
-
-            label.setText(NbBundle.getMessage(PresenceIndicator.class, "CTL_PresenceOnline", new Object[] {online}));
+            label.setToolTipText(tip);
+            label.setText(String.valueOf(onlineUsers.size()));
         }
     }
 

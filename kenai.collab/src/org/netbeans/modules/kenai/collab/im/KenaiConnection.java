@@ -68,7 +68,6 @@ import org.netbeans.modules.kenai.collab.chat.ui.PresenceIndicator;
 import org.netbeans.modules.kenai.collab.chat.ui.PresenceIndicator.PresenceListener;
 import org.netbeans.modules.kenai.collab.chat.ui.PresenceIndicator.Status;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
-import org.openide.util.Exceptions;
 
 /**
  * Class representing connection to kenai xmpp server
@@ -220,6 +219,16 @@ public class KenaiConnection implements KenaiListener {
         return chats.get(prj.getName());
     }
 
+    /**
+     *
+     * @param name
+     * @return
+     */
+    public MultiUserChat getChat(String name) {
+        return chats.get(name);
+    }
+
+
     public Roster getRoster() {
         return connection.getRoster();
     }
@@ -227,10 +236,10 @@ public class KenaiConnection implements KenaiListener {
     public void stateChanged(KenaiEvent e) {
         if (e.getType() == KenaiEvent.LOGIN) {
             final PasswordAuthentication pa = (PasswordAuthentication) e.getSource();
-            if (pa.getUserName() != null) {
+            if (pa != null) {
                 myProjects = null;
                 tryConnect();
-                ChatTopComponent.getDefault().reload();
+                ChatTopComponent.reload();
             }
         }
     }
@@ -239,16 +248,16 @@ public class KenaiConnection implements KenaiListener {
 //TODO this should be removed when xmpp server starts working on kenai.com    
 
 //    bcol4 test server
-//    private static final String USER = "testuser1";
-//    private static final String PASSWORD = "password";
-//    private static final String XMPP_SERVER = "bco14.central.sun.com";
-//    private static final String CHAT_ROOM = "nbchat@muc.central.sun.com";
+    private static final String USER = "testuser1";
+    private static final String PASSWORD = "password";
+    private static final String XMPP_SERVER = "bco14.central.sun.com";
+    private static final String CHAT_ROOM = "@muc.central.sun.com";
 
-//  test server on localhost
-    private static final String USER = "netbeans";
-    private static final String PASSWORD = "netbeans";
-    private static final String XMPP_SERVER = "127.0.0.1";
-    private static final String CHAT_ROOM = "@conference.127.0.0.1";
+////  test server on localhost
+//    private static final String USER = "netbeans";
+//    private static final String PASSWORD = "netbeans";
+//    private static final String XMPP_SERVER = "127.0.0.1";
+//    private static final String CHAT_ROOM = "@conference.127.0.0.1";
 
     /**
      * TODO: should return kenai account name
@@ -273,9 +282,12 @@ public class KenaiConnection implements KenaiListener {
     public Collection<KenaiProject> getMyProjects() {
         if (myProjects == null) {
             try {
-                myProjects = Kenai.getDefault().getMyProjects();
+                myProjects = new ArrayList();
+                myProjects.add(Kenai.getDefault().getProject("kenai"));
+                myProjects.add(Kenai.getDefault().getProject("alligator"));
+                //myProjects = Kenai.getDefault().getMyProjects();
             } catch (KenaiException ex) {
-                myProjects = Collections.emptyList();
+                myProjects = null;
             }
         }
         return myProjects;

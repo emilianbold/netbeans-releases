@@ -39,20 +39,64 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javax.swing.AbstractAction;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiEvent;
+import org.netbeans.modules.kenai.api.KenaiListener;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import org.openide.util.NbBundle;
 
 
 /**
  * @author Jan Becicka
  */
-public final class LoginAction implements ActionListener {
+public final class LoginAction extends AbstractAction {
 
-    public void actionPerformed(ActionEvent e) {
-        if (!UIUtils.showLogin()) return;
-        final KenaiTopComponent kenaiTC = KenaiTopComponent.getDefault();
-        kenaiTC.open();
-        kenaiTC.requestActive();
+    private static LoginAction instance;
+    private boolean logout;
+
+    private LoginAction() {
+        setLogout(Kenai.getDefault().getPasswordAuthentication()!=null);
     }
 
+    public static synchronized LoginAction getDefault() {
+        if (instance==null) {
+            instance=new LoginAction();
+            Kenai.getDefault().addKenaiListener(new KenaiListener() {
+
+                public void stateChanged(KenaiEvent e) {
+                    if (e.LOGIN == e.getType()) {
+                        if (e.getSource()==null) {
+                            instance.setLogout(false);
+                        } else {
+                            instance.setLogout(true);
+                        }
+                    }
+                }
+            });
+        }
+        return instance;
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        if (logout) {
+            Kenai.getDefault().logout();
+        } else {
+            if (!UIUtils.showLogin()) {
+                return;
+            }
+            final KenaiTopComponent kenaiTC = KenaiTopComponent.getDefault();
+            kenaiTC.open();
+            kenaiTC.requestActive();
+        }
+    }
+
+    private void setLogout(boolean b) {
+        this.logout=b;
+        if (b) {
+            putValue(NAME, NbBundle.getMessage(LoginAction.class, "CTL_LogoutAction"));
+        } else {
+            putValue(NAME, NbBundle.getMessage(LoginAction.class, "CTL_LoginAction"));
+        }
+    }
 }
