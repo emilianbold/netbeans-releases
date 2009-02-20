@@ -282,12 +282,12 @@ public class KenaiConnection implements KenaiListener {
     public Collection<KenaiProject> getMyProjects() {
         if (myProjects == null) {
             try {
-                myProjects = new ArrayList();
-                myProjects.add(Kenai.getDefault().getProject("kenai"));
-                myProjects.add(Kenai.getDefault().getProject("alligator"));
-                //myProjects = Kenai.getDefault().getMyProjects();
+        //        myProjects = new ArrayList();
+        //        myProjects.add(Kenai.getDefault().getProject("kenai"));
+        //        myProjects.add(Kenai.getDefault().getProject("alligator"));
+                  myProjects = Kenai.getDefault().getMyProjects();
             } catch (KenaiException ex) {
-                myProjects = null;
+                myProjects = Collections.emptyList();
             }
         }
         return myProjects;
