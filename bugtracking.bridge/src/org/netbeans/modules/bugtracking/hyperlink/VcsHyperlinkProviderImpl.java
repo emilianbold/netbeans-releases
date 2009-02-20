@@ -40,7 +40,6 @@
 package org.netbeans.modules.bugtracking.hyperlink;
 
 import java.io.File;
-import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.bridge.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
@@ -68,6 +67,7 @@ public class VcsHyperlinkProviderImpl extends HyperlinkProvider {
 
     @Override
     public void onClick(File file, String text, int offsetStart, int offsetEnd) {
+        // XXX run async
         String issueId = getIssueId(text, offsetStart, offsetEnd);
         if(issueId == null) return;
 

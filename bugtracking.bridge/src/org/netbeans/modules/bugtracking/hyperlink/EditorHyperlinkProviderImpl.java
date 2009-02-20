@@ -84,6 +84,7 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt {
     }
 
     public void performClickAction(Document doc, int offset, HyperlinkType type) {
+        // XXX run async
         String issueId = getIssueId(doc, offset, type);
         if(issueId == null) return;
 
