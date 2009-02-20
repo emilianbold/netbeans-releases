@@ -63,9 +63,10 @@ public class Bugzilla {
 
     private static Bugzilla instance;
 
-    public static Logger LOG = Logger.getLogger("org.netbeans.modules.jira.Jira");
+    public static Logger LOG = Logger.getLogger("org.netbeans.modules.bugzilla.Bugzilla"); // NOI18N
 
     private RequestProcessor rp;
+
     private Map<String, RepositoryConfiguration> repoToRepoconf = new HashMap<String, RepositoryConfiguration>();
     
     private Bugzilla() {
@@ -84,6 +85,7 @@ public class Bugzilla {
         return instance;
     }
 
+    // XXX private?
     public BugzillaRepositoryConnector getRepositoryConnector() {
         if(brc == null) {
             brc = new BugzillaRepositoryConnector();
@@ -91,10 +93,27 @@ public class Bugzilla {
         return brc;
     }
 
+    /**
+     * Returns all products defined in the given repository
+     *
+     * @param repository
+     * @return
+     * @throws java.io.IOException
+     * @throws org.eclipse.core.runtime.CoreException
+     */
     public List<String> getProducts(BugzillaRepository repo) throws MalformedURLException, CoreException, IOException {
         return getRepositoryConfiguration(repo).getProducts();
     }
 
+    /**
+     * Returns the componets for the given product or all known components if product is null
+     *
+     * @param repository
+     * @param product
+     * @return list of components
+     * @throws java.io.IOException
+     * @throws org.eclipse.core.runtime.CoreException
+     */
     public List<String> getComponents(BugzillaRepository repository, String product) throws IOException, CoreException {
         if(product == null) {
             return getRepositoryConfiguration(repository).getComponents();
@@ -103,10 +122,27 @@ public class Bugzilla {
         }
     }
 
+    /**
+     * Returns all resolutions defined in the given repository
+     *
+     * @param repository
+     * @return
+     * @throws java.io.IOException
+     * @throws org.eclipse.core.runtime.CoreException
+     */
     public List<String> getResolutions(BugzillaRepository repository) throws IOException, CoreException {
         return getRepositoryConfiguration(repository).getResolutions();
     }
 
+    /**
+     * Returns versiones defined for the given product or all available versions if product is null
+     *
+     * @param repository
+     * @param product
+     * @return
+     * @throws java.io.IOException
+     * @throws org.eclipse.core.runtime.CoreException
+     */
     public List<String> getVersions(BugzillaRepository repository, String product) throws IOException, CoreException {
         if(product == null) {
             return getRepositoryConfiguration(repository).getVersions();
@@ -115,21 +151,48 @@ public class Bugzilla {
         }
     }
 
+    /**
+     * Returns all status defined in the given repository
+     * @param repository
+     * @return
+     * @throws java.io.IOException
+     * @throws org.eclipse.core.runtime.CoreException
+     */
     public List<String> getStatusValues(BugzillaRepository repository) throws IOException, CoreException {
         return getRepositoryConfiguration(repository).getStatusValues();
     }
 
+    /**
+     * Returns all priorities defined in the given repository
+     * @param repository
+     * @return
+     * @throws java.io.IOException
+     * @throws org.eclipse.core.runtime.CoreException
+     */
     public List<String> getPriorities(BugzillaRepository repository) throws IOException, CoreException {
         return getRepositoryConfiguration(repository).getPriorities();
     }
 
-    public List<BugzillaCustomField> getFields(BugzillaRepository repository) throws IOException, CoreException {
+    /**
+     * Returns all custom fields defined in the given repository
+     * @param repository
+     * @return
+     * @throws java.io.IOException
+     * @throws org.eclipse.core.runtime.CoreException
+     */
+    public List<BugzillaCustomField> getCustomFields(BugzillaRepository repository) throws IOException, CoreException {
         return getRepositoryConfiguration(repository).getCustomFields();
     }
 
+    /**
+     * Returns the request procussor for common tasks in bugzilla. 
+     * Do not use this when accesing a remote repository.
+     * 
+     * @return
+     */
     public RequestProcessor getRequestProcessor() {
         if(rp == null) {
-            rp = new RequestProcessor("Bugzilla Tasks"); // XXX is tp 1 enough?
+            rp = new RequestProcessor("Bugzilla"); // NOI18N
         }
         return rp;
     }
