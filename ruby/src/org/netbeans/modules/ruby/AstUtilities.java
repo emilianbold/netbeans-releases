@@ -160,9 +160,9 @@ public class AstUtilities {
             elementBegin = LexUtilities.getLexerOffset(info, elementBegin);
         }
 
+        baseDoc.readLock();
         try {
-            baseDoc.readLock();
-            if (elementBegin >= baseDoc.getLength()) {
+            if (elementBegin < 0 || elementBegin >= baseDoc.getLength()) {
                 return null;
             }
 
