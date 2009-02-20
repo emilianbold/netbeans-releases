@@ -96,6 +96,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -136,91 +137,91 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             t = null;
         }
         //ordered by appearance in pom schema..
-        checkChildString(names.MODELVERSION, "Model Version", t != null ? t.getModelVersion() : null);
-        checkChildString(names.GROUPID, "GroupId", t != null ? t.getGroupId() : null);
-        checkChildString(names.ARTIFACTID, "ArtifactId", t != null ? t.getArtifactId() : null);
-        checkChildString(names.PACKAGING, "Packaging", t != null ? t.getPackaging() : null);
-        checkChildString(names.NAME, "Name", t != null ? t.getName() : null);
-        checkChildString(names.VERSION, "Version", t != null ? t.getVersion() : null);
-        checkChildString(names.DESCRIPTION, "Description", t != null ? t.getDescription() : null);
-        checkChildString(names.URL, "Url", t != null ? t.getURL() : null);
-        checkChildObject(names.PREREQUISITES, Prerequisites.class, "Prerequisites", t != null ? t.getPrerequisites() : null);
-        checkChildObject(names.ISSUEMANAGEMENT, IssueManagement.class, "IssueManagement", t != null ? t.getIssueManagement() : null);
-        checkChildObject(names.CIMANAGEMENT, CiManagement.class, "CiManagement", t != null ? t.getCiManagement() : null);
-        checkChildString(names.INCEPTIONYEAR, "Inception Year", t != null ? t.getInceptionYear() : null);
+        checkChildString(names.MODELVERSION, NbBundle.getMessage(POMModelVisitor.class, "MODEL_VERSION"), t != null ? t.getModelVersion() : null);
+        checkChildString(names.GROUPID, NbBundle.getMessage(POMModelVisitor.class, "GROUPID"), t != null ? t.getGroupId() : null);
+        checkChildString(names.ARTIFACTID, NbBundle.getMessage(POMModelVisitor.class, "ARTIFACTID"), t != null ? t.getArtifactId() : null);
+        checkChildString(names.PACKAGING, NbBundle.getMessage(POMModelVisitor.class, "PACKAGING"), t != null ? t.getPackaging() : null);
+        checkChildString(names.NAME, NbBundle.getMessage(POMModelVisitor.class, "NAME"), t != null ? t.getName() : null);
+        checkChildString(names.VERSION, NbBundle.getMessage(POMModelVisitor.class, "VERSION"), t != null ? t.getVersion() : null);
+        checkChildString(names.DESCRIPTION, NbBundle.getMessage(POMModelVisitor.class, "DESCRIPTION"), t != null ? t.getDescription() : null);
+        checkChildString(names.URL, NbBundle.getMessage(POMModelVisitor.class, "URL"), t != null ? t.getURL() : null);
+        checkChildObject(names.PREREQUISITES, Prerequisites.class, NbBundle.getMessage(POMModelVisitor.class, "PREREQUISITES"), t != null ? t.getPrerequisites() : null);
+        checkChildObject(names.ISSUEMANAGEMENT, IssueManagement.class, NbBundle.getMessage(POMModelVisitor.class, "ISSUEMANAGEMENT"), t != null ? t.getIssueManagement() : null);
+        checkChildObject(names.CIMANAGEMENT, CiManagement.class, NbBundle.getMessage(POMModelVisitor.class, "CIMANAGEMENT"), t != null ? t.getCiManagement() : null);
+        checkChildString(names.INCEPTIONYEAR, NbBundle.getMessage(POMModelVisitor.class, "INCEPTION_YEAR"), t != null ? t.getInceptionYear() : null);
         this.<MailingList>checkListObject(names.MAILINGLISTS, names.MAILINGLIST,
-                MailingList.class, "Mailing Lists",
+                MailingList.class, NbBundle.getMessage(POMModelVisitor.class, "MAILING_LISTS"),
                 t != null ? t.getMailingLists() : null,
                 new IdentityKeyGenerator<MailingList>() {
                     public String createName(MailingList c) {
-                        return c.getName() != null ? c.getName() : "Mailing List";
+                        return c.getName() != null ? c.getName() : NbBundle.getMessage(POMModelVisitor.class, "MAILING_LIST");
                     }
                 });
         this.<Developer>checkListObject(names.DEVELOPERS, names.DEVELOPER,
-                Developer.class, "Developers",
+                Developer.class, NbBundle.getMessage(POMModelVisitor.class, "DEVELOPERS"),
                 t != null ? t.getDevelopers() : null,
                 new IdentityKeyGenerator<Developer>() {
                     public String createName(Developer c) {
-                        return c.getId() != null ? c.getId() : "Developer";
+                        return c.getId() != null ? c.getId() : NbBundle.getMessage(POMModelVisitor.class, "DEVELOPER");
                     }
                 });
         this.<Contributor>checkListObject(names.CONTRIBUTORS, names.CONTRIBUTOR,
-                Contributor.class, "Contributors",
+                Contributor.class, NbBundle.getMessage(POMModelVisitor.class, "CONTRIBUTORS"),
                 t != null ? t.getContributors() : null,
                 new IdentityKeyGenerator<Contributor>() {
                     public String createName(Contributor c) {
-                        return c.getName() != null ? c.getName() : "Contributor";
+                        return c.getName() != null ? c.getName() : NbBundle.getMessage(POMModelVisitor.class, "CONTRIBUTOR");
                     }
                 });
         this.<License>checkListObject(names.LICENSES, names.LICENSE,
-                License.class, "Licenses",
+                License.class, NbBundle.getMessage(POMModelVisitor.class, "LICENSES"),
                 t != null ? t.getLicenses() : null,
                 new IdentityKeyGenerator<License>() {
                     public String createName(License c) {
-                        return c.getName() != null ? c.getName() : "License";
+                        return c.getName() != null ? c.getName() : NbBundle.getMessage(POMModelVisitor.class, "LICENSE");
                     }
                 });
-        checkChildObject(names.SCM, Scm.class, "Scm", t != null ? t.getScm() : null);
-        checkChildObject(names.ORGANIZATION, Organization.class, "Organization", t != null ? t.getOrganization() : null);
-        checkChildObject(names.BUILD, Build.class, "Build", t != null ? t.getBuild() : null);
+        checkChildObject(names.SCM, Scm.class, NbBundle.getMessage(POMModelVisitor.class, "SCM"), t != null ? t.getScm() : null);
+        checkChildObject(names.ORGANIZATION, Organization.class, NbBundle.getMessage(POMModelVisitor.class, "ORGANIZATION"), t != null ? t.getOrganization() : null);
+        checkChildObject(names.BUILD, Build.class, NbBundle.getMessage(POMModelVisitor.class, "BUILD"), t != null ? t.getBuild() : null);
         this.<Profile>checkListObject(names.PROFILES, names.PROFILE,
-                Profile.class, "Profiles",
+                Profile.class, NbBundle.getMessage(POMModelVisitor.class, "PROFILES"),
                 t != null ? t.getProfiles() : null,
                 new KeyGenerator<Profile>() {
                     public Object generate(Profile c) {
                         return c.getId();
                     }
                     public String createName(Profile c) {
-                        return c.getId() != null ? c.getId() : "Profile";
+                        return c.getId() != null ? c.getId() : NbBundle.getMessage(POMModelVisitor.class, "PROFILE");
                     }
                 });
         this.<Repository>checkListObject(names.REPOSITORIES, names.REPOSITORY,
-                Repository.class, "Repositories",
+                Repository.class, NbBundle.getMessage(POMModelVisitor.class, "REPOSITORIES"),
                 t != null ? t.getRepositories() : null,
                 new KeyGenerator<Repository>() {
                     public Object generate(Repository c) {
                         return c.getId();
                     }
                     public String createName(Repository c) {
-                        return c.getId() != null ? c.getId() : "Repository";
+                        return c.getId() != null ? c.getId() : NbBundle.getMessage(POMModelVisitor.class, "REPOSITORY");
                     }
                 });
         this.<Repository>checkListObject(names.PLUGINREPOSITORIES, names.PLUGINREPOSITORY,
-                Repository.class, "Plugin Repositories",
+                Repository.class, NbBundle.getMessage(POMModelVisitor.class, "PLUGIN_REPOSITORIES"),
                 t != null ? t.getPluginRepositories() : null,
                 new KeyGenerator<Repository>() {
                     public Object generate(Repository c) {
                         return c.getId();
                     }
                     public String createName(Repository c) {
-                        return c.getId() != null ? c.getId() : "Repository";
+                        return c.getId() != null ? c.getId() : NbBundle.getMessage(POMModelVisitor.class, "REPOSITORY");
                     }
                 });
         checkDependencies(t);
-        checkChildObject(names.REPORTING, Reporting.class, "Reporting", t != null ? t.getReporting() : null);
-        checkChildObject(names.DEPENDENCYMANAGEMENT, DependencyManagement.class, "Dependency Management", t != null ? t.getDependencyManagement() : null);
-        checkChildObject(names.DISTRIBUTIONMANAGEMENT, DistributionManagement.class, "Distribution Management", t != null ? t.getDistributionManagement() : null);
-        checkChildObject(names.PROPERTIES, Properties.class, "Properties", t != null ? t.getProperties() : null);
+        checkChildObject(names.REPORTING, Reporting.class, NbBundle.getMessage(POMModelVisitor.class, "REPORTING"), t != null ? t.getReporting() : null);
+        checkChildObject(names.DEPENDENCYMANAGEMENT, DependencyManagement.class, NbBundle.getMessage(POMModelVisitor.class, "DEPENDENCY_MANAGEMENT"), t != null ? t.getDependencyManagement() : null);
+        checkChildObject(names.DISTRIBUTIONMANAGEMENT, DistributionManagement.class, NbBundle.getMessage(POMModelVisitor.class, "DISTRIBUTION_MANAGEMENT"), t != null ? t.getDistributionManagement() : null);
+        checkChildObject(names.PROPERTIES, Properties.class, NbBundle.getMessage(POMModelVisitor.class, "PROPERTIES"), t != null ? t.getProperties() : null);
 
         count++;
     }
@@ -233,8 +234,8 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        checkChildString(names.NAME, "Name", t != null ? t.getName() : null);
-        checkChildString(names.URL, "Url", t != null ? t.getUrl() : null);
+        checkChildString(names.NAME, NbBundle.getMessage(POMModelVisitor.class, "NAME"), t != null ? t.getName() : null);
+        checkChildString(names.URL, NbBundle.getMessage(POMModelVisitor.class, "URL"), t != null ? t.getUrl() : null);
 
         count++;
     }
@@ -244,10 +245,10 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        checkChildObject(names.DIST_REPOSITORY, DeploymentRepository.class, "Repository", t != null ? t.getRepository() : null);
-        checkChildObject(names.DIST_SNAPSHOTREPOSITORY, DeploymentRepository.class, "Snapshot Repository", t != null ? t.getSnapshotRepository() : null);
-        checkChildObject(names.SITE, Site.class, "Site", t != null ? t.getSite() : null);
-        checkChildString(names.DOWNLOADURL, "Download Url", t != null ? t.getDownloadUrl() : null);
+        checkChildObject(names.DIST_REPOSITORY, DeploymentRepository.class, NbBundle.getMessage(POMModelVisitor.class, "REPOSITORY"), t != null ? t.getRepository() : null);
+        checkChildObject(names.DIST_SNAPSHOTREPOSITORY, DeploymentRepository.class, NbBundle.getMessage(POMModelVisitor.class, "SNAPSHOT_REPOSITORY"), t != null ? t.getSnapshotRepository() : null);
+        checkChildObject(names.SITE, Site.class, NbBundle.getMessage(POMModelVisitor.class, "SITE"), t != null ? t.getSite() : null);
+        checkChildString(names.DOWNLOADURL, NbBundle.getMessage(POMModelVisitor.class, "DOWNLOAD_URL"), t != null ? t.getDownloadUrl() : null);
 
         count++;
     }
@@ -257,9 +258,9 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        checkChildString(names.ID, "Id", t != null ? t.getId() : null);
-        checkChildString(names.NAME, "Name", t != null ? t.getName() : null);
-        checkChildString(names.URL, "Url", t != null ? t.getUrl() : null);
+        checkChildString(names.ID, NbBundle.getMessage(POMModelVisitor.class, "ID"), t != null ? t.getId() : null);
+        checkChildString(names.NAME, NbBundle.getMessage(POMModelVisitor.class, "NAME"), t != null ? t.getName() : null);
+        checkChildString(names.URL, NbBundle.getMessage(POMModelVisitor.class, "URL"), t != null ? t.getUrl() : null);
 
         count++;
     }
@@ -269,10 +270,10 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        checkChildString(names.ID, "Id", t != null ? t.getId() : null);
-        checkChildString(names.NAME, "Name", t != null ? t.getName() : null);
-        checkChildString(names.URL, "Url", t != null ? t.getUrl() : null);
-        checkChildString(names.LAYOUT, "Layout", t != null ? t.getLayout() : null);
+        checkChildString(names.ID, NbBundle.getMessage(POMModelVisitor.class, "ID"), t != null ? t.getId() : null);
+        checkChildString(names.NAME, NbBundle.getMessage(POMModelVisitor.class, "NAME"), t != null ? t.getName() : null);
+        checkChildString(names.URL, NbBundle.getMessage(POMModelVisitor.class, "URL"), t != null ? t.getUrl() : null);
+        checkChildString(names.LAYOUT, NbBundle.getMessage(POMModelVisitor.class, "LAYOUT"), t != null ? t.getLayout() : null);
 
         count++;
     }
@@ -282,7 +283,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        checkChildString(names.MAVEN, "Maven", t != null ? t.getMaven() : null);
+        checkChildString(names.MAVEN, NbBundle.getMessage(POMModelVisitor.class, "MAVEN"), t != null ? t.getMaven() : null);
 
         count++;
     }
@@ -292,12 +293,12 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        checkChildString(names.NAME, "Name", t != null ? t.getName() : null);
-        checkChildString(names.EMAIL, "Email", t != null ? t.getEmail() : null);
-        checkChildString(names.URL, "Url", t != null ? t.getUrl() : null);
-        checkChildString(names.ORGANIZATION, "Organization", t != null ? t.getOrganization() : null);
-        checkChildString(names.ORGANIZATIONURL, "Organization Url", t != null ? t.getOrganizationUrl() : null);
-        checkChildString(names.TIMEZONE, "Timezone", t != null ? t.getTimezone() : null);
+        checkChildString(names.NAME, NbBundle.getMessage(POMModelVisitor.class, "NAME"), t != null ? t.getName() : null);
+        checkChildString(names.EMAIL, NbBundle.getMessage(POMModelVisitor.class, "EMAIL"), t != null ? t.getEmail() : null);
+        checkChildString(names.URL, NbBundle.getMessage(POMModelVisitor.class, "URL"), t != null ? t.getUrl() : null);
+        checkChildString(names.ORGANIZATION, NbBundle.getMessage(POMModelVisitor.class, "ORGANIZATION"), t != null ? t.getOrganization() : null);
+        checkChildString(names.ORGANIZATIONURL, NbBundle.getMessage(POMModelVisitor.class, "ORGANIZATION_URL"), t != null ? t.getOrganizationUrl() : null);
+        checkChildString(names.TIMEZONE, NbBundle.getMessage(POMModelVisitor.class, "TIMEZONE"), t != null ? t.getTimezone() : null);
 
         count++;    }
 
@@ -306,10 +307,10 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        checkChildString(names.CONNECTION, "Connection", t != null ? t.getConnection() : null);
-        checkChildString(names.DEVELOPERCONNECTION, "Developer Connection", t != null ? t.getDeveloperConnection() : null);
-        checkChildString(names.TAG, "Tag", t != null ? t.getTag() : null);
-        checkChildString(names.URL, "Url", t != null ? t.getUrl() : null);
+        checkChildString(names.CONNECTION, NbBundle.getMessage(POMModelVisitor.class, "CONNECTION"), t != null ? t.getConnection() : null);
+        checkChildString(names.DEVELOPERCONNECTION, NbBundle.getMessage(POMModelVisitor.class, "DEVELOPER_CONNECTION"), t != null ? t.getDeveloperConnection() : null);
+        checkChildString(names.TAG, NbBundle.getMessage(POMModelVisitor.class, "TAG"), t != null ? t.getTag() : null);
+        checkChildString(names.URL, NbBundle.getMessage(POMModelVisitor.class, "URL"), t != null ? t.getUrl() : null);
 
         count++;
     }
@@ -319,8 +320,8 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        checkChildString(names.SYSTEM, "System", t != null ? t.getSystem() : null);
-        checkChildString(names.URL, "Url", t != null ? t.getUrl() : null);
+        checkChildString(names.SYSTEM, NbBundle.getMessage(POMModelVisitor.class, "SYSTEM"), t != null ? t.getSystem() : null);
+        checkChildString(names.URL, NbBundle.getMessage(POMModelVisitor.class, "URL"), t != null ? t.getUrl() : null);
 
         count++;
     }
@@ -330,8 +331,8 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        checkChildString(names.SYSTEM, "System", t != null ? t.getSystem() : null);
-        checkChildString(names.URL, "Url", t != null ? t.getUrl() : null);
+        checkChildString(names.SYSTEM, NbBundle.getMessage(POMModelVisitor.class, "SYSTEM"), t != null ? t.getSystem() : null);
+        checkChildString(names.URL, NbBundle.getMessage(POMModelVisitor.class, "URL"), t != null ? t.getUrl() : null);
 
         count++;
     }
@@ -345,12 +346,12 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        checkChildString(names.ID, "Id", t != null ? t.getId() : null);
-        checkChildString(names.NAME, "Name", t != null ? t.getName() : null);
-        checkChildString(names.URL, "Url", t != null ? t.getUrl() : null);
-        checkChildString(names.LAYOUT, "Layout", t != null ? t.getLayout() : null);
-        checkChildObject(names.RELEASES, RepositoryPolicy.class, "Releases", t != null ? t.getReleases() : null);
-        checkChildObject(names.SNAPSHOTS, RepositoryPolicy.class, "Snapshots", t != null ? t.getSnapshots() : null);
+        checkChildString(names.ID, NbBundle.getMessage(POMModelVisitor.class, "ID"), t != null ? t.getId() : null);
+        checkChildString(names.NAME, NbBundle.getMessage(POMModelVisitor.class, "NAME"), t != null ? t.getName() : null);
+        checkChildString(names.URL, NbBundle.getMessage(POMModelVisitor.class, "URL"), t != null ? t.getUrl() : null);
+        checkChildString(names.LAYOUT, NbBundle.getMessage(POMModelVisitor.class, "LAYOUT"), t != null ? t.getLayout() : null);
+        checkChildObject(names.RELEASES, RepositoryPolicy.class, NbBundle.getMessage(POMModelVisitor.class, "RELEASES"), t != null ? t.getReleases() : null);
+        checkChildObject(names.SNAPSHOTS, RepositoryPolicy.class, NbBundle.getMessage(POMModelVisitor.class, "SNAPSHOTS"), t != null ? t.getSnapshots() : null);
 
         count++;
     }
@@ -360,9 +361,9 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        checkChildString(names.ENABLED, "Enabled", t != null ? (t.isEnabled() != null ? t.isEnabled().toString() : null) : null);
-        checkChildString(names.UPDATEPOLICY, "Update Policy", t != null ? t.getUpdatePolicy() : null);
-        checkChildString(names.CHECKSUMPOLICY, "Checksum Policy", t != null ? t.getChecksumPolicy() : null);
+        checkChildString(names.ENABLED, NbBundle.getMessage(POMModelVisitor.class, "ENABLED"), t != null ? (t.isEnabled() != null ? t.isEnabled().toString() : null) : null);
+        checkChildString(names.UPDATEPOLICY, NbBundle.getMessage(POMModelVisitor.class, "UPDATE_POLICY"), t != null ? t.getUpdatePolicy() : null);
+        checkChildString(names.CHECKSUMPOLICY, NbBundle.getMessage(POMModelVisitor.class, "CHECKSUM_POLICY"), t != null ? t.getChecksumPolicy() : null);
 
         count++;
     }
@@ -372,36 +373,36 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        checkChildString(names.ID, "Id", t != null ? t.getId() : null);
-        checkChildObject(names.ACTIVATION, Activation.class, "Activation", t != null ? t.getActivation() : null);
-        checkChildObject(names.BUILD, BuildBase.class, "Build", t != null ? t.getBuildBase() : null);
+        checkChildString(names.ID, NbBundle.getMessage(POMModelVisitor.class, "ID"), t != null ? t.getId() : null);
+        checkChildObject(names.ACTIVATION, Activation.class, NbBundle.getMessage(POMModelVisitor.class, "ACTIVATION"), t != null ? t.getActivation() : null);
+        checkChildObject(names.BUILD, BuildBase.class, NbBundle.getMessage(POMModelVisitor.class, "BUILD"), t != null ? t.getBuildBase() : null);
         this.<Repository>checkListObject(names.REPOSITORIES, names.REPOSITORY,
-                Repository.class, "Repositories",
+                Repository.class, NbBundle.getMessage(POMModelVisitor.class, "REPOSITORIES"),
                 t != null ? t.getRepositories() : null,
                 new KeyGenerator<Repository>() {
                     public Object generate(Repository c) {
                         return c.getId();
                     }
                     public String createName(Repository c) {
-                        return c.getId() != null ? c.getId() : "Repository";
+                        return c.getId() != null ? c.getId() : NbBundle.getMessage(POMModelVisitor.class, "REPOSITORY");
                     }
                 });
         this.<Repository>checkListObject(names.PLUGINREPOSITORIES, names.PLUGINREPOSITORY,
-                Repository.class, "Plugin Repositories",
+                Repository.class, NbBundle.getMessage(POMModelVisitor.class, "PLUGIN_REPOSITORIES"),
                 t != null ? t.getPluginRepositories() : null,
                 new KeyGenerator<Repository>() {
                     public Object generate(Repository c) {
                         return c.getId();
                     }
                     public String createName(Repository c) {
-                        return c.getId() != null ? c.getId() : "Repository";
+                        return c.getId() != null ? c.getId() : NbBundle.getMessage(POMModelVisitor.class, "REPOSITORY");
                     }
                 });
         checkDependencies(t);
-        checkChildObject(names.REPORTING, Reporting.class, "Reporting", t != null ? t.getReporting() : null);
-        checkChildObject(names.DEPENDENCYMANAGEMENT, DependencyManagement.class, "Dependency Management", t != null ? t.getDependencyManagement() : null);
-        checkChildObject(names.DISTRIBUTIONMANAGEMENT, DistributionManagement.class, "Distribution Management", t != null ? t.getDistributionManagement() : null);
-        checkChildObject(names.PROPERTIES, Properties.class, "Properties", t != null ? t.getProperties() : null);
+        checkChildObject(names.REPORTING, Reporting.class, NbBundle.getMessage(POMModelVisitor.class, "REPORTING"), t != null ? t.getReporting() : null);
+        checkChildObject(names.DEPENDENCYMANAGEMENT, DependencyManagement.class, NbBundle.getMessage(POMModelVisitor.class, "DEPENDENCY_MANAGEMENT"), t != null ? t.getDependencyManagement() : null);
+        checkChildObject(names.DISTRIBUTIONMANAGEMENT, DistributionManagement.class, NbBundle.getMessage(POMModelVisitor.class, "DISTRIBUTION_MANAGEMENT"), t != null ? t.getDistributionManagement() : null);
+        checkChildObject(names.PROPERTIES, Properties.class, NbBundle.getMessage(POMModelVisitor.class, "PROPERTIES"), t != null ? t.getProperties() : null);
 
         count++;
     }
@@ -411,29 +412,29 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        checkChildString(names.DEFAULTGOAL, "Default Goal", t != null ? t.getDefaultGoal() : null);
+        checkChildString(names.DEFAULTGOAL, NbBundle.getMessage(POMModelVisitor.class, "DEFAULT_GOAL"), t != null ? t.getDefaultGoal() : null);
         this.<Resource>checkListObject(names.RESOURCES, names.RESOURCE,
-                Resource.class, "Resources",
+                Resource.class, NbBundle.getMessage(POMModelVisitor.class, "RESOURCES"),
                 t != null ? t.getResources() : null,
                 new IdentityKeyGenerator<Resource>() {
                     public String createName(Resource c) {
-                        return c.getDirectory() != null ? c.getDirectory() : "Resource";
+                        return c.getDirectory() != null ? c.getDirectory() : NbBundle.getMessage(POMModelVisitor.class, "RESOURCE");
                     }
                 });
         this.<Resource>checkListObject(names.TESTRESOURCES, names.TESTRESOURCE,
-                Resource.class, "Test Resources",
+                Resource.class, NbBundle.getMessage(POMModelVisitor.class, "TEST_RESOURCES"),
                 t != null ? t.getTestResources() : null,
                 new IdentityKeyGenerator<Resource>() {
                     public String createName(Resource c) {
-                        return c.getDirectory() != null ? c.getDirectory() : "Test Resource";
+                        return c.getDirectory() != null ? c.getDirectory() : NbBundle.getMessage(POMModelVisitor.class, "TEST_RESOURCE");
                     }
                 });
-        checkChildString(names.DIRECTORY, "Directory", t != null ? t.getDirectory() : null);
-        checkChildString(names.FINALNAME, "Final Name", t != null ? t.getFinalName() : null);
+        checkChildString(names.DIRECTORY, NbBundle.getMessage(POMModelVisitor.class, "DIRECTORY"), t != null ? t.getDirectory() : null);
+        checkChildString(names.FINALNAME, NbBundle.getMessage(POMModelVisitor.class, "FINAL_NAME"), t != null ? t.getFinalName() : null);
         //TODO filters
-        checkChildObject(names.PLUGINMANAGEMENT, PluginManagement.class, "Plugin Management", t != null ? t.getPluginManagement() : null);
+        checkChildObject(names.PLUGINMANAGEMENT, PluginManagement.class, NbBundle.getMessage(POMModelVisitor.class, "PLUGIN_MANAGEMENT"), t != null ? t.getPluginManagement() : null);
         this.<Plugin>checkListObject(names.PLUGINS, names.PLUGIN,
-                Plugin.class, "Plugins",
+                Plugin.class, NbBundle.getMessage(POMModelVisitor.class, "PLUGINS"),
                 t != null ? t.getPlugins() : null,
                 new KeyGenerator<Plugin>() {
                     public Object generate(Plugin c) {
@@ -444,7 +445,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                         return gr + ":" + c.getArtifactId(); //NOI18N
                     }
                     public String createName(Plugin c) {
-                        return c.getArtifactId() != null ? c.getArtifactId() : "Plugin";
+                        return c.getArtifactId() != null ? c.getArtifactId() : NbBundle.getMessage(POMModelVisitor.class, "PLUGIN");
                     }
                 });
 
@@ -456,25 +457,25 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        checkChildString(names.GROUPID, "GroupId", t != null ? t.getGroupId() : null);
-        checkChildString(names.ARTIFACTID, "ArtifactId", t != null ? t.getArtifactId() : null);
-        checkChildString(names.VERSION, "Version", t != null ? t.getVersion() : null);
-        checkChildString(names.EXTENSIONS, "Extensions", t != null ? (t.isExtensions() != null ? t.isExtensions().toString() : null) : null);
+        checkChildString(names.GROUPID, NbBundle.getMessage(POMModelVisitor.class, "GROUPID"), t != null ? t.getGroupId() : null);
+        checkChildString(names.ARTIFACTID, NbBundle.getMessage(POMModelVisitor.class, "ARTIFACTID"), t != null ? t.getArtifactId() : null);
+        checkChildString(names.VERSION, NbBundle.getMessage(POMModelVisitor.class, "VERSION"), t != null ? t.getVersion() : null);
+        checkChildString(names.EXTENSIONS, NbBundle.getMessage(POMModelVisitor.class, "EXTENSIONS"), t != null ? (t.isExtensions() != null ? t.isExtensions().toString() : null) : null);
         this.<PluginExecution>checkListObject(names.EXECUTIONS, names.EXECUTION,
-                PluginExecution.class, "Executions",
+                PluginExecution.class, NbBundle.getMessage(POMModelVisitor.class, "EXECUTIONS"),
                 t != null ? t.getExecutions() : null,
                 new KeyGenerator<PluginExecution>() {
                     public Object generate(PluginExecution c) {
                         return c.getId(); //NOI18N
                     }
                     public String createName(PluginExecution c) {
-                        return c.getId() != null ? c.getId() : "Execution";
+                        return c.getId() != null ? c.getId() : NbBundle.getMessage(POMModelVisitor.class, "EXECUTION");
                     }
                 });
         checkDependencies(t);
         //TODO goals.
-        checkChildString(names.INHERITED, "Inherited", t != null ? (t.isInherited() != null ? t.isInherited().toString() : null) : null);
-        checkChildObject(names.CONFIGURATION, Configuration.class, "Configuration", t != null ? t.getConfiguration() : null);
+        checkChildString(names.INHERITED, NbBundle.getMessage(POMModelVisitor.class, "INHERITED"), t != null ? (t.isInherited() != null ? t.isInherited().toString() : null) : null);
+        checkChildObject(names.CONFIGURATION, Configuration.class, NbBundle.getMessage(POMModelVisitor.class, "CONFIGURATION"), t != null ? t.getConfiguration() : null);
 
         count++;
     }
@@ -484,19 +485,19 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        checkChildString(names.GROUPID, "GroupId", t != null ? t.getGroupId() : null);
-        checkChildString(names.ARTIFACTID, "ArtifactId", t != null ? t.getArtifactId() : null);
-        checkChildString(names.VERSION, "Version", t != null ? t.getVersion() : null);
-        checkChildString(names.TYPE, "Type", t != null ? t.getType() : null);
-        checkChildString(names.CLASSIFIER, "Classifier", t != null ? t.getClassifier() : null);
-        checkChildString(names.SCOPE, "Scope", t != null ? t.getScope() : null);
+        checkChildString(names.GROUPID, NbBundle.getMessage(POMModelVisitor.class, "GROUPID"), t != null ? t.getGroupId() : null);
+        checkChildString(names.ARTIFACTID, NbBundle.getMessage(POMModelVisitor.class, "ARTIFACTID"), t != null ? t.getArtifactId() : null);
+        checkChildString(names.VERSION, NbBundle.getMessage(POMModelVisitor.class, "VERSION"), t != null ? t.getVersion() : null);
+        checkChildString(names.TYPE, NbBundle.getMessage(POMModelVisitor.class, "TYPE"), t != null ? t.getType() : null);
+        checkChildString(names.CLASSIFIER, NbBundle.getMessage(POMModelVisitor.class, "CLASSIFIER"), t != null ? t.getClassifier() : null);
+        checkChildString(names.SCOPE, NbBundle.getMessage(POMModelVisitor.class, "SCOPE"), t != null ? t.getScope() : null);
 
         this.<Exclusion>checkListObject(names.EXCLUSIONS, names.EXCLUSION,
-                Exclusion.class, "Exclusions",
+                Exclusion.class, NbBundle.getMessage(POMModelVisitor.class, "EXCLUSIONS"),
                 t != null ? t.getExclusions() : null,
                 new IdentityKeyGenerator<Exclusion>() {
                     public String createName(Exclusion c) {
-                        return c.getArtifactId() != null ? c.getArtifactId() : "Exclusion";
+                        return c.getArtifactId() != null ? c.getArtifactId() : NbBundle.getMessage(POMModelVisitor.class, "EXCLUSION");
                     }
                 });
 
@@ -508,8 +509,8 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        checkChildString(names.GROUPID, "GroupId", t != null ? t.getGroupId() : null);
-        checkChildString(names.ARTIFACTID, "ArtifactId", t != null ? t.getArtifactId() : null);
+        checkChildString(names.GROUPID, NbBundle.getMessage(POMModelVisitor.class, "GROUPID"), t != null ? t.getGroupId() : null);
+        checkChildString(names.ARTIFACTID, NbBundle.getMessage(POMModelVisitor.class, "ARTIFACTID"), t != null ? t.getArtifactId() : null);
 
         count++;
     }
@@ -519,11 +520,11 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        checkChildString(names.ID, "Id", t != null ? t.getId() : null);
-        checkChildString(names.PHASE, "Phase", t != null ? t.getPhase() : null);
+        checkChildString(names.ID, NbBundle.getMessage(POMModelVisitor.class, "ID"), t != null ? t.getId() : null);
+        checkChildString(names.PHASE, NbBundle.getMessage(POMModelVisitor.class, "PHASE"), t != null ? t.getPhase() : null);
         //TODO goals.
-        checkChildString(names.INHERITED, "Inherited", t != null ? (t.isInherited() != null ? t.isInherited().toString() : null) : null);
-        checkChildObject(names.CONFIGURATION, Configuration.class, "Configuration", t != null ? t.getConfiguration() : null);
+        checkChildString(names.INHERITED, NbBundle.getMessage(POMModelVisitor.class, "INHERITED"), t != null ? (t.isInherited() != null ? t.isInherited().toString() : null) : null);
+        checkChildObject(names.CONFIGURATION, Configuration.class, NbBundle.getMessage(POMModelVisitor.class, "CONFIGURATION"), t != null ? t.getConfiguration() : null);
 
         count++;
     }
@@ -533,9 +534,9 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        checkChildString(names.TARGETPATH, "Target Path", t != null ? t.getTargetPath() : null);
+        checkChildString(names.TARGETPATH, NbBundle.getMessage(POMModelVisitor.class, "TARGET_PATH"), t != null ? t.getTargetPath() : null);
         //TODO filtering
-        checkChildString(names.DIRECTORY, "Directory", t != null ? t.getDirectory() : null);
+        checkChildString(names.DIRECTORY, NbBundle.getMessage(POMModelVisitor.class, "DIRECTORY"), t != null ? t.getDirectory() : null);
         //TODO includes, excludes
 
         count++;
@@ -547,7 +548,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             t = null;
         }
         this.<Plugin>checkListObject(names.PLUGINS, names.PLUGIN,
-                Plugin.class, "Plugins",
+                Plugin.class, NbBundle.getMessage(POMModelVisitor.class, "PLUGINS"),
                 t != null ? t.getPlugins() : null,
                 new KeyGenerator<Plugin>() {
                     public Object generate(Plugin c) {
@@ -558,7 +559,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                         return gr + ":" + c.getArtifactId(); //NOI18N
                     }
                     public String createName(Plugin c) {
-                        return c.getArtifactId() != null ? c.getArtifactId() : "Plugin";
+                        return c.getArtifactId() != null ? c.getArtifactId() : NbBundle.getMessage(POMModelVisitor.class, "PLUGIN");
                     }
                 });
 
@@ -570,17 +571,17 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        checkChildString(names.EXCLUDEDEFAULTS, "Exclude Defaults", t != null ? (t.isExcludeDefaults() != null ? t.isExcludeDefaults().toString() : null) : null);
-        checkChildString(names.OUTPUTDIRECTORY, "Output Directory", t != null ? t.getOutputDirectory() : null);
+        checkChildString(names.EXCLUDEDEFAULTS, NbBundle.getMessage(POMModelVisitor.class, "EXCLUDE_DEFAULTS"), t != null ? (t.isExcludeDefaults() != null ? t.isExcludeDefaults().toString() : null) : null);
+        checkChildString(names.OUTPUTDIRECTORY, NbBundle.getMessage(POMModelVisitor.class, "OUTPUT_DIRECTORY"), t != null ? t.getOutputDirectory() : null);
         this.<ReportPlugin>checkListObject(names.REPORTPLUGINS, names.REPORTPLUGIN,
-                ReportPlugin.class, "Report Plugins",
+                ReportPlugin.class, NbBundle.getMessage(POMModelVisitor.class, "REPORT_PLUGINS"),
                 t != null ? t.getReportPlugins() : null,
                 new KeyGenerator<ReportPlugin>() {
                     public Object generate(ReportPlugin c) {
-                        return c.getGroupId() + ":" + c.getArtifactId();
+                        return c.getGroupId() + ":" + c.getArtifactId(); //NOI18N
                     }
                     public String createName(ReportPlugin c) {
-                        return c.getArtifactId() != null ? c.getArtifactId() : "Report Plugin";
+                        return c.getArtifactId() != null ? c.getArtifactId() : NbBundle.getMessage(POMModelVisitor.class, "REPORT_PLUGIN");
                     }
                 });
 
@@ -592,20 +593,20 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        checkChildString(names.GROUPID, "GroupId", t != null ? t.getGroupId() : null);
-        checkChildString(names.ARTIFACTID, "ArtifactId", t != null ? t.getArtifactId() : null);
-        checkChildString(names.VERSION, "Version", t != null ? t.getVersion() : null);
-        checkChildString(names.INHERITED, "Inherited", t != null ? (t.isInherited() != null ? t.isInherited().toString() : null) : null);
-        checkChildObject(names.CONFIGURATION, Configuration.class, "Configuration", t != null ? t.getConfiguration() : null);
+        checkChildString(names.GROUPID, NbBundle.getMessage(POMModelVisitor.class, "GROUPID"), t != null ? t.getGroupId() : null);
+        checkChildString(names.ARTIFACTID, NbBundle.getMessage(POMModelVisitor.class, "ARTIFACTID"), t != null ? t.getArtifactId() : null);
+        checkChildString(names.VERSION, NbBundle.getMessage(POMModelVisitor.class, "VERSION"), t != null ? t.getVersion() : null);
+        checkChildString(names.INHERITED, NbBundle.getMessage(POMModelVisitor.class, "INHERITED"), t != null ? (t.isInherited() != null ? t.isInherited().toString() : null) : null);
+        checkChildObject(names.CONFIGURATION, Configuration.class, NbBundle.getMessage(POMModelVisitor.class, "CONFIGURATION"), t != null ? t.getConfiguration() : null);
         this.<ReportSet>checkListObject(names.REPORTSETS, names.REPORTSET,
-                ReportSet.class, "ReportSets",
+                ReportSet.class, NbBundle.getMessage(POMModelVisitor.class, "REPORTSETS"),
                 t != null ? t.getReportSets() : null,
                 new KeyGenerator<ReportSet>() {
                     public Object generate(ReportSet c) {
                         return c.getId(); //NOI18N
                     }
                     public String createName(ReportSet c) {
-                        return c.getId() != null ? c.getId() : "ReportSet";
+                        return c.getId() != null ? c.getId() : NbBundle.getMessage(POMModelVisitor.class, "REPORTSET");
                     }
                 });
 
@@ -617,9 +618,9 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        checkChildString(names.ID, "Id", t != null ? t.getId() : null);
-        checkChildObject(names.CONFIGURATION, Configuration.class, "Configuration", t != null ? t.getConfiguration() : null);
-        checkChildString(names.INHERITED, "Inherited", t != null ? (t.isInherited() != null ? t.isInherited().toString() : null) : null);
+        checkChildString(names.ID, NbBundle.getMessage(POMModelVisitor.class, "ID"), t != null ? t.getId() : null);
+        checkChildObject(names.CONFIGURATION, Configuration.class, NbBundle.getMessage(POMModelVisitor.class, "CONFIGURATION"), t != null ? t.getConfiguration() : null);
+        checkChildString(names.INHERITED, NbBundle.getMessage(POMModelVisitor.class, "INHERITED"), t != null ? (t.isInherited() != null ? t.isInherited().toString() : null) : null);
         //TODO reports.
 
         count++;
@@ -630,10 +631,10 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        checkChildObject(names.ACTIVATIONOS, ActivationOS.class, "Operating System", t != null ? t.getActivationOS() : null);
-        checkChildObject(names.ACTIVATIONPROPERTY, ActivationProperty.class, "Property", t != null ? t.getActivationProperty() : null);
-        checkChildObject(names.ACTIVATIONFILE, ActivationFile.class, "File", t != null ? t.getActivationFile() : null);
-        checkChildObject(names.ACTIVATIONCUSTOM, ActivationCustom.class, "Custom", t != null ? t.getActivationCustom() : null);
+        checkChildObject(names.ACTIVATIONOS, ActivationOS.class, NbBundle.getMessage(POMModelVisitor.class, "OPERATING_SYSTEM"), t != null ? t.getActivationOS() : null);
+        checkChildObject(names.ACTIVATIONPROPERTY, ActivationProperty.class, NbBundle.getMessage(POMModelVisitor.class, "PROPERTY"), t != null ? t.getActivationProperty() : null);
+        checkChildObject(names.ACTIVATIONFILE, ActivationFile.class, NbBundle.getMessage(POMModelVisitor.class, "FILE"), t != null ? t.getActivationFile() : null);
+        checkChildObject(names.ACTIVATIONCUSTOM, ActivationCustom.class, NbBundle.getMessage(POMModelVisitor.class, "CUSTOM"), t != null ? t.getActivationCustom() : null);
 
         count++;
     }
@@ -665,13 +666,13 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        checkChildString(names.SOURCEDIRECTORY, "Source Directory", t != null ? t.getSourceDirectory() : null);
+        checkChildString(names.SOURCEDIRECTORY, NbBundle.getMessage(POMModelVisitor.class, "SOURCE_DIRECTORY"), t != null ? t.getSourceDirectory() : null);
         //just ignore script directory
-        checkChildString(names.TESTSOURCEDIRECTORY, "Test Source Directory", t != null ? t.getTestSourceDirectory() : null);
-        checkChildString(names.OUTPUTDIRECTORY, "Output Directory", t != null ? t.getOutputDirectory() : null);
-        checkChildString(names.TESTOUTPUTDIRECTORY, "Test Output Directory", t != null ? t.getTestOutputDirectory() : null);
+        checkChildString(names.TESTSOURCEDIRECTORY, NbBundle.getMessage(POMModelVisitor.class, "TEST_SOURCE_DIRECTORY"), t != null ? t.getTestSourceDirectory() : null);
+        checkChildString(names.OUTPUTDIRECTORY, NbBundle.getMessage(POMModelVisitor.class, "OUTPUT_DIRECTORY"), t != null ? t.getOutputDirectory() : null);
+        checkChildString(names.TESTOUTPUTDIRECTORY, NbBundle.getMessage(POMModelVisitor.class, "TEST_OUTPUT_DIRECTORY"), t != null ? t.getTestOutputDirectory() : null);
         this.<Extension>checkListObject(names.EXTENSIONS, names.EXTENSION,
-                Extension.class, "Extensions",
+                Extension.class, NbBundle.getMessage(POMModelVisitor.class, "EXTENSIONS"),
                 t != null ? t.getExtensions() : null,
                 new KeyGenerator<Extension>() {
                     public Object generate(Extension c) {
@@ -679,32 +680,32 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                         return gr + ":" + c.getArtifactId(); //NOI18N
                     }
                     public String createName(Extension c) {
-                        return c.getArtifactId() != null ? c.getArtifactId() : "Plugin";
+                        return c.getArtifactId() != null ? c.getArtifactId() : "Extension";
                     }
                 });
-        checkChildString(names.DEFAULTGOAL, "Default Goal", t != null ? t.getDefaultGoal() : null);
+        checkChildString(names.DEFAULTGOAL, NbBundle.getMessage(POMModelVisitor.class, "DEFAULT_GOAL"), t != null ? t.getDefaultGoal() : null);
         this.<Resource>checkListObject(names.RESOURCES, names.RESOURCE,
-                Resource.class, "Resources",
+                Resource.class, NbBundle.getMessage(POMModelVisitor.class, "RESOURCES"),
                 t != null ? t.getResources() : null,
                 new IdentityKeyGenerator<Resource>() {
                     public String createName(Resource c) {
-                        return c.getDirectory() != null ? c.getDirectory() : "Resource";
+                        return c.getDirectory() != null ? c.getDirectory() : NbBundle.getMessage(POMModelVisitor.class, "RESOURCE");
                     }
                 });
         this.<Resource>checkListObject(names.TESTRESOURCES, names.TESTRESOURCE,
-                Resource.class, "Test Resources",
+                Resource.class, NbBundle.getMessage(POMModelVisitor.class, "TEST_RESOURCES"),
                 t != null ? t.getTestResources() : null,
                 new IdentityKeyGenerator<Resource>() {
                     public String createName(Resource c) {
-                        return c.getDirectory() != null ? c.getDirectory() : "Test Resource";
+                        return c.getDirectory() != null ? c.getDirectory() : NbBundle.getMessage(POMModelVisitor.class, "TEST_RESOURCE");
                     }
                 });
-        checkChildString(names.DIRECTORY, "Directory", t != null ? t.getDirectory() : null);
-        checkChildString(names.FINALNAME, "Final Name", t != null ? t.getFinalName() : null);
+        checkChildString(names.DIRECTORY, NbBundle.getMessage(POMModelVisitor.class, "DIRECTORY"), t != null ? t.getDirectory() : null);
+        checkChildString(names.FINALNAME, NbBundle.getMessage(POMModelVisitor.class, "FINAL_NAME"), t != null ? t.getFinalName() : null);
         //TODO filters
-        checkChildObject(names.PLUGINMANAGEMENT, PluginManagement.class, "Plugin Management", t != null ? t.getPluginManagement() : null);
+        checkChildObject(names.PLUGINMANAGEMENT, PluginManagement.class, NbBundle.getMessage(POMModelVisitor.class, "PLUGIN_MANAGEMENT"), t != null ? t.getPluginManagement() : null);
         this.<Plugin>checkListObject(names.PLUGINS, names.PLUGIN,
-                Plugin.class, "Plugins",
+                Plugin.class, NbBundle.getMessage(POMModelVisitor.class, "PLUGINS"),
                 t != null ? t.getPlugins() : null,
                 new KeyGenerator<Plugin>() {
                     public Object generate(Plugin c) {
@@ -715,7 +716,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                         return gr + ":" + c.getArtifactId(); //NOI18N
                     }
                     public String createName(Plugin c) {
-                        return c.getArtifactId() != null ? c.getArtifactId() : "Plugin";
+                        return c.getArtifactId() != null ? c.getArtifactId() : NbBundle.getMessage(POMModelVisitor.class, "PLUGIN");
                     }
                 });
 
@@ -727,9 +728,9 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        checkChildString(names.GROUPID, "GroupId", t != null ? t.getGroupId() : null);
-        checkChildString(names.ARTIFACTID, "ArtifactId", t != null ? t.getArtifactId() : null);
-        checkChildString(names.VERSION, "Version", t != null ? t.getVersion() : null);
+        checkChildString(names.GROUPID, NbBundle.getMessage(POMModelVisitor.class, "GROUPID"), t != null ? t.getGroupId() : null);
+        checkChildString(names.ARTIFACTID, NbBundle.getMessage(POMModelVisitor.class, "ARTIFACTID"), t != null ? t.getArtifactId() : null);
+        checkChildString(names.VERSION, NbBundle.getMessage(POMModelVisitor.class, "VERSION"), t != null ? t.getVersion() : null);
     }
 
     public void visit(License target) {
@@ -737,8 +738,8 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        checkChildString(names.NAME, "Name", t != null ? t.getName() : null);
-        checkChildString(names.URL, "Url", t != null ? t.getUrl() : null);
+        checkChildString(names.NAME, NbBundle.getMessage(POMModelVisitor.class, "NAME"), t != null ? t.getName() : null);
+        checkChildString(names.URL, NbBundle.getMessage(POMModelVisitor.class, "URL"), t != null ? t.getUrl() : null);
         count++;
     }
 
@@ -747,11 +748,11 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        checkChildString(names.NAME, "Name", t != null ? t.getName() : null);
-        checkChildString(names.SUBSCRIBE, "Subscribe", t != null ? t.getSubscribe() : null);
-        checkChildString(names.UNSUBSCRIBE, "Unsubscribe", t != null ? t.getUnsubscribe() : null);
-        checkChildString(names.POST, "Post", t != null ? t.getPost() : null);
-        checkChildString(names.ARCHIVE, "Archive", t != null ? t.getArchive() : null);
+        checkChildString(names.NAME, NbBundle.getMessage(POMModelVisitor.class, "NAME"), t != null ? t.getName() : null);
+        checkChildString(names.SUBSCRIBE, NbBundle.getMessage(POMModelVisitor.class, "SUBSCRIBE"), t != null ? t.getSubscribe() : null);
+        checkChildString(names.UNSUBSCRIBE, NbBundle.getMessage(POMModelVisitor.class, "UNSUBSCRIBE"), t != null ? t.getUnsubscribe() : null);
+        checkChildString(names.POST, NbBundle.getMessage(POMModelVisitor.class, "POST"), t != null ? t.getPost() : null);
+        checkChildString(names.ARCHIVE, NbBundle.getMessage(POMModelVisitor.class, "ARCHIVE"), t != null ? t.getArchive() : null);
         count++;
     }
 
@@ -760,13 +761,13 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
-        checkChildString(names.ID, "Id", t != null ? t.getId() : null);
-        checkChildString(names.NAME, "Name", t != null ? t.getName() : null);
-        checkChildString(names.EMAIL, "Email", t != null ? t.getEmail() : null);
-        checkChildString(names.URL, "Url", t != null ? t.getUrl() : null);
-        checkChildString(names.ORGANIZATION, "Organization", t != null ? t.getOrganization() : null);
-        checkChildString(names.ORGANIZATIONURL, "Organization Url", t != null ? t.getOrganizationUrl() : null);
-        checkChildString(names.TIMEZONE, "Timezone", t != null ? t.getTimezone() : null);
+        checkChildString(names.ID, NbBundle.getMessage(POMModelVisitor.class, "ID"), t != null ? t.getId() : null);
+        checkChildString(names.NAME, NbBundle.getMessage(POMModelVisitor.class, "NAME"), t != null ? t.getName() : null);
+        checkChildString(names.EMAIL, NbBundle.getMessage(POMModelVisitor.class, "EMAIL"), t != null ? t.getEmail() : null);
+        checkChildString(names.URL, NbBundle.getMessage(POMModelVisitor.class, "URL"), t != null ? t.getUrl() : null);
+        checkChildString(names.ORGANIZATION, NbBundle.getMessage(POMModelVisitor.class, "ORGANIZATION"), t != null ? t.getOrganization() : null);
+        checkChildString(names.ORGANIZATIONURL, NbBundle.getMessage(POMModelVisitor.class, "ORGANIZATION_URL"), t != null ? t.getOrganizationUrl() : null);
+        checkChildString(names.TIMEZONE, NbBundle.getMessage(POMModelVisitor.class, "TIMEZONE"), t != null ? t.getTimezone() : null);
 
         count++;
     }
@@ -854,14 +855,14 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
     private void checkDependencies(DependencyContainer container) {
         this.<Dependency>checkListObject(names.DEPENDENCIES, names.DEPENDENCY,
-                Dependency.class, "Dependencies",
+                Dependency.class, NbBundle.getMessage(POMModelVisitor.class, "DEPENDENCIES"),
                 container != null ? container.getDependencies() : null,
                 new KeyGenerator<Dependency>() {
                     public Object generate(Dependency c) {
-                        return c.getGroupId() + ":" + c.getArtifactId();
+                        return c.getGroupId() + ":" + c.getArtifactId(); //NOI18N
                     }
                     public String createName(Dependency c) {
-                        return c.getArtifactId() != null ? c.getArtifactId() : "Dependency";
+                        return c.getArtifactId() != null ? c.getArtifactId() : NbBundle.getMessage(POMModelVisitor.class, "DEPENDENCY");
                     }
                 });
 
@@ -982,7 +983,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
             String dispVal = POMModelPanel.getValidValue(values);
             if (dispVal == null) {
-                dispVal = "&lt;Undefined&gt;";
+                dispVal = NbBundle.getMessage(POMModelVisitor.class, "UNDEFINED");
             }
             boolean override = POMModelPanel.overridesParentValue(values);
             String overrideStart = override ? "<b>" : "";
@@ -1022,7 +1023,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         @Override
         public String getHtmlDisplayName() {
             Object[] values = getLookup().lookup(POMCutHolder.class).getCutValues();
-            String dispVal = POMModelPanel.definesValue(values) ? "" : "&lt;Undefined&gt;";
+            String dispVal = POMModelPanel.definesValue(values) ? "" : NbBundle.getMessage(POMModelVisitor.class, "UNDEFINED");
             boolean override = POMModelPanel.overridesParentValue(values);
             String overrideStart = override ? "<b>" : "";
             String overrideEnd = override ? "</b>" : "";
@@ -1065,7 +1066,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             //TODO - this needs different markings..
             Object[] values = getLookup().lookup(POMCutHolder.class).getCutValues();
 
-            String dispVal = POMModelPanel.definesValue(values) ? "" : "&lt;Undefined&gt;";
+            String dispVal = POMModelPanel.definesValue(values) ? "" : NbBundle.getMessage(POMModelVisitor.class, "UNDEFINED");
             boolean override = POMModelPanel.overridesParentValue(values);
             String overrideStart = override ? "<b>" : "";
             String overrideEnd = override ? "</b>" : "";
