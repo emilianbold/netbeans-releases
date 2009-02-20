@@ -231,13 +231,14 @@ class ConfigActionTest extends ConfigAction {
                 executionDescriptor = executionDescriptor
                         .preExecution(new Runnable() {
                             public void run() {
+                                rerunUnitTestHandler.disable();
                                 testRunner.start();
                             }
                         })
                         .postExecution(new Runnable() {
                             public void run() {
-                                rerunUnitTestHandler.enable();
                                 testRunner.showResults();
+                                rerunUnitTestHandler.enable();
                                 handleCodeCoverage();
                             }
                         });
@@ -362,8 +363,17 @@ class ConfigActionTest extends ConfigAction {
         }
 
         void enable() {
-            enabled = true;
-            changeSupport.fireChange();
+            if (!enabled) {
+                enabled = true;
+                changeSupport.fireChange();
+            }
+        }
+
+        void disable() {
+            if (enabled) {
+                enabled = false;
+                changeSupport.fireChange();
+            }
         }
     }
 
