@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.bugzilla.util;
 
-import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -49,7 +48,6 @@ import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugzilla.Bugzilla;
-import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
