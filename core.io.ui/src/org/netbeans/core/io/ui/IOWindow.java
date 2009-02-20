@@ -191,6 +191,7 @@ public final class IOWindow implements IOContainer.Provider {
         private static final String TOOLBAR_ACTIONS_PROP = "toolbarActions"; //NOI18N
         private static final String TOOLBAR_BUTTONS_PROP = "toolbarButtons"; //NOI18N
         private static final String ICON_RESOURCE = "org/netbeans/core/resources/frames/output.png"; // NOI18N
+        private static final boolean AQUA = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
         private JTabbedPane pane;
         private JComponent singleTab;
         private JToolBar toolbar;
@@ -257,6 +258,14 @@ public final class IOWindow implements IOContainer.Provider {
             // special title for sliding mode
             // XXX - please rewrite to regular API when available - see issue #55955
             putClientProperty("SlidingName", getDisplayName()); //NOI18N
+
+            if (AQUA) {
+                setBackground(UIManager.getColor("NbExplorerView.background"));
+                setOpaque(true);
+                toolbar.setBackground(UIManager.getColor("NbExplorerView.background"));
+                pane.setBackground(UIManager.getColor("NbExplorerView.background"));
+                pane.setOpaque(true);
+            }
         }
 
         @Override
@@ -438,6 +447,10 @@ public final class IOWindow implements IOContainer.Provider {
 
         @Override
         public void paintComponent(Graphics g) {
+            if (AQUA) {
+                g.setColor(getBackground());
+                g.fillRect(0, 0, getWidth(), getHeight());
+            }
             super.paintComponent(g);
             if (hasFocus()) {
                 Insets ins = getInsets();
