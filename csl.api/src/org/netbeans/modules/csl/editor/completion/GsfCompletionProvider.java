@@ -312,6 +312,9 @@ public class GsfCompletionProvider implements CompletionProvider {
 
                                 public void run (ResultIterator resultIterator) throws Exception {
                                     ParserResult parserResult = (ParserResult) resultIterator.getParserResult (caretOffset);
+                                    if (parserResult == null) {
+                                        return;
+                                    }
                                     if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
                                         resolveCompletion(parserResult);
                                     } else if (queryType == TOOLTIP_QUERY_TYPE) {
@@ -324,7 +327,7 @@ public class GsfCompletionProvider implements CompletionProvider {
 
                                 public void cancel() {
                                 }
-                            });
+                        });
                         if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
                             if (results != null)
                                 resultSet.addAllItems(results);
