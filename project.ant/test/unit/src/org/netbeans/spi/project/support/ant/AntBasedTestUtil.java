@@ -157,14 +157,14 @@ public class AntBasedTestUtil {
         
     }
     
-    private static final class TestAntBasedProject implements Project {
+    public static class TestAntBasedProject implements Project {
         
         private final AntProjectHelper helper;
         private final ReferenceHelper refHelper;
         private final GeneratedFilesHelper genFilesHelper;
         private final Lookup l;
         
-        TestAntBasedProject(AntProjectHelper helper, AntBuildExtenderImplementation ext) throws IOException {
+        protected TestAntBasedProject(AntProjectHelper helper, AntBuildExtenderImplementation ext) throws IOException {
             if (helper.getProjectDirectory().getFileObject("nbproject/broken") != null) {
                 throw new IOException("broken");
             }

@@ -62,6 +62,7 @@ import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.FilterPropertyProvider;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
@@ -90,6 +91,12 @@ import org.w3c.dom.Text;
 /**
  * @author ads, Tomas Mysik
  */
+@AntBasedProjectRegistration(
+    type=PhpProjectType.TYPE,
+    iconResource="org/netbeans/modules/php/project/ui/resources/phpProject.png",
+    sharedNamespace=PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+    privateNamespace=PhpProjectType.PRIVATE_CONFIGURATION_NAMESPACE
+)
 public class PhpProject implements Project {
 
     public static final String USG_LOGGER_NAME = "org.netbeans.ui.metrics.php"; //NOI18N
@@ -112,7 +119,7 @@ public class PhpProject implements Project {
     // @GuardedBy(this)
     private FileObject seleniumDirectory;
 
-    PhpProject(AntProjectHelper helper) {
+    public PhpProject(AntProjectHelper helper) {
         assert helper != null;
 
         this.helper = helper;

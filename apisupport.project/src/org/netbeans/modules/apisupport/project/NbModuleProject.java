@@ -112,6 +112,7 @@ import org.netbeans.modules.apisupport.project.ui.ModuleOperations;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.spi.project.support.LookupProviderSupport;
+import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.modules.SpecificationVersion;
@@ -121,6 +122,14 @@ import org.openide.util.Exceptions;
  * A NetBeans module project.
  * @author Jesse Glick
  */
+@AntBasedProjectRegistration(
+    type=NbModuleProjectType.TYPE,
+    iconResource="org/netbeans/modules/apisupport/project/resources/module.png", // NOI18N
+    sharedName=NbModuleProjectType.NAME_SHARED,
+    sharedNamespace= NbModuleProjectType.NAMESPACE_SHARED,
+    privateName=NbModuleProjectType.NAME_PRIVATE,
+    privateNamespace= NbModuleProjectType.NAMESPACE_PRIVATE
+)
 public final class NbModuleProject implements Project {
     
     public static final String NB_PROJECT_ICON_PATH =
@@ -138,7 +147,7 @@ public final class NbModuleProject implements Project {
     private final GeneratedFilesHelper genFilesHelper;
     private final NbModuleProviderImpl typeProvider;
     
-    NbModuleProject(AntProjectHelper helper) throws IOException {
+    public NbModuleProject(AntProjectHelper helper) throws IOException {
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
         for (int v = 4; v < 10; v++) {
             if (aux.getConfigurationFragment("data", "http://www.netbeans.org/ns/nb-module-project/" + v, true) != null) { // NOI18N

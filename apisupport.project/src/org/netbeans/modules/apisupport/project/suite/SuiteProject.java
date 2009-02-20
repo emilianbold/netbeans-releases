@@ -67,6 +67,7 @@ import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizer;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.LookupProviderSupport;
+import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -93,6 +94,14 @@ import org.w3c.dom.Element;
  * Represents one module suite project.
  * @author Jesse Glick
  */
+@AntBasedProjectRegistration(
+    type=SuiteProjectType.TYPE,
+    iconResource="org/netbeans/modules/apisupport/project/suite/resources/suite.png", // NOI18N
+    sharedName=SuiteProjectType.NAME_SHARED,
+    sharedNamespace= SuiteProjectType.NAMESPACE_SHARED,
+    privateName=SuiteProjectType.NAME_PRIVATE,
+    privateNamespace= SuiteProjectType.NAMESPACE_PRIVATE
+)
 public final class SuiteProject implements Project {
     
     public static final String SUITE_ICON_PATH =
