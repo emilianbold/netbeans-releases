@@ -133,7 +133,7 @@ public class GoToTest implements TestLocator {
                 }
             }
         }
-        return new LocationResult(NbBundle.getMessage(GoToTest.class, "MSG_SrcNotFound", testFo.getName()));
+        return new LocationResult(NbBundle.getMessage(GoToTest.class, "MSG_SrcNotFound", testFo.getNameExt()));
     }
 
     public static LocationResult findTest(PhpProject project, FileObject srcFo) {
@@ -153,7 +153,7 @@ public class GoToTest implements TestLocator {
                 }
             }
         }
-        return new LocationResult(NbBundle.getMessage(GoToTest.class, "MSG_TestNotFound", srcFo.getName()));
+        return new LocationResult(NbBundle.getMessage(GoToTest.class, "MSG_TestNotFound", srcFo.getNameExt()));
     }
 
     private PhpProject findPhpProject(FileObject fo) {
