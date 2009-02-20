@@ -179,7 +179,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
 
         propertyChange(null);
 
-        LOG.log(Level.FINE, null, new Throwable("Creating AnnotationHolder for " + file.getPath()));
+//        LOG.log(Level.FINE, null, new Throwable("Creating AnnotationHolder for " + file.getPath()));
         Logger.getLogger("TIMER").log(Level.FINE, "Annotation Holder",
                     new Object[] {file, this});
     }
