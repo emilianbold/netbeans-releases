@@ -3,7 +3,7 @@
 <filesystem>
 
     <folder name="Actions">
-        <folder name="Bugtracking">
+        <folder name="Versioning">
             <file name="org-netbeans-modules-bugtracking-ui-query-QueryAction.instance"/>
         </folder>
         <folder name="Window">
@@ -17,11 +17,11 @@
     </folder>
 
     <folder name="Menu">
-        <folder name="Bugtracking">
+        <folder name="Versioning">
             <attr name="position" intvalue="960"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bugtracking.Bundle"/>
             <file name="org-netbeans-modules-bugtracking-ui-query-QueryAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Bugtracking/org-netbeans-modules-bugtracking-ui-query-QueryAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Versioning/org-netbeans-modules-bugtracking-ui-query-QueryAction.instance"/>
                 <attr name="position" intvalue="100"/>
             </file>
         </folder>
