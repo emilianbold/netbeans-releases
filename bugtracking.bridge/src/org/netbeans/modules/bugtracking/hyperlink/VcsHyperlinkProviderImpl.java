@@ -40,6 +40,8 @@
 package org.netbeans.modules.bugtracking.hyperlink;
 
 import java.io.File;
+import java.util.logging.Logger;
+import org.netbeans.modules.bugtracking.bridge.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -69,7 +71,7 @@ public class VcsHyperlinkProviderImpl extends HyperlinkProvider {
         String issueId = getIssueId(text, offsetStart, offsetEnd);
         if(issueId == null) return;
 
-        Repository repo = BugtrackingUtil.getBugtrackingOwner(file);
+        Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file);
         if(repo == null) return;
         
         Issue issue = repo.getIssue(issueId);

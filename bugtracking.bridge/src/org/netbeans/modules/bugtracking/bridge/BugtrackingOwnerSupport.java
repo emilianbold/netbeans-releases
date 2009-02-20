@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,42 +34,71 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.bridge;
 
 import java.io.File;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
 /**
  *
- * @author tomas
- * XXX get rid of this
+ * @author Tomas Stupka
  */
-class BugtrackingOwnerQuery {
+public class BugtrackingOwnerSupport {
 
+    private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.bridge.BugtrackingOwnerSupport");   // NOI18N
 
-    public BugtrackingOwnerQuery() {
+    private Map<File, Repository> fileToRepo = new HashMap<File, Repository>(10);
+    private static BugtrackingOwnerSupport instance;
+
+    private BugtrackingOwnerSupport() { }
+
+    public static BugtrackingOwnerSupport getInstance() {
+        if(instance == null) {
+            instance = new BugtrackingOwnerSupport();
+        }
+        return instance;
+    }
+    
+    public Repository getRepository(File file) {
+        // check cached values firts
+        // XXX - todo
+        // 1.) cache repository for a VCS topmostanagedParent
+        // 2.) persist cache
+        Repository repo = fileToRepo.get(file);
+        if(repo != null) {
+            LOG.log(Level.FINER, " found cached repository [" + repo + "] for file " + file); // NOI18N
+        }
+
+        // XXX todo
+        // 1.) check if file belongs to a kenai project and create repository from
+        // its metadata eventually
+        // 2.) store in cache
+        if(repo == null) {
+            repo = getBugtrackingOwner(file);
+            LOG.log(Level.FINER, " caching repository [" + repo + "] for file " + file); // NOI18N
+            fileToRepo.put(file, repo);
+        }
+
+        // XXX
+        // 1.) there was no repository assotiated with the file
+        // neither does it belong to a kenai project ->
+        // -> ask user if he want's to create a new one
+        // 2.) store in cache
+        return repo;
     }
 
-    public static Repository getBugtrackingOwner(File file) {
-//        TasksOwnerQueryImplementation[] qarray;
-//        synchronized(queries) {
-//            qarray = queries.toArray(new TasksOwnerQueryImplementation[queries.size()]);
-//        }
-//        TasksRepositoryDescriptor ret;
-//        for (TasksOwnerQueryImplementation q : qarray) {
-//            ret = q.getTasksOwner(file);
-//            if(ret != null) {
-//                return ret;
-//            }
-//        }
-//        return null;
-        Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
-
-        Repository repo = null;
+    // XXX dummy
+    private Repository getBugtrackingOwner(File file) {
+        Repository[] repos = BugtrackingUtil.getKnownRepositories();
+        
         for (Repository r : repos) {
             if(r.getDisplayName().indexOf("office") > -1) { // XXX
                 return r;

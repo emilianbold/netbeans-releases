@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugtracking.vcshooks;
 
+import org.netbeans.modules.bugtracking.bridge.BugtrackingOwnerSupport;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -65,11 +66,11 @@ public class HgHookImpl extends HgHook {
     private HookPanel panel;
     private final String name;
     private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.HgHook");   // NOI18N
-    private HookSupport support;
+    private BugtrackingOwnerSupport support;
 
     public HgHookImpl() {
         this.name = NbBundle.getMessage(HgHookImpl.class, "LBL_VCSHook");       // NOI18N
-        support = HookSupport.getInstance();
+        support = BugtrackingOwnerSupport.getInstance();
     }
 
     @Override
@@ -101,7 +102,7 @@ public class HgHookImpl extends HgHook {
             return;
         }
         
-        Repository repo = support.getRepository(file, LOG);
+        Repository repo = support.getRepository(file);
         if(repo == null) {
             LOG.log(Level.FINE, " could not find repository for " + file);      // NOI18N
             return;
@@ -153,7 +154,7 @@ public class HgHookImpl extends HgHook {
         File file = context.getFiles()[0];
         LOG.log(Level.FINE, "push hook start for " + file);
 
-        Repository repo = support.getRepository(file, LOG);
+        Repository repo = support.getRepository(file);
         if(repo == null) {
             LOG.log(Level.FINE, " could not find repository for " + file);      // NOI18N
             return;
@@ -180,13 +181,13 @@ public class HgHookImpl extends HgHook {
 
     @Override
     public JPanel createComponent(HgHookContext context) {
-        Repository[] repos = support.getKnownRepositories(LOG);
+        Repository[] repos = BugtrackingUtil.getKnownRepositories();
         if(context.getFiles().length == 0) {
             LOG.warning("creating hg hook component for zero files");           // NOI18N
             panel = new HookPanel(repos, null);
         } else {
             File file = context.getFiles()[0];
-            Repository repoToSelect = support.getRepository(file, LOG);
+            Repository repoToSelect = support.getRepository(file);
             if(repoToSelect == null) {
                 LOG.log(Level.FINE, " could not find repository for " + file);  // NOI18N
             }

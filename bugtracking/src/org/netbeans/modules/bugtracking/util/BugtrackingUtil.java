@@ -132,10 +132,6 @@ public class BugtrackingUtil {
         return rs.create();
     }
 
-    public static Repository getBugtrackingOwner(File file) {
-        return BugtrackingOwnerQuery.getBugtrackingOwner(file);
-    }
-
     public static Repository[] getKnownRepositories() {
         return BugtrackingManager.getInstance().getKnownRepositories();
     }

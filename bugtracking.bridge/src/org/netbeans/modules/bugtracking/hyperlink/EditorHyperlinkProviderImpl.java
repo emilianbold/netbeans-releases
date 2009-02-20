@@ -52,6 +52,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
+import org.netbeans.modules.bugtracking.bridge.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -96,7 +97,7 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt {
         }
         if(file == null) return;
         
-        Repository repo = BugtrackingUtil.getBugtrackingOwner(file);
+        Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file);
         if(repo == null) return;
 
         Issue issue = repo.getIssue(issueId);
