@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
@@ -80,7 +81,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
     private /*final*/ CsmObject containerRef;// can be set in onDispose or contstructor only
     private /*final*/ CsmUID<CsmIdentifiable> containerUID;
 
-    public TypedefImpl(AST ast, CsmFile file, CsmObject container, CsmType type, String name) {
+    public TypedefImpl(AST ast, CsmFile file, CsmObject container, CsmType type, String name, boolean global) {
 
         super(ast, file);
 
@@ -102,6 +103,10 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
             name = fixBuiltInTypedef(ast);
         }
         this.name = QualifiedNameCache.getManager().getString(name);
+
+        if(!global) {
+            Utils.setSelfUID(this);
+        }
     }
 
     private String fixBuiltInTypedef(AST ast){
