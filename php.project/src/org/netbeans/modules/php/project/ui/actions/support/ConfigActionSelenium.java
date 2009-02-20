@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,70 +34,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.ui.actions;
+
+package org.netbeans.modules.php.project.ui.actions.support;
 
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
-import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 
 /**
- * @author Radek Matous, Tomas Mysik
+ * Action implementation for SELENIUM TEST configuration.
+ * It means running and debugging Selenium tests.
+ * @author Tomas Mysik
  */
-public abstract class Command {
+class ConfigActionSelenium extends ConfigActionTest {
 
-    private final PhpProject project;
-
-    public Command(PhpProject project) {
-        assert project != null;
-        this.project = project;
+    protected ConfigActionSelenium(PhpProject project) {
+        super(project);
     }
 
-    public abstract String getCommandId();
-
-    public abstract void invokeAction(Lookup context);
-
-    public abstract boolean isActionEnabled(Lookup context);
-
-    public boolean asyncCallRequired() {
-        return true;
+    @Override
+    protected FileObject getTestDirectory(boolean showCustomizer) {
+        return ProjectPropertiesSupport.getSeleniumDirectory(project, showCustomizer);
     }
 
-    public boolean saveRequired() {
-        return true;
-    }
-
-    public final PhpProject getProject() {
-        return project;
-    }
-
-    protected boolean isScriptSelected() {
-        PhpProjectProperties.RunAsType runAs = ProjectPropertiesSupport.getRunAs(project);
-        return PhpProjectProperties.RunAsType.SCRIPT.equals(runAs);
-    }
-
-    protected ConfigAction getConfigAction() {
-        return ConfigAction.get(ConfigAction.convert(ProjectPropertiesSupport.getRunAs(project)), project);
-    }
-
-    protected boolean isTestFile(FileObject fileObj) {
-        // #156939
-        if (fileObj == null) {
-            return false;
-        }
-        return CommandUtils.isUnderTests(project, fileObj, false);
-    }
-
-    protected boolean isSeleniumFile(FileObject fileObj) {
-        // #156939
-        if (fileObj == null) {
-            return false;
-        }
-        return CommandUtils.isUnderSelenium(project, fileObj, false);
+    @Override
+    protected boolean isCoverageEnabled() {
+        return false;
     }
 }

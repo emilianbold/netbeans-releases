@@ -74,7 +74,7 @@ import org.openide.util.NbBundle;
  * It means running and debugging tests.
  * @author Tomas Mysik
  */
-public class ConfigActionTest extends ConfigAction {
+class ConfigActionTest extends ConfigAction {
     private static final String CWD = "."; // NOI18N
     final PhpCoverageProvider coverageProvider;
 
@@ -82,6 +82,14 @@ public class ConfigActionTest extends ConfigAction {
         super(project);
         coverageProvider = project.getLookup().lookup(PhpCoverageProvider.class);
         assert coverageProvider != null;
+    }
+
+    protected FileObject getTestDirectory(boolean showCustomizer) {
+        return ProjectPropertiesSupport.getTestDirectory(project, showCustomizer);
+    }
+
+    protected boolean isCoverageEnabled() {
+        return coverageProvider.isEnabled();
     }
 
     @Override
@@ -96,7 +104,7 @@ public class ConfigActionTest extends ConfigAction {
 
     @Override
     public boolean isRunFileEnabled(Lookup context) {
-        FileObject rootFolder = ProjectPropertiesSupport.getTestDirectory(project, false);
+        FileObject rootFolder = getTestDirectory(false);
         assert rootFolder != null : "Test directory not found but isRunFileEnabled() for a test file called?!";
         FileObject file = CommandUtils.fileForContextOrSelectedNodes(context, rootFolder);
         return file != null && CommandUtils.isPhpFile(file);
@@ -113,7 +121,7 @@ public class ConfigActionTest extends ConfigAction {
     @Override
     public void runProject() {
         // first, let user select test directory
-        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, true);
+        FileObject testDirectory = getTestDirectory(true);
         if (testDirectory == null) {
             return;
         }
@@ -176,7 +184,7 @@ public class ConfigActionTest extends ConfigAction {
 
     // <working directory, unit test name (script name without extension)>
     private Pair<FileObject, String> getPair(Lookup context) {
-        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, true);
+        FileObject testDirectory = getTestDirectory(true);
         if (testDirectory == null) {
             return null;
         }
@@ -253,7 +261,7 @@ public class ConfigActionTest extends ConfigAction {
             externalProcessBuilder = externalProcessBuilder
                     .addArgument(PhpUnit.PARAM_XML_LOG)
                     .addArgument(PhpUnit.XML_LOG.getAbsolutePath());
-            if (coverageProvider.isEnabled()) {
+            if (isCoverageEnabled()) {
                 externalProcessBuilder = externalProcessBuilder
                         .addArgument(PhpUnit.PARAM_COVERAGE_LOG)
                         .addArgument(PhpUnit.COVERAGE_LOG.getAbsolutePath());
@@ -286,9 +294,9 @@ public class ConfigActionTest extends ConfigAction {
         }
 
         void handleCodeCoverage() {
-            if (!coverageProvider.isEnabled()
+            if (!isCoverageEnabled()
                     || pair.second != CWD) {
-                // XXX no provider or not enabled or just one test case (could be handled later)
+                // XXX not enabled or just one test case (could be handled later)
                 return;
             }
 
@@ -339,7 +347,7 @@ public class ConfigActionTest extends ConfigAction {
             if (context == null) {
                 return null;
             }
-            FileObject testRoot = ProjectPropertiesSupport.getTestDirectory(project, false);
+            FileObject testRoot = getTestDirectory(false);
             assert testRoot != null : "Test root must be known already";
             FileObject file = CommandUtils.fileForContextOrSelectedNodes(context, testRoot);
             assert file != null : "Start file must be found";

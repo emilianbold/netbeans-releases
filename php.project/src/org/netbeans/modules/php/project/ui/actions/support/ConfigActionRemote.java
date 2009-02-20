@@ -53,7 +53,7 @@ import org.openide.util.Lookup;
  * It means uploading, running and debugging web pages on a remote web server.
  * @author Tomas Mysik
  */
-public class ConfigActionRemote extends ConfigActionLocal {
+class ConfigActionRemote extends ConfigActionLocal {
 
     protected ConfigActionRemote(PhpProject project) {
         super(project);

@@ -75,7 +75,7 @@ import org.openide.util.lookup.Lookups;
  * It means running and debugging web pages on a local web server.
  * @author Tomas Mysik
  */
-public class ConfigActionLocal extends ConfigAction {
+class ConfigActionLocal extends ConfigAction {
     private final FileObject webRoot;
 
     protected ConfigActionLocal(PhpProject project) {
