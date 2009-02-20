@@ -47,17 +47,21 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import javax.imageio.ImageIO;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.View;
 import junit.framework.TestCase;
 import org.netbeans.core.output2.ui.AbstractOutputPane;
-import org.netbeans.core.output2.ui.AbstractOutputTab;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
+import org.openide.windows.IOContainer;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
@@ -70,23 +74,30 @@ public class WrappedTextViewTest extends TestCase {
     public WrappedTextViewTest(String testName) {
         super(testName);
     }
-    
-    private OutputWindow win;
+
+    IOContainer iowin;
     private NbIO io;
-    private OutWriter out = null;
     JFrame jf = null;
     static int testNum;
 
+    @Override
     protected void setUp() throws Exception {
-        jf = new JFrame();
-        win = new OutputWindow();
-        OutputWindow.DEFAULT = win;
-        jf.getContentPane().setLayout (new BorderLayout());
-        jf.getContentPane().add (win, BorderLayout.CENTER);
-        jf.setBounds (20, 20, 700, 300);
-        io = (NbIO) new NbIOProvider().getIO ("Test" + testNum++, false);
-        SwingUtilities.invokeAndWait (new Shower());
+        SwingUtilities.invokeAndWait(new Runnable() {
+
+            public void run() {
+                iowin = IOContainer.getDefault();
+                JComponent wnd = LifecycleTest.getIOWindow();
+                jf = new JFrame();
+                jf.getContentPane().setLayout(new BorderLayout());
+                jf.getContentPane().add(wnd, BorderLayout.CENTER);
+                jf.setBounds(20, 20, 700, 300);
+                jf.setVisible(true);
+                io = (NbIO) new NbIOProvider().getIO("Test" + testNum++, false);
+            }
+        });
+
         sleep();
+        io.select();
         io.getOut().println ("Test line 1");
         sleep();
         sleep();
@@ -108,28 +119,22 @@ public class WrappedTextViewTest extends TestCase {
         
         SwingUtilities.invokeAndWait (new Runnable() {
             public void run() {
-                win.getSelectedTab().getOutputPane().setWrapped(true);
+                ((OutputTab) iowin.getSelected()).getOutputPane().setWrapped(true);
             }
         });
     }
     
     private final void sleep() {
         try {
-            Thread.currentThread().sleep(200);
+            Thread.sleep(200);
             SwingUtilities.invokeAndWait (new Runnable() {
                 public void run() {
                     System.currentTimeMillis();
                 }
             });
-            Thread.currentThread().sleep(200);
+            Thread.sleep(200);
         } catch (Exception e) {
             fail (e.getMessage());
-        }
-    }
-    
-    public class Shower implements Runnable {
-        public void run() {
-            jf.setVisible(true);
         }
     }
     
@@ -137,16 +142,33 @@ public class WrappedTextViewTest extends TestCase {
      * tests if caret position is computed correctly (see issue #122492)
      */
     public void testViewToModel() {
-        Graphics g = win.getSelectedTab().getOutputPane().getGraphics();
-        FontMetrics fm = g.getFontMetrics(win.getSelectedTab().getOutputPane().getTextView().getFont());
-        int charWidth = fm.charWidth('m');
-        int charHeight = fm.getHeight();
-        int fontDescent = fm.getDescent();
-        float x = charWidth * 50;
-        float y = charHeight * 1 + fontDescent;
-        int charPos = win.getSelectedTab().getOutputPane().getTextView().getUI().getRootView(null).viewToModel(x, y, new Rectangle(), new Position.Bias[]{});
-        int expCharPos = (Utilities.getOperatingSystem() & Utilities.OS_WINDOWS_MASK) != 0 ? 45 : 43;
-        assertTrue("viewToModel returned wrong value (it would result in bad caret position)!", charPos == expCharPos);
+        final Integer pos1 = new Integer(-2);
+        final Integer pos2 = new Integer(-1);
+        class R implements Runnable {
+            int charPos;
+            int expCharPos;
+            public void run() {
+                AbstractOutputPane pane = ((OutputTab) iowin.getSelected()).getOutputPane();
+                Graphics g = pane.getGraphics();
+                FontMetrics fm = g.getFontMetrics(pane.getTextView().getFont());
+                int charWidth = fm.charWidth('m');
+                int charHeight = fm.getHeight();
+                int fontDescent = fm.getDescent();
+                float x = charWidth * 50;
+                float y = charHeight * 1 + fontDescent;
+                charPos = pane.getTextView().getUI().getRootView(null).viewToModel(x, y, new Rectangle(), new Position.Bias[]{});
+                expCharPos = (Utilities.getOperatingSystem() & Utilities.OS_WINDOWS_MASK) != 0 ? 45 : 43;
+            }
+        }
+        R r = new R();
+        try {
+            SwingUtilities.invokeAndWait(r);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        assertTrue("viewToModel returned wrong value (it would result in bad caret position)!", r.charPos == r.expCharPos);
     }
     
     public void testModelToView() throws Exception {
@@ -157,86 +179,87 @@ public class WrappedTextViewTest extends TestCase {
             //FOR PRODUCTION AND USE IT JUST FOR DEBUGGING
             return;
         }
-        
-        AbstractOutputTab tab = win.getSelectedTab();
-        AbstractOutputPane pane = tab.getOutputPane();
-        JTextComponent text = pane.getTextView();
-        
-        View view = text.getUI().getRootView(text);
-        
-        Rectangle r = new Rectangle(1,1,1,1);
-        Rectangle alloc = new Rectangle();
-        
-        java.awt.image.ColorModel model = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().
-                                          getDefaultScreenDevice().getDefaultConfiguration().getColorModel(java.awt.Transparency.TRANSLUCENT);
-        java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(model,
-                model.createCompatibleWritableRaster(text.getWidth() + 10, text.getHeight() + 10), model.isAlphaPremultiplied(), null);
-        
-        text.paint (img.getGraphics());
-        boolean errorsFound = false;
-        ArrayList errors = new ArrayList();
-        
-        System.out.println("...scanning " + (text.getWidth() * text.getHeight() + " pixels to make sure viewToModel() matches modeltoView().  Expect it to take about 10 minutes."));
-        
-        for (int y=0; y < text.getHeight(); y++) {
-            r.y = y;
-            for (int x=0; x < text.getWidth(); x++) {
-                r.x = x;
-                alloc.setBounds (0, 0, text.getWidth(), text.getHeight());
-                
-                int vtm = view.viewToModel (x, y, alloc, new Position.Bias[1]);
-                
-                Rectangle mtv = (Rectangle) view.modelToView (vtm, Position.Bias.Forward, vtm, Position.Bias.Forward, new Rectangle (0, 0, text.getWidth(), text.getHeight()));
-                
-                int xvtm = view.viewToModel (mtv.x, mtv.y, alloc, new Position.Bias[1]);
+        class R implements Runnable {
+            boolean errorsFound;
+            java.awt.image.BufferedImage img;
+            ArrayList errors;
 
-                if (vtm != xvtm) {
-                    errorsFound = true;
-                    try {
-                        errors.add ("ViewToModel(" + x + "," + y + ") returns character position " + vtm + "; modelToView on " + vtm + " returns " + mtv + "; that Rectangle's corner, passed back to viewToModel maps to a different character position: " + xvtm + "\n");
-                        img.setRGB(x, y, vtm > xvtm ? Color.RED.getRGB() : Color.BLUE.getRGB());
-                        img.setRGB(x-1, y-1, vtm > xvtm ? Color.RED.getRGB() : Color.BLUE.getRGB());
-                        img.setRGB(x+1, y-1, vtm > xvtm ? Color.RED.getRGB() : Color.BLUE.getRGB());
-                        img.setRGB(x+1, y+1, vtm > xvtm ? Color.RED.getRGB() : Color.BLUE.getRGB());
-                        img.setRGB(x-1, y+1, vtm > xvtm ? Color.RED.getRGB() : Color.BLUE.getRGB());
-                    } catch (ArrayIndexOutOfBoundsException aioobe) {
-                        System.err.println("OUT OF BOUNDS: " + x + "," + y + " image width " + img.getWidth() + " img height " + img.getHeight());
+            public void run() {
+                AbstractOutputPane pane = ((OutputTab) iowin.getSelected()).getOutputPane();
+                JTextComponent text = pane.getTextView();
+
+                View view = text.getUI().getRootView(text);
+
+                Rectangle r = new Rectangle(1, 1, 1, 1);
+                Rectangle alloc = new Rectangle();
+
+                java.awt.image.ColorModel model = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().
+                        getDefaultScreenDevice().getDefaultConfiguration().getColorModel(java.awt.Transparency.TRANSLUCENT);
+                img = new java.awt.image.BufferedImage(model,
+                        model.createCompatibleWritableRaster(text.getWidth() + 10, text.getHeight() + 10), model.isAlphaPremultiplied(), null);
+
+                text.paint(img.getGraphics());
+                errorsFound = false;
+                errors = new ArrayList();
+
+                System.out.println("...scanning " + (text.getWidth() * text.getHeight() + " pixels to make sure viewToModel() matches modeltoView().  Expect it to take about 10 minutes."));
+
+                for (int y = 0; y < text.getHeight(); y++) {
+                    r.y = y;
+                    for (int x = 0; x < text.getWidth(); x++) {
+                        r.x = x;
+                        alloc.setBounds(0, 0, text.getWidth(), text.getHeight());
+
+                        int vtm = view.viewToModel(x, y, alloc, new Position.Bias[1]);
+
+                        Rectangle mtv = null;
+                        try {
+                            mtv = (Rectangle) view.modelToView(vtm, Position.Bias.Forward, vtm, Position.Bias.Forward, new Rectangle(0, 0, text.getWidth(), text.getHeight()));
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+
+                        int xvtm = view.viewToModel(mtv.x, mtv.y, alloc, new Position.Bias[1]);
+
+                        if (vtm != xvtm) {
+                            errorsFound = true;
+                            try {
+                                errors.add("ViewToModel(" + x + "," + y + ") returns character position " + vtm + "; modelToView on " + vtm + " returns " + mtv + "; that Rectangle's corner, passed back to viewToModel maps to a different character position: " + xvtm + "\n");
+                                img.setRGB(x, y, vtm > xvtm ? Color.RED.getRGB() : Color.BLUE.getRGB());
+                                img.setRGB(x - 1, y - 1, vtm > xvtm ? Color.RED.getRGB() : Color.BLUE.getRGB());
+                                img.setRGB(x + 1, y - 1, vtm > xvtm ? Color.RED.getRGB() : Color.BLUE.getRGB());
+                                img.setRGB(x + 1, y + 1, vtm > xvtm ? Color.RED.getRGB() : Color.BLUE.getRGB());
+                                img.setRGB(x - 1, y + 1, vtm > xvtm ? Color.RED.getRGB() : Color.BLUE.getRGB());
+                            } catch (ArrayIndexOutOfBoundsException aioobe) {
+                                System.err.println("OUT OF BOUNDS: " + x + "," + y + " image width " + img.getWidth() + " img height " + img.getHeight());
+                            }
+
+                            System.err.println(x + "," + y + "=" + vtm + " -> [" + mtv.x + "," + mtv.y + "," + mtv.width + "," + mtv.height + "]->" + xvtm);
+                        }
+
+                        r.y = y; //just in case
+                        r.width = 1;
+                        r.height = 1;
                     }
-                        
-                    System.err.println(x + "," + y + "=" + vtm + " -> [" + mtv.x + "," + mtv.y + "," + mtv.width + "," + mtv.height + "]->" + xvtm);
                 }
-                
-                r.y = y; //just in case
-                r.width = 1;
-                r.height = 1;
             }
         }
+        R r = new R();
+        SwingUtilities.invokeAndWait(r);
         
-        if (errorsFound) {
+        if (r.errorsFound) {
             String dir = System.getProperty ("java.io.tmpdir");
             if (!dir.endsWith(File.separator)) {
                 dir += File.separator;
             }
             String fname = dir + "outputWindowDiffs.png";
-            ImageIO.write (img, "png", new File (fname));
+            ImageIO.write (r.img, "png", new File (fname));
             fail ("In a wrapped view, some points as mapped by viewToModel do " +
                 "not map back to the same coordinates in viewToModel.  \nA bitmap " +
                 "of the problem coordinates is saved in " + fname + "  Problem" +
-                "spots are marked in red and blue.\n" + errors);
+                "spots are marked in red and blue.\n" + r.errors);
         }
-        
-
-        
-/*        
-        try {
-            Thread.currentThread().sleep (40000);
-        } catch (Exception e) {}
- */
-        
-//        WrappedTextView wtv = win.getSelectedTab().getOutputPane().getTextView().getUI().getView();
     }
-
-
 
     public class L implements OutputListener {
 
@@ -248,7 +271,5 @@ public class WrappedTextViewTest extends TestCase {
 
         public void outputLineCleared(OutputEvent ev) {
         }
-
     }    
-    
 }

@@ -87,6 +87,7 @@ class OutputPane extends AbstractOutputPane {
         }
     }
 
+    @Override
     public void setMouseLine (int line, Point p) {
         Document doc = getDocument();
         if (doc instanceof OutputDocument) {
@@ -157,6 +158,7 @@ class OutputPane extends AbstractOutputPane {
      * numbers of calls to viewToModel if the cursor is never going to be 
      * changed anyway.
      */
+    @Override
     public void mouseMoved (MouseEvent evt) {
         Document doc = getDocument();
         if (doc instanceof OutputDocument) {
@@ -166,6 +168,7 @@ class OutputPane extends AbstractOutputPane {
         }
     }
     
+    @Override
     public void mousePressed(MouseEvent e) {
         super.mousePressed(e);
         if (e.getSource() == textView && SwingUtilities.isLeftMouseButton(e)) {
@@ -189,6 +192,7 @@ class OutputPane extends AbstractOutputPane {
         return  (OutputTab) SwingUtilities.getAncestorOfClass (OutputTab.class, this);
     }
 
+    @Override
     protected void setDocument (Document doc) {
         if (doc == null) {
             Document d = getDocument();
@@ -266,7 +270,7 @@ class OutputPane extends AbstractOutputPane {
         InputMap map = result.getInputMap();
         MyInputMap myMap = new MyInputMap();
         myMap.setParent(map);
-        result.setInputMap(result.WHEN_FOCUSED, myMap);
+        result.setInputMap(JEditorPane.WHEN_FOCUSED, myMap);
         
         Action act = new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {
@@ -296,6 +300,7 @@ class OutputPane extends AbstractOutputPane {
             super();
         }
         
+        @Override
         public Object get(KeyStroke keyStroke) {
             KeyStroke stroke = KeyStroke.getKeyStroke("control shift O");
             if (keyStroke.equals(stroke)) {
@@ -325,6 +330,7 @@ class OutputPane extends AbstractOutputPane {
     }
     
     private static final class GEP extends JEditorPane {
+        @Override
         public java.awt.Color getBackground() {
             return UIManager.getColor("text");
         }
