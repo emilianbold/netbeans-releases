@@ -185,6 +185,7 @@ public final class POMQNames {
     public final POMQName POST;
     public final POMQName ARCHIVE;
 
+    public final POMQName DOWNLOADURL;
 
 
     private boolean ns;
@@ -327,6 +328,7 @@ public final class POMQNames {
         POST = new POMQName(POMQName.createQName("post",ns), ns); //NOI18N
         ARCHIVE = new POMQName(POMQName.createQName("archive",ns), ns); //NOI18N
 
+        DOWNLOADURL = new POMQName(POMQName.createQName("downloadUrl",ns), ns); //NOI18N
     }
 
     public boolean isNSAware() {
@@ -446,8 +448,8 @@ public final class POMQNames {
             ARCHIVE.getQName(),
             SUBSCRIBE.getQName(),
             UNSUBSCRIBE.getQName(),
-            POST.getQName()
-                    
+            POST.getQName(),
+            DOWNLOADURL.getQName()
         };
         List<QName> list = Arrays.asList(names);
         return new HashSet<QName>(list);
