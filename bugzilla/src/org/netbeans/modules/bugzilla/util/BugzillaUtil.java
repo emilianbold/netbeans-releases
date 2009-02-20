@@ -50,6 +50,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -58,7 +59,7 @@ import org.openide.NotifyDescriptor;
 public class BugzillaUtil {
     public static boolean show(JPanel panel, String title, String okName) {
         JButton ok = new JButton(okName);
-        JButton cancel = new JButton(NBBundle.getMessage(BugzillaUtil.class, "LBL_Cancel"));
+        JButton cancel = new JButton(NbBundle.getMessage(BugzillaUtil.class, "LBL_Cancel"));
         NotifyDescriptor descriptor = new NotifyDescriptor (
                 panel,
                 title,
