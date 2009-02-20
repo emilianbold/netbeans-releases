@@ -130,10 +130,12 @@ public class RecentSearches {
         if (items[0].length() != 0) {
             for (int i = 0; i < items.length; i++) {
                 int semicolonPos = items[i].lastIndexOf(":"); // NOI18N
-                final String name = items[i].substring(0, semicolonPos);
-                final long time = Long.parseLong(items[i].substring(semicolonPos + 1));
-                ItemResult incomplete = new ItemResult(null, new FakeAction(name), name, new Date(time));
-                recent.add(incomplete);
+                if (semicolonPos >= 0) {
+                    final String name = items[i].substring(0, semicolonPos);
+                    final long time = Long.parseLong(items[i].substring(semicolonPos + 1));
+                    ItemResult incomplete = new ItemResult(null, new FakeAction(name), name, new Date(time));
+                    recent.add(incomplete);
+                }
             }
         }
     }

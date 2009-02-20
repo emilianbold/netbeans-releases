@@ -70,6 +70,7 @@ import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -213,7 +214,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             }
         }
         //add red color..
-        lblExternalVersion.setText(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "ERR_NoValidInstallation"));
+        lblExternalVersion.setText(NbBundle.getMessage(SettingsPanel.class, "ERR_NoValidInstallation"));
     }
     
     private void initValues() {
@@ -713,10 +714,20 @@ public class SettingsPanel extends javax.swing.JPanel {
     
     public void setValues(org.netbeans.modules.maven.model.settings.Settings sett) {
         changed = false;
-        Boolean offline = sett.isOffline();
-        cbOffline.setSelected(offline != null ? offline.booleanValue() : false);
+        if (sett != null) {
+            Boolean offline = sett.isOffline();
+            cbOffline.setSelected(offline != null ? offline.booleanValue() : false);
+            txtLocalRepository.setText(sett.getLocalRepository() != null ? sett.getLocalRepository() : "");
+        } else {
+            //TODO report broken settings xml file.
+            cbOffline.setEnabled(false);
+            txtLocalRepository.setEnabled(false);
+            btnLocalRepository.setEnabled(false);
+            NotifyDescriptor.Message msg = new NotifyDescriptor.Message(NbBundle.getMessage(SettingsPanel.class, "ERR_Wrong_Settings_file"));
+            DialogDisplayer.getDefault().notify(msg);
+        }
+
         cbPluginRegistry.setSelected(MavenExecutionSettings.getDefault().isUsePluginRegistry());
-        txtLocalRepository.setText(sett.getLocalRepository() != null ? sett.getLocalRepository() : "");
         cbErrors.setSelected(MavenExecutionSettings.getDefault().isShowErrors());
         cbErrors.putClientProperty(CP_SELECTED, Boolean.valueOf(cbErrors.isSelected()));
         cbDebug.setSelected(MavenExecutionSettings.getDefault().isShowDebug());
@@ -756,12 +767,14 @@ public class SettingsPanel extends javax.swing.JPanel {
     }
     
     public void applyValues(org.netbeans.modules.maven.model.settings.Settings sett) {
-        sett.setOffline(cbOffline.isSelected() ? Boolean.TRUE : null);
-        String locrepo = txtLocalRepository.getText().trim();
-        if (locrepo.length() == 0) {
-            locrepo = null;
+        if (sett != null) {
+            sett.setOffline(cbOffline.isSelected() ? Boolean.TRUE : null);
+            String locrepo = txtLocalRepository.getText().trim();
+            if (locrepo.length() == 0) {
+                locrepo = null;
+            }
+            sett.setLocalRepository(locrepo);
         }
-        sett.setLocalRepository(locrepo);
         
         MavenExecutionSettings.getDefault().setUsePluginRegistry(cbPluginRegistry.isSelected());
         MavenExecutionSettings.getDefault().setShowDebug(cbDebug.isSelected());

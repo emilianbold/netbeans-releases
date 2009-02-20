@@ -64,6 +64,7 @@ public class SvnModuleConfig {
     public static final String KEY_ANNOTATION_FORMAT        = "annotationFormat";                           // NOI18N
     public static final String SAVE_PASSWORD                = "savePassword";                               // NOI18N
     private static final String FILE_SELECTOR_PREFIX        = "fileSelector";                               // NOI18N
+    private static final String SEARCH_HISTORY_ALL_INFO     = "histAllInfo";                                // NOI18N
     
     public static final String KEY_RECENT_URL = "repository.recentURL";                                     // NOI18N
     private static final String SHOW_CHECKOUT_COMPLETED = "checkoutCompleted.showCheckoutCompleted";        // NOI18N  
@@ -160,6 +161,14 @@ public class SvnModuleConfig {
 
     public void setFileSelectorPreset(String hash, String path) {
         getPreferences().put(FILE_SELECTOR_PREFIX + "-" + hash, path);
+    }
+    
+    public boolean getShowFileAllInfo() {
+        return getPreferences().getBoolean(SEARCH_HISTORY_ALL_INFO, false);
+    }
+
+    public void setShowFileAllInfo(boolean value) {
+        getPreferences().putBoolean(SEARCH_HISTORY_ALL_INFO, value);
     }
 
     public RepositoryConnection getRepositoryConnection(String url) {

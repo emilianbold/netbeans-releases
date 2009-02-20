@@ -68,7 +68,6 @@ import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
-import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
@@ -76,7 +75,6 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
-import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -131,7 +129,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 
     /*package*/ String getBaseMethodDescription() {
         if (baseVirtualMethod != null) {
-            CsmVisibility vis = baseVirtualMethod.getVisibility();
+            //CsmVisibility vis = baseVirtualMethod.getVisibility();
             String functionDisplayName = baseVirtualMethod.getSignature().toString();
             String displayClassName = methodDeclaringSuperClass.getName().toString();
             return getString("DSC_MethodUsages", functionDisplayName, displayClassName); // NOI18N

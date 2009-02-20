@@ -57,6 +57,7 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
     private final PropertyEvaluator evaluator;
     private final SourceRoots sourceRoots;
     private final SourceRoots testRoots;
+    private final SourceRoots seleniumRoots;
 
     private SourcesHelper sourcesHelper;
     private Sources delegate;
@@ -66,20 +67,23 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
     private volatile boolean externalRootsRegistered;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    public PhpSources(AntProjectHelper helper, PropertyEvaluator evaluator, final SourceRoots sourceRoots, final SourceRoots testRoots) {
+    public PhpSources(AntProjectHelper helper, PropertyEvaluator evaluator, final SourceRoots sourceRoots, final SourceRoots testRoots, final SourceRoots seleniumRoots) {
         assert helper != null;
         assert evaluator != null;
         assert sourceRoots != null;
         assert testRoots != null;
+        assert seleniumRoots != null;
 
         this.helper = helper;
         this.evaluator = evaluator;
         this.sourceRoots = sourceRoots;
         this.testRoots = testRoots;
+        this.seleniumRoots = seleniumRoots;
 
         this.evaluator.addPropertyChangeListener(this);
         this.sourceRoots.addPropertyChangeListener(this);
         this.testRoots.addPropertyChangeListener(this);
+        this.seleniumRoots.addPropertyChangeListener(this);
         initSources(); // have to register external build roots eagerly
     }
 
@@ -111,6 +115,7 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
         sourcesHelper = new SourcesHelper(helper, evaluator);   //Safe to pass APH
         register(sourceRoots);
         register(testRoots);
+        register(seleniumRoots);
 
         externalRootsRegistered = false;
         ProjectManager.mutex().postWriteRequest(new Runnable() {

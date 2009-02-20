@@ -55,7 +55,7 @@ public class CssPreviewAction extends AbstractAction {
     
     public CssPreviewAction() {
         super(NbBundle.getMessage(CssPreviewAction.class, "CTL_CssPreviewAction"));
-        putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(CssPreviewTopComponent.ICON_PATH, true)));
+        putValue(SMALL_ICON, ImageUtilities.loadImageIcon(CssPreviewTopComponent.ICON_PATH, true));
     }
     
     public void actionPerformed(ActionEvent evt) {

@@ -39,15 +39,12 @@
 
 package org.netbeans.modules.php.editor.model;
 
-import java.util.List;
-import org.netbeans.modules.gsf.api.NameKind;
+import java.util.Collection;
 
 /**
  *
  * @author Radek Matous
  */
 public interface VariableScope extends Scope  {
-    public List<? extends VariableName> getAllVariables();
-    public List<? extends VariableName> getVariables(final String... queryName);
-    public List<? extends VariableName> getVariables(final NameKind nameKind, final String... queryName);
+    public Collection<? extends VariableName> getDeclaredVariables();
 }

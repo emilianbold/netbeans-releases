@@ -42,11 +42,9 @@
 package org.netbeans.modules.cnd.navigation.hierarchy;
 
 import java.awt.event.ActionEvent;
-import java.util.prefs.Preferences;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 import org.openide.util.actions.CallableSystemAction;
 
 /**
@@ -69,7 +67,7 @@ public class HierarchyAction extends CallableSystemAction {
 
     public void performAction() {
         HierarchyTopComponent win = HierarchyTopComponent.findInstance();
-        Preferences ps = NbPreferences.forModule(HierarchyTopComponent.class);
+        //Preferences ps = NbPreferences.forModule(HierarchyTopComponent.class);
         win.open();
         win.requestActive();
     }

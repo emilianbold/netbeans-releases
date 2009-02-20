@@ -291,6 +291,10 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
         super.performTest("restrict.c", 15, 5);
     }
 
+    public void testLocalEnumerators() throws Exception {
+        super.performTest("local_enumerators.cc", 4, 14);
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // tests for cast completion
     // IZ#92198 : Code completion works wrong with static_cast expression

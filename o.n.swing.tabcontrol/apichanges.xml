@@ -105,6 +105,24 @@ is the proper place.
 
 <changes>
 
+    <change id="topcomponent_level_winsys_customizations">
+      <api name="tabcontrol"/>
+      <summary>Added new methods to WinsysInfoForTabbedContainer class which can
+      adjust the behavior of TopComponents in tabbed container.</summary>
+      <version major="1" minor="15"/>
+      <date day="13" month="1" year="2009"/>
+      <author login="saubrecht"/>
+      <compatibility addition="yes" binary="compatible" deprecation="no"/>
+      <description>
+        <p>Added new methods to class WinsysInfoForTabbedContainer to find out the
+        status (enabled/disabled) of some window system features for given TopComponent,
+        e.g. is the TopComponent allowed to slide-out etc.
+        </p>
+      </description>
+      <class package="org.netbeans.swing.tabcontrol" name="WinsysInfoForTabbedContainer"/>
+      <issue number="156693"/>
+    </change>
+
     <change id="winsysinfo_for_tabbed_container">
       <api name="tabcontrol"/>
       <summary>Added new abstract class WinsysInfoForTabbedContainer which can 

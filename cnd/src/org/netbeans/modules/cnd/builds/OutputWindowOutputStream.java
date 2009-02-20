@@ -235,23 +235,23 @@ public class OutputWindowOutputStream extends OutputStream {
                 if (col1 == -1) {
                     return NbBundle.getMessage
                             (OutputWindowOutputStream.class, "MSG_err_line", fname, m, // NOI18N
-                            new Integer(line1 + 1));
+                            Integer.valueOf(line1 + 1));
                 } else {
                     if (line2 == -1 || col2 == -1 || (line1 == line2 && col1 == col2)) {
                         return NbBundle.getMessage
                                 (OutputWindowOutputStream.class, "MSG_err_line_col", // NOI18N
-                                new Object[] { fname, m, new Integer(line1 + 1), new Integer(col1 + 1) });
+                                new Object[] { fname, m, Integer.valueOf(line1 + 1), Integer.valueOf(col1 + 1) });
                     } else {
                         if (line1 == line2) {
                             return NbBundle.getMessage
                                     (OutputWindowOutputStream.class, "MSG_err_line_col_col", // NOI18N
-                                    new Object[] { fname, m, new Integer(line1 + 1),
-                                    new Integer(col1 + 1), new Integer(col2 + 1) });
+                                    new Object[] { fname, m, Integer.valueOf(line1 + 1),
+                                    Integer.valueOf(col1 + 1), Integer.valueOf(col2 + 1) });
                         } else {
                             return NbBundle.getMessage
                                     (OutputWindowOutputStream.class, "MSG_err_line_col_line_col", // NOI18N
-                                    new Object[] { fname, m, new Integer(line1 + 1),
-                                    new Integer(col1 + 1), new Integer(line2 + 1), new Integer(col2 + 1) });
+                                    new Object[] { fname, m, Integer.valueOf(line1 + 1),
+                                    Integer.valueOf(col1 + 1), Integer.valueOf(line2 + 1), Integer.valueOf(col2 + 1) });
                         }
                     }
                 }

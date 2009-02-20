@@ -92,22 +92,23 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             type = TemplateUtils.checkTemplateType(type, ClassImpl.this);
             FieldImpl field = new FieldImpl(offsetAst, file, type, name, ClassImpl.this, curentVisibility, !isRenderingLocalContext());
             field.setStatic(_static);
-            ClassImpl.this.addMember(field);
+            ClassImpl.this.addMember(field,!isRenderingLocalContext());
             return field;
         }
 
         @Override
         public void render(AST ast) {
-            CsmTypedef[] typedefs;
+            Pair typedefs;
             AST child;
             for (AST token = ast.getFirstChild(); token != null; token = token.getNextSibling()) {
                 switch (token.getType()) {
                     //case CPPTokenTypes.CSM_TEMPLATE_PARMLIST:
-                    case CPPTokenTypes.LITERAL_template:
-                        templateDescriptor = new TemplateDescriptor(
-                                TemplateUtils.getTemplateParameters(token, ClassImpl.this.getContainingFile(), ClassImpl.this),
-                                '<' + TemplateUtils.getClassSpecializationSuffix(token, null) + '>');
+                    case CPPTokenTypes.LITERAL_template:{
+                        List<CsmTemplateParameter> params = TemplateUtils.getTemplateParameters(token, ClassImpl.this.getContainingFile(), ClassImpl.this);
+                        String name = "<" + TemplateUtils.getClassSpecializationSuffix(token, null) + ">"; // NOI18N
+                        setTemplateDescriptor(params, name);
                         break;
+                    }
                     case CPPTokenTypes.CSM_BASE_SPECIFIER:
                         inheritances.add(new InheritanceImpl(token, getContainingFile(), ClassImpl.this));
                         break;
@@ -139,13 +140,16 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                                 ? ClassImplSpecialization.create(token, ClassImpl.this, getContainingFile(), !isRenderingLocalContext())
                                 : ClassImpl.create(token, ClassImpl.this, getContainingFile(), !isRenderingLocalContext());
                         innerClass.setVisibility(curentVisibility);
-                        addMember(innerClass);
+                        addMember(innerClass,!isRenderingLocalContext());
                         typedefs = renderTypedef(token, innerClass, ClassImpl.this);
-                        if (typedefs != null && typedefs.length > 0) {
-                            for (int i = 0; i < typedefs.length; i++) {
+                        if (!typedefs.getTypesefs().isEmpty()) {
+                            for (CsmTypedef typedef : typedefs.getTypesefs()) {
                                 // It could be important to register in project before add as member...
-                                ((FileImpl) getContainingFile()).getProjectImpl(true).registerDeclaration(typedefs[i]);
-                                addMember((MemberTypedef) typedefs[i]);
+                                ((FileImpl) getContainingFile()).getProjectImpl(true).registerDeclaration(typedef);
+                                addMember((MemberTypedef) typedef,!isRenderingLocalContext());
+                                if (typedefs.getEnclosingClassifier() != null){
+                                    typedefs.getEnclosingClassifier().addEnclosingTypedef(typedef);
+                                }
                             }
                         }
                         renderVariableInClassifier(token, innerClass, null, null);
@@ -153,7 +157,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     case CPPTokenTypes.CSM_ENUM_DECLARATION:
                         EnumImpl innerEnum = EnumImpl.create(token, ClassImpl.this, getContainingFile(), !isRenderingLocalContext());
                         innerEnum.setVisibility(curentVisibility);
-                        addMember(innerEnum);
+                        addMember(innerEnum,!isRenderingLocalContext());
                         renderVariableInClassifier(token, innerEnum, null, null);
                         break;
 
@@ -161,7 +165,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     case CPPTokenTypes.CSM_CTOR_DEFINITION:
                     case CPPTokenTypes.CSM_CTOR_TEMPLATE_DEFINITION:
                         try {
-                            addMember(new ConstructorDDImpl(token, ClassImpl.this, curentVisibility));
+                            addMember(new ConstructorDDImpl(token, ClassImpl.this, curentVisibility),!isRenderingLocalContext());
                         } catch (AstRendererException e) {
                             DiagnosticExceptoins.register(e);
                         }
@@ -169,7 +173,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     case CPPTokenTypes.CSM_CTOR_DECLARATION:
                     case CPPTokenTypes.CSM_CTOR_TEMPLATE_DECLARATION:
                         try {
-                            addMember(new ConstructorImpl(token, ClassImpl.this, curentVisibility));
+                            addMember(new ConstructorImpl(token, ClassImpl.this, curentVisibility),!isRenderingLocalContext());
                         } catch (AstRendererException e) {
                             DiagnosticExceptoins.register(e);
                         }
@@ -177,14 +181,14 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     case CPPTokenTypes.CSM_DTOR_DEFINITION:
                     case CPPTokenTypes.CSM_DTOR_TEMPLATE_DEFINITION:
                         try {
-                            addMember(new DestructorDDImpl(token, ClassImpl.this, curentVisibility));
+                            addMember(new DestructorDDImpl(token, ClassImpl.this, curentVisibility),!isRenderingLocalContext());
                         } catch (AstRendererException e) {
                             DiagnosticExceptoins.register(e);
                         }
                         break;
                     case CPPTokenTypes.CSM_DTOR_DECLARATION:
                         try {
-                            addMember(new DestructorImpl(token, ClassImpl.this, curentVisibility));
+                            addMember(new DestructorImpl(token, ClassImpl.this, curentVisibility),!isRenderingLocalContext());
                         } catch (AstRendererException e) {
                             DiagnosticExceptoins.register(e);
                         }
@@ -198,11 +202,14 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                                 break;
                             }
                             typedefs = renderTypedef(token, (FileImpl) getContainingFile(), ClassImpl.this, null);
-                            if (typedefs != null && typedefs.length > 0) {
-                                for (int i = 0; i < typedefs.length; i++) {
+                            if (!typedefs.getTypesefs().isEmpty()) {
+                                for (CsmTypedef typedef : typedefs.getTypesefs()) {
                                     // It could be important to register in project before add as member...
-                                    ((FileImpl) getContainingFile()).getProjectImpl(true).registerDeclaration(typedefs[i]);
-                                    addMember((MemberTypedef) typedefs[i]);
+                                    ((FileImpl) getContainingFile()).getProjectImpl(true).registerDeclaration(typedef);
+                                    addMember((MemberTypedef) typedef,!isRenderingLocalContext());
+                                    if (typedefs.getEnclosingClassifier() != null) {
+                                        typedefs.getEnclosingClassifier().addEnclosingTypedef(typedef);
+                                    }
                                 }
                                 break;
                             }
@@ -211,7 +218,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                             }
                             ClassMemberForwardDeclaration fd = renderClassForwardDeclaration(token);
                             if (fd != null) {
-                                addMember(fd);
+                                addMember(fd,!isRenderingLocalContext());
                                 fd.init(token, ClassImpl.this, !isRenderingLocalContext());
                                 break;
                             }
@@ -221,7 +228,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                          {
                             ClassMemberForwardDeclaration fd = renderClassForwardDeclaration(token);
                             if (fd != null) {
-                                addMember(fd);
+                                addMember(fd,!isRenderingLocalContext());
                                 fd.init(token, ClassImpl.this, !isRenderingLocalContext());
                                 break;
                             }
@@ -259,7 +266,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                                 }
                             } else {
                                 try {
-                                    addMember(new MethodImpl(token, ClassImpl.this, curentVisibility));
+                                    addMember(new MethodImpl(token, ClassImpl.this, curentVisibility),!isRenderingLocalContext());
                                 } catch (AstRendererException e) {
                                     DiagnosticExceptoins.register(e);
                                 }
@@ -277,11 +284,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                                 CsmFriendFunction friend;
                                 CsmFunction func;
                                 if (isMemberDefinition(token)) {
-                                    FriendFunctionDefinitionImpl impl = new FriendFunctionDefinitionImpl(token, ClassImpl.this, null);
+                                    FriendFunctionDefinitionImpl impl = new FriendFunctionDefinitionImpl(token, ClassImpl.this, null, !isRenderingLocalContext());
                                     func = impl;
                                     friend = impl;
                                 } else {
-                                    FriendFunctionDDImpl impl = new FriendFunctionDDImpl(token, ClassImpl.this, scope);
+                                    FriendFunctionDDImpl impl = new FriendFunctionDDImpl(token, ClassImpl.this, scope, !isRenderingLocalContext());
                                     friend = impl;
                                     func = impl;
                                     if (scope instanceof NamespaceImpl) {
@@ -297,7 +304,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                             }
                         } else {
                             try {
-                                addMember(new MethodDDImpl(token, ClassImpl.this, curentVisibility, !isRenderingLocalContext()));
+                                addMember(new MethodDDImpl(token, ClassImpl.this, curentVisibility, !isRenderingLocalContext(),!isRenderingLocalContext()),!isRenderingLocalContext());
                             } catch (AstRendererException e) {
                                 DiagnosticExceptoins.register(e);
                             }
@@ -313,6 +320,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         break;
                 }
             }
+        }
+
+        private void setTemplateDescriptor(List<CsmTemplateParameter> params, String name) {
+            templateDescriptor = new TemplateDescriptor(params, name, !isRenderingLocalContext());
         }
 
         private boolean hasFriendPrefix(AST child) {
@@ -396,7 +407,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     }
                 }
                 FieldImpl field = new FieldImpl(start, getContainingFile(), type, idAST.getText(), ClassImpl.this, curentVisibility, !isRenderingLocalContext());
-                ClassImpl.this.addMember(field);
+                ClassImpl.this.addMember(field,!isRenderingLocalContext());
                 added = true;
             }
             return added;
@@ -411,7 +422,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         @Override
         protected CsmClassForwardDeclaration createForwardClassDeclaration(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
             ClassMemberForwardDeclaration fd = new ClassMemberForwardDeclaration(ClassImpl.this, ast, curentVisibility, !isRenderingLocalContext());
-            addMember(fd);
+            addMember(fd,!isRenderingLocalContext());
             fd.init(ast, ClassImpl.this, !isRenderingLocalContext());
             return fd;
         }
@@ -580,16 +591,20 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 //        this.kind = CsmDeclaration.Kind.CLASS;
 //        register();
 //    }
-    protected ClassImpl(AST ast, CsmFile file) {
+    protected ClassImpl(String name, AST ast, CsmFile file) {
         // we call findId(..., true) because there might be qualified name - in the case of nested class template specializations
-        super(AstUtil.findId(ast, CPPTokenTypes.RCURLY, true), file, ast);
+        super((name != null ? name : AstUtil.findId(ast, CPPTokenTypes.RCURLY, true)), file, ast);
         kind = findKind(ast);
     }
 
     protected void init(CsmScope scope, AST ast, boolean register) {
         initScope(scope, ast);
         initQualifiedName(scope, ast);
-        RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
+        if (register) {
+            RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
+        } else {
+            Utils.setSelfUID(this);
+        }
         render(ast, !register);
         leftBracketPos = initLeftBracketPos(ast);
         if (register) {
@@ -603,7 +618,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     }
 
     public static ClassImpl create(AST ast, CsmScope scope, CsmFile file, boolean register) {
-        ClassImpl impl = new ClassImpl(ast, file);
+        ClassImpl impl = new ClassImpl(null, ast, file);
         impl.init(scope, ast, register);
         return impl;
     }
@@ -644,8 +659,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         return templateDescriptor != null;
     }
 
-    private void addMember(CsmMember member) {
-        CsmUID<CsmMember> uid = RepositoryUtils.put(member);
+    private void addMember(CsmMember member, boolean global) {
+        if (global) {
+            RepositoryUtils.put(member);
+        }
+        CsmUID<CsmMember> uid = UIDCsmConverter.declarationToUID(member);
         assert uid != null;
         synchronized (members) {
             members.add(uid);

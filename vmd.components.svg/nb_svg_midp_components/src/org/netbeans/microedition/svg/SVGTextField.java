@@ -147,7 +147,7 @@ public class SVGTextField extends AbstractTextRenderingComponent {
     }
     
     public void setCaretPosition(int caretPos) {
-        if (caretPos != myCaretPos) {
+        if (caretPos != myCaretPos && myCaretElement != null) {
             myCaretPos = caretPos;
 
             if (caretPos < myStartOffset) {
@@ -155,17 +155,16 @@ public class SVGTextField extends AbstractTextRenderingComponent {
             } else if (caretPos > myEndOffset) {
                 setStartOffset(myStartOffset + caretPos - myEndOffset);
             }
-            
-            if (myCaretElement != null) {
-                float caretLoc = myTextElement.getFloatTrait(TRAIT_X);
-                if ( caretPos > 0) {
-                    String beforeCaret = myTextValue.substring(myStartOffset, 
-                            caretPos);
-                    caretLoc += getTextWidth(beforeCaret) + caretWidth;
-                }
-                setTraitSafely(myCaretElement , TRAIT_X, caretLoc);
+
+            float caretLoc = myTextElement.getFloatTrait(TRAIT_X);
+            if (caretPos > 0) {
+                String beforeCaret = myTextValue.substring(myStartOffset,
+                        caretPos);
+                caretLoc += getTextWidth(beforeCaret) + caretWidth;
             }
+            setTraitSafely(myCaretElement, TRAIT_X, caretLoc);
         }
+
     }
     
     public void setCaretVisible( boolean isVisible) {

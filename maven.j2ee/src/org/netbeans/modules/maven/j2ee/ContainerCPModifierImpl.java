@@ -43,6 +43,7 @@ import hidden.org.codehaus.plexus.util.StringUtils;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.apache.maven.artifact.Artifact;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
@@ -51,12 +52,15 @@ import org.netbeans.modules.j2ee.core.api.support.classpath.ContainerClassPathMo
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Repository;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -78,6 +82,9 @@ public class ContainerCPModifierImpl implements ContainerClassPathModifier {
         ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
             public void performOperation(POMModel model) {
                 Map<String, Item> items = createItemList();
+                ProjectSourcesClassPathProvider prv = project.getLookup().lookup(ProjectSourcesClassPathProvider.class);
+                ClassPath[] cps = prv.getProjectClassPaths(ClassPath.COMPILE);
+                ClassPath cp = ClassPathSupport.createProxyClassPath(cps);
                 String version = WebModule.JAVA_EE_5_LEVEL; //sort of fallback
                 WebModule wm = WebModule.getWebModule(file);
                 if (wm != null) {
@@ -93,7 +100,6 @@ public class ContainerCPModifierImpl implements ContainerClassPathModifier {
                     Item item = items.get(name + ":" + version);//NOI18N
                     if (item != null) {
                         if (item.classToCheck != null) {
-                            ClassPath cp = ClassPath.getClassPath(file, ClassPath.COMPILE);
                             FileObject fo = cp.findResource(item.classToCheck);
                             if (fo != null) {
                                 //skip, already on CP somehow..
@@ -115,6 +121,8 @@ public class ContainerCPModifierImpl implements ContainerClassPathModifier {
                                 repository.setLayout(repo[1]);
                             }
                         }
+                    } else {
+                        Logger.getLogger(ContainerCPModifierImpl.class.getName()).warning("Cannot process api with symbolic name: " + name + ". Nothing will be added to project's classpath.");
                     }
                 }
             }
@@ -124,7 +132,7 @@ public class ContainerCPModifierImpl implements ContainerClassPathModifier {
         //TODO is the manual reload necessary if pom.xml file is being saved?
 //                NbMavenProject.fireMavenProjectReload(project);
         if (added[0]) {
-            project.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
+            project.getLookup().lookup(NbMavenProject.class).synchronousDependencyDownload();
         }
 
     }
@@ -197,8 +205,97 @@ public class ContainerCPModifierImpl implements ContainerClassPathModifier {
         item.repositoryurl = "java.net1|legacy|http://download.java.net/maven/1"; //NOI18N
         toRet.put(key, item);
 
+        key = ContainerClassPathModifier.API_TRANSACTION + ":" + J2eeModule.J2EE_13;//NOI18N
+        item = new Item();
+        item.groupId = "javax.transaction";//NOI18N
+        item.artifactId = "jta";//NOI18N
+        item.version = "1.0.1B";//NOI18N
+        item.repositoryurl = "java.net2|default|http://download.java.net/maven/2"; //NOI18N
+        item.classToCheck = "javax/transaction/UserTransaction.class"; //NOI18N
+        toRet.put(key, item);
+        key = ContainerClassPathModifier.API_TRANSACTION + ":" + J2eeModule.J2EE_14;//NOI18N
+        item = new Item();
+        item.groupId = "javax.transaction";//NOI18N
+        item.artifactId = "jta";//NOI18N
+        item.version = "1.0.1B";//NOI18N
+        item.classToCheck = "javax/transaction/UserTransaction.class"; //NOI18N
+        item.repositoryurl = "java.net2|default|http://download.java.net/maven/2"; //NOI18N
+        toRet.put(key, item);
+        key = ContainerClassPathModifier.API_TRANSACTION + ":" + J2eeModule.JAVA_EE_5;//NOI18N
+        item = new Item();
+        item.groupId = "javax.transaction";//NOI18N
+        item.artifactId = "jta";//NOI18N
+        item.version = "1.1";//NOI18N
+        item.classToCheck = "javax/transaction/UserTransaction.class"; //NOI18N
+        toRet.put(key, item);
+
+        key = ContainerClassPathModifier.API_PERSISTENCE + ":" + J2eeModule.J2EE_13;//NOI18N
+        item = new Item();
+        item.groupId = "javax.persistence";//NOI18N
+        item.artifactId = "persistence-api";//NOI18N
+        item.version = "1.0";//NOI18N
+        item.classToCheck = "javax/persistence/PersistenceContext.class"; //NOI18N
+        toRet.put(key, item);
+        key = ContainerClassPathModifier.API_PERSISTENCE + ":" + J2eeModule.J2EE_14;//NOI18N
+        item = new Item();
+        item.groupId = "javax.persistence";//NOI18N
+        item.artifactId = "persistence-api";//NOI18N
+        item.version = "1.0";//NOI18N
+        item.classToCheck = "javax/persistence/PersistenceContext.class"; //NOI18N
+        toRet.put(key, item);
+        key = ContainerClassPathModifier.API_PERSISTENCE + ":" + J2eeModule.JAVA_EE_5;//NOI18N
+        item = new Item();
+        item.groupId = "javax.persistence";//NOI18N
+        item.artifactId = "persistence-api";//NOI18N
+        item.version = "1.0";//NOI18N
+        item.classToCheck = "javax/persistence/PersistenceContext.class"; //NOI18N
+        toRet.put(key, item);
+
+        key = ContainerClassPathModifier.API_ANNOTATION + ":" + J2eeModule.J2EE_13;//NOI18N
+        item = new Item();
+        item.groupId = "javax.annotation";//NOI18N
+        item.artifactId = "jsr250-api";//NOI18N
+        item.version = "1.0";//NOI18N
+        item.classToCheck = "javax/annotation/Resource.class"; //NOI18N
+        toRet.put(key, item);
+        key = ContainerClassPathModifier.API_ANNOTATION + ":" + J2eeModule.J2EE_14;//NOI18N
+        item = new Item();
+        item.groupId = "javax.annotation";//NOI18N
+        item.artifactId = "jsr250-api";//NOI18N
+        item.version = "1.0";//NOI18N
+        item.classToCheck = "javax/annotation/Resource.class"; //NOI18N
+        toRet.put(key, item);
+        key = ContainerClassPathModifier.API_ANNOTATION + ":" + J2eeModule.JAVA_EE_5;//NOI18N
+        item = new Item();
+        item.groupId = "javax.annotation";//NOI18N
+        item.artifactId = "jsr250-api";//NOI18N
+        item.version = "1.0";//NOI18N
+        item.classToCheck = "javax/annotation/Resource.class"; //NOI18N
+        toRet.put(key, item);
 
 
+        key = ContainerClassPathModifier.API_EJB + ":" + J2eeModule.J2EE_13;//NOI18N
+        item = new Item();
+        // oh well does it matter? where is 2.0 stuff to be found?
+        item.groupId = "org.apache.geronimo.specs";//NOI18N
+        item.artifactId = "geronimo-ejb_2.1_spec";//NOI18N
+        item.version = "1.0";//NOI18N
+        item.classToCheck = "javax/ejb/EJB.class"; //NOI18N
+        toRet.put(key, item);
+        key = ContainerClassPathModifier.API_EJB + ":" + J2eeModule.J2EE_14;//NOI18N
+        item = new Item();
+        item.groupId = "org.apache.geronimo.specs";//NOI18N
+        item.artifactId = "geronimo-ejb_2.1_spec";//NOI18N
+        item.version = "1.1";//NOI18N
+        item.classToCheck = "javax/ejb/EJB.class"; //NOI18N
+        toRet.put(key, item);
+        key = ContainerClassPathModifier.API_EJB + ":" + J2eeModule.JAVA_EE_5;//NOI18N
+        item = new Item();
+        item.groupId = "org.apache.geronimo.specs";//NOI18N
+        item.artifactId = "geronimo-ejb_3.0_spec";//NOI18N
+        item.version = "1.0.1";//NOI18N
+        item.classToCheck = "javax/ejb/EJB.class"; //NOI18N
+        toRet.put(key, item);
         return toRet;
     }
 

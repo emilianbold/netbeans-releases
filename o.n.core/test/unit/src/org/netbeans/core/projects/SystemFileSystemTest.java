@@ -60,7 +60,7 @@ import java.beans.BeanInfo;
 import java.awt.image.PixelGrabber;
 import java.awt.image.ImageObserver;
 import org.netbeans.core.startup.MainLookup;
-import org.netbeans.core.startup.SetupHid;
+import org.netbeans.SetupHid;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 

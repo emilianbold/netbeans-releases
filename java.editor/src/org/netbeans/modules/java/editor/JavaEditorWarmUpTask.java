@@ -46,6 +46,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.Iterator;
+import java.util.concurrent.Callable;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
@@ -62,6 +63,7 @@ import org.netbeans.editor.view.spi.EstimatedSpanView;
 import org.netbeans.editor.view.spi.LockView;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -142,6 +144,12 @@ public class JavaEditorWarmUpTask implements Runnable{
         
                 //creating actions instances
                 javaKit.getActions();
+
+                try {
+                    ((Callable) javaKit).call();
+                } catch (Exception e) {
+                    Exceptions.printStackTrace(e);
+                }
         
 
                 // Start of a code block that tries to force hotspot to compile

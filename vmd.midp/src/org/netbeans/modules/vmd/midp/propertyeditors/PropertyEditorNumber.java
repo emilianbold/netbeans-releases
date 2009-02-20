@@ -420,6 +420,13 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
         return String.valueOf(value.getPrimitiveValue());
     }
 
+    @Override
+    public void setAsText(String text) {
+        if ( canEditAsText() ){
+            saveValue(text);
+        }
+    }
+
     /**
      * Sets propertyValue from text
      *

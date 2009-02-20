@@ -101,5 +101,5 @@ public abstract class AbstractSaveAction extends CookieAction{
         assert doj != null;
         return doj.getSceneManager().getPerseusController();
     }
-    
+
 }

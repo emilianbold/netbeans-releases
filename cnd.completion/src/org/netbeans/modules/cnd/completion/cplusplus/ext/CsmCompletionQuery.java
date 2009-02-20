@@ -69,7 +69,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CndTokenProcessor;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
@@ -163,10 +165,13 @@ abstract public class CsmCompletionQuery {
         return query(component, doc, offset, openingSource, sort);
     }
 
-    public static boolean checkCondition(final Document doc, final int dot) {
+    public static boolean checkCondition(final Document doc, final int dot, boolean takeLock) {
+        if (!takeLock) {
+            return _checkCondition(doc, dot);
+        }
         final AtomicBoolean res = new AtomicBoolean(false);
         if (doc instanceof BaseDocument) {
-            ((BaseDocument)doc).runAtomic(new Runnable() {
+            ((BaseDocument)doc).render(new Runnable() {
                 public void run() {
                     res.set(_checkCondition(doc, dot));
                 }
@@ -211,7 +216,7 @@ abstract public class CsmCompletionQuery {
         CsmCompletionResult ret = null;
 
         CompletionSupport sup = CompletionSupport.get(doc);
-        if (sup == null || !checkCondition(doc, offset)) {
+        if (sup == null || !checkCondition(doc, offset, true)) {
             return null;
         }
 
@@ -219,10 +224,11 @@ abstract public class CsmCompletionQuery {
             // find last separator position
             final int lastSepOffset = sup.getLastCommandSeparator(offset);
             final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset, lastSepOffset);
+            final CndTokenProcessor<Token<CppTokenId>> etp = CsmExpandedTokenProcessor.create(doc, tp, offset);
             tp.enableTemplateSupport(true);
             doc.readLock();
             try {
-                CndTokenUtilities.processTokens(tp, doc, lastSepOffset, offset);
+                CndTokenUtilities.processTokens(etp, doc, lastSepOffset, offset);
             } finally {
                 doc.readUnlock();
             }
@@ -893,8 +899,7 @@ abstract public class CsmCompletionQuery {
         }
 
         @SuppressWarnings({"fallthrough", "unchecked"})
-        boolean resolveExp(CsmCompletionExpression exp) {
-            boolean lastDot = false; // dot at the end of the whole expression?
+        boolean resolveExp(CsmCompletionExpression exp) {            boolean lastDot = false; // dot at the end of the whole expression?
             boolean ok = true;
 
             switch (exp.getExpID()) {
@@ -1517,11 +1522,17 @@ abstract public class CsmCompletionQuery {
                 // nobreak
                 case CsmCompletionExpression.METHOD: // Closed method
                     CsmCompletionExpression mtdNameExp = item.getParameter(0);
-                    String mtdName = mtdNameExp.getTokenText(0);
-
-                    if (mtdNameExp.getExpID() == CsmCompletionExpression.GENERIC_TYPE) {
-                        lastType = resolveType(mtdNameExp);
+                    CsmCompletionExpression genericNameExp = null;
+                    while (mtdNameExp.getExpID() == CsmCompletionExpression.GENERIC_TYPE) {
+                        genericNameExp = mtdNameExp;
+//                        lastType = resolveType(mtdNameExp);
+                        if (mtdNameExp.getParameterCount() > 0) {
+                            mtdNameExp = mtdNameExp.getParameter(0);
+                        } else {
+                            break;
+                        }
                     }
+                    String mtdName = mtdNameExp.getTokenText(0);
 
                     // this() invoked, offer constructors
 //                if( ("this".equals(mtdName)) && (item.getTokenCount()>0) ){ //NOI18N
@@ -1627,20 +1638,46 @@ abstract public class CsmCompletionQuery {
                                     // try to find method in last resolved class appropriate for current context
                                     if (CsmKindUtilities.isClass(classifier)) {
                                         mtdList = finder.findMethods(this.contextElement, (CsmClass) classifier, mtdName, true, false, first, true, scopeAccessedClassifier, this.sort);
+                                        if ((!last || findType) && (mtdList == null || mtdList.size() == 0)) {
+                                            // could be pointer to function-type field
+                                            lastType = null;
+                                            List<CsmField> foundFields = finder.findFields(this.contextElement, (CsmClass) classifier, mtdName, true, false, first, true, scopeAccessedClassifier, this.sort);
+                                            if (foundFields != null && !foundFields.isEmpty()) {
+                                                // we found field with correct name, check if it has function pointer type
+                                                for (CsmField csmField : foundFields) {
+                                                    CsmType fldType = csmField.getType();
+                                                    if (CsmKindUtilities.isFunctionPointerType(fldType)) {
+                                                        // that was a function-type field
+                                                        lastType = fldType;
+                                                    }
+                                                }
+                                            }
+                                            return (lastType != null);
+                                        }
                                     }
                                 }
                             }
                             if (mtdList == null || mtdList.size() == 0) {
                                 // If we have not found method and (lastType != null) it could be default constructor.
                                 if (!isConstructor) {
-                                    // It could be default constructor call without "new"
-                                    CsmClassifier cls = null;
-                                    //cls = sup.getClassFromName(CsmCompletionQuery.this.getFinder(), mtdName, true);
-                                    if (cls == null) {
-                                        cls = findExactClass(mtdName, mtdNameExp.getTokenOffset(0));
-                                    }
-                                    if (cls != null) {
-                                        lastType = CsmCompletion.getType(cls, 0);
+                                    if (first) {
+                                        // It could be default constructor call without "new"
+                                        CsmClassifier cls = null;
+                                        //cls = sup.getClassFromName(CsmCompletionQuery.this.getFinder(), mtdName, true);
+                                        if (cls == null) {
+                                            cls = findExactClass(mtdName, mtdNameExp.getTokenOffset(0));
+                                        }
+                                        if (cls != null) {
+                                            if (CsmKindUtilities.isTemplate(cls) && genericNameExp != null) {
+                                                CsmObject inst = createInstantiation((CsmTemplate)cls, genericNameExp);
+                                                if (CsmKindUtilities.isClassifier(inst)) {
+                                                    cls = (CsmClassifier) inst;
+                                                }
+                                            }
+                                            lastType = CsmCompletion.getType(cls, 0);
+                                        }
+                                    } else {
+                                        lastType = null;
                                     }
                                 }
                                 return lastType != null;
@@ -1660,6 +1697,12 @@ abstract public class CsmCompletionQuery {
                                 } else {
                                     if (mtdList.size() > 0) {
                                         CsmFunction fun = (CsmFunction) mtdList.get(0);
+                                        if (genericNameExp != null && CsmKindUtilities.isTemplate(fun)) {
+                                            CsmObject inst = createInstantiation((CsmTemplate) fun, genericNameExp);
+                                            if (CsmKindUtilities.isFunction(inst)) {
+                                                fun = (CsmFunction) inst;
+                                            }
+                                        }
                                         if (CsmKindUtilities.isConstructor(fun)) {
                                             CsmClassifier cls = ((CsmConstructor) fun).getContainingClass();
                                             lastType = CsmCompletion.getType(cls, 0);

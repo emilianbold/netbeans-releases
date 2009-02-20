@@ -40,10 +40,9 @@ package org.netbeans.modules.python.debugger.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
 import org.netbeans.modules.python.debugger.config.NetBeansFrontend;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 
 /**
  * Action which shows PythonDebugging Console component.
@@ -55,7 +54,7 @@ public class PythonDebugConsoleAction extends AbstractAction {
 
   public PythonDebugConsoleAction() {
     super(NbBundle.getMessage(PythonDebugConsoleAction.class, "CTL_PythonDebugConsoleAction"));
-    putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(ICON_PATH, true)));
+    putValue(SMALL_ICON, ImageUtilities.loadImageIcon(ICON_PATH, true));
   }
 
   public void actionPerformed(ActionEvent evt) {

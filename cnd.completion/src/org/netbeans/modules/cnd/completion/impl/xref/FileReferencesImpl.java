@@ -204,6 +204,7 @@ public class FileReferencesImpl extends CsmFileReferences  {
         private final FileReferencesContext fileReferncesContext;
         private CppTokenId derefToken;
         private BlockConsumer blockConsumer;
+        private boolean afterParen = false;
         
         ReferencesProcessor(CsmFile csmFile, BaseDocument doc,
              boolean skipPreprocDirectives, boolean needAfterDereferenceUsages,
@@ -258,6 +259,14 @@ public class FileReferencesImpl extends CsmFileReferences  {
                     derefToken = token.id();
                     break;
                 case LBRACE:
+                    if(afterParen) {
+                        // Compiler extension "({...})"
+                        blockConsumer = new BlockConsumer(CppTokenId.LBRACE, CppTokenId.RBRACE);
+                    } else {
+                        contextBuilder.open(token.id());
+                    }
+                    derefToken = null;
+                    break;
                 case LBRACKET:
                 case LPAREN:
                 case LT:
@@ -272,6 +281,7 @@ public class FileReferencesImpl extends CsmFileReferences  {
                     derefToken = null;
                     break;
                 case __ATTRIBUTE__:
+                case __ATTRIBUTE:
                 case _DECLSPEC:
                 case __DECLSPEC:
                 case ASM:
@@ -295,6 +305,22 @@ public class FileReferencesImpl extends CsmFileReferences  {
                     contextBuilder.other(token.id());
                     derefToken = null;
             }
+
+            // Initializing afterParen flag
+            // This flag is used for detection of compiler extensions "({...})"
+            switch (token.id()) {
+                case LPAREN:
+                    afterParen = true;
+                    break;
+                case WHITESPACE:
+                case NEW_LINE:
+                case BLOCK_COMMENT:
+                case LINE_COMMENT:
+                    break;
+                default:
+                    afterParen = false;
+            }
+            
             return needEmbedding;
         }
     }

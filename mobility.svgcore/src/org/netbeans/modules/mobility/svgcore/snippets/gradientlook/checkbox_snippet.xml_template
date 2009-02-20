@@ -1,0 +1,37 @@
+ <g id="%%COMPONENT_ID%%" transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)">      <!-- Metadata information. Please don't edit. -->
+        <text display="none">type=checkbox</text>
+        <g>
+            <image width="334" height="125" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAVIAAAB9CAYAAADwWOu4AAAACXBIWXMAAC4jAAAuIwF4pT92AAAA
+            GXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAxNJREFUeNrs3U9r03Acx/H8Sp+K
+            iAd1IDKYAxUV9SIeBPEwLz4uL3oQQcSLqIioUMQx8N/JB7MmTtgEmW3TfIYh6+t1EIRkhxzefL9J
+            2paqo2ZPBTBQZc+R/S3xBEQ1i2rrk0UUENSOIRVQQEyDkIooIKhBSEUUENN2MS0iCpDFdCSiAGFs
+            RRQgm0pHLhHAfIuGzJFpFOAIVnsRBei+4lvtAUJCCtDSrO19ZK0HMJECCCmAkAKsiH/dDhVSABMp
+            gJACCCmAkAIgpABCCiCkAEIKgJACCCmAkAIIKQBCCiCkAEIKIKQACCnA/zGuKj8iCmAiBRBSACEF
+            WFnjxi1SABMpgJACCCmAkAIgpAD98MkmABMpgJACCCmAkAIgpAB9GVe1p/YAJlIAIQUQUgAhBUBI
+            AYQUYIjGjS8tAchCWvnRJgCrPYCQAgx5tW+s9gAmUoBeJ1I/NQJgIgXodyJ1ixTARAogpAADX+3t
+            9gAmUgAhBRjwal9XtasAYCIF6HEi9ckmgDCkjc0eIJ1IlRQgm0ir4ioAZBOpe6QAWUhrqz1AFlKb
+            PUAW0qa22gNkE6mn9gBhSE2kAOlEKqQAUUhrH20CyELaeP0JIJ1IrfYAUUirauoqACQhndrsAbKQ
+            Nh42AYQhra32AFFIvUcKYLUH6DukLgJAFlIv5AOEIXWPFMBECtBzSE2kAGFIvUcKkIXUNQAIQ+r9
+            J4AwpNNdVwEgCmkxkQJkIfXUHiALab3rqT1ANpH60hKANKRWe4C2Tpy+UA6H1EdEAdKJ1D1SgCik
+            J9culZ9fP9jvAbqG9Pc/Te2lfIBFTp27WmaGtPbFJQCd/anrj+3X1nuAGc6s3yhzV/uDg75/fimm
+            AEsa//U/Kz7AIWc3bpVWq/2Bb5MXplKAfWubt8tyE+n+SV8mz8UUoKWZpd35+ExMgZV2/uKd0ua4
+            uQftvH8qpsBqRvTy3dL22IUHbr97IqbAyli/cq8se07rEz69fSyowLG2cW2rdDlvqZMmbx6JKXDs
+            bF6/X5LzO588efVQVIHhxvPmg3JUf+uXAAMANjzXcWAvxG4AAAAASUVORK5CYII="
+            transform="matrix(0.060759496,0.0,0.0,0.15946665,7.666668,3.333336)" id="_8" >
+            </image>
+        </g>
+        <rect x="0" y="0" rx="4" ry="4" width="200" height="30" fill="none" stroke="rgb(255,165,0)"                     stroke-width="2" visibility="hidden">
+            <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%.focusin" fill="freeze" to="visible"/>
+            <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%.focusout" fill="freeze" to="hidden"/>
+        </rect>
+        <rect x="7.4000015" id="_4" rx="4"  ry="4" y="3.0" width="20" height="20" fill="none" stroke="rgb(73,46,55)" stroke-width="1.5"/>
+
+        <g>               <!-- Metadata information. Please don't edit. -->
+            <text display="none">type=mark</text>
+            <path id="%%COMPONENT_ID%%_mark" transform="translate(11.5,12.5)"  d="M 0,0 5,5 19,-12" fill="none"                      stroke="black" stroke-width="2"/>
+        </g>
+        <g>
+            <text id="%%COMPONENT_ID%%_title" x="33.8" y="21.6"  font-size="16">               Online</text>               <!-- Metadata information. Please don't edit. -->
+            <text display="none">type=text</text>
+        </g>
+    </g>

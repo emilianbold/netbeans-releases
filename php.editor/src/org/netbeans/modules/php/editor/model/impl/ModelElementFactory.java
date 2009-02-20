@@ -40,11 +40,14 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.IncludeInfo;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -83,4 +86,18 @@ class ModelElementFactory {
         FieldElementImpl fei = new FieldElementImpl(context.getCurrentScope(), returnType, nodeInfo);
         return fei;
     }
+
+    static ClassConstantElementImpl create(ClassConstantDeclarationInfo clsConst, ModelBuilder context) {
+        //TODO: addElement(retval);
+        return new ClassConstantElementImpl(context.getCurrentScope(), clsConst);
+    }
+
+    static public VariableNameImpl create(Program program, Variable node, ModelBuilder context) {
+        VariableNameImpl retval = new VariableNameImpl(context.getCurrentScope(), program, node, false);
+        //TODO: addElement(retval);
+        return retval;
+    }
+
+
+
 }

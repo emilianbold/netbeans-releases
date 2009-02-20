@@ -57,7 +57,7 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.test.refactoring.actions.FindUsagesAction;
 import org.netbeans.modules.test.refactoring.operators.FindUsagesClassOperator;
-import org.netbeans.modules.test.refactoring.operators.FindUsagesResultOperator;
+import org.netbeans.modules.test.refactoring.operators.RefactoringResultOperator;
 
 /**
  *
@@ -98,7 +98,7 @@ public class FindUsagesClassTest extends FindUsagesTestCase{
         findUsagesClassOperator.setScope(null);
         findUsagesClassOperator.getFind().pushNoBlock();
         new EventTool().waitNoEvent(2000);
-        FindUsagesResultOperator result = new FindUsagesResultOperator();
+        RefactoringResultOperator result = new RefactoringResultOperator();
         new JButtonOperator(result.getRefresh()).pushNoBlock();
         findUsagesClassOperator = new FindUsagesClassOperator();
         ref(findUsagesClassOperator.getSearchInComments().isSelected());
@@ -109,7 +109,7 @@ public class FindUsagesClassTest extends FindUsagesTestCase{
         findUsagesClassOperator.setScope(projectName);
         findUsagesClassOperator.getFind().pushNoBlock();
         new EventTool().waitNoEvent(2000);
-        result = new FindUsagesResultOperator();
+        result = new RefactoringResultOperator();
         new JButtonOperator(result.getRefresh()).pushNoBlock();
         findUsagesClassOperator = new FindUsagesClassOperator();
         ref(findUsagesClassOperator.getSearchInComments().isSelected());
@@ -123,7 +123,7 @@ public class FindUsagesClassTest extends FindUsagesTestCase{
         setBrowseChild(false);        
         findUsages("fu","FindUsagesClass", 12, 19, FIND_USAGES | NOT_SEARCH_IN_COMMENTS);
         setBrowseChild(true);        
-        FindUsagesResultOperator result = new FindUsagesResultOperator();
+        RefactoringResultOperator result = new RefactoringResultOperator();
         int rowCount = result.getPreviewTree().getRowCount();
         ref(rowCount);
         JToggleButtonOperator jtbo = new JToggleButtonOperator(result.getCollapse());
@@ -141,7 +141,7 @@ public class FindUsagesClassTest extends FindUsagesTestCase{
         setBrowseChild(false);
         findUsages("fu","FindUsagesClass", 12, 19, FIND_USAGES | NOT_SEARCH_IN_COMMENTS);
         setBrowseChild(true);       
-        FindUsagesResultOperator result = new FindUsagesResultOperator();
+        RefactoringResultOperator result = new RefactoringResultOperator();
         JToggleButtonOperator jtbol = new JToggleButtonOperator(result.getLogical());
         JToggleButtonOperator jtbop = new JToggleButtonOperator(result.getPhysical());
         jtbol.pushNoBlock();
@@ -163,7 +163,7 @@ public class FindUsagesClassTest extends FindUsagesTestCase{
         setBrowseChild(false);
         findUsages("fu","FindSubtype", 11, 19, FIND_USAGES | NOT_SEARCH_IN_COMMENTS);
         setBrowseChild(true);        
-        FindUsagesResultOperator result = new FindUsagesResultOperator();
+        RefactoringResultOperator result = new RefactoringResultOperator();
         JButtonOperator next = new JButtonOperator(result.getNext());
         JTree preview = result.getPreviewTree();
         for (int i = 0; i < 5; i++) {
@@ -186,7 +186,7 @@ public class FindUsagesClassTest extends FindUsagesTestCase{
         setBrowseChild(false);
         findUsages("fu","FindSubtype", 11, 19, FIND_USAGES | NOT_SEARCH_IN_COMMENTS);
         setBrowseChild(true);
-        FindUsagesResultOperator result = new FindUsagesResultOperator();
+        RefactoringResultOperator result = new RefactoringResultOperator();
         JButtonOperator prev = new JButtonOperator(result.getPrev());
         JTree preview = result.getPreviewTree();
         for (int i = 0; i < 5; i++) {
@@ -207,7 +207,7 @@ public class FindUsagesClassTest extends FindUsagesTestCase{
         setBrowseChild(false);
         findUsages("fu","FindSubtype", 11, 19, FIND_USAGES | NOT_SEARCH_IN_COMMENTS);
         setBrowseChild(true);                        
-        FindUsagesResultOperator result = new FindUsagesResultOperator();
+        RefactoringResultOperator result = new RefactoringResultOperator();
         JTree previewTree = result.getPreviewTree();
         JTreeOperator jto = new JTreeOperator(previewTree);
         jto.selectRow(8);
@@ -221,7 +221,7 @@ public class FindUsagesClassTest extends FindUsagesTestCase{
         setBrowseChild(false);
         findUsages("fu","FindUsagesClass", 12, 19, FIND_USAGES | NOT_SEARCH_IN_COMMENTS);
         setBrowseChild(true);
-        FindUsagesResultOperator furo = new FindUsagesResultOperator();                       
+        RefactoringResultOperator furo = new RefactoringResultOperator();
         int tabCount = furo.getTabCount();
         EditorOperator editor = new EditorOperator("FindUsagesClass");
         editor.setCaretPosition(12, 19);
@@ -237,7 +237,7 @@ public class FindUsagesClassTest extends FindUsagesTestCase{
         findUsages("fu","FindUsagesClass", 12, 19, FIND_USAGES | NOT_SEARCH_IN_COMMENTS);
         findUsages("fu","FindUsagesClass", 12, 19, FIND_USAGES | NOT_SEARCH_IN_COMMENTS);
         setBrowseChild(true);
-        FindUsagesResultOperator furo = new FindUsagesResultOperator();
+        RefactoringResultOperator furo = new RefactoringResultOperator();
         JTabbedPane tabbedPane = furo.getTabbedPane();
         assertNotNull(tabbedPane);
         String title = tabbedPane.getTitleAt(tabbedPane.getTabCount()-1);

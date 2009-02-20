@@ -1,4 +1,3 @@
-// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
@@ -37,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-//</editor-fold>
 
 package org.netbeans.modules.glassfish.javaee;
 
@@ -131,6 +129,8 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             } catch(InstanceCreationException ex) {
                 Logger.getLogger("glassfish-javaee").log(Level.WARNING, null, ex);
             }
+        } else {
+                Logger.getLogger("glassfish-javaee").log(Level.WARNING, "commonModule is NULL");
         }
 
         return (ip != null) ? new JavaEEServerModule(instanceLookup, ip) : null;

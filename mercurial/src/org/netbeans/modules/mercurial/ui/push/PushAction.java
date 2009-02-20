@@ -40,25 +40,31 @@
  */
 package org.netbeans.modules.mercurial.ui.push;
 
+import java.io.IOException;
+import org.netbeans.modules.mercurial.hooks.spi.HgHook;
 import org.netbeans.modules.versioning.spi.VCSContext;
 
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
+import org.netbeans.modules.mercurial.hooks.spi.HgHookContext;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.netbeans.modules.mercurial.ui.pull.PullAction;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
@@ -70,20 +76,20 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 
 /**
- * Push action for mercurial: 
+ * Push action for mercurial:
  * hg push - push changes to the specified destination
- * 
+ *
  * @author John Rice
  */
 public class PushAction extends ContextAction {
-    
+
     private final VCSContext context;
 
     public PushAction(String name, VCSContext context) {
         this.context = context;
         putValue(Action.NAME, name);
     }
-    
+
     public void performAction(ActionEvent e) {
         final File root = HgUtils.getRootFile(context);
         if (root == null) {
@@ -105,11 +111,11 @@ public class PushAction extends ContextAction {
     }
     public boolean isEnabled() {
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(HgUtils.getRootFile(context) == null || ctxFiles == null || ctxFiles.size() == 0) 
+        if(HgUtils.getRootFile(context) == null || ctxFiles == null || ctxFiles.size() == 0)
             return false;
         return true; // #121293: Speed up menu display, warn user if not set when Push selected
     }
-    
+
     public static void push(final VCSContext ctx){
         final File root = HgUtils.getRootFile(ctx);
         if (root == null) return;
@@ -118,17 +124,17 @@ public class PushAction extends ContextAction {
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() { getDefaultAndPerformPush(ctx, root, this.getLogger()); } };
-        support.start(rp, repository, 
+        support.start(rp, repository,
                 org.openide.util.NbBundle.getMessage(PushAction.class, "MSG_PUSH_PROGRESS")); // NOI18N
-        
+
     }
-                
+
     public static void notifyUpdatedFiles(File repo, List<String> list){
-        // When hg -v output, or hg -v unbundle or hg -v pull is called 
+        // When hg -v output, or hg -v unbundle or hg -v pull is called
         // the output contains line
         // getting <file>
         // for each file updated.
-        //  
+        //
         for (String line : list) {
             if (line.startsWith("getting ")) {
                 String name = line.substring(8);
@@ -183,6 +189,8 @@ public class PushAction extends ContextAction {
             if ((listOutgoing == null) || listOutgoing.isEmpty()) {
                 return;
             }
+            List<HgLogMessage> messages = new ArrayList<HgLogMessage>();
+            HgCommand.processLogMessages(root.getAbsolutePath(), null, listOutgoing, messages);
 
             boolean bNoChanges = HgCommand.isNoChanges(listOutgoing.get(listOutgoing.size() - 1));
 
@@ -195,19 +203,41 @@ public class PushAction extends ContextAction {
                     return;
                 }
             }
-            
+
             List<String> list;
             if (bNoChanges) {
                 list = listOutgoing;
             } else {
+                List<HgHook> hooks = Mercurial.getInstance().getHooks();
+                int a = 0;
+                HgHookContext context = null;
+                if(hooks.size() > 0) {
+                    HgHookContext.LogEntry[] entries = new HgHookContext.LogEntry[messages.size()];
+                    for (int i = 0; i < messages.size(); i++) {
+                        entries[i] = new HgHookContext.LogEntry(messages.get(i));
+                    }
+                    context = new HgHookContext(new File[] {root}, null, entries);
+                }
+
+                for (HgHook hgHook : hooks) {
+                    try {
+                        // XXX handle returned context
+                        hgHook.beforePush(context);
+                    } catch (IOException ex) {
+                        // XXX handle veto
+                    }
+                }
                 list = HgCommand.doPush(root, pushPath, logger);
+                for (HgHook hgHook : hooks) {
+                    hgHook.afterPush(context);
+                }
             }
             if (!list.isEmpty() &&
                     HgCommand.isErrorAbortPush(list.get(list.size() - 1))) {
                 logger.output(list);
                 logger.output("");
                 HgUtils.warningDialog(PushAction.class,
-                        "MSG_PUSH_ERROR_TITLE", "MSG_PUSH_ERROR_QUERY"); // NOI18N 
+                        "MSG_PUSH_ERROR_TITLE", "MSG_PUSH_ERROR_QUERY"); // NOI18N
                 logger.outputInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_ERROR_CANCELED")); // NOI18N
                 return;
             }
@@ -216,11 +246,17 @@ public class PushAction extends ContextAction {
 
                 if (!HgCommand.isNoChanges(listOutgoing.get(listOutgoing.size() - 1))) {
                     logger.outputInRed(NbBundle.getMessage(PushAction.class, "MSG_CHANGESETS_TO_PUSH")); // NOI18N
-                    for (String s : listOutgoing) {
-                        if (s.indexOf(Mercurial.CHANGESET_STR) == 0) {
-                            logger.outputInRed(s);
-                        } else if (!s.equals("")) { // NOI18N
-                            logger.output(HgUtils.replaceHttpPassword(s));
+                    if(messages.size() > 0) {
+                        for (HgLogMessage m : messages) {
+                            HgUtils.logHgLog(m, logger);
+                        }
+                    } else {
+                        for (String s : listOutgoing) {
+                            if (s.indexOf(Mercurial.CHANGESET_STR) == 0) {
+                                logger.outputInRed(s);
+                            } else if (!s.equals("")) { // NOI18N
+                                logger.output(HgUtils.replaceHttpPassword(s));
+                            }
                         }
                     }
                     logger.output(""); // NOI18N
@@ -228,7 +264,7 @@ public class PushAction extends ContextAction {
 
                 logger.output(HgUtils.replaceHttpPassword(list));
 
-                if (toPrjName == null) { 
+                if (toPrjName == null) {
                     logger.outputInRed(
                             NbBundle.getMessage(PushAction.class,
                             "MSG_PUSH_TO_NONAME", bLocalPush ? HgUtils.stripDoubleSlash(pushPath) : HgUtils.replaceHttpPassword(pushPath))); // NOI18N
@@ -272,13 +308,13 @@ public class PushAction extends ContextAction {
                         }
                         boolean bOutStandingUncommittedMerges = HgCommand.isMergeAbortUncommittedMsg(list.get(list.size() - 1));
                         if (bOutStandingUncommittedMerges) {
-                            bConfirmMerge = HgUtils.confirmDialog(PushAction.class, "MSG_PUSH_MERGE_CONFIRM_TITLE", "MSG_PUSH_MERGE_UNCOMMITTED_CONFIRM_QUERY"); // NOI18N 
+                            bConfirmMerge = HgUtils.confirmDialog(PushAction.class, "MSG_PUSH_MERGE_CONFIRM_TITLE", "MSG_PUSH_MERGE_UNCOMMITTED_CONFIRM_QUERY"); // NOI18N
                         } else {
                             notifyUpdatedFiles(pushFile, list);
                         }
                     }
                 } else {
-                    bConfirmMerge = HgUtils.confirmDialog(PushAction.class, "MSG_PUSH_MERGE_CONFIRM_TITLE", "MSG_PUSH_MERGE_CONFIRM_QUERY"); // NOI18N 
+                    bConfirmMerge = HgUtils.confirmDialog(PushAction.class, "MSG_PUSH_MERGE_CONFIRM_TITLE", "MSG_PUSH_MERGE_CONFIRM_QUERY"); // NOI18N
                 }
 
                 if (bConfirmMerge) {
@@ -311,5 +347,5 @@ public class PushAction extends ContextAction {
             logger.output(""); // NOI18N
         }
     }
-    
+
 }

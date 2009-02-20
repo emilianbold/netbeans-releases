@@ -566,13 +566,14 @@ public class FortranReader {
 
 
     /** An simple enumeration class */
-    public class State {
+    public static class State {
 	private final String name;
 
 	public State(String name) {
 	    this.name = name;
 	}
 
+        @Override
 	public String toString() {
 	    return name;
 	}

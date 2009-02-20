@@ -49,6 +49,7 @@ import java.lang.ref.WeakReference;
 import java.util.*;
 import javax.swing.text.*;
 
+import org.netbeans.modules.cnd.support.ReadOnlySupport;
 import org.openide.ErrorManager;
 import org.openide.text.*;
 import org.openide.loaders.DataObject;
@@ -186,7 +187,12 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
 
         /** Implements abstract superclass method.*/
         protected FileLock takeLock() throws IOException {
-            return ((CndDataObject) getDataObject()).getPrimaryEntry().takeLock();
+            ReadOnlySupport readOnly = getDataObject().getLookup().lookup(ReadOnlySupport.class);
+            if (readOnly != null && readOnly.isReadOnly()) {
+                throw new IOException(); // for read only state method must throw IOException
+            } else {
+                return ((CndDataObject) getDataObject()).getPrimaryEntry().takeLock();
+            }
         }
 
         /** 

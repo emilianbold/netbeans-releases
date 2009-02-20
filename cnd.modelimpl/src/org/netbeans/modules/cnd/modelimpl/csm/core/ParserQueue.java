@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * A queue that hold a list of files to parse.
@@ -302,7 +303,7 @@ public final class ParserQueue {
 
     private PriorityQueue<Entry> queue = new PriorityQueue<Entry>();
 
-    private State state;
+    private volatile State state;
     private final Object suspendLock = new Object();
 
     // do not need UIDs for ProjectBase in parsing data collection
@@ -389,7 +390,17 @@ public final class ParserQueue {
             if( files.contains(file) ) {
                 entry = findEntry(file); //TODO: think over / profile, probably this line is expensive
                 if( entry == null ) {
-                    assert false : "ProjectData contains file " + file + ", but there is no matching entry in the queue"; // NOI18N
+                    FileImpl findFile = null;
+                    for(FileImpl aFile : files){
+                        if (aFile.equals(file)){
+                            findFile = aFile;
+                        }
+                    }
+                    if (findFile == file) {
+                        CndUtils.assertTrue(false, "ProjectData contains file " + file + ", but there is no matching entry in the queue"); // NOI18N
+                    } else {
+                        CndUtils.assertTrue(false, "ProjectData contains another instance of file " + file + ", so there is no matching entry in the queue"); // NOI18N
+                    }
                 } else {
                     if (clearPrevState) {
                         entry.setStates(ppStates);
@@ -487,7 +498,7 @@ public final class ParserQueue {
 	// TODO: think over, whether this should be under if( notifyListeners
 	ProgressSupport.instance().fireFileParsingStarted(file);
         if( lastFileInProject ) {
-            project.onParseFinish();
+            project.onParseFinish(false);
             if( notifyListeners ) {
                 ProgressSupport.instance().fireProjectParsingFinished(project);
             }
@@ -524,7 +535,7 @@ public final class ParserQueue {
         }
 
         if( lastFileInProject ) {
-            project.onParseFinish();
+            project.onParseFinish(false);
             if( notifyListeners ) {
                 ProgressSupport.instance().fireProjectParsingFinished(project);
             }
@@ -565,7 +576,7 @@ public final class ParserQueue {
             }
         }
         if( lastFileInProject) {
-            project.onParseFinish();
+            project.onParseFinish(false);
             if( data.notifyListeners ) {
                 ProgressSupport.instance().fireProjectParsingFinished(project);
             }
@@ -679,7 +690,7 @@ public final class ParserQueue {
         ProgressSupport.instance().fireFileParsingFinished(file);
         if( lastFileInProject ) {
             if (TraceFlags.TRACE_CLOSE_PROJECT) {System.err.println("Last file in project " + project.getName());}
-            project.onParseFinish();
+            project.onParseFinish(false);
             if( data.notifyListeners ) {
                 ProgressSupport.instance().fireProjectParsingFinished(project);
             }

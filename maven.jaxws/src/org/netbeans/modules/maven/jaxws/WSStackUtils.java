@@ -107,8 +107,10 @@ public class WSStackUtils {
         if(j2eePlatform != null){
             WSStack<JaxWs> wsStack = JaxWsStackProvider.getJaxWsStack(j2eePlatform);
             return wsStack != null && wsStack.isFeatureSupported(JaxWs.Feature.JSR109);
+        } else {
+            // by default return true if j2eePlatform (server) isn't specified
+            return true;
         }
-        return false;
     }
 
     public boolean isJsr109OldSupported() {

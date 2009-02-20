@@ -61,6 +61,10 @@ public class MidpCodeGenerator implements CodeGenerator {
 //        if (MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (context.getProjectType ())) {
 //            System.out.println ("MidpCodeGenerator.validateModelForCodeGeneration");
 //        }
+        DataObject dataObject = context.getDataObject ();
+            DataObjectInterface dataObjectInteface = IOSupport.getDataObjectInteface (dataObject);
+            StyledDocument styledDocument = dataObjectInteface.getEditorDocument ();
+            JavaCodeGenerator.getDefault ().preUpdateCode (styledDocument, document);
     }
 
     public void updateModelFromCode (DataObjectContext context, DesignDocument document) {

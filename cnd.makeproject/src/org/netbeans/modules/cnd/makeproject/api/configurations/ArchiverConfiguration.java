@@ -151,7 +151,7 @@ public class ArchiverConfiguration implements AllOptionsProvider {
     // Clone and assign
     public void assign(ArchiverConfiguration conf) {
         // ArchiverConfiguration
-        setMakeConfiguration(conf.getMakeConfiguration());
+        //setMakeConfiguration(conf.getMakeConfiguration()); // MakeConfiguration should not be assigned
         getOutput().assign(conf.getOutput());
         getRunRanlib().assign(conf.getRunRanlib());
         getReplaceOption().assign(conf.getReplaceOption());
@@ -280,8 +280,12 @@ public class ArchiverConfiguration implements AllOptionsProvider {
     
     private String getOutputDefault() {
         String outputName = IpeUtils.getBaseName(getMakeConfiguration().getBaseDir()).toLowerCase();
+        switch (getMakeConfiguration().getConfigurationType().getValue()) {
+            case MakeConfiguration.TYPE_STATIC_LIB:
+                outputName = "lib" + outputName + ".a"; // NOI18N
+                break;
+        }
         outputName = ConfigurationSupport.makeNameLegal(outputName);
-        outputName = "lib" + outputName + ".a"; // NOI18N
         return MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + "${CND_PLATFORM}" + "/" + outputName; // UNIX path // NOI18N
     }
     

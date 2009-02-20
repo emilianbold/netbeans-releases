@@ -237,17 +237,20 @@ final class ModuleList implements Stamps.Updater {
                     }
                 }
                 if (! name.equals(props.get("name"))) throw new IOException("Code name mismatch: " /* #25011 */ + name + " vs. " + props.get("name")); // NOI18N
+                Boolean enabledB = (Boolean)props.get("enabled"); // NOI18N
                 String jar = (String)props.get("jar"); // NOI18N
                 File jarFile;
                 try {
                     jarFile = findJarByName(jar, name);
                 } catch (FileNotFoundException fnfe) {
                     //LOG.fine("Cannot find: " + fnfe.getMessage());
-                    ev.log(Events.MISSING_JAR_FILE, new File(fnfe.getMessage()));
-                    try {
-                        f.delete();
-                    } catch (IOException ioe) {
-                        LOG.log(Level.WARNING, null, ioe);
+                    ev.log(Events.MISSING_JAR_FILE, new File(fnfe.getMessage()), enabledB);
+                    if (!Boolean.FALSE.equals(enabledB)) {
+                        try {
+                            f.delete();
+                        } catch (IOException ioe) {
+                            LOG.log(Level.WARNING, null, ioe);
+                        }
                     }
                     continue;
                 }
@@ -259,7 +262,6 @@ final class ModuleList implements Stamps.Updater {
                 history.upgrade(prevRelease, prevSpec);
                 Boolean reloadableB = (Boolean)props.get("reloadable"); // NOI18N
                 boolean reloadable = (reloadableB != null ? reloadableB.booleanValue() : false);
-                Boolean enabledB = (Boolean)props.get("enabled"); // NOI18N
                 boolean enabled = (enabledB != null ? enabledB.booleanValue() : false);
                 Boolean autoloadB = (Boolean)props.get("autoload"); // NOI18N
                 boolean autoload = (autoloadB != null ? autoloadB.booleanValue() : false);
@@ -1616,7 +1618,13 @@ final class ModuleList implements Stamps.Updater {
                     Map<String, Object> props = dirtyprops.get(cnb);
                     if (! cnb.equals(props.get("name"))) throw new IOException("Code name mismatch"); // NOI18N
                     String jar = (String)props.get("jar"); // NOI18N
-                    File jarFile = findJarByName(jar, cnb);
+                    File jarFile;
+                    try {
+                        jarFile = findJarByName(jar, cnb);
+                    } catch (FileNotFoundException fnfe) {
+                        ev.log(Events.MISSING_JAR_FILE, new File(fnfe.getMessage()), true);
+                        continue;
+                    }
                     Boolean reloadableB = (Boolean)props.get("reloadable"); // NOI18N
                     boolean reloadable = (reloadableB != null ? reloadableB.booleanValue() : false);
                     Boolean autoloadB = (Boolean)props.get("autoload"); // NOI18N

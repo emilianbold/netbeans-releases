@@ -51,6 +51,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import org.netbeans.upgrade.systemoptions.Importer;
 
@@ -115,7 +116,7 @@ public final class AutoUpgrade {
     // the order of VERSION_TO_CHECK here defines the precedence of imports
     // the first one will be choosen for import
     final static private List VERSION_TO_CHECK = 
-            Arrays.asList (new String[] { ".netbeans/6.1", ".netbeans/6.0", ".netbeans/5.5.1", ".netbeans/5.5" });//NOI18N
+            Arrays.asList (new String[] { ".netbeans/6.5", ".netbeans/6.1", ".netbeans/6.0", ".netbeans/5.5.1", ".netbeans/5.5" });//NOI18N
 
             
     static private File checkPrevious (String[] version, final List versionsToCheck) {        
@@ -155,20 +156,16 @@ public final class AutoUpgrade {
             JOptionPane.QUESTION_MESSAGE,
             JOptionPane.YES_NO_OPTION
         );
-        javax.swing.JDialog d = p.createDialog (
-            null,
-            NbBundle.getMessage (AutoUpgrade.class, "MSG_Confirmation_Title") // NOI18N
-        );
-        d.setModal (true);
+        JDialog d = Util.createJOptionDialog(p, NbBundle.getMessage (AutoUpgrade.class, "MSG_Confirmation_Title"));
         d.setVisible (true);
 
         return new Integer (JOptionPane.YES_OPTION).equals (p.getValue ());
     }
-    
+
     static void doUpgrade (File source, String oldVersion) 
     throws java.io.IOException, java.beans.PropertyVetoException {        
         File userdir = new File(System.getProperty ("netbeans.user", "")); // NOI18N
-        
+
         java.util.Set includeExclude;
         try {
             Reader r = new InputStreamReader (

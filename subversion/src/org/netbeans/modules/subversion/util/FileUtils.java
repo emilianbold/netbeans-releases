@@ -156,6 +156,29 @@ public class FileUtils {
     }
 
     /**
+     * Reads the data from the <code>file</code> and returns it as an array of bytes.
+     * @param file file to be read
+     * @return file contents as a byte array
+     * @throws java.io.IOException
+     */
+    public static byte[] getFileContentsAsByteArray (File file) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(1024 * 5);
+        BufferedInputStream bis = null;
+        try {
+        bis = createInputStream(file);
+        byte[] buffer = new byte[1024];
+        for (int byteRead = bis.read(buffer); byteRead > 0; byteRead = bis.read(buffer)) {
+            baos.write(buffer, 0, byteRead);
+        }
+        } finally {
+            if (bis != null) {
+                bis.close();
+            }
+        }
+        return baos.toByteArray();
+    }
+
+    /**
      * Recursively deletes all files and directories under a given file/directory.
      *
      * @param file file/directory to delete
@@ -281,5 +304,28 @@ public class FileUtils {
         }
         return checkoutFolder;
     }
-        
+
+    /**
+     * Returns the first found file whose filename is the same (in a case insensitive way) as given <code>file</code>'s.
+     * @param file
+     * @return the first found file with the same name, but ignoring case, or <code>null</code> if no such file is found.
+     */
+    public static String getExistingFilenameInParent(File file) {
+        String filename = null;
+        if (file == null) {
+            return filename;
+        }
+        File parent = file.getParentFile();
+        if (parent == null) {
+            return filename;
+        }
+        File[] children = parent.listFiles();
+        for (File child : children) {
+            if (file.getName().equalsIgnoreCase(child.getName())) {
+                filename = child.getName();
+                break;
+            }
+        }
+        return filename;
+    }
 }

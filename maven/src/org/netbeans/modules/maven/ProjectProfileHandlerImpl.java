@@ -38,7 +38,9 @@
  */
 package org.netbeans.modules.maven;
 
+import hidden.org.codehaus.plexus.util.IOUtil;
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -49,6 +51,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Profile;
+import org.apache.maven.profiles.ProfilesRoot;
+import org.apache.maven.profiles.io.xpp3.ProfilesXpp3Reader;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.build.model.ModelLineage;
@@ -203,15 +207,20 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
         if (fileObject != null) { //144159
             FileObject profiles = fileObject.getFileObject("profiles.xml");
             if (profiles != null) {
-                ModelSource ms = Utilities.createModelSource(profiles);
-                ProfilesModel pm = ProfilesModelFactory.getDefault().getModel(ms);
-                if (State.VALID.equals(pm.getState())) {
-                    List<org.netbeans.modules.maven.model.profile.Profile> profs = pm.getProfilesRoot().getProfiles();
-                    if (profs != null) {
-                        for (org.netbeans.modules.maven.model.profile.Profile prf : profs) {
-                            profileIds.add(prf.getId());
-                        }
+                // using xpp3 reader because xam based model needs project instance (for encoding)
+                // and might deadlock
+                ProfilesXpp3Reader reader = new ProfilesXpp3Reader();
+                InputStream in = null;
+                try {
+                    ProfilesRoot root = reader.read(profiles.getInputStream());
+                    List<org.apache.maven.profiles.Profile> profs = root.getProfiles();
+                    for (org.apache.maven.profiles.Profile prf : profs) {
+                        profileIds.add(prf.getId());
                     }
+                } catch (Exception e) {
+                    Logger.getLogger(ProjectProfileHandlerImpl.class.getName()).log(Level.FINE, "Error while retrieving profiles from profiles.xml file. Ignore.", e); //NOI18N
+                } finally {
+                    IOUtil.close(in);
                 }
             }
         }

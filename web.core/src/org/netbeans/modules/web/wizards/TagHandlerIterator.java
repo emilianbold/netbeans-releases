@@ -80,7 +80,7 @@ import org.netbeans.modules.web.taglib.model.TldAttributeType;
  *
  * @author  mk115033
  */
-public class TagHandlerIterator implements TemplateWizard.Iterator {
+public class TagHandlerIterator implements TemplateWizard.AsynchronousInstantiatingIterator {
     private static final Logger LOG = Logger.getLogger(TagHandlerIterator.class.getName());
     private WizardDescriptor.Panel packageChooserPanel,tagHandlerSelectionPanel,tagInfoPanel;
     
@@ -107,7 +107,7 @@ public class TagHandlerIterator implements TemplateWizard.Iterator {
         };
     }
 
-    public Set<DataObject> instantiate (TemplateWizard wiz) throws IOException/*, IllegalStateException*/ {
+    public Set instantiate () throws IOException/*, IllegalStateException*/ {
         // Here is the default plain behavior. Simply takes the selected
         // template (you need to have included the standard second panel
         // in createPanels(), or at least set the properties targetName and
@@ -228,11 +228,11 @@ public class TagHandlerIterator implements TemplateWizard.Iterator {
     // provide various kinds of useful information such as
     // the currently selected target name.
     // Also the panels will receive wiz as their "settings" object.
-    public void initialize (TemplateWizard wiz) {
-        this.wiz = wiz;
+    public void initialize (WizardDescriptor wiz) {
+        this.wiz = (TemplateWizard) wiz;
         index = 0;
         Project project = Templates.getProject( wiz );
-        panels = createPanels (project,wiz);
+        panels = createPanels (project,this.wiz);
         
         // Creating steps.
         Object prop = wiz.getProperty (WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
@@ -259,7 +259,7 @@ public class TagHandlerIterator implements TemplateWizard.Iterator {
             }
         }
     }
-    public void uninitialize (TemplateWizard wiz) {
+    public void uninitialize (WizardDescriptor wiz) {
         this.wiz = null;
         panels = null;
     }

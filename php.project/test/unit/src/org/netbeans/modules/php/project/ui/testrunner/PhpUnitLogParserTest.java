@@ -156,6 +156,24 @@ public class PhpUnitLogParserTest extends NbTestCase {
         assertEquals(10, testCase.getTime());
     }
 
+    public void testParseLogIssue157846() throws Exception {
+        Reader reader = new BufferedReader(new FileReader(new File(getDataDir(), "phpunit-log-issue157846.xml")));
+        TestSessionVO testSession = new TestSessionVO();
+
+        PhpUnitLogParser.parse(reader, testSession);
+
+        assertSame(1, testSession.getTestSuites().size());
+        TestSuiteVO testSuite = testSession.getTestSuites().get(0);
+        assertEquals("integration_REST_C_CustomersTest", testSuite.getName());
+
+        assertSame(1, testSuite.getTestCases().size());
+        TestCaseVO testCase = testSuite.getTestCases().get(0);
+        assertEquals("testCheckNewRecord", testCase.getName());
+
+        assertEquals(Status.FAILED, testCase.getStatus());
+        assertSame(1, testCase.getStacktrace().length);
+    }
+
     private File getLogForMoreSuites() throws Exception {
         File xmlLog = new File(getDataDir(), "phpunit-log-more-suites.xml");
         assertTrue(xmlLog.isFile());

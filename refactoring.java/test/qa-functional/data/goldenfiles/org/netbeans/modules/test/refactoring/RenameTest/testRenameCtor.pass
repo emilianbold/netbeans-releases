@@ -1,0 +1,39 @@
+==>RenamedCtor
+package renameClass;
+
+public class RenamedCtor {
+
+    public RenamedCtor() {
+    }
+
+    public RenamedCtor(int a) {
+    }
+
+    public RenamedCtor(String s) {
+    }
+
+
+
+
+}
+Created file:
+==>RenamedCtor.java
+package renameClass;
+
+public class RenamedCtor {
+
+    public RenamedCtor() {
+    }
+
+    public RenamedCtor(int a) {
+    }
+
+    public RenamedCtor(String s) {
+    }
+
+
+
+
+}
+Deleted file:
+/space/nb-hg/jet-main/refactoring.java/build/test/qa-functional/data/projects/RefactoringTest/src/renameClass/RenameCtor.java

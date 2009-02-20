@@ -166,7 +166,7 @@ public class MaximizeWindowAction extends AbstractAction {
         TopComponent active = getTCToWorkWith();
         boolean maximize;
         ModeImpl activeMode = (ModeImpl)wm.findMode(active);
-        if (activeMode == null || !Switches.isTopComponentMaximizationEnabled() ) {
+        if (activeMode == null || !Switches.isTopComponentMaximizationEnabled() || !Switches.isMaximizationEnabled(active)) {
             String label = NbBundle.getMessage(MaximizeWindowAction.class, "CTL_MaximizeWindowAction"); //NOI18N
             putValue(Action.NAME, (isPopup ? Actions.cutAmpersand(label) : label));
             setEnabled(false);

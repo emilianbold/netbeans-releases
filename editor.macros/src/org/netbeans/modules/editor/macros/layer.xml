@@ -55,6 +55,9 @@ made subject to such option by the copyright holder.
     <folder name="xml">
         <folder name="entities">
             <folder name="NetBeans">
+                <file name="DTD_Editor_Macros_settings_1_0" url="nbres:/org/netbeans/modules/editor/macros/storage/EditorMacros-1_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Editor Macros settings 1.0//EN"/>
+                </file>
                 <file name="DTD_Editor_Macros_settings_1_1" url="nbres:/org/netbeans/modules/editor/macros/storage/EditorMacros-1_1.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Editor Macros settings 1.1//EN"/>
                 </file>

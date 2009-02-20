@@ -110,6 +110,7 @@ public abstract class NodeAction extends CallableSystemAction implements Context
 
     /* Initialize the listener.
     */
+    @Override
     protected void initialize() {
         super.initialize();
         putProperty(PROP_HAS_LISTENERS, Boolean.FALSE);
@@ -121,6 +122,7 @@ public abstract class NodeAction extends CallableSystemAction implements Context
     /** Initializes selection listener.
      * If you override this method, you must always call the super method first.
      */
+    @Override
     protected void addNotify() {
         super.addNotify();
 
@@ -143,6 +145,7 @@ public abstract class NodeAction extends CallableSystemAction implements Context
     /** Shuts down the selection listener.
      * If you override this method, you must always call the super method last.
      */
+    @Override
     protected void removeNotify() {
         synchronized (listeningActions) {
             listeningActions.remove(this);
@@ -163,6 +166,7 @@ public abstract class NodeAction extends CallableSystemAction implements Context
     * You probably ought not ever override this.
     * @return <code>true</code> to enable
     */
+    @Override
     public boolean isEnabled() {
         Node[] ns = null;
         Boolean b = null;
@@ -221,11 +225,13 @@ public abstract class NodeAction extends CallableSystemAction implements Context
      * changes, so we should clear the cache to ensure that the enablement status
      * is respected.
      */
+    @Override
     public void setEnabled(boolean e) {
         putProperty(PROP_LAST_ENABLED, null);
         putProperty(PROP_LAST_NODES, null);
 
-        if (((Boolean) getProperty(PROP_HAS_LISTENERS)).booleanValue()) {
+        Boolean propHasListener = (Boolean) getProperty(PROP_HAS_LISTENERS);
+        if (propHasListener != null && propHasListener.booleanValue()) {
             // Just set it; the next time selection chamges, we will recompute.
             super.setEnabled(e);
         } else {
@@ -252,6 +258,7 @@ public abstract class NodeAction extends CallableSystemAction implements Context
      * a lookup containing all desired {@link Node} instances.
      */
     @Deprecated
+    @Override
     public void actionPerformed(final ActionEvent ev) {
         final Object s = (ev == null) ? null : ev.getSource();
 
@@ -557,6 +564,7 @@ OUTER:
         }
 
         /** Overrides superclass method, adds delegate description. */
+        @Override
         public String toString() {
             return super.toString() + "[delegate=" + delegate + "]"; // NOI18N
         }

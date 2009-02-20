@@ -67,6 +67,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
+import org.netbeans.modules.ruby.rubyproject.RubyTestingSettings;
 
 /**
  * Test runner implmentation for running test/unit tests.
@@ -78,14 +79,15 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
 
     private static final Logger LOGGER = Logger.getLogger(TestUnitRunner.class.getName());
     private static final String NB_TEST_RUNNER = "NB_TEST_RUNNER"; //NOI18N
-    public static final String MEDIATOR_SCRIPT_NAME = "nb_test_mediator.rb";  //NOI18N
-    public static final String RUNNER_SCRIPT_NAME = "nb_test_runner.rb";  //NOI18N
+    static final String MEDIATOR_SCRIPT_NAME = "nb_test_mediator.rb";  //NOI18N
+    static final String TEST_RUNNER_SCRIPT_NAME = "nb_test_runner.rb";  //NOI18N
+    static final String SUITE_RUNNER_SCRIPT_NAME = "nb_suite_runner.rb";  //NOI18N
     private static final TestRunner INSTANCE = new TestUnitRunner();
 
     static {
         // this env variable is referenced from nb_test_runner.rb, where it
         // gets appended to the rake require path
-        System.setProperty(NB_TEST_RUNNER, getScript(RUNNER_SCRIPT_NAME).getAbsolutePath());
+        System.setProperty(NB_TEST_RUNNER, getScript(TEST_RUNNER_SCRIPT_NAME).getAbsolutePath());
     }
 
     public TestRunner getInstance() {
@@ -133,7 +135,7 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
     }
 
     static void addTestUnitRunnerToEnv(Map<String, String> env) {
-        env.put(NB_TEST_RUNNER, getScript(RUNNER_SCRIPT_NAME).getAbsolutePath());
+        env.put(NB_TEST_RUNNER, getScript(TEST_RUNNER_SCRIPT_NAME).getAbsolutePath());
     }
     
     public void runAllTests(Project project, boolean debug) {
@@ -183,12 +185,9 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
     }
 
     public void customize(Project project, RakeTask task, final RubyExecutionDescriptor taskDescriptor, boolean debug) {
-        boolean useRunner = TestRunnerUtilities.useTestRunner(project, SharedRubyProjectProperties.TEST_TASKS, task, new DefaultTaskEvaluator() {
-
-            public boolean isDefault(RakeTask task) {
-                return "test".equals(task.getTask()) || task.getTask().startsWith("test:"); //NOI18N
-            }
-        });
+        boolean useRunner =
+                RubyTestingSettings.getDefault().useRunner(TestType.TEST_UNIT)
+                && TestRunnerUtilities.useTestRunner(project, SharedRubyProjectProperties.TEST_TASKS, task, TestUnitTaskEvaluator.INSTANCE);
 
         if (!useRunner) {
             return;
@@ -198,7 +197,7 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         // this takes care of loading our custom TestTask, which in turn passes
         // the custom test runner as an option for the task. This is needed since
         // the test run is forked to a different process (by Rake::TestTask) than rake itself
-        task.addRakeParameters("-r \"" + getScript(RUNNER_SCRIPT_NAME).getAbsolutePath() + "\""); //NOI18N
+        task.addRakeParameters("-r \"" + getScript(TEST_RUNNER_SCRIPT_NAME).getAbsolutePath() + "\""); //NOI18N
         TestSession session = new TestSession(task.getDisplayName(),
                 project,
                 debug ? SessionType.DEBUG : SessionType.TEST,
@@ -225,5 +224,16 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         TestExecutionManager.getInstance().init(taskDescriptor);
         session.setRerunHandler(TestExecutionManager.getInstance());
   }
+
+    private static class TestUnitTaskEvaluator implements DefaultTaskEvaluator {
+        static final TestUnitTaskEvaluator INSTANCE = new TestUnitTaskEvaluator();
+
+        private TestUnitTaskEvaluator() {
+        }
+
+        public boolean isDefault(RakeTask task) {
+            return "test".equals(task.getTask()) || task.getTask().startsWith("test:"); //NOI18N
+        }
+    }
 
 }

@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import java.io.BufferedReader;
@@ -59,6 +58,8 @@ import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
  */
 public class SunCCCCompilerTest {
 
+    private static final boolean TRACE = false;
+
     public SunCCCCompilerTest() {
     }
 
@@ -80,19 +81,22 @@ public class SunCCCCompilerTest {
 
     @Test
     public void testParseCompilerOutputSunCC() {
-        System.setProperty("os.name","SunOS");
+        System.setProperty("os.name", "SunOS");
         String s =
-"###     command line files and options (expanded):\n" +
-"### -dryrun -E xxx.c " +
-"### CC: Note: NLSPATH = /opt/SUNWspro/prod/bin/../lib/locale/%L/LC_MESSAGES/%N.cat:/opt/SUNWspro/prod/bin/../../lib/locale/%L/LC_MESSAGES/%N.cat\n" +
-"/opt/SUNWspro/prod/bin/ccfe -E -ptf /tmp/09752%1.%2 -ptx /opt/SUNWspro/prod/bin/CC -ptk \"-xdryrun -E  -xs \" -D__SunOS_5_11 -D__SUNPRO_CC=0x5100 -Dunix -Dsun -Di386 -D__i386 -D__unix -D__sun -D__SunOS -D__BUILTIN_VA_ARG_INCR -D__SVR4 -D__SUNPRO_CC_COMPAT=5 -D__SUN_PREFETCH -xdbggen=no%stabs+dwarf2 -xdbggen=incl -I-xbuiltin -xldscope=global -instlib=/opt/SUNWspro/prod/lib/libCstd.a -I/opt/SUNWspro/prod/include/CC/Cstd -I/opt/SUNWspro/prod/include/CC -I/opt/SUNWspro/prod/include/CC/rw7 -I/opt/SUNWspro/prod/include/cc -O0 xxx.c >&/tmp/ccfe.09752.0.err\n" +
-"/opt/SUNWspro/prod/bin/stdlibfilt -stderr </tmp/ccfe.09752.0.err\n" +
-"rm /tmp/ccfe.09752.0.err\n";
+                "###     command line files and options (expanded):\n" +
+                "### -dryrun -E xxx.c " +
+                "### CC: Note: NLSPATH = /opt/SUNWspro/prod/bin/../lib/locale/%L/LC_MESSAGES/%N.cat:/opt/SUNWspro/prod/bin/../../lib/locale/%L/LC_MESSAGES/%N.cat\n" +
+                "/opt/SUNWspro/prod/bin/ccfe -E -ptf /tmp/09752%1.%2 -ptx /opt/SUNWspro/prod/bin/CC -ptk \"-xdryrun -E  -xs \" -D__SunOS_5_11 -D__SUNPRO_CC=0x5100 -Dunix -Dsun -Di386 -D__i386 -D__unix -D__sun -D__SunOS -D__BUILTIN_VA_ARG_INCR -D__SVR4 -D__SUNPRO_CC_COMPAT=5 -D__SUN_PREFETCH -xdbggen=no%stabs+dwarf2 -xdbggen=incl -I-xbuiltin -xldscope=global -instlib=/opt/SUNWspro/prod/lib/libCstd.a -I/opt/SUNWspro/prod/include/CC/Cstd -I/opt/SUNWspro/prod/include/CC -I/opt/SUNWspro/prod/include/CC/rw7 -I/opt/SUNWspro/prod/include/cc -O0 xxx.c >&/tmp/ccfe.09752.0.err\n" +
+                "/opt/SUNWspro/prod/bin/stdlibfilt -stderr </tmp/ccfe.09752.0.err\n" +
+                "rm /tmp/ccfe.09752.0.err\n";
 
         BufferedReader buf = new BufferedReader(new StringReader(s));
-        System.out.println("Parse Compiler Output of SunStudio CC on Solaris");
+        if (TRACE) {
+            System.out.println("Parse Compiler Output of SunStudio CC on Solaris");
+        }
         CompilerFlavor flavor = CompilerFlavor.toFlavor("SunStudio", Platform.PLATFORM_SOLARIS_INTEL);
         SunCCCompiler instance = new SunCCCompiler("localhost", flavor, Tool.CCCompiler, "SunStudio", "SunStudio", "/opt/SUNWspro/bin") {
+
             @Override
             protected String normalizePath(String path) {
                 return path;
@@ -111,26 +115,31 @@ public class SunCCCCompilerTest {
         golden.add("/opt/SUNWspro/prod/include/cc");
 
         StringBuilder result = new StringBuilder();
-        for(String i: out){
+        for (String i : out) {
             result.append(i);
             result.append("\n");
         }
-        System.out.println(result);
-        assert(golden.equals(out));
+        if (TRACE) {
+            System.out.println(result);
+        }
+        assert (golden.equals(out));
     }
 
     @Test
     public void testParseCompilerOutputSunC() {
-        System.setProperty("os.name","SunOS");
+        System.setProperty("os.name", "SunOS");
         String s =
-"/opt/SUNWspro/prod/bin/acomp -xldscope=global -i xxx.c -o - -xdbggen=no%stabs+dwarf2+usedonly -E -m32 -fparam_ir -Qy -D__SunOS_5_11 -D__SUNPRO_C=0x5100 -D__SVR4 -D__sun -D__SunOS -D__unix -D__i386 -D__BUILTIN_VA_ARG_INCR -D__C99FEATURES__ -Xa -D__PRAGMA_REDEFINE_EXTNAME -Dunix -Dsun -Di386 -D__RESTRICT -xc99=%all,no%lib -D__FLT_EVAL_METHOD__=-1 -I/opt/SUNWspro/prod/include/cc \"-g/opt/SUNWspro/prod/bin/cc -xdryrun -E \" -fsimple=0 -D__SUN_PREFETCH -destination_ir=%none\n";
+                "/opt/SUNWspro/prod/bin/acomp -xldscope=global -i xxx.c -o - -xdbggen=no%stabs+dwarf2+usedonly -E -m32 -fparam_ir -Qy -D__SunOS_5_11 -D__SUNPRO_C=0x5100 -D__SVR4 -D__sun -D__SunOS -D__unix -D__i386 -D__BUILTIN_VA_ARG_INCR -D__C99FEATURES__ -Xa -D__PRAGMA_REDEFINE_EXTNAME -Dunix -Dsun -Di386 -D__RESTRICT -xc99=%all,no%lib -D__FLT_EVAL_METHOD__=-1 -I/opt/SUNWspro/prod/include/cc \"-g/opt/SUNWspro/prod/bin/cc -xdryrun -E \" -fsimple=0 -D__SUN_PREFETCH -destination_ir=%none\n";
 
 
 
         BufferedReader buf = new BufferedReader(new StringReader(s));
-        System.out.println("Parse Compiler Output of SunStudio C on Solaris");
+        if (TRACE) {
+            System.out.println("Parse Compiler Output of SunStudio C on Solaris");
+        }
         CompilerFlavor flavor = CompilerFlavor.toFlavor("SunStudio", Platform.PLATFORM_SOLARIS_INTEL);
         SunCCCompiler instance = new SunCCCompiler("localhost", flavor, Tool.CCompiler, "SunStudio", "SunStudio", "/opt/SUNWspro/bin") {
+
             @Override
             protected String normalizePath(String path) {
                 return path;
@@ -145,12 +154,13 @@ public class SunCCCCompilerTest {
         golden.add("/opt/SUNWspro/prod/include/cc");
 
         StringBuilder result = new StringBuilder();
-        for(String i: out){
+        for (String i : out) {
             result.append(i);
             result.append("\n");
         }
-        System.out.println(result);
-        assert(golden.equals(out));
+        if (TRACE) {
+            System.out.println(result);
+        }
+        assert (golden.equals(out));
     }
-
 }

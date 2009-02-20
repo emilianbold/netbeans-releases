@@ -39,21 +39,34 @@
 
 package org.netbeans.modules.web.client.javascript.debugger.attach;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import javax.swing.JComponent;
 import org.netbeans.spi.debugger.ui.AttachType;
-import org.openide.util.NbBundle;
+import org.netbeans.spi.debugger.ui.Controller;
 
 /**
  *
  * @author gordonp
  */
+@AttachType.Registration(displayName="#CTL_URLAttachPanel_name")
 public class URLAttachType extends AttachType  {
+    private Reference<URLAttachPanel> customizerRef = new WeakReference<URLAttachPanel>(null);
 
-    public String getTypeDisplayName() {
-        return NbBundle.getMessage(URLAttachType.class, "CTL_URLAttachPanel_name"); // NOI18N
+    public JComponent getCustomizer () {
+        URLAttachPanel panel = new URLAttachPanel ();
+        customizerRef = new WeakReference<URLAttachPanel>(panel);
+        return panel;
     }
 
-    public JComponent getCustomizer() {
-        return new URLAttachPanel();
+    @Override
+    public Controller getController() {
+        URLAttachPanel panel = customizerRef.get();
+        if (panel != null) {
+            return panel.getController();
+        } else {
+            return null;
+        }
     }
+
 }

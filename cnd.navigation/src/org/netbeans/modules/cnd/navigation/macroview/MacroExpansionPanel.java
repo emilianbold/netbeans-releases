@@ -108,7 +108,6 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         }
         jCodeExpansionEditorPane.setContentType(mimeType);
         jCodeExpansionEditorPane.setDocument(doc);
-        jCodeExpansionEditorPane.enableInputMethods(false);
         doc.putProperty(JEditorPane.class, jCodeExpansionEditorPane);
     }
 
@@ -142,7 +141,7 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
     /**
      * Sets scope for macro expansion (local or whole file).
      *
-     * @param local - is scole local
+     * @param local - is scope local
      */
     public void setLocalContext(boolean local) {
         localContext.setSelected(local);
@@ -238,8 +237,10 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
             FileObject file2 = CsmUtilities.getFileObject(doc2);
             if (file2 != null) {
                 JEditorPane ep = MacroExpansionViewUtils.getEditor(doc2);
-                int doc2CarretPosition = ep.getCaretPosition();
-                return doc2CarretPosition;
+                if(ep != null) {
+                    int doc2CarretPosition = ep.getCaretPosition();
+                    return doc2CarretPosition;
+                }
             }
         }
         return 0;
@@ -273,6 +274,10 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         jSplitPane1 = new javax.swing.JSplitPane();
         jScrollPane1 = new javax.swing.JScrollPane();
         jMacroExpansionEditorPane = new javax.swing.JEditorPane();
+        jPanel1 = new javax.swing.JPanel();
+        jCodeExpansionPane = new javax.swing.JScrollPane();
+        jCodeExpansionEditorPane = new javax.swing.JEditorPane();
+        jStatusBar = new javax.swing.JLabel();
         jToolBar1 = new javax.swing.JToolBar();
         refresh = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JToolBar.Separator();
@@ -285,9 +290,6 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         jSeparator4 = new javax.swing.JToolBar.Separator();
         prevMacro = new javax.swing.JButton();
         nextMacro = new javax.swing.JButton();
-        jCodeExpansionPane = new javax.swing.JScrollPane();
-        jCodeExpansionEditorPane = new javax.swing.JEditorPane();
-        jStatusBar = new javax.swing.JLabel();
 
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane1.setResizeWeight(1.0);
@@ -302,14 +304,35 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
 
         setLayout(new java.awt.BorderLayout());
 
+        jPanel1.setMaximumSize(new java.awt.Dimension(100, 100));
+        jPanel1.setMinimumSize(new java.awt.Dimension(100, 100));
+        jPanel1.setLayout(new java.awt.BorderLayout());
+
+        jCodeExpansionPane.setBorder(null);
+
+        jCodeExpansionEditorPane.setBorder(null);
+        jCodeExpansionPane.setViewportView(jCodeExpansionEditorPane);
+
+        jPanel1.add(jCodeExpansionPane, java.awt.BorderLayout.CENTER);
+
+        jStatusBar.setText(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.jStatusBar.text")); // NOI18N
+        jPanel1.add(jStatusBar, java.awt.BorderLayout.PAGE_END);
+
+        add(jPanel1, java.awt.BorderLayout.CENTER);
+
         jToolBar1.setFloatable(false);
         jToolBar1.setOrientation(1);
         jToolBar1.setRollover(true);
+        jToolBar1.setMaximumSize(new java.awt.Dimension(28, 240));
+        jToolBar1.setPreferredSize(new java.awt.Dimension(28, 240));
 
         refresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/navigation/macroview/resources/refresh.png"))); // NOI18N
         refresh.setToolTipText(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.refresh.toolTipText")); // NOI18N
         refresh.setFocusable(false);
         refresh.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        refresh.setMaximumSize(new java.awt.Dimension(24, 24));
+        refresh.setMinimumSize(new java.awt.Dimension(24, 24));
+        refresh.setPreferredSize(new java.awt.Dimension(24, 24));
         refresh.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         refresh.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -319,12 +342,16 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         jToolBar1.add(refresh);
         refresh.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.refresh.AccessibleContext.accessibleDescription")); // NOI18N
 
+        jSeparator1.setSeparatorSize(new java.awt.Dimension(0, 4));
         jToolBar1.add(jSeparator1);
 
         localContext.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/navigation/macroview/resources/declscope.png"))); // NOI18N
         localContext.setToolTipText(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.localContext.toolTipText")); // NOI18N
         localContext.setFocusable(false);
         localContext.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        localContext.setMaximumSize(new java.awt.Dimension(24, 24));
+        localContext.setMinimumSize(new java.awt.Dimension(24, 24));
+        localContext.setPreferredSize(new java.awt.Dimension(24, 24));
         localContext.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         localContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -338,6 +365,9 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         fileContext.setToolTipText(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.fileContext.toolTipText")); // NOI18N
         fileContext.setFocusable(false);
         fileContext.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        fileContext.setMaximumSize(new java.awt.Dimension(24, 24));
+        fileContext.setMinimumSize(new java.awt.Dimension(24, 24));
+        fileContext.setPreferredSize(new java.awt.Dimension(24, 24));
         fileContext.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         fileContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -347,12 +377,16 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         jToolBar1.add(fileContext);
         fileContext.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.fileContext.AccessibleContext.accessibleDescription")); // NOI18N
 
+        jSeparator2.setSeparatorSize(new java.awt.Dimension(0, 4));
         jToolBar1.add(jSeparator2);
 
         syncCaret.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/navigation/macroview/resources/synccaret.png"))); // NOI18N
         syncCaret.setToolTipText(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.syncCaret.toolTipText")); // NOI18N
         syncCaret.setFocusable(false);
         syncCaret.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        syncCaret.setMaximumSize(new java.awt.Dimension(24, 24));
+        syncCaret.setMinimumSize(new java.awt.Dimension(24, 24));
+        syncCaret.setPreferredSize(new java.awt.Dimension(24, 24));
         syncCaret.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         syncCaret.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -362,12 +396,16 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         jToolBar1.add(syncCaret);
         syncCaret.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.fileContext1.AccessibleContext.accessibleDescription")); // NOI18N
 
+        jSeparator3.setSeparatorSize(new java.awt.Dimension(0, 4));
         jToolBar1.add(jSeparator3);
 
         syncContext.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/navigation/macroview/resources/synccontext.png"))); // NOI18N
         syncContext.setToolTipText(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.syncContext.toolTipText")); // NOI18N
         syncContext.setFocusable(false);
         syncContext.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        syncContext.setMaximumSize(new java.awt.Dimension(24, 24));
+        syncContext.setMinimumSize(new java.awt.Dimension(24, 24));
+        syncContext.setPreferredSize(new java.awt.Dimension(24, 24));
         syncContext.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         syncContext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -375,12 +413,17 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
             }
         });
         jToolBar1.add(syncContext);
+
+        jSeparator4.setSeparatorSize(new java.awt.Dimension(0, 4));
         jToolBar1.add(jSeparator4);
 
         prevMacro.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/navigation/macroview/resources/prevmacro.png"))); // NOI18N
         prevMacro.setToolTipText(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.prevMacro.toolTipText")); // NOI18N
         prevMacro.setFocusable(false);
         prevMacro.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        prevMacro.setMaximumSize(new java.awt.Dimension(24, 24));
+        prevMacro.setMinimumSize(new java.awt.Dimension(24, 24));
+        prevMacro.setPreferredSize(new java.awt.Dimension(24, 24));
         prevMacro.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         prevMacro.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -394,6 +437,9 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         nextMacro.setToolTipText(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.nextMacro.toolTipText")); // NOI18N
         nextMacro.setFocusable(false);
         nextMacro.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        nextMacro.setMaximumSize(new java.awt.Dimension(24, 24));
+        nextMacro.setMinimumSize(new java.awt.Dimension(24, 24));
+        nextMacro.setPreferredSize(new java.awt.Dimension(24, 24));
         nextMacro.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         nextMacro.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -404,16 +450,6 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         nextMacro.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.nextMacro.AccessibleContext.accessibleDescription")); // NOI18N
 
         add(jToolBar1, java.awt.BorderLayout.LINE_START);
-
-        jCodeExpansionPane.setBorder(null);
-
-        jCodeExpansionEditorPane.setBorder(null);
-        jCodeExpansionPane.setViewportView(jCodeExpansionEditorPane);
-
-        add(jCodeExpansionPane, java.awt.BorderLayout.CENTER);
-
-        jStatusBar.setText(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.jStatusBar.text")); // NOI18N
-        add(jStatusBar, java.awt.BorderLayout.PAGE_END);
     }// </editor-fold>//GEN-END:initComponents
 
     private void nextMacroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextMacroActionPerformed
@@ -487,6 +523,7 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
     private javax.swing.JEditorPane jCodeExpansionEditorPane;
     private javax.swing.JScrollPane jCodeExpansionPane;
     private javax.swing.JEditorPane jMacroExpansionEditorPane;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JToolBar.Separator jSeparator1;
     private javax.swing.JToolBar.Separator jSeparator2;

@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
 <filesystem>
     <attr name="Services\MIMEResolver\org-netbeans-modules-editor-settings-storage-mime-resolver.xml\position" intvalue="325"/>
     <folder name="Editors">
-        <file name="org-netbeans-lib-editor-codetemplates-textsync-TextRegionEditing$Highlighting$HLFactory.instance" />
+        <file name="org-netbeans-lib-editor-codetemplates-textsync-TextRegionManager$Highlighting$HLFactory.instance" />
         <folder name="text">
             <folder name="x-java">
                 <folder name="CompletionProviders">
@@ -67,6 +67,9 @@ made subject to such option by the copyright holder.
     <folder name="xml">
         <folder name="entities">
             <folder name="NetBeans">
+                <file name="DTD_Editor_Abbreviations_settings_1_0" url="nbres:/org/netbeans/lib/editor/codetemplates/storage/EditorAbbreviations-1_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Editor Abbreviations settings 1.0//EN"/>
+                </file>
                 <file name="DTD_Editor_Code_Templates_settings_1_0" url="nbres:/org/netbeans/lib/editor/codetemplates/storage/EditorCodeTemplates-1_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Editor Code Templates settings 1.0//EN"/>
                 </file>

@@ -56,7 +56,7 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
     private final CsmVisibility visibility;
 
     public FieldImpl(AST ast, CsmFile file, CsmType type, String name, ClassImpl cls, CsmVisibility visibility, boolean register) {
-        super(ast, file, type, name, /*cls*/ null, false);
+        super(ast, file, type, name, /*cls*/ null, false, register);
         this.visibility = visibility;
         setScope(cls, register);
     }

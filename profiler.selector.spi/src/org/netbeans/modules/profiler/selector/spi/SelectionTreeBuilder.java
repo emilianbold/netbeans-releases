@@ -152,7 +152,8 @@ public abstract class SelectionTreeBuilder {
      * 
      * @return Returns the estimated number of top level
      *         nodes that will be created when calling
-     *         {@linkplain SelectionTreeBuilder#buildSelectionTree()} method
+     *         {@linkplain SelectionTreeBuilder#buildSelectionTree()} method.
+     *         Return -1 if the builder would generate an empty tree
      */
     abstract public int estimatedNodeCount();
 

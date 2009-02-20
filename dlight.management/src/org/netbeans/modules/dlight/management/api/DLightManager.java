@@ -85,7 +85,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
      *
      */
     public DLightManager() {
-        this.addDLightSessionListener(IndicatorsComponentProvider.getInstance().getIndicatorComponent());
+        this.addDLightSessionListener(IndicatorsComponentProvider.getInstance().getIndicatorComponentListener());
     }
 
     public static DLightManager getDefault() {
@@ -194,6 +194,9 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
     }
 
     public void addDLightSessionListener(DLightSessionListener listener) {
+        if (listener == null){
+            return;
+        }
         if (!sessionListeners.contains(listener)) {
             sessionListeners.add(listener);
 

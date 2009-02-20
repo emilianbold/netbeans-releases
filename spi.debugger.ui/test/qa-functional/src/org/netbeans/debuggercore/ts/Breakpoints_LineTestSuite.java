@@ -77,8 +77,8 @@ public class Breakpoints_LineTestSuite extends JellyTestCase {
                     "testLineBreakpointFunctionalityInSecondaryClass",
                     "testConditionalLineBreakpointFunctionality",
                     "testLineBreakpointActions",
-                    "testLineBreakpointsValidation",
-                    "testLineBreakpointsHitCount"
+                    "testLineBreakpointsValidation"
+                    
                 )
             .enableModules(".*").clusters(".*"));
 //        }

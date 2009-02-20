@@ -137,7 +137,7 @@ public class CommonGeneralFinishPanel extends  ResourceWizardPanel {
             int i;
             for (i=0; i < component.jLabels.length; i++) {
                 String jLabel = (String)component.jLabels[i].getText();
-                if (jLabel.equals(bundle.getString("LBL_" + __JndiName))) { //NOI18N
+                if (jLabel.equals(Util.getCorrectedLabel(bundle, __JndiName))) { //NOI18N
                     String jndiName = (String)((JTextField)component.jFields[i]).getText();
                     if (jndiName == null || jndiName.length() == 0) {
                         setErrorMsg(bundle.getString("Err_InvalidJndiName"));
@@ -151,21 +151,21 @@ public class CommonGeneralFinishPanel extends  ResourceWizardPanel {
                     }
                 }    
                 if (wizardInfo.getName().equals(__MailResource)) {
-                    if (jLabel.equals(bundle.getString("LBL_" + __Host))) { // NO18N
+                    if (jLabel.equals(Util.getCorrectedLabel(bundle, __Host))) { // NO18N
                         String host = (String)((JTextField)component.jFields[i]).getText();
                         if (host == null || host.length() == 0) {
                             setErrorMessage(bundle.getString("Err_EmptyValue"), jLabel);
                             return false;
                         }
                     }
-                    if (jLabel.equals(bundle.getString("LBL_" + __MailUser))) { // NO18N
+                    if (jLabel.equals(Util.getCorrectedLabel(bundle, __MailUser))) { // NO18N
                         String user = (String)((JTextField)component.jFields[i]).getText();
                         if (user == null || user.length() == 0) {
                             setErrorMessage(bundle.getString("Err_EmptyValue"), jLabel);
                             return false;
                         }
                     }
-                    if (jLabel.equals(bundle.getString("LBL_" + __From))) { //NOI18N
+                    if (jLabel.equals(Util.getCorrectedLabel(bundle, __From))) { //NOI18N
                         String from = (String)((JTextField)component.jFields[i]).getText();
                         if (from == null || from.length() == 0) {
                             setErrorMessage(bundle.getString("Err_EmptyValue"), jLabel);

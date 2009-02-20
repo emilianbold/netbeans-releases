@@ -94,7 +94,7 @@ public class NestedType extends TypeImpl {
                     classifier = getNestedClassifier(memberResolver, parentClassifier, getOwnText());
                 }
             }
-            if (classifier == null) {
+            if (!CsmBaseUtilities.isValid(classifier)) {
                 // try to resolve qualified name, not through the parent classifier
                 List<CharSequence> fqn = getFullQName();
                 classifier = renderClassifier(fqn.toArray(new CharSequence[fqn.size()]), parent);
@@ -152,8 +152,16 @@ public class NestedType extends TypeImpl {
             if (visited.contains(this)) {
                 return false;
             }
+            // Fixed IZ#155112 : False positive error highlighting errors on inner types of templates
+            // Check for isTemplateBased parent type and then this
+            HashSet<CsmType> t = new HashSet<CsmType>(visited);
+            t.add(this);
+            boolean result = ((SafeTemplateBasedProvider)parentType).isTemplateBased(t);
+            if (!result) {
+                result = super.isTemplateBased(visited);
+            }
             visited.add(this);
-            return ((SafeTemplateBasedProvider)parentType).isTemplateBased(visited);
+            return result;
         } else if (parentType != null && parentType.isTemplateBased()) {
             return true;
         } else {

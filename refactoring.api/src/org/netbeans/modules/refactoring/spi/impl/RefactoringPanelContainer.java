@@ -50,7 +50,6 @@ import javax.swing.JPanel;
 import org.openide.awt.MouseUtils;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import java.awt.Component;
@@ -139,6 +138,7 @@ public class RefactoringPanelContainer extends TopComponent {
         requestActive();
     }
 
+    @Override
     protected void componentActivated () {
         super.componentActivated();
         JPanel panel = getCurrentPanel();
@@ -211,7 +211,8 @@ public class RefactoringPanelContainer extends TopComponent {
         return usages;
     }
     
-    protected void closeNotify() {
+    @Override
+    protected void componentClosed() {
         isVisible = false;
         if (getComponentCount() == 0) {
             return ;
@@ -228,10 +229,12 @@ public class RefactoringPanelContainer extends TopComponent {
         }
     }
     
+    @Override
     protected String preferredID() {
         return "RefactoringPanel"; // NOI18N
     }
 
+    @Override
     public int getPersistenceType() {
         return PERSISTENCE_ALWAYS;
     }
@@ -332,6 +335,7 @@ public class RefactoringPanelContainer extends TopComponent {
         }
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(RefactoringPanelContainer.class.getName() + (isRefactoring ? ".refactoring-preview" : ".find-usages") ); //NOI18N
     }

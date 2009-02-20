@@ -306,17 +306,18 @@ public final class MIMEResolverImpl {
                 return null;
             }
 
-            // smell is filled in reverse order
-            
-            for (int i = smell.length-1; i>=0; i--) {
-                String s = smell[i].resolve(fo);
-                if (s != null) {
-                    if (s.equals(FileElement.EXIT_MIME_TYPE)) {
-                        // if file matches conditions and exit element is present, do not continue in loop and return null
-                        return null;
+            synchronized (this) {
+                // smell is filled in reverse order
+                for (int i = smell.length - 1; i >= 0; i--) {
+                    String s = smell[i].resolve(fo);
+                    if (s != null) {
+                        if (s.equals(FileElement.EXIT_MIME_TYPE)) {
+                            // if file matches conditions and exit element is present, do not continue in loop and return null
+                            return null;
+                        }
+                        ERR.fine("MIMEResolverImpl.findMIMEType(" + fo + ")=" + s);  // NOI18N
+                        return s;
                     }
-                    if (ERR.isLoggable(Level.FINE)) ERR.fine("MIMEResolverImpl.findMIMEType(" + fo + ")=" + s);  // NOI18N
-                    return s;
                 }
             }
             

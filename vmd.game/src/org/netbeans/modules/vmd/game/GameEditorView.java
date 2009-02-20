@@ -184,12 +184,15 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
             comboGlobal.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     Object item = comboGlobal.getSelectedItem();
+                    if (gameDesign == null) {
+                        return;
+                    }
                     if (item instanceof Editable) {
                         if (DEBUG) System.out.println("Request editing for: " + item); // NOI18N
                         gameDesign.getMainView().requestEditing((Editable) item);
                     }
-					else if (item instanceof String) {
-						gameDesign.getMainView().requestEditing(gameDesign);
+                    else if (item instanceof String) {
+                        gameDesign.getMainView().requestEditing(gameDesign);
                     }
                 }
             });

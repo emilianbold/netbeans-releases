@@ -252,17 +252,6 @@ public class ThreadBreakpointPanel extends JPanel implements Controller, org.ope
         return true;
     }
     
-    /**
-     * Return <code>true</code> whether value of this customizer 
-     * is valid (and OK button can be enabled).
-     *
-     * @return <code>true</code> whether value of this customizer 
-     * is valid
-     */
-    public boolean isValid () {
-        return true;
-    }
-    
     private String valiadateMsg () {
         return null;
     }

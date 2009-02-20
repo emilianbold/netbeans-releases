@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.support.ReadOnlySupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.navigation.hierarchy.ContextUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -133,7 +134,7 @@ public final class MacroExpansionViewUtils {
         }
         final int expansionsNumber = CsmMacroExpansion.expand(mainDoc, startOffset, endOffset, newExpandedContextDoc);
         setOffset(newExpandedContextDoc, startOffset, endOffset);
-        saveDocument(newExpandedContextDoc);
+        saveDocumentAndMarkAsReadOnly(newExpandedContextDoc);
 
         // Init expanded macro field
         final Document expandedMacroDoc = createExpandedMacroDocument(mainDoc, csmFile);
@@ -148,7 +149,7 @@ public final class MacroExpansionViewUtils {
                 Exceptions.printStackTrace(ex);
             }
         }
-        saveDocument(expandedMacroDoc);
+        saveDocumentAndMarkAsReadOnly(expandedMacroDoc);
 
         // Open view
         Runnable openView = new Runnable() {
@@ -158,7 +159,7 @@ public final class MacroExpansionViewUtils {
                     view.open();
                 }
                 view.setDocuments(newExpandedContextDoc, expandedMacroDoc);
-                view.setStatusBarText(NbBundle.getMessage(MacroExpansionTopComponent.class, "CTL_MacroExpansionStatusBarLine") + expansionsNumber); // NOI18N
+                view.setStatusBarText(NbBundle.getMessage(MacroExpansionTopComponent.class, "CTL_MacroExpansionStatusBarLine", expansionsNumber)); // NOI18N
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
@@ -205,8 +206,8 @@ public final class MacroExpansionViewUtils {
      * @param endOffset - new end offset
      */
     public static void setOffset(Document doc, int startOffset, int endOffset) {
-        doc.putProperty(MACRO_EXPANSION_START_OFFSET, new Integer(startOffset));
-        doc.putProperty(MACRO_EXPANSION_END_OFFSET, new Integer(endOffset));
+        doc.putProperty(MACRO_EXPANSION_START_OFFSET, Integer.valueOf(startOffset));
+        doc.putProperty(MACRO_EXPANSION_END_OFFSET, Integer.valueOf(endOffset));
     }
 
     /**
@@ -367,10 +368,10 @@ public final class MacroExpansionViewUtils {
      *
      * @param doc - document
      */
-    public static void saveDocument(Document doc) {
+    public static void saveDocumentAndMarkAsReadOnly(Document doc) {
         FileObject fo = CsmUtilities.getFileObject(doc);
         if (fo != null) {
-            saveFile(fo);
+            saveFileAndMarkAsReadOnly(fo);
         }
     }
 
@@ -379,11 +380,15 @@ public final class MacroExpansionViewUtils {
      *
      * @param fo - file object
      */
-    public static void saveFile(FileObject fo) {
+    private static void saveFileAndMarkAsReadOnly(FileObject fo) {
         try {
             DataObject dob = DataObject.find(fo);
-            EditorCookie ec = dob.getCookie(EditorCookie.class);
+            EditorCookie ec = dob.getLookup().lookup(EditorCookie.class);
             ec.saveDocument();
+            ReadOnlySupport ro = dob.getLookup().lookup(ReadOnlySupport.class);
+            if (ro != null) {
+                ro.setReadOnly(true);
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

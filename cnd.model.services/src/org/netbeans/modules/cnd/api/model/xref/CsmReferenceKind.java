@@ -59,6 +59,12 @@ public enum CsmReferenceKind {
      * all references in active code
      */
     public static final Set<CsmReferenceKind> ANY_REFERENCE_IN_ACTIVE_CODE;
+
+    /**
+     * all references in active code and live preprocessor directives
+     */
+    public static final Set<CsmReferenceKind> ANY_REFERENCE_IN_ACTIVE_CODE_AND_PREPROCESSOR;
+
     /**
      * all references
      */
@@ -66,6 +72,7 @@ public enum CsmReferenceKind {
     
     static {
         ANY_REFERENCE_IN_ACTIVE_CODE = EnumSet.range(DEFINITION, AFTER_DEREFERENCE_USAGE);
+        ANY_REFERENCE_IN_ACTIVE_CODE_AND_PREPROCESSOR = EnumSet.range(DEFINITION, IN_PREPROCESSOR_DIRECTIVE);
         ALL = EnumSet.range(DEFINITION, IN_DEAD_BLOCK);
     }
 }

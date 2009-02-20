@@ -26,7 +26,7 @@ import org.openide.util.Utilities;
  */
 public abstract class AbstractNameValidationDialog extends javax.swing.JPanel implements ActionListener {
 	
-    private static final Icon ICON_ERROR = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/vmd/midp/resources/error.gif"));
+    private static final Icon ICON_ERROR = ImageUtilities.loadImageIcon("org/netbeans/modules/vmd/midp/resources/error.gif", false);
 	private DialogDescriptor dd;
 
 	private String initialTextContent;

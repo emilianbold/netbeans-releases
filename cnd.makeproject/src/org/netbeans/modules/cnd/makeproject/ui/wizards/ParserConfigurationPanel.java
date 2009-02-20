@@ -561,7 +561,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         return outerPanel;
     }
 
-    private class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
+    private static class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
 
         public AdditionalLibrariesListPanel(List<String> objects) {
             super(objects);
@@ -668,7 +668,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         }
     }
 
-    private class IncludesListPanel extends ListEditorPanel<String> {
+    private static class IncludesListPanel extends ListEditorPanel<String> {
 
         public IncludesListPanel(List<String> objects) {
             super(objects);
@@ -752,7 +752,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         }
     }
 
-    private class MacrosListPanel extends ListEditorPanel<String> {
+    private static class MacrosListPanel extends ListEditorPanel<String> {
 
         public MacrosListPanel(List<String> objects) {
             super(objects);

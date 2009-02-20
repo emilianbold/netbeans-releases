@@ -125,7 +125,7 @@ public class CommonMessagePanel extends javax.swing.JPanel {
         jTextArea2.setToolTipText(errorMsg);
         jTextArea2.setForeground (nbErrorForeground);
         jTextArea2.repaint();
-        jLabel1.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/xml/wsdl/ui/view/common/resources/error.gif")));
+        jLabel1.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/xml/wsdl/ui/view/common/resources/error.gif", false));
         jLabel1.setToolTipText(errorMsg);
         mValidState = false;
     }

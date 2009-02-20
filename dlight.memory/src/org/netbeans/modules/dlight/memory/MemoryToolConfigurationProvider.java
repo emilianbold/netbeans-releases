@@ -39,26 +39,25 @@
 package org.netbeans.modules.dlight.memory;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
-import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.dlight.collector.stdout.api.CLIODCConfiguration;
-import org.netbeans.modules.dlight.collector.stdout.api.CLIOParser;
+import org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration;
+import org.netbeans.modules.dlight.collector.stdout.CLIOParser;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
+import org.openide.util.NbBundle;
 
 /**
  * 
@@ -66,52 +65,66 @@ import org.netbeans.modules.dlight.util.Util;
  */
 public final class MemoryToolConfigurationProvider implements DLightToolConfigurationProvider {
 
+    private static final boolean useCollector = Util.getBoolean("dlight.memory.collector", true);
+    private static final boolean redirectStdErr = Util.getBoolean("dlight.memory.log.stderr", false);
+
     public MemoryToolConfigurationProvider() {
     }
 
     public DLightToolConfiguration create() {
         final String toolName = "Memory Tool";
         final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(toolName);
-        Column timestampColumn = new Column("timestamp", Long.class, "Timestamp", null);
-        Column timeColumn = new Column("kind", Integer.class, "Kind", null);
-        Column sizeColumn = new Column("size", Integer.class, "Size", null);
-        Column addressColumn = new Column("address", Integer.class, "Address", null);
         Column totalColumn = new Column("total", Integer.class, "Heap size", null);
-        Column stackColumn = new Column("stackid", Integer.class, "Stack ID", null);
+        DataTableMetadata rawTableMetadata = null;
+        if (useCollector) {
+            Column timestampColumn = new Column("timestamp", Long.class, "Timestamp", null);
+            Column kindColumn = new Column("kind", Integer.class, "Kind", null);
+            Column sizeColumn = new Column("size", Integer.class, "Size", null);
+            Column addressColumn = new Column("address", Long.class, "Address", null);
+            Column stackColumn = new Column("stackid", Integer.class, "Stack ID", null);
 
-        List<Column> columns = Arrays.asList(
-                timestampColumn,
-                timeColumn,
-                sizeColumn,
-                addressColumn,
-                totalColumn,
-                stackColumn);
+            List<Column> columns = Arrays.asList(
+                    timestampColumn,
+                    kindColumn,
+                    sizeColumn,
+                    addressColumn,
+                    totalColumn,
+                    stackColumn);
 
-        String scriptFile = Util.copyResource(getClass(), Util.getBasePath(getClass()) + "/resources/mem.d");
+            String scriptFile = Util.copyResource(getClass(), Util.getBasePath(getClass()) + "/resources/mem.d");
 
-        final DataTableMetadata rawTableMetadata = new DataTableMetadata("mem", columns);
-        DTDCConfiguration dataCollectorConfiguration = new DTDCConfiguration(scriptFile, Arrays.asList(rawTableMetadata));
-        dataCollectorConfiguration.setStackSupportEnabled(true);
-        //dataCollectorConfiguration.setIndicatorFiringFactor(1);
-        // DTDCConfiguration collectorConfiguration = new DtraceDataAndStackCollector(dataCollectorConfiguration);
-        MultipleDTDCConfiguration multipleDTDCConfiguration = new MultipleDTDCConfiguration(dataCollectorConfiguration, "mem:");
-        toolConfiguration.addDataCollectorConfiguration(multipleDTDCConfiguration);
-
+            rawTableMetadata = new DataTableMetadata("mem", columns);
+            DTDCConfiguration dataCollectorConfiguration = new DTDCConfiguration(scriptFile, Arrays.asList(rawTableMetadata));
+            dataCollectorConfiguration.setStackSupportEnabled(true);
+            //dataCollectorConfiguration.setIndicatorFiringFactor(1);
+            // DTDCConfiguration collectorConfiguration = new DtraceDataAndStackCollector(dataCollectorConfiguration);
+            MultipleDTDCConfiguration multipleDTDCConfiguration = new MultipleDTDCConfiguration(dataCollectorConfiguration, "mem:");
+            toolConfiguration.addDataCollectorConfiguration(multipleDTDCConfiguration);
+        }
         List<Column> indicatorColumns = Arrays.asList(
                 totalColumn);
         IndicatorMetadata indicatorMetadata = new IndicatorMetadata(indicatorColumns);
         DataTableMetadata indicatorTableMetadata = new DataTableMetadata("truss", indicatorColumns);
 
-        CLIODCConfiguration clioCollectorConfiguration = new CLIODCConfiguration("/usr/bin/truss", "-l -d -t '!all' -u 'libc:*alloc,free' -p @PID 2>&1",
-                new MyCLIOParser(totalColumn), Arrays.asList(indicatorTableMetadata));
-        toolConfiguration.addIndicatorDataProviderConfiguration(clioCollectorConfiguration);
-
-//        HashMap<String, Object> configuration = new HashMap<String, Object>();
-//        configuration.put("aggregation", "avrg");
-//        BarIndicator indicator = new BarIndicator(indicatorMetadata, new BarIndicatorConfig(configuration));
-        MemoryIndicatorConfiguration indicator = new MemoryIndicatorConfiguration(indicatorMetadata, "total");
-        indicator.setVisualizerConfiguration(getDetails(rawTableMetadata));
-        toolConfiguration.addIndicatorConfiguration(indicator);
+        String monitor = MemoryMonitorUtil.getMonitorCmd();
+        String envVar = MemoryMonitorUtil.getEnvVar();
+        String agent = MemoryMonitorUtil.getAgentLib();
+        DLightLogger.instance.fine("Memory Indicator:\nmonitor:\n" + monitor + "\nagent:\n" + agent + "\n\n");
+        if (monitor != null && agent != null) {
+            CLIODCConfiguration clioCollectorConfiguration = new CLIODCConfiguration(monitor,
+                    " @PID " + (redirectStdErr ? " 2>/tmp/mmonitor.err" : ""),
+                    new MAgentClioParser(totalColumn), Arrays.asList(indicatorTableMetadata));
+            Map<String, String> env = new LinkedHashMap<String, String>();
+            env.put(envVar, agent);
+            DLightLogger.instance.fine("SET " + envVar + "=" + agent);//NOI18N
+            clioCollectorConfiguration.setDLightTargetExecutionEnv(env);
+            toolConfiguration.addIndicatorDataProviderConfiguration(clioCollectorConfiguration);
+            MemoryIndicatorConfiguration indicator = new MemoryIndicatorConfiguration(indicatorMetadata, "total");
+            if (useCollector) {
+                indicator.setVisualizerConfiguration(getDetails(rawTableMetadata));
+            }
+            toolConfiguration.addIndicatorConfiguration(indicator);
+        }
 
         return toolConfiguration;
     }
@@ -127,107 +140,143 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
             "FROM mem, node AS node, func, ( " +
             "   SELECT MAX(timestamp) as leak_timestamp FROM mem, ( " +
             "       SELECT address as leak_address, sum(kind*size) AS leak_size FROM mem GROUP BY address HAVING sum(kind*size) > 0 " +
-            "   ) WHERE address = leak_address GROUP BY address " +
-            ") WHERE timestamp = leak_timestamp " +
+            "   ) AS vt1 WHERE address = leak_address GROUP BY address " +
+            ") AS vt2 WHERE timestamp = leak_timestamp " +
             "AND stackid = node.node_id and node.func_id = func.func_id " +
-            "GROUP BY node.func_id";
+            "GROUP BY node.func_id, func.func_name";
 
-        DataTableMetadata viewTableMetadata = new DataTableMetadata("sync", viewColumns, sql, Arrays.asList(rawTableMetadata));
-        return new TableVisualizerConfiguration(viewTableMetadata);
+        DataTableMetadata viewTableMetadata = new DataTableMetadata("mem", viewColumns, sql, Arrays.asList(rawTableMetadata));
+        TableVisualizerConfiguration tableVisualizerConfiguration = new TableVisualizerConfiguration(viewTableMetadata);
+        tableVisualizerConfiguration.setEmptyAnalyzeMessage(NbBundle.getMessage(MemoryToolConfigurationProvider.class, "DetailedView.EmptyAnalyzeMessage"));
+        tableVisualizerConfiguration.setEmptyRunningMessage(NbBundle.getMessage(MemoryToolConfigurationProvider.class, "DetailedView.EmptyRunningMessage"));
+        return  tableVisualizerConfiguration;
     }
 
-    private static class MyCLIOParser implements CLIOParser {
+    private static class MAgentClioParser implements CLIOParser {
 
         private List<String> colNames;
-        private long allocated;
-        private Logger log = DLightLogger.instance;
 
-        /**
-         * Maps a thread  (string pair process-thread printed by truss in 1-st column)
-         * to size (string hex representation, including 0x prefix)
-         */
-        private Map<String, String> threadToSize = new LinkedHashMap<String, String>();
-
-        private Map<Long, Long> addressToSize = new HashMap<Long, Long>();
-
-        public MyCLIOParser(Column totalColumn) {
+        public MAgentClioParser(Column totalColumn) {
             colNames = Arrays.asList(totalColumn.getColumnName());
-            allocated = 0;
         }
 
         public DataRow process(String line) {
-
+            DLightLogger.instance.fine("MAgentClioParser: " + line); //NOI18N
             if (line == null) {
                 return null;
             }
-            String l = line.trim();
-            if (log.isLoggable(Level.FINE)) { log.fine(line); }
-
-            // The example of line is:
-            //      /1@1:   14.9686 -> libc:malloc(0x1388, 0x2710, 0x88, 0x1)
-            //      /1@1:   14.9700 <- libc:malloc() = 0x8064c08
-            //      /1@1:   14.9720 -> libc:free(0x8064c08, 0x2710, 0x88, 0x1)
-            //      /1@1:   14.9728 <- libc:free() = 0
-
-            String[] tokens = l.split("[ \t(),]+"); //NOI18N
-
-            if (tokens.length < 4) {
+            line = line.trim();
+            if (!Character.isDigit(line.charAt(0))) {
                 return null;
             }
             try {
-                String threadName = tokens[0];
-                String direction = tokens[2];
-                String funcName = tokens[3];
-                if ( "libc:malloc".equals(funcName)) { //NOI18N
-                    if ("->".equals(direction)) { //NOI18N
-                        String strSize = tokens[4];
-                        threadToSize.put(threadName, strSize);
-                    } else if ("<-".equals(direction)) { //NOI18N
-                        String strSize = threadToSize.remove(threadName);
-                        if ("0".equals(tokens[5])) {
-                            if (log.isLoggable(Level.FINE)) { log.fine("alloc FAILED"); } //NOI18N
-                        } else {
-                            if (strSize != null) {
-                                int size = parseHex(strSize);
-                                allocated += size;
-                                long address = parseHex(tokens[5]);
-                                addressToSize.put(new Long(address), new Long(size));
-                                if (log.isLoggable(Level.FINE)) { log.fine(String.format("allocated %d address %X total %d extents %d",  //NOI18N
-                                        size, address, allocated, addressToSize.size())); }
-                                return new DataRow(colNames, Arrays.asList(new Long[] { allocated }));
-                            }
-                        }
-                    }
-                }
-                else if ( "libc:free".equals(funcName) && "->".equals(direction)) { //NOI18N
-                    if ("0x0".equals(tokens[4])) {
-                        if (log.isLoggable(Level.FINE)) { log.fine("free FAILED"); } //NOI18N
-                    } else {
-                        long address = parseHex(tokens[4]);
-                        Long size = addressToSize.remove(address);
-                        if (size == null) {
-                            if (log.isLoggable(Level.FINE)) { 
-                                log.fine(String.format("free: wrong address %X", address)); //NOI18N
-                            }
-                        } else {
-                            allocated -= size.longValue();
-                            if (log.isLoggable(Level.FINE)) { 
-                                log.fine(String.format("freed %d total %d extents %d", size.longValue(), allocated, addressToSize.size())); //NOI18N
-                            }
-                            return new DataRow(colNames, Arrays.asList(new Long[] { allocated }));
-                        }
-                    }
-                }
-            } catch (NumberFormatException nfe) {
-                nfe.printStackTrace();
+                long value = Integer.parseInt(line);
+                return new DataRow(colNames, Arrays.asList(new Long[] { value }));
+            } catch (NumberFormatException e) {
+                DLightLogger.instance.log(Level.WARNING, e.getMessage(), e);
             }
             return null;
         }
 
-        int parseHex(String s) throws NumberFormatException {
+        int parseInt(String s) throws NumberFormatException {
             DLightLogger.assertTrue(s != null);
-            DLightLogger.assertTrue(s.startsWith("0x"));
-            return Integer.parseInt(s.substring(2), 16);
+            return Integer.parseInt(s);
         }
+
     }
+
+//    private static class TrussClioParser implements CLIOParser {
+//
+//        private List<String> colNames;
+//        private long allocated;
+//        private Logger log = DLightLogger.instance;
+//
+//        /**
+//         * Maps a thread  (string pair process-thread printed by truss in 1-st column)
+//         * to size (string hex representation, including 0x prefix)
+//         */
+//        private Map<String, String> threadToSize = new LinkedHashMap<String, String>();
+//
+//        private Map<Long, Long> addressToSize = new HashMap<Long, Long>();
+//
+//        public TrussClioParser(Column totalColumn) {
+//            colNames = Arrays.asList(totalColumn.getColumnName());
+//            allocated = 0;
+//        }
+//
+//        public DataRow process(String line) {
+//
+//            if (line == null) {
+//                return null;
+//            }
+//            String l = line.trim();
+//            if (log.isLoggable(Level.FINE)) { log.fine(line); }
+//
+//            // The example of line is:
+//            //      /1@1:   14.9686 -> libc:malloc(0x1388, 0x2710, 0x88, 0x1)
+//            //      /1@1:   14.9700 <- libc:malloc() = 0x8064c08
+//            //      /1@1:   14.9720 -> libc:free(0x8064c08, 0x2710, 0x88, 0x1)
+//            //      /1@1:   14.9728 <- libc:free() = 0
+//
+//            String[] tokens = l.split("[ \t(),]+"); //NOI18N
+//
+//            if (tokens.length < 4) {
+//                return null;
+//            }
+//            try {
+//                String threadName = tokens[0];
+//                String direction = tokens[2];
+//                String funcName = tokens[3];
+//                if ( "libc:malloc".equals(funcName)) { //NOI18N
+//                    if ("->".equals(direction)) { //NOI18N
+//                        String strSize = tokens[4];
+//                        threadToSize.put(threadName, strSize);
+//                    } else if ("<-".equals(direction)) { //NOI18N
+//                        String strSize = threadToSize.remove(threadName);
+//                        if ("0".equals(tokens[5])) {
+//                            if (log.isLoggable(Level.FINE)) { log.fine("alloc FAILED"); } //NOI18N
+//                        } else {
+//                            if (strSize != null) {
+//                                int size = parseHex(strSize);
+//                                allocated += size;
+//                                long address = parseHex(tokens[5]);
+//                                addressToSize.put(new Long(address), new Long(size));
+//                                if (log.isLoggable(Level.FINE)) { log.fine(String.format("allocated %d address %X total %d extents %d",  //NOI18N
+//                                        size, address, allocated, addressToSize.size())); }
+//                                return new DataRow(colNames, Arrays.asList(new Long[] { allocated }));
+//                            }
+//                        }
+//                    }
+//                }
+//                else if ( "libc:free".equals(funcName) && "->".equals(direction)) { //NOI18N
+//                    if ("0x0".equals(tokens[4])) {
+//                        if (log.isLoggable(Level.FINE)) { log.fine("free FAILED"); } //NOI18N
+//                    } else {
+//                        long address = parseHex(tokens[4]);
+//                        Long size = addressToSize.remove(address);
+//                        if (size == null) {
+//                            if (log.isLoggable(Level.FINE)) {
+//                                log.fine(String.format("free: wrong address %X", address)); //NOI18N
+//                            }
+//                        } else {
+//                            allocated -= size.longValue();
+//                            if (log.isLoggable(Level.FINE)) {
+//                                log.fine(String.format("freed %d total %d extents %d", size.longValue(), allocated, addressToSize.size())); //NOI18N
+//                            }
+//                            return new DataRow(colNames, Arrays.asList(new Long[] { allocated }));
+//                        }
+//                    }
+//                }
+//            } catch (NumberFormatException nfe) {
+//                nfe.printStackTrace();
+//            }
+//            return null;
+//        }
+//
+//        int parseHex(String s) throws NumberFormatException {
+//            DLightLogger.assertTrue(s != null);
+//            DLightLogger.assertTrue(s.startsWith("0x"));
+//            return Integer.parseInt(s.substring(2), 16);
+//        }
+//    }
 }

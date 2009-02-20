@@ -47,7 +47,7 @@ package org.netbeans.modules.cnd.highlight.error;
 public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
 
     static {
-        System.setProperty("cnd.identifier.error.provider", "true");
+        //System.setProperty("cnd.identifier.error.provider", "true");
     }
 
     public UnresolvedIdentifierTest(String testName) {
@@ -99,11 +99,19 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("iz_144873.cpp");
     }
 
-
     public void testIZ145118() throws Exception {
         performStaticTest("iz_145118.cpp");
     }
 
+    public void testIZ155112() throws Exception {
+        performStaticTest("iz155112.cpp");
+    }
+
+    public void testIZ158216() throws Exception {
+        // IZ#158216 : Unresolved ids in compiler extensions
+        performStaticTest("iz158216.cpp");
+    }
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
 
@@ -114,9 +122,13 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         }
 
         @Override
-	protected Class getTestCaseDataClass() {
-	    return UnresolvedIdentifierTest.class;
-	}
+        protected Class getTestCaseDataClass() {
+            return UnresolvedIdentifierTest.class;
+        }
 
+        public void testIZ158280() throws Exception {
+            // IZ#158280 : False positive error highlighting on templates in case of macro usage
+            performStaticTest("iz158280.cpp");
+        }
     }
 }

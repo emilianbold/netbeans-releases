@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,19 +31,15 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
@@ -56,50 +52,115 @@ import org.openide.filesystems.FileUtil;
 public class ExternalModificationTest extends ModelImplBaseTestCase {
 
     private final static boolean verbose;
+
+
     static {
         verbose = Boolean.getBoolean("test.external.modification.verbose");
-        if( verbose ) {
-	    System.setProperty("cnd.modelimpl.trace.external.changes", "true");
-            
+        if (verbose) {
+            System.setProperty("cnd.modelimpl.trace.external.changes", "true");
+
             System.setProperty("cnd.modelimpl.timing", "true");
             System.setProperty("cnd.modelimpl.timing.per.file.flat", "true");
             System.setProperty("cnd.repository.listener.trace", "true");
             System.setProperty("cnd.trace.close.project", "true");
         }
-    }    
-    
+    }
+
     public ExternalModificationTest(String testName) {
         super(testName);
     }
 
     public void testSimple() throws Exception {
-
         File workDir = getWorkDir();
         File sourceFile = new File(workDir, "test1.cc");
         String oldName = "foo1";
         String newName = "foo2";
-        
+
         writeFile(sourceFile, "void " + oldName + "() {};");
-        
-	final TraceModelBase traceModel = new  TraceModelBase();
-	//traceModel.setUseSysPredefined(true);
-	traceModel.processArguments(sourceFile.getAbsolutePath());
-	ModelImpl model = traceModel.getModel();
-	//ModelSupport.instance().setModel(model);
-	final CsmProject project = traceModel.getProject();
+
+        final TraceModelBase traceModel = new TraceModelBase();
+        //traceModel.setUseSysPredefined(true);
+        traceModel.processArguments(sourceFile.getAbsolutePath());
+        ModelImpl model = traceModel.getModel();
+        //ModelSupport.instance().setModel(model);
+        final CsmProject project = traceModel.getProject();
 
         project.waitParse();
         assertNotNull(oldName + " should be found", findDeclaration(oldName, project));
-        
+
         writeFile(sourceFile, "void " + newName + "() {};");
-        
+
         sleep(1000);
         FileUtil.refreshAll();
         sleep(2000);
-        
+
         project.waitParse();
         assertNotNull(newName + " should be found", findDeclaration(newName, project));
         assertNull(oldName + " is found, while it should be absent", findDeclaration(oldName, project));
+    }
+
+    public void testReparseOfBrokenInclude() throws Exception {
+        File workDir = getWorkDir();
+        File sourceFile = new File(workDir, "test.cc");
+        writeFile(sourceFile, "#include \"test.h\"\n");
+        File headerFile = new File(workDir, "test.h");
+        headerFile.delete();
+
+        final TraceModelBase traceModel = new TraceModelBase();
+        traceModel.processArguments(sourceFile.getAbsolutePath());
+        final CsmProject project = traceModel.getProject();
+
+        project.waitParse();
+        CsmFile csmFile = project.findFile(sourceFile.getAbsolutePath());
+        assertNotNull(csmFile);
+        assertEquals(1, csmFile.getIncludes().size());
+        assertNull(csmFile.getIncludes().iterator().next().getIncludeFile());
+
+        // This call ensures that workDir content is fully cached,
+        // so that subsequent creation of test.h will be noticed.
+        FileUtil.toFileObject(workDir).getChildren();
+
+        writeFile(headerFile, "void foo();\n");
+
+        sleep(1000);
+        FileUtil.refreshAll();
+        sleep(2000);
+
+        project.waitParse();
+        assertNotNull(csmFile.getIncludes().iterator().next().getIncludeFile());
+    }
+
+    public void testReparseOfBrokenInclude2() throws Exception {
+        File workDir = getWorkDir();
+        File sourceFile = new File(workDir, "test.cc");
+        writeFile(sourceFile, "#include \"test1.h\"\n");
+        File headerFile1 = new File(workDir, "test1.h");
+        writeFile(headerFile1, "#include \"test2.h\"\n");
+        File headerFile2 = new File(workDir, "test2.h");
+        headerFile2.delete();
+
+        final TraceModelBase traceModel = new TraceModelBase();
+        traceModel.processArguments(sourceFile.getAbsolutePath());
+        final CsmProject project = traceModel.getProject();
+
+        project.waitParse();
+        CsmFile csmFile = project.findFile(headerFile1.getAbsolutePath());
+        assertNotNull(csmFile);
+        assertEquals(1, csmFile.getIncludes().size());
+        assertNull(csmFile.getIncludes().iterator().next().getIncludeFile());
+
+        // This call ensures that workDir content is fully cached,
+        // so that subsequent creation of test2.h will be noticed.
+        FileUtil.toFileObject(workDir).getChildren();
+
+        writeFile(headerFile2, "void foo();\n");
+
+        sleep(1000);
+        FileUtil.refreshAll();
+        sleep(2000);
+
+        project.waitParse();
+        assertNotNull(csmFile.getIncludes().iterator().next().getIncludeFile());
     }
 
 }

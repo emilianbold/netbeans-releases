@@ -55,8 +55,8 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
     // Constants
     private static final String ENTERPRISE_CLUSTER =
             "{enterprise-cluster}"; // NOI18N
-    private static final String VISUALWEB_CLUSTER =
-            "{visualweb-cluster}"; // NOI18N
+    //private static final String VISUALWEB_CLUSTER =
+    //        "{visualweb-cluster}"; // NOI18N
     private static final String IDENTITY_CLUSTER =
             "{identity-cluster}"; // NOI18N
     private static final String XML_CLUSTER =
@@ -77,7 +77,7 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
     public ConfigurationLogic() throws InitializationException {
         super(new String[]{
                     ENTERPRISE_CLUSTER,
-                    VISUALWEB_CLUSTER,
+                    //VISUALWEB_CLUSTER,
                     IDENTITY_CLUSTER,
                     XML_CLUSTER,
                     GROOVY_CLUSTER}, ID);

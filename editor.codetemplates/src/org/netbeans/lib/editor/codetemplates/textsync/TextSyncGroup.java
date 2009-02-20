@@ -54,12 +54,19 @@ import java.util.List;
  *
  * @author Miloslav Metelka
  */
-public final class TextSyncGroup {
+public final class TextSyncGroup<I> {
     
     private TextRegionManager manager;
     
     private List<TextSync> textSyncs;
     
+    private int activeTextSyncIndex = -1;
+
+    /**
+     * Client-specific information.
+     */
+    private I clientInfo;
+
     public TextSyncGroup(TextSync... textSyncs) {
         initTextSyncs(textSyncs.length);
         for (TextSync textSync : textSyncs)
@@ -86,17 +93,17 @@ public final class TextSyncGroup {
     public void addTextSync(TextSync textSync) {
         if (textSync == null)
             throw new IllegalArgumentException("textSync cannot be null");
-        if (textSync.textSyncGroup() != null)
+        if (textSync.group() != null)
             throw new IllegalArgumentException("textSync " + textSync + // NOI18N
-                    " already assigned to group " + textSync.textSyncGroup()); // NOI18N
+                    " already assigned to group " + textSync.group()); // NOI18N
         textSyncs.add(textSync);
-        textSync.setTextSyncGroup(this);
+        textSync.setGroup(this);
         
     }
 
     public void removeTextSync(TextSync textSync) {
         if (textSyncs.remove(textSync)) {
-            textSync.setTextSyncGroup(null);
+            textSync.setGroup(null);
         }
     }
 
@@ -112,15 +119,39 @@ public final class TextSyncGroup {
         this.manager = manager;
     }
 
+    public I clientInfo() {
+        return clientInfo;
+    }
+
+    public void setClientInfo(I clientInfo) {
+        this.clientInfo = clientInfo;
+    }
+
+    public TextSync activeTextSync() {
+        return (activeTextSyncIndex >= 0 && activeTextSyncIndex < textSyncs.size())
+                ? textSyncs.get(activeTextSyncIndex)
+                : null;
+    }
+
+    public int activeTextSyncIndex() {
+        return activeTextSyncIndex;
+    }
+
+    void setActiveTextSyncIndex(int activeTextSyncIndex) {
+        this.activeTextSyncIndex = activeTextSyncIndex;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(textSyncs.size() * 50 + 2);
-        sb.append('{');
-        if (textSyncs.size() > 0)
-            sb.append(textSyncs.get(0));
-        for (int i = 1; i < textSyncs.size(); i++)
-            sb.append(", ").append(textSyncs.get(i));
-        sb.append('}');
+        sb.append(super.toString());
+        if (clientInfo != null) {
+            sb.append(" ").append(clientInfo);
+        }
+        sb.append('\n');
+        for (TextSync ts : textSyncs) {
+            sb.append("  ").append(ts).append('\n');
+        }
         return sb.toString();
     }
 

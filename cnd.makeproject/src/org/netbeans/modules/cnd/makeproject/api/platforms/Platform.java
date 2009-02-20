@@ -72,14 +72,27 @@ public abstract class Platform extends PlatformTypes {
     public abstract LibraryItem.StdLibItem[] getStandardLibraries();
     
     public abstract String getLibraryName(String baseName);
-    
+
+    /**
+     * File name that qmake would generate on current platform
+     * given <code>TARGET=baseName</code> and <code>VERSION=version</code>.
+     *
+     * @param baseName
+     * @param version
+     * @return
+     */
+    public String getQtLibraryName(String baseName, String version) {
+        return getLibraryName(baseName) + "." + version; // NOI18N
+    }
+
     public abstract String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet);
     
     public LibraryItem.StdLibItem getStandardLibrarie(String name) {
-	for (int i = 0; i < getStandardLibraries().length; i++) {
-	    if (getStandardLibraries()[i].getName().equals(name))
-		return getStandardLibraries()[i];
-	}
-	return null;
+        for (int i = 0; i < getStandardLibraries().length; i++) {
+            if (getStandardLibraries()[i].getName().equals(name)) {
+                return getStandardLibraries()[i];
+            }
+        }
+        return null;
     }
 }

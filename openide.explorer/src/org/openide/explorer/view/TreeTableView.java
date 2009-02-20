@@ -770,6 +770,9 @@ public class TreeTableView extends BeanTreeView {
             tableModel.setNodes(nodes);
         }
         listener.revalidateScrollBar();
+        ViewUtil.adjustBackground(treeTable);
+        ViewUtil.adjustBackground(scrollPane);
+        ViewUtil.adjustBackground(scrollPane.getViewport());
     }
 
     @Override
@@ -1656,9 +1659,9 @@ public class TreeTableView extends BeanTreeView {
 
         private ImageIcon getProperIcon(boolean descending) {
             if (descending) {
-                return new ImageIcon(ImageUtilities.loadImage(SORT_DESC_ICON));
+                return ImageUtilities.loadImageIcon(SORT_DESC_ICON, false);
             } else {
-                return new ImageIcon(ImageUtilities.loadImage(SORT_ASC_ICON));
+                return ImageUtilities.loadImageIcon(SORT_ASC_ICON, false);
             }
         }
     }

@@ -83,7 +83,7 @@ public class AutoTestSupport {
     public void start() {
 
         // use the ui test runner if available
-        TestRunner autotestRunner = getTestRunner(TestRunner.TestType.AUTOTEST);
+        TestRunner autotestRunner = Util.getTestRunner(TestRunner.TestType.AUTOTEST);
         if (autotestRunner != null) {
             autotestRunner.runAllTests(project, false);
             return;
@@ -118,14 +118,4 @@ public class AutoTestSupport {
         ExecutionService.newService(rpc, desc.toExecutionDescriptor(), displayName).run();
     }
     
-    private TestRunner getTestRunner(TestRunner.TestType testType) {
-        Collection<? extends TestRunner> testRunners = Lookup.getDefault().lookupAll(TestRunner.class);
-        for (TestRunner each : testRunners) {
-            if (each.supports(testType)) {
-                return each;
-            }
-        }
-        return null;
-    }
-
 }

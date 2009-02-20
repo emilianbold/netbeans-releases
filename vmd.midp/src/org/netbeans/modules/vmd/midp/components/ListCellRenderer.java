@@ -73,5 +73,4 @@ public class ListCellRenderer extends DefaultListCellRenderer {
         return renderer;
     }
     
-    
 }

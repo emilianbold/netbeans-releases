@@ -85,7 +85,7 @@ public class CompletionSupport {
     }
 
     private  List<? extends TypeScope> getClassMemberTypegetType(final int offset) {
-        ModelScope modelScope = modelVisitor.getModelScope();
+        FileScope modelScope = modelVisitor.getModelScope();
         VariableScope nearestVariableScope = modelVisitor.getNearestVariableScope(offset);
 
         List<? extends TypeScope> emptyRetval = Collections.emptyList();

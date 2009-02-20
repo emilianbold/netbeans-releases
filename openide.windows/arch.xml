@@ -548,6 +548,37 @@ Yes. Component can control its persistence and way how they are displayed in con
 </api>
 
 
+<api type="export" group="property" name="netbeans.winsys.tc.closing_disabled" category="stable">
+     Name of TopComponent's Boolean client property which removes close button
+     from TopComponent's header and disables its 'Close Window' action when set to Boolean.TRUE.
+</api>
+
+<api type="export" group="property" name="netbeans.winsys.tc.sliding_disabled" category="stable">
+     Name of TopComponent's Boolean client property which removes 'minimized' button
+     from TopComponent's header and disables its 'Minimize Window' action when
+     set to Boolean.TRUE. TopComponents which are already slided-out and have this
+     property set to Boolean.TRUE will have 'pin' button removed from their header
+     and their 'Minimize Window' action will be disabled.
+</api>
+
+<api type="export" group="property" name="netbeans.winsys.tc.undocking_disabled" category="stable">
+     Name of TopComponent's Boolean client property which disables TopComponent's
+     'Undock Window' action when set to Boolean.TRUE. TopComponents which are already
+     floating and have this property set to Boolean.TRUE will have their 'Dock Window' action disabled.
+</api>
+
+<api type="export" group="property" name="netbeans.winsys.tc.dragging_disabled" category="stable">
+     Name of TopComponent's Boolean client property which disables drag and drop
+     when set to Boolean.TRUE.
+</api>
+
+<api type="export" group="property" name="netbeans.winsys.tc.maximization_disabled" category="stable">
+     Name of TopComponent's Boolean client property which disables TopComponent
+     maximization by double-clicking its header when set to Boolean.TRUE. TopComponent's
+     'Maximize Window' action will be also disabled.
+</api>
+
+
 <!--<api group="property" name="NamingType" type="export" category="private">
     Valid values are "BothOnlyCompName", "SDIOnlyCompName", "MDIOnlyCompName". 
     Default is "" (empty string). This property controls how window (frame) title is constructed

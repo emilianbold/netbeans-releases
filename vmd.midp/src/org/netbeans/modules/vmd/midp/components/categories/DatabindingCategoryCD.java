@@ -76,7 +76,7 @@ public final class DatabindingCategoryCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList (
             // general
-            InfoPresenter.createStatic (NbBundle.getMessage(DatabindingCategoryCD.class, "DISP_Databinding"), null, CategorySupport.ICON_PATH_CATEGORY_DATABINDING), // NOI18N
+            InfoPresenter.createStatic (NbBundle.getMessage(DatabindingCategoryCD.class, "DISP_Databinding"), null, CategorySupport.ICON_PATH_CATEGORY_RESOURCES), // NOI18N
             // accept
             new AcceptTypePresenter (DataSetAbstractCD.TYPEID),
             // inspector

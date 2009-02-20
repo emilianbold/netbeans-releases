@@ -82,6 +82,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -310,6 +311,8 @@ public abstract class NbTopManager {
                 for( int i=0; i<messages.size() && !added; i++ ) {
                     WeakReference<MessageImpl> ref = messages.get(0);
                     MessageImpl impl = ref.get();
+                    if (impl == null)
+                        continue;
                     if( impl.importance == importance ) {
                         messages.set(i, newRef);
                         added = true;
@@ -490,7 +493,8 @@ public abstract class NbTopManager {
                     public void run() {
                         org.netbeans.CLIHandler.stopServer ();
                 
-                        if(windowSystem != null) {
+                        boolean gui = org.netbeans.core.startup.CLIOptions.isGui();
+                        if(windowSystem != null && gui) {
                             windowSystem.hide();
                             windowSystem.save();
                         }
@@ -546,7 +550,7 @@ public abstract class NbTopManager {
      * Default implementation of the lifecycle manager interface that knows
      * how to save all modified DataObject's, and to exit the IDE safely.
      */
-    @org.openide.util.lookup.ServiceProvider(service=org.openide.LifecycleManager.class)
+    @ServiceProvider(service=LifecycleManager.class, supersedes="org.netbeans.core.startup.ModuleLifecycleManager")
     public static final class NbLifecycleManager extends LifecycleManager {
         /** Default constructor for lookup. */
         public NbLifecycleManager() {}

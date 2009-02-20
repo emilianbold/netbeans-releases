@@ -57,7 +57,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
 public class HashMapRepository implements Repository {
 
     /** repersents a single unit */
-    private class Unit {
+    private static class Unit {
         
         private Map<Key,Persistent> map = new ConcurrentHashMap<Key,Persistent>();
         private CharSequence name;

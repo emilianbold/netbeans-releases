@@ -56,7 +56,7 @@
             <property name="ergonomicsdir" location="${basedir}"/>
             <dirset refid="ergonomic.clusters"/>
         </subant>
-        <pathconvert property="extra.modules.files" pathsep=",">
+        <pathconvert property="extra.module.files" pathsep=",">
             <path>
                 <fileset id="-disable-kits" dir="${build.release.dir}">
                     <include name="**/*"/>
@@ -69,7 +69,7 @@
         </pathconvert>
         <copy todir="${cluster}">
             <fileset dir="${build.release.dir}">
-                <include name="${extra.modules.files}"/>
+                <include name="${extra.module.files}"/>
             </fileset>
         </copy>
     </target>
@@ -89,13 +89,10 @@
 
         <property name="proxytmp" value="${ergonomicsdir}/build/proxies/${cluster.name}"/>
         <property name="proxydir" value="${ergonomicsdir}/build/classes/org/netbeans/modules/ide/ergonomics/${cluster.name}"/>
-
-        <available property="proxy.already.generated" file="${proxytmp}/layers"/>
     </target>
     <target 
         name="-proxy-one-cluster"
         depends="-init-clusters,-init-one-cluster-propeties"
-        unless="proxy.already.generated"
     >
         <taskdef name="layerindex"
              classname="org.netbeans.nbbuild.LayerIndex"
@@ -173,9 +170,6 @@
                 <include name="**/modules/*.jar"/>
             </entries>
             <bundlefilter>
-                <linecontains>
-                    <contains value="Templates"/>
-                </linecontains>
                 <concatfilter prepend="${proxyprop}"/>
             </bundlefilter>
          </extractlayer>

@@ -324,11 +324,9 @@ public class Hk2DatasourceManager implements DatasourceManager {
     
     private static class ConnectionPool {
         
-        private final String poolName;
         private final Map<String, String> properties;
         
         public ConnectionPool(String poolName) {
-            this.poolName = poolName;
             this.properties = new HashMap<String, String>();
         }
         
@@ -493,7 +491,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
         
         UrlData urlData = new UrlData(url);
         if(DbUtil.strEmpty(pool.getUrl())) {
-            matchedSettings = DbUtil.strEquivalent(urlData.getHostName(), pool.getHostName()) &&
+            matchedSettings = DbUtil.strEquivalent(urlData.getHostName(), pool.getHostname()) &&
                     DbUtil.strEquivalent(urlData.getPort(), pool.getPort()) &&
                     DbUtil.strEquivalent(urlData.getDatabaseName(), pool.getDatabaseName()) &&
                     DbUtil.strEquivalent(urlData.getSid(), pool.getSid());
@@ -897,7 +895,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
         
         private final String poolName;
         private final String url;
-        private final String hostName;
+        private final String hostname;
         private final String port;
         private final String databaseName;
         private final String username;
@@ -908,7 +906,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
                 String databaseName, String username, String password, String sid) {
             this.poolName = poolName;
             this.url = url;
-            this.hostName = hostName;
+            this.hostname = hostName;
             this.port = port;
             this.databaseName = databaseName;
             this.username = username;
@@ -928,8 +926,8 @@ public class Hk2DatasourceManager implements DatasourceManager {
             return databaseName;
         }
 
-        public String getHostName() {
-            return hostName;
+        public String getHostname() {
+            return hostname;
         }
 
         public String getPassword() {

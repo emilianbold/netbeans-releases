@@ -148,7 +148,7 @@ public final class TreePathHandle {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null && !(obj instanceof TreePathHandle)) {
+        if (!(obj instanceof TreePathHandle)) {
             return false;
         }
         

@@ -40,7 +40,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jaroslav Tulach
  */
-final class Decorations {
+public final class Decorations {
     
     private static final SimpleFormatter FORMATTER = new SimpleFormatter();
     

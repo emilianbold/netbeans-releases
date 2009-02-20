@@ -305,7 +305,10 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.bugtracking.bridge</friend>
+                <package>org.netbeans.modules.subversion.hooks.spi</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

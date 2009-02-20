@@ -47,8 +47,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -57,6 +55,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
@@ -104,7 +103,9 @@ import org.w3c.dom.NodeList;
  * @author Jesse Glick
  */
 public final class ReferenceHelper {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(ReferenceHelper.class.getName());
+
     /**
      * XML element name used to store references in <code>project.xml</code>.
      */
@@ -1281,6 +1282,8 @@ public final class ReferenceHelper {
      * @since 1.9
      */
     public void fixReferences(File originalPath) {
+        LOGGER.fine("Fixing refs for: " + originalPath);
+
         String[] prefixesToFix = new String[] {"file.reference.", "project."};
         EditableProperties pub  = h.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH);
         EditableProperties priv = h.getProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH);
@@ -1305,12 +1308,21 @@ public final class ReferenceHelper {
             if (!cont)
                 continue;
             
-            String    value = e.getValue();
+            // #151648: do not try to fix references defined via property
+            String value = e.getValue();
+            if (value.startsWith("${")) { // NOI18N
+                continue;
+            }
             
             File absolutePath = FileUtil.normalizeFile(PropertyUtils.resolveFile(originalPath, value));
             
             //TODO: extra base dir relativization:
-            if (!CollocationQuery.areCollocated(absolutePath, projectDir)) {
+
+        //mkleint: removed CollocationQuery.areCollocated() reference
+        // when AlwaysRelativeCQI gets removed the condition resolves to false more frequently.
+        // that might not be desirable.
+            String rel = PropertyUtils.relativizeFile(projectDir, absolutePath);
+            if (rel == null) {
                 pubRemove.add(key);
                 privAdd.put(key, absolutePath.getAbsolutePath());
             }
@@ -1329,23 +1341,35 @@ public final class ReferenceHelper {
             if (!cont)
                 continue;
             
-            String    value = e.getValue();
+            // #151648: do not try to fix references defined via property
+            String value = e.getValue();
+            if (value.startsWith("${")) { // NOI18N
+                continue;
+            }
             
             File absolutePath = FileUtil.normalizeFile(PropertyUtils.resolveFile(originalPath, value));
             
-	    if (absolutePath.getAbsolutePath().startsWith(originalPath.getAbsolutePath())) {
-		//#65141: in private.properties, a full path into originalPath may be given, fix:
-		String relative = PropertyUtils.relativizeFile(originalPath, absolutePath);
-		
-		absolutePath = new File(projectDir, relative);
-		
-		privRemove.add(key);
-		privAdd.put(key, absolutePath.getAbsolutePath());
-	    }
+            if (absolutePath.getAbsolutePath().startsWith(originalPath.getAbsolutePath())) {
+                //#65141: in private.properties, a full path into originalPath may be given, fix:
+                String relative = PropertyUtils.relativizeFile(originalPath, absolutePath);
+
+                absolutePath = FileUtil.normalizeFile(new File(projectDir, relative));
+
+                LOGGER.fine("Removing " + key + ", " +
+                        "path: " + absolutePath.getAbsolutePath() + ", " +
+                        "original path: " + originalPath.getAbsolutePath());
+                privRemove.add(key);
+                privAdd.put(key, absolutePath.getAbsolutePath());
+            }
 	    
             //TODO: extra base dir relativization:
-            if (CollocationQuery.areCollocated(absolutePath, projectDir)) {
-                pubAdd.put(key, PropertyUtils.relativizeFile(projectDir, absolutePath));
+
+        //mkleint: removed CollocationQuery.areCollocated() reference
+        // when AlwaysRelativeCQI gets removed the condition resolves to false more frequently.
+        // that might not be desirable.
+            String rel = PropertyUtils.relativizeFile(projectDir, absolutePath);
+            if (rel != null) {
+                pubAdd.put(key, rel);
             }
         }
         

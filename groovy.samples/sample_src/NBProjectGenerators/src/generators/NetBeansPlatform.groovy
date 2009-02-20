@@ -85,7 +85,7 @@ disabled.modules=\
     org.openide.options,\
     org.openide.util.enumerations
 enabled.clusters=\
-    nb7.0,\
+    nb6.7,\
     platform10
 nbplatform.active=default
 

@@ -54,9 +54,17 @@ public class Installer extends ModuleInstall {
 
         // Send a shutdown message to any V3 server instances we started.
         if (GlassfishInstanceProvider.initialized()) {
-            GlassfishInstanceProvider provider = GlassfishInstanceProvider.getDefault();
-            for(GlassfishInstance instance: provider.getInternalInstances()) {
-                instance.stopIfStartedByIde(0L);
+            GlassfishInstanceProvider provider = GlassfishInstanceProvider.getPrelude();
+            if (null != provider) {
+                for (GlassfishInstance instance : provider.getInternalInstances()) {
+                    instance.stopIfStartedByIde(0L);
+                }
+            }
+            provider = GlassfishInstanceProvider.getEe6();
+            if (null != provider) {
+                for (GlassfishInstance instance : provider.getInternalInstances()) {
+                    instance.stopIfStartedByIde(0L);
+                }
             }
         }
     }

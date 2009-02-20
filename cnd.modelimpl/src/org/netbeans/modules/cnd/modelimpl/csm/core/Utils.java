@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import static org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind.*;
 
@@ -100,20 +99,6 @@ public class Utils {
         return sb.toString();
     }
       
-    public static String getNestedNamespaceQualifiedName(CharSequence name, NamespaceImpl parent, boolean createForEmptyNames) {
-        StringBuilder sb = new StringBuilder(name);
-        if (parent != null) {
-            if (name.length() == 0 && createForEmptyNames) {
-                sb.append(parent.getNameForUnnamedElement());
-            }
-            if (!parent.isGlobal()) {
-                sb.insert(0, "::"); // NOI18N
-                sb.insert(0, parent.getQualifiedName());
-            }
-        }
-        return sb.toString();
-    }
-    
     public static String toString(String[] a) {
         StringBuilder sb = new StringBuilder("["); // NOI18N
         for (int i = 0; i < a.length; i++) {
@@ -149,7 +134,15 @@ public class Utils {
             }            
         }
     }
-    
+
+    public static void setSelfUID(CsmDeclaration decl) {
+        if (decl instanceof OffsetableIdentifiableBase) {
+            ((OffsetableIdentifiableBase)decl).setSelfUID();
+        } else {
+            throw new IllegalArgumentException("unexpected object:" + decl);//NOI18N
+        }
+    }
+
     public static String getCsmIncludeKindKey() {
         // Returned string should be differed from getCsmDeclarationKindkey()
         return "I"; // NOI18N

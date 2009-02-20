@@ -214,9 +214,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
                     } else {
                         res = getDisplayName().compareTo(o.getDisplayName());
                         if (res == 0) {
-                            if (res == 0) {
-                                res = weight - o.weight;
-                            }
+                            res = weight - o.weight;
                         }
                     }
                 }

@@ -72,7 +72,7 @@ public class AutotestRunner implements TestRunner {
     private static final TestRunner INSTANCE = new AutotestRunner();
 
     private static final String NB_RSPEC_MEDIATOR = "NB_RSPEC_MEDIATOR"; //NOI18N
-    private static final String RSPEC_AUTOTEST_LOADER = "nb_autotest_loader.rb"; //NOI18N
+    static final String RSPEC_AUTOTEST_LOADER = "nb_autotest_loader.rb"; //NOI18N
 
     
     public AutotestRunner() {

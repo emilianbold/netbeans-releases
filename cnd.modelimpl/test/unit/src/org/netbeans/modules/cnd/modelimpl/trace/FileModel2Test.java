@@ -184,4 +184,19 @@ public class FileModel2Test extends TraceModelTestBase {
         // IZ#154349: wrongly flagged errors for destructor during template specialization
         performTest("iz154349.cc");
     }
+
+    public void testIZ157603() throws Exception {
+        // IZ#157603 : Code model does not understand __attribute, constructor, destructor keywords (GNU)
+        performTest("iz157603.cc");
+    }
+
+    public void testIZ157836() throws Exception {
+        // IZ#157836 : parser incorrectly handles expression in else without {}
+        performTest("iz157836.cc");
+    }
+
+    public void testIZ156004() throws Exception {
+        // IZ#156004 : Unexpected token = in variable declaration
+        performTest("iz156004.cc");
+    }
 }

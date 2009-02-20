@@ -406,12 +406,12 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
             debug.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
-            debug.getQmakeConfiguration().getConfig().setValue(QmakeConfiguration.DEBUG_FLAG);
+            debug.getQmakeConfiguration().getBuildMode().setValue(QmakeConfiguration.DEBUG_MODE);
             MakeConfiguration release = new MakeConfiguration(dirF.getPath(), "Release", conftype); // NOI18N
             release.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
-            release.getQmakeConfiguration().getConfig().setValue(QmakeConfiguration.RELEASE_FLAG);
+            release.getQmakeConfiguration().getBuildMode().setValue(QmakeConfiguration.RELEASE_MODE);
             MakeConfiguration[] confs = new MakeConfiguration[] {debug, release};
             MakeProjectGenerator.createProject(dirF, projectName, makefileName, confs, null, null);
             FileObject dir = FileUtil.toFileObject(dirF);

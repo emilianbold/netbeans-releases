@@ -46,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,6 +56,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -467,7 +469,24 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                         bootcp = "${nbjdk.home}/../Classes/classes.jar";    //NOI18N
                     }
                     else {
-                        bootcp = "${nbjdk.home}/jre/lib/rt.jar".replace('/', File.separatorChar); // NOI18N
+                        File jHome;
+                        if (home != null && (jHome = new File(home, "jre/lib")).isDirectory()) {
+                            String[] jars = jHome.list(new FilenameFilter() {
+                                public boolean accept(File dir, String name) {
+                                    String n = name.toLowerCase(Locale.US);
+                                    return n.endsWith(".jar"); // NOI18N
+                                }
+                            });
+                            StringBuilder sb = new StringBuilder();
+                            for (String jar : jars) {
+                                if (sb.length() > 0)
+                                    sb.append(File.pathSeparator);
+                                sb.append("${nbjdk.home}/jre/lib/").append(jar);
+                            }
+                            bootcp = sb.toString().replace('/', File.separatorChar); // NOI18N
+                        } else {
+                            bootcp = "${nbjdk.home}/jre/lib/rt.jar".replace('/', File.separatorChar); // NOI18N
+                        }
                     }
                 }
             }

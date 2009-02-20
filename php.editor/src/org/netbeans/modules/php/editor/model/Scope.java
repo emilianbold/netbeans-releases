@@ -48,6 +48,8 @@ import org.netbeans.modules.gsf.api.OffsetRange;
  * @author Radek Matous
  */
 public interface Scope extends ModelElement {
+    /** TODO: remove*/
+    public String getNormalizedName();
     List<? extends ModelElement> getElements();
     OffsetRange getBlockRange();
 }

@@ -30,6 +30,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Editors">
         <folder name="text">
             <folder name="x-diff">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.diff.Bundle"/>
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -39,21 +40,6 @@ Microsystems, Inc. All Rights Reserved.
                         </folder>
                     </folder>
                 </folder>
-                <folder name="FoldManager">
-                    <file name="org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance"/>
-                </folder>
-                <folder name="SideBar">
-                    <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance">
-                        <attr name="position" intvalue="1500"/>
-                    </file>
-                </folder>
-                <folder name="UpToDateStatusProvider">
-                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance"/>
-                </folder>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.diff.Bundle"/>
-                <file name="language.nbs" url="Diff.nbs">
-                    <attr name="icon" stringvalue="org/netbeans/modules/languages/diff/diff_file_16.png"/>
-                </file>
             </folder>
         </folder>
     </folder>
@@ -61,6 +47,69 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="PreviewExamples">
             <folder name="text">
                 <file name="x-diff" url="DiffExample.diff"/>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-diff">
+                <folder name="Actions">
+                    <file name="org-openide-actions-CopyAction.instance">
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                    <file name="org-openide-actions-CutAction.instance">
+                        <attr name="position" intvalue="300"/>
+                    </file>
+                    <file name="org-openide-actions-DeleteAction.instance">
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                    <file name="org-openide-actions-FileSystemAction.instance">
+                        <attr name="position" intvalue="1100"/>
+                    </file>
+                    <file name="org-openide-actions-OpenAction.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="org-openide-actions-PropertiesAction.instance">
+                        <attr name="position" intvalue="1400"/>
+                    </file>
+                    <file name="org-openide-actions-RenameAction.instance">
+                        <attr name="position" intvalue="700"/>
+                    </file>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="org-openide-actions-ToolsAction.instance">
+                        <attr name="position" intvalue="1300"/>
+                    </file>
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="200"/>
+                    </file>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="800"/>
+                    </file>
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="sep-5.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                </folder>
+                <folder name="Factories">
+                    <file name="DiffDataLoader.instance">
+                        <attr name="dataObjectClass" stringvalue="org.netbeans.modules.languages.diff.DiffDataObject"/>
+                        <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
+                        <attr name="mimeType" stringvalue="text/x-diff"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/languages/diff/diff_file_16.png"/>
+                    </file>
+                </folder>
             </folder>
         </folder>
     </folder>

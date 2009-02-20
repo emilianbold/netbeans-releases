@@ -75,7 +75,18 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Ajit Bhate
  */
+@NodeFactory.Registration(projectType="org-netbeans-modules-java-j2seproject",position=260)
 public class ProjectWebServiceNodeFactory implements NodeFactory {
+
+    @NodeFactory.Registration(projectType="org-netbeans-modules-web-project",position=400)
+    public static ProjectWebServiceNodeFactory ejbproject() {
+        return new ProjectWebServiceNodeFactory();
+    }
+
+    @NodeFactory.Registration(projectType="org-netbeans-modules-j2ee-ejbjarproject",position=155)
+    public static ProjectWebServiceNodeFactory j2seproject() {
+        return new ProjectWebServiceNodeFactory();
+    }
 
     /** Creates a new instance of ProjectWebServiceNodeFactory */
     public ProjectWebServiceNodeFactory() {

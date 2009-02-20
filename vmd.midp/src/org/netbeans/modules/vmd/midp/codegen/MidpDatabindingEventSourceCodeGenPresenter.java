@@ -45,7 +45,7 @@ import org.netbeans.modules.vmd.api.model.Presenter;
 
 /**
  *
- * @author karolharezlak
+ * @author karol harezlak
  */
 public abstract class MidpDatabindingEventSourceCodeGenPresenter extends Presenter {
     

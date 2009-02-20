@@ -44,16 +44,11 @@ package org.netbeans.core.windows.view.ui;
 
 
 import org.netbeans.core.windows.Constants;
-import org.netbeans.core.windows.WindowManagerImpl;
-import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.actions.ActionUtils;
 import org.netbeans.core.windows.actions.MaximizeWindowAction;
 import org.netbeans.core.windows.view.ModeView;
-import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
 import org.netbeans.core.windows.WindowManagerImpl;
-import org.netbeans.core.windows.view.SlidingView;
 import org.netbeans.core.windows.view.ui.slides.SlideOperation;
-import org.netbeans.core.windows.view.ui.slides.TabbedSlideAdapter;
 import org.netbeans.swing.tabcontrol.TabbedContainer;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
 import org.openide.windows.TopComponent;
@@ -315,7 +310,7 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
             }
             tae.consume();
             if (TabbedContainer.COMMAND_CLOSE == cmd) { //== test is safe here
-                TopComponent tc = (TopComponent) tabbed.getTopComponentAt(tae.getTabIndex());
+                TopComponent tc = tabbed.getTopComponentAt(tae.getTabIndex());
                 if (tc != null) {
                     modeView.getController().userClosedTopComponent(modeView, tc);
                 } else {
@@ -329,12 +324,12 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
             } else if (TabbedContainer.COMMAND_CLOSE_ALL == cmd) {
                 ActionUtils.closeAllDocuments(true);
             } else if (TabbedContainer.COMMAND_CLOSE_ALL_BUT_THIS == cmd) {
-                TopComponent tc = (TopComponent) tabbed.getTopComponentAt(tae.getTabIndex());
+                TopComponent tc = tabbed.getTopComponentAt(tae.getTabIndex());
                 ActionUtils.closeAllExcept(tc, true);
             //Pin button handling here
             } else if (TabbedContainer.COMMAND_ENABLE_AUTO_HIDE.equals(cmd)) {
                 if( Switches.isTopComponentSlidingEnabled() ) {
-                    TopComponent tc = (TopComponent) tabbed.getTopComponentAt(tae.getTabIndex());
+                    TopComponent tc = tabbed.getTopComponentAt(tae.getTabIndex());
                     // prepare slide operation
                     Component tabbedComp = tabbed.getComponent();
 
@@ -366,12 +361,13 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
                 SlideOperation op = new ProxySlideOperation(sbe.getSlideOperation(), ignoreChange);
                 modeView.getController().userTriggeredSlideOut(modeView, op);
             } else if (SlideBar.COMMAND_DISABLE_AUTO_HIDE.equals(cmd)) {
-                TopComponent tc = (TopComponent) tabbed.getTopComponentAt(sbe.getTabIndex());
+                TopComponent tc = tabbed.getTopComponentAt(sbe.getTabIndex());
                 modeView.getController().userDisabledAutoHide(modeView, tc);
             } else if( SlideBar.COMMAND_MAXIMIZE == cmd ) {
-                TopComponent tc = (TopComponent) tabbed.getTopComponentAt(sbe.getTabIndex());
+                TopComponent tc = tabbed.getTopComponentAt(sbe.getTabIndex());
                 MaximizeWindowAction mwa = new MaximizeWindowAction(tc);
-                mwa.actionPerformed(e);
+                if( mwa.isEnabled() )
+                    mwa.actionPerformed(e);
             }
         }
     }
@@ -403,6 +399,8 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
         if (actions == null) { 
             actions = tc.getActions();
         }
+        if (actions == null || actions.length == 0 )
+            return;
 
         showPopupMenu(
             Utilities.actionsToPopup(actions, tc.getLookup()), p, c);

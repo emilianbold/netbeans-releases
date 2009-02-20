@@ -76,4 +76,4 @@ if [ -d "/Library/Receipts/baseide.pkg" ] ; then
 fi
 
 #create ST for NB
-"$dirname"/servicetag.sh "nb"
+"$dirname"/servicetag.sh "nb" "$2"

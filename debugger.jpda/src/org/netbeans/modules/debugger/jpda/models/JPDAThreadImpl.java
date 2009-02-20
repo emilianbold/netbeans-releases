@@ -75,6 +75,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
@@ -492,7 +493,19 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                     l = ThreadReferenceWrapper.frames (threadReference, from, length);
                 } catch (IndexOutOfBoundsException ioobex) {
                     ioobex = Exceptions.attachMessage(ioobex, "from = "+from+", to = "+to+", frame count = "+max+", length = "+length+", fresh frame count = "+ThreadReferenceWrapper.frameCount(threadReference));
-                    throw ioobex;
+                    // Terrible attempt to hack a magic issue
+                    if (to == 13) { // Magic number in issue http://www.netbeans.org/issues/show_bug.cgi?id=156601
+                        length = to = 12;
+                        try {
+                            l = ThreadReferenceWrapper.frames (threadReference, from, length);
+                        } catch (IndexOutOfBoundsException ioobex2) {
+                            Exceptions.printStackTrace(ioobex);
+                            ioobex2 = Exceptions.attachMessage(ioobex2, "from = "+from+", to = "+to+", frame count = "+max+", length = "+length+", fresh frame count = "+ThreadReferenceWrapper.frameCount(threadReference));
+                            throw ioobex2;
+                        }
+                    } else {
+                        throw ioobex;
+                    }
                 }
             
             int n = l.size();
@@ -578,7 +591,12 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     public void popFrames(StackFrame sf) throws IncompatibleThreadStateException {
         try {
             notifyToBeResumed();
-            ThreadReferenceWrapper.popFrames(threadReference, sf);
+            accessLock.writeLock().lock();
+            try {
+                ThreadReferenceWrapper.popFrames(threadReference, sf);
+            } finally {
+                accessLock.writeLock().unlock();
+            }
             cleanCachedFrames();
             setReturnVariable(null); // Clear the return var
         } catch (IllegalThreadStateExceptionWrapper ex) {
@@ -951,6 +969,18 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      * @see JPDADebugger#getCurrentThread
      */
     public void makeCurrent () {
+        if (SwingUtilities.isEventDispatchThread()) {
+            debugger.getRequestProcessor().post(new Runnable() {
+                public void run() {
+                    doMakeCurrent();
+                }
+            });
+        } else {
+            doMakeCurrent();
+        }
+    }
+
+    private void doMakeCurrent() {
         debugger.setCurrentThread (this);
         Session session = debugger.getSession();
         DebuggerManager manager = DebuggerManager.getDebuggerManager();

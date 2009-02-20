@@ -55,7 +55,7 @@ public class Hk2TargetModuleID implements TargetModuleID {
 
     private final Hk2Target target;
     private final String docBaseURI;
-    private final String path;
+    private String path;
     private final String location;
     private TargetModuleID parent;
     private final Vector<TargetModuleID> children;
@@ -105,6 +105,11 @@ public class Hk2TargetModuleID implements TargetModuleID {
         this.parent = parent;
     }
     
+    public void setPath(String p) {
+        if (null == path)
+            this.path = p;
+    }
+
     public void addChild(Hk2TargetModuleID child) {
         children.add(child);
         child.setParent(this);

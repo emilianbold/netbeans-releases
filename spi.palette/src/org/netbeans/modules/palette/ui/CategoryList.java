@@ -122,7 +122,10 @@ public class CategoryList extends JList implements Autoscroll {
             setBackground( new Color( UIManager.getColor("Tree.background").getRGB() ) );//NOI18N
             setOpaque(true);
         } else {
-            setBackground(UIManager.getColor ("Panel.background"));
+            if( "Aqua".equals(UIManager.getLookAndFeel().getID()) )
+                setBackground(UIManager.getColor("NbExplorerView.background"));
+            else
+                setBackground(UIManager.getColor ("Panel.background"));
         }
         setBorder (new EmptyBorder (0, 0, 0, 0));
         setVisibleRowCount (0);
@@ -300,6 +303,8 @@ public class CategoryList extends JList implements Autoscroll {
                     toolbar.setLayout (new BorderLayout (0, 0));
                     toolbar.setBorder (BorderFactory.createEmptyBorder());
                     toolbar.add (button);
+                    if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
+                        toolbar.setBackground( UIManager.getColor("NbExplorerView.background") ); //NOI18N
                 }
             }
         }

@@ -41,19 +41,25 @@
 
 package org.netbeans.modules.cnd.highlight.semantic.options;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Set;
 import java.util.prefs.Preferences;
 import org.openide.util.NbPreferences;
+import org.openide.util.WeakSet;
 
 /**
  *
  * @author Sergey Grinev
  */
-public class SemanticHighlightingOptions {
+public final class SemanticHighlightingOptions {
 
     private SemanticHighlightingOptions() {}
     
     private static class Instantiator {
         public static SemanticHighlightingOptions instance = new SemanticHighlightingOptions();
+        private Instantiator() {
+        }
     }
     
     public static SemanticHighlightingOptions instance() {
@@ -66,6 +72,29 @@ public class SemanticHighlightingOptions {
     private static final String KEEP_MARKS = "KeepMarks"; // NOI18N
 
     public static final boolean SEMANTIC_ADVANCED = Boolean.getBoolean("cnd.semantic.advanced"); // NOI18N
+
+    private final Set<PropertyChangeListener> listeners = new WeakSet<PropertyChangeListener>();
+    private final Object lock = new Object();
+
+    public void addPropertyChangeListener(PropertyChangeListener listener){
+        synchronized(lock) {
+            listeners.add(listener);
+        }
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener){
+        synchronized(lock) {
+            listeners.remove(listener);
+        }
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        synchronized(lock) {
+            for(PropertyChangeListener listener : listeners){
+                listener.propertyChange(evt);
+            }
+        }
+    }
 
     private boolean getOption(String key, boolean defaultValue) {
         return preferences.getBoolean(key, defaultValue);

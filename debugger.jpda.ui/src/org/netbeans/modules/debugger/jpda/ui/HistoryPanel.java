@@ -89,10 +89,10 @@ public class HistoryPanel extends javax.swing.JPanel {
         historyTable.setModel(historyModel);
     }
 
-    public void addItem(final String expr, final String type, final String value) {
+    public void addItem(final String expr, final String type, final String value, final String toString) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                historyModel.addItem(expr, type, value);
+                historyModel.addItem(expr, type, value, toString);
             }
         });
     }
@@ -103,6 +103,10 @@ public class HistoryPanel extends javax.swing.JPanel {
                 historyModel.clearHistory();
             }
         });
+    }
+
+    public ArrayList<Item> getHistoryItems() {
+        return historyModel.getHistory();
     }
 
     /** This method is called from within the constructor to
@@ -146,16 +150,18 @@ public class HistoryPanel extends javax.swing.JPanel {
 
     // ..........................................................................
 
-    private class Item {
+    public class Item {
 
-        String expr;
-        String type;
-        String value;
+        public String expr;
+        public String type;
+        public String value;
+        public String toString;
 
-        Item(String expr, String type, String value) {
+        Item(String expr, String type, String value, String toString) {
             this.expr = expr;
             this.type = type;
             this.value = value;
+            this.toString = toString;
         }
 
         Vector toVector() {
@@ -163,7 +169,13 @@ public class HistoryPanel extends javax.swing.JPanel {
             result.add(expr);
             result.add(type);
             result.add(value);
+            result.add(toString);
             return result;
+        }
+
+        @Override
+        public String toString() {
+            return expr;
         }
 
     }
@@ -201,13 +213,17 @@ public class HistoryPanel extends javax.swing.JPanel {
 
         private ArrayList<Item> historyItems = new ArrayList<Item>();
 
-        private void addItem(String expr, String type, String value) {
-            Item item = new Item(expr, type, value);
+        private void addItem(String expr, String type, String value, String toString) {
+            Item item = new Item(expr, type, value, toString);
             historyItems.add(0, item);
             if (historyItems.size() > MAX_ITEMS) {
                 historyItems.remove(MAX_ITEMS);
             }
             fireTableDataChanged();
+        }
+
+        public ArrayList<Item> getHistory() {
+            return historyItems;
         }
 
         public void clearHistory() {

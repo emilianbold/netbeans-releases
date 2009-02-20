@@ -54,10 +54,6 @@ made subject to such option by the copyright holder.
             <file name="OS-Left.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-PreviousViewCallbackAction.instance"/>
             </file>
-<!--retouche:-->
-<!--            <file name="C-R.shadow">
-                <attr name="originalFile" stringvalue="Actions/Form/org-netbeans-modules-form-actions-ReloadAction.instance"/>
-            </file>-->
             <file name="D-2.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-physical-tab-action.instance"/>
             </file>
@@ -67,17 +63,9 @@ made subject to such option by the copyright holder.
             <file name="A-LEFT.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-PreviousTabAction.instance"/>
             </file>
-<!--retouche:-->
-<!--            <file name="OS-O.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-editor-java-JavaFastOpenAction.instance"/>
-            </file>-->
             <file name="DO-T.shadow">
                 <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xsl-actions-TransformAction.instance"/>
             </file>
-<!--retouche:-->
-<!--            <file name="OS-R.shadow">
-                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-RenameAction.instance"/>
-            </file>-->
             <file name="O-F6.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestProject.instance"/>
             </file>
@@ -129,14 +117,6 @@ made subject to such option by the copyright holder.
             <file name="S-F2.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/bookmark-previous.instance"/>
             </file>
-<!--retouche:-->
-<!--            <file name="O-S-F9.shadow">
-                <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-ValidateAction.instance"/>
-            </file>-->
-<!--retouche:-->
-<!--            <file name="OS-V.shadow">
-                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-MoveClassAction.instance"/>
-            </file>-->
 	    <file name="F1.shadow">
                 <attr name="originalFile" stringvalue="Actions/Help/org-netbeans-modules-javahelp-HelpAction.instance"/>
             </file>
@@ -164,9 +144,6 @@ made subject to such option by the copyright holder.
             <file name="D-BACK_QUOTE.shadow">
                 <attr name="originalFile" methodvalue="org.netbeans.core.windows.actions.RecentViewListAction.getStringRep4Unixes"/>
             </file>
-            <file name="DS-J.shadow">
-                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-i18n-InsertI18nStringAction.instance"/>
-            </file>
             <file name="S-F4.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-DocumentsAction.instance"/>
             </file>
@@ -176,10 +153,6 @@ made subject to such option by the copyright holder.
             <file name="D-F5.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ContinueAction.instance"/>
             </file>
-<!--retouche:-->
-<!--            <file name="O-F9.shadow">
-                <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-CheckAction.instance"/>
-            </file>-->
             <file name="F7.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance"/>
             </file>
@@ -201,10 +174,6 @@ made subject to such option by the copyright holder.
             <file name="S-ESCAPE.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-MaximizeWindowAction.instance"/>
             </file>
-<!--retouche:-->
-<!--            <file name="DO-F.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-refactoring-ui-FindUsagesOpenAction.instance"/>
-            </file>-->
             <file name="S-F6.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
             </file>
@@ -244,19 +213,12 @@ made subject to such option by the copyright holder.
             <file name="D-0.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance"/>
             </file>
-            <file name="DS-U.shadow">
-                <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-CreateTestAction.instance"/>
-            </file>
             <file name="CONTEXT_MENU.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PopupAction.instance"/>
             </file>
             <file name="S-F10.shadow">
         	    <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PopupAction.instance"/>
         	</file>
-<!--retouche:-->
-<!--            <file name="D-I.shadow">
-                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-java-tools-OverrideAction.instance"/>
-            </file>-->
             <file name="SO-8.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-SourcesViewAction.instance"/>
             </file>
@@ -281,19 +243,12 @@ made subject to such option by the copyright holder.
             <file name="F6.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance"/>
             </file>
-<!--retouche:-->
-<!--            <file name="S-F1.shadow">
-                <attr name="originalFile" stringvalue="Actions/Tools/javadoc-Search-Doc-Action.instance"/>
-            </file>-->
             <file name="D-1.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-logical-tab-action.instance"/>
             </file>
             <file name="F11.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-BuildMainProject.instance"/>
             </file>
-
-
-                        
             <file name="A-W.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
             </file>
@@ -387,10 +342,6 @@ made subject to such option by the copyright holder.
             <file name="OS-Left.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-PreviousViewCallbackAction.instance"/>
             </file>
-<!--retouche:-->
-<!--            <file name="C-R.shadow">
-                <attr name="originalFile" stringvalue="Actions/Form/org-netbeans-modules-form-actions-ReloadAction.instance"/>
-            </file>-->
             <file name="D-2.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-physical-tab-action.instance"/>
             </file>
@@ -415,17 +366,9 @@ made subject to such option by the copyright holder.
             <file name="A-LEFT.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-PreviousTabAction.instance"/>
             </file>
-<!--retouche:-->
-<!--            <file name="OS-O.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-editor-java-JavaFastOpenAction.instance"/>
-            </file>-->
             <file name="DO-T.shadow">
                 <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xsl-actions-TransformAction.instance"/>
             </file>
-<!--retouche:-->
-<!--            <file name="OS-R.shadow">
-                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-RenameAction.instance"/>
-            </file>-->
             <file name="O-F6.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestProject.instance"/>
             </file>
@@ -480,14 +423,6 @@ made subject to such option by the copyright holder.
             <file name="S-F2.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/bookmark-previous.instance"/>
             </file>
-<!--retouche:-->
-<!--            <file name="O-S-F9.shadow">
-                <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-ValidateAction.instance"/>
-            </file>-->
-<!--retouche:-->
-<!--            <file name="OS-V.shadow">
-                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-MoveClassAction.instance"/>
-            </file>-->
             <file name="F1.shadow">
                 <attr name="originalFile" stringvalue="Actions/Help/org-netbeans-modules-javahelp-HelpAction.instance"/>
             </file>
@@ -522,9 +457,6 @@ made subject to such option by the copyright holder.
             <file name="D-BACK_QUOTE.shadow">
                 <attr name="originalFile" methodvalue="org.netbeans.core.windows.actions.RecentViewListAction.getStringRep4Unixes"/>
             </file>
-            <file name="DS-J.shadow">
-                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-i18n-InsertI18nStringAction.instance"/>
-            </file>
             <file name="D-N.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewFile.instance"/>
             </file>
@@ -537,10 +469,6 @@ made subject to such option by the copyright holder.
             <file name="D-F5.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ContinueAction.instance"/>
             </file>
-<!--retouche:-->
-<!--            <file name="O-F9.shadow">
-                <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-CheckAction.instance"/>
-            </file>-->
             <file name="F7.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance"/>
             </file>
@@ -568,10 +496,6 @@ made subject to such option by the copyright holder.
             <file name="D-S.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAction.instance"/>
             </file>
-<!--retouche:-->
-<!--            <file name="DO-F.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-refactoring-ui-FindUsagesOpenAction.instance"/>
-            </file>-->
             <file name="S-F6.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
             </file>
@@ -617,19 +541,12 @@ made subject to such option by the copyright holder.
             <file name="D-0.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance"/>
             </file>
-            <file name="DS-U.shadow">
-                <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-CreateTestAction.instance"/>
-            </file>
             <file name="CONTEXT_MENU.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PopupAction.instance"/>
             </file>
             <file name="S-F10.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PopupAction.instance"/>
             </file>
-<!--retouche:-->
-<!--            <file name="C-Q.shadow">
-                <attr name="originalFile" stringvalue="Actions/Build/Set Request Parameters.instance"/>
-            </file>-->
             <file name="D-X.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
             </file>
@@ -639,10 +556,6 @@ made subject to such option by the copyright holder.
             <file name="S-DELETE.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
             </file>
-<!--retouche:-->
-<!--            <file name="D-I.shadow">
-                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-java-tools-OverrideAction.instance"/>
-            </file>-->
             <file name="SO-8.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-SourcesViewAction.instance"/>
             </file>
@@ -667,10 +580,6 @@ made subject to such option by the copyright holder.
             <file name="F6.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance"/>
             </file>
-<!--retouche:-->
-<!--            <file name="S-F1.shadow">
-                <attr name="originalFile" stringvalue="Actions/Tools/javadoc-Search-Doc-Action.instance"/>
-            </file>-->
             <file name="D-O.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-openfile-OpenFileAction.instance"/>
             </file>
@@ -898,9 +807,6 @@ made subject to such option by the copyright holder.
             <file name="D-0.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance"/>
             </file>
-            <file name="DS-U.shadow">
-                <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-CreateTestAction.instance"/>
-            </file>
             <file name="CONTEXT_MENU.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PopupAction.instance"/>
             </file>
@@ -967,10 +873,6 @@ made subject to such option by the copyright holder.
         
         <folder name="Eclipse">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
-<!--retouche:-->
-<!--            <file name="DO-F.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-refactoring-ui-FindUsagesOpenAction.instance"/>
-            </file>-->
             <file name="A-RIGHT.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-NextTabAction.instance"/>
             </file>
@@ -1025,20 +927,12 @@ made subject to such option by the copyright holder.
             <file name="C-F4.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
             </file>
-<!--retouche:-->
-<!--            <file name="AS-V.shadow">
-                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-MoveClassAction.instance"/>
-            </file>-->
             <file name="C-M.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-MaximizeWindowAction.instance"/>
             </file>
             <file name="F5.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance"/>
             </file>
-<!--retouche:-->
-<!--            <file name="AS-Y.shadow">
-                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-RedoAction.instance"/>
-            </file>-->
             <file name="CS-S.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAllAction.instance"/>
             </file>
@@ -1063,10 +957,6 @@ made subject to such option by the copyright holder.
             <file name="PASTE.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
             </file>
-<!--retouche:-->
-<!--            <file name="AS-J.shadow">
-                <attr name="originalFile" stringvalue="Actions/Tools/Correct Javadoc Action.instance"/>
-            </file>-->
             <file name="C-PERIOD.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpNextAction.instance"/>
             </file>
@@ -1118,30 +1008,18 @@ made subject to such option by the copyright holder.
             <file name="C-COMMA.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpPrevAction.instance"/>
             </file>
-<!--retouche:-->
-<!--            <file name="AS-Z.shadow">
-                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-UndoAction.instance"/>
-            </file>-->
             <file name="C-INSERT.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
             </file>
             <file name="F7.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-PopTopmostCallAction.instance"/>
             </file>
-<!--retouche:-->
-<!--            <file name="AS-R.shadow">
-                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-RenameAction.instance"/>
-            </file>-->
             <file name="S-DELETE.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
             </file>
             <file name="C-S.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAction.instance"/>
             </file>
-<!--retouche:-->
-<!--            <file name="AS-M.shadow">
-                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-ExtractMethodAction.instance"/>
-            </file>-->
             <file name="C-N.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewFile.instance"/>
             </file>
@@ -1151,24 +1029,14 @@ made subject to such option by the copyright holder.
             <file name="F12.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance"/>
             </file>
-<!--retouche:-->
-<!--            <file name="AS-C.shadow">
-                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-ChangeParametersAction.instance"/>
-            </file>-->
             <file name="DS-R.shadow">
                 <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
             </file>
             <file name="DS-T.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-jumpto-type-GoToType.instance"/>
             </file>
-            <file name="D-O.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectMembersAction.instance"/>
-            </file>
             <file name="D-H.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-search-FindInFilesAction.instance"/>
-            </file>
-            <file name="D-T.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectHierarchyAtCaretAction.instance"/>
             </file>
             <file name="DO-H.shadow">
                 <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
@@ -1203,11 +1071,6 @@ made subject to such option by the copyright holder.
             <file name="A-7.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-navigator-ShowNavigatorAction.instance"/>
             </file>
-            <!-- broken link
-            <file name="A-BACK_QUOTE.shadow">
-                <attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-ShowNextNotificationAction.instance"/>
-            </file>
-            -->
             <file name="A-DELETE.shadow">
                 <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-SafeDeleteAction.instance"/>
             </file>
@@ -1228,9 +1091,6 @@ made subject to such option by the copyright holder.
             </file>
             <file name="A-F7.shadow">
                 <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
-            </file>
-            <file name="A-F8.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-ui-actions-EvaluateAction.instance"/>
             </file>
             <file name="A-F9.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunToCursorAction.instance"/>
@@ -1256,11 +1116,6 @@ made subject to such option by the copyright holder.
             <file name="AS-3.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-CallStackViewAction.instance"/>
             </file>
-            <!--
-            <file name="AS-4.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-heapwalk-actions-ClassesCountsViewAction.instance"/>
-            </file>
-            -->
             <file name="AS-5.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.instance"/>
             </file>
@@ -1297,17 +1152,11 @@ made subject to such option by the copyright holder.
             <file name="C-F.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-FindAction.instance"/>
             </file>
-            <file name="C-F12.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectMembersAction.instance"/>
-            </file>
             <file name="C-F2.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
             </file>
             <file name="C-F4.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
-            </file>
-            <file name="C-F6.shadow">
-                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-java-api-ui-ChangeParametersAction.instance"/>
             </file>
             <file name="C-F8.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
@@ -1317,9 +1166,6 @@ made subject to such option by the copyright holder.
             </file>
             <file name="C-G.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-GotoAction.instance"/>
-            </file>
-            <file name="C-H.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectHierarchyAction.instance"/>
             </file>
             <file name="C-INSERT.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
@@ -1344,12 +1190,6 @@ made subject to such option by the copyright holder.
             </file>
             <file name="CA-F11.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-ToggleFullScreenAction.instance"/>
-            </file>
-            <file name="CA-F8.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-ui-actions-ToggleMethodFieldBreakpointAction.instance"/>
-            </file>
-            <file name="CA-N.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-spring-beans-jumpto-type-GoToBean.instance"/>
             </file>
             <file name="CA-S.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-options-OptionsWindowAction.instance"/>
@@ -1387,50 +1227,24 @@ made subject to such option by the copyright holder.
             <file name="CS-F9.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CompileSingle.instance"/>
             </file>
-            <file name="CS-H.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectHierarchyAtCaretAction.instance"/>
-            </file>
-            <!--
-            <file name="CS-L.shadow">
-                <attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-ShowCollabExplorerAction.instance"/>
-            </file>
-            -->
             <file name="CS-N.shadow">
                 <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
             </file>
             <file name="CS-R.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-search-ReplaceInFilesAction.instance"/>
             </file>
-            <!--
-            <file name="CS-S.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-xml-search-impl-action-SearchAction.instance"/>
-            </file>
-            -->
             <file name="CS-Z.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-RedoAction.instance"/>
             </file>
             <file name="CUT.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
             </file>
-            <file name="D-8.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-ui-debugging-ThreadsHistoryAction.instance"/>
-            </file>
-            <!--
-            <file name="D-A.shadow">
-                <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-drawingarea-actions-SelectAllAction.instance"/>
-            </file>
-            -->
             <file name="DAS-H.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-db-sql-editor-ui-actions-SQLHistoryAction.instance"/>
             </file>
             <file name="DELETE.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
             </file>
-            <!--
-            <file name="DOS-P.shadow">
-                <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-impl-action-PrintPreviewMenu.instance"/>
-            </file>
-            -->
             <file name="ESCAPE.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance"/>
             </file>
@@ -1461,22 +1275,11 @@ made subject to such option by the copyright holder.
             <file name="FIND.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-FindAction.instance"/>
             </file>
-            <!--
-            <file name="OS-A.shadow">
-                <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-diagrams-actions-CreateAttributesAction.instance"/>
-            </file>
-            <file name="OS-M.shadow">
-                <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-diagrams-actions-CreateOperationAction.instance"/>
-            </file>
-            -->
             <file name="S-DELETE.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
             </file>
             <file name="S-ESCAPE.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
-            </file>
-            <file name="S-F1.shadow">
-                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-javadoc-search-SearchDocAction.instance"/>
             </file>
             <file name="S-F10.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance"/>
@@ -1489,9 +1292,6 @@ made subject to such option by the copyright holder.
             </file>
             <file name="S-F9.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.instance"/>
-            </file>
-            <file name="SO-9.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-DebuggingViewAction.instance"/>
             </file>
             <file name="UNDO.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-UndoAction.instance"/>
@@ -1579,7 +1379,7 @@ made subject to such option by the copyright holder.
                 <folder name="Defaults">
                     <file name="org-netbeans-modules-defaults-keybindings.xml" url="NetBeans55-keybindings.xml"/>
                     <file name="org-netbeans-modules-editor-keybindings-mac.xml" url="NetBeans55-keybindings-mac.xml">
-                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC" />
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
                     </file>
                 </folder>
             </folder>

@@ -77,6 +77,7 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
+import org.openide.util.Exceptions;
 
 /**
  * A ProxyClassLoader capable of loading classes from a set of jar files
@@ -284,6 +285,8 @@ public class JarClassLoader extends ProxyClassLoader {
         public final URL getURL() {
             return url;
         }
+
+        public abstract String getPath();
         
         public final ProtectionDomain getProtectionDomain() {
             if (pd == null) {
@@ -329,13 +332,19 @@ public class JarClassLoader extends ProxyClassLoader {
         }
         
         static Source create(File f, JarClassLoader jcl) throws IOException {
-            Source src = f.isDirectory() ? new DirSource(f) : new JarSource(f);
+            boolean directory;
+            if (f.getName().endsWith("jar")) {
+                directory = false;
+            } else {
+                directory = f.isDirectory();
+            }
+            Source src = directory ? new DirSource(f) : new JarSource(f);
             src.jcl = jcl;
             // should better use the same string as other indexes
             // this way, there are currently 3 similar long Strings per
             // JarClassLoader instance - its URL, its identifier
             // in Archive.sources map and this one
-            sources.put(f.toURI().toString(), src);
+            sources.put(src.getPath(), src);
             return src;
         }
 
@@ -358,7 +367,7 @@ public class JarClassLoader extends ProxyClassLoader {
         private final Set<String> nonexistentResources = Collections.synchronizedSet(new HashSet<String>());
         
         JarSource(File file) throws IOException {
-            this(file, "jar:" + file.toURI() + "!/"); // NOI18N
+            this(file, toURI(file));
         }
         private JarSource(File file, String resPrefix) throws IOException {
             super(new URL(resPrefix)); // NOI18N
@@ -366,14 +375,38 @@ public class JarClassLoader extends ProxyClassLoader {
             this.file = file;
         }
 
+        public String getPath() {
+            return file.getPath();
+        }
+
+        private static String toURI(File file) {
+            String sp = slashify(file.getPath(), false);
+            if (sp.startsWith("//")) // NOI18N
+                sp = "//" + sp; // NOI18N
+            return "jar:file:"+ sp +"!/"; // NOI18N
+        }
+        private static String slashify(String path, boolean isDirectory) {
+            String p = path;
+            if (File.separatorChar != '/')
+                p = p.replace(File.separatorChar, '/');
+            if (!p.startsWith("/"))
+                p = "/" + p;
+            if (!p.endsWith("/") && isDirectory)
+                p = p + "/";
+            return p;
+        }
+
         @Override
         public Manifest getManifest() {
             try {
-                return getJarFile("man").getManifest();
-            } catch (IOException e) {
+                byte[] arr = archive.getData(this, "META-INF/MANIFEST.MF");
+                if (arr == null) {
+                    return null;
+                }
+                return new Manifest(new ByteArrayInputStream(arr));
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, "Cannot read manifest for " + getPath(), ex);
                 return null;
-            } finally {
-                releaseJarFile();
             }
         }
         
@@ -606,6 +639,10 @@ public class JarClassLoader extends ProxyClassLoader {
             super(file.toURI().toURL());
             dir = file;
         }
+        
+        public String getPath() {
+            return dir.getPath();
+        }
 
         protected URL doGetResource(String name) throws MalformedURLException {
             File resFile = new File(dir, name);
@@ -702,7 +739,13 @@ public class JarClassLoader extends ProxyClassLoader {
             if (bang == -1) {
                 throw new IOException("Malformed JAR-protocol URL: " + u);
             }
-            String jar = url.substring(0, bang);
+            int from;
+            if (url.startsWith("file:")) {
+                from = 5;
+            } else {
+                from = 0;
+            }
+            String jar = url.substring(from, bang);
             String _name = url.substring(bang+2);
             Source _src = Source.sources.get(jar);
             if (_src == null) {
@@ -762,6 +805,11 @@ public class JarClassLoader extends ProxyClassLoader {
                     throw new FileNotFoundException(getURL().toString());
                 }
             }
+        }
+
+        @Override
+        public long getLastModified() {
+            return Stamps.getModulesJARs().lastModified();
         }
 
         @Override

@@ -80,7 +80,6 @@ import org.netbeans.api.queries.FileBuiltQuery.Status;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
-import org.netbeans.modules.java.api.common.classpath.ClassPathExtender;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -141,7 +140,7 @@ import org.w3c.dom.NodeList;
  */
 public final class J2SEProject implements Project, AntProjectListener {
     
-    private static final Icon J2SE_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png")); // NOI18N
+    private static final Icon J2SE_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png", false); // NOI18N
     private static final Logger LOG = Logger.getLogger(J2SEProject.class.getName());
 
     private final AuxiliaryConfiguration aux;
@@ -285,7 +284,8 @@ public final class J2SEProject implements Project, AntProjectListener {
             final J2SEActionProvider actionProvider) {
         final SubprojectProvider spp = refHelper.createSubprojectProvider();        
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), J2SEProjectProperties.SOURCE_ENCODING);
-        @SuppressWarnings("deprecation") Object cpe = new ClassPathExtender(cpMod, ProjectProperties.JAVAC_CLASSPATH, null);
+        @SuppressWarnings("deprecation") Object cpe = new org.netbeans.modules.java.api.common.classpath.ClassPathExtender(
+            cpMod, ProjectProperties.JAVAC_CLASSPATH, null);
         final Lookup base = Lookups.fixed(
             J2SEProject.this,
             new Info(),
@@ -583,6 +583,9 @@ public final class J2SEProject implements Project, AntProjectListener {
                                 }
                                 if (!ep.containsKey(ProjectProperties.EXCLUDES)) {
                                     ep.setProperty(ProjectProperties.EXCLUDES, ""); // NOI18N
+                                }
+                                if (!ep.containsKey("build.generated.sources.dir")) { // NOI18N
+                                    ep.setProperty("build.generated.sources.dir", "${build.dir}/generated-sources"); // NOI18N
                                 }
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                                 try {

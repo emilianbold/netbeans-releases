@@ -86,6 +86,7 @@ public class Retriever implements Runnable {
         NbBundle.getMessage(Retriever.class, "STATUS_Terminated"),  //NOI18N
         NbBundle.getMessage(Retriever.class, "STATUS_InvalidWsdl")  //NOI18N
     };
+    private String topLevelPrefix;
     
     public interface Updater {
         public void updateMessageText(String msg);
@@ -101,12 +102,13 @@ public class Retriever implements Runnable {
     
     
     public Retriever(File installDir, String locationUrl, String urlPrefix, 
-            String defaultTargetUrl, Updater u) {
+            String defaultTargetUrl, Updater u, String topLevelPrefix) {
         this.targetInstallDir = installDir;
         this.locationUrl = locationUrl;
         this.targetUrlPrefix = urlPrefix;
         this.defaultTargetUrl = defaultTargetUrl;
         this.updater = u;
+        this.topLevelPrefix = topLevelPrefix;
     }
 
     // Thread support for downloading...
@@ -163,7 +165,7 @@ public class Retriever implements Runnable {
     
     public void run() {
         // Set name of thread for easier debugging in case of deadlocks, etc.
-        Thread.currentThread().setName("V3Downloader"); // NOI18N
+        Thread.currentThread().setName("Downloader"); // NOI18N
         
         shutdown = false;
         status = STATUS_START;
@@ -180,7 +182,7 @@ public class Retriever implements Runnable {
             setDownloadState(STATUS_CONNECTING);
             targetUrl = new URL(getDownloadLocation());
 
-            Logger.getLogger("glassfish").fine("Downloading V3 from " + targetUrl); // NOI18N
+            Logger.getLogger("glassfish").fine("Downloading from " + targetUrl); // NOI18N
             connection = targetUrl.openConnection();
             connection.setConnectTimeout(ZIP_DOWNLOAD_TIMEOUT);
             connection.setReadTimeout(ZIP_DOWNLOAD_TIMEOUT);
@@ -235,7 +237,7 @@ public class Retriever implements Runnable {
             while(tries++ < LOCATION_TRIES) {
                 try {
                     URL url = new URL(locationUrl);
-                    Logger.getLogger("glassfish").fine("Attempt " + tries + " to get V3 download URL suffix from " + url); // NOI18N
+                    Logger.getLogger("glassfish").fine("Attempt " + tries + " to get download URL suffix from " + url); // NOI18N
                     conn = url.openConnection();
                     conn.setConnectTimeout(LOCATION_DOWNLOAD_TIMEOUT);
                     conn.setReadTimeout(LOCATION_DOWNLOAD_TIMEOUT);
@@ -330,11 +332,9 @@ public class Retriever implements Runnable {
         return shutdown;
     }
     
-    private static final String TOP_LEVEL_PREFIX = "glassfishv3"; // NOI18N
-    
     private String stripTopLevelDir(String name) {
-        if(name.startsWith(TOP_LEVEL_PREFIX)) {
-            int slashIndex = slashIndexOf(name, TOP_LEVEL_PREFIX.length());
+        if(name.startsWith(topLevelPrefix)) {
+            int slashIndex = slashIndexOf(name, topLevelPrefix.length());
             if(slashIndex >= 0) {
                 name = name.substring(slashIndex + 1);
             }

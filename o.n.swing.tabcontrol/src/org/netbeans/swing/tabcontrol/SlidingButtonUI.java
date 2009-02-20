@@ -52,8 +52,6 @@ import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicHTML;
 import javax.swing.plaf.basic.BasicToggleButtonUI;
 import javax.swing.text.View;
-import org.netbeans.swing.tabcontrol.SlideBarDataModel;
-import org.netbeans.swing.tabcontrol.SlidingButton;
 
 /** Button UI for SlidingButton component that can paint rotated text.
  * To change appearance, provide a subclass of this class or subclass of ComponentUI
@@ -81,22 +79,24 @@ public class SlidingButtonUI extends BasicToggleButtonUI {
         return INSTANCE;
     }  
     
+    @Override
     protected String getPropertyPrefix() {
         //TODO -define own prefix?
         return "ToggleButton.";
     }
 
+    @Override
     public void paint(Graphics g, JComponent c) {
        AbstractButton b = (AbstractButton) c;
         ButtonModel model = b.getModel();
         Dimension size = b.getSize();
+        Font f = c.getFont();
+        g.setFont(f);
         FontMetrics fm = g.getFontMetrics();
         Insets i = c.getInsets();
         Rectangle viewRect = new Rectangle(size);
         Rectangle iconRect = new Rectangle();
         Rectangle textRect = new Rectangle();
-        Font f = c.getFont();
-        g.setFont(f);
         
         Rectangle rotatedViewRect;
         Rectangle rotatedIconRect = new Rectangle();
@@ -149,9 +149,9 @@ public class SlidingButtonUI extends BasicToggleButtonUI {
 
         if (model.isArmed() && model.isPressed() || model.isSelected() || model.isRollover()) {
             paintButtonPressed(g,b);
-	} else if (b.isOpaque()) {
+        } else if (b.isOpaque()) {
             paintBackground(g2d, b);
-	}
+        }
 	
         
         
@@ -211,10 +211,12 @@ public class SlidingButtonUI extends BasicToggleButtonUI {
 
     
     
+    @Override
     public Dimension getMinimumSize(JComponent c) {
         return getPreferredSize(c);
     }
 
+    @Override
     public Dimension getPreferredSize(JComponent c) {
         SlidingButton b = (SlidingButton) c;
         Dimension prefSize = super.getPreferredSize(c);
@@ -228,6 +230,7 @@ public class SlidingButtonUI extends BasicToggleButtonUI {
         }
     }
 
+    @Override
     public Dimension getMaximumSize(JComponent c) {
         return getPreferredSize(c);
     }

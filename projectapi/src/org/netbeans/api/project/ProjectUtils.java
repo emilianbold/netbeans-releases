@@ -227,7 +227,7 @@ public class ProjectUtils {
         }
         
         public Icon getIcon() {
-            return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/projectapi/resources/empty.gif")); // NOI18N
+            return ImageUtilities.loadImageIcon("org/netbeans/modules/projectapi/resources/empty.gif", false); // NOI18N
         }
         
         public void addPropertyChangeListener(PropertyChangeListener listener) {

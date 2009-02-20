@@ -146,7 +146,7 @@ made subject to such option by the copyright holder.
 
     <folder name="Services">
         <folder name="MIMEResolver">
-            <file name="org-netbeans-modules-image-mime-resolver.xml" url="mime-resolver.xml">
+            <file name="org-netbeans-modules-image-mime-resolver.xml" url="image-mime-resolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.image.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/image/imageObject.png"/>
                 <attr name="position" intvalue="110"/>

@@ -48,7 +48,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.openide.*;
 import org.openide.filesystems.*;
 import org.openide.cookies.InstanceCookie;
 import org.openide.util.Task;
@@ -158,6 +157,8 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
      *  Started immediately after the <code>recognizingTask</code> is finished.
      */
     private Task creationTask;
+    /** Sequence number for creationTask */
+    private volatile int creationSequence;
     
     /* -------------------------------------------------------------------- */
     /* -- Constructor(s) -------------------------------------------------- */
@@ -650,9 +651,12 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
     * @param arr collection of DataObjects
     */
     final void processObjects (final Collection<DataObject> arr) {
+        final int sequence = ++creationSequence;
         creationTask = postCreationTask (new Runnable () {
             public void run () {
-                defaultProcessObjects (arr);
+                if (sequence == creationSequence) {
+                    defaultProcessObjects (arr);
+                }
             }
         });
     }

@@ -42,6 +42,9 @@ package org.netbeans.modules.java.api.common.queries;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.project.ProjectManager;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.queries.FileBuiltQuery;
@@ -49,6 +52,11 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex.Action;
 
 
@@ -63,6 +71,18 @@ final class FileBuiltQueryImpl implements FileBuiltQueryImplementation, Property
     private final PropertyEvaluator evaluator;
     private final SourceRoots sourceRoots;
     private final SourceRoots testRoots;
+    private File buildGeneratedDir = null;
+    private final FileChangeListener buildGeneratedDirListener = new FileChangeAdapter() {
+        public @Override void fileFolderCreated(FileEvent fe) {
+            invalidate();
+        }
+        public @Override void fileDeleted(FileEvent fe) {
+            invalidate();
+        }
+        public @Override void fileRenamed(FileRenameEvent fe) {
+            invalidate();
+        }
+    };
 
     FileBuiltQueryImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sourceRoots,
             SourceRoots testRoots) {
@@ -96,27 +116,50 @@ final class FileBuiltQueryImpl implements FileBuiltQueryImplementation, Property
 
 
     private FileBuiltQueryImplementation createDelegate() {
-        String[] srcRoots = sourceRoots.getRootProperties();
-        String[] tstRoots = testRoots.getRootProperties();
-        String[] from = new String [srcRoots.length + tstRoots.length];
-        String[] to = new String [srcRoots.length + tstRoots.length];
-        for (int i = 0; i < srcRoots.length; i++) {
-            from[i] = "${" + srcRoots[i] + "}/*.java"; // NOI18N
-            to[i] = "${build.classes.dir}/*.class"; // NOI18N
+        List<String> from = new ArrayList<String>();
+        List<String> to = new ArrayList<String>();
+        for (String r : sourceRoots.getRootProperties()) {
+            from.add("${" + r + "}/*.java"); // NOI18N
+            to.add("${build.classes.dir}/*.class"); // NOI18N
         }
-        for (int i = 0; i < tstRoots.length; i++) {
-            from[srcRoots.length + i] = "${" + tstRoots[i] + "}/*.java"; // NOI18N
-            to[srcRoots.length + i] = "${build.test.classes.dir}/*.class"; // NOI18N
+        for (String r : testRoots.getRootProperties()) {
+            from.add("${" + r + "}/*.java"); // NOI18N
+            to.add("${build.test.classes.dir}/*.class"); // NOI18N
         }
-        return helper.createGlobFileBuiltQuery(evaluator, from, to); // save to pass APH
+        String buildGeneratedDirS = evaluator.getProperty("build.generated.sources.dir"); // NOI18N
+        if (buildGeneratedDirS != null) { // #105645
+            File _buildGeneratedDir = helper.resolveFile(buildGeneratedDirS);
+            if (!_buildGeneratedDir.equals(buildGeneratedDir)) {
+                if (buildGeneratedDir != null) {
+                    FileUtil.removeFileChangeListener(buildGeneratedDirListener, buildGeneratedDir);
+                }
+                buildGeneratedDir = _buildGeneratedDir;
+                FileUtil.addFileChangeListener(buildGeneratedDirListener, buildGeneratedDir);
+            }
+            if (buildGeneratedDir.isDirectory()) {
+                for (File root : buildGeneratedDir.listFiles()) {
+                    if (!root.isDirectory()) {
+                        continue;
+                    }
+                    from.add(root + "/*.java"); // NOI18N
+                    to.add("${build.classes.dir}/*.class"); // NOI18N
+                }
+            }
+        }
+        return helper.createGlobFileBuiltQuery(evaluator,
+                from.toArray(new String[from.size()]),
+                to.toArray(new String[to.size()]));
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (SourceRoots.PROP_ROOT_PROPERTIES.equals(evt.getPropertyName())) {
-            synchronized (this) {
-                delegate = null;
-                // XXX: what to do with already returned Statuses
-            }
+            invalidate();
         }
     }
+
+    private synchronized void invalidate() {
+        delegate = null;
+        // XXX: what to do with already returned Statuses
+    }
+
 }

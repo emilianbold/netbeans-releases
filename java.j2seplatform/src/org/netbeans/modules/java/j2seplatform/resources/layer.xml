@@ -86,7 +86,7 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
         <folder name="MIMEResolver">
-            <file name="org-netbeans-modules-jar-mime-resolver.xml" url="mime-resolver.xml">
+            <file name="org-netbeans-modules-jar-mime-resolver.xml" url="platforms-mime-resolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.j2seplatform.resources.Bundle"/>
                 <attr name="position" intvalue="480"/>
             </file>
@@ -123,7 +123,7 @@ made subject to such option by the copyright holder.
             <folder name="NetBeans">
                 <file name="DTD_Java_PlatformDefinition_1_0.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.java.j2seplatform.platformdefinition.PlatformConvertor"/>
-                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment.Provider"/>
+                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment$Provider"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seplatform.platformdefinition.PlatformConvertor.createProvider"/>
                 </file>
             </folder>

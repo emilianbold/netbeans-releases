@@ -142,6 +142,9 @@ public class MakeTemplateListener implements OperationListener {
             folder = i.getFolder();
         }
 
+        if (folder.isDiskFolder()) {
+            return; // item is added via Folder.fileDataCreated event
+        }
         MakeConfigurationDescriptor makeConfigurationDescriptor = getMakeConfigurationDescriptor(p);
 
         assert makeConfigurationDescriptor != null;

@@ -16,12 +16,30 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.api.annotations.common</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.api.progress</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.12.0.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.extexecution</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.13</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -39,6 +57,14 @@
                     <run-dependency/>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.filesystems</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.20.0.1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.io</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -50,9 +76,7 @@
                     <code-name-base>org.openide.modules</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>7.7</specification-version>
-                    </run-dependency>
+                    <run-dependency/>
                 </dependency>
                 <dependency>
                     <code-name-base>org.openide.util</code-name-base>
@@ -69,10 +93,27 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.core.startup</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                </test-type>
+            </test-dependencies>
+            <friend-packages>
+                <friend>org.netbeans.modules.cnd.gizmo</friend>
+                <friend>org.netbeans.modules.dlight</friend>
+                <friend>org.netbeans.modules.dlight.collector.stdout</friend>
+                <friend>org.netbeans.modules.dlight.dtrace</friend>
+                <friend>org.netbeans.modules.dlight.management</friend>
+                <friend>org.netbeans.modules.dlight.perfan</friend>
+                <friend>org.netbeans.modules.dlight.webstack</friend>
                 <package>org.netbeans.modules.nativeexecution.api</package>
-                <package>org.netbeans.modules.nativeexecution.util</package>
-            </public-packages>
+                <package>org.netbeans.modules.nativeexecution.api.util</package>
+            </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/jsch-20081111.jar</runtime-relative-path>
                 <binary-origin>release/modules/ext/jsch-20081111.jar</binary-origin>

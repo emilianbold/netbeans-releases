@@ -293,6 +293,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         private Map<String,String> normalizedPaths = new HashMap<String,String>();
         private String compileFlavor;
         private String compileDirectory;
+        private String cygwinDriveDirectory;
         
         public CompilerSettings(ProjectProxy project){
             systemIncludePathsCpp = DiscoveryUtils.getSystemIncludePaths(project, true);
@@ -301,6 +302,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             systemMacroDefinitionsC = DiscoveryUtils.getSystemMacroDefinitions(project,false);
             compileFlavor = DiscoveryUtils.getCompilerFlavor(project);
             compileDirectory = DiscoveryUtils.getCompilerDirectory(project);
+            cygwinDriveDirectory = DiscoveryUtils.getCygwinDrive(project);
         }
         
         public List<String> getSystemIncludePaths(boolean isCPP) {
@@ -342,6 +344,10 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
 
         public String getCompileDirectory() {
             return compileDirectory;
+        }
+
+        public String getCygwinDrive() {
+            return cygwinDriveDirectory;
         }
     }
 }

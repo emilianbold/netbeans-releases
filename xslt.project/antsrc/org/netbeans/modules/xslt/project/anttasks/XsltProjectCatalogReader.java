@@ -29,8 +29,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.xml.resolver.Catalog;
-import org.apache.xml.resolver.CatalogManager;
-import org.apache.xml.resolver.tools.CatalogResolver;
+import org.apache.xml.resolver.NbCatalogManager;
+import org.apache.xml.resolver.tools.NbCatalogResolver;
 import org.apache.xml.resolver.tools.ResolvingXMLReader;
 
 import org.xml.sax.Attributes;
@@ -50,14 +50,14 @@ public class XsltProjectCatalogReader {
      * @throws Excepetion Exception during parsing the Catalog.xml file.
      */
     public XsltProjectCatalogReader(String catalogXML) throws Exception {
-        CatalogResolver catalogResolver;
+        NbCatalogResolver catalogResolver;
         Catalog apacheCatalogResolverObj;
 
 
-        CatalogManager manager = new CatalogManager(null);
+        NbCatalogManager manager = new NbCatalogManager(null);
         manager.setUseStaticCatalog(false);
         manager.setPreferPublic(false);
-        catalogResolver = new CatalogResolver(manager);
+        catalogResolver = new NbCatalogResolver(manager);
         apacheCatalogResolverObj = catalogResolver.getCatalog();
         try {
             apacheCatalogResolverObj.parseCatalog(catalogXML);

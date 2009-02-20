@@ -58,6 +58,7 @@ import java.util.EventListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -130,6 +131,9 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     /** Registry identification property */
     public static final String ID_PROP = "id"; // NOI18N
+
+    /** This document's version. It's accessed by DocumentUtilities.getDocumentVersion(). */
+    private static final String VERSION_PROP = "version"; //NOI18N
 
     /** Line separator property for reading files in */
     public static final String READ_LINE_SEPARATOR_PROP = DefaultEditorKit.EndOfLineStringProperty;
@@ -505,6 +509,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         putProperty(CharSequence.class, getDocumentContent().createCharSequenceView());
         putProperty("supportsModificationListener", Boolean.TRUE); // NOI18N
         putProperty(MIME_TYPE_PROP, new MimeTypePropertyEvaluator(this));
+        putProperty(VERSION_PROP, new AtomicLong());
 
         lineRootElement = new LineRootElement(this);
 
@@ -694,6 +699,8 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             throw new BadLocationException("Wrong insert position " + offset, offset); // NOI18N
         }
 
+        incrementDocVersion();
+
         // possible CR-LF conversion
         text = Analyzer.convertLSToLF(text);
 
@@ -851,6 +858,8 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                 throw new BadLocationException("Wrong remove position " + offset, offset); // NOI18N
             }
 
+            incrementDocVersion();
+            
             // Check whether there is an active postModificationDocumentListener
             // and if so then start an atomic transaction.
             boolean activePostModification;
@@ -1066,11 +1075,17 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         try {
             removedText = getText(chng.getOffset(), chng.getLength());
         } catch (BadLocationException e) {
-            // Ignore
-            removedText = null;
+            throw new IllegalStateException(e);
         }
         org.netbeans.lib.editor.util.swing.DocumentUtilities.putEventProperty(chng, String.class,
                 removedText);
+
+        // Notify the remove update listeners - before the actual remove happens
+        // so that it adheres to removeUpdate() logic; also the listeners can check
+        // positions' offsets before the actual removal happens.
+        for (DocumentListener listener: updateDocumentListenerList.getListeners()) {
+            listener.removeUpdate(chng);
+        }
 
         // Remember the line changes here but add them to chng during postRemoveUpdate()
         removeUpdateLineUndo = lineRootElement.removeUpdate(chng.getOffset(), chng.getLength());
@@ -1094,17 +1109,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         fixLineSyntaxState.update(false);
         chng.addEdit(fixLineSyntaxState.createAfterLineUndo());
         fixLineSyntaxState = null;
-
-        // Useful for lexer snapshots
-        org.netbeans.lib.editor.util.swing.DocumentUtilities.addEventPropertyStorage(chng);
-        BaseDocumentEvent bEvt = (BaseDocumentEvent)chng;
-        org.netbeans.lib.editor.util.swing.DocumentUtilities.putEventProperty(
-                chng, String.class, bEvt.getText());
-
-        for (DocumentListener listener: updateDocumentListenerList.getListeners()) {
-            listener.removeUpdate(chng);
-        }
-
     }
 
     public String getText(int[] block) throws BadLocationException {
@@ -2152,6 +2156,10 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         return toString();
     }
 
+    private void incrementDocVersion() {
+        ((AtomicLong) getProperty(VERSION_PROP)).incrementAndGet();
+    }
+
     /** Compound edit that write-locks the document for the whole processing
      * of its undo operation.
      */
@@ -2252,7 +2260,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             this.nonSignificant = !significant;
         }
 
-    }
+    } // End of AtomicCompoundEdit
 
     /** Property evaluator is useful for lazy evaluation
      * of properties of the document when

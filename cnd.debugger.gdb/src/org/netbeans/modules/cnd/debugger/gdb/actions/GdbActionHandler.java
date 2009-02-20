@@ -51,29 +51,35 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
-import org.netbeans.modules.cnd.makeproject.api.CustomProjectActionHandler;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
-public class GdbActionHandler implements CustomProjectActionHandler {
+public class GdbActionHandler implements ProjectActionHandler {
     
     private Collection<ExecutionListener> listeners = new CopyOnWriteArrayList<ExecutionListener>();
-    
-    public void execute(final ProjectActionEvent ev, final InputOutput io) {
-        GdbProfile profile = (GdbProfile) ev.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
+
+    private ProjectActionEvent pae;
+
+    public void init(ProjectActionEvent pae) {
+        this.pae = pae;
+    }
+
+    public void execute(final InputOutput io) {
+        GdbProfile profile = (GdbProfile) pae.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
         if (profile != null) { // profile can be null if dbxgui is enabled
-            String gdb = profile.getGdbPath((MakeConfiguration)ev.getConfiguration(), true);
+            String gdb = profile.getGdbPath((MakeConfiguration)pae.getConfiguration(), true);
             if (gdb != null) {
                 executionStarted();
-                if (ev.getID() == ProjectActionEvent.DEBUG || ev.getID() == ProjectActionEvent.DEBUG_STEPINTO) {
+                if (pae.getType() == ProjectActionEvent.Type.DEBUG || pae.getType() == ProjectActionEvent.Type.DEBUG_STEPINTO) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             DebuggerManager.getDebuggerManager().startDebugging(
                                     DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID,
-                                    new Object[]{ev, io, GdbActionHandler.this}));
+                                    new Object[]{pae, io, GdbActionHandler.this}));
                         }
                     });
                 }
@@ -93,7 +99,11 @@ public class GdbActionHandler implements CustomProjectActionHandler {
     public void removeExecutionListener(ExecutionListener l) {
         listeners.remove(l);
     }
-    
+
+    public boolean canCancel() {
+        return false;
+    }
+
     /*
      * Called when user cancels execution from progressbar in output window
      */

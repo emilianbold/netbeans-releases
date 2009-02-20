@@ -66,7 +66,7 @@ public class CosCheckerTest {
      * Test of extractDebugJVMOptions method, of class CosChecker.
      */
     @Test
-    public void testExtractDebugJVMOptions() {
+    public void testExtractDebugJVMOptions() throws Exception {
         String arg = "-Xmx256m  -Xdebug -Djava.compiler=none -Xam -Xnoagent -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address}";
         List<String> args = CosChecker.extractDebugJVMOptions(arg);
         assertEquals(args.get(0), "-Xmx256m");

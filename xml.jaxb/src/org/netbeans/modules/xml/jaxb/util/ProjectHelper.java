@@ -128,7 +128,7 @@ public class ProjectHelper {
     private static final String XSL_RESOURCE = "org/netbeans/modules/xml/jaxb/resources/JAXBBuild.xsl"; //NOI18N
     private static final String EJB_XSL_RESOURCE = "org/netbeans/modules/xml/jaxb/resources/JAXBBuild_ejb.xsl"; //NOI18N
     private static final String WEB_XSL_RESOURCE = "org/netbeans/modules/xml/jaxb/resources/JAXBBuild_web.xsl"; //NOI18N
-    private static final String BUILD_GEN_JAXB_DIR = "build/generated/addons/jaxb"; //NOI18N
+    private static final String BUILD_GEN_JAXB_DIR = "build/generated-sources/jaxb"; //NOI18N
     private static final String NON_JAVA_SE_CONFIG_DIR = "conf/xml-resources/jaxb"; //NOI18N
     private static final String JAVA_SE_CONFIG_DIR = "xml-resources/jaxb"; //NOI18N
     //private static final String PLATFORM_ACTIVE = "platform.active"; //NOI18N

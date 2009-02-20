@@ -41,10 +41,12 @@
 
 package org.netbeans.modules.junit.output;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
 import javax.accessibility.AccessibleContext;
 import javax.swing.JTree;
+import javax.swing.UIManager;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import org.openide.awt.HtmlRenderer;
@@ -72,6 +74,9 @@ final class ResultTreeView extends BeanTreeView implements Runnable {
         tree.setCellRenderer(new DelegatingTreeCellRenderer());
         
         initAccessibility();
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+            tree.setBackground( new Color(UIManager.getColor("Tree.background").getRGB()) ); //NOI18N
+        }
     }
     
     /**

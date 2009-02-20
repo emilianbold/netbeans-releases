@@ -38,42 +38,58 @@
  */
 package org.netbeans.modules.dlight.api.support;
 
+import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
-import org.netbeans.modules.dlight.api.*;
-import org.netbeans.modules.dlight.execution.api.support.IOTabManagerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.CancellationException;
+import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.dlight.api.execution.SubstitutableTarget;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.nativeexecution.api.TaskExecutionState;
-import org.netbeans.modules.nativeexecution.api.NativeTaskListener;
-import org.netbeans.modules.nativeexecution.api.NativeTask;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.openide.util.RequestProcessor;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 
 /**
  * Wrapper of {@link @org-netbeans-modules-nativexecution@org/netbeans/modules/nativexecution/api/NativeTask.html}
- * 
+ *
  */
-public final class NativeExecutableTarget extends DLightTarget implements SubstitutableTarget, AttachableTarget, NativeTaskListener {
+public final class NativeExecutableTarget extends DLightTarget implements SubstitutableTarget, AttachableTarget, ChangeListener {
 
-    private static final Logger log = DLightLogger.getLogger(NativeExecutableTarget.class);
+    private static final Logger log =
+            DLightLogger.getLogger(NativeExecutableTarget.class);
     private final ExecutionEnvironment execEnv;
-    private NativeTask task;
+    private Future<Integer> targetFutureResult;
     private String cmd;
     private String templateCMD;
     private String[] args;
+    private Map<String, String> envs;
+    private String workingDirectory;
+    private ExternalTerminal externalTerminal;
     private String[] templateArgs;
     private String extendedCMD;
     private String[] extendedCMDArgs;
+    private volatile int pid = -1;
+    private volatile State state;
 
     public NativeExecutableTarget(NativeExecutableTargetConfiguration configuration) {
         super(new NativeExecutableTargetExecutionService());
         this.execEnv = configuration.getExecutionEvnitoment();
         this.cmd = configuration.getCmd();
+        this.workingDirectory = configuration.getWorkingDirectory();
+        this.envs = new HashMap<String, String>();
+        this.envs.putAll(configuration.getEnv());
+        this.externalTerminal = configuration.getExternalTerminal();
         this.templateCMD = this.cmd;
         this.args = configuration.getArgs();
         if (this.args != null) {
@@ -85,56 +101,56 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     }
 
     public int getPID() {
-        return task.getPID();
+        return pid;
     }
 
     public State getState() {
-        // Do mapping between DLightTarget.State and NativeTask state
-        TaskExecutionState taskState = task.getState();
-
-        switch (taskState) {
-            case INITIAL:
-                return State.INIT;
-            case STARTING:
-                return State.STARTING;
-            case ERROR:
-                return State.FAILED;
-            case RUNNING:
-                return State.RUNNING;
-            case CANCELED:
-                return State.TERMINATED;
-            case FINISHED:
-                return State.DONE;
-        }
-
-        return null;
+        return state;
     }
 
     @Override
     public String toString() {
-        return "Executable target: " + cmd;
+        return "Executable target: " + cmd; // NOI18N
     }
 
-    public void taskStarted(NativeTask task) {
-        notifyListeners(State.INIT, State.RUNNING);
-    }
+    public void stateChanged(ChangeEvent e) {
+        final Object src = e.getSource();
 
-    private void targetFinished(Integer result) {
-        notifyListeners(State.RUNNING, getState());
-    }
+        if (!(src instanceof NativeProcess)) {
+            return;
+        }
 
-    public void taskFinished(NativeTask task, Integer result) {
-        targetFinished(result);
-    }
+        final NativeProcess process = (NativeProcess) src;
+        final NativeProcess.State newState = process.getState();
+        final DLightTarget.State prevState = state;
 
-    public void taskCancelled(NativeTask task, CancellationException cex) {
-        log.info("NativeTask " + task.toString() + " cancelled!");
-        targetFinished(-1);
-    }
+        switch (newState) {
+            case INITIAL:
+                state = State.INIT;
+                break;
+            case STARTING:
+                state = State.STARTING;
+                break;
+            case RUNNING:
+                state = State.RUNNING;
+                this.pid = process.getPID();
+                break;
+            case CANCELLED:
+                state = State.TERMINATED;
+                log.info("NativeTask " + process.toString() + " cancelled!"); // NOI18N
+                break;
+            case ERROR:
+                state = State.FAILED;
+                log.info("NativeTask " + process.toString() + // NOI18N
+                        " finished with error! "); // NOI18N
+                break;
+            case FINISHED:
+                state = State.DONE;
+                break;
 
-    public void taskError(NativeTask task, Throwable t) {
-        log.info("NativeTask " + task.toString() + " finished with error! " + t);
-        targetFinished(-1);
+        }
+
+        notifyListeners(prevState, state);
     }
 
     public boolean canBeSubstituted() {
@@ -163,30 +179,62 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         return execEnv;
     }
 
-    private void start() {
-        task = new NativeTask(execEnv, cmd, args);
-        task.setInputOutput(IOTabManagerFactory.getIOTabManager().getIO(task, true));
-        task.addListener(NativeExecutableTarget.this);
-        task.submit();
+    private void start(ExecutionEnvVariablesProvider executionEnvProvider) {
+        ExecutionDescriptor descr = new ExecutionDescriptor();
+        descr = descr.controllable(true).frontWindow(true);
+        
+        NativeProcessBuilder pb = new NativeProcessBuilder(execEnv, cmd);
+        pb = pb.setArguments(args);
+        pb = pb.addNativeProcessListener(NativeExecutableTarget.this);
+        pb = pb.setWorkingDirectory(workingDirectory);
+        pb = pb.addEnvironmentVariables(envs);
+        
+        if (externalTerminal != null) {
+            pb = pb.useExternalTerminal(externalTerminal);
+            descr = descr.inputVisible(false);
+        }
+        
+        if (executionEnvProvider != null && executionEnvProvider.getExecutionEnv() != null) {
+            pb = pb.addEnvironmentVariables(executionEnvProvider.getExecutionEnv());
+        }
+
+        final ExecutionService es = ExecutionService.newService(
+                pb,
+                descr,
+                toString());
+
+        // Because of possible prompts for passwords we need to start
+        // this in non-AWT thread...
+        Runnable r = new Runnable() {
+
+            public void run() {
+                targetFutureResult = es.run();
+            }
+        };
+
+        if (SwingUtilities.isEventDispatchThread()) {
+            RequestProcessor.getDefault().post(r);
+        } else {
+            r.run();
+        }
+
     }
 
     private void terminate() {
-        if (task == null || !task.isRunning()) {
-            return;
+        if (targetFutureResult != null && !targetFutureResult.isDone()) {
+            targetFutureResult.cancel(true);
         }
-
-        task.cancel();
     }
 
-    private static final class NativeExecutableTargetExecutionService implements DLightTargetExecutionService<NativeExecutableTarget> {
+    private static final class NativeExecutableTargetExecutionService
+            implements DLightTargetExecutionService<NativeExecutableTarget> {
 
-        public void start(NativeExecutableTarget target) {
-            target.start();
+        public void start(NativeExecutableTarget target, ExecutionEnvVariablesProvider executionEnvProvider) {
+            target.start(executionEnvProvider);
         }
 
         public void terminate(NativeExecutableTarget target) {
             target.terminate();
         }
     }
-
 }

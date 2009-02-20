@@ -62,7 +62,7 @@ public class RemoteScriptSupport extends RemoteConnectionSupport {
     }
     
     public RemoteScriptSupport(String key, ScriptManager manager) {
-        this(key, manager, 22);
+        this(key, manager, PORT);
     }
     
     private void setChannelCommand(String script) {

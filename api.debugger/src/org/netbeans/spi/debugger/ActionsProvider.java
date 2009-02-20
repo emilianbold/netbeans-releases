@@ -41,7 +41,14 @@
 
 package org.netbeans.spi.debugger;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.util.Map;
 import java.util.Set;
+import org.netbeans.debugger.registry.ContextAwareServiceHandler;
+import org.netbeans.spi.debugger.ContextAwareSupport;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -108,6 +115,99 @@ public abstract class ActionsProvider {
                 }
             }
         });
+    }
+
+    /**
+     * Declarative registration of an ActionsProvider implementation.
+     * By marking the implementation class with this annotation,
+     * you automatically register that implementation for use by debugger.
+     * The class must be public and have a public constructor which takes
+     * no arguments or takes {@link ContextProvider} as an argument.
+     * @since 1.16
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ElementType.TYPE})
+    public @interface Registration {
+        /**
+         * An optional path to register this implementation in.
+         * Usually the session ID.
+         */
+        String path() default "";
+
+    }
+
+    static class ContextAware extends ActionsProvider implements ContextAwareService<ActionsProvider> {
+
+        private String serviceName;
+        private ContextProvider context;
+        private ActionsProvider delegate;
+
+        private ContextAware(String serviceName) {
+            this.serviceName = serviceName;
+        }
+
+        private ContextAware(String serviceName, ContextProvider context) {
+            this.serviceName = serviceName;
+            this.context = context;
+        }
+
+        private synchronized ActionsProvider getDelegate() {
+            if (delegate == null) {
+                delegate = (ActionsProvider) ContextAwareSupport.createInstance(serviceName, context);
+            }
+            return delegate;
+        }
+
+        @Override
+        public Set getActions() {
+            return getDelegate().getActions();
+        }
+
+        @Override
+        public void doAction(Object action) {
+            getDelegate().doAction(action);
+        }
+
+        @Override
+        public void postAction(Object action, Runnable actionPerformedNotifier) {
+            getDelegate().postAction(action, actionPerformedNotifier);
+        }
+
+        @Override
+        public boolean isEnabled(Object action) {
+            return getDelegate().isEnabled(action);
+        }
+
+        @Override
+        public void addActionsProviderListener(ActionsProviderListener l) {
+            getDelegate().addActionsProviderListener(l);
+        }
+
+        @Override
+        public void removeActionsProviderListener(ActionsProviderListener l) {
+            getDelegate().removeActionsProviderListener(l);
+        }
+
+        public ActionsProvider forContext(ContextProvider context) {
+            if (context == this.context) {
+                return this;
+            } else {
+                return new ActionsProvider.ContextAware(serviceName, context);
+            }
+        }
+
+        /**
+         * Creates instance of <code>ContextAwareService</code> based on layer.xml
+         * attribute values
+         *
+         * @param attrs attributes loaded from layer.xml
+         * @return new <code>ContextAwareService</code> instance
+         */
+        static ContextAwareService createService(Map attrs) throws ClassNotFoundException {
+            String serviceName = (String) attrs.get(ContextAwareServiceHandler.SERVICE_NAME);
+            return new ActionsProvider.ContextAware(serviceName);
+        }
+
     }
     
 }

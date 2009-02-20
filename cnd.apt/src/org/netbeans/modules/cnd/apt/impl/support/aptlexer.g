@@ -280,6 +280,8 @@ tokens {
     END_PREPROC_DIRECTIVE;
     FUN_LIKE_MACRO_LPAREN;
     BACK_SLASH;
+
+    LITERAL___attribute="__attribute"; // NOI18N
 }
 {
 

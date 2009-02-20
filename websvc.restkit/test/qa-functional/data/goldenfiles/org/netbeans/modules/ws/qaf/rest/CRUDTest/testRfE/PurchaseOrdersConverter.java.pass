@@ -55,6 +55,7 @@ public class PurchaseOrdersConverter {
             items = new ArrayList<PurchaseOrderConverter>();
         }
         if (entities != null) {
+            items.clear();
             for (PurchaseOrder entity : entities) {
                 items.add(new PurchaseOrderConverter(entity, uri, expandLevel, true));
             }

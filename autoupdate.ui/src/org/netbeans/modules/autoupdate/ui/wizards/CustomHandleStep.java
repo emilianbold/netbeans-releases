@@ -237,6 +237,6 @@ public class CustomHandleStep implements WizardDescriptor.FinishablePanel<Wizard
     }
 
     private String getBundle (String key, String... params) {
-        return NbBundle.getMessage (InstallStep.class, key, params);
+        return NbBundle.getMessage (CustomHandleStep.class, key, params);
     }
 }

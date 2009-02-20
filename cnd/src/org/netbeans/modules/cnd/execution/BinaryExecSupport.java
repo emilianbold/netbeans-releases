@@ -130,8 +130,8 @@ public final class BinaryExecSupport extends ExecutionSupport {
         try {
             getEntry().getFile().setAttribute(PROP_RUN_DIRECTORY, dir);
         } catch (IOException ex) {
-            String msg = MessageFormat.format("INTERNAL ERROR: Cannot set run directory", // NOI18N
-                    new Object[]{FileUtil.toFile(getEntry().getFile()).getPath()});
+            //String msg = MessageFormat.format("INTERNAL ERROR: Cannot set run directory", // NOI18N
+            //        new Object[]{FileUtil.toFile(getEntry().getFile()).getPath()});
 
             if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
                 ex.printStackTrace();

@@ -158,6 +158,9 @@ public final class CheckModuleConfigs extends Task {
     
     @SuppressWarnings("unchecked")
     private Set<String> split(String list, boolean warnIfUnsorted, String what) {
+        if (list.contains(" ")) {
+            throw new BuildException("remove spaces from " + what + ": " + list);
+        }
         List elements = Collections.list(new StringTokenizer(list, ", "));
         if (warnIfUnsorted) {
             List sorted = new ArrayList(elements);
@@ -236,7 +239,7 @@ public final class CheckModuleConfigs extends Task {
         if (masterProjectXml == null) {
             return;
         }
-        log("Writing module list  to " + masterProjectXml);
+        log("Writing module list to " + masterProjectXml);
         Document doc = XMLUtil.parse(new InputSource(masterProjectXml.toURI().toString()), false, true, null, null);
         NodeList nl = doc.getElementsByTagName("subprojects");
         if (nl.getLength() != 1) {

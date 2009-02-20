@@ -46,12 +46,8 @@ import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
-import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.ui.BrowseTestSources;
-import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
-import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -62,6 +58,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -112,16 +109,37 @@ public final class ProjectPropertiesSupport {
             return testsDirectory;
         }
         if (showFileChooser) {
-            BrowseTestSources panel = new BrowseTestSources(project);
+            BrowseTestSources panel = new BrowseTestSources(project, NbBundle.getMessage(ProjectPropertiesSupport.class, "LBL_BrowseTests"));
             if (panel.open()) {
                 File tests = new File(panel.getTestSources());
                 assert tests.isDirectory();
                 testsDirectory = FileUtil.toFileObject(tests);
                 project.setTestsDirectory(testsDirectory);
-                saveTestSources(project, tests);
+                saveTestSources(project, PhpProjectProperties.TEST_SRC_DIR, tests);
             }
         }
         return testsDirectory;
+    }
+
+    /**
+     * @return selenium test sources directory or <code>null</code> (if not set up yet e.g.)
+     */
+    public static FileObject getSeleniumDirectory(PhpProject project, boolean showFileChooser) {
+        FileObject seleniumDirectory = project.getSeleniumDirectory();
+        if (seleniumDirectory != null && seleniumDirectory.isValid()) {
+            return seleniumDirectory;
+        }
+        if (showFileChooser) {
+            BrowseTestSources panel = new BrowseTestSources(project, NbBundle.getMessage(ProjectPropertiesSupport.class, "LBL_BrowseSelenium"));
+            if (panel.open()) {
+                File selenium = new File(panel.getTestSources());
+                assert selenium.isDirectory();
+                seleniumDirectory = FileUtil.toFileObject(selenium);
+                project.setSeleniumDirectory(seleniumDirectory);
+                saveTestSources(project, PhpProjectProperties.SELENIUM_SRC_DIR, selenium);
+            }
+        }
+        return seleniumDirectory;
     }
 
     public static FileObject getWebRootDirectory(PhpProject project) {
@@ -170,51 +188,6 @@ public final class ProjectPropertiesSupport {
 
     public static boolean areAspTagsEnabled(PhpProject project) {
         return getBoolean(project, PhpProjectProperties.ASP_TAGS, PhpLanguageOptions.ASP_TAGS_ENABLED);
-    }
-
-    /** validates the active config and return <code>true</code> if it's OK */
-    public static boolean isActiveConfigValid(PhpProject project, boolean indexFileNeeded, boolean showCustomizer) {
-        boolean valid = validateActiveConfig(project, indexFileNeeded);
-        if (!valid && showCustomizer) {
-            project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.RUN);
-        }
-        return valid;
-    }
-
-    private static boolean validateActiveConfig(PhpProject project, boolean indexFileNeeded) {
-        String indexFile = getIndexFile(project);
-        if (indexFileNeeded && (indexFile == null || indexFile.trim().length() == 0)) {
-            return false;
-        }
-        RunAsType runAs = getRunAs(project);
-        switch (runAs) {
-            case LOCAL:
-                if (RunAsValidator.validateWebFields(getUrl(project), FileUtil.toFile(getWebRootDirectory(project)),
-                        null, getArguments(project)) != null) {
-                    return false;
-                }
-                break;
-            case REMOTE:
-                String remoteConnection = getRemoteConnection(project);
-                if (RunAsValidator.validateWebFields(getUrl(project), FileUtil.toFile(getWebRootDirectory(project)),
-                        null, getArguments(project)) != null) {
-                    return false;
-                } else if (remoteConnection == null || RemoteConnections.get().remoteConfigurationForName(remoteConnection) == null) {
-                    return false;
-                } else if (RunAsValidator.validateUploadDirectory(getRemoteDirectory(project), true) != null) {
-                    return false;
-                }
-                break;
-            case SCRIPT:
-                if (RunAsValidator.validateScriptFields(getPhpInterpreter(project).getProgram(),
-                        FileUtil.toFile(getSourcesDirectory(project)), null, getArguments(project)) != null) {
-                    return false;
-                }
-                break;
-            default:
-                assert false : "Unknown run configuration type: " + runAs;
-        }
-        return true;
     }
 
     /**
@@ -298,7 +271,7 @@ public final class ProjectPropertiesSupport {
         return defaultValue;
     }
 
-    private static void saveTestSources(final PhpProject project, final File testDir) {
+    private static void saveTestSources(final PhpProject project, final String propertyName, final File testDir) {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
@@ -316,7 +289,7 @@ public final class ProjectPropertiesSupport {
                             }
 
                             EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                            projectProperties.put(PhpProjectProperties.TEST_SRC_DIR, testPath);
+                            projectProperties.put(propertyName, testPath);
                             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
                             return null;
                         }

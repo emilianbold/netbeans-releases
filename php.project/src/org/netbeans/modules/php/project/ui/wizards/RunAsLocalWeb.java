@@ -39,9 +39,6 @@
 package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
@@ -222,6 +219,10 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         indexFileBrowseButton.setVisible(false);
     }
 
+    public void setCopyFilesState(boolean state) {
+        copyFilesVisual.setState(state);
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -285,7 +286,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
                                 .addPreferredGap(LayoutStyle.RELATED)
                                 .add(indexFileBrowseButton)))))
                 .add(0, 0, 0))
-        
+
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
@@ -305,7 +306,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
                 .add(18, 18, 18)
                 .add(copyFilesPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        
+
         );
 
         urlLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.urlLabel.AccessibleContext.accessibleName")); // NOI18N

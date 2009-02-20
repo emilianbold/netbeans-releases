@@ -4,7 +4,7 @@
     <folder name="Services">
         <!-- Recognize application/vnd.sun.wadl+xml: -->
         <folder name="MIMEResolver">
-            <file name="org-netbeans-modules-websvc-rest-wadl-design-resources-mime-resolver.xml" url="mime-resolver.xml">
+            <file name="org-netbeans-modules-websvc-rest-wadl-design-resources-mime-resolver.xml" url="wadl-mime-resolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wadl.design.loader.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wadl/design/resources/wadl_file.png"/>
                 <attr name="position" intvalue="431"/>

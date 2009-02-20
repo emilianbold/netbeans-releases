@@ -86,6 +86,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -135,20 +136,21 @@ public class CsmUtilities {
     public static final int LOCAL_MEMBER_BIT = 0x00000100;
 
     // the bit for local member. the modificator is not saved within this bit.
-    public static final int CONST_MEMBER_BIT = 0x00000200;
     public static final int PUBLIC_LEVEL = 2;
     public static final int PROTECTED_LEVEL = 1;
     public static final int PRIVATE_LEVEL = 0;
-    public static final int GLOBAL = 0x00001000;
-    public static final int LOCAL = 0x00002000;
-    public static final int FILE_LOCAL = 0x00004000;
-    public static final int MEMBER = 0x00008000;
-    public static final int ENUMERATOR = 0x00000400;
-    public static final int CONSTRUCTOR = 0x00000800;
-    public static final int DESTRUCTOR = 0x00020000;
-    public static final int OPERATOR = 0x00040000;
-    public static final int MACRO = 0x00010000;
-    public static final int EXTERN = 0x00080000;
+    public static final int CONST_MEMBER_BIT= 0x00000200;
+    public static final int ENUMERATOR      = 0x00000400;
+    public static final int CONSTRUCTOR     = 0x00000800;
+    public static final int GLOBAL          = 0x00001000;
+    public static final int LOCAL           = 0x00002000;
+    public static final int FILE_LOCAL      = 0x00004000;
+    public static final int MEMBER          = 0x00008000;
+    public static final int MACRO           = 0x00010000;
+    public static final int DESTRUCTOR      = 0x00020000;
+    public static final int OPERATOR        = 0x00040000;
+    public static final int EXTERN          = 0x00080000;
+    public static final int FORWARD         = 0x00100000;
     public static final boolean DEBUG = Boolean.getBoolean("csm.utilities.trace.summary") ||
             Boolean.getBoolean("csm.utilities.trace");
 
@@ -158,19 +160,33 @@ public class CsmUtilities {
             mod |= CsmUtilities.getMemberModifiers((CsmMember) obj);
         } else if (CsmKindUtilities.isFunctionDefinition(obj)) {
             CsmFunctionDefinition fun = (CsmFunctionDefinition) obj;
-            if (CsmKindUtilities.isClassMember(fun.getDeclaration())) {
-                mod |= CsmUtilities.getMemberModifiers((CsmMember) fun.getDeclaration());
+            CsmFunction decl = fun.getDeclaration();
+            if (CsmKindUtilities.isClassMember(decl)) {
+                mod |= CsmUtilities.getMemberModifiers((CsmMember) decl);
+            } else {
+                if (decl == null) {
+                    decl = fun;
+                }
+                if (CsmKindUtilities.isGlobalFunction(obj)) {
+                    mod |= GLOBAL;
+                }
+                if (CsmKindUtilities.isFileLocalFunction(decl)){
+                    mod |= FILE_LOCAL;
+                }
             }
         } else {
-            if (CsmKindUtilities.isGlobalVariable(obj) || CsmKindUtilities.isGlobalVariable(obj)) {
+            if (CsmKindUtilities.isGlobalVariable(obj) || CsmKindUtilities.isGlobalFunction(obj)) {
                 mod |= GLOBAL;
             }
-            if (CsmKindUtilities.isFileLocalVariable(obj)) {
+            if (CsmKindUtilities.isFileLocalVariable(obj) || CsmKindUtilities.isFileLocalFunction(obj)) {
                 mod |= FILE_LOCAL;
             }
             if (CsmKindUtilities.isEnumerator(obj)) {
                 mod |= ENUMERATOR;
             }
+        }
+        if (CsmClassifierResolver.getDefault().isForwardClass(obj)) {
+            mod |= FORWARD;
         }
         if (CsmKindUtilities.isOperator(obj)) {
             mod |= OPERATOR;
@@ -326,6 +342,33 @@ public class CsmUtilities {
             exc.printStackTrace();
         }
         return csmProject;
+    }
+
+    /**
+     * Tries to find project that contains given file under its root directory.
+     * File doesn't have to be included into project or code model.
+     * This is somewhat similar to default FileOwnerQueryImplementation,
+     * but only for CsmProjects.
+     *
+     * @param fo  file to look up
+     * @return project that contains file under its root directory,
+     *      or <code>null</code> if there is no such project
+     */
+    public static CsmProject getCsmProject(FileObject fo) {
+        File file = FileUtil.toFile(fo);
+        if (file != null) {
+            String path = file.getPath();
+            for (CsmProject csmProject : CsmModelAccessor.getModel().projects()) {
+                Object platformProject = csmProject.getPlatformProject();
+                if (platformProject instanceof NativeProject) {
+                    NativeProject nativeProject = (NativeProject)platformProject;
+                    if (path.startsWith(nativeProject.getProjectRoot() + File.separator)) {
+                        return csmProject;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public static boolean isAnyNativeProjectOpened() {
@@ -502,6 +545,9 @@ public class CsmUtilities {
     }
 
     public static CloneableEditorSupport findCloneableEditorSupport(DataObject dob) {
+        if (dob == null) {
+            return null;
+        }
         Object obj = dob.getCookie(org.openide.cookies.OpenCookie.class);
         if (obj instanceof CloneableEditorSupport) {
             return (CloneableEditorSupport) obj;

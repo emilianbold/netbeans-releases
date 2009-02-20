@@ -41,23 +41,25 @@
 
 package org.netbeans.core.startup;
 
+import org.netbeans.MockEvents;
 import java.io.File;
 import java.util.Collections;
 import java.util.Locale;
 import org.netbeans.Module;
+import org.netbeans.ModuleManager;
 import org.openide.filesystems.FileUtil;
 
 /** Test the NetBeans module installer implementation.
  * Broken into pieces to ensure each runs in its own VM.
  * @author Jesse Glick
  */
-public class NbInstallerTest2 extends SetupHid {
+public class NbInstallerTest2 extends NbInstallerTestBase {
 
     public NbInstallerTest2(String name) {
         super(name);
     }
 
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         System.setProperty("org.netbeans.core.modules.NbInstaller.noAutoDeps", "true");
     }
@@ -65,9 +67,9 @@ public class NbInstallerTest2 extends SetupHid {
     /** Test #21173/#23595: overriding layers by localization. */
     public void testLocLayerOverrides() throws Exception {
         Main.getModuleSystem (); // init module system
-        final FakeEvents ev = new FakeEvents();
-        org.netbeans.core.startup.NbInstaller installer = new org.netbeans.core.startup.NbInstaller(ev);
-        org.netbeans.ModuleManager mgr = new org.netbeans.ModuleManager(installer, ev);
+        final MockEvents ev = new MockEvents();
+        NbInstaller installer = new NbInstaller(ev);
+        ModuleManager mgr = new ModuleManager(installer, ev);
         installer.registerManager(mgr);
         mgr.mutexPrivileged().enterWriteAccess();
         try {

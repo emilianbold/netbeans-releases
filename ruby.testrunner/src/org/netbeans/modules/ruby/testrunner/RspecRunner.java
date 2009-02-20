@@ -74,6 +74,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
+import org.netbeans.modules.ruby.rubyproject.RubyTestingSettings;
 
 
 /**
@@ -308,12 +309,9 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
     }
 
     public void customize(Project project, RakeTask task, RubyExecutionDescriptor taskDescriptor, boolean debug) {
-        boolean useRunner = TestRunnerUtilities.useTestRunner(project, SharedRubyProjectProperties.SPEC_TASKS, task, new DefaultTaskEvaluator() {
-
-            public boolean isDefault(RakeTask task) {
-                return "spec".equals(task.getTask()); //NOI18N
-            }
-        });
+        boolean useRunner = 
+                RubyTestingSettings.getDefault().useRunner(TestType.RSPEC)
+                && TestRunnerUtilities.useTestRunner(project, SharedRubyProjectProperties.SPEC_TASKS, task, RSpecTaskEvaluator.INSTANCE);
           
         if (!useRunner) {
             return;
@@ -356,6 +354,18 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
             }
         });
         TestExecutionManager.getInstance().init(taskDescriptor);
+    }
+
+    private static class RSpecTaskEvaluator implements DefaultTaskEvaluator {
+
+        static final RSpecTaskEvaluator INSTANCE = new RSpecTaskEvaluator();
+
+        private RSpecTaskEvaluator() {
+        }
+
+        public boolean isDefault(RakeTask task) {
+            return "spec".equals(task.getTask()); //NOI18N
+        }
     }
 
 }

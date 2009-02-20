@@ -268,7 +268,6 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         
         kbs = MimeLookup.getLookup(MimePath.EMPTY).lookupResult(KeyBindingSettings.class);
         kbs.addLookupListener(WeakListeners.create(LookupListener.class, shortcutsTracker, kbs));
-        kbs.allInstances();
     }
     
     private JTextComponent getActiveComponent() {
@@ -1272,6 +1271,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         completionShortcut = null;
         
         // Register completion show
+        kbs.allInstances(); // in order to make Lookup.Result active and fire events
         KeyStroke[] keys = findEditorKeys(ExtKit.completionShowAction);
         for (int i = 0; i < keys.length; i++) {
             inputMap.put(keys[i], COMPLETION_SHOW);
@@ -1279,8 +1279,6 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 completionShortcut = getKeyStrokeAsText(keys[i]);
             }
         }
-        if (completionShortcut == null)
-            completionShortcut = "\'Ctrl+SPACE\'";
         actionMap.put(COMPLETION_SHOW, new CompletionShowAction(CompletionProvider.COMPLETION_QUERY_TYPE));
 
         // Register all completion show

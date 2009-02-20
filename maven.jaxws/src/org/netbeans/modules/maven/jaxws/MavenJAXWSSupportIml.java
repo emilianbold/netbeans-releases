@@ -76,7 +76,7 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
             "com.sun.xml.ws.transport.http.servlet.WSServlet"; //NOI18N
     private final static String SERVLET_LISTENER =
             "com.sun.xml.ws.transport.http.servlet.WSServletContextListener"; //NOI18N
-
+    private  Boolean generateNonJsr109Stuff;
     /** Constructor.
      *
      * @param prj project
@@ -89,19 +89,31 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
         services.add(service);
 
         if (!WSUtils.isJsr109Supported(prj)) {
-            // modify web.xml file
-            try {
-                WSUtils.addServiceEntriesToDD(prj, service);
-            } catch (IOException ex) {
-                Logger.getLogger(MavenJAXWSSupportIml.class.getName()).log(Level.WARNING,
-                        "Cannot add service elements to web.xml file", ex); //NOI18N
+
+            if (generateNonJsr109Stuff == null) {
+                FileObject ddFolder = getDeploymentDescriptorFolder();
+                if (ddFolder == null || ddFolder.getFileObject("sun-jaxws.xml") == null) {
+                    // ask user if non jsr109 stuff should be generated
+                    generateNonJsr109Stuff = Boolean.valueOf(WSUtils.generateNonJsr109Artifacts(prj));
+                } else {
+                    generateNonJsr109Stuff = Boolean.TRUE;
+                }
             }
-            // modify sun-jaxws.xml file
-            try {
-                addSunJaxWsEntries(service);
-            } catch (IOException ex) {
-                Logger.getLogger(MavenJAXWSSupportIml.class.getName()).log(Level.WARNING,
-                        "Cannot modify sun-jaxws.xml file", ex); //NOI18N
+            if (generateNonJsr109Stuff) {
+                // modify web.xml file
+                try {
+                    WSUtils.addServiceEntriesToDD(prj, service);
+                } catch (IOException ex) {
+                    Logger.getLogger(MavenJAXWSSupportIml.class.getName()).log(Level.WARNING,
+                            "Cannot add service elements to web.xml file", ex); //NOI18N
+                }
+                // modify sun-jaxws.xml file
+                try {
+                    addSunJaxWsEntries(service);
+                } catch (IOException ex) {
+                    Logger.getLogger(MavenJAXWSSupportIml.class.getName()).log(Level.WARNING,
+                            "Cannot modify sun-jaxws.xml file", ex); //NOI18N
+                }
             }
         }
     }

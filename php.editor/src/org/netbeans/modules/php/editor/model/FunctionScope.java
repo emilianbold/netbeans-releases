@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.editor.model;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -47,6 +48,6 @@ import java.util.List;
 public interface FunctionScope extends Scope, VariableScope {
     List<? extends String> getParameterNames();
     List<? extends Parameter> getParameters();
-    List<? extends TypeScope> getReturnTypes();
+    Collection<? extends TypeScope> getReturnTypes();
 
 }

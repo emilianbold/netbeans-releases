@@ -2045,6 +2045,7 @@ public class ReformatterImpl {
                     case __ALIGNOF__:
                     case THROW:
                     case __ATTRIBUTE__:
+                    case __ATTRIBUTE:
                     case _DECLSPEC:
                     case __DECLSPEC:
                     case _FAR:

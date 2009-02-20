@@ -49,7 +49,7 @@ import junit.framework.AssertionFailedError;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.core.startup.ModuleHistory;
-import org.netbeans.core.startup.SetupHid;
+import org.netbeans.SetupHid;
 import org.netbeans.junit.NbTestCase;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;

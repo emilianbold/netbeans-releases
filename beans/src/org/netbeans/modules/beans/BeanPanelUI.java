@@ -10,8 +10,6 @@ import java.awt.BorderLayout;
 import java.awt.Image;
 import java.awt.Rectangle;
 import javax.swing.Action;
-import javax.swing.KeyStroke;
-import java.beans.PropertyVetoException;
 import javax.lang.model.element.Element;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
@@ -19,13 +17,12 @@ import javax.swing.event.ChangeEvent;
 import org.netbeans.api.java.source.ElementHandle;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 
 /**
@@ -259,7 +256,7 @@ public class BeanPanelUI extends javax.swing.JPanel
     
     private static class WaitNode extends AbstractNode {
         
-        private Image waitIcon = Utilities.loadImage("org/netbeans/modules/beans/resources/wait.gif"); // NOI18N
+        private Image waitIcon = ImageUtilities.loadImage("org/netbeans/modules/beans/resources/wait.gif"); // NOI18N
         
         WaitNode( ) {
             super( Children.LEAF );

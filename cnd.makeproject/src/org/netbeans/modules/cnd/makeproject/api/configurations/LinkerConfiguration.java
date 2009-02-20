@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.VectorNodeProp;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration.OptionToString;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -72,7 +73,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
     private BooleanConfiguration nameassignOption;
     private OptionsConfiguration commandLineConfiguration;
     private OptionsConfiguration additionalDependencies;
-    private LibrariesConfiguration<LibraryItem> librariesConfiguration;
+    private LibrariesConfiguration librariesConfiguration;
     private StringConfiguration tool;
 
     // Constructors
@@ -88,7 +89,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
         commandLineConfiguration = new OptionsConfiguration();
         additionalDependencies = new OptionsConfiguration();
         additionalDependencies.setPreDefined(getAdditionalDependenciesPredefined());
-        librariesConfiguration = new LibrariesConfiguration<LibraryItem>();
+        librariesConfiguration = new LibrariesConfiguration();
         tool = new StringConfiguration(null, ""); // NOI18N
     }
 
@@ -188,11 +189,11 @@ public class LinkerConfiguration implements AllOptionsProvider {
     }
 
     // LibrariesConfiguration
-    public LibrariesConfiguration<LibraryItem> getLibrariesConfiguration() {
+    public LibrariesConfiguration getLibrariesConfiguration() {
         return librariesConfiguration;
     }
 
-    public void setLibrariesConfiguration(LibrariesConfiguration<LibraryItem> librariesConfiguration) {
+    public void setLibrariesConfiguration(LibrariesConfiguration librariesConfiguration) {
         this.librariesConfiguration = librariesConfiguration;
     }
 
@@ -209,7 +210,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
     // Clone and assign
     public void assign(LinkerConfiguration conf) {
         // LinkerConfiguration
-        setMakeConfiguration(conf.getMakeConfiguration());
+        //setMakeConfiguration(conf.getMakeConfiguration()); // MakeConfiguration should not be assigned
         getOutput().assign(conf.getOutput());
         getAdditionalLibs().assign(conf.getAdditionalLibs());
         getDynamicSearch().assign(conf.getDynamicSearch());
@@ -228,15 +229,15 @@ public class LinkerConfiguration implements AllOptionsProvider {
         LinkerConfiguration clone = new LinkerConfiguration(getMakeConfiguration());
         // LinkerConfiguration
         clone.setOutput(getOutput().clone());
-        clone.setAdditionalLibs(getAdditionalLibs().cloneConf());
-        clone.setDynamicSearch(getDynamicSearch().cloneConf());
+        clone.setAdditionalLibs(getAdditionalLibs().clone());
+        clone.setDynamicSearch(getDynamicSearch().clone());
         clone.setCommandLineConfiguration(getCommandLineConfiguration().clone());
         clone.setAdditionalDependencies(getAdditionalDependencies().clone());
         clone.setStripOption(getStripOption().clone());
         clone.setPICOption(getPICOption().clone());
         clone.setNorunpathOption(getNorunpathOption().clone());
         clone.setNameassignOption(getNameassignOption().clone());
-        clone.setLibrariesConfiguration(getLibrariesConfiguration().cloneConf());
+        clone.setLibrariesConfiguration(getLibrariesConfiguration().clone());
         clone.setTool(getTool().clone());
         return clone;
     }
@@ -299,18 +300,13 @@ public class LinkerConfiguration implements AllOptionsProvider {
         if (linker == null) {
             return ""; // NOI18N
         }
-        String libPrefix = linker.getLibrarySearchFlag();
-        String dynSearchPrefix = linker.getDynamicLibrarySearchFlag();
-        if (libPrefix == null) {
-            libPrefix = ""; // NOI18N
-        }
-        if (dynSearchPrefix == null) {
-            dynSearchPrefix = ""; // NOI18N
-        }
         String options = ""; // NOI18N
-        options += getAdditionalLibs().getOption(cs, libPrefix) + " "; // NOI18N
-        options += getDynamicSearch().getOption(cs, dynSearchPrefix) + " "; // NOI18N
-        options += getLibrariesConfiguration().getOptions(getMakeConfiguration()) + " "; // NOI18N
+        OptionToString staticSearchVisitor = new OptionToString(cs, linker.getLibrarySearchFlag());
+        options += getAdditionalLibs().toString(staticSearchVisitor) + " "; // NOI18N
+        OptionToString dynamicSearchVisitor = new OptionToString(cs, linker.getDynamicLibrarySearchFlag());
+        options += getDynamicSearch().toString(dynamicSearchVisitor) + " "; // NOI18N
+        LibraryToString libVisitor = new LibraryToString(getMakeConfiguration());
+        options += getLibrariesConfiguration().toString(libVisitor) + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);
     }
 
@@ -322,10 +318,11 @@ public class LinkerConfiguration implements AllOptionsProvider {
     }
 
     // Sheet
-    public Sheet getGeneralSheet(Project project, MakeConfigurationDescriptor configurationDescriptor, MakeConfiguration conf) {
+    public Sheet getGeneralSheet(Project project, MakeConfigurationDescriptor configurationDescriptor, MakeConfiguration conf, boolean isQtMode) {
         Sheet sheet = new Sheet();
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         String linkDriver = null;
+        String[] texts = null;
         if (compilerSet != null) {
             if (conf.hasCPPFiles(configurationDescriptor)) {
                 BasicCompiler ccCompiler = (BasicCompiler) compilerSet.getTool(Tool.CCCompiler);
@@ -336,58 +333,62 @@ public class LinkerConfiguration implements AllOptionsProvider {
             }
         }
 
-        Sheet.Set set1 = new Sheet.Set();
-        set1.setName("General"); // NOI18N
-        set1.setDisplayName(getString("GeneralTxt"));
-        set1.setShortDescription(getString("GeneralHint"));
-        set1.put(new OutputNodeProp(getOutput(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
-        set1.put(new VectorNodeProp(getAdditionalLibs(), null, getMakeConfiguration().getBaseDir(), new String[]{"AdditionalLibraryDirectories", getString("AdditionalLibraryDirectoriesTxt"), getString("AdditionalLibraryDirectoriesHint")}, true, new HelpCtx("AddtlLibraryDirectories"))); // NOI18N
-        set1.put(new VectorNodeProp(getDynamicSearch(), null, getMakeConfiguration().getBaseDir(), new String[]{"RuntimeSearchDirectories", getString("RuntimeSearchDirectoriesTxt"), getString("RuntimeSearchDirectoriesHint")}, false, new HelpCtx("RuntimeSearchDirectories"))); // NOI18N
-        sheet.put(set1);
-        Sheet.Set set2 = new Sheet.Set();
-        set2.setName("Options"); // NOI18N
-        set2.setDisplayName(getString("OptionsTxt"));
-        set2.setShortDescription(getString("OptionsHint"));
-        set2.put(new BooleanNodeProp(getStripOption(), true, "StripSymbols", getString("StripSymbolsTxt"), getString("StripSymbolsHint"))); // NOI18N
-        if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
-            set2.put(new BooleanNodeProp(getPICOption(), true, "PositionIndependantCode", getString("PositionIndependantCodeTxt"), getString("PositionIndependantCodeHint"))); // NOI18N
-            if (compilerSet != null && compilerSet.isSunCompiler()) {
-                set2.put(new BooleanNodeProp(getNorunpathOption(), true, "NoRunPath", getString("NoRunPathTxt"), getString("NoRunPathHint"))); // NOI18N
-                set2.put(new BooleanNodeProp(getNameassignOption(), true, "AssignName", getString("AssignNameTxt"), getString("AssignNameHint"))); // NOI18N
+        if (!isQtMode) {
+            Sheet.Set set1 = new Sheet.Set();
+            set1.setName("General"); // NOI18N
+            set1.setDisplayName(getString("GeneralTxt"));
+            set1.setShortDescription(getString("GeneralHint"));
+            set1.put(new OutputNodeProp(getOutput(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
+            set1.put(new VectorNodeProp(getAdditionalLibs(), null, getMakeConfiguration().getBaseDir(), new String[]{"AdditionalLibraryDirectories", getString("AdditionalLibraryDirectoriesTxt"), getString("AdditionalLibraryDirectoriesHint")}, true, new HelpCtx("AddtlLibraryDirectories"))); // NOI18N
+            set1.put(new VectorNodeProp(getDynamicSearch(), null, getMakeConfiguration().getBaseDir(), new String[]{"RuntimeSearchDirectories", getString("RuntimeSearchDirectoriesTxt"), getString("RuntimeSearchDirectoriesHint")}, false, new HelpCtx("RuntimeSearchDirectories"))); // NOI18N
+            sheet.put(set1);
+            Sheet.Set set2 = new Sheet.Set();
+            set2.setName("Options"); // NOI18N
+            set2.setDisplayName(getString("OptionsTxt"));
+            set2.setShortDescription(getString("OptionsHint"));
+            set2.put(new BooleanNodeProp(getStripOption(), true, "StripSymbols", getString("StripSymbolsTxt"), getString("StripSymbolsHint"))); // NOI18N
+            if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
+                set2.put(new BooleanNodeProp(getPICOption(), true, "PositionIndependantCode", getString("PositionIndependantCodeTxt"), getString("PositionIndependantCodeHint"))); // NOI18N
+                if (compilerSet != null && compilerSet.isSunCompiler()) {
+                    set2.put(new BooleanNodeProp(getNorunpathOption(), true, "NoRunPath", getString("NoRunPathTxt"), getString("NoRunPathHint"))); // NOI18N
+                    set2.put(new BooleanNodeProp(getNameassignOption(), true, "AssignName", getString("AssignNameTxt"), getString("AssignNameHint"))); // NOI18N
+                }
             }
+            sheet.put(set2);
+            Sheet.Set set3 = new Sheet.Set();
+            texts = new String[]{getString("AdditionalDependenciesTxt1"), getString("AdditionalDependenciesHint"), getString("AdditionalDependenciesTxt2"), getString("InheritedValuesTxt")};
+            set3.setName("Input"); // NOI18N
+            set3.setDisplayName(getString("InputTxt"));
+            set3.setShortDescription(getString("InputHint"));
+            set3.put(new OptionsNodeProp(getAdditionalDependencies(), null, new AdditionalDependenciesOptions(), null, ",", texts)); // NOI18N
+            sheet.put(set3);
+            Sheet.Set set4 = new Sheet.Set();
+            set4.setName("Tool"); // NOI18N
+            set4.setDisplayName(getString("ToolTxt1"));
+            set4.setShortDescription(getString("ToolHint1"));
+            if (linkDriver != null) {
+                set4.put(new StringNodeProp(getTool(), linkDriver, "Tool", getString("ToolTxt1"), getString("ToolHint1"))); // NOI18N
+            }
+            sheet.put(set4);
         }
-        sheet.put(set2);
-        Sheet.Set set3 = new Sheet.Set();
-        String[] texts = new String[]{getString("AdditionalDependenciesTxt1"), getString("AdditionalDependenciesHint"), getString("AdditionalDependenciesTxt2"), getString("InheritedValuesTxt")};
-        set3.setName("Input"); // NOI18N
-        set3.setDisplayName(getString("InputTxt"));
-        set3.setShortDescription(getString("InputHint"));
-        set3.put(new OptionsNodeProp(getAdditionalDependencies(), null, new AdditionalDependenciesOptions(), null, ",", texts)); // NOI18N
-        sheet.put(set3);
-        Sheet.Set set4 = new Sheet.Set();
-        set4.setName("Tool"); // NOI18N
-        set4.setDisplayName(getString("ToolTxt1"));
-        set4.setShortDescription(getString("ToolHint1"));
-        if (linkDriver != null) {
-            set4.put(new StringNodeProp(getTool(), linkDriver, "Tool", getString("ToolTxt1"), getString("ToolHint1"))); // NOI18N
-        }
-        sheet.put(set4);
 
         texts = new String[]{getString("LibrariesTxt1"), getString("LibrariesHint"), getString("LibrariesTxt2"), getString("AllOptionsTxt2")};
-        set2 = new Sheet.Set();
-        set2.setName("Libraries"); // NOI18N
-        set2.setDisplayName(getString("LibrariesTxt1"));
-        set2.setShortDescription(getString("LibrariesHint"));
-        set2.put(new LibrariesNodeProp(getLibrariesConfiguration(), project, conf, getMakeConfiguration().getBaseDir(), texts));
-        sheet.put(set2);
+        Sheet.Set set5 = new Sheet.Set();
+        set5.setName("Libraries"); // NOI18N
+        set5.setDisplayName(getString("LibrariesTxt1"));
+        set5.setShortDescription(getString("LibrariesHint"));
+        set5.put(new LibrariesNodeProp(getLibrariesConfiguration(), project, conf, getMakeConfiguration().getBaseDir(), texts));
+        sheet.put(set5);
 
-        texts = new String[]{getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"), getString("AdditionalOptionsTxt2"), getString("AllOptionsTxt")}; // NOI18N
-        set2 = new Sheet.Set();
-        set2.setName("CommandLine"); // NOI18N
-        set2.setDisplayName(getString("CommandLineTxt"));
-        set2.setShortDescription(getString("CommandLineHint"));
-        set2.put(new OptionsNodeProp(getCommandLineConfiguration(), null, this, null, null, texts));
-        sheet.put(set2);
+        if (!isQtMode) {
+            texts = new String[]{getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"), getString("AdditionalOptionsTxt2"), getString("AllOptionsTxt")}; // NOI18N
+            Sheet.Set set6 = new Sheet.Set();
+            set6.setName("CommandLine"); // NOI18N
+            set6.setDisplayName(getString("CommandLineTxt"));
+            set6.setShortDescription(getString("CommandLineHint"));
+            set6.put(new OptionsNodeProp(getCommandLineConfiguration(), null, this, null, null, texts));
+            sheet.put(set6);
+        }
 
         return sheet;
     }
@@ -419,11 +420,13 @@ public class LinkerConfiguration implements AllOptionsProvider {
 
     private String getOutputDefault() {
         String outputName = IpeUtils.getBaseName(getMakeConfiguration().getBaseDir());
-        if (getMakeConfiguration().isApplicationConfiguration() || getMakeConfiguration().isQmakeConfiguration()) {
-            outputName = outputName.toLowerCase();
-        } else if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
-            Platform platform = Platforms.getPlatform(getMakeConfiguration().getPlatform().getValue());
-            outputName = platform.getLibraryName(outputName);
+        switch (getMakeConfiguration().getConfigurationType().getValue()) {
+            case MakeConfiguration.TYPE_APPLICATION:
+                outputName = outputName.toLowerCase();
+                break;
+            case MakeConfiguration.TYPE_DYNAMIC_LIB:
+                outputName = Platforms.getPlatform(getMakeConfiguration().getPlatform().getValue()).getLibraryName(outputName);
+                break;
         }
         outputName = ConfigurationSupport.makeNameLegal(outputName);
         return MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + "${CND_PLATFORM}" + "/" + outputName; // NOI18N
@@ -507,5 +510,18 @@ public class LinkerConfiguration implements AllOptionsProvider {
     /** Look up i18n strings here */
     private static String getString(String s) {
         return NbBundle.getMessage(LinkerConfiguration.class, s);
+    }
+
+    public static class LibraryToString implements VectorConfiguration.ToString<LibraryItem> {
+
+        private final MakeConfiguration conf;
+
+        public LibraryToString(MakeConfiguration conf) {
+            this.conf = conf;
+        }
+
+        public String toString(LibraryItem item) {
+            return item.getOption(conf);
+        }
     }
 }

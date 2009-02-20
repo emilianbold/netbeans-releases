@@ -84,7 +84,7 @@ made subject to such option by the copyright holder.
     </target>
     
     <target name="download-project" depends="init-download-project" if="do-download-project">
-        <cvs cvsroot=":pserver:anoncvs@toolscvs.sfbay.sun.com:/cvs/nbextra" command="co qa\projectized\lime6.zip" dest="${temp_dir}"/>
+        <cvs cvsroot=":pserver:anoncvs@toolscvs.sfbay.sun.com:/cvs/nbextra" command="co qa/projectized/lime6.zip" dest="${temp_dir}"/>
     </target>
     
     <!-- Prepare -->

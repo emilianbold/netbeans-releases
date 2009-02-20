@@ -290,17 +290,6 @@ public class ClassBreakpointPanel extends JPanel implements Controller, org.open
         return true;
     }
     
-    /**
-     * Return <code>true</code> whether value of this customizer 
-     * is valid (and OK button can be enabled).
-     *
-     * @return <code>true</code> whether value of this customizer 
-     * is valid
-     */
-    public boolean isValid () {
-        return true;
-    }
-    
     private String valiadateMsg () {
         if (tfClassName.getText().trim ().length() == 0) {
             return NbBundle.getMessage(ClassBreakpointPanel.class, "MSG_No_Class_Name_Spec");

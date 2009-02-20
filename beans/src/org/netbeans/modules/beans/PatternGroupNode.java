@@ -42,6 +42,7 @@
 package org.netbeans.modules.beans;
 
 import javax.lang.model.element.Element;
+import javax.swing.Action;
 import org.netbeans.api.java.source.ElementHandle;
 
 import org.openide.nodes.AbstractNode;
@@ -70,7 +71,7 @@ public final class  PatternGroupNode extends AbstractNode {
     private boolean isWritable = true;
 
     /** Array of the actions of the java methods, constructors and fields. */
-    private static final SystemAction[] DEFAULT_ACTIONS = new SystemAction[] {
+    private static final Action[] DEFAULT_ACTIONS = new Action[] {
 //                SystemAction.get(GenerateBeanInfoAction.class),
                 null,
                 SystemAction.get(NewAction.class),
@@ -80,7 +81,7 @@ public final class  PatternGroupNode extends AbstractNode {
             };
 
     /** Array of the actions of the java methods, constructors and fields. */
-    private static final SystemAction[] DEFAULT_ACTIONS_NON_WRITEABLE = new SystemAction[] {
+    private static final Action[] DEFAULT_ACTIONS_NON_WRITEABLE = new Action[] {
 //                SystemAction.get(GenerateBeanInfoAction.class),
                 null,
                 SystemAction.get(ToolsAction.class),
@@ -98,11 +99,6 @@ public final class  PatternGroupNode extends AbstractNode {
     public PatternGroupNode(PatternChildren children, boolean isWriteable) {
         super(children);
         this.isWritable = isWriteable;
-        if (isWritable) {
-            setActions(DEFAULT_ACTIONS);
-        } else {
-            setActions(DEFAULT_ACTIONS_NON_WRITEABLE);
-        }
         setName(getString("Patterns"));
         setShortDescription (getString("Patterns_HINT"));
         setIconBaseWithExtension(ICON_BASE);
@@ -111,11 +107,9 @@ public final class  PatternGroupNode extends AbstractNode {
 //        cs.add(children.getPatternAnalyser());
     }
 
-    /** Set all actions for this node.
-    * @param actions new list of actions
-    */
-    public void setActions(SystemAction[] actions) {
-        systemActions = actions;
+    @Override
+    public Action[] getActions(boolean context) {
+        return isWritable ? DEFAULT_ACTIONS : DEFAULT_ACTIONS_NON_WRITEABLE;
     }
     
     public PatternNode getNodeForElement( ElementHandle<Element> eh ) {

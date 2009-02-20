@@ -527,7 +527,14 @@ public class MacOsNativeUtils extends UnixNativeUtils {
         }
         
     }
+    @Override
+    protected String [] getPossibleBrowserLocations() {
+        return POSSIBLE_BROWSER_LOCATIONS_MAC;
+    }
     
+    public static final String[] POSSIBLE_BROWSER_LOCATIONS_MAC = new String[]{
+        "/usr/bin/open"
+    };
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final String LIBRARY_PATH_MACOSX =

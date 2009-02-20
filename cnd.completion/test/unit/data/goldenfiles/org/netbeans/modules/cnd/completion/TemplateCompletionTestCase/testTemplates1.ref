@@ -1,6 +1,9 @@
 t1 T1
+DataSource<class T>
+Person
 T1<int i>
 T2<class C>
 T3<int k,class C>
 T4<class T>
 main() int
+select<class T>() DataSource<T>

@@ -54,7 +54,9 @@ import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.structure.APTDefineNode;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
+import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap.State;
 import org.netbeans.modules.cnd.apt.support.APTToken;
@@ -77,7 +79,7 @@ public abstract class APTBaseMacroMap {
     /**
      * Creates a new instance of APTBaseMacroMap
      */    
-    public APTBaseMacroMap() {
+    protected APTBaseMacroMap() {
         active = makeSnapshot(null);
     }
 
@@ -85,21 +87,21 @@ public abstract class APTBaseMacroMap {
     // manage define/undef macros
 
     
-    protected final void fill(List<String> macros) {
+    protected final void fill(List<String> macros, boolean isSystem) {
         // update callback with user macros information
         for (Iterator<String> it = macros.iterator(); it.hasNext();) {
             String macro = it.next();
             if (APTTraceFlags.TRACE_APT) {
                 System.err.println("adding macro in map " + macro); // NOI18N
             }
-            define(macro);
+            define(macro, isSystem);
         }           
     }
     
     /** 
      * analyze macroText string with structure "macro=value" and put in map
      */
-    private void define(String macroText) {
+    private void define(String macroText, boolean isSystem) {
         macroText = DEFINE_PREFIX + macroText;
         TokenStream stream = APTTokenStreamBuilder.buildTokenStream(macroText);
         try {
@@ -120,7 +122,11 @@ public abstract class APTBaseMacroMap {
             if (body.isEmpty()) {
                 body = APTUtils.DEF_MACRO_BODY;
             }
-            defineImpl(defNode.getName(), defNode.getParams(), body);
+            if (isSystem) {
+                defineImpl(null, defNode.getName(), defNode.getParams(), body, Kind.COMPILER_PREDEFINED);
+            } else {
+                defineImpl(null, defNode.getName(), defNode.getParams(), body, Kind.USER_SPECIFIED);
+            }
         } catch (TokenStreamException ex) {
             APTUtils.LOG.log(Level.SEVERE, 
                     "error on lexing macros {0}\n\t{1}", // NOI18N
@@ -128,28 +134,28 @@ public abstract class APTBaseMacroMap {
         }
     }
     
-    public final void define(APTToken name, List<APTToken> value) {
-        defineImpl(name, value);
+    public final void define(APTFile file, APTToken name, List<APTToken> value, Kind macroType) {
+        defineImpl(file, name, value, macroType);
     }
     
-    protected final void defineImpl(APTToken name, List<APTToken> value) {
-        define(name, null, value);
+    private void defineImpl(APTFile file, APTToken name, List<APTToken> value, Kind macroType) {
+        define(file, name, null, value, macroType);
     }
 
-    protected void define(APTToken name, Collection<APTToken> params, List<APTToken> value) {
-        defineImpl(name, params, value);
+    protected void define(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
+        defineImpl(file, name, params, value, macroType);
     }
     
-    protected void defineImpl(APTToken name, Collection<APTToken> params, List<APTToken> value) {
-        active.macros.put(name.getText(), createMacro(name, params, value));
+    private void defineImpl(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
+        active.macros.put(name.getText(), createMacro(file, name, params, value, macroType));
     }
-    
-    protected void undef(APTToken name) {
+
+    protected void undef(APTFile file, APTToken name) {
         active.macros.put(name.getText(), APTMacroMapSnapshot.UNDEFINED_MACRO);
     }
     
     /** method to implement in children */
-    protected abstract APTMacro createMacro(APTToken name, Collection<APTToken> params, List<APTToken> value);
+    protected abstract APTMacro createMacro(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType);
     
     ////////////////////////////////////////////////////////////////////////////
     // manage macro access
@@ -297,7 +303,6 @@ public abstract class APTBaseMacroMap {
         }
 
         public void popExpanding() {
-//            return null;
         }
 
         public boolean isExpanding(APTToken token) {
@@ -317,13 +322,13 @@ public abstract class APTBaseMacroMap {
             return null;
         }      
 
-        public void define(APTToken name, Collection<APTToken> params, List<APTToken> value) {
+        public void define(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
         }
 
-        public void define(APTToken name, List<APTToken> value) {
+        public void define(APTFile file, APTToken name, List<APTToken> value, Kind macroType) {
         }
 
-        public void undef(APTToken name) {
+        public void undef(APTFile file, APTToken name) {
         }
 
         public void setState(State state) {
@@ -331,6 +336,6 @@ public abstract class APTBaseMacroMap {
 
         public State getState() {
             return new StateImpl((APTMacroMapSnapshot )null);
-        }               
+        }
     };    
 }

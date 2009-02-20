@@ -734,7 +734,7 @@ public class FormI18nSupport extends JavaI18nSupport {
                             // which does the same thing.
                             string = toAscii((String)value);
                             
-                            if ((validProp.getSkip() == 0) && string.equals(hardString)) {
+                            if ((validProp.getSkip() == 0) && string.equals(toAscii(hardString))) {
                                 found = true;
                             }
                         }

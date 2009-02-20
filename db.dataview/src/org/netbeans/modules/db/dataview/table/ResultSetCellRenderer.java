@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR parent HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of parent file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of parent file to be governed by only the CDDL
@@ -43,7 +43,6 @@ package org.netbeans.modules.db.dataview.table;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
-import java.text.DateFormat;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTable;
@@ -54,6 +53,8 @@ import org.jdesktop.swingx.renderer.FormatStringValue;
 import org.jdesktop.swingx.renderer.JRendererCheckBox;
 import org.jdesktop.swingx.renderer.StringValue;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
+import org.netbeans.modules.db.dataview.util.TimeType;
+import org.netbeans.modules.db.dataview.util.TimestampType;
 
 /**
  * @author Ahimanikya Satapathy
@@ -65,7 +66,7 @@ public class ResultSetCellRenderer extends DefaultTableRenderer {
         @Override
         public String getString(Object value) {
             if (format == null) {
-                format = DateFormat.getDateTimeInstance();
+                format = TimestampType.DEFAULT_FORMAT;
             }
             return super.getString(value);
         }
@@ -75,7 +76,7 @@ public class ResultSetCellRenderer extends DefaultTableRenderer {
         @Override
         public String getString(Object value) {
             if (format == null) {
-                format = DateFormat.getTimeInstance();
+                format = TimeType.DEFAULT_FOMAT;
             }
             return super.getString(value);
         }

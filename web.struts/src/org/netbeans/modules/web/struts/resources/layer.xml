@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
     <folder name="Services">
         <!-- Recognize text/struts+xml: -->
         <folder name="MIMEResolver">
-            <file name="org-netbeans-modules-web-struts-resources-mime-resolver.xml" url="mime-resolver.xml">
+            <file name="org-netbeans-modules-web-struts-resources-mime-resolver.xml" url="struts-mime-resolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.struts.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/struts/resources/StrutsConfigIcon.png"/>
                 <attr name="position" intvalue="410"/>

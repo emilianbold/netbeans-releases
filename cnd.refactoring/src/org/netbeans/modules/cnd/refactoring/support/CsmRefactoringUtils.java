@@ -52,8 +52,6 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.model.CsmScope;
-import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
@@ -66,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
@@ -76,7 +75,12 @@ import org.openide.util.Lookup;
  *
  * @author Vladimir Voskresensky
  */
-public class CsmRefactoringUtils {
+public final class CsmRefactoringUtils {
+    public static final boolean REFACTORING_EXTRA = CndUtils.getBoolean("cnd.refactoring.extra", false); // NOI18N
+    
+    private CsmRefactoringUtils() {
+    }
+
     public static boolean isElementInOpenProject(FileObject f) {
         if (f == null) {
             return false;
@@ -110,8 +114,6 @@ public class CsmRefactoringUtils {
         return referencedObject;
     }
 
-    private CsmRefactoringUtils() {}
-    
     public static CsmProject getContextCsmProject(CsmObject contextObject) {
         CsmFile contextFile = null;
         if (CsmKindUtilities.isOffsetable(contextObject)) {
@@ -174,7 +176,7 @@ public class CsmRefactoringUtils {
             return csmObject;
         }
     } 
-    
+
     public static String getSimpleText(CsmObject element) {
         String text = "";
         if (element != null) {
@@ -237,31 +239,40 @@ public class CsmRefactoringUtils {
             return obj.toString();
         }
     }
-    
+
+    public static CsmFile getCsmFile(CsmObject csmObject) {
+        if (CsmKindUtilities.isFile(csmObject)) {
+            return ((CsmFile) csmObject);
+        } else if (CsmKindUtilities.isOffsetable(csmObject)) {
+            return ((CsmOffsetable) csmObject).getContainingFile();
+        }
+        return null;
+    }
+
     public static CsmObject getEnclosingElement(CsmObject decl) {
         assert decl != null;
-        if (decl instanceof CsmReference) {
+        while (decl instanceof CsmReference) {
             decl = ((CsmReference)decl).getOwner();
         }
         if (CsmKindUtilities.isOffsetable(decl)) {
             return findInnerFileObject((CsmOffsetable)decl);
         }
-        
-        CsmObject scopeElem = decl instanceof CsmReference ? ((CsmReference)decl).getOwner() : decl;
-        while (CsmKindUtilities.isScopeElement(scopeElem)) {
-            CsmScope scope = ((CsmScopeElement)scopeElem).getScope();
-            if (isLangContainerFeature(scope)) {
-                return scope;
-            } else if (CsmKindUtilities.isScopeElement(scope)) {
-                scopeElem = ((CsmScopeElement)scope);
-            } else {
-                if (scope == null) System.err.println("scope element without scope " + scopeElem);
-                break;
-            }
-        }
-        if (CsmKindUtilities.isOffsetable(decl)) {
-            return ((CsmOffsetable)decl).getContainingFile();
-        }
+//
+//        CsmObject scopeElem = decl instanceof CsmReference ? ((CsmReference)decl).getOwner() : decl;
+//        while (CsmKindUtilities.isScopeElement(scopeElem)) {
+//            CsmScope scope = ((CsmScopeElement)scopeElem).getScope();
+//            if (isLangContainerFeature(scope)) {
+//                return scope;
+//            } else if (CsmKindUtilities.isScopeElement(scope)) {
+//                scopeElem = ((CsmScopeElement)scope);
+//            } else {
+//                if (scope == null) { System.err.println("scope element without scope " + scopeElem); }
+//                break;
+//            }
+//        }
+//        if (CsmKindUtilities.isOffsetable(decl)) {
+//            return ((CsmOffsetable)decl).getContainingFile();
+//        }
         return null;
     }
     

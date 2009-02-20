@@ -416,7 +416,7 @@ public final class AddElementVisualPanel1 extends JPanel
             String selectedElemType = (String) this.getSelectedListElement();
 
             if (selectedElemType != null && (selectedElemType.equals("Class") ||
-                    selectedElemType.equals("Interface")) || selectedElemType.equals("Enumeration"))
+                    selectedElemType.equals("Interface") || selectedElemType.equals("Enumeration")))
             {
                 if (p.invalidClass(getElementName()))
                 {
