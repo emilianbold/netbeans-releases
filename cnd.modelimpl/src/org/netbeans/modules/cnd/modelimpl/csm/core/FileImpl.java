@@ -220,8 +220,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         state = State.INITIAL;
         setBuffer(fileBuffer);
         this.projectUID = UIDCsmConverter.projectToUID(project);
-        if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().endsWith("cpu.cc")) {
-            new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prj@"  + System.identityHashCode(project) + ":UID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err);
+        if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().endsWith("cpu.cc")) { // NOI18N
+            new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prj@"  + System.identityHashCode(project) + ":UID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
         }
         this.projectRef = new WeakReference<ProjectBase>(project); // Suppress Warnings
         this.fileType = fileType;
@@ -1575,8 +1575,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         // not null UID
         assert this.projectUID != null;
         UIDObjectFactory.getDefaultFactory().writeUID(this.projectUID, output);
-        if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().endsWith("cpu.cc")) {
-            new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prjUID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err);
+        if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().endsWith("cpu.cc")) { // NOI18N
+            new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prjUID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
         }
         output.writeLong(lastParsed);
         output.writeUTF(state.toString());
@@ -1603,8 +1603,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         fileType = input.readInt();
 
         this.projectUID = UIDObjectFactory.getDefaultFactory().readUID(input);
-        if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().endsWith("cpu.cc")) {
-            new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prjUID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err);
+        if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().endsWith("cpu.cc")) { // NOI18N
+            new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prjUID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
         }
         // not null UID
         assert this.projectUID != null;
