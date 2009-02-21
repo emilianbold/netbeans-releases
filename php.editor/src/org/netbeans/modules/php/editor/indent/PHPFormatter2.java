@@ -83,13 +83,13 @@ public class PHPFormatter2 implements org.netbeans.modules.gsf.api.Formatter {
     private static final Logger LOG = Logger.getLogger(PHPFormatter2.class.getName());
     private static final Set<PHPTokenId> IGNORE_BREAK_IN = new HashSet<PHPTokenId>(Arrays.asList(
             PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH, PHPTokenId.PHP_WHILE, PHPTokenId.PHP_DO));
-    
+
     public PHPFormatter2() {
         LOG.fine("PHP Formatter: " + this); //NOI18N
     }
-    
+
     public boolean needsParserResult() {
-        return false;
+        return true;
     }
 
     public void reindent(Context context) {
@@ -101,42 +101,15 @@ public class PHPFormatter2 implements org.netbeans.modules.gsf.api.Formatter {
         prettyPrint(context);
         reindent(context, info, false);
     }
-    
+
     public int indentSize() {
         return CodeStyle.get((Document) null).getIndentSize();
     }
-    
+
     public int hangingIndentSize() {
         return CodeStyle.get((Document) null).getContinuationIndentSize();
     }
-    
-    /** Compute the initial balance of brackets at the given offset. */
-    private int getFormatStableStart(BaseDocument doc, int offset) {
-        TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
-        if (ts == null) {
-            return 0;
-        }
 
-        ts.move(offset);
-
-        if (!ts.movePrevious()) {
-            return 0;
-        }
-
-        // Look backwards to find a suitable context - a class, module or method definition
-        // which we will assume is properly indented and balanced
-        do {
-            Token<?extends PHPTokenId> token = ts.token();
-            TokenId id = token.id();
-
-            if (id == PHPTokenId.PHP_OPENTAG || id == PHPTokenId.PHP_CLASS || id == PHPTokenId.PHP_FUNCTION) {
-                return ts.offset();
-            }
-        } while (ts.movePrevious());
-
-        return ts.offset();
-    }
-    
     public static int getTokenBalanceDelta(BaseDocument doc, Token<? extends PHPTokenId> token, TokenSequence<? extends PHPTokenId> ts, boolean includeKeywords) {
         if (token.id() == PHPTokenId.PHP_VARIABLE) {
             // In some cases, the [ shows up as an identifier, for example in this expression:
@@ -240,176 +213,6 @@ public class PHPFormatter2 implements org.netbeans.modules.gsf.api.Formatter {
         return balance;
     }
 
-    private boolean isInLiteral(BaseDocument doc, int offset) throws BadLocationException {
-        // TODO: Handle arrays better
-        // %w(January February March April May June July
-        //    August September October November December)
-        // I should indent to the same level
-
-        // Can't reformat these at the moment because reindenting a line
-        // that is a continued string array causes incremental lexing errors
-        // (which further screw up formatting)
-        int pos = Utilities.getRowFirstNonWhite(doc, offset);
-        //int pos = offset;
-
-        if (pos != -1) {
-            // I can't look at the first position on the line, since
-            // for a string array that is indented, the indentation portion
-            // is recorded as a blank identifier
-            Token<?extends PHPTokenId> token = LexUtilities.getToken(doc, pos);
-
-            if (token != null) {
-                TokenId id = token.id();
-                // If we're in a string literal (or regexp or documentation) leave
-                // indentation alone!
-                if (id == PHPTokenId.PHP_COMMENT || id == PHPTokenId.PHP_COMMENT_START || id == PHPTokenId.PHP_COMMENT_END ||
-                    id == PHPTokenId.PHPDOC_COMMENT || id == PHPTokenId.PHPDOC_COMMENT_START || id == PHPTokenId.PHPDOC_COMMENT_END ||
-                    id == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING ||
-                    id == PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE ||
-                    id == PHPTokenId.PHP_HEREDOC_TAG
-                ) {
-                    // No indentation for literal strings in Ruby, since they can
-                    // contain newlines. Leave it as is.
-                    return true;
-                }
-// XXX: resurrect support for heredoc                
-//                if (id == PHPTokenId.STRING_END || id == PHPTokenId.QUOTED_STRING_END) {
-//                    // Possibly a heredoc
-//                    TokenSequence<? extends PHPTokenId> ts = LexUtilities.getRubyTokenSequence(doc, pos);
-//                    ts.move(pos);
-//                    OffsetRange range = LexUtilities.findHeredocBegin(ts, token);
-//                    if (range != OffsetRange.NONE) {
-//                        String text = doc.getText(range.getStart(), range.getLength());
-//                        if (text.startsWith("<<-")) { // NOI18N
-//                            return false;
-//                        } else {
-//                            return true;
-//                        }
-//                    }
-//                }
-            } else {
-                // No ruby token -- leave the formatting alone!
-                // (Probably in an RHTML file on a line with no Ruby)
-                return true;
-            }
-        } else {
-            // Empty line inside a string, documentation etc. literal?
-            Token<?extends PHPTokenId> token = LexUtilities.getToken(doc, offset);
-
-            if (token != null) {
-                TokenId id = token.id();
-                // If we're in a string literal (or regexp or documentation) leave
-                // indentation alone!
-                if (id == PHPTokenId.PHP_COMMENT || id == PHPTokenId.PHP_COMMENT_START || id == PHPTokenId.PHP_COMMENT_END ||
-                    id == PHPTokenId.PHPDOC_COMMENT || id == PHPTokenId.PHPDOC_COMMENT_START || id == PHPTokenId.PHPDOC_COMMENT_END ||
-                    id == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING ||
-                    id == PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE ||
-                    id == PHPTokenId.PHP_HEREDOC_TAG
-                ) {
-                    // No indentation for literal strings in Ruby, since they can
-                    // contain newlines. Leave it as is.
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-    
-    /** 
-     * Get the first token on the given line. Similar to LexUtilities.getToken(doc, lineBegin)
-     * except (a) it computes the line begin from the offset itself, and more importantly,
-     * (b) it handles RHTML tokens specially; e.g. if a line begins with
-     * {@code
-     *    <% if %>
-     * }
-     * then the "if" embedded token will be returned rather than the RHTML delimiter, or even
-     * the whitespace token (which is the first Ruby token in the embedded sequence).
-     *    
-     * </pre>   
-     */
-    private Token<? extends PHPTokenId> getFirstToken(BaseDocument doc, int offset) throws BadLocationException {
-        int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
-
-        if (lineBegin != -1) {
-            return LexUtilities.getToken(doc, lineBegin);
-        }
-        
-        return null;
-    }
-
-    private boolean isEndIndent(BaseDocument doc, int offset) throws BadLocationException {
-        int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
-
-        if (lineBegin != -1) {
-            Token<?extends PHPTokenId> token = getFirstToken(doc, offset);
-            
-            if (token == null) {
-                return false;
-            }
-            
-            // If the line starts with an end-marker, such as "end", "}", "]", etc.,
-            // find the corresponding opening marker, and indent the line to the same
-            // offset as the beginning of that line.
-            return LexUtilities.isIndentEndToken(token.id()) ||
-                LexUtilities.textEquals(token.text(), ')') || LexUtilities.textEquals(token.text(), ']') ||
-                token.id() == PHPTokenId.PHP_CURLY_CLOSE;
-        }
-        
-        return false;
-    }
-    
-    private boolean isLineContinued(BaseDocument doc, int offset, int bracketBalance) throws BadLocationException {
-        offset = Utilities.getRowLastNonWhite(doc, offset);
-        if (offset == -1) {
-            return false;
-        }
-
-        TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
-        if (ts == null) {
-            return false;
-        }
-        
-        ts.move(offset);
-        if (!ts.moveNext() && !ts.movePrevious()) {
-            return false;
-        }
-
-        Token<?extends PHPTokenId> token = ts.token();
-
-        if (token != null) {
-            TokenId id = token.id();
-            
-            if (ts.offset() == offset && token.length() > 1 && token.text().toString().startsWith("\\")) {
-                // Continued lines have different token types
-                return true;
-            }
-            
-            if (token.length() == 1 && id == PHPTokenId.PHP_TOKEN && token.text().toString().equals(",")) {
-                // If there's a comma it's a continuation operator, but inside arrays, hashes or parentheses
-                // parameter lists we should not treat it as such since we'd "double indent" the items, and
-                // NOT the first item (where there's no comma, e.g. you'd have
-                //  foo(
-                //    firstarg,
-                //      secondarg,  # indented both by ( and hanging indent ,
-                //      thirdarg)
-                if (bracketBalance == 0) {
-                    return true;
-                }
-            }
-            
-            if (id == PHPTokenId.PHP_TOKEN) {
-                if (CharSequenceUtilities.textEquals(token.text(), "or") // NOI18N
-                    || CharSequenceUtilities.textEquals(token.text(), "and")
-                ) { 
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
     private void prettyPrint(final Context context) {
         final BaseDocument doc = (BaseDocument) context.document();
         final String openingBraceStyle = CodeStyle.get(doc).getOpeningBraceStyle();
@@ -463,7 +266,7 @@ public class PHPFormatter2 implements org.netbeans.modules.gsf.api.Formatter {
         int startOffset = context.startOffset();
         int endOffset = context.endOffset();
         document.putProperty("HTML_FORMATTER_ACTS_ON_TOP_LEVEL", Boolean.TRUE); //NOI18N
-        
+
         try {
             final BaseDocument doc = (BaseDocument)document; // document.getText(0, document.getLength())
 
@@ -472,24 +275,7 @@ public class PHPFormatter2 implements org.netbeans.modules.gsf.api.Formatter {
             }
 
             startOffset = Utilities.getRowStart(doc, startOffset);
-            final int lineStart = startOffset;//Utilities.getRowStart(doc, startOffset);
-            int initialOffset = 0;
-            int initialIndent = 0;
-            if (startOffset > 0) {
-                int prevOffset = Utilities.getRowStart(doc, startOffset-1);
-                initialOffset = getFormatStableStart(doc, prevOffset);
-                initialIndent = GsfUtilities.getLineIndent(doc, initialOffset);
-            }
-            
-
-            // When we're formatting sections, include whitespace on empty lines; this
-            // is used during live code template insertions for example. However, when
-            // wholesale formatting a whole document, leave these lines alone.
-            boolean indentEmptyLines = (startOffset != 0 || endOffset != doc.getLength());
-
-            boolean includeEnd = endOffset == doc.getLength() || indentOnly;
-
-
+            final int firstLine = Utilities.getLineOffset(doc, startOffset);
             final Map<Integer, Integer> indentLevels = new LinkedHashMap<Integer, Integer>();
             final IndentLevelCalculator indentCalc = new IndentLevelCalculator(doc, indentLevels);
             FileObject file = NavUtils.getFile(doc);
@@ -511,6 +297,7 @@ public class PHPFormatter2 implements org.netbeans.modules.gsf.api.Formatter {
             doc.runAtomic(new Runnable() {
 
                 public void run() {
+                    int indentBias = 0;
                     try {
                         int numberOfLines = Utilities.getLineOffset(doc, doc.getLength() - 1);
                         Map<Integer, Integer> indentDeltaByLine = new LinkedHashMap<Integer, Integer>();
@@ -524,7 +311,8 @@ public class PHPFormatter2 implements org.netbeans.modules.gsf.api.Formatter {
                                     ? indentDelta : lineDelta + indentDelta);
                         }
 
-                        for (int i = 1, currentIndent = 0; i < numberOfLines; i++) {
+                        for (int i = 0, currentIndent = 0; i < numberOfLines; i++) {
+                            int lineStart = Utilities.getRowStartFromLineOffset(doc, i);
                             Integer lineDelta = indentDeltaByLine.get(i);
 
                             if (lineDelta != null) {
@@ -532,8 +320,22 @@ public class PHPFormatter2 implements org.netbeans.modules.gsf.api.Formatter {
                                 assert currentIndent >= 0;
                             }
 
-                            int lineStart = Utilities.getRowStartFromLineOffset(doc, i);
-                            GsfUtilities.setLineIndentation(doc, lineStart, currentIndent);
+                            if (i == firstLine){
+                                // TODO: do it also if there was HTML block in the middle
+                                // and this is the first line after the HTML
+                                indentBias = currentIndent - GsfUtilities.getLineIndent(doc, lineStart);
+                            }
+
+                            //TODO:
+                            if (lineStart >= context.startOffset() && lineStart <= context.endOffset()){
+                                int actualIndent = 0;
+
+                                if (currentIndent > indentBias){
+                                    actualIndent = currentIndent - indentBias;
+                                }
+
+                                GsfUtilities.setLineIndentation(doc, lineStart, actualIndent);
+                            }
                         }
 
                     } catch (BadLocationException ex) {
