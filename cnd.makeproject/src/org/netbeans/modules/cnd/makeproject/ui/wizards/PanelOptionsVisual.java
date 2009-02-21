@@ -178,7 +178,7 @@ public class PanelOptionsVisual extends SettingsPanel {
         MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
         MIMEExtensions ccExtensions = MIMEExtensions.get("text/x-c++"); // NOI18N
 
-        d.putProperty("createMainFile", createMainCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE);
+        d.putProperty("createMainFile", createMainCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE); // NOI18N
         if (createMainCheckBox.isSelected() && createMainTextField.getText().length() > 0) {
             if (type == NewMakeProjectWizardIterator.TYPE_APPLICATION) {
                 if (((String) createMainComboBox.getSelectedItem()).equals("C")) { // NOI18N
