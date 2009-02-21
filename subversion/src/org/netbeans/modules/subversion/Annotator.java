@@ -161,13 +161,14 @@ public class Annotator {
 
     public void refresh() {
         String string = SvnModuleConfig.getDefault().getAnnotationFormat(); //System.getProperty("netbeans.experimental.svn.ui.statusLabelFormat");  // NOI18N
-        if (string != null && !string.trim().equals("")) {
+        if (string != null && !string.trim().equals("")) { // NOI18N
             mimeTypeFlag = string.indexOf("{mime_type}") > -1;
-            string = Utils.skipUnsupportedVariables(string, new String[] {"{status}", "{folder}", "{revision}", "{mime_type}" });     // NOI18N
-            string = string.replaceAll("\\{revision\\}",  "\\{0\\}");           // NOI18N
-            string = string.replaceAll("\\{status\\}",    "\\{1\\}");           // NOI18N
-            string = string.replaceAll("\\{folder\\}",    "\\{2\\}");           // NOI18N
-            string = string.replaceAll("\\{mime_type\\}", "\\{3\\}");           // NOI18N
+            string = SvnUtils.createAnnotationFormat(string);
+            if (!SvnUtils.isAnnotationFormatValid(string)) {
+                Subversion.LOG.log(Level.WARNING, "Bad annotation format, switching to defaults");
+                string = org.openide.util.NbBundle.getMessage(Annotator.class, "Annotator.defaultFormat"); // NOI18N
+                mimeTypeFlag = string.contains("{3}");
+            }
             format = new MessageFormat(string);
             emptyFormat = format.format(new String[] {"", "", "", ""} , new StringBuffer(), null).toString().trim();
         }

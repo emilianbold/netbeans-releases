@@ -46,6 +46,7 @@ import java.awt.Frame;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.io.*;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -86,6 +87,40 @@ public class Utils {
             return SharabilityQuery.getSharability(pathname) != SharabilityQuery.NOT_SHARABLE;
         }
     };
+
+    /**
+     * Creates annotation format string.
+     * @param format format specified by the user, e.g. [{status}]
+     * @return modified format, e.g. [{0}]
+     */
+    public static String createAnnotationFormat(final String format) {
+        String taf = org.netbeans.modules.versioning.util.Utils.skipUnsupportedVariables(
+                        format, new String[] {"{status}", "{tag}", "{revision}", "{binary}" }   // NOI18N
+                );
+        taf = taf.replaceAll("\\{revision}", "{0}").    // NOI18N
+                replaceAll("\\{status}", "{1}").        // NOI18N
+                replaceAll("\\{tag}", "{2}").           // NOI18N
+                replaceAll("\\{binary}", "{3}");        // NOI18N
+        return taf;
+    }
+
+    /**
+     * Validates annotation format text
+     * @param format format to be validatet
+     * @return <code>true</code> if the format is correct, <code>false</code> otherwise.
+     */
+    public static boolean isAnnotationFormatValid(final String format) {
+        boolean retval = true;
+        if (format != null) {
+            try {
+                new MessageFormat(format);
+            } catch (IllegalArgumentException ex) {
+                CvsVersioningSystem.LOG.log(Level.FINER, "Bad user input - annotation format", ex);
+                retval = false;
+            }
+        }
+        return retval;
+    }
     
     /**
      * Semantics is similar to {@link org.openide.windows.TopComponent#getActivatedNodes()} except that this

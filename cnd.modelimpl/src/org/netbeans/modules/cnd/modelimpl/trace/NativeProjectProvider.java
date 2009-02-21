@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
-import org.netbeans.modules.cnd.loaders.CndDataObject;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.openide.filesystems.FileObject;
@@ -279,8 +278,8 @@ public final class NativeProjectProvider {
         
     /*package*/ static void registerItemInDataObject(DataObject obj, NativeFileItem item) {
         if (obj != null) {
-            if (obj instanceof CndDataObject) {
-                NativeFileItemSet set = obj.getLookup().lookup(NativeFileItemSet.class);
+            NativeFileItemSet set = obj.getLookup().lookup(NativeFileItemSet.class);
+            if (set != null) {
                 set.add(item);
             }
         }

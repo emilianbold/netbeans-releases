@@ -1946,7 +1946,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             if (!disposing) {
                 for (Iterator it = getAllFiles().iterator(); it.hasNext();) {
                     FileImpl file = (FileImpl) it.next();
-                    file.fixFakeRegistrations(libsAlreadyParsed);
+                    file.fixFakeRegistrations();
+                    if (libsAlreadyParsed) {
+                        file.clearFakeRegistrations();
+                    }
                 }
             }
         } catch (Exception e) {

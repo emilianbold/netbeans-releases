@@ -387,6 +387,14 @@ public class RubyCodeCompleterTest extends RubyTestBase {
         checkCompletion("testfiles/methods_chaining.rb", "10.between?(0, 100).to^");
     }
 
+    public void testMethodsChainingParenthesised2() throws Exception {
+        checkCompletion("testfiles/methods_chaining.rb", "puts greeting.capitalize().swapc^ase()");
+    }
+
+    public void testMethodsChainingNoParenthesis() throws Exception {
+        checkCompletion("testfiles/methods_chaining.rb", "puts greeting.capitalize.swapc^ase");
+    }
+
     public void testMethodTypeInference() throws Exception {
         checkCompletion("testfiles/method_type_inference.rb", "puts num.abs^");
     }

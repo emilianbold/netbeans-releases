@@ -37,6 +37,9 @@
 #     CND_ARTIFACT_DIR_${CONF}   directory of build artifact (current configuration)
 #     CND_ARTIFACT_NAME_${CONF}  name of build artifact (current configuration)
 #     CND_ARTIFACT_PATH_${CONF}  path to build artifact (current configuration)
+#     CND_PACKAGE_DIR_${CONF}    directory of package (current configuration)
+#     CND_PACKAGE_NAME_${CONF}   name of package (current configuration)
+#     CND_PACKAGE_PATH_${CONF}   path to package (current configuration)
 #
 # NOCDDL
 
