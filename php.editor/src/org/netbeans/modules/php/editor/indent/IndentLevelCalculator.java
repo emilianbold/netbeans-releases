@@ -39,9 +39,13 @@
 package org.netbeans.modules.php.editor.indent;
 
 import java.util.Map;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -52,9 +56,11 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
     private Map<Integer, Integer> indentLevels;
     private int indentSize;
     private int continuationIndentSize;
+    private BaseDocument doc;
 
     public IndentLevelCalculator(Document doc, Map<Integer, Integer> indentLevels) {
         this.indentLevels = indentLevels;
+        this.doc = (BaseDocument) doc;
         CodeStyle codeStyle = CodeStyle.get(doc);
         indentSize = codeStyle.getIndentSize();
         continuationIndentSize = codeStyle.getContinuationIndentSize();
@@ -63,7 +69,17 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
     @Override
     public void visit(Block node) {
         if (node.isCurly()) {
-            indentLevels.put(node.getStartOffset(), indentSize);
+            int start = node.getStartOffset();
+            try {
+                int firstNonWS = Utilities.getFirstNonWhiteFwd(doc, start + 1);
+                if (firstNonWS > -1){
+                    start = firstNonWS;
+                }
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            
+            indentLevels.put(start, indentSize);
             indentLevels.put(node.getEndOffset(), -1 * indentSize);
         }
 
