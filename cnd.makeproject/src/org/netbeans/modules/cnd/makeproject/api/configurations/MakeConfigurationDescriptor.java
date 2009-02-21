@@ -191,7 +191,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         initTask = null;
     }
 
-    public void initLogicalFolders(Iterator<SourceFolderInfo> sourceFileFolders, boolean createLogicalFolders, Iterator<String> importantItems) {
+    public void initLogicalFolders(Iterator<SourceFolderInfo> sourceFileFolders, boolean createLogicalFolders, Iterator<String> importantItems, String mainFilePath) {
         if (createLogicalFolders) {
             rootFolder.addNewFolder(SOURCE_FILES_FOLDER, getString("SourceFilesTxt"), true);
             rootFolder.addNewFolder(HEADER_FILES_FOLDER, getString("HeaderFilesTxt"), true);
@@ -206,7 +206,15 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 externalFileItems.addItem(new Item(importantItems.next()));
             }
         }
-//        addSourceFilesFromFolders(sourceFileFolders, false, false, true);
+//        addSourceFilesFromFolders(sourceFileFolders, false, false, true
+        // Add main file
+        if (mainFilePath != null) {
+            Folder srcFolder = rootFolder.findFolderByName(MakeConfigurationDescriptor.SOURCE_FILES_FOLDER);
+            if (srcFolder != null) {
+                srcFolder.addItem(new Item(mainFilePath));
+            }
+        }
+        // Handle source root folders
         if (sourceFileFolders != null) {
             while (sourceFileFolders.hasNext()) {
                 SourceFolderInfo sourceFolderInfo = sourceFileFolders.next();

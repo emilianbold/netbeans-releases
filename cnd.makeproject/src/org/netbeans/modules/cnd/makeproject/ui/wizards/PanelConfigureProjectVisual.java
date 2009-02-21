@@ -62,7 +62,7 @@ public class PanelConfigureProjectVisual extends JPanel {
     private PanelOptionsVisual optionsPanel;
     
     /** Creates new form PanelInitProject */
-    public PanelConfigureProjectVisual(PanelConfigureProject panel, String name, String wizardTitle, String wizardACSD, boolean showMakefileTextField) {
+    public PanelConfigureProjectVisual(PanelConfigureProject panel, String name, String wizardTitle, String wizardACSD, boolean showMakefileTextField, int type) {
         this.panel = panel;
         initComponents();
                 
@@ -75,7 +75,7 @@ public class PanelConfigureProjectVisual extends JPanel {
         getAccessibleContext ().setAccessibleDescription(wizardACSD); // NOI18N
 
         locationContainer.add( projectLocationPanel, java.awt.BorderLayout.CENTER );
-        optionsPanel = new PanelOptionsVisual(panel);
+        optionsPanel = new PanelOptionsVisual(panel, type);
         //projectLocationPanel.addPropertyChangeListener(optionsPanel);
         optionsContainer.add( optionsPanel, java.awt.BorderLayout.CENTER );
     }

@@ -361,7 +361,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
                 }
                 @SuppressWarnings("unchecked")
                 Iterator<SourceFolderInfo> it = (Iterator)wiz.getProperty("sourceFolders"); // NOI18N
-                final MakeProject makeProject = MakeProjectGenerator.createProject(dirF, projectName, makefileName, new MakeConfiguration[] {extConf}, it, importantItemsIterator);
+                final MakeProject makeProject = MakeProjectGenerator.createProject(dirF, projectName, makefileName, new MakeConfiguration[] {extConf}, it, importantItemsIterator, null);
                 FileObject dir = FileUtil.toFileObject(dirF);
                 resultSet.add(dir);
                 final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
@@ -402,6 +402,12 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
             } else if (wizardtype == TYPE_QT_STATIC_LIB) {
                 conftype = MakeConfiguration.TYPE_QT_STATIC_LIB;
             }
+            String mainFile = null;
+            if (((Boolean)wiz.getProperty("createMainFile")).booleanValue()) { // NOI18N
+                String fname = (String)wiz.getProperty("mainFileName"); // NOI18N
+                String template = (String)wiz.getProperty("mainFileTemplate"); // NOI18N
+                mainFile = fname + "|" + template; // NOI18N
+            }
             MakeConfiguration debug = new MakeConfiguration(dirF.getPath(), "Debug", conftype); // NOI18N
             debug.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
@@ -413,7 +419,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
             release.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getQmakeConfiguration().getBuildMode().setValue(QmakeConfiguration.RELEASE_MODE);
             MakeConfiguration[] confs = new MakeConfiguration[] {debug, release};
-            MakeProjectGenerator.createProject(dirF, projectName, makefileName, confs, null, null);
+            MakeProjectGenerator.createProject(dirF, projectName, makefileName, confs, null, null, mainFile);
             FileObject dir = FileUtil.toFileObject(dirF);
             resultSet.add(dir);
         }
