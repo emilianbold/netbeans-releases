@@ -481,10 +481,10 @@ public class AddDomainWizardIterator implements
                         ((String)wizard.getProperty(SIP_SSL_PORT)).trim(),
                 domain
                 };
-                Integer detectedVersion = 
+                int detectedVersion =
                         ServerLocationManager.getAppServerPlatformVersion(irf);
                 // stop a warning about deprecated options...
-                if (detectedVersion.equals((Integer) ServerLocationManager.GF_V2)) {
+                if (detectedVersion >= ServerLocationManager.GF_V2) {
                     arrnd[6] = "--user";
                 }
                 Profile selectedProfile  = (Profile) wizard.getProperty(PROFILE);
