@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import javax.swing.JPanel;
@@ -51,52 +50,47 @@ import org.openide.util.NbBundle;
 public class PanelConfigureProjectVisual extends JPanel {
 
     private PanelConfigureProject panel;
-
     private boolean ignoreProjectDirChanges;
-
     private boolean ignoreAntProjectNameChanges;
-
     private boolean noDir = true;
-
     private SettingsPanel projectLocationPanel;
     private PanelOptionsVisual optionsPanel;
-    
+
     /** Creates new form PanelInitProject */
     public PanelConfigureProjectVisual(PanelConfigureProject panel, String name, String wizardTitle, String wizardACSD, boolean showMakefileTextField, int type) {
         this.panel = panel;
         initComponents();
-                
-        setName(NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NameAndLoc")); // NOI18N
 
-        projectLocationPanel = new PanelProjectLocationVisual( panel, name, showMakefileTextField );
-        putClientProperty ("NewProjectWizard_Title", wizardTitle); // NOI18N
+        setName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NameAndLoc")); // NOI18N
+
+        projectLocationPanel = new PanelProjectLocationVisual(panel, name, showMakefileTextField);
+        putClientProperty("NewProjectWizard_Title", wizardTitle); // NOI18N
         jSeparator1.setVisible(true);
-        getAccessibleContext ().setAccessibleName(wizardTitle); // NOI18N
-        getAccessibleContext ().setAccessibleDescription(wizardACSD); // NOI18N
+        getAccessibleContext().setAccessibleName(wizardTitle); // NOI18N
+        getAccessibleContext().setAccessibleDescription(wizardACSD); // NOI18N
 
-        locationContainer.add( projectLocationPanel, java.awt.BorderLayout.CENTER );
+        locationContainer.add(projectLocationPanel, java.awt.BorderLayout.CENTER);
         optionsPanel = new PanelOptionsVisual(panel, type);
         //projectLocationPanel.addPropertyChangeListener(optionsPanel);
-        optionsContainer.add( optionsPanel, java.awt.BorderLayout.CENTER );
+        optionsContainer.add(optionsPanel, java.awt.BorderLayout.CENTER);
     }
-    
-    boolean valid( WizardDescriptor wizardDescriptor ) {
-        wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, "" ); //NOI18N
-        return projectLocationPanel.valid( wizardDescriptor ) && optionsPanel.valid(wizardDescriptor);
+
+    boolean valid(WizardDescriptor wizardDescriptor) {
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
+        return projectLocationPanel.valid(wizardDescriptor) && optionsPanel.valid(wizardDescriptor);
     }
-    
-    void read (WizardDescriptor d) {
-        projectLocationPanel.read (d);
-        optionsPanel.read (d);
+
+    void read(WizardDescriptor d) {
+        projectLocationPanel.read(d);
+        optionsPanel.read(d);
     }
-    
-    void store( WizardDescriptor d ) {
-        
-        projectLocationPanel.store( d );
-        optionsPanel.store( d );        
+
+    void store(WizardDescriptor d) {
+
+        projectLocationPanel.store(d);
+        optionsPanel.store(d);
     }
-    
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -143,15 +137,11 @@ public class PanelConfigureProjectVisual extends JPanel {
 
     }
     // </editor-fold>//GEN-END:initComponents
-
     /** Currently only handles the "Browse..." button
      */
-           
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JPanel locationContainer;
     private javax.swing.JPanel optionsContainer;
     // End of variables declaration//GEN-END:variables
-
-    
 }

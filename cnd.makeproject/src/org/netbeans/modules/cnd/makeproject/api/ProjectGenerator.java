@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.api;
 
 import java.io.File;
@@ -53,38 +52,38 @@ import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectGenerato
 public class ProjectGenerator {
 
     public static String getDefaultProjectFolder() {
-	return MakeProjectGenerator.getDefaultProjectFolder();
+        return MakeProjectGenerator.getDefaultProjectFolder();
     }
 
     public static String getValidProjectName(String projectFolder) {
-	return MakeProjectGenerator.getValidProjectName(projectFolder);
+        return MakeProjectGenerator.getValidProjectName(projectFolder);
     }
 
     public static String getValidProjectName(String projectFolder, String suggestedProjectName) {
-	return MakeProjectGenerator.getValidProjectName(projectFolder, suggestedProjectName);
+        return MakeProjectGenerator.getValidProjectName(projectFolder, suggestedProjectName);
     }
 
     public static Project createBlankProject(boolean open) throws IOException {
-	return MakeProjectGenerator.createBlankProject(open);
+        return MakeProjectGenerator.createBlankProject(open);
     }
 
     public static Project createBlankProject(String projectName, String projectFolder) throws IOException {
-	return MakeProjectGenerator.createBlankProject(projectName, projectFolder, false);
+        return MakeProjectGenerator.createBlankProject(projectName, projectFolder, false);
     }
-    
+
     public static Project createBlankProject(String projectName, String makefileName, String projectFolder) throws IOException {
-	return MakeProjectGenerator.createBlankProject(projectName, makefileName, projectFolder, false);
+        return MakeProjectGenerator.createBlankProject(projectName, makefileName, projectFolder, false);
     }
 
     public static Project createBlankProject(String projectName, String projectFolder, MakeConfiguration[] confs, boolean open) throws IOException {
-	return MakeProjectGenerator.createBlankProject(projectName, projectFolder, confs, open);
+        return MakeProjectGenerator.createBlankProject(projectName, projectFolder, confs, open);
     }
 
     public static Project createProject(File dir, String name, String makefileName, MakeConfiguration[] confs, Iterator<SourceFolderInfo> sourceFolders, Iterator<String> importantItems) throws IOException {
-    	return MakeProjectGenerator.createProject(dir, name, makefileName, confs, sourceFolders, importantItems, null);
+        return MakeProjectGenerator.createProject(dir, name, makefileName, confs, sourceFolders, importantItems, null);
     }
-    
+
     public static void createProjectFromTemplate(URL url, String projectName, String projectFolder) throws IOException {
-	 MakeSampleProjectGenerator.createProjectFromTemplate(url, new File(projectFolder + "/" + projectName), projectName); // NOI18N
+        MakeSampleProjectGenerator.createProjectFromTemplate(url, new File(projectFolder + "/" + projectName), projectName); // NOI18N
     }
 }

@@ -57,8 +57,6 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
@@ -242,8 +240,7 @@ public class MakeProjectGenerator {
         final String mainFilePath;
         if (mainFile != null) {
             mainFilePath = createMain(mainFile, dirFO);
-        }
-        else {
+        } else {
             mainFilePath = null;
         }
 
@@ -337,7 +334,6 @@ public class MakeProjectGenerator {
 
         return mainName;
     }
-    
 //    private static void refreshFileSystem (final File dir) throws FileStateInvalidException {
 //        File rootF = dir;
 //        while (rootF.getParentFile() != null /*UNC*/&& rootF.getParentFile().exists()) {

@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
@@ -54,28 +53,26 @@ public class PanelOptionsVisual extends SettingsPanel {
     private int type;
 
     /** Creates new form PanelOptionsVisual */
-    public PanelOptionsVisual( PanelConfigureProject panel, int type) {
+    public PanelOptionsVisual(PanelConfigureProject panel, int type) {
         initComponents();
         this.panel = panel;
         this.type = type;
-        setAsMainCheckBox.setVisible( true );
+        setAsMainCheckBox.setVisible(true);
 
         createMainTextField.setText("main"); // NOI18N
         createMainComboBox.addItem("C"); // NOI18N
         createMainComboBox.addItem("C++"); // NOI18N
         createMainComboBox.setSelectedIndex(0);
-        
+
         if (type == NewMakeProjectWizardIterator.TYPE_APPLICATION) {
             createMainCheckBox.setVisible(true);
             createMainTextField.setVisible(true);
             createMainComboBox.setVisible(true);
-        }
-        else if (type == NewMakeProjectWizardIterator.TYPE_QT_APPLICATION) {
+        } else if (type == NewMakeProjectWizardIterator.TYPE_QT_APPLICATION) {
             createMainCheckBox.setVisible(true);
             createMainTextField.setVisible(true);
             createMainComboBox.setVisible(false);
-        }
-        else {
+        } else {
             createMainCheckBox.setSelected(false);
             createMainCheckBox.setVisible(false);
             createMainTextField.setVisible(false);
@@ -164,18 +161,18 @@ public class PanelOptionsVisual extends SettingsPanel {
         createMainTextField.setEnabled(createMainCheckBox.isSelected());
         createMainComboBox.setEnabled(createMainCheckBox.isSelected());
     }//GEN-LAST:event_createMainCheckBoxActionPerformed
-    
+
     boolean valid(WizardDescriptor settings) {
-	return true;
+        return true;
     }
-    
-    void read (WizardDescriptor d) {
+
+    void read(WizardDescriptor d) {
         //TODO:
     }
 
-    void store( WizardDescriptor d ) {
-        d.putProperty( /*XXX Define somewhere */ "setAsMain", setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
-        d.putProperty( /*XXX Define somewhere */ "mainClass", null ); // NOI18N
+    void store(WizardDescriptor d) {
+        d.putProperty( /*XXX Define somewhere */"setAsMain", setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE); // NOI18N
+        d.putProperty( /*XXX Define somewhere */"mainClass", null); // NOI18N
 
 
         MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
@@ -184,22 +181,19 @@ public class PanelOptionsVisual extends SettingsPanel {
         d.putProperty("createMainFile", createMainCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE);
         if (createMainCheckBox.isSelected() && createMainTextField.getText().length() > 0) {
             if (type == NewMakeProjectWizardIterator.TYPE_APPLICATION) {
-                if (((String)createMainComboBox.getSelectedItem()).equals("C")) { // NOI18N
+                if (((String) createMainComboBox.getSelectedItem()).equals("C")) { // NOI18N
                     d.putProperty("mainFileName", createMainTextField.getText() + "." + cExtensions.getDefaultExtension()); // NOI18N
                     d.putProperty("mainFileTemplate", "Templates/cFiles/main.c"); // NOI18N
-                }
-                else {
+                } else {
                     d.putProperty("mainFileName", createMainTextField.getText() + "." + ccExtensions.getDefaultExtension()); // NOI18N
                     d.putProperty("mainFileTemplate", "Templates/cppFiles/main.cc"); // NOI18N
                 }
-            }
-            else if (type == NewMakeProjectWizardIterator.TYPE_QT_APPLICATION) {
+            } else if (type == NewMakeProjectWizardIterator.TYPE_QT_APPLICATION) {
                 d.putProperty("mainFileName", createMainTextField.getText() + "." + ccExtensions.getDefaultExtension()); // NOI18N
                 d.putProperty("mainFileTemplate", "Templates/qtFiles/main.cc"); // NOI18N
             }
         }
     }
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox createMainCheckBox;
     private javax.swing.JComboBox createMainComboBox;
