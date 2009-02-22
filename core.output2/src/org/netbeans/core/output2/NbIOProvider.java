@@ -46,6 +46,7 @@ import javax.swing.Action;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
+import org.openide.windows.IOContainer;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
@@ -59,15 +60,17 @@ public final class NbIOProvider extends IOProvider {
 
     private static final String STDOUT = NbBundle.getMessage(NbIOProvider.class,
         "LBL_STDOUT"); //NOI18N
+
+    private static final String NAME = "output2"; // NOI18N
     
     public OutputWriter getStdOut() {
         if (Controller.LOG) {
             Controller.log("NbIOProvider.getStdOut");
         }
-        InputOutput stdout = getIO (STDOUT, false, null);
-        NbWriter out = ((NbIO)stdout).writer();
-        
-        Controller.ensureViewInDefault ((NbIO) stdout, true);
+        NbIO stdout = (NbIO) getIO(STDOUT, false);
+        NbWriter out = stdout.writer();
+
+        NbIO.post(new IOEvent(stdout, IOEvent.CMD_CREATE, true));
         //ensure it is not closed
         if (out != null && out.isClosed()) {
             try {
@@ -75,7 +78,7 @@ public final class NbIOProvider extends IOProvider {
                 out = (NbWriter) stdout.getOut();
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
-                stdout = getIO (STDOUT, true, null);
+                stdout = (NbIO) getIO(STDOUT, true);
                 out = (NbWriter) stdout.getOut();
             }
         } else {
@@ -86,27 +89,34 @@ public final class NbIOProvider extends IOProvider {
     
     
     public InputOutput getIO(String name, boolean newIO) {
-        return getIO (name, newIO, new Action[0]);
+        return getIO (name, newIO, new Action[0], null);
     }
     
     @Override
     public InputOutput getIO(String name, Action[] toolbarActions) {
-        return getIO (name, true, toolbarActions);
+        return getIO (name, true, toolbarActions, null);
     }
-    
-    private InputOutput getIO(String name, boolean newIO, Action[] toolbarActions) {
+
+    @Override
+    public InputOutput getIO(String name, Action[] additionalActions, IOContainer ioContainer) {
+        return getIO(name, true, additionalActions, ioContainer);
+    }
+
+    @Override
+    public String getName() {
+        return NAME;
+    }
+
+    private InputOutput getIO(String name, boolean newIO, Action[] toolbarActions, IOContainer ioContainer) {
         if (Controller.LOG) {
             Controller.log("GETIO: " + name + " new:" + newIO);
         }
         NbIO result = namesToIos.get(name);
 
         if (result == null || newIO) {
-            result = new NbIO(name, toolbarActions);
+            result = new NbIO(name, toolbarActions, ioContainer);
             namesToIos.add (name, result);
-            Controller.ensureViewInDefault (result, newIO);
-        } else {
-            // mkleint ignore actions if reuse of tabs.
-//            result.setToolbarActions(toolbarActions);
+            NbIO.post(new IOEvent(result, IOEvent.CMD_CREATE, newIO));
         }
         return result;
     }

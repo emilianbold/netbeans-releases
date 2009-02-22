@@ -65,15 +65,21 @@ made subject to such option by the copyright holder.
                 <attr name="keywordsCategory" stringvalue="Editor/General"/>
                 <attr name="position" intvalue="100"/>
             </file>
-            <file name="Formating.instance">
+            <folder name="General">
+                <attr name="position" intvalue="0"/>
+            </folder>
+            <file name="Formatting.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
                 <attr name="controller" newvalue="org.netbeans.modules.options.indentation.FormattingPanelController"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.options.editor.Bundle#CTL_Formating_DisplayName"/>
                 <attr name="toolTip" bundlevalue="org.netbeans.modules.options.editor.Bundle#CTL_Formating_ToolTip"/>
                 <attr name="keywords" bundlevalue="org.netbeans.modules.options.editor.Bundle#KW_Formatting"/>
-                <attr name="keywordsCategory" stringvalue="Editor/Formating"/>
+                <attr name="keywordsCategory" stringvalue="Editor/Formatting"/>
                 <attr name="position" intvalue="200"/>
             </file>
+            <folder name="Formatting">
+                <attr name="position" intvalue="0"/>
+            </folder>
             <file name="CodeCompletion.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
                 <attr name="controller" newvalue="org.netbeans.modules.options.editor.completion.CodeCompletionOptionsPanelController"/>
@@ -83,6 +89,9 @@ made subject to such option by the copyright holder.
                 <attr name="keywordsCategory" stringvalue="Editor/CodeCompletion"/>
                 <attr name="position" intvalue="250"/>
             </file>
+            <folder name="CodeCompletion">
+                <attr name="position" intvalue="0"/>
+            </folder>
             <file name="Hints.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
                 <attr name="controller" methodvalue="org.netbeans.modules.options.editor.FolderBasedController.create"/>
@@ -94,18 +103,24 @@ made subject to such option by the copyright holder.
                 <attr name="keywordsCategory" stringvalue="Editor/Hints"/>
                 <attr name="position" intvalue="400"/>
             </file>
-            <file name="MarkOccurences.instance">
+            <folder name="Hints">
+                <attr name="position" intvalue="0"/>
+            </folder>
+            <file name="MarkOccurrences.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
                 <attr name="controller" methodvalue="org.netbeans.modules.options.editor.FolderBasedController.create"/>
-                <attr name="optionsSubFolder" stringvalue="MarkOccurences/"/>
+                <attr name="optionsSubFolder" stringvalue="MarkOccurrences/"/>
                 <attr name="helpContextId" stringvalue="netbeans.optionsDialog.editor.markOccurences"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.options.editor.Bundle#CTL_MarkOccurences_DisplayName"/>
                 <attr name="toolTip" bundlevalue="org.netbeans.modules.options.editor.Bundle#CTL_MarkOccurences_ToolTip"/>
                 <attr name="keywords" bundlevalue="org.netbeans.modules.options.editor.Bundle#KW_Mark"/>
-                <attr name="keywordsCategory" stringvalue="Editor/MarkOccurences"/>
+                <attr name="keywordsCategory" stringvalue="Editor/MarkOccurrences"/>
                 <attr name="position" intvalue="500"/>
             </file>
-            <file name="Tasklist.instance">
+            <folder name="MarkOccurrences">
+                <attr name="position" intvalue="0"/>
+            </folder>
+            <file name="TaskList.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
                 <attr name="controller" methodvalue="org.netbeans.modules.options.editor.FolderBasedController.create"/>
                 <attr name="optionsSubFolder" stringvalue="TaskList/"/>
@@ -113,9 +128,12 @@ made subject to such option by the copyright holder.
                 <attr name="displayName" bundlevalue="org.netbeans.modules.options.editor.Bundle#CTL_Tasklist_DisplayName"/>
                 <attr name="toolTip" bundlevalue="org.netbeans.modules.options.editor.Bundle#CTL_Tasklist_ToolTip"/>
                 <attr name="keywords" bundlevalue="org.netbeans.modules.options.editor.Bundle#KW_TaskList"/>
-                <attr name="keywordsCategory" stringvalue="Editor/Tasklist"/>
+                <attr name="keywordsCategory" stringvalue="Editor/TaskList"/>
                 <attr name="position" intvalue="600"/>
             </file>
+            <folder name="TaskList">
+                <attr name="position" intvalue="0"/>
+            </folder>
         </folder>
         <file name="FontsAndColors.instance">
             <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.OptionsCategory.createCategory"/>
