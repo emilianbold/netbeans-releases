@@ -246,22 +246,12 @@ public class JsAnalyzer implements StructureScanner {
     
     static AnalysisResult analyze(JsParseResult result) {
         AnalysisResult analysisResult = new AnalysisResult(result);
-        BaseDocument doc = LexUtilities.getDocument(result, true);
-        if (doc != null) {
-            try {
-                doc.readLock(); // Read-lock due to token hierarchy use
-
-                ParseTreeWalker walker = new ParseTreeWalker(analysisResult);
-                Node root = result.getRootNode();
-                if (root != null) {
-                    walker.walk(root);
-                }
-                analysisResult.postProcess(result);
-            } finally {
-                doc.readUnlock();
-            }
+        ParseTreeWalker walker = new ParseTreeWalker(analysisResult);
+        Node root = result.getRootNode();
+        if (root != null) {
+            walker.walk(root);
         }
-        
+        analysisResult.postProcess(result);
         return analysisResult;
     }
 

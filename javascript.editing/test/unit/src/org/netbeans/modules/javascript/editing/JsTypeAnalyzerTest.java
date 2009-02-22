@@ -56,7 +56,7 @@ import org.openide.filesystems.FileObject;
  * @author Tor Norbye
  */
 public class JsTypeAnalyzerTest extends JsTestBase {
-    
+
     public JsTypeAnalyzerTest(String testName) {
         super(testName);
     }
@@ -73,6 +73,8 @@ public class JsTypeAnalyzerTest extends JsTestBase {
             caretOffset = -1;
         }
 
+        indexFile(file);
+
         final JsTypeAnalyzer [] result = new JsTypeAnalyzer [] { null };
         ParserManager.parse(Collections.singleton(source), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
@@ -82,8 +84,7 @@ public class JsTypeAnalyzerTest extends JsTestBase {
 
                 Node root = jspr.getRootNode();
                 initializeRegistry();
-// XXX: parsingapi
-//                JsIndex index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
+                JsIndex index = JsIndex.get(Collections.singleton(r.getSnapshot().getSource().getFileObject().getParent()));
 
                 AstPath path = new AstPath(root, caretOffset);
                 Node node = path.leaf();
@@ -95,8 +96,7 @@ public class JsTypeAnalyzerTest extends JsTestBase {
                     root = method;
                 }
 
-// XXX: parsingapi
-//                result[0] = new JsTypeAnalyzer(jspr, index, root, node, caretOffset, caretOffset);
+                result[0] = new JsTypeAnalyzer(jspr, index, root, node, caretOffset, caretOffset);
             }
         });
 

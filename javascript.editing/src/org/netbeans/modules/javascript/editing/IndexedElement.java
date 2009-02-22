@@ -54,6 +54,7 @@ import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
@@ -287,7 +288,8 @@ public abstract class IndexedElement extends JsElement {
                 }
                 if (docOffset < doc.getLength()) {
                     //return LexUtilities.gatherDocumentation(null, doc, docOffset);
-                    OffsetRange range = LexUtilities.getCommentBlock(doc, docOffset, false);
+                    Source docSource = Source.create(doc);
+                    OffsetRange range = LexUtilities.getCommentBlock(docSource.createSnapshot(), docOffset, false);
                     if (range != OffsetRange.NONE) {
                         String comment = doc.getText(range.getStart(), range.getLength());
                         String[] lines = comment.split("\n");

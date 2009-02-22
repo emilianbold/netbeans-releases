@@ -50,6 +50,7 @@ import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.parsing.spi.Scheduler;
@@ -117,12 +118,7 @@ public class JsOccurrenceFinder extends OccurrencesFinder<JsParseResult> {
             file = currentFile;
         }
 
-        JsParseResult rpr = AstUtilities.getParseResult(info);
-        if (rpr == null) {
-            return;
-        }
-
-        Node root = rpr.getRootNode();
+        Node root = info.getRootNode();
         if (root == null) {
             return;
         }
@@ -138,11 +134,11 @@ public class JsOccurrenceFinder extends OccurrencesFinder<JsParseResult> {
         AstPath path = new AstPath(root, astOffset);
         Node closest = path.leaf();
 
-        VariableVisitor v = rpr.getVariableVisitor();
+        VariableVisitor v = info.getVariableVisitor();
 
         // When we sanitize the line around the caret, occurrences
         // highlighting can get really ugly
-        OffsetRange blankRange = rpr.getSanitizedRange();
+        OffsetRange blankRange = info.getSanitizedRange();
 
         if (blankRange.containsInclusive(astOffset)) {
             closest = null;
@@ -157,33 +153,15 @@ public class JsOccurrenceFinder extends OccurrencesFinder<JsParseResult> {
         // . to the end of Scanf as a CallNode, which is a weird highlight.
         // We don't want occurrences highlights that span lines.
         if (closest != null) {
-            BaseDocument doc = (BaseDocument)info.getSnapshot().getSource().getDocument(false);
-            if (doc == null) {
-                // Document was just closed
-                return;
-            }
-            doc.readLock();
             try {
-                int length = doc.getLength();
                 OffsetRange astRange = AstUtilities.getRange(closest);
-                OffsetRange lexRange = LexUtilities.getLexerOffsets(info, astRange);
-                int lexStartPos = lexRange.getStart();
-                int lexEndPos = lexRange.getEnd();
-
-                // If the buffer was just modified where a lot of text was deleted,
-                // the parse tree positions could be pointing outside the valid range
-                if (lexStartPos > length) {
-                    lexStartPos = length;
-                }
-                if (lexEndPos > length) {
-                    lexEndPos = length;
-                }
+                CharSequence text = info.getSnapshot().getText();
 
                 // One special case I care about: highlighting method exit points. In
                 // this case, the full def node is selected, which typically spans
                 // lines. This should trigger if you put the caret on the method definition
                 // line, unless it's in a comment there.
-                org.netbeans.api.lexer.Token<?extends JsTokenId> token = LexUtilities.getToken(doc, caretPosition);
+                org.netbeans.api.lexer.Token<?extends JsTokenId> token = LexUtilities.getToken(info.getSnapshot(), astOffset);
                 boolean isFunctionKeyword = (token != null) && token.id() == JsTokenId.FUNCTION;
                 boolean isMethodName = closest.getType() == Token.FUNCNAME;
                 boolean isReturn = closest.getType() == Token.RETURN && astOffset < closest.getSourceStart() + "return".length(); // NOI18N
@@ -216,8 +194,9 @@ public class JsOccurrenceFinder extends OccurrencesFinder<JsParseResult> {
                     // Fall through and set closest to null such that I don't do other highlighting
                     closest = null;
                 } else if (closest.getType() == Token.CALL && 
-                        lexStartPos != -1 && lexEndPos != -1 && 
-                            Utilities.getRowStart(doc, Math.min(doc.getLength(), lexStartPos)) != Utilities.getRowStart(doc, Math.min(doc.getLength(), lexEndPos))) {
+                        astRange.getStart() != -1 && astRange.getEnd() != -1 &&
+                        GsfUtilities.getRowStart(text, astRange.getStart()) != GsfUtilities.getRowStart(text, astRange.getEnd()))
+                {
                     // Some nodes may span multiple lines, but the range we care about is only
                     // on a single line because we're pulling out the lvalue - for example,
                     // a method call may span multiple lines because of a long parameter list,
@@ -226,8 +205,6 @@ public class JsOccurrenceFinder extends OccurrencesFinder<JsParseResult> {
                 }
             } catch (BadLocationException ble) {
                 Exceptions.printStackTrace(ble);
-            } finally {
-                doc.readUnlock();
             }
         }
 

@@ -49,7 +49,6 @@ import org.mozilla.nb.javascript.Token;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -81,7 +80,7 @@ public class TypesTest extends JsTestBase {
     private void initialize(Node node, List<Object> nodes, Map<Object,String> types, Map<Object,
             OffsetRange> positions, JsParseResult info) throws Exception {
         if (node.getSourceStart() > node.getSourceEnd()) {
-            BaseDocument doc = LexUtilities.getDocument(info, false);
+            BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(true);
             assertTrue(node.toString() + "; node=" + node.toString() + " at line " + org.netbeans.editor.Utilities.getLineOffset(doc, node.getSourceStart()), false);
         }
         OffsetRange range = new OffsetRange(node.getSourceStart(), node.getSourceEnd());

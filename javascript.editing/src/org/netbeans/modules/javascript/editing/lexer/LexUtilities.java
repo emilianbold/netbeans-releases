@@ -49,7 +49,6 @@ import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -57,10 +56,9 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.JsParseResult;
-import org.netbeans.modules.parsing.api.Source;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.Exceptions;
 
 
@@ -93,29 +91,14 @@ public class LexUtilities {
         INDENT_WORDS.add(JsTokenId.WHILE);
     }
 
-    @CheckForNull
-    public static BaseDocument getDocument(JsParseResult info, boolean forceOpen) {
-        BaseDocument bdoc = null;
-        
-        if (info != null) {
-            Source source = info.getSnapshot().getSource();
-            Document doc = source.getDocument(forceOpen);
-            if (doc instanceof BaseDocument) {
-                bdoc = (BaseDocument) doc;
-            }
-        }
-
-        return bdoc;
-    }
-
     private LexUtilities() {
     }
     
     /** 
      * Return the comment sequence (if any) for the comment prior to the given offset.
      */
-    public static TokenSequence<? extends JsCommentTokenId> getCommentFor(BaseDocument doc, int offset) {
-        TokenSequence<?extends JsTokenId> jts = getJsTokenSequence(doc, offset);
+    public static TokenSequence<? extends JsCommentTokenId> getCommentFor(Snapshot snapshot, int offset) {
+        TokenSequence<?extends JsTokenId> jts = getJsTokenSequence(snapshot, offset);
         if (jts == null) {
             return null;
         }
@@ -153,8 +136,8 @@ public class LexUtilities {
 
     /** Find the NEXT JavaScript sequence in the buffer starting from the given offset */
     @SuppressWarnings("unchecked")
-    public static TokenSequence<?extends JsTokenId> getNextJsTokenSequence(BaseDocument doc, int fromOffset, int max) {
-        TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+    public static TokenSequence<?extends JsTokenId> getNextJsTokenSequence(Document doc, int fromOffset, int max) {
+        TokenHierarchy<Document> th = TokenHierarchy.get(doc);
         TokenSequence<?> ts = th.tokenSequence();
         ts.move(fromOffset);
 
@@ -187,15 +170,19 @@ public class LexUtilities {
     }
 
     /** Find the JavaScript token sequence (in case it's embedded in something else at the top level */
-    @SuppressWarnings("unchecked")
-    public static TokenSequence<?extends JsTokenId> getJsTokenSequence(BaseDocument doc, int offset) {
-        TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+    public static TokenSequence<? extends JsTokenId> getJsTokenSequence(Document doc, int offset) {
+        TokenHierarchy<Document> th = TokenHierarchy.get(doc);
+        return getJsTokenSequence(th, offset);
+    }
+
+    public static TokenSequence<?extends JsTokenId> getJsTokenSequence(Snapshot snapshot, int offset) {
+        TokenHierarchy<?> th = snapshot.getTokenHierarchy();
         return getJsTokenSequence(th, offset);
     }
     
     /** Find the JavaScript token sequence (in case it's embedded in something else at the top level */
     @SuppressWarnings("unchecked")
-    public static TokenSequence<?extends JsTokenId> getJsTokenSequence(TokenHierarchy<Document> th, int offset) {
+    public static TokenSequence<?extends JsTokenId> getJsTokenSequence(TokenHierarchy<?> th, int offset) {
         TokenSequence<?extends JsTokenId> ts = th.tokenSequence(JsTokenId.language());
 
         if (ts == null) {
@@ -227,25 +214,25 @@ public class LexUtilities {
         return ts;
     }
 
-    public static TokenSequence<?extends JsTokenId> getPositionedSequence(BaseDocument doc, int offset) {
+    public static TokenSequence<?extends JsTokenId> getPositionedSequence(Document doc, int offset) {
         return getPositionedSequence(doc, offset, true);
     }
+
+    public static TokenSequence<?extends JsTokenId> getPositionedSequence(Snapshot snapshot, int offset) {
+        return getPositionedSequence(snapshot, offset, true);
+    }
     
-    public static TokenSequence<?extends JsTokenId> getPositionedSequence(BaseDocument doc, int offset, boolean lookBack) {
-        TokenSequence<?extends JsTokenId> ts = getJsTokenSequence(doc, offset);
+    public static TokenSequence<?extends JsTokenId> getPositionedSequence(Document doc, int offset, boolean lookBack) {
+        return _getPosSeq(getJsTokenSequence(doc, offset), offset, lookBack);
+    }
 
+    public static TokenSequence<?extends JsTokenId> getPositionedSequence(Snapshot snapshot, int offset, boolean lookBack) {
+        return _getPosSeq(getJsTokenSequence(snapshot, offset), offset, lookBack);
+    }
+
+    private static TokenSequence<?extends JsTokenId> _getPosSeq(TokenSequence<? extends JsTokenId> ts, int offset, boolean lookBack) {
         if (ts != null) {
-            try {
-                ts.move(offset);
-            } catch (AssertionError e) {
-                DataObject dobj = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
-
-                if (dobj != null) {
-                    Exceptions.attachMessage(e, FileUtil.getFileDisplayName(dobj.getPrimaryFile()));
-                }
-
-                throw e;
-            }
+            ts.move(offset);
 
             if (!lookBack && !ts.moveNext()) {
                 return null;
@@ -260,8 +247,18 @@ public class LexUtilities {
     }
 
     
-    public static Token<?extends JsTokenId> getToken(BaseDocument doc, int offset) {
+    public static Token<?extends JsTokenId> getToken(Document doc, int offset) {
         TokenSequence<?extends JsTokenId> ts = getPositionedSequence(doc, offset);
+
+        if (ts != null) {
+            return ts.token();
+        }
+
+        return null;
+    }
+
+    public static Token<?extends JsTokenId> getToken(Snapshot snapshot, int offset) {
+        TokenSequence<?extends JsTokenId> ts = getPositionedSequence(snapshot, offset);
         
         if (ts != null) {
             return ts.token();
@@ -270,7 +267,7 @@ public class LexUtilities {
         return null;
     }
 
-    public static char getTokenChar(BaseDocument doc, int offset) {
+    public static char getTokenChar(Document doc, int offset) {
         Token<?extends JsTokenId> token = getToken(doc, offset);
 
         if (token != null) {
@@ -375,7 +372,7 @@ public class LexUtilities {
     }
     
     /** Search forwards in the token sequence until a token of type <code>down</code> is found */
-    public static OffsetRange findFwd(BaseDocument doc, TokenSequence<?extends JsTokenId> ts, TokenId up,
+    public static OffsetRange findFwd(Document doc, TokenSequence<?extends JsTokenId> ts, TokenId up,
         TokenId down) {
         int balance = 0;
 
@@ -398,7 +395,7 @@ public class LexUtilities {
     }
 
     /** Search backwards in the token sequence until a token of type <code>up</code> is found */
-    public static OffsetRange findBwd(BaseDocument doc, TokenSequence<?extends JsTokenId> ts, TokenId up,
+    public static OffsetRange findBwd(Document doc, TokenSequence<?extends JsTokenId> ts, TokenId up,
         TokenId down) {
         int balance = 0;
 
@@ -468,7 +465,7 @@ public class LexUtilities {
         return  OffsetRange.NONE;
     }
     
-    public static OffsetRange getMultilineRange(BaseDocument doc, TokenSequence<? extends JsTokenId> ts) {
+    public static OffsetRange getMultilineRange(Document doc, TokenSequence<? extends JsTokenId> ts) {
         int index = ts.index();
         OffsetRange offsetRange = findMultilineRange(ts);
         ts.moveIndex(index);
@@ -528,7 +525,7 @@ public class LexUtilities {
      * @param open the token that increses the count
      * @param close the token that decreses the count
      */
-    public static int getTokenBalance(BaseDocument doc, TokenId open, TokenId close, int offset)
+    public static int getTokenBalance(Document doc, TokenId open, TokenId close, int offset)
         throws BadLocationException {
         TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, 0);
         if (ts == null) {
@@ -578,6 +575,21 @@ public class LexUtilities {
         return false;
     }
 
+    public static boolean isCommentOnlyLine(Snapshot snapshot, int offset) throws BadLocationException {
+        int begin = GsfUtilities.getRowFirstNonWhite(snapshot.getText(), offset);
+
+        if (begin == -1) {
+            return false; // whitespace only
+        }
+
+        Token<? extends JsTokenId> token = LexUtilities.getToken(snapshot, begin);
+        if (token != null) {
+            return token.id() == JsTokenId.LINE_COMMENT;
+        }
+
+        return false;
+    }
+
     /**
      * Get the comment block for the given offset. The offset may be either within the comment
      * block, or the comment corresponding to a code node, depending on isAfter.
@@ -588,20 +600,20 @@ public class LexUtilities {
      *   such as a method node. In this case it needs to back up to find the comment.
      * @return
      */
-    public static OffsetRange getCommentBlock(BaseDocument doc, int caretOffset, boolean isAfter) {
+    public static OffsetRange getCommentBlock(Snapshot snapshot, int offset, boolean isAfter) {
         // Check if the caret is within a comment, and if so insert a new
         // leaf "node" which contains the comment line and then comment block
         try {
-            TokenSequence<? extends TokenId> ts = LexUtilities.getJsTokenSequence(doc, caretOffset);
+            TokenSequence<? extends JsTokenId> ts = snapshot.getTokenHierarchy().tokenSequence(JsTokenId.language());
             if (ts == null) {
                 return OffsetRange.NONE;
             }
-            ts.move(caretOffset);
+            ts.move(offset);
             if (isAfter) {
                 while (ts.movePrevious()) {
                     TokenId id = ts.token().id();
                     if (id == JsTokenId.BLOCK_COMMENT || id == JsTokenId.LINE_COMMENT) {
-                        return getCommentBlock(doc, ts.offset(), false);
+                        return getCommentBlock(snapshot, ts.offset(), false);
                     } else if (!((id == JsTokenId.WHITESPACE) || (id == JsTokenId.EOL))) {
                         return OffsetRange.NONE;
                     }
@@ -619,30 +631,32 @@ public class LexUtilities {
             }
 
             if ((token != null) && (token.id() == JsTokenId.LINE_COMMENT)) {
-                // First add a range for the current line
-                int begin = Utilities.getRowStart(doc, caretOffset);
-                int end = Utilities.getRowEnd(doc, caretOffset);
+                CharSequence text = snapshot.getText();
 
-                if (LexUtilities.isCommentOnlyLine(doc, caretOffset)) {
+                // First add a range for the current line
+                int begin = GsfUtilities.getRowStart(text, offset);
+                int end = GsfUtilities.getRowEnd(text, offset);
+
+                if (LexUtilities.isCommentOnlyLine(snapshot, offset)) {
 
                     while (begin > 0) {
-                        int newBegin = Utilities.getRowStart(doc, begin - 1);
+                        int newBegin = GsfUtilities.getRowStart(text, begin - 1);
 
-                        if ((newBegin < 0) || !LexUtilities.isCommentOnlyLine(doc, newBegin)) {
-                            begin = Utilities.getRowFirstNonWhite(doc, begin);
+                        if ((newBegin < 0) || !LexUtilities.isCommentOnlyLine(snapshot, newBegin)) {
+                            begin = GsfUtilities.getRowFirstNonWhite(text, begin);
                             break;
                         }
 
                         begin = newBegin;
                     }
 
-                    int length = doc.getLength();
+                    int length = text.length();
 
                     while (true) {
-                        int newEnd = Utilities.getRowEnd(doc, end + 1);
+                        int newEnd = GsfUtilities.getRowEnd(text, end + 1);
 
-                        if ((newEnd >= length) || !LexUtilities.isCommentOnlyLine(doc, newEnd)) {
-                            end = Utilities.getRowLastNonWhite(doc, end)+1;
+                        if ((newEnd >= length) || !LexUtilities.isCommentOnlyLine(snapshot, newEnd)) {
+                            end = GsfUtilities.getRowLastNonWhite(text, end)+1;
                             break;
                         }
 
@@ -654,9 +668,7 @@ public class LexUtilities {
                     }
                 } else {
                     // It's just a line comment next to some code
-                    TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-                    int offset = token.offset(th);
-                    return new OffsetRange(offset, offset + token.length());
+                    return new OffsetRange(ts.offset(), ts.offset() + token.length());
                 }
             }
         } catch (BadLocationException ble) {
@@ -737,24 +749,23 @@ public class LexUtilities {
         int elementBegin = nodeOffset;
         
         try {
-            BaseDocument baseDoc = getDocument(info, true);
-            if (elementBegin >= baseDoc.getLength()) {
+            CharSequence text = info.getSnapshot().getText();
+            if (elementBegin < 0 || elementBegin >= text.length()) {
                 return null;
             }
 
             // Search to previous lines, locate comments. Once we have a non-whitespace line that isn't
             // a comment, we're done
 
-            int offset = Utilities.getRowStart(baseDoc, elementBegin);
+            int offset = GsfUtilities.getRowStart(text, elementBegin);
             offset--;
 
             // Skip empty and whitespace lines
             while (offset >= 0) {
                 // Find beginning of line
-                offset = Utilities.getRowStart(baseDoc, offset);
+                offset = GsfUtilities.getRowStart(text, offset);
 
-                if (!Utilities.isRowEmpty(baseDoc, offset) &&
-                        !Utilities.isRowWhite(baseDoc, offset)) {
+                if (!GsfUtilities.isRowEmpty(text, offset) && !GsfUtilities.isRowWhite(text, offset)) {
                     break;
                 }
 
@@ -767,24 +778,24 @@ public class LexUtilities {
 
             while (offset >= 0) {
                 // Find beginning of line
-                offset = Utilities.getRowStart(baseDoc, offset);
+                offset = GsfUtilities.getRowStart(text, offset);
 
-                if (Utilities.isRowEmpty(baseDoc, offset) || Utilities.isRowWhite(baseDoc, offset)) {
+                if (GsfUtilities.isRowEmpty(text, offset) || GsfUtilities.isRowWhite(text, offset)) {
                     // Empty lines not allowed within an rdoc
                     break;
                 }
 
                 // This is a comment line we should include
-                int lineBegin = Utilities.getRowFirstNonWhite(baseDoc, offset);
-                int lineEnd = Utilities.getRowLastNonWhite(baseDoc, offset) + 1;
-                String line = baseDoc.getText(lineBegin, lineEnd - lineBegin);
+                int lineBegin = GsfUtilities.getRowFirstNonWhite(text, offset);
+                int lineEnd = GsfUtilities.getRowLastNonWhite(text, offset) + 1;
+                String line = text.subSequence(lineBegin, lineEnd).toString();
 
                 // Tolerate "public", "private" and "protected" here --
                 // Test::Unit::Assertions likes to put these in front of each
                 // method.
-                if (line.startsWith("*")) {
+                if (line.startsWith("*")) { //NOI18N
                     // ignore end of block comment: "*/"
-                    if (line.length() == 1 || (line.length() > 1 && line.charAt(1) != '/')) {
+                    if (line.length() == 1 || (line.length() > 1 && line.charAt(1) != '/')) { //NOI18N
                         comments.addFirst(line.substring(1).trim());
                     }
                 } else {

@@ -47,9 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.javascript.editing.JsAnalyzer;
@@ -164,15 +162,6 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         public List<Embedding> translate(Snapshot snapshot);
     } // End of Translator interface
 
-    private static TokenSequence<? extends TokenId> getTokenSequence(Snapshot snapshot) {
-        Language<? extends TokenId> l = Language.find(snapshot.getMimeType());
-        if (l != null) {
-            return TokenHierarchy.create(snapshot.getText(), l).tokenSequence();
-        } else {
-            return null;
-        }
-    }
-
     private static final class JspTranslator implements Translator {
         /** Create a JavaScript model of the given JSP buffer.
          * @todo Make this more general purpose (so it can be used from HTML, JSP etc.)
@@ -181,7 +170,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
          * @param tokenSequence  The token sequence for the RHTML code
          */
         public List<Embedding> translate(Snapshot snapshot) {
-            TokenSequence<? extends TokenId> tokenSequence = getTokenSequence(snapshot);
+            TokenSequence<? extends TokenId> tokenSequence = snapshot.getTokenHierarchy().tokenSequence();
             List<Embedding> embeddings = new ArrayList<Embedding>();
             
             //TODO - implement the "classpath" import for other projects
@@ -229,7 +218,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
 
     private static final class PhpTranslator implements Translator {
         public List<Embedding> translate(Snapshot snapshot) {
-            TokenSequence<? extends TokenId> tokenSequence = getTokenSequence(snapshot);
+            TokenSequence<? extends TokenId> tokenSequence = snapshot.getTokenHierarchy().tokenSequence();
             List<Embedding> embeddings = new ArrayList<Embedding>();
 
             //TODO - implement the "classpath" import for other projects
@@ -274,7 +263,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
 
     private static final class RhtmlTranslator implements Translator {
         public List<Embedding> translate(Snapshot snapshot) {
-            TokenSequence<? extends TokenId> tokenSequence = getTokenSequence(snapshot);
+            TokenSequence<? extends TokenId> tokenSequence = snapshot.getTokenHierarchy().tokenSequence();
             List<Embedding> embeddings = new ArrayList<Embedding>();
 
             // Add a super class such that code completion, goto declaration etc.
@@ -392,7 +381,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
 
     private static final class HtmlTranslator implements Translator {
         public List<Embedding> translate(Snapshot snapshot) {
-            TokenSequence<? extends TokenId> tokenSequence = getTokenSequence(snapshot);
+            TokenSequence<? extends TokenId> tokenSequence = snapshot.getTokenHierarchy().tokenSequence();
             List<Embedding> embeddings = new ArrayList<Embedding>();
             JsAnalyzerState state = new JsAnalyzerState();
 

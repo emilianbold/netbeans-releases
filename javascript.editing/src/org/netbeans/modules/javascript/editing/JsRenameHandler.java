@@ -51,7 +51,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -81,11 +80,12 @@ public class JsRenameHandler implements InstantRenamer {
             return false;
         }
 
-        BaseDocument doc = LexUtilities.getDocument(jspr, true);
-        if (doc == null) {
+        int astOffset = AstUtilities.getAstOffset(info, caretOffset);
+        if (astOffset == -1) {
             return false;
         }
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(doc, caretOffset);
+
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(info.getSnapshot(), astOffset);
         if (ts != null && ts.token().id() == JsTokenId.BLOCK_COMMENT) {
             TokenSequence<JsCommentTokenId> cts = ts.embedded(JsCommentTokenId.language());
             boolean canRename = false;
@@ -101,11 +101,6 @@ public class JsRenameHandler implements InstantRenamer {
             return canRename;
         }
         
-        int astOffset = AstUtilities.getAstOffset(info, caretOffset);
-        if (astOffset == -1) {
-            return false;
-        }
-
         AstPath path = new AstPath(jspr.getRootNode(), astOffset);
         Node closest = path.leaf();
 
@@ -131,16 +126,21 @@ public class JsRenameHandler implements InstantRenamer {
         }
 
         Node root = rpr.getRootNode();
-        BaseDocument doc = LexUtilities.getDocument(rpr, true);
-        if (root == null || doc == null) {
+        if (root == null) {
             return Collections.emptySet();
         }
+        
+        int astOffset = AstUtilities.getAstOffset(info, caretOffset);
+        if (astOffset == -1) {
+            return Collections.emptySet();
+        }
+
         String parameterName = null;
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(doc, caretOffset);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(info.getSnapshot(), astOffset);
         if (ts != null && ts.token().id() == JsTokenId.BLOCK_COMMENT) {
             TokenSequence<JsCommentTokenId> cts = ts.embedded(JsCommentTokenId.language());
             if (cts != null) {
-                parameterName = getParameterName(cts, caretOffset);
+                parameterName = getParameterName(cts, astOffset);
             } else {
                 return Collections.emptySet();
             }
@@ -164,7 +164,7 @@ public class JsRenameHandler implements InstantRenamer {
                     // Found the parameter list.
                     assert seenFunction;
                     foundArg = true;
-                    caretOffset = ts.offset()+1;
+                    astOffset = ts.offset()+1;
                     break;
                 } else if (id == JsTokenId.BLOCK_COMMENT) {
                     // Cannot skip another block comment - this is probably another function
@@ -176,11 +176,6 @@ public class JsRenameHandler implements InstantRenamer {
             }
         }
 
-        int astOffset = AstUtilities.getAstOffset(info, caretOffset);
-        if (astOffset == -1) {
-            return Collections.emptySet();
-        }
-        
         VariableVisitor v = rpr.getVariableVisitor();
 
         AstPath path = new AstPath(root, astOffset);

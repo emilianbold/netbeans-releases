@@ -50,9 +50,8 @@ import org.mozilla.nb.javascript.Token;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -124,12 +123,7 @@ public final class AstUtilities {
      */
     public static TokenSequence<? extends JsCommentTokenId> getCommentFor(JsParseResult info, Node node) {
         int astOffset = node.getSourceStart();
-        int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
-        BaseDocument doc = LexUtilities.getDocument(info, true);
-        if (lexOffset == -1 || lexOffset > doc.getLength()) {
-            return null;
-        }
-        
+        CharSequence text = info.getSnapshot().getText();
         try {
             // Jump to the end of the previous line since that's typically where the block comments
             // sit (I can't just iterate left in the document hierarchy since for functions in 
@@ -138,14 +132,14 @@ public final class AstUtilities {
             //     foo: function() {
             //     }
             // Here the function offset points to the beginning of "function", not "foo".
-            int rowStart = Utilities.getRowStart(doc, Math.min(lexOffset, doc.getLength()));
+            int rowStart = GsfUtilities.getRowStart(text, Math.min(astOffset, text.length()));
             if (rowStart > 0) {
-                lexOffset = Utilities.getRowEnd(doc, Math.min(rowStart-1, doc.getLength()));
+                astOffset = GsfUtilities.getRowEnd(text, Math.min(rowStart - 1, text.length()));
             }
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
         }
-        return LexUtilities.getCommentFor(doc, lexOffset);
+        return LexUtilities.getCommentFor(info.getSnapshot(), astOffset);
     }
     
     public static Node getFirstChild(Node node) {

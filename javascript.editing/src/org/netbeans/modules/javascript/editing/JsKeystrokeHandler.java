@@ -1553,23 +1553,10 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
         AstPath path = new AstPath(jspr.getRootNode(), astOffset);
         List<OffsetRange> ranges = new ArrayList<OffsetRange>();
         
-        /** Furthest we can go back in the buffer (in RHTML documents, this
-         * may be limited to the surrounding &lt;% starting tag
-         */
-        int min = 0;
-        int max = Integer.MAX_VALUE;
-        int length;
-
         // Check if the caret is within a comment, and if so insert a new
         // leaf "node" which contains the comment line and then comment block
         try {
-            BaseDocument doc = (BaseDocument)jspr.getSnapshot().getSource().getDocument(false);
-            if (doc == null) {
-                return ranges;
-            }
-            length = doc.getLength();
-            
-            TokenSequence<?extends JsTokenId> ts = LexUtilities.getPositionedSequence(doc, caretOffset);
+            TokenSequence<?extends JsTokenId> ts = LexUtilities.getPositionedSequence(info.getSnapshot(), astOffset);
             if (ts != null) {
                 Token<?extends JsTokenId> token = ts.token();
 
@@ -1579,22 +1566,26 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
                     int end = begin+token.length();
                     ranges.add(new OffsetRange(begin, end));
                 } else if ((token != null) && (token.id() == JsTokenId.LINE_COMMENT)) {
-                    // First add a range for the current line
-                    int begin = Utilities.getRowStart(doc, caretOffset);
-                    int end = Utilities.getRowEnd(doc, caretOffset);
+                    CharSequence text = info.getSnapshot().getText();
 
-                    if (LexUtilities.isCommentOnlyLine(doc, caretOffset)) {
-                        ranges.add(new OffsetRange(Utilities.getRowFirstNonWhite(doc, begin), 
-                                Utilities.getRowLastNonWhite(doc, end)+1));
+                    // First add a range for the current line
+                    int begin = GsfUtilities.getRowStart(text, astOffset);
+                    int end = GsfUtilities.getRowEnd(text, astOffset);
+
+                    if (LexUtilities.isCommentOnlyLine(info.getSnapshot(), astOffset)) {
+                        ranges.add(new OffsetRange(
+                            GsfUtilities.getRowFirstNonWhite(text, begin),
+                            GsfUtilities.getRowLastNonWhite(text, end)+1)
+                        );
 
                         int lineBegin = begin;
                         int lineEnd = end;
 
                         while (begin > 0) {
-                            int newBegin = Utilities.getRowStart(doc, begin - 1);
+                            int newBegin = GsfUtilities.getRowStart(text, begin - 1);
 
-                            if ((newBegin < 0) || !LexUtilities.isCommentOnlyLine(doc, newBegin)) {
-                                begin = Utilities.getRowFirstNonWhite(doc, begin);
+                            if ((newBegin < 0) || !LexUtilities.isCommentOnlyLine(info.getSnapshot(), newBegin)) {
+                                begin = GsfUtilities.getRowFirstNonWhite(text, begin);
                                 break;
                             }
 
@@ -1602,10 +1593,10 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
                         }
 
                         while (true) {
-                            int newEnd = Utilities.getRowEnd(doc, end + 1);
+                            int newEnd = GsfUtilities.getRowEnd(text, end + 1);
 
-                            if ((newEnd >= length) || !LexUtilities.isCommentOnlyLine(doc, newEnd)) {
-                                end = Utilities.getRowLastNonWhite(doc, end)+1;
+                            if ((newEnd >= text.length()) || !LexUtilities.isCommentOnlyLine(info.getSnapshot(), newEnd)) {
+                                end = GsfUtilities.getRowLastNonWhite(text, end)+1;
                                 break;
                             }
 
@@ -1617,8 +1608,7 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
                         }
                     } else {
                         // It's just a line comment next to some code; select the comment
-                        TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-                        int offset = token.offset(th);
+                        int offset = token.offset(info.getSnapshot().getTokenHierarchy());
                         ranges.add(new OffsetRange(offset, offset + token.length()));
                     }
                 }
@@ -1646,11 +1636,6 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
             if (range.containsInclusive(astOffset) && !range.equals(previous)) {
                 range = LexUtilities.getLexerOffsets(jspr, range);
                 if (range != OffsetRange.NONE) {
-                    if (range.getStart() < min) {
-                        ranges.add(new OffsetRange(min, max));
-                        ranges.add(new OffsetRange(0, length));
-                        break;
-                    }
                     ranges.add(range);
                     previous = range;
                 }

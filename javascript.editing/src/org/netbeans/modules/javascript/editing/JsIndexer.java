@@ -57,8 +57,6 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.JsAnalyzer.AnalysisResult;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;
@@ -66,6 +64,7 @@ import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
@@ -198,7 +197,6 @@ public class JsIndexer extends EmbeddingIndexer {
         private final List<IndexDocument> documents = new ArrayList<IndexDocument>();
 
         private String url;
-        private BaseDocument doc;
         
         private TreeAnalyzer(JsParseResult result, IndexingSupport indexingSupport, Indexable indexable) {
             this.result = result;
@@ -212,75 +210,64 @@ public class JsIndexer extends EmbeddingIndexer {
         }
 
         public void analyze() {
-            this.doc = LexUtilities.getDocument(result, true);
-
-            if (doc != null) {
-                doc.readLock(); // For Utilities.getRowStart() access
-            }
             try {
-                try {
-                    url = file.getURL().toExternalForm();
+                url = file.getURL().toExternalForm();
 
-                    // Make relative URLs for urls in the libraries
-                    url = getPreindexUrl(url);
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
+                // Make relative URLs for urls in the libraries
+                url = getPreindexUrl(url);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
 
-                if (file.getExt().equals("sdoc")) { // NOI18N
-                    indexScriptDoc(doc, null);
+            if (file.getExt().equals("sdoc")) { // NOI18N
+                indexScriptDoc(result.getSnapshot(), null);
+                return;
+            }
+
+            if (url.endsWith(".js")) { //NOI18N
+                boolean done = indexRelatedScriptDocs();
+                if (done) {
                     return;
                 }
+            }
 
-                if (url.endsWith(".js")) { //NOI18N
-                    boolean done = indexRelatedScriptDocs();
-                    if (done) {
-                        return;
+            IndexDocument document = indexingSupport.createDocument(indexable);
+            documents.add(document);
+
+            AnalysisResult ar = result.getStructure();
+            List<?extends AstElement> children = ar.getElements();
+
+            // Add the fields, etc.. Recursively add the children classes or modules if any
+            for (AstElement child : children) {
+                ElementKind childKind = child.getKind();
+                if (childKind == ElementKind.CONSTRUCTOR || childKind == ElementKind.METHOD) {
+                    String signature = computeSignature(child);
+                    indexFuncOrProperty(child, document, signature);
+                    String name = child.getName();
+                    if (Character.isUpperCase(name.charAt(0))) {
+                        indexClass(child, document, signature);
                     }
+                } else if (childKind == ElementKind.GLOBAL ||
+                        childKind == ElementKind.PROPERTY ||
+                        childKind == ElementKind.CLASS) {
+                    indexFuncOrProperty(child, document, computeSignature(child));
+                } else {
+                    assert false : childKind;
+                }
+                // XXX what about fields, constants, attributes?
+
+                assert child.getChildren().size() == 0;
+            }
+
+            Map<String,String> classExtends = ar.getExtendsMap();
+            if (classExtends != null && classExtends.size() > 0) {
+                for (Map.Entry<String,String> entry : classExtends.entrySet()) {
+                    String clz = entry.getKey();
+                    String superClz = entry.getValue();
+                    document.addPair(FIELD_EXTEND, clz.toLowerCase() + ";" + clz + ";" + superClz, true, true); // NOI18N
                 }
 
-                IndexDocument document = indexingSupport.createDocument(indexable);
-                documents.add(document);
-
-                AnalysisResult ar = result.getStructure();
-                List<?extends AstElement> children = ar.getElements();
-
-                // Add the fields, etc.. Recursively add the children classes or modules if any
-                for (AstElement child : children) {
-                    ElementKind childKind = child.getKind();
-                    if (childKind == ElementKind.CONSTRUCTOR || childKind == ElementKind.METHOD) {
-                        String signature = computeSignature(child);
-                        indexFuncOrProperty(child, document, signature);
-                        String name = child.getName();
-                        if (Character.isUpperCase(name.charAt(0))) {
-                            indexClass(child, document, signature);
-                        }
-                    } else if (childKind == ElementKind.GLOBAL ||
-                            childKind == ElementKind.PROPERTY ||
-                            childKind == ElementKind.CLASS) {
-                        indexFuncOrProperty(child, document, computeSignature(child));
-                    } else {
-                        assert false : childKind;
-                    }
-                    // XXX what about fields, constants, attributes?
-
-                    assert child.getChildren().size() == 0;
-                }
-
-                Map<String,String> classExtends = ar.getExtendsMap();
-                if (classExtends != null && classExtends.size() > 0) {
-                    for (Map.Entry<String,String> entry : classExtends.entrySet()) {
-                        String clz = entry.getKey();
-                        String superClz = entry.getValue();
-                        document.addPair(FIELD_EXTEND, clz.toLowerCase() + ";" + clz + ";" + superClz, true, true); // NOI18N
-                    }
-
-                    ClassCache.INSTANCE.refresh();
-                }
-            } finally {
-                if (doc != null) {
-                    doc.readUnlock();
-                }
+                ClassCache.INSTANCE.refresh();
             }
         }
 
@@ -302,11 +289,9 @@ public class JsIndexer extends EmbeddingIndexer {
             String compatibility = "";
             if (file.getNameExt().startsWith("stub_")) { // NOI18N
                 int astOffset = element.getNode().getSourceStart();
-                int lexOffset = astOffset;
-                lexOffset = result.getSnapshot().getOriginalOffset(astOffset);
+                CharSequence text = result.getSnapshot().getText();
                 try {
-                    String line = doc.getText(lexOffset,
-                            Utilities.getRowEnd(doc, lexOffset)-lexOffset);
+                    String line = text.subSequence(astOffset, GsfUtilities.getRowEnd(text, astOffset)).toString();
                     int compatIdx = line.indexOf("COMPAT="); // NOI18N
                     if (compatIdx != -1) {
                         compatIdx += "COMPAT=".length(); // NOI18N
@@ -444,27 +429,31 @@ public class JsIndexer extends EmbeddingIndexer {
         
         private OffsetRange getDocumentationOffset(AstElement element) {
             int astOffset = element.getNode().getSourceStart();
-            // XXX This is wrong; I should do a
-            //int lexOffset = LexUtilities.getLexerOffset(result, astOffset);
-            // but I don't have the CompilationInfo in the ParseResult handed to the indexer!!
-            int lexOffset = astOffset;
             try {
-                if (lexOffset > doc.getLength()) {
+                if (astOffset > result.getSnapshot().getText().length()) {
                     return OffsetRange.NONE;
                 }
-                lexOffset = Utilities.getRowStart(doc, lexOffset);
+                astOffset = GsfUtilities.getRowStart(result.getSnapshot().getText(), astOffset);
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            OffsetRange range = LexUtilities.getCommentBlock(doc, lexOffset, true);
+            OffsetRange range = LexUtilities.getCommentBlock(result.getSnapshot(), astOffset, true);
             if (range != OffsetRange.NONE) {
+                range = LexUtilities.getLexerOffsets(result, range);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("DocOffset: elementStart=" + IndexedElement.encode(element.getNode().getSourceStart())
+                            + ", rowStart=" + IndexedElement.encode(astOffset)
+                            + ", rowStart-in-doc=" + IndexedElement.encode(result.getSnapshot().getOriginalOffset(astOffset))
+                            + " doc=<" + IndexedElement.encode(range.getStart()) + ", " + IndexedElement.encode(range.getEnd()) + ">,"
+                            + " text='" + result.getSnapshot().getText().subSequence(range.getStart(), range.getEnd()) + "'");
+                }
                 return range;
             } else {
                 return OffsetRange.NONE;
             }
         }
         
-        private void indexScriptDoc(BaseDocument doc, String sdocUrl) {
+        private void indexScriptDoc(Snapshot snapshot, String sdocUrl) {
             // I came across the following tags in YUI:
             // @type, @param, @method, @class, @return, @constructor, @namespace, 
             // @static, @private, @event, @property, @extends, @final, @module,
@@ -491,10 +480,7 @@ public class JsIndexer extends EmbeddingIndexer {
 
             // TODO - I need to be able to associate builtin .sdoc files with specific versions found
             // in the libraries
-            if (doc == null) {
-                return;
-            }
-            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, 0);
+            TokenSequence<? extends JsTokenId> ts = snapshot.getTokenHierarchy().tokenSequence(JsTokenId.language());
             if (ts == null) {
                 return;
             }
@@ -788,8 +774,8 @@ public class JsIndexer extends EmbeddingIndexer {
             }
             
             if (fo.getExt().equals("sdoc")) { // NOI18N
-                BaseDocument urlDoc = GsfUtilities.getDocument(fo, true);
-                indexScriptDoc(urlDoc, url);
+                Source source = Source.create(fo);
+                indexScriptDoc(source.createSnapshot(), url);
             }
         }
         
@@ -834,8 +820,8 @@ public class JsIndexer extends EmbeddingIndexer {
                         if (recurse) {
                             indexScriptDocRecursively(fo, urlString);
                         } else {
-                            BaseDocument urlDoc = GsfUtilities.getDocument(fo, true);
-                            indexScriptDoc(urlDoc, urlString);
+                            Source source = Source.create(fo);
+                            indexScriptDoc(source.createSnapshot(), urlString);
                         }
                     }
                 }
