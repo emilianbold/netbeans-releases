@@ -61,7 +61,7 @@ import org.openide.util.Lookup;
  * It means running and debugging scripts.
  * @author Tomas Mysik
  */
-public class ConfigActionScript extends ConfigAction {
+class ConfigActionScript extends ConfigAction {
     private final FileObject sourceRoot;
 
     protected ConfigActionScript(PhpProject project) {

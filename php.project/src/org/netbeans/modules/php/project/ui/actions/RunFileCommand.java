@@ -41,9 +41,11 @@
 package org.netbeans.modules.php.project.ui.actions;
 
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
 import org.netbeans.modules.php.project.ui.actions.support.Displayable;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 /**
@@ -59,7 +61,11 @@ public class RunFileCommand extends Command implements Displayable {
 
     @Override
     public void invokeAction(Lookup context) {
-        if (isTestFile(context)) {
+        FileObject fileObj = CommandUtils.fileForContextOrSelectedNodes(context);
+        if (isSeleniumFile(fileObj)) {
+            // selenium
+            ConfigAction.get(ConfigAction.Type.SELENIUM, getProject()).runFile(context);
+        } else if (isTestFile(fileObj)) {
             // test
             ConfigAction.get(ConfigAction.Type.TEST, getProject()).runFile(context);
         } else {
@@ -75,7 +81,12 @@ public class RunFileCommand extends Command implements Displayable {
 
     @Override
     public boolean isActionEnabled(Lookup context) {
-        if (isTestFile(context)) {
+        FileObject fileObj = CommandUtils.fileForContextOrSelectedNodes(context);
+        if (isSeleniumFile(fileObj)) {
+            // selenium
+            return ConfigAction.get(ConfigAction.Type.SELENIUM, getProject()).isRunFileEnabled(context);
+        }
+        if (isTestFile(fileObj)) {
             // test
             return ConfigAction.get(ConfigAction.Type.TEST, getProject()).isRunFileEnabled(context);
         }
