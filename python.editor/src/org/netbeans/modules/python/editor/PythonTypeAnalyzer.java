@@ -462,6 +462,21 @@ public class PythonTypeAnalyzer {
             if (checkNode(node)) {
                 return null;
             }
+
+            expr nameExpr = node.getInternalName();
+            if (nameExpr != null) {
+                String name = PythonAstUtils.getExprName(nameExpr);
+                if (name != null) {
+                    expr typeExpr = node.getInternalType();
+                    if (typeExpr != null) {
+                        String type = PythonAstUtils.getExprName(typeExpr);
+                        if (type != null) {
+                            localVars.put(name, type);
+                        }
+                    }
+                }
+            }
+
             return super.visitExceptHandler(node);
         }
 

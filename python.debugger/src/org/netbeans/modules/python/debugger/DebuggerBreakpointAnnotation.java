@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,57 +37,54 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.python.debugger.gui;
 
-import java.util.EventObject;
-import javax.swing.*;
+package org.netbeans.modules.python.debugger;
+
+import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.spi.debugger.ui.BreakpointAnnotation;
+import org.openide.text.Annotatable;
+import org.openide.util.NbBundle;
 
 /**
- *  Python debugging event
- *
- * @author jean-yves
+ * Debugger Annotation class.
  */
-public class DebugEvent
-        extends EventObject {
+public final class DebuggerBreakpointAnnotation extends BreakpointAnnotation {
+    
+    public static final String BREAKPOINT_ANNOTATION_TYPE = "Breakpoint";
+    public static final String DISABLED_BREAKPOINT_ANNOTATION_TYPE = "DisabledBreakpoint";
+    
+    private final String type;
+    private final Breakpoint breakpoint;
+    
+    public DebuggerBreakpointAnnotation(final String type, final Annotatable annotatable,
+                                        final Breakpoint b) {
+        this.type = type;
+        this.breakpoint = b;
+        attach(annotatable);
+    }
+    
+    public String getAnnotationType() {
+        return type;
+    }
+    
+    public String getShortDescription() {
+        if (type.equals(BREAKPOINT_ANNOTATION_TYPE)) {
+            return getMessage("TOOLTIP_BREAKPOINT"); // NOI18N
+        } else if (type.equals(DISABLED_BREAKPOINT_ANNOTATION_TYPE)) {
+            return getMessage("TOOLTIP_DISABLED_BREAKPOINT"); // NOI18N
+        } else {
+            return null;
+        }
+    }
+    
+    private static String getMessage(final String key) {
+        return NbBundle.getBundle(DebuggerBreakpointAnnotation.class).getString(key);
+    }
 
-  public final static String STOP = "shutdown Python environment";
-  public final static String START = "startup local debugging session";
-  public final static String REMOTESTART = "startup remote debugging session";
-  public final static String STEPOVER = "Debug statement step Over";
-  public final static String STEPINTO = "Debug statement step Into";
-  public final static String RUN = "Run";
-  public final static String RUNTOCURSOR = "Run to cursor";
-  public final static String SENDCOMMAND = "execute Python Command";
-  public final static String COMMANDFIELD = "Python command field";
-  public final static String TOGGLEJYTHON = "Jython / CPython language switch";
-  public final static String PGMARGS = "Add python programs arguments to args table";
-  private String _moduleName;
-  private Action _action;
-  private AbstractButton _guiButton;
-
-  public DebugEvent(Object source,
-          String moduleName,
-          Action action,
-          AbstractButton gui) {
-    super(source);
-    _action = action;
-    _guiButton = gui;
-  }
-
-  public String get_moduleName() {
-    return _moduleName;
-  }
-
-  public Action get_action() {
-    return _action;
-  }
-
-  public AbstractButton get_guiButton() {
-    return _guiButton;
-  }
+    @Override
+    public Breakpoint getBreakpoint() {
+        return breakpoint;
+    }
+    
 }

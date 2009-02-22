@@ -96,7 +96,10 @@ public class BreakpointModel
           throws UnknownTypeException {
     if (node instanceof PythonBreakpoint) {
       PythonBreakpoint breakpoint = (PythonBreakpoint) node;
-      return breakpoint.getLine().getDisplayName();
+      if (breakpoint.getLine() != null) {
+        return breakpoint.getLine().getDisplayName();
+      }
+      return null;
     }
     throw new UnknownTypeException(node);
   }

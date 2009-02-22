@@ -103,6 +103,7 @@ public class PythonDebugger
     _ACTIONS_.add(ActionsManager.ACTION_STEP_INTO);
     _ACTIONS_.add(ActionsManager.ACTION_STEP_OVER);
     _ACTIONS_.add(ActionsManager.ACTION_STEP_OUT);
+    _ACTIONS_.add(ActionsManager.ACTION_RUN_TO_CURSOR);
   }
   private ContextProvider _contextProvider;
   private Object _currentLine;
@@ -135,6 +136,7 @@ public class PythonDebugger
     setEnabled(ActionsManager.ACTION_STEP_OUT, true);
     setEnabled(ActionsManager.ACTION_CONTINUE, true);
     setEnabled(ActionsManager.ACTION_START, true);
+    setEnabled(ActionsManager.ACTION_RUN_TO_CURSOR, true);
 
   }
 
@@ -171,6 +173,7 @@ public class PythonDebugger
     if (action == ActionsManager.ACTION_STEP_INTO) {
       _pyCookie.getDebugView().stepInto();
     } else if (action == ActionsManager.ACTION_STEP_OUT) {
+      _pyCookie.getDebugView().stepOut();
     } else if (action == ActionsManager.ACTION_STEP_OVER) {
       _pyCookie.getDebugView().stepOver();
     }
@@ -182,6 +185,7 @@ public class PythonDebugger
     setEnabled(ActionsManager.ACTION_STEP_OVER, false);
     setEnabled(ActionsManager.ACTION_STEP_OUT, false);
     setEnabled(ActionsManager.ACTION_CONTINUE, false);
+    setEnabled(ActionsManager.ACTION_RUN_TO_CURSOR, false);
   }
 
   private void leaveRunningState() {
@@ -190,11 +194,12 @@ public class PythonDebugger
     setEnabled(ActionsManager.ACTION_STEP_OVER, true);
     setEnabled(ActionsManager.ACTION_STEP_OUT, true);
     setEnabled(ActionsManager.ACTION_CONTINUE, true);
+    setEnabled(ActionsManager.ACTION_RUN_TO_CURSOR, true);
   }
 
-  private void doContinue() {
+  private void doContinue( boolean toCursor ) {
     Utils.unmarkCurrent();
-    _pyCookie.getDebugView().doContinue();
+    _pyCookie.getDebugView().doContinue(toCursor);
   }
 
   /**
@@ -215,7 +220,9 @@ public class PythonDebugger
     if (action == ActionsManager.ACTION_KILL) {
       finish();
     } else if (action == ActionsManager.ACTION_CONTINUE) {
-      doContinue();
+      doContinue(false);
+    } else if (action == ActionsManager.ACTION_RUN_TO_CURSOR) {
+      doContinue(true);
     } else if (action == ActionsManager.ACTION_START) {
       doStart();
     } else if ((action == ActionsManager.ACTION_STEP_INTO) || (action == ActionsManager.ACTION_STEP_OUT) || (action == ActionsManager.ACTION_STEP_OVER)) {
