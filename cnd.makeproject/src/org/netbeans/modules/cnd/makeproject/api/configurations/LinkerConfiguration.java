@@ -429,20 +429,9 @@ public class LinkerConfiguration implements AllOptionsProvider {
                 break;
         }
         outputName = ConfigurationSupport.makeNameLegal(outputName);
-        return MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + "${CND_PLATFORM}" + "/" + outputName; // NOI18N
+        return "${CND_DISTDIR}" + "/" + "${CND_CONF}" + "/" + "${CND_PLATFORM}" + "/" + outputName; // NOI18N
     }
 
-    /*
-    private String getOutputDefault30() {
-    String outputName = IpeUtils.getBaseName(getMakeConfiguration().getBaseDir());
-    if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_APPLICATION)
-    outputName = outputName.toLowerCase();
-    else if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB)
-    outputName = "lib" + outputName + ".so"; // NOI18N
-
-    return MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + getMakeConfiguration().getVariant() + "/" + outputName; // NOI18N
-    }
-     **/
     public String getOutputDefault27() {
         String outputName = IpeUtils.getBaseName(getMakeConfiguration().getBaseDir());
         if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_APPLICATION) {

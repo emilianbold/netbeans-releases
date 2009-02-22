@@ -384,8 +384,8 @@ public class CsmUtilities {
     public static CsmFile[] getCsmFiles(DataObject dobj) {
         if (dobj != null && dobj.isValid()) {
             try {
-                Collection< ? extends NativeFileItemSet> sets = dobj.getLookup().lookupAll(NativeFileItemSet.class);
-                if (sets.size() == 0 ) {
+                NativeFileItemSet set = dobj.getLookup().lookup(NativeFileItemSet.class);
+                if (set == null || set.isEmpty()) {
                     FileObject fo = dobj.getPrimaryFile();
                     if (fo != null) {
                         File file = FileUtil.toFile(fo);
@@ -399,16 +399,13 @@ public class CsmUtilities {
                         }
                     }
                 } else {
-
                     List<CsmFile> l = new ArrayList<CsmFile>();
-                    for (NativeFileItemSet set : sets) {
-                        for (NativeFileItem item : set.getItems()) {
-                            CsmProject csmProject = CsmModelAccessor.getModel().getProject(item.getNativeProject());
-                            if (csmProject != null) {
-                                CsmFile file = csmProject.findFile(item);
-                                if (file != null) {
-                                    l.add(file);
-                                }
+                    for (NativeFileItem item : set.getItems()) {
+                        CsmProject csmProject = CsmModelAccessor.getModel().getProject(item.getNativeProject());
+                        if (csmProject != null) {
+                            CsmFile file = csmProject.findFile(item);
+                            if (file != null) {
+                                l.add(file);
                             }
                         }
                     }

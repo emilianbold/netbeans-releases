@@ -89,7 +89,7 @@ public final class VeryPretty extends JCTree.Visitor {
     private final CodeStyle cs;
     private final CharBuffer out;
 
-    private final Name.Table names;
+    private final Names names;
     private final CommentHandler commentHandler;
     private final Symtab symbols;
     private final Types types;
@@ -161,7 +161,7 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     public VeryPretty(Context context, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span) {
-	names = Name.Table.instance(context);
+	names = Names.instance(context);
 	enclClassName = names.empty;
         commentHandler = CommentHandlerService.instance(context);
 	symbols = Symtab.instance(context);
@@ -232,7 +232,7 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     public final void print(Name n) {
-	out.appendUtf8(n.table.names, n.index, n.len);
+	out.appendUtf8(n.getByteArray(), n.getByteOffset(), n.getByteLength());
     }
 
     public void print(JCTree t) {
@@ -628,7 +628,7 @@ public final class VeryPretty extends JCTree.Visitor {
     public void printVarInit(JCVariableDecl tree) {
         int col = out.col;
         if (!ERROR.contentEquals(tree.name))
-            col -= tree.name.len;
+            col -= tree.name.getByteLength();
         if (cs.spaceAroundAssignOps())
             print(' ');
         print('=');
@@ -1471,7 +1471,7 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     private void printQualified(Symbol t) {
-	if (t.owner != null && t.owner.name.len > 0
+	if (t.owner != null && t.owner.name.getByteLength() > 0
 		&& !(t.type instanceof Type.TypeVar)
 		&& !(t.owner instanceof MethodSymbol)) {
 	    if (t.owner instanceof Symbol.PackageSymbol)
@@ -1484,7 +1484,7 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     private void printAllQualified(Symbol t) {
-	if (t.owner != null && t.owner.name.len > 0) {
+	if (t.owner != null && t.owner.name.getByteLength() > 0) {
 	    printAllQualified(t.owner);
 	    print('.');
 	}
@@ -2104,7 +2104,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	case JCTree.SELECT:
             JCFieldAccess sel = (JCFieldAccess)tree;
 	    Name sname = fullName(sel.selected);
-	    return sname != null && sname.len > 0 ? sname.append('.', sel.name) : sel.name;
+	    return sname != null && sname.getByteLength() > 0 ? sname.append('.', sel.name) : sel.name;
 	default:
 	    return null;
 	}

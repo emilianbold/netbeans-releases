@@ -82,10 +82,18 @@ abstract class BaseTestMethodNodeAction extends TestNodeAction {
     }
 
     protected String getTestMethod() {
+        return getTestMethod(testcase);
+    }
+
+    static final String getTestMethod(Testcase testcase) {
         return testcase.getClassName() + "/" + testcase.getName(); //NOI18N
     }
 
     protected FileObject getTestSourceRoot() {
+        return getTestSourceRoot(project);
+    }
+
+    static final FileObject getTestSourceRoot(Project project) {
         RubyBaseProject baseProject = project.getLookup().lookup(RubyBaseProject.class);
         // need to use test source roots, not source roots -- see the comments in #135680
         FileObject[] testRoots = baseProject.getTestSourceRootFiles();

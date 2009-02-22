@@ -250,7 +250,7 @@ public final class CheckModuleConfigs extends Task {
         while (nl.getLength() > 0) {
             sp.removeChild(nl.item(0));
         }
-        sp.appendChild(doc.createComment(" To update, run: ant -f nbbuild/build.xml check-module-configs "));
+        sp.appendChild(doc.createComment(" To update, run target listed above "));
         for (String module : allClusterModules) {
             if (new File(nbroot, (module + "/nbproject/project.xml").replace('/', File.separatorChar)).isFile()) {
                 Element e = doc.createElementNS("http://www.netbeans.org/ns/freeform-project/2", "project");

@@ -108,7 +108,7 @@ public final class HostInfoUtils {
         if (execEnv.isLocal()) {
             fileExists = new File(fname).exists();
         } else {
-            if (ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
                 throw new ConnectException();
             }
 
