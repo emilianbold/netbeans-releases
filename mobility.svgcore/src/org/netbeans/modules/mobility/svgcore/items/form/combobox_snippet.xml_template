@@ -9,7 +9,7 @@
             <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%.focusout" 
                 fill="freeze" to="hidden"/>
         </rect>
-        <rect  x="5.0" y="0.0" width="80" height="20" fill="none" stroke="black" stroke-width="2"/>
+        <rect id="%%COMPONENT_ID%%_border" x="5.0" y="0.0" width="80" height="20" fill="none" stroke="black" stroke-width="2"/>
 	<g>
 		<!-- Metadata information. Please don't edit. -->
 		<text display="none">type=button</text>
@@ -38,7 +38,6 @@
                     <!-- Metadata information. Please don't edit. -->
 	            <text display="none">type=text</text>
                 </g>
-		<rect visibility="hidden" x="5.0" y="0" width="60" height="20" />
 	</g>
 </g>
 <g id="%%COMPONENT_ID%%_list" visibility="hidden" transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)">

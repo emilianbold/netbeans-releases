@@ -78,7 +78,7 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
 
     public Component getComponent() {
         if (component == null) {
-            component = new PanelConfigureProjectVisual(this, this.name, this.wizardTitle, this.wizardACSD, showMakefileTextField);
+            component = new PanelConfigureProjectVisual(this, this.name, this.wizardTitle, this.wizardACSD, showMakefileTextField, type);
         }
         return component;
     }

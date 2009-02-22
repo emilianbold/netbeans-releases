@@ -215,6 +215,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 
     private void putProject2Map(final Object id, final ProjectBase prj) {
         CsmUID<CsmProject> uid = UIDCsmConverter.projectToUID(prj);
+        if (TraceFlags.TRACE_CPU_CPP) {System.err.println("putting [" + platf2csm.size() + "] prj@" + System.identityHashCode(prj) + " with UID@" + System.identityHashCode(uid) + uid);}
         platf2csm.put(id, uid);
     }
 
@@ -653,10 +654,10 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     }
     private final Object lock = new Object();
     /** maps platform project to project */
-    private Map<Object, CsmUID<CsmProject>> platf2csm = new HashMap<Object, CsmUID<CsmProject>>();
+    private final Map<Object, CsmUID<CsmProject>> platf2csm = new HashMap<Object, CsmUID<CsmProject>>();
     private CsmModelState state;
     private double warningThreshold = 0.98;
     //private double fatalThreshold = 0.99;
-    private Set<Object> disabledProjects = new HashSet<Object>();
-    private RequestProcessor modelProcessor = new RequestProcessor("Code model request processor", 1); // NOI18N
+    private final Set<Object> disabledProjects = new HashSet<Object>();
+    private final RequestProcessor modelProcessor = new RequestProcessor("Code model request processor", 1); // NOI18N
 }

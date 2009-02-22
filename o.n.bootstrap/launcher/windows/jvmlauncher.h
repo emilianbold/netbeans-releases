@@ -59,6 +59,7 @@ class JvmLauncher {
     static const char *JAVA_HOME_NAME;
     static const char *JAVA_BIN_DIR;
     static const char *JAVA_EXE_FILE;
+    static const char *JAVAW_EXE_FILE;
     static const char *JAVA_CLIENT_DLL_FILE;
     static const char *JAVA_SERVER_DLL_FILE;
     static const char *JAVA_JRE_PREFIX;
@@ -71,6 +72,10 @@ public:
     bool initialize(const char *javaPathOrMinVersion);
     bool getJavaPath(std::string &path);
     bool start(const char *mainClassName, std::list<std::string> args, std::list<std::string> options, bool &separateProcess, DWORD *retCode);
+
+    void setSuppressConsole(bool val) {
+        suppressConsole = val;
+    }
 
 private:
     JvmLauncher(const JvmLauncher& orig);
@@ -85,7 +90,9 @@ private:
     bool findClientOption(std::list<std::string> &options);
 
 private:
+    bool suppressConsole;
     std::string javaExePath;
+    std::string javawExePath;
     std::string javaDllPath;
     std::string javaClientDllPath;
     std::string javaServerDllPath;

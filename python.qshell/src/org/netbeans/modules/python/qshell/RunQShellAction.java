@@ -38,25 +38,57 @@
  */
 package org.netbeans.modules.python.qshell;
 
+import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.JOptionPane;
+import java.io.File;
+import javax.swing.JButton;
 import org.netbeans.modules.python.qshell.richexecution.Program;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.awt.Mnemonics;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 public final class RunQShellAction implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
 
-        String cmd = JOptionPane.showInputDialog("Enter qshell command", "sudo /opt/qbase2/qshell");
-        if (cmd == null) return;
+        JButton runButton = new JButton();
+        runButton.setToolTipText(NbBundle.getMessage(RunQShellAction.class, "TT_RunButtonAction"));
+        QShellConfigPanel panel = new QShellConfigPanel();
+
+        panel.command.setText(QShellConfig.getQShellCommand());
+        panel.path.setText(QShellConfig.getQShellPath());
+
+        DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(RunQShellAction.class, "CTL_runDialog_Title")); // NOI18N
+        dd.setModal(true);
+        dd.setMessageType(DialogDescriptor.QUESTION_MESSAGE);
+        Mnemonics.setLocalizedText(runButton, NbBundle.getMessage(RunQShellAction.class, "CTL_RunDialog_Run")); //NOI18N
+
+        dd.setOptions(new Object[] {runButton, DialogDescriptor.CANCEL_OPTION}); // NOI18N
+        dd.setHelpCtx(new HelpCtx("org.netbeans.modules.clearcase.ui.checkout.Uncheckout"));
+
+        panel.putClientProperty("DialogDescriptor", dd); // NOI18N
+        final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunQShellAction.class, "ACSD_RunDialog")); // NOI18N
+        dialog.pack();
+        dialog.setVisible(true);
+
+        Object value = dd.getValue();
+        if (value != runButton) return;
+
+        QShellConfig.setQShellCommand(panel.command.getText().trim());
+        QShellConfig.setQShellPath(panel.path.getText().trim());
 
         QShellTopComponent qtc = QShellTopComponent.findInstance();
         qtc.open();
         qtc.requestActive();
 
         // TODO: support multiple platforms, add to options
-        Program program = new Program(cmd);
-//        Program program = new Program("sudo","/opt/qbase2/qshell");
+        Program program = new Program(panel.command.getText().trim());
+        program.directory(new File(panel.path.getText().trim()));
+
         qtc.addTerminal(program);
     }
 }

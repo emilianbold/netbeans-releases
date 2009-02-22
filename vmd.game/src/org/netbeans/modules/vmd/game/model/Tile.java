@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.vmd.game.model;
 
+import java.awt.Graphics2D;
+
 
 
 public abstract class Tile implements Previewable, Comparable {
@@ -60,6 +62,8 @@ public abstract class Tile implements Previewable, Comparable {
 		this.height = height;
 	}
 
+    public abstract void paint(Graphics2D g, int x, int y, int scaledWidth, int scaledHeight);
+    
 	public int getIndex() {
 		return this.index;
 	}

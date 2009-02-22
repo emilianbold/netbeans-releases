@@ -481,7 +481,7 @@ private void profileSelectorActionPerformed(java.awt.event.ActionEvent evt) {//G
     
     private void updateProfileList() {
         File location = new File(platformField.getText());
-        if (ServerLocationManager.getAppServerPlatformVersion(location) !=
+        if (ServerLocationManager.getAppServerPlatformVersion(location) <
                 ServerLocationManager.GF_V2) {
             setProfilesList(SHORT_PROFILES_LIST,true);
         } else {

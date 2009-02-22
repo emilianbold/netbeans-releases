@@ -83,7 +83,9 @@ public class ModuleLifecycleManager extends LifecycleManager {
             } catch (Throwable t) {
                 Exceptions.printStackTrace(t);
             }
-            TopSecurityManager.exit(0);
+            if (System.getProperty("netbeans.close.no.exit") == null) {
+                TopSecurityManager.exit(0);
+            }
         }
     }
 

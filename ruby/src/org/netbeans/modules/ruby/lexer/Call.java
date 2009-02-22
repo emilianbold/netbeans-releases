@@ -41,6 +41,8 @@
 package org.netbeans.modules.ruby.lexer;
 
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
@@ -59,6 +61,11 @@ import org.openide.util.Exceptions;
  * Class which represents a Call in the source
  */
 public class Call {
+
+    /**
+     * Pattern for recognizing constructor calls.
+     */
+    private static final Pattern callToNew = Pattern.compile(".+(\\.new(\\z|\\(.*\\)))"); //NOI18N
 
     public static final Call LOCAL = new Call(RubyType.createUnknown(), null, false, false);
     public static final Call NONE = new Call(RubyType.createUnknown(), null, false, false);
@@ -366,16 +373,19 @@ public class Call {
                     } else if (Character.isUpperCase(lhs.charAt(0))) {
                         
                         // Detect constructor calls of the form String.new.^
-                        if (lhs.endsWith(".new")) { // NOI18N
+                        int constructorCallLength = isCallToNew(lhs);
+                        if (constructorCallLength != -1) {
                             // See if it looks like a type prior to that
-                            String type = lhs.substring(0, lhs.length() - 4); // 4=".new".length()
+                            String type = lhs.substring(0, lhs.length() - constructorCallLength);
                             if (RubyUtils.isValidConstantFQN(type)) {
                                 return new Call(RubyType.create(type), lhs, false, methodExpected);
                             }
                         }
 
                         String type = RubyUtils.RUBY_PREDEF_VARS_CLASSES.get(lhs);
-                        boolean isStatic = type == null; // predefined vars are instances
+                         // predefined vars are instances
+                        // also if it was a call to a constructor, the call is not static
+                        boolean isStatic = (type == null && constructorCallLength == -1);
 
                         boolean isLHSConstant = RubyUtils.isValidConstantFQN(lhs);
                         if (type == null /* not predef. var */ && isLHSConstant) {
@@ -403,6 +413,21 @@ public class Call {
         }
 
         return Call.LOCAL;
+    }
+
+    /**
+     * Checks whether the given lhs represents a constructor invocation.
+     * 
+     * @param lhs
+     * @return the length of the contructor call or <code>-1</code> if
+     *  the given <code>lhs</code> did not represent a constructor call.
+     */
+    private static int isCallToNew(String lhs) {
+        Matcher matcher = callToNew.matcher(lhs);
+        if (!matcher.matches()) {
+            return -1;
+        }
+        return matcher.group(1).length();
     }
 
     private static Call tryLiteral(final TokenId id, final boolean methodExpected, final String tokenText) {

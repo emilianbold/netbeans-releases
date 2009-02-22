@@ -495,12 +495,14 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
     private void fileContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileContextActionPerformed
         fileContext.setSelected(true);
         localContext.setSelected(false);
+        MacroExpansionTopComponent.setLocalContext(false);
         update();
 }//GEN-LAST:event_fileContextActionPerformed
 
     private void localContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_localContextActionPerformed
         localContext.setSelected(true);
         fileContext.setSelected(false);
+        MacroExpansionTopComponent.setLocalContext(true);
         update();
 }//GEN-LAST:event_localContextActionPerformed
 

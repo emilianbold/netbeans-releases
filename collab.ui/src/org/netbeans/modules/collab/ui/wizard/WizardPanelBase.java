@@ -41,10 +41,11 @@
 package org.netbeans.modules.collab.ui.wizard;
 
 import java.awt.Component;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.event.*;
-
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
@@ -54,12 +55,10 @@ import org.netbeans.modules.collab.core.Debug;
  *
  * @author  Todd Fast, todd.fast@sun.com
  */
-public abstract class WizardPanelBase extends JPanel implements WizardDescriptor.Panel {
+public abstract class WizardPanelBase implements WizardDescriptor.Panel {
     ////////////////////////////////////////////////////////////////////////////
     // Instance variables
     ////////////////////////////////////////////////////////////////////////////
-    private String name;
-    private boolean initialized;
     private boolean valid;
     private Set changeListeners = new HashSet();
 
@@ -75,18 +74,7 @@ public abstract class WizardPanelBase extends JPanel implements WizardDescriptor
      *
      *
      */
-    public WizardPanelBase(String name) {
-        this();
-        setName(name);
-    }
-
-    /**
-     *
-     *
-     */
-    public synchronized Component getComponent() {
-        return this;
-    }
+    public abstract Component getComponent();
 
     /**
      *
@@ -109,9 +97,7 @@ public abstract class WizardPanelBase extends JPanel implements WizardDescriptor
      *
      */
     public void setValid(boolean value) {
-        boolean oldValue = value;
         valid = value;
-        firePropertyChange("valid", oldValue, value); // NOI18N
         fireStateChanged();
     }
 

@@ -60,7 +60,9 @@ import org.openide.util.lookup.ProxyLookup;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -1609,11 +1611,34 @@ public abstract class TreeView extends JScrollPane {
     };
     private int originalScrollMode;
 
+    private static class SearchPanel extends JPanel {
+        public SearchPanel() {
+            if( ViewUtil.isAquaLaF )
+                setBorder(BorderFactory.createEmptyBorder(9,6,8,2));
+            else
+                setBorder(BorderFactory.createEmptyBorder(2,6,2,2));
+            setOpaque( true );
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            if( ViewUtil.isAquaLaF && g instanceof Graphics2D ) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setPaint( new GradientPaint(0, 0, UIManager.getColor("NbExplorerView.quicksearch.background.top"),
+                        0, getHeight(), UIManager.getColor("NbExplorerView.quicksearch.background.bottom")));//NOI18N
+                g2d.fillRect(0, 0, getWidth(), getHeight());
+                g2d.setColor( UIManager.getColor("NbExplorerView.quicksearch.border") ); //NOI18N
+                g2d.drawLine(0, 0, getWidth(), 0);
+            } else {
+                super.paintComponent(g);
+            }
+        }
+    }
 
 
     private void prepareSearchPanel() {
         if( searchpanel == null ) {
-            searchpanel = new JPanel();
+            searchpanel = new SearchPanel();
 
             JLabel lbl = new JLabel(NbBundle.getMessage(TreeView.class, "LBL_QUICKSEARCH")); //NOI18N
             searchpanel.setLayout(new BoxLayout(searchpanel, BoxLayout.X_AXIS));
@@ -1622,8 +1647,6 @@ public abstract class TreeView extends JScrollPane {
             lbl.setLabelFor(searchTextField);
             searchTextField.setColumns(10);
             searchTextField.setMaximumSize(searchTextField.getPreferredSize());
-            searchpanel.setBorder(BorderFactory.createEmptyBorder(2,6,2,2));
-            searchpanel.setOpaque( true );
             searchTextField.putClientProperty("JTextField.variant", "search"); //NOI18N
             lbl.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
         }

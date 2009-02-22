@@ -315,7 +315,7 @@ public class AddAttributePanel extends javax.swing.JPanel implements ActionListe
     
     public void actionPerformed(@SuppressWarnings("unused")
 	final java.awt.event.ActionEvent e) {
-        dd.setValid(isValid());
+        dd.setValid(isStateValid());
     }
     
     public void changedUpdate(@SuppressWarnings("unused")

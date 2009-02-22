@@ -103,8 +103,8 @@ import org.openide.windows.InputOutput;
 public final class SolarisPrivilegesSupport {
 
     private static final java.util.logging.Logger log = Logger.getInstance();
-    private Map<String, List<String>> privilegesHash =
-            Collections.synchronizedMap(new HashMap<String, List<String>>());
+    private Map<ExecutionEnvironment, List<String>> privilegesHash =
+            Collections.synchronizedMap(new HashMap<ExecutionEnvironment, List<String>>());
     private static SolarisPrivilegesSupport instance = new SolarisPrivilegesSupport();
     private WeakReference<GrantPrivilegesDialog> dialogRef = null;
 
@@ -127,7 +127,7 @@ public final class SolarisPrivilegesSupport {
      * @return true if <tt>execEnv</tt> has all execution privileges listed in
      *         <tt>privs</tt>
      */
-    public boolean hasPrivileges(
+    public synchronized boolean hasPrivileges(
             final ExecutionEnvironment execEnv,
             final List<String> privs) {
 
@@ -153,14 +153,14 @@ public final class SolarisPrivilegesSupport {
      */
     public List<String> getExecutionPrivileges(
             final ExecutionEnvironment execEnv) {
-        return getExecutionPrivileges(execEnv, false);
+        return getCurrentPrivilegesList(execEnv, false);
     }
 
-    private List<String> getExecutionPrivileges(
+    private synchronized List<String> getCurrentPrivilegesList(
             final ExecutionEnvironment execEnv,
             final boolean forceQuery) {
-        if (!forceQuery && privilegesHash.containsKey(execEnv.toString())) {
-            return privilegesHash.get(execEnv.toString());
+        if (!forceQuery && privilegesHash.containsKey(execEnv)) {
+            return privilegesHash.get(execEnv);
         }
 
         /*
@@ -230,7 +230,7 @@ public final class SolarisPrivilegesSupport {
             }
         }
 
-        privilegesHash.put(execEnv.toString(), real_privs);
+        privilegesHash.put(execEnv, real_privs);
 
         return real_privs;
     }
@@ -261,7 +261,7 @@ public final class SolarisPrivilegesSupport {
         ph.start();
 
         final List<String> currentPrivileges =
-                getExecutionPrivileges(execEnv, false);
+                getCurrentPrivilegesList(execEnv, false);
 
         List<String> newPrivileges = null;
 
@@ -275,9 +275,12 @@ public final class SolarisPrivilegesSupport {
             boolean result = dialog.askPassword();
 
             if (result) {
+                char[] clearPassword = dialog.getPassword();
                 PrivilegesRequestor.doRequest(execEnv, requiredPrivileges,
-                        dialog.getUser(), dialog.getPassword());
-                newPrivileges = getExecutionPrivileges(execEnv, true);
+                        dialog.getUser(), clearPassword);
+                Arrays.fill(clearPassword, (char) 0);
+                dialog.clearPassword();
+                newPrivileges = getCurrentPrivilegesList(execEnv, true);
             }
         } finally {
             ph.finish();
@@ -345,7 +348,7 @@ public final class SolarisPrivilegesSupport {
         }
     }
 
-    private static String loc(String key, Object... params) {
+    private static String loc(String key, String... params) {
         return NbBundle.getMessage(SolarisPrivilegesSupport.class, key, params);
     }
 
@@ -362,7 +365,7 @@ public final class SolarisPrivilegesSupport {
         private static void doRequest(
                 final ExecutionEnvironment execEnv,
                 final List<String> requestedPrivileges,
-                String user, String passwd) {
+                String user, char[] passwd) {
 
             // Construct privileges list
             StringBuffer sb = new StringBuffer();
@@ -379,7 +382,7 @@ public final class SolarisPrivilegesSupport {
         }
 
         private static void doRequestLocal(final ExecutionEnvironment execEnv,
-                final String requestedPrivs, String user, String passwd) {
+                final String requestedPrivs, String user, char[] passwd) {
 
             MacroExpander macroExpander = MacroExpanderFactory.getExpander(execEnv);
             String privp = null;
@@ -443,7 +446,7 @@ public final class SolarisPrivilegesSupport {
             }
 
             PrintWriter w = new PrintWriter(p.getOutputStream());
-            w.write(passwd.trim() + "\n"); // NOI18N
+            w.println(passwd);
             w.flush();
 
             try {
@@ -495,7 +498,7 @@ public final class SolarisPrivilegesSupport {
         private static synchronized void doRequestRemote(
                 final ExecutionEnvironment execEnv,
                 final String requestedPrivs,
-                final String user, final String passwd) {
+                final String user, final char[] passwd) {
 
             ConnectionManager mgr = ConnectionManager.getInstance();
 
@@ -536,7 +539,7 @@ public final class SolarisPrivilegesSupport {
 
                 expect(in, "Password:"); // NOI18N
 
-                w.write(passwd.trim() + "\n"); // NOI18N
+                w.println(passwd);
                 w.flush();
 
                 String exitStatus = expect(in, "ExitStatus:%"); // NOI18N
