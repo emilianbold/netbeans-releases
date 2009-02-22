@@ -90,8 +90,6 @@ public class WebModuleImpl implements WebModuleImplementation, J2eeModuleImpleme
     private MetadataModel<WebAppMetadata> webAppAnnMetadataModel;
     private MetadataModel<WebservicesMetadata> webservicesMetadataModel;
     
-    private String url = ""; //NOI18N
-
     private boolean inplace = false;
     private NbMavenProject mavenproject;
     
@@ -225,14 +223,14 @@ public class WebModuleImpl implements WebModuleImplementation, J2eeModuleImpleme
         return J2eeModule.WAR;
     }
     
+    /**
+     * @inherit
+     */
     public String getUrl() {
-        return url;
+        String toRet =  "/" + mavenproject.getMavenProject().getBuild().getFinalName(); //NOI18N
+        return toRet;
     }
     
-    public void setUrl(String string) {
-        url = string;
-    }
-
     /**
      * @inherit
      */

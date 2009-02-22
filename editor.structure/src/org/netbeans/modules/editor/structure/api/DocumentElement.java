@@ -403,6 +403,16 @@ public final class DocumentElement {
                 de.getEndOffset() == getEndOffset() /*&&
                 de.getAttributes().isEqual(getAttributes())*/); //equality acc. to attribs causes problems with readding of elements in XMLDocumentModelProvider when changing attributes.
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 29 * hash + (this.name != null ? this.name.hashCode() : 0);
+        hash = 29 * hash + (this.type != null ? this.type.hashCode() : 0);
+        hash = 29 * hash + (this.startPos != null ? this.startPos.hashCode() : 0);
+        hash = 29 * hash + (this.endPos != null ? this.endPos.hashCode() : 0);
+        return hash;
+    }
     
     public String toString() {
         String elementContent = "";

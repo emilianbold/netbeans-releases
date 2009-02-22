@@ -274,6 +274,10 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable, I
 		this.getDefaultSequence().getFrame(0).paint(g, x, y);
     }
 
+    public void paint(Graphics2D g, int x, int y, int scaledWidth, int scaledHeight) {
+		this.getDefaultSequence().getFrame(0).paint(g, x, y, scaledWidth, scaledHeight);
+    }
+
 	public JComponent getNavigator() {
 		return this.navigator == null ? this.navigator = new SequenceContainerNavigator(this) : this.navigator;
 	}

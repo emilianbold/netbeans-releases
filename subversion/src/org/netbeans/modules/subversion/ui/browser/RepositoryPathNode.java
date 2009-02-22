@@ -85,21 +85,21 @@ public class RepositoryPathNode extends AbstractNode {
     private static final String OPENED_ICON_KEY_UIMANAGER = "Tree.openIcon";                    // NOI18N
     private static final String ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.icon";              // NOI18N
     private static final String OPENED_ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.openedIcon"; // NOI18N
-    
+
     private RepositoryPathEntry entry;
-    private final BrowserClient client;    
+    private final BrowserClient client;
     private boolean repositoryFolder;
 
     private boolean isListed = false;
-    
+
     static RepositoryPathNode createRepositoryPathNode(BrowserClient client, RepositoryFile file) {
         return createRepositoryPathNode(client, new RepositoryPathEntry(file, SVNNodeKind.DIR, new SVNRevision(0), null, ""));
-    }          
+    }
 
-    static RepositoryPathNode createRepositoryPathNode(BrowserClient client, RepositoryPathEntry entry) {        
+    static RepositoryPathNode createRepositoryPathNode(BrowserClient client, RepositoryPathEntry entry) {
         RepositoryPathNode node = new RepositoryPathNode(client, entry, true);
         return node;
-    }    
+    }
 
     static RepositoryPathNode createPreselectedPathNode(BrowserClient client, RepositoryFile file) {
         return createDelayedExpandNode(client, file);
@@ -108,16 +108,16 @@ public class RepositoryPathNode extends AbstractNode {
     static RepositoryPathNode createRepositoryRootNode(BrowserClient client, RepositoryFile file) {
         return createDelayedExpandNode(client, file);
     }
-    
+
     private static RepositoryPathNode createDelayedExpandNode(BrowserClient client, RepositoryFile file) {
-        return new DelayedExpandNode(client, new RepositoryPathEntry(file, SVNNodeKind.DIR, new SVNRevision(0), null, ""), false);
+        return new DelayedExpandNode(client, new RepositoryPathEntry(file, SVNNodeKind.DIR, new SVNRevision(0), null, ""), true);
     }
-    
+
     private RepositoryPathNode(BrowserClient client, RepositoryPathEntry entry, boolean repositoryFolder) {
         super(entry.getSvnNodeKind() == SVNNodeKind.DIR ? new RepositoryPathChildren(client) : Children.LEAF);
         this.entry = entry;
         this.client = client;
-        this.repositoryFolder = repositoryFolder;                
+        this.repositoryFolder = repositoryFolder;
         initProperties();
     }
 
@@ -126,8 +126,8 @@ public class RepositoryPathNode extends AbstractNode {
         if (entry.getSvnNodeKind() == SVNNodeKind.DIR) {
             return getTreeFolderIcon(false);
         } else {
-            return super.getIcon(type);   
-        }             
+            return super.getIcon(type);
+        }
     }
 
     @Override
@@ -135,55 +135,55 @@ public class RepositoryPathNode extends AbstractNode {
         if (entry.getSvnNodeKind() == SVNNodeKind.DIR) {
             return getTreeFolderIcon(true);
         } else {
-            return super.getOpenedIcon(type);    
+            return super.getOpenedIcon(type);
         }
     }
-        
+
     /**
      * Returns default folder icon as {@link java.awt.Image}. Never returns
      * <code>null</code>.
      * Inspired by org.netbeans.modules.apisupport.project.ui.UIUtil.getTreeFolderIcon()
-     * 
+     *
      * @param opened wheter closed or opened icon should be returned.
      */
     private Image getTreeFolderIcon(boolean opened) {
         Image base = null;
-        Icon baseIcon = UIManager.getIcon(opened ? OPENED_ICON_KEY_UIMANAGER : ICON_KEY_UIMANAGER); 
+        Icon baseIcon = UIManager.getIcon(opened ? OPENED_ICON_KEY_UIMANAGER : ICON_KEY_UIMANAGER);
         if (baseIcon != null) {
            base = ImageUtilities.icon2Image(baseIcon);
         } else {
-            base = (Image) UIManager.get(opened ? OPENED_ICON_KEY_UIMANAGER_NB : ICON_KEY_UIMANAGER_NB); 
-            if (base == null) { // fallback to our owns                
+            base = (Image) UIManager.get(opened ? OPENED_ICON_KEY_UIMANAGER_NB : ICON_KEY_UIMANAGER_NB);
+            if (base == null) { // fallback to our owns
                 base = ImageUtilities.loadImage("org/openide/loaders/defaultFolder.gif");        //NOI18N
             }
         }
         assert base != null;
         return base;
     }
-    
+
     private void initProperties() {
         Sheet sheet = Sheet.createDefault();
         Sheet.Set ps = Sheet.createPropertiesSet();
-                
+
         ps.put(new RevisionProperty());
         ps.put(new DateProperty());
         ps.put(new AuthorProperty());
         ps.put(new HistoryProperty());
-        
+
         sheet.put(ps);
-        setSheet(sheet);        
-    }   
-    
+        setSheet(sheet);
+    }
+
     public String getDisplayName() {
         return getName();
     }
 
-    public String getName() {        
+    public String getName() {
         if(entry.getRepositoryFile().isRepositoryRoot()) {
             return entry.getRepositoryFile().getRepositoryUrl().toString();
         } else {
-            return entry.getRepositoryFile().getName();   
-        }        
+            return entry.getRepositoryFile().getName();
+        }
     }
 
     public void setName(String name) {
@@ -191,10 +191,10 @@ public class RepositoryPathNode extends AbstractNode {
         if(!oldName.equals(name)) {
             renameNode (this, name, 0);
             this.fireNameChange(oldName, name);
-        }                
+        }
     }
-    
-    private void renameNode (RepositoryPathNode node, String newParentsName, int level) {        
+
+    private void renameNode (RepositoryPathNode node, String newParentsName, int level) {
         node.entry = new RepositoryPathEntry(
                         node.entry.getRepositoryFile().replaceLastSegment(newParentsName, level),
                         node.entry.getSvnNodeKind(),
@@ -208,10 +208,10 @@ public class RepositoryPathNode extends AbstractNode {
         for (int i = 0; i < childernNodes.length; i++) {
             if(childernNodes[i] instanceof RepositoryPathNode) {
                 renameNode((RepositoryPathNode) childernNodes[i], newParentsName, level);
-            }            
+            }
         }
     }
-    
+
     public Action[] getActions(boolean context) {
         return client.getActions();
     }
@@ -222,7 +222,7 @@ public class RepositoryPathNode extends AbstractNode {
 
     public BrowserClient getClient() {
         return client;
-    }       
+    }
 
     public boolean canRename() {
         return !repositoryFolder;
@@ -231,26 +231,26 @@ public class RepositoryPathNode extends AbstractNode {
     private void setRepositoryFolder(boolean bl) {
         repositoryFolder = bl;
     }
-    
+
     /**
      * List the repository path from entry and sets up the Nodes children with the retrieved values
-     */ 
-    void expand() {         
+     */
+    void expand() {
         if(isListed) {
-            return; 
+            return;
         }
         isListed = true;
         Children ch = getChildren();
         if(ch instanceof RepositoryPathChildren) {
-            ((RepositoryPathChildren) getChildren()).listRepositoryPath(entry);                                       
-        }        
+            ((RepositoryPathChildren) getChildren()).listRepositoryPath(entry);
+        }
     }
-    
+
     private static class RepositoryPathChildren extends Children.Keys {
 
         private final BrowserClient client;
         private Node[] previousNodes = null;
-        
+
         public RepositoryPathChildren(BrowserClient client) {
             this.client = client;
         }
@@ -259,7 +259,7 @@ public class RepositoryPathNode extends AbstractNode {
         protected void addNotify() {
             super.addNotify();
         }
-        
+
         @Override
         protected void removeNotify() {
             setKeys(Collections.EMPTY_LIST);
@@ -270,34 +270,34 @@ public class RepositoryPathNode extends AbstractNode {
             if (key instanceof Node) {
                 return new Node[] {(Node) key};
             }
-            
-            RepositoryPathEntry entry = (RepositoryPathEntry) key;                        
-            
-            // reuse nodes 
+
+            RepositoryPathEntry entry = (RepositoryPathEntry) key;
+
+            // reuse nodes
             if(previousNodes != null) {
                 for(Node n : previousNodes) {
                     if(n instanceof RepositoryPathNode) {
                         if(((RepositoryPathNode)n).entry.getRepositoryFile().getName().equals(entry.getRepositoryFile().getName())) {
-                            return null; 
+                            return null;
                         }
                     }
                 }
             }
-            
+
             Node pathNode = RepositoryPathNode.createRepositoryPathNode(client, entry);
             return new Node[] {pathNode};
         }
 
         public void listRepositoryPath(final RepositoryPathEntry pathEntry) {
-            
+
             previousNodes = getNodes();
             AbstractNode waitNode = new WaitNode(org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "BK2001")); // NOI18N
-            setKeys(Collections.singleton(waitNode));                        
-            
+            setKeys(Collections.singleton(waitNode));
+
             RequestProcessor rp = Subversion.getInstance().getRequestProcessor(pathEntry.getRepositoryFile().getRepositoryUrl());
             SvnProgressSupport support = new SvnProgressSupport() {
-                public void perform() {                    
-                    try {                                                
+                public void perform() {
+                    try {
                         Collection<RepositoryPathEntry> listedEntries = client.listRepositoryPath(pathEntry, this);
                         if(isCanceled()) {
                             return;
@@ -307,12 +307,12 @@ public class RepositoryPathNode extends AbstractNode {
                         if(listedEntries == null) {
                             // is not a folder in the repository
                             RepositoryPathNode node = (RepositoryPathNode) getNode();
-                            node.setRepositoryFolder(false);                                       
+                            node.setRepositoryFolder(false);
                         } else {
                             if(!isCreativeBrowser(client)) {
-                                removePreselectedFolders(listedEntries);                                
-                            }                               
-                           
+                                removePreselectedFolders(listedEntries);
+                            }
+
                             // keep nodes which were created in the browser
                             Collection<RepositoryPathEntry> accepptedEntries = new ArrayList<RepositoryPathEntry>();
                             for(RepositoryPathEntry listedEntry : listedEntries) {
@@ -327,16 +327,16 @@ public class RepositoryPathNode extends AbstractNode {
                                     accepptedEntries.add(listedEntry);
                                 }
                             }
-                            previousEntries.addAll(accepptedEntries);        
+                            previousEntries.addAll(accepptedEntries);
                         }
-                        setKeys(previousEntries);                            
-                        
+                        setKeys(previousEntries);
+
                     } catch (SVNClientException ex) {
                         Collection entries = getPreviousNodeEntries();
-                        if(entries.size() > 0) {                            
+                        if(entries.size() > 0) {
                             setKeys(entries);
                         } else {
-                            setKeys(Collections.singleton(errorNode(ex)));                            
+                            setKeys(Collections.singleton(errorNode(ex)));
                         }
                         return;
                     } finally {
@@ -352,25 +352,25 @@ public class RepositoryPathNode extends AbstractNode {
             if(previousNodes != null) {
                 for(Node node : previousNodes) {
                     if(node instanceof RepositoryPathNode) {
-                        l.add( ((RepositoryPathNode)node).entry);    
-                    }                                
+                        l.add( ((RepositoryPathNode)node).entry);
+                    }
                 }
-            }            
+            }
             return l;
         }
-        
-        private String getLastPathSegment(RepositoryPathEntry entry) {            
+
+        private String getLastPathSegment(RepositoryPathEntry entry) {
             String[] childSegments = entry.getRepositoryFile().getPathSegments();
-            return childSegments.length > 0 ? childSegments[childSegments.length-1] : null;            
+            return childSegments.length > 0 ? childSegments[childSegments.length-1] : null;
         }
-        
+
         private static Node errorNode(Exception ex) {
             AbstractNode errorNode = new AbstractNode(Children.LEAF);
             errorNode.setDisplayName(org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "BK2002")); // NOI18N
             errorNode.setShortDescription(ex.getLocalizedMessage());
             return errorNode;
-        }    
-        
+        }
+
         private boolean isCreativeBrowser(BrowserClient client) {
             Action[] actions = client.getActions();
             for (int i = 0; i < actions.length; i++) {
@@ -380,16 +380,16 @@ public class RepositoryPathNode extends AbstractNode {
             }
             return false;
         }
-        
+
         private void removePreselectedFolders(final Collection cl) {
             Node[] childNodes = getNodes();
             for(int i=0; i < childNodes.length; i++) {
                 if(childNodes[i] instanceof RepositoryPathNode) {
-                    String lastChildSegment = getLastPathSegment( ((RepositoryPathNode) childNodes[i]).getEntry() );                                
+                    String lastChildSegment = getLastPathSegment( ((RepositoryPathNode) childNodes[i]).getEntry() );
                     if(lastChildSegment!=null) {
                         boolean pathExists = false;
                         for(Iterator it = cl.iterator(); it.hasNext(); ) {
-                            String lastNewChildSegment = getLastPathSegment((RepositoryPathEntry) it.next());     
+                            String lastNewChildSegment = getLastPathSegment((RepositoryPathEntry) it.next());
                             if(lastNewChildSegment!=null) {
                                 if(lastNewChildSegment.equals(lastChildSegment)) {
                                     pathExists = true;
@@ -397,7 +397,7 @@ public class RepositoryPathNode extends AbstractNode {
                                 }
                             }
                         }
-                        if(!pathExists) {                                            
+                        if(!pathExists) {
                             remove(new Node[] { childNodes[i] });
                         }
                     }
@@ -405,16 +405,16 @@ public class RepositoryPathNode extends AbstractNode {
             }
         }
 
-    }    
-        
-    static final String PROPERTY_NAME_REVISION = "revision";    // NOI18N    
-    static final String PROPERTY_NAME_DATE     = "date";        // NOI18N    
-    static final String PROPERTY_NAME_AUTHOR   = "author";      // NOI18N    
-    static final String PROPERTY_NAME_HISTORY  = "history";     // NOI18N    
+    }
+
+    static final String PROPERTY_NAME_REVISION = "revision";    // NOI18N
+    static final String PROPERTY_NAME_DATE     = "date";        // NOI18N
+    static final String PROPERTY_NAME_AUTHOR   = "author";      // NOI18N
+    static final String PROPERTY_NAME_HISTORY  = "history";     // NOI18N
 
     private final static String HISTORY_DISPLAY_NAME = org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "LBL_BrowserTree_History_Name");
-    private final static String HISTORY_SHORT_DESC = org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "LBL_BrowserTree_History_Short_Desc");    
-           
+    private final static String HISTORY_SHORT_DESC = org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "LBL_BrowserTree_History_Short_Desc");
+
     private class RevisionProperty extends NodeProperty {
         public RevisionProperty() {
             super(PROPERTY_NAME_REVISION, String.class, PROPERTY_NAME_REVISION, PROPERTY_NAME_REVISION);
@@ -438,7 +438,7 @@ public class RepositoryPathNode extends AbstractNode {
     }
 
     private class AuthorProperty extends NodeProperty<String> {
-                
+
         public AuthorProperty() {
             super(PROPERTY_NAME_AUTHOR, String.class, PROPERTY_NAME_AUTHOR, PROPERTY_NAME_AUTHOR);
         }
@@ -449,38 +449,38 @@ public class RepositoryPathNode extends AbstractNode {
     }
 
     private class HistoryProperty extends PropertySupport.ReadOnly<String> {
-       
+
         public HistoryProperty() {
             super(PROPERTY_NAME_HISTORY, String.class, HISTORY_DISPLAY_NAME, HISTORY_SHORT_DESC);
         }
 
         public String getValue() throws IllegalAccessException, InvocationTargetException {
             return "";
-        }        
-        
-        public String toString() {            
+        }
+
+        public String toString() {
             try {
-                Object obj = getValue();               
+                Object obj = getValue();
                 return obj != null ? obj.toString() : "";
             } catch (Exception e) {
                 Subversion.LOG.log(Level.INFO, null, e);
                 return e.getLocalizedMessage();
             }
-        }           
-        
+        }
+
         public PropertyEditor getPropertyEditor() {
             return new HistoryPropertyEditor();
-        }                   
+        }
     }
-                            
-    private abstract class NodeProperty<T> extends PropertySupport.ReadOnly<T> {        
+
+    private abstract class NodeProperty<T> extends PropertySupport.ReadOnly<T> {
         protected NodeProperty(String name, Class<T> type, String displayName, String shortDescription) {
             super(name, type, displayName, shortDescription);
         }
 
-        public String toString() {            
+        public String toString() {
             try {
-                Object obj = getValue();               
+                Object obj = getValue();
                 return obj != null ? obj.toString() : "";
             } catch (Exception e) {
                 Subversion.LOG.log(Level.INFO, null, e);
@@ -489,29 +489,29 @@ public class RepositoryPathNode extends AbstractNode {
         }
 
         public boolean canWrite() {
-            return false;                    
-        }     
+            return false;
+        }
 
         public PropertyEditor getPropertyEditor() {
             return new PropertyEditorSupport();
-        }                     
+        }
     }
 
     private class HistoryPropertyEditor extends PropertyEditorSupport {
-       
-        public HistoryPropertyEditor() {      
-            setValue("");           
-        }        
-        
+
+        public HistoryPropertyEditor() {
+            setValue("");
+        }
+
         public boolean supportsCustomEditor () {
             return true;
         }
-        
+
         public Component getCustomEditor() {
             SVNRevision revision = entry.getLastChangedRevision();
             SVNUrl repositoryUrl = entry.getRepositoryFile().getRepositoryUrl();
             SVNUrl fileUrl = entry.getRepositoryFile().getFileUrl();
-            final SvnSearch svnSearch = new SvnSearch(new RepositoryFile(repositoryUrl, fileUrl, revision));        
+            final SvnSearch svnSearch = new SvnSearch(new RepositoryFile(repositoryUrl, fileUrl, revision));
             return svnSearch.getSearchPanel();
         }
     }
@@ -519,7 +519,7 @@ public class RepositoryPathNode extends AbstractNode {
     static class RepositoryPathEntry {
         private final SVNNodeKind svnNodeKind;
         private final RepositoryFile file;
-        private final SVNRevision revision;        
+        private final SVNRevision revision;
         private Date date;
         private final String author;
         RepositoryPathEntry (RepositoryFile file, SVNNodeKind svnNodeKind, SVNRevision revision, Date date, String author) {
@@ -534,40 +534,40 @@ public class RepositoryPathNode extends AbstractNode {
         }
         RepositoryFile getRepositoryFile() {
             return file;
-        }        
+        }
         SVNRevision getLastChangedRevision() {
             return revision;
-        }       
+        }
         Date getLastChangedDate() {
             return date;
-        }               
+        }
         String getLastChangedAuthor() {
             return author != null ? author : "";
-        }                       
-    }        
+        }
+    }
 
     /**
      * Lists it's children from the repository after the second expand in the browser
-     */ 
+     */
     private static class DelayedExpandNode extends RepositoryPathNode {
         private final int IGNORE_EXPANDS = 1;
-        private int expanded = 0;    
+        private int expanded = 0;
         public DelayedExpandNode(BrowserClient client, RepositoryPathEntry entry, boolean repositoryFolder) {
-            super(client, entry, repositoryFolder);            
-        }       
+            super(client, entry, repositoryFolder);
+        }
         @Override
         void expand() {
             try {
                 if(expanded < IGNORE_EXPANDS) {
-                    return; 
+                    return;
                 }
                 super.expand();
             } finally {
                 if(expanded <= IGNORE_EXPANDS) {
                     ++expanded;
                 }
-            }        
+            }
         }
     }
-    
+
 }

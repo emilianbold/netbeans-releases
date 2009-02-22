@@ -70,7 +70,6 @@ public final class CreateHostVisualPanel2 extends JPanel {
         initComponents();
 
         textLoginName.setText(System.getProperty("user.name"));
-        btDetails.setVisible(false);
 
         DocumentListener dl = new DocumentListener() {
 
@@ -131,11 +130,13 @@ public final class CreateHostVisualPanel2 extends JPanel {
         textPassword = new javax.swing.JPasswordField();
         cbSavePassword = new javax.swing.JCheckBox();
         btConnect = new javax.swing.JButton();
-        btDetails = new javax.swing.JButton();
         pbarStatusPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tpOutput = new javax.swing.JTextPane();
         jLabel3 = new javax.swing.JLabel();
+
+        setPreferredSize(new java.awt.Dimension(534, 409));
+        setRequestFocusEnabled(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.jLabel1.text")); // NOI18N
 
@@ -154,14 +155,12 @@ public final class CreateHostVisualPanel2 extends JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(btDetails, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.btDetails.text")); // NOI18N
-
         pbarStatusPanel.setMaximumSize(new java.awt.Dimension(2147483647, 10));
         pbarStatusPanel.setMinimumSize(new java.awt.Dimension(100, 10));
         pbarStatusPanel.setLayout(new java.awt.BorderLayout());
 
+        tpOutput.setEditable(false);
         tpOutput.setText(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.tpOutput.text")); // NOI18N
-        tpOutput.setFocusable(false);
         tpOutput.setOpaque(false);
         jScrollPane1.setViewportView(tpOutput);
 
@@ -174,27 +173,24 @@ public final class CreateHostVisualPanel2 extends JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
+                    .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 514, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, cbSavePassword)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(layout.createSequentialGroup()
-                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                            .add(jLabel2)
-                                            .add(jLabel1))
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                            .add(textPassword)
-                                            .add(textLoginName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 204, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                                    .add(btConnect, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 90, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                .add(45, 45, 45)
-                                .add(btDetails))
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                .add(layout.createSequentialGroup()
+                                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                        .add(jLabel2)
+                                        .add(jLabel1))
+                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                        .add(textPassword)
+                                        .add(textLoginName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 204, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                                .add(btConnect, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 132, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE))
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
-                        .add(pbarStatusPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+                        .add(pbarStatusPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE)
                         .addContainerGap())))
         );
         layout.setVerticalGroup(
@@ -212,9 +208,7 @@ public final class CreateHostVisualPanel2 extends JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cbSavePassword)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(btDetails)
-                    .add(btConnect))
+                .add(btConnect)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 208, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -233,11 +227,16 @@ public final class CreateHostVisualPanel2 extends JPanel {
 
     private ProgressHandle phandle;
     
-    /* package-local */String hostFound() {
+    /* package-local */ String hostFound() {
         return hostFound;
     }
 
+    /* package-local */ Runnable getRunOnFinish() {
+        return runOnFinish;
+    }
+
     private String hostFound = null;
+    private Runnable runOnFinish = null;
 
     private String getHostKey() {
         return getLoginName() + '@' + hostname;
@@ -292,8 +291,13 @@ public final class CreateHostVisualPanel2 extends JPanel {
                         public void close() throws IOException {
                         }
                     });
-                    CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(hostKey);
-                    csm.initialize(false);
+                    final CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(hostKey);
+                   csm.initialize(false, false);
+                    runOnFinish = new Runnable() {
+                        public void run() {
+                            csm.finishInitialization();
+                        }
+                    };
                     hostFound = csm.getHost(); //TODO: no validations, pure cheat
                     wizardListener.stateChanged(null);
                 } else {
@@ -337,7 +341,6 @@ public final class CreateHostVisualPanel2 extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btConnect;
-    private javax.swing.JButton btDetails;
     private javax.swing.JCheckBox cbSavePassword;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

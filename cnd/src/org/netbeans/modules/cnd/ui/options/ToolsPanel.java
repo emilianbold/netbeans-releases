@@ -1733,7 +1733,7 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     Runnable longTask = new Runnable() {
         public void run() {
             CompilerSetManager newCsm = CompilerSetManager.create(hkey);
-            newCsm.initialize(false);
+            newCsm.initialize(false, true);
             cacheManager.addCompilerSetManager(newCsm);
             List<CompilerSet> list = csm.getCompilerSets();
             for (CompilerSet cs : list) {

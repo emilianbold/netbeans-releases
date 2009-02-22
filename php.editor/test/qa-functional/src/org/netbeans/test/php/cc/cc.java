@@ -44,7 +44,6 @@ package org.netbeans.test.php.cc;
 import org.netbeans.test.php.GeneralPHP;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
-import java.util.List;
 
 /**
  *

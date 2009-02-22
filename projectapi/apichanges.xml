@@ -104,6 +104,25 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="source-group-modifier">
+            <api name="general"/>
+            <summary>introduction of SourceGroupModifier, a way to create SourceGroup if missing</summary>
+            <version major="1" minor="24"/>
+            <date day="18" month="2" year="2009"/>
+            <author login="mkleint"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    <code>SourceGroupModifier</code> provides ways of create specific folders (<code>SourceGroup</code> root folders)
+                    in case they don't exist, eg. cannot be retrieved from <code>Sources</code>.
+                    The project supporting automated creation of SourceGroup root folders needs to
+                    provide <code>SourceGroupModifierImplementation</code> in the project's lookup.
+                </p>
+            </description>
+            <class package="org.netbeans.api.project" name="SourceGroupModifier"/>
+            <class package="org.netbeans.spi.project" name="SourceGroupModifierImplementation"/>
+            <issue number="102711"/>
+        </change>
 
         <change id="projectfactory2">
             <api name="general"/>

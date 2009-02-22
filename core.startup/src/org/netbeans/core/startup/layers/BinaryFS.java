@@ -781,9 +781,11 @@ public class BinaryFS extends FileSystem {
                         conn = new URL(obj.first()).openConnection();
                     }
 
+                    /*
                     if (conn instanceof java.net.JarURLConnection) {
                         conn = ((java.net.JarURLConnection)conn).getJarFileURL ().openConnection ();
                     }
+                     */
 
                     if (conn != null) {
                         long date = conn.getLastModified ();

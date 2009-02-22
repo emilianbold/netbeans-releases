@@ -205,6 +205,11 @@ public class SVGSlider extends SVGComponent {
             myRuleElement = (SVGLocatableElement) getElementByMeta(
                     getElement(), TYPE, RULE);
         }
+
+        if ( myRuleElement != null && myRuleElement.getBBox() != null){
+            SVGRect rect = myRuleElement.getScreenBBox();
+            isHorizontal = rect.getHeight()< rect.getWidth();
+        }
     }
     
     private void verify() {
@@ -260,8 +265,13 @@ public class SVGSlider extends SVGComponent {
             }
             myStartKnobX = rect.getX();
             myStartKnobY = rect.getY();
-            if ( myStartKnobX <= event.getX() && 
+            if ( isHorizontal && myStartKnobX <= event.getX() &&
                     myStartKnobX +rect.getWidth()>= event.getX() )
+            {
+                isKnobPressed = true;
+            }
+            else if ( !isHorizontal && myStartKnobY <= event.getY() &&
+                    myStartKnobY +rect.getHeight()>= event.getY() )
             {
                 isKnobPressed = true;
             }
@@ -274,7 +284,8 @@ public class SVGSlider extends SVGComponent {
                 super.handlePointerRelease( event );
                 return;
             }
-            float knobX = rect.getX();
+            float knob = isHorizontal ? rect.getX() :rect.getY();
+            float coord = isHorizontal ? event.getX(): event.getY();
             if ( isKnobPressed ){
                 isKnobPressed = false;
                 SVGRect ruleRect = myRuleElement.getScreenBBox();
@@ -282,10 +293,16 @@ public class SVGSlider extends SVGComponent {
                     super.handlePointerRelease(event);
                     return;
                 }
-                float factor = (event.getX()-ruleRect.getX())/ruleRect.getWidth();
+                float factor ;
+                if ( isHorizontal ){
+                    factor = (event.getX()-ruleRect.getX())/ruleRect.getWidth();
+                }
+                else {
+                    factor = (event.getY()-ruleRect.getY())/ruleRect.getHeight();
+                }
                 setValue(myMin + (int)(factor*(myMax - myMin)));
             }
-            else if ( knobX > event.getX() ){
+            else if ( knob > coord ){
                 setValue( Math.max( myMin , myValue - myStep ) );
             }
             else {
@@ -307,5 +324,7 @@ public class SVGSlider extends SVGComponent {
     
     private SVGLocatableElement myKnobElement;
     private SVGLocatableElement myRuleElement;
+
+    private boolean isHorizontal = true;
 
 }

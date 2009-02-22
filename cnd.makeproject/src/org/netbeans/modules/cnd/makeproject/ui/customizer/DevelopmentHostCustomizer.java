@@ -110,7 +110,7 @@ public class DevelopmentHostCustomizer extends JOptionPane implements VetoableCh
                         record.validate(true);
                         // initialize compiler sets for remote host if needed
                         CompilerSetManager csm = CompilerSetManager.getDefault(record.getName());
-                        csm.initialize(true);
+                        csm.initialize(true, true);
                     } catch(Exception e) {
                         e.printStackTrace();
                     }

@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
@@ -80,7 +81,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
     private /*final*/ CsmObject containerRef;// can be set in onDispose or contstructor only
     private /*final*/ CsmUID<CsmIdentifiable> containerUID;
 
-    public TypedefImpl(AST ast, CsmFile file, CsmObject container, CsmType type, String name) {
+    public TypedefImpl(AST ast, CsmFile file, CsmObject container, CsmType type, String name, boolean global) {
 
         super(ast, file);
 
@@ -98,7 +99,45 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
         } else {
             this.type = type;
         }
+        if (name.length()==0) {
+            name = fixBuiltInTypedef(ast);
+        }
         this.name = QualifiedNameCache.getManager().getString(name);
+        if (!global) {
+            Utils.setSelfUID(this);
+        }
+    }
+
+    private String fixBuiltInTypedef(AST ast){
+        // typedef cannot be unnamed
+        AST first = ast.getFirstChild();
+        if (first != null) {
+            AST last = null;
+            while(first != null) {
+                if (first.getType() == CPPTokenTypes.COMMA || first.getType() == CPPTokenTypes.SEMICOLON) {
+                    break;
+                }
+                last = first;
+                first = first.getNextSibling();
+            }
+            if (last != null) {
+                first = last.getFirstChild();
+                while(first != null) {
+                    if (first.getText() != null && first.getText().length()>0) {
+                        if (Character.isJavaIdentifierStart(first.getText().charAt(0))){
+                            last = first;
+                        }
+                    }
+                    first = first.getNextSibling();
+                }
+                if (last.getText() != null && last.getText().length()>0) {
+                   if (Character.isJavaIdentifierStart(last.getText().charAt(0))){
+                        return last.getText();
+                    }
+                }
+            }
+        }
+        return "";
     }
 
     public boolean isTypeUnnamed() {

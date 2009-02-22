@@ -98,7 +98,7 @@ public final class MacroExpansionViewUtils {
      */
     public static boolean updateView(int newOffset) {
         final MacroExpansionTopComponent view = MacroExpansionTopComponent.findInstance();
-        boolean localContext = view.isLocalContext();
+        boolean localContext = MacroExpansionTopComponent.isLocalContext();
 
         final Document expandedContextDoc = view.getExpandedContextDoc();
         if (expandedContextDoc == null) {
@@ -165,13 +165,7 @@ public final class MacroExpansionViewUtils {
         if (SwingUtilities.isEventDispatchThread()) {
             openView.run();
         } else {
-            try {
-                SwingUtilities.invokeAndWait(openView);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (InvocationTargetException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            SwingUtilities.invokeLater(openView);
         }
         return true;
     }

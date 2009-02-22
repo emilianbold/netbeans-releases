@@ -129,6 +129,16 @@ public class CNDValidation extends JellyTestCase {
         npnlso.txtProjectLocation().setText(System.getProperty("netbeans.user")); // NOI18N
         npnlso.btFinish().pushNoBlock();
         npnlso.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
+        do {
+            try {
+                // wait for error dialog if compiler is not set
+                NbDialogOperator errorOper = new NbDialogOperator("No Compilers Found");
+                errorOper.close();
+            } catch (TimeoutExpiredException e) {
+                // no more error dialog => we can continue
+                break;
+            }
+        } while (true);
         npnlso.waitClosed();
         // Opening Projects
         String openingProjectsTitle = Bundle.getString("org.netbeans.modules.project.ui.Bundle", "LBL_Opening_Projects_Progress");
@@ -140,16 +150,6 @@ public class CNDValidation extends JellyTestCase {
         } catch (TimeoutExpiredException e) {
             // ignore when progress dialog was closed before we started to wait for it
         }
-        do {
-            try {
-                // wait for error dialog if compiler is not set
-                NbDialogOperator errorOper = new NbDialogOperator("Error");
-                errorOper.close();
-            } catch (TimeoutExpiredException e) {
-                // no more error dialog => we can continue
-                break;
-            }
-        } while (true);
         // wait project appear in projects view
         new ProjectsTabOperator().getProjectRootNode(SAMPLE_PROJECT_NAME);
     }

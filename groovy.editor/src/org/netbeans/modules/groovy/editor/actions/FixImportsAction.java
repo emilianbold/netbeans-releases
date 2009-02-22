@@ -153,7 +153,7 @@ public class FixImportsAction extends BaseAction implements Runnable {
         // go over list of missing imports, fix it - if there is only one 
         // candidate or populate choosers input list.
 
-        Map<String, List> multipleCandidates = new HashMap<String, List>();
+        Map<String, List<FixImportsHelper.ImportCandidate>> multipleCandidates = new HashMap<String, List<FixImportsHelper.ImportCandidate>>();
 
         for (String name : missingNames) {
             List<ImportCandidate> importCandidates = helper.getImportCandidate(fo, name);
@@ -193,7 +193,7 @@ public class FixImportsAction extends BaseAction implements Runnable {
         return;
     }
 
-    private List<String> presentChooser(Map<String, List> multipleCandidates) {
+    private List<String> presentChooser(Map<String, List<FixImportsHelper.ImportCandidate>> multipleCandidates) {
         LOG.log(Level.FINEST, "presentChooser()");
         List<String> result = new ArrayList<String>();
         ImportChooserInnerPanel panel = new ImportChooserInnerPanel();

@@ -313,7 +313,7 @@ public class CompletionHandler implements CodeCompletionHandler {
 
         // get the active token:
 
-        if(ts.isValid() && ts.moveNext() && ts.offset() >= 0){
+        if (ts.isValid() && ts.moveNext() && ts.offset() >= 0) {
             active = (Token<? extends GroovyTokenId>) ts.token();
         }
 

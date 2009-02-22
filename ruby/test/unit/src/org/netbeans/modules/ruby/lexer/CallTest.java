@@ -395,6 +395,24 @@ public class CallTest extends RubyTestBase {
         assertFalse(call.isStatic());
     }
 
+    public void testConstructorCall5() throws Exception {
+        Call call = getCall("String.new(\"foo\").^");
+        assertType("String", call.getType());
+        assertFalse(call.isStatic());
+    }
+
+    public void testConstructorCall6() throws Exception {
+        Call call = getCall("Something.new(a_method_call()).^");
+        assertType("Something", call.getType());
+        assertFalse(call.isStatic());
+    }
+
+    public void testConstructorCall7() throws Exception {
+        Call call = getCall("Something.new(some_var).^");
+        assertType("Something", call.getType());
+        assertFalse(call.isStatic());
+    }
+
     public void testNotConstructorCall() throws Exception {
         Call call = getCall("String.neww.^");
         assertFalse(call.getType().isKnown());
@@ -417,6 +435,11 @@ public class CallTest extends RubyTestBase {
 
     public void testNotConstructorCall5() throws Exception {
         Call call = getCall("1.even?.^");
+        assertFalse(call.getType().isKnown());
+    }
+
+    public void testNotConstructorCall6() throws Exception {
+        Call call = getCall("String.neww().^");
         assertFalse(call.getType().isKnown());
     }
 
