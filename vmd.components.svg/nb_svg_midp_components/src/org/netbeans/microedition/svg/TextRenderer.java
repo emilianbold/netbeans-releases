@@ -61,6 +61,7 @@ class TextRenderer {
         }
         String text = element.getTrait( SVGComponent.TRAIT_TEXT );
         if ( text != null && text.length() != 0 && element.getBBox() != null){
+            text = text.trim();
             myLetterWidth = element.getBBox().getWidth()/text.length();
         }
     }
@@ -103,22 +104,30 @@ class TextRenderer {
         return myLetterWidth == 0;
     }
     
-    float doGetTextWidth(final String text) {
+    float doGetTextWidth(String text) {
         float width =0;
         if (text.length() > 0) {
+            final String setText = text.trim();
             getForm().invokeAndWaitSafely(new Runnable() {
                 public void run() {
                     getHiddenTextElement().setTrait(SVGComponent.TRAIT_TEXT, 
-                            text);
-                    while ( getHiddenTextElement().getTrait( 
-                            SVGComponent.TRAIT_TEXT )!=text )
+                            setText);
+                    /*
+                     NB : be carefull with text that is used for set
+                          and  resulting text. They could be different.
+                          F.e. spaces and tabulations at the beggining and
+                          the end are not considered in SVG rendering .
+                          As result getTrait( "text" ) could differs from
+                          string that was used for setTrait( "text" , string )
+                     while ( !setText.equals( getHiddenTextElement().getTrait(
+                            SVGComponent.TRAIT_TEXT )) )
                     {
                         try {
                             Thread.sleep(50);
                         }
                         catch (InterruptedException e) {
                         }
-                    }
+                    }*/
                 }
             });
             SVGRect bBox = getHiddenTextElement().getBBox();

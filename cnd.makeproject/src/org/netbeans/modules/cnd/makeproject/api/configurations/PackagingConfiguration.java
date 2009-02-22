@@ -419,10 +419,10 @@ public class PackagingConfiguration {
     }
     
     private String getOutputDefault() {
-        String outputPath = MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + "${CND_PLATFORM}" + "/package"; // NOI18N 
+        String outputPath = "${CND_DISTDIR}" + "/" + "${CND_CONF}" + "/" + "${CND_PLATFORM}" + "/package"; // NOI18N
 //        String outputName = getOutputName();
         PackagerDescriptor packager = PackagerManager.getDefault().getPackager(getType().getValue());
-        
+
         if (!packager.isOutputAFolder()) {
             outputPath += "/" + packager.getOutputFileName(makeConfiguration, this) + "." + packager.getOutputFileSuffix(); // NOI18N
         }

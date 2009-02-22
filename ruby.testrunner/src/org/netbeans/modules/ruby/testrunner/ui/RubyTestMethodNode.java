@@ -46,11 +46,14 @@ import java.util.List;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.gsf.testrunner.api.DiffViewAction;
 import org.netbeans.modules.gsf.testrunner.api.Locator;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.TestMethodNode;
+import org.netbeans.modules.ruby.RubyDeclarationFinder;
 import org.netbeans.modules.ruby.RubyUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -108,7 +111,7 @@ public final class RubyTestMethodNode extends TestMethodNode {
      *
      * @return
      */
-    private static String getTestCaseLineFromStackTrace(Testcase testcase) {
+    private String getTestCaseLineFromStackTrace(Testcase testcase) {
         if (testcase.getTrouble() == null) {
             return null;
         }
@@ -117,16 +120,54 @@ public final class RubyTestMethodNode extends TestMethodNode {
             return null;
         }
         if (stacktrace.length > 2) {
-            String underscoreName = RubyUtils.camelToUnderlinedName(testcase.getClassName());
-            for (int i = 0; i < stacktrace.length; i++) {
-                if (stacktrace[i].contains(underscoreName) && stacktrace[i].contains(testcase.getName())) {
-                    return stacktrace[i];
-                }
+            String candidateLine = findLocationLine(stacktrace, testcase.getName(), getFileName(testcase));
+            if (candidateLine != null) {
+                return  candidateLine;
             }
         }
+        // fall back to the second line (the first one contains the failure msg)
         return stacktrace[1];
     }
 
+    // package private for unit tests
+    static final String findLocationLine(String[] stacktrace, String testName, String fileName) {
+        String candidateLine = null;
+        for (int i = 0; i < stacktrace.length; i++) {
+            if (stacktrace[i].contains(fileName)) {
+                if (stacktrace[i].contains(testName)) {
+                    // if both the class and test method names are present
+                    // in the line, it is the one we will return
+                    candidateLine = stacktrace[i];
+                    break;
+                }
+                // as a fallback use a line that contains the test file name -- we want
+                // to return the first line found in the stack trace, hence the check for null
+                if (candidateLine == null) {
+                    candidateLine = stacktrace[i];
+                }
+            }
+        }
+        if (candidateLine != null) {
+            return candidateLine;
+        }
+        return null;
+    }
+
+    /**
+     * @return the name of the file (possibly including the extension if it can be resolved)  
+     * where the given test case is defined.
+      */
+    private String getFileName(Testcase testcase) {
+        FileObject testRoot = BaseTestMethodNodeAction.getTestSourceRoot(project);
+        String testName = BaseTestMethodNodeAction.getTestMethod(testcase);
+        DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(testRoot, testName, true, true);
+        FileObject testFile = location.getFileObject();
+        if (testFile != null) {
+            return testFile.getNameExt();
+        }
+        // fallback
+        return RubyUtils.camelToUnderlinedName(testcase.getClassName());
+    }
 
     @Override
     public Action[] getActions(boolean context) {

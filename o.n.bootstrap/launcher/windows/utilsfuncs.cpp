@@ -43,6 +43,7 @@
 
 #include "utilsfuncs.h"
 #include "argnames.h"
+#include <tlhelp32.h>
 
 using namespace std;
 
@@ -281,13 +282,18 @@ bool checkLoggingArg(int argc, char *argv[], bool delFile) {
     return true;
 }
 
-bool setUpProcess(int &argc, char *argv[], const char *attachMsg) {
+bool setupProcess(int &argc, char *argv[], DWORD &parentProcID, const char *attachMsg) {
+#define CHECK_ARG \
+    if (i+1 == argc) {\
+        logErr(false, true, "Argument is missing for \"%s\" option.", argv[i]);\
+        return false;\
+    }
+
+    parentProcID = 0;
+    DWORD cmdLineArgPPID = 0;
     for (int i = 0; i < argc; i++) {
         if (strcmp(ARG_NAME_CONSOLE, argv[i]) == 0) {
-            if (i + 1 == argc) {
-                logErr(false, true, "Argument is missing for \"%s\" option.", argv[i]);
-                return false;
-            }
+            CHECK_ARG;
             if (strcmp("new", argv[i + 1]) == 0){
                 AllocConsole();
             } else if (strcmp("suppress", argv[i + 1]) == 0) {
@@ -302,8 +308,19 @@ bool setUpProcess(int &argc, char *argv[], const char *attachMsg) {
             }
             argc -= 2;
             return true;
+        } else if (strcmp(ARG_NAME_LA_PPID, argv[i]) == 0) {
+            CHECK_ARG;
+            char *end = 0;
+            cmdLineArgPPID = strtoul(argv[++i], &end, 10);
+            if (cmdLineArgPPID == 0 && *end != '\0') {
+                logErr(false, true, "Invalid parameter for option %s", ARG_NAME_LA_PPID);
+                return false;
+            }
+            logMsg("Command line arg PPID: %u", cmdLineArgPPID);
+            break;
         }
     }
+#undef CHECK_ARG
 
     // default, attach to parent process console if exists
     // AttachConsole exists since WinXP, so be nice and do it dynamically
@@ -312,16 +329,42 @@ bool setUpProcess(int &argc, char *argv[], const char *attachMsg) {
     if (hKernel32) {
         LPFAC attachConsole = (LPFAC) GetProcAddress(hKernel32, "AttachConsole");
         if (attachConsole) {
-            if (!attachConsole((DWORD)-1)) {
-                logErr(true, false, "AttachConsole failed.");
-            } else if (attachMsg) {
-                printToConsole(attachMsg);
+            if (cmdLineArgPPID) {
+                if (!attachConsole(cmdLineArgPPID)) {
+                    logErr(true, false, "AttachConsole of PPID: %u failed.", cmdLineArgPPID);
+                }
+            } else {
+                if (!attachConsole((DWORD) -1)) {
+                    logErr(true, false, "AttachConsole of PP failed.");
+                } else {
+                    getParentProcessID(parentProcID);
+                    if (attachMsg) {
+                        printToConsole(attachMsg);
+                    }
+                }
             }
         } else {
             logErr(true, false, "GetProcAddress() for AttachConsole failed.");
         }
     }
     return true;
+}
+
+bool isConsoleAttached() {
+    typedef HWND (WINAPI *GetConsoleWindowT)();
+    HINSTANCE hKernel32 = GetModuleHandle("kernel32");
+    if (hKernel32) {
+        GetConsoleWindowT getConsoleWindow = (GetConsoleWindowT) GetProcAddress(hKernel32, "GetConsoleWindow");
+        if (getConsoleWindow) {
+            if (getConsoleWindow() != NULL) {
+                logMsg("Console is attached.");
+                return true;
+            }
+        } else {
+            logErr(true, false, "GetProcAddress() for GetConsoleWindow failed.");
+        }
+    }
+    return false;
 }
 
 bool printToConsole(const char *msg) {
@@ -331,5 +374,53 @@ bool printToConsole(const char *msg) {
     }
     fprintf(console, "%s", msg);
     fclose(console);
+    return false;
+}
+
+bool getParentProcessID(DWORD &id) {
+    typedef HANDLE (WINAPI * CreateToolhelp32SnapshotT)(DWORD, DWORD);
+    typedef BOOL (WINAPI * Process32FirstT)(HANDLE, LPPROCESSENTRY32);
+    typedef BOOL (WINAPI * Process32NextT)(HANDLE, LPPROCESSENTRY32);
+
+    HINSTANCE hKernel32 = GetModuleHandle("kernel32");
+    if (!hKernel32) {
+        return false;
+    }
+
+    CreateToolhelp32SnapshotT createToolhelp32Snapshot = (CreateToolhelp32SnapshotT) GetProcAddress(hKernel32, "CreateToolhelp32Snapshot");
+    Process32FirstT process32First = (Process32FirstT) GetProcAddress(hKernel32, "Process32First");
+    Process32NextT process32Next = (Process32NextT) GetProcAddress(hKernel32, "Process32Next");
+
+    if (createToolhelp32Snapshot == NULL || process32First == NULL || process32Next == NULL) {
+        logErr(true, false, "Failed to obtain Toolhelp32 functions.");
+        return false;
+    }
+
+    HANDLE hSnapshot = createToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (hSnapshot == INVALID_HANDLE_VALUE) {
+        logErr(true, false, "Failed to obtain process snapshot.");
+        return false;
+    }
+
+    PROCESSENTRY32 entry = {0};
+    entry.dwSize = sizeof (PROCESSENTRY32);
+    if (!process32First(hSnapshot, &entry)) {
+        CloseHandle(hSnapshot);
+        return false;
+    }
+
+    DWORD curID = GetCurrentProcessId();
+    logMsg("Current process ID: %u", curID);
+
+    do {
+        if (entry.th32ProcessID == curID) {
+            id = entry.th32ParentProcessID;
+            logMsg("Parent process ID: %u", id);
+            CloseHandle(hSnapshot);
+            return true;
+        }
+    } while (process32Next(hSnapshot, &entry));
+
+    CloseHandle(hSnapshot);
     return false;
 }

@@ -4,7 +4,7 @@
                     <rect id="%%COMPONENT_ID%%_selection" x="5" y="0" rx="4" ry="4" stroke="black" stroke-width="1" fill="rgb(200,200,255)"                         visibility="inherit" width="80" height="0"/>
                 </g>
                 <g>
-                    <text id="%%COMPONENT_ID%%_hidden_text" visibility="hidden" x="10" y="13" stroke="black" font-size="16">		HIDDEN TEXT	        </text>
+                    <text id="%%COMPONENT_ID%%_hidden_text" visibility="hidden" x="10" y="13" stroke="black" font-size="16">HIDDEN TEXT</text>
                     <text display="none">type=hidden_text</text>
                 </g>
                 <g id="%%COMPONENT_ID%%_current_selection" >        <!-- Metadata information. Please don't edit. -->

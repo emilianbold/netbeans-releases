@@ -253,19 +253,10 @@ class EarImpl implements EarImplementation,
      * Returns the location of the module within the application archive.
      */
     public String getUrl() {
-//        System.out.println("EarImpl: getURL");
-        return "/";//NOI18N
+        String toRet =  "/" + mavenproject.getMavenProject().getBuild().getFinalName(); //NOI18N
+        return toRet;
     }
 
-    /**
-     * Sets the location of the modules within the application archive.
-     * For example, a web module could be at "/wbmodule1.war" within the ear
-     * file. For standalone module the URL cannot be set to a different value
-     * then "/"
-     */
-    public void setUrl(String url) {
-        throw new IllegalStateException("Cannot set url for maven ear projects");//NOI18N
-    }
 
     /**
      * Returns the archive file for the module of null if the archive file 

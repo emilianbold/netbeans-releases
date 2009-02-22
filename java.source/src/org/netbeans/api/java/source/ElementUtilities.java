@@ -68,7 +68,7 @@ import com.sun.tools.javac.comp.Resolve;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.Name;
+import com.sun.tools.javac.util.Names;
 import com.sun.tools.javadoc.DocEnv;
 
 import java.util.ArrayList;
@@ -254,11 +254,11 @@ public final class ElementUtilities {
                         }
                     }
                     if (te.getKind().isClass()) {
-                        VarSymbol thisPseudoMember = new VarSymbol(Flags.FINAL | Flags.HASINIT, Name.Table.instance(ctx)._this, (ClassType)te.asType(), (ClassSymbol)te);
+                        VarSymbol thisPseudoMember = new VarSymbol(Flags.FINAL | Flags.HASINIT, Names.instance(ctx)._this, (ClassType)te.asType(), (ClassSymbol)te);
                         if (acceptor == null || acceptor.accept(thisPseudoMember, type))
                             members.add(thisPseudoMember);
                         if (te.getSuperclass().getKind() == TypeKind.DECLARED) {
-                            VarSymbol superPseudoMember = new VarSymbol(Flags.FINAL | Flags.HASINIT, Name.Table.instance(ctx)._super, (ClassType)te.getSuperclass(), (ClassSymbol)te);
+                            VarSymbol superPseudoMember = new VarSymbol(Flags.FINAL | Flags.HASINIT, Names.instance(ctx)._super, (ClassType)te.getSuperclass(), (ClassSymbol)te);
                             if (acceptor == null || acceptor.accept(superPseudoMember, type))
                                 members.add(superPseudoMember);
                         }
@@ -277,7 +277,7 @@ public final class ElementUtilities {
                         com.sun.tools.javac.util.List.of((Type)type) :
                         com.sun.tools.javac.util.List.<Type>nil();
                     t = new ClassType(t.getEnclosingType(), typeargs, t.tsym);
-                    Element classPseudoMember = new VarSymbol(Flags.STATIC | Flags.PUBLIC | Flags.FINAL, Name.Table.instance(ctx)._class, t, ((Type)type).tsym);
+                    Element classPseudoMember = new VarSymbol(Flags.STATIC | Flags.PUBLIC | Flags.FINAL, Names.instance(ctx)._class, t, ((Type)type).tsym);
                     if (acceptor == null || acceptor.accept(classPseudoMember, type))
                         members.add(classPseudoMember);
                     break;

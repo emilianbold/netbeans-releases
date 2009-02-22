@@ -533,17 +533,22 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
     
     private CsmUID<CsmNamespace> uid = null;
-    public CsmUID<CsmNamespace> getUID() {
-        if (uid == null) {
-            uid = createUID();
+    public final CsmUID<CsmNamespace> getUID() {
+        CsmUID<CsmNamespace> out = uid;
+        if (out == null) {
+            synchronized (this) {
+                if (uid == null) {
+                    uid = out = createUID();
+                }
+            }
         }
         return uid;
-    }
+    }   
     
     protected CsmUID<CsmNamespace> createUID() {
 	return UIDUtilities.createNamespaceUID(this);
     }
-    
+
     private ProjectBase _getProject() {
         projectLock.readLock().lock();
         try {

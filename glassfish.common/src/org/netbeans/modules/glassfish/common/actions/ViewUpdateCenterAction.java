@@ -72,9 +72,14 @@ public class ViewUpdateCenterAction extends NodeAction {
             "org/netbeans/modules/glassfish/common/resources/UpdateCenter.gif"; // NOI18N
 
     private static final WeakHashMap<String, Process> taskMap = new WeakHashMap<String, Process>();
+
+    private boolean needToBeAdmin = false;
     
     @Override
     protected void performAction(Node[] nodes) {
+        if (needToBeAdmin) {
+            displayAdminWarning();
+        }
         GlassfishModule commonSupport = nodes[0].getLookup().lookup(GlassfishModule.class);
         if(commonSupport != null) {
             // updatetool already running?  if yes, is there a crossplatform way
@@ -119,6 +124,9 @@ public class ViewUpdateCenterAction extends NodeAction {
                             if(realLauncher != null) {
                                 new NbProcessDescriptor(realLauncher.getPath(), "").exec(null, null, realLauncher.getParentFile());
                             }
+                        } catch (java.io.IOException ioe) {
+                            needToBeAdmin = true;
+                            displayAdminWarning();
                         } catch(Exception ex) {
                             Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex);
                         }
@@ -258,6 +266,13 @@ public class ViewUpdateCenterAction extends NodeAction {
         // TODO - add code to write proxy info to the output stream.
         // For now, answer negative to the "do you have proxy info..." question
         writer.println("n");
+    }
+
+    private void displayAdminWarning() {
+        String mess = NbBundle.getMessage(getClass(), "WARN_ELEVATE");
+        Logger.getLogger("glassfish").warning(mess);
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(mess,
+                NotifyDescriptor.WARNING_MESSAGE));
     }
     
 }

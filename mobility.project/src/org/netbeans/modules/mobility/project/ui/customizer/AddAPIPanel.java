@@ -253,7 +253,7 @@ public class AddAPIPanel extends javax.swing.JPanel implements ActionListener, D
     
     public void actionPerformed(@SuppressWarnings("unused")
 	final java.awt.event.ActionEvent e) {
-        dd.setValid(isValid());
+        dd.setValid(isStateValid());
     }
     
     public void changedUpdate(@SuppressWarnings("unused")

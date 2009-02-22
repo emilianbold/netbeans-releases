@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.php.editor.indent;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -59,10 +60,17 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.modules.gsf.spi.GsfUtilities;
+import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.nav.NavUtils;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 
@@ -425,7 +433,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
         return false;
     }
 
-    private void prettyPrint(Context context) {
+    private void prettyPrint(final Context context) {
         final BaseDocument doc = (BaseDocument) context.document();
         final String openingBraceStyle = CodeStyle.get(doc).getOpeningBraceStyle();
 
@@ -433,46 +441,44 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
             return;
         }
 
-        TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, 0);
-        
-        if (ts != null) {
-            final LinkedHashMap<Integer, Integer> breaks = new LinkedHashMap<Integer, Integer>();
-            ts.move(context.endOffset());
-            boolean wasOpeningBracket = false;
-            while (ts.movePrevious() && ts.offset() >= context.startOffset()) {
-                if (wasOpeningBracket) {
-                    int insertPos = ts.offset();
-                    int cutLength = 0;
-                    if (ts.token().id() == PHPTokenId.WHITESPACE) {
-                        cutLength = ts.token().length();
-                    } else {
-                        insertPos += ts.token().length();
-                    }
-                    breaks.put(insertPos, cutLength);
-                }
-                wasOpeningBracket = ts.token().id() == PHPTokenId.PHP_CURLY_OPEN;
-            }
-            doc.runAtomic(new Runnable() {
+        doc.runAtomic(new Runnable() {
 
-                public void run() {
-                    try {
-                        String replacement = FmtOptions.OBRACE_NEWLINE.equals(openingBraceStyle)
-                                ? "\n" : " "; //NOI18N
+            public void run() {
+                final WSTransformer wsTransformer = new WSTransformer(context);
+                FileObject file = NavUtils.getFile(doc);
+                try {
+                    SourceModelFactory.getInstance().getModel(file).runUserActionTask(new CancellableTask<CompilationInfo>() {
 
-                        for (Integer offset : breaks.keySet()) {
-                            int len = breaks.get(offset);
-                            doc.insertString(offset + len, replacement, null);
+                        public void cancel() {}
 
-                            if (len > 0) {
-                                doc.remove(offset, len);
-                            }
+                        public void run(CompilationInfo parameter) throws Exception {
+                            PHPParseResult result = (PHPParseResult) parameter.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, 0);
+                            result.getProgram().accept(wsTransformer);
                         }
-                    } catch (BadLocationException badLocationException) {
-                        badLocationException.printStackTrace();
+                    }, true);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
+                for (WSTransformer.Replacement replacement : wsTransformer.getReplacements()){
+                    if (replacement.offset() < context.startOffset()
+                            || replacement.offset() > context.endOffset()){
+                        continue;
+                    }
+
+                    try {
+                        doc.insertString(replacement.offset(), replacement.newString(), null);
+
+                        if (replacement.length() > 0){
+                            doc.remove(replacement.offset() - replacement.length(), replacement.length());
+                        }
+
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
                 }
-            });
-        }
+            }
+        });
     }
 
     private void reindent(final Context context, CompilationInfo info, final boolean indentOnly) {

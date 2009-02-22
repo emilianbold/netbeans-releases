@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.spi.impl;
 
 import org.netbeans.modules.dlight.api.storage.types.Time;
@@ -51,6 +50,7 @@ import java.text.NumberFormat;
  */
 public class TimeEditor extends PropertyEditorSupport {
 
+    private static final Time zeroTime = new Time(0);
     private final NumberFormat format;
 
     /**
@@ -66,12 +66,11 @@ public class TimeEditor extends PropertyEditorSupport {
 
     @Override
     public String getAsText() {
-        return format.format(((Time)getValue()).getNanos() / 1e9);
+        return ((Time) getValue() == null ? "0" : ((Time) getValue()).equals(zeroTime) ? "0" : format.format(((Time) getValue()).getNanos() / 1e9));
     }
 
     @Override
     public void setAsText(String text) {
         throw new UnsupportedOperationException();
     }
-
 }

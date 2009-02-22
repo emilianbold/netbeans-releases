@@ -42,6 +42,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -199,6 +200,10 @@ public final class PyUnitRunner implements TestRunner/*, RakeTaskCustomizer*/ {
         File f = FileUtil.toFile(fo);
         pythonPath.add(f.getAbsolutePath());
       }
+      for (FileObject fo : project.getTestRoots().getRoots()) {
+          File f = FileUtil.toFile(fo);
+          pythonPath.add(f.getAbsolutePath());
+      }
       PythonProjectProperties properties = new PythonProjectProperties(project);
       pythonPath.addAll(properties.getPythonPath());
       return pythonPath ;
@@ -267,6 +272,13 @@ public final class PyUnitRunner implements TestRunner/*, RakeTaskCustomizer*/ {
                 desc = coverageProvider.wrapWithCoverage(desc);
             }
 
+            if (LOGGER.isLoggable(Level.INFO)) {
+                LOGGER.log(Level.INFO, "Running Python Unit Test with the following descriptor: command={0} " +
+                        "commandArgs={1} displayName={2} javaPath={3} path={4} script={5} scriptArgs={6}" +
+                        " workingDirectory={7}", new Object[]{desc.getCommand(), desc.getCommandArgs(),
+                        desc.getDisplayName(), desc.getJavaPath(), desc.getPath(), desc.getScript(),
+                        desc.getScriptArgs(), desc.getWorkingDirectory()});
+            }
 
         final TestSession session = new TestSession(name,
                 project,

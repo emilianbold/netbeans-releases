@@ -572,7 +572,7 @@ public final class TreeUtilities {
         }
         JCMethodDecl jcm = (JCMethodDecl) method;
         String name;
-        if (jcm.name == jcm.name.table.init) {
+        if (jcm.name == jcm.name.table.names.init) {
             TreePath path = info.getTrees().getPath(info.getCompilationUnit(), jcm);
             if (path == null) {
                 return null;

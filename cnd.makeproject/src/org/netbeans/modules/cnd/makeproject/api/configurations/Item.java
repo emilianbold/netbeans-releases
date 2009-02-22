@@ -145,7 +145,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         }
         String oldPath = getAbsPath();
         Item item = new Item(newPath);
-            f.addItem(item);
+        f.addItem(item);
         if (item.getFolder().isProjectFiles()) {
             copyItemConfigurations(this, item);
         }
@@ -289,6 +289,25 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             itemConfigurations[i] = getItemConfiguration(configurations[i]);
         }
         return itemConfigurations;
+    }
+
+    public void copyConfigurations(Item src) {
+        if (src.getFolder() == null) {
+            return;
+        }
+
+        MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor) src.getFolder().getConfigurationDescriptor();
+        if (makeConfigurationDescriptor == null) {
+            return;
+        }
+
+        for (Configuration conf : makeConfigurationDescriptor.getConfs().getConfs()) {
+            ItemConfiguration srcItemConfiguration = src.getItemConfiguration(conf);
+            ItemConfiguration dstItemConfiguration = getItemConfiguration(conf);
+            if (srcItemConfiguration != null && dstItemConfiguration != null) {
+                dstItemConfiguration.assignValues(srcItemConfiguration);
+            }
+        }
     }
 
     /**

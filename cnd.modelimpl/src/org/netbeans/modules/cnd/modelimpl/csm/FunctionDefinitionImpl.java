@@ -128,7 +128,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
             s1 = "operator  " + s1.substring(i1 + 2); // NOI18N
         }
         Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers(owner,
-                CsmSelect.getDefault().getFilterBuilder().createNameFilter("operator", false, true, false));
+                CsmSelect.getDefault().getFilterBuilder().createNameFilter("operator", false, true, false)); // NOI18N
         while (it.hasNext()) {
             CsmMember m = it.next();
             String s2 = m.getName().toString();
