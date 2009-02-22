@@ -1235,9 +1235,9 @@ public abstract class CslTestBase extends NbTestCase {
         Collections.sort(sortedRanges);
         OffsetRange prevRange = OffsetRange.NONE;
         for (OffsetRange range : sortedRanges) {
-            if (range.getStart() < prevRange.getEnd()) {
-                fail("OffsetRanges should be non-overlapping! " + prevRange + 
-                        "(" + doc.getText(prevRange.getStart(), prevRange.getLength()) + ") and " + range + 
+            if (range.getStart() < prevRange.getEnd() && range.getEnd() > prevRange.getEnd()) {
+                fail("OffsetRanges should be non-overlapping! " + prevRange +
+                        "(" + doc.getText(prevRange.getStart(), prevRange.getLength()) + ") and " + range +
                         "(" + doc.getText(range.getStart(), range.getLength()) + ")");
             }
             prevRange = range;
@@ -1421,7 +1421,15 @@ public abstract class CslTestBase extends NbTestCase {
             SupportAccessor.getInstance().endTrans();
         }
 
-        return ((TestIndexImpl) tifi.getIndex(context.getIndexFolder())).documents.get(indexable.getRelativePath());
+        TestIndexImpl tii = ((TestIndexImpl) tifi.getIndex(context.getIndexFolder()));
+        if (tii != null) {
+            List<TestIndexDocumentImpl> list = tii.documents.get(indexable.getRelativePath());
+            if (list != null) {
+                return list;
+            }
+        }
+
+        return Collections.<TestIndexDocumentImpl>emptyList();
     }
 
     protected void indexFile(String relFilePath) throws Exception {

@@ -412,7 +412,7 @@ public final class GsfUtilities {
                 doc.getProperty(CT_HANDLER_DOC_PROPERTY) != null;
     }
 
-    public static boolean isRowWhite(String text, int offset) throws BadLocationException {
+    public static boolean isRowWhite(CharSequence text, int offset) throws BadLocationException {
         try {
             // Search forwards
             for (int i = offset; i < text.length(); i++) {
@@ -443,7 +443,7 @@ public final class GsfUtilities {
         }
     }
 
-    public static boolean isRowEmpty(String text, int offset) throws BadLocationException {
+    public static boolean isRowEmpty(CharSequence text, int offset) throws BadLocationException {
         try {
             if (offset < text.length()) {
                 char c = text.charAt(offset);
@@ -465,7 +465,7 @@ public final class GsfUtilities {
         }
     }
 
-    public static int getRowLastNonWhite(String text, int offset) throws BadLocationException {
+    public static int getRowLastNonWhite(CharSequence text, int offset) throws BadLocationException {
         try {
             // Find end of line
             int i = offset;
@@ -494,7 +494,7 @@ public final class GsfUtilities {
         }
     }
 
-    public static int getRowFirstNonWhite(String text, int offset) throws BadLocationException {
+    public static int getRowFirstNonWhite(CharSequence text, int offset) throws BadLocationException {
         try {
             // Find start of line
             int i = offset-1;
@@ -526,7 +526,7 @@ public final class GsfUtilities {
         }
     }
 
-    public static int getRowStart(String text, int offset) throws BadLocationException {
+    public static int getRowStart(CharSequence text, int offset) throws BadLocationException {
         try {
             // Search backwards
             for (int i = offset-1; i >= 0; i--) {
@@ -537,6 +537,24 @@ public final class GsfUtilities {
             }
 
             return 0;
+        } catch (Exception ex) {
+            BadLocationException ble = new BadLocationException(offset + " out of " + text.length(), offset);
+            ble.initCause(ex);
+            throw ble;
+        }
+    }
+
+    public static int getRowEnd(CharSequence text, int offset) throws BadLocationException {
+        try {
+            // Search backwards
+            for (int i = offset; i < text.length(); i++) {
+                char c = text.charAt(i);
+                if (c == '\n') {
+                    return i;
+                }
+            }
+
+            return text.length();
         } catch (Exception ex) {
             BadLocationException ble = new BadLocationException(offset + " out of " + text.length(), offset);
             ble.initCause(ex);
