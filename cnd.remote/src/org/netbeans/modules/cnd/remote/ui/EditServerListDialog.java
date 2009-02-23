@@ -190,7 +190,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                     record.init(pcs);
                     if (record.isOnline()) {
                         CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(entry);
-                        csm.initialize(false);
+                        csm.initialize(false, true);
                     }
                     phandle.finish();
                     // back to EDT to work with Swing

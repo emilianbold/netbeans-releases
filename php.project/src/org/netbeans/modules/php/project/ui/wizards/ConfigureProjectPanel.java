@@ -51,6 +51,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import javax.swing.MutableComboBoxModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -134,11 +135,14 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
                 } else {
                     configureProjectPanelVisual.setLocalServerModel(new LocalServer.ComboBoxModel(LocalServer.PENDING_LOCAL_SERVER));
                     configureProjectPanelVisual.setState(false);
-                    fireChangeEvent();
                     canceled = false;
                     PhpEnvironment.get().readDocumentRoots(new PhpEnvironment.ReadDocumentRootsNotifier() {
-                        public void finished(List<DocumentRoot> documentRoots) {
-                            initLocalServers(documentRoots);
+                        public void finished(final List<DocumentRoot> documentRoots) {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    initLocalServers(documentRoots);
+                                }
+                            });
                         }
                     });
                 }
@@ -302,6 +306,10 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         return projectName;
     }
 
+    private File getProjectFolder(String projectName) {
+        return new File(getProjectFolder().getParentFile(), projectName);
+    }
+
     private File getProjectFolder() {
         File projectFolder = (File) descriptor.getProperty(PROJECT_DIR);
         if (projectFolder == null) {
@@ -367,17 +375,26 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         descriptor.putProperty(RunConfigurationPanel.COPY_SRC_TARGETS, new LocalServer.ComboBoxModel(localServers.toArray(new LocalServer[size])));
 
         // create & set a new model for document roots
-        MutableComboBoxModel model = new LocalServer.ComboBoxModel(new LocalServer(getProjectFolder().getAbsolutePath()));
+        File projectFolder = FileUtil.normalizeFile(getProjectFolder(projectName));
+        MutableComboBoxModel model = new LocalServer.ComboBoxModel(new LocalServer(projectFolder.getAbsolutePath()));
+        LocalServer selected = null;
         for (DocumentRoot root : documentRoots) {
             LocalServer ls = new LocalServer(root.getDocumentRoot() + File.separator + projectName);
             ls.setHint(root.getHint());
             model.addElement(ls);
             if (root.isPreferred()) {
-                model.setSelectedItem(ls);
+                selected = ls;
             }
         }
+        model.setSelectedItem(selected);
+        // store settings
+        descriptor.putProperty(SOURCES_FOLDER, selected);
+        descriptor.putProperty(LOCAL_SERVERS, model);
+        descriptor.putProperty(PROJECT_DIR, projectFolder);
+        // update UI
         configureProjectPanelVisual.setLocalServerModel(model);
         configureProjectPanelVisual.setProjectName(projectName);
+        configureProjectPanelVisual.setProjectFolder(projectFolder.getAbsolutePath());
 
         configureProjectPanelVisual.setState(true);
         fireChangeEvent();

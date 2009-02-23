@@ -33,6 +33,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.cnd.api.project</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.cnd.dwarfdump</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -372,6 +381,7 @@
                 <friend>org.netbeans.modules.cnd.qnavigator</friend>
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <friend>org.netbeans.modules.cnd.remote</friend>
+                <friend>org.netbeans.modules.cnd.gizmo</friend>
                 <package>org.netbeans.modules.cnd</package>
                 <package>org.netbeans.modules.cnd.actions</package>
                 <package>org.netbeans.modules.cnd.api.compilers</package>

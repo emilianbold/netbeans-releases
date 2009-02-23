@@ -58,6 +58,10 @@ public class GrantPrivilegesDialog extends javax.swing.JPanel {
         initComponents();
     }
 
+    public void clearPassword() {
+        suPasswordField.setText(null);
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -137,7 +141,7 @@ public class GrantPrivilegesDialog extends javax.swing.JPanel {
     }//GEN-LAST:event_hdlPasswordFieldFocus
 
     public boolean askPassword() {
-        suPasswordField.setText(""); // NOI18N
+        suPasswordField.setText(null);
 
         DialogDescriptor dd = new DialogDescriptor(this,
                 loc("GrantPrivilegesDialog.title"), true, // NOI18N
@@ -161,8 +165,8 @@ public class GrantPrivilegesDialog extends javax.swing.JPanel {
         return dd.getValue() == DialogDescriptor.OK_OPTION;
     }
 
-    public String getPassword() {
-        return String.valueOf(suPasswordField.getPassword());
+    public char[] getPassword() {
+        return suPasswordField.getPassword();
     }
 
     public String getUser() {

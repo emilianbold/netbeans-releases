@@ -435,19 +435,30 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         if (res instanceof CsmFunctionDefinition) {
             return (CsmFunctionDefinition)res;
         }
-        if (getParameters().size()==0 && !isVoidParameterList()) {
-            CsmScope scope = getScope();
-            if (CsmKindUtilities.isNamespace(scope) && ((CsmNamespace)scope).isGlobal()) {
-                if (prj instanceof ProjectBase) {
-                    String from = uname.substring(0, uname.indexOf('(')+1);
-                    Collection<CsmOffsetableDeclaration> decls = ((ProjectBase)prj).findDeclarationsByPrefix(from);
-                    for(CsmOffsetableDeclaration decl : decls){
-                        if (!ProjectBase.isCppFile(decl.getContainingFile())){
-                            return (CsmFunctionDefinition)decl;
-                        }
+        if (prj instanceof ProjectBase) {
+            int parmSize = getParameters().size();
+            boolean isVoid = isVoidParameterList();
+            String from = uname.substring(0, uname.indexOf('(')+1);
+            Collection<CsmOffsetableDeclaration> decls = ((ProjectBase)prj).findDeclarationsByPrefix(from);
+            CsmFunctionDefinition candidate = null;
+            for(CsmOffsetableDeclaration decl : decls){
+                CsmFunctionDefinition def = (CsmFunctionDefinition) decl;
+                int candidateParamSize = def.getParameters().size();
+                if (!isVoid && parmSize == 0) {
+                    if (!ProjectBase.isCppFile(decl.getContainingFile())){
+                        return def;
+                    }
+                }
+                if (parmSize == candidateParamSize) {
+                    // TODO check overloads
+                    if (candidate == null) {
+                        candidate = def;
+                    } else {
+                        return null;
                     }
                 }
             }
+            return candidate;
         }
         return null;
     }

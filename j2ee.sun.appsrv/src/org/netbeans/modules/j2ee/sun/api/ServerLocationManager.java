@@ -74,6 +74,8 @@ public class ServerLocationManager  {
     
     public static final int GF_V2 = 910;
 
+    public static final int GF_V2point1 = 911;
+
     public static final String INSTALL_ROOT_PROP_NAME = "com.sun.aas.installRoot"; //NOI18N
     private static final String JAR_BRIGDES_DEFINITION_LAYER="/J2EE/SunAppServer/Bridge"; //NOI18N
     private static Map serverLocationAndClassLoaderMap = Collections.synchronizedMap((Map)new HashMap(2,1));
@@ -366,7 +368,10 @@ public class ServerLocationManager  {
             //now test for AS 9 (J2EE 5.0) which should work for this plugin
             File as90 = new File((asInstallRoot)+"/lib/dtds/sun-domain_1_2.dtd");   // NOI18N
             File as91 = new File((asInstallRoot)+"/lib/dtds/sun-domain_1_3.dtd");   // NOI18N
-            if(as91.exists()){
+            File as911 = new File((asInstallRoot)+"/lib/dtds/sun-ejb-jar_3_0-1.dtd");   // NOI18N
+            if (as911.exists()) {
+                version = GF_V2point1;
+            } else if(as91.exists()){
                 version = GF_V2; 
             } else if (as90.exists()) {
                 version = GF_V1;

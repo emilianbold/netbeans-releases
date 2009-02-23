@@ -6,6 +6,9 @@ cd ${DIRNAME}
 SCRIPTS_DIR=`pwd`
 source init.sh
 
+OUTPUT_DIR="$DIST/installers"
+export OUTPUT_DIR
+
 if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
    ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/installer $MAC_PATH/reglib/src
    ERROR_CODE=$?
@@ -45,7 +48,7 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
 #   ssh $NATIVE_MAC_MACHINE $MAC_PATH/run-mac-installer.sh $ML_BUILD > $MAC_LOG 2>&1 &
 
 # Run new builds
-   scp -q -v $NB_ALL/../build-private.sh $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild
+   sh $NB_ALL/installer/mac/newbuild/init.sh | ssh $NATIVE_MAC_MACHINE "cat > $MAC_PATH/installer/mac/newbuild/build-private.sh"
    ssh $NATIVE_MAC_MACHINE chmod a+x $MAC_PATH/installer/mac/newbuild/build.sh
 #   if [ 1 -eq $ML_BUILD ] ; then
 #       ssh $NATIVE_MAC_MACHINE $MAC_PATH/installer/mac/newbuild/build.sh $MAC_PATH/zip-ml/moduleclusters $BASENAME_PREFIX $BUILDNUMBER $ML_BUILD > $MAC_LOG_NEW 2>&1 &  
@@ -77,12 +80,12 @@ done
 set -x
 
 if [ -d $DIST/ml ]; then
-    mv $DIST/installers/ml/* $DIST/ml
-    rm -rf $DIST/installers/ml
+    mv $OUTPUT_DIR/ml/* $DIST/ml
+    rm -rf $OUTPUT_DIR/ml
 fi
 
-mv $DIST/installers/* $DIST
-rmdir $DIST/installers
+mv $OUTPUT_DIR/* $DIST
+rmdir $OUTPUT_DIR
 
 #Check if Mac installer was OK, 10 "BUILD SUCCESSFUL" messages should be in Mac log
 if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then

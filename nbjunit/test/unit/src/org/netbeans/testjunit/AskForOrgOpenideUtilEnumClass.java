@@ -40,9 +40,10 @@
  */
 package org.netbeans.testjunit;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.junit.*;
 import junit.framework.TestCase;
-import org.openide.util.Exceptions;
 
 /** This class needs to be in other package than
  * org.netbeans.junit in order to not be loaded by the application
@@ -65,7 +66,7 @@ public class AskForOrgOpenideUtilEnumClass extends TestCase {
             Class<?> access = Class.forName("org.openide.util.enum.ArrayEnumeration");
             System.setProperty("en.one", "OK");
         } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+            Logger.getLogger("testOne").log(Level.INFO, ex.getMessage(), ex);
         }
     }
 }

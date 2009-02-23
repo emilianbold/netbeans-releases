@@ -84,7 +84,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- * TODO, include this in the main module (nb-project)
  * @author mkleint
  */
 public class ArchetypeWizardUtils {
@@ -178,7 +177,6 @@ public class ArchetypeWizardUtils {
         config.setActivatedProfiles(Collections.<String>emptyList());
         config.setExecutionDirectory(directory);
         config.setExecutionName(NbBundle.getMessage(ArchetypeWizardUtils.class, "RUN_Project_Creation"));
-        //TODO externalize somehow to allow advanced users to change the value..
         config.setGoals(Collections.singletonList(MavenCommandSettings.getDefault().getCommand(MavenCommandSettings.COMMAND_CREATE_ARCHETYPENG))); //NOI18N
         if (arch.getRepository() != null) {
             props.setProperty("archetype.repository", arch.getRepository()); //NOI18N

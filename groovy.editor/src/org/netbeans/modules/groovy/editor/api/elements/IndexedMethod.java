@@ -81,7 +81,7 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
     }
 
     public static IndexedMethod create(GroovyIndex index, String signature, String returnType,
-            String fqn, String clz, String fileUrl, String attributes, int flags) {
+            String clz, String fileUrl, String attributes, int flags) {
         IndexedMethod m =
             new IndexedMethod(signature, returnType, index, fileUrl, clz, attributes, flags);
 

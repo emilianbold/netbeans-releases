@@ -57,6 +57,7 @@ import java.util.Date;
  * timestamped against the last
  * time they were used, and occasionally prunes not recently used bitmaps.
  *
+ * @deprecated The new brushed metal look and feel doesn't need this class anymore.
  * @author Tim Boudreau
  */
 public class ChicletWrapper implements Runnable {
