@@ -118,7 +118,7 @@ public class HgHookImpl extends HgHook {
             Date date = context.getLogEntries()[0].getDate();
             String message = context.getLogEntries()[0].getMessage();
 
-            String formatString = VCSHooksConfig.getInstance().getSvnCommentFormat();
+            String formatString = VCSHooksConfig.getInstance().getHgCommentFormat();
             formatString = formatString.replaceAll("\\{changeset\\}", "\\{0\\}");           // NOI18N
             formatString = formatString.replaceAll("\\{author\\}",    "\\{1\\}");           // NOI18N
             formatString = formatString.replaceAll("\\{date\\}",      "\\{2\\}");           // NOI18N
