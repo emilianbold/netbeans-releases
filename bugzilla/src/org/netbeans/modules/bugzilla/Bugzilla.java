@@ -208,6 +208,24 @@ public class Bugzilla {
     }
 
     /**
+     * Returns target milestones defined for the given product or all available 
+     * milestones if product is null
+     *
+     * @param repository
+     * @param product
+     * @return
+     * @throws java.io.IOException
+     * @throws org.eclipse.core.runtime.CoreException
+     */
+    public List<String> getTargetMilestones(BugzillaRepository repository, String product) throws IOException, CoreException {
+        if(product == null) {
+            return getRepositoryConfiguration(repository).getTargetMilestones();
+        } else {
+            return getRepositoryConfiguration(repository).getTargetMilestones(product);
+        }
+    }
+
+    /**
      * Returns the request procussor for common tasks in bugzilla. 
      * Do not use this when accesing a remote repository.
      * 
