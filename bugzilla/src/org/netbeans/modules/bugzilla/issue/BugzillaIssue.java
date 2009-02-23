@@ -94,7 +94,7 @@ public class BugzillaIssue extends Issue {
     private Map<String, String> attributes;
 
     /**
-     * Defines column labels for a view table.
+     * Defines columns for a view table.
      */
     public static ColumnDescriptor[] DESCRIPTORS;
 
@@ -143,6 +143,33 @@ public class BugzillaIssue extends Issue {
         setSeen(seen, true);
     }
 
+    @Override
+    public String toString() {
+        String str = getID() + " : "  + getSeverity() + " : " + getStatus() + " : " + getPriority() + " : " + getSummary();
+        return str;
+    }
+
+    @Override
+    public IssueNode getNode() {
+        if(node == null) {
+            node = createNode();
+        }
+        return node;
+    }
+
+    @Override
+    public Map<String, String> getAttributes() {
+        if(attributes == null) {
+            attributes = new HashMap<String, String>();
+            attributes.put("id", getID());
+            attributes.put("summary", getSummary());
+            attributes.put("status", getStatus());
+            attributes.put("priority", getPriority());
+        }
+        attributes.put("seen", wasSeen() ? "1" : "0"); // XXX
+        return attributes;
+    }
+
     public void setSeen(boolean seen, boolean cacheRefresh) {
         super.setSeen(seen);
         if(cacheRefresh) {
@@ -164,12 +191,6 @@ public class BugzillaIssue extends Issue {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    @Override
-    public String toString() {
-        String str = getID() + " : "  + getSeverity() + " : " + getStatus() + " : " + getPriority() + " : " + getSummary();
-        return str;
-    }
-
     void addAttachment(File f, String comment, String desc) {
         FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(f);
         attachmentSource.setContentType("text/plain");
@@ -177,7 +198,7 @@ public class BugzillaIssue extends Issue {
 
         try {
             Bugzilla.getInstance().getRepositoryConnector().getClientManager().getClient(getTaskRepository(), new NullProgressMonitor()).
-                postAttachment(getID(), comment, desc, attachmentSource.getContentType(), false, source, new NullProgressMonitor());
+            postAttachment(getID(), comment, desc, attachmentSource.getContentType(), false, source, new NullProgressMonitor());
         } catch (HttpException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -227,6 +248,67 @@ public class BugzillaIssue extends Issue {
     String getResolution() {
         return getMappedValue(TaskAttribute.RESOLUTION);
     }
+
+    String getProduct() {
+        return getValue(BugzillaAttribute.PRODUCT.getKey());
+    }
+
+    String getComponent() {
+        return getValue(BugzillaAttribute.COMPONENT.getKey());
+    }
+
+    String getVersion() {
+        return getValue(BugzillaAttribute.VERSION.getKey());
+    }
+
+    String getPlatform() {
+        return getValue(BugzillaAttribute.REP_PLATFORM.getKey());
+    }
+
+    String getTargetMilestone() {
+        return getValue(BugzillaAttribute.TARGET_MILESTONE.getKey());
+    }
+
+    String getReporter() {
+        return getValue(BugzillaAttribute.REPORTER.getKey());
+    }
+
+    String getAssignedTo() {
+        return getValue(BugzillaAttribute.ASSIGNED_TO.getKey());
+    }
+
+    String getAssignedToName() {
+        return getValue(BugzillaAttribute.ASSIGNED_TO_NAME.getKey());
+    }
+
+    String getQAContact() {
+        return getValue(BugzillaAttribute.QA_CONTACT.getKey());
+    }
+
+    String getQAContactName() {
+        return getValue(BugzillaAttribute.QA_CONTACT_NAME.getKey());
+    }
+
+    String getCC() {
+        return getValue(BugzillaAttribute.CC.getKey());
+    }
+
+    String getDependsOn() {
+        return getValue(BugzillaAttribute.DEPENDSON.getKey());
+    }
+
+    String getBlocks() {
+        return getValue(BugzillaAttribute.BLOCKED.getKey());
+    }
+
+    String getUrl() {
+        return getValue(BugzillaAttribute.BUG_FILE_LOC.getKey());
+    }
+
+    String getKeywords() {
+        return getValue(BugzillaAttribute.KEYWORDS.getKey());
+    }
+
 
     String getSeverity() {
         return getValue(BugzillaAttribute.BUG_SEVERITY.getKey());
@@ -321,27 +403,6 @@ public class BugzillaIssue extends Issue {
         if(controller != null) {
             controller.refreshViewData();
         }
-    }
-
-    @Override
-    public IssueNode getNode() {
-        if(node == null) {
-            node = createNode();
-        }
-        return node;
-    }
-
-    @Override
-    public Map<String, String> getAttributes() {
-        if(attributes == null) {
-            attributes = new HashMap<String, String>();
-            attributes.put("id", getID());
-            attributes.put("summary", getSummary());
-            attributes.put("status", getStatus());
-            attributes.put("priority", getPriority());
-        }
-        attributes.put("seen", wasSeen() ? "1" : "0"); // XXX
-        return attributes;
     }
     
     class Comment {
