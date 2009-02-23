@@ -65,9 +65,9 @@ import org.netbeans.modules.bugzilla.util.BugzillaUtil;
  */
 public class KenaiTest extends NbTestCase implements TestConstants {
 
-    public static final String REPO_PASSWD  = "YOUR_USERNAME";
-    public static final String REPO_URL     = "https://kenai.com/bugzilla";
-    public static final String REPO_USER    = "YOUR_PASSWORD";
+    public static final String REPO_PASSWD  = "XXX";
+    public static final String REPO_URL     = "https://testkenai.com/bugzilla";
+    public static final String REPO_USER    = "XXX";
 
     private TaskRepository repository;
     private BugzillaRepositoryConnector brc;
@@ -94,7 +94,8 @@ public class KenaiTest extends NbTestCase implements TestConstants {
         repository = new TaskRepository("bugzilla", REPO_URL);
         AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(REPO_USER, REPO_PASSWD);
         repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
-        repository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
+//        authenticationCredentials = new AuthenticationCredentials("", "fabuloso09");
+//        repository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
 
         trm = new TaskRepositoryManager();
         brc = new BugzillaRepositoryConnector();
