@@ -45,20 +45,27 @@ import org.netbeans.modules.kenai.api.KenaiEvent;
 import org.netbeans.modules.kenai.api.KenaiListener;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+
 
 
 /**
  * @author Jan Becicka
  */
-public final class LoginAction extends AbstractAction {
+public final class LoginAction extends AbstractAction implements Runnable {
 
     private static LoginAction instance;
     private boolean logout;
 
     private LoginAction() {
         setLogout(Kenai.getDefault().getPasswordAuthentication()!=null);
+        RequestProcessor.getDefault().post(this);
     }
 
+    public void run() {
+        UIUtils.tryLogin();
+    }
+    
     public static synchronized LoginAction getDefault() {
         if (instance==null) {
             instance=new LoginAction();

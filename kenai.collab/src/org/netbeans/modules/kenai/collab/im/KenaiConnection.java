@@ -101,7 +101,6 @@ public class KenaiConnection implements KenaiListener {
         if (instance == null) {
             instance = new KenaiConnection();
             Kenai.getDefault().addKenaiListener(instance);
-            instance.tryConnect();
         }
         return instance;
     }
@@ -139,11 +138,9 @@ public class KenaiConnection implements KenaiListener {
 
     private void tryConnect() {
         try {
-            if (UIUtils.tryLogin()) {
-                connect();
-                initChats();
-                PresenceIndicator.getDefault().setStatus(Status.ONLINE);
-            }
+            connect();
+            initChats();
+            PresenceIndicator.getDefault().setStatus(Status.ONLINE);
         } catch (XMPPException ex) {
             XMPPLOG.log(Level.WARNING, ex.getMessage());
         }
@@ -239,7 +236,14 @@ public class KenaiConnection implements KenaiListener {
             if (pa != null) {
                 myProjects = null;
                 tryConnect();
-                ChatTopComponent.reload();
+            } else {
+                for (MultiUserChat muc:getChats()) {
+                    muc.leave();
+                }
+                chats.clear();
+                connection.disconnect();
+                messageQueue.clear();
+                listeners.clear();
             }
         }
     }
