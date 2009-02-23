@@ -95,8 +95,13 @@ public final class GrailsInstance implements ServerInstanceImplementation {
     }
 
     public final String getDisplayName() {
-        Version version = runtime.getVersion();
-        return NbBundle.getMessage(GrailsInstance.class, "GrailsInstance.displayName", version.toString());
+        String version;
+        if (!runtime.isConfigured()) {
+            version = NbBundle.getMessage(GrailsInstance.class, "GrailsInstance.unknownVersion");
+        }
+
+        version = runtime.getVersion().toString();
+        return NbBundle.getMessage(GrailsInstance.class, "GrailsInstance.displayName", version);
     }
 
     public final String getServerDisplayName() {
