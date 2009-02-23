@@ -64,7 +64,7 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
-import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
+import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.GrailsProjectFactory;
 import org.netbeans.modules.groovy.grailsproject.GrailsServerState;
@@ -120,7 +120,7 @@ public final class GrailsCommandSupport {
     }
 
     public ExecutionDescriptor getRunDescriptor() {
-        return getDescriptor(GrailsRuntime.IDE_RUN_COMMAND);
+        return getDescriptor(GrailsPlatform.IDE_RUN_COMMAND);
     }
 
     public ExecutionDescriptor getDescriptor(String command) {
@@ -132,7 +132,7 @@ public final class GrailsCommandSupport {
     }
 
     public ExecutionDescriptor getDescriptor(String command, InputProcessorFactory outFactory, final boolean debug) {
-        if (GrailsRuntime.IDE_RUN_COMMAND.equals(command)) {
+        if (GrailsPlatform.IDE_RUN_COMMAND.equals(command)) {
             Runnable runnable = new Runnable() {
                 public void run() {
                     final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);

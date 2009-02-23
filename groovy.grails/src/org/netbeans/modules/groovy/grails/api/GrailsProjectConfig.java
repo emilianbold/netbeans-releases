@@ -290,8 +290,8 @@ public final class GrailsProjectConfig {
         propertyChangeSupport.firePropertyChange(GRAILS_JAVA_PLATFORM_PROPERTY, oldValue, platform);
     }
 
-    public GrailsRuntime getGrailsPlatform() {
-        GrailsRuntime runtime = GrailsRuntime.getInstance();
+    public GrailsPlatform getGrailsPlatform() {
+        GrailsPlatform runtime = GrailsPlatform.getDefault();
         if (runtime.isConfigured()) {
             return runtime;
         }

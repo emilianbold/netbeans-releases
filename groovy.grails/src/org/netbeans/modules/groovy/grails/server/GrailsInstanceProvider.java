@@ -48,7 +48,7 @@ import java.util.concurrent.Executors;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.server.ServerInstance;
-import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
+import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.spi.server.ServerInstanceFactory;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.util.ChangeSupport;
@@ -83,7 +83,7 @@ public final class GrailsInstanceProvider implements ServerInstanceProvider {
     }
 
     public List<ServerInstance> getInstances() {
-        if (!GrailsRuntime.getInstance().isConfigured()) {
+        if (!GrailsPlatform.getDefault().isConfigured()) {
             return Collections.emptyList();
         }
         return Collections.singletonList(ServerInstanceFactory.createServerInstance(grailsInstance));

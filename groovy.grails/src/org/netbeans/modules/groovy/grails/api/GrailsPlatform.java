@@ -81,11 +81,11 @@ import org.openide.util.Utilities;
  */
 // TODO instance should be always configured in future
 // TODO more appropriate would be getDefault and forProject
-public final class GrailsRuntime {
+public final class GrailsPlatform {
 
     public static final String IDE_RUN_COMMAND = "run-app"; // NOI18N
 
-    private static final Logger LOGGER = Logger.getLogger(GrailsRuntime.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(GrailsPlatform.class.getName());
 
     private static final Set<String> GUARDED_COMMANDS = new HashSet<String>();
 
@@ -93,13 +93,13 @@ public final class GrailsRuntime {
         Collections.addAll(GUARDED_COMMANDS, "run-app", "run-app-https", "run-war", "shell"); //NOI18N
     }
 
-    private static GrailsRuntime instance;
+    private static GrailsPlatform instance;
 
     private boolean initialized;
 
     private Version version;
 
-    private GrailsRuntime() {
+    private GrailsPlatform() {
         super();
     }
 
@@ -108,9 +108,9 @@ public final class GrailsRuntime {
      *
      * @return the instance representing the IDE configured Grails runtime
      */
-    public static synchronized GrailsRuntime getInstance() {
+    public static synchronized GrailsPlatform getDefault() {
         if (instance == null) {
-            instance = new GrailsRuntime();
+            instance = new GrailsPlatform();
             GrailsSettings.getInstance().addPropertyChangeListener(new PropertyChangeListener() {
 
                 public void propertyChange(PropertyChangeEvent evt) {
@@ -215,7 +215,7 @@ public final class GrailsRuntime {
         RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {
-                synchronized (GrailsRuntime.this) {
+                synchronized (GrailsPlatform.this) {
                     if (initialized) {
                         return;
                     }
@@ -666,7 +666,7 @@ public final class GrailsRuntime {
                         descriptor.getDirectory(), descriptor.getName());
             } catch (IOException ex) {
                 NotifyDescriptor desc = new NotifyDescriptor.Message(
-                        NbBundle.getMessage(GrailsRuntime.class, "MSG_StartFailedIOE",
+                        NbBundle.getMessage(GrailsPlatform.class, "MSG_StartFailedIOE",
                                 grailsExecutable.getAbsolutePath()), NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notifyLater(desc);
                 throw ex;

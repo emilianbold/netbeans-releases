@@ -57,7 +57,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
-import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
+import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
@@ -141,7 +141,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     private List<PathResourceImplementation> findGroovyPlatform() {
         List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
 
-        final GrailsRuntime runtime = GrailsRuntime.getInstance();
+        final GrailsPlatform runtime = GrailsPlatform.getDefault();
         if (!runtime.isConfigured()) {
             return Collections.unmodifiableList(result);
         }

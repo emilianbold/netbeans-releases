@@ -52,7 +52,7 @@ import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
-import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
+import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.modules.groovy.grailsproject.GrailsProjectSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDisplayer;
@@ -159,7 +159,7 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Progress
         this.wiz = wizard;
         index = 0;
 
-        if (!GrailsRuntime.getInstance().isConfigured()) {
+        if (!GrailsPlatform.getDefault().isConfigured()) {
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(NewGrailsProjectWizardIterator.class,
                     "NewGrailsProjectWizardIterator.NoGrailsServerConfigured"));
