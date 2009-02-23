@@ -129,10 +129,12 @@ public class JobCreator extends JPanel implements ProjectHudsonJobCreator {
         Element publishers = (Element) projectE.appendChild(doc.createElement("publishers"));
         // XXX use appropriate properties from project evaluator where possible
         if (buildJar.isSelected()) {
-            publishers.appendChild(doc.createElement("hudson.tasks.ArtifactArchiver")).
-                    appendChild(doc.createElement("artifacts")).
+            Element aa = (Element) publishers.appendChild(doc.createElement("hudson.tasks.ArtifactArchiver"));
+            aa.appendChild(doc.createElement("artifacts")).
                     // XXX consider including lib/ subdir too
                     appendChild(doc.createTextNode("dist/*.jar"));
+            aa.appendChild(doc.createElement("latestOnly")).
+                    appendChild(doc.createTextNode("true"));
         }
         if (buildJavadoc.isSelected()) {
             publishers.appendChild(doc.createElement("hudson.tasks.JavadocArchiver")).
@@ -148,6 +150,7 @@ public class JobCreator extends JPanel implements ProjectHudsonJobCreator {
             projectE.appendChild(doc.createElement(dummy));
         }
         Helper.addSCM(basedir, doc);
+        Helper.addLogRotator(doc);
         return doc;
     }
 

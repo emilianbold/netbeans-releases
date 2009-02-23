@@ -133,6 +133,19 @@ public interface ProjectHudsonJobCreatorFactory {
                     setAttribute("class", "hudson.scm.NullSCM");
         }
 
+        /**
+         * Adds instruction to keep only the last successful build.
+         * @param configXml a {@code config.xml} to which {@code <logRotator>} will be appended
+         */
+        public static void addLogRotator(Document configXml) {
+            Element lr = (Element) configXml.getDocumentElement().appendChild(
+                    configXml.createElement("logRotator"));
+            lr.appendChild(configXml.createElement("daysToKeep")).
+                    appendChild(configXml.createTextNode("-1"));
+            lr.appendChild(configXml.createElement("numToKeep")).
+                    appendChild(configXml.createTextNode("1"));
+        }
+
     }
 
 }

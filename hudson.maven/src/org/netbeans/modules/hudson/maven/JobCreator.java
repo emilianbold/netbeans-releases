@@ -78,6 +78,7 @@ public class JobCreator implements ProjectHudsonJobCreatorFactory {
             public Document configure() throws IOException {
                 Document doc = XMLUtil.createDocument("maven2-moduleset", null, null, null);
                 Helper.addSCM(prj.getMavenProject().getBasedir(), doc);
+                Helper.addLogRotator(doc);
                 return doc;
             }
 
