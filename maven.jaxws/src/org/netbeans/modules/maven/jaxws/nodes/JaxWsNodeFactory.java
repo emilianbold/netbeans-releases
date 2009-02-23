@@ -55,6 +55,7 @@ import org.netbeans.modules.websvc.project.api.WebServiceData;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.nodes.Node;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -62,6 +63,8 @@ import org.openide.nodes.Node;
  */
 @NodeFactory.Registration(projectType="org-netbeans-modules-maven",position=85)
 public class JaxWsNodeFactory implements NodeFactory {
+
+    private JAXWSLightSupport jaxwsSupport;
 
     /** Creates a new instance of WebServicesNodeFactory */
     public JaxWsNodeFactory() {
@@ -72,16 +75,14 @@ public class JaxWsNodeFactory implements NodeFactory {
         return new WsNodeList(p);
     }
     
-    private static class WsNodeList implements NodeList<String>, PropertyChangeListener {
+    private class WsNodeList implements NodeList<String>, PropertyChangeListener {
         // Web Services
         private static final String KEY_SERVICES = "web_services"; // NOI18N
         // Web Service Client
         private static final String KEY_SERVICE_REFS = "serviceRefs"; // NOI18N
         
         private Project project;
-        
-        private JAXWSLightSupport jaxwsSupport;
-        
+           
         private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
         
         public WsNodeList(Project proj) {
@@ -144,18 +145,16 @@ public class JaxWsNodeFactory implements NodeFactory {
         public void addNotify() {
             if (jaxwsSupport == null) {
                 jaxwsSupport = JAXWSLightSupport.getJAXWSLightSupport(project.getProjectDirectory());
-            }
-            if (jaxwsSupport != null) {
-                jaxwsSupport.addPropertyChangeListener(this);
+                if (jaxwsSupport != null) {
+                    jaxwsSupport.addPropertyChangeListener(WeakListeners.propertyChange(this, jaxwsSupport));
+                }
             }
         }
         
         public void removeNotify() {
-            if (jaxwsSupport == null) {
-                jaxwsSupport = JAXWSLightSupport.getJAXWSLightSupport(project.getProjectDirectory());
-            }
             if (jaxwsSupport != null) {
-                jaxwsSupport.removePropertyChangeListener(this);
+                jaxwsSupport.removePropertyChangeListener(WeakListeners.propertyChange(this, jaxwsSupport));
+                jaxwsSupport = null;
             }
         }
 
