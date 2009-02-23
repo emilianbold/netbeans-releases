@@ -56,28 +56,34 @@ import java.net.MalformedURLException;
 import java.io.File;
 import java.net.URL;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
+import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileObject;
 
 final class ProjectClassPathImplementation implements ClassPathImplementation, FileChangeListener {
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
     private List<PathResourceImplementation> resources;
+
+    private final GrailsProjectConfig projectConfig;
+
     private final File projectRoot;
 
-    private ProjectClassPathImplementation(FileObject projectRoot) {
-        this.projectRoot = FileUtil.toFile(projectRoot);
+    private ProjectClassPathImplementation(GrailsProjectConfig projectConfig) {
+        this.projectConfig = projectConfig;
+        this.projectRoot = FileUtil.toFile(projectConfig.getProject().getProjectDirectory());
     }
 
     public static ProjectClassPathImplementation forProject(Project project) {
-        ProjectClassPathImplementation impl = new ProjectClassPathImplementation(project.getProjectDirectory());
+        ProjectClassPathImplementation impl = new ProjectClassPathImplementation(GrailsProjectConfig.forProject(project));
 
         File pluginsDir = FileUtil.normalizeFile(new File(FileUtil.toFile(project.getProjectDirectory()), "plugins")); // NOI18N
         File libDir = FileUtil.normalizeFile(new File(FileUtil.toFile(project.getProjectDirectory()), "lib")); // NOI18N
 
         // it is weakly referenced
+        // FIXME in 1.1 we have to listen on application.properties
         FileUtil.addFileChangeListener(impl, pluginsDir);
         FileUtil.addFileChangeListener(impl, libDir);
         return impl;
@@ -94,7 +100,8 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, F
         List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
         // lib directory from project root
         addLibs(projectRoot, result);
-        File pluginsDir = new File(projectRoot, "plugins"); // NOI18N
+        //File pluginsDir = new File(projectRoot, "plugins"); // NOI18N
+        File pluginsDir = getPluginsDir();
         if (pluginsDir.isDirectory()) {
             for (String name : pluginsDir.list()) {
                 File file = new File(pluginsDir, name);
@@ -127,6 +134,58 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, F
                 }
             }
         }
+    }
+
+    private File getPluginsDir() {
+        GrailsPlatform platform = projectConfig.getGrailsPlatform();
+        if (GrailsPlatform.Version.VERSION_1_1.compareTo(platform.getVersion()) <= 0) {
+            File buildConfig = new File(projectRoot,
+                    "grails-app" + File.separator + "conf" + File.separator + "BuildConfig.groovy"); // NOI18N
+
+            // FIXME global plugins and buildConfig
+//            if (!buildConfig.exists() || !buildConfig.canRead()) {
+                File pluginsDirFile;
+                String pluginsDir = System.getProperty("grails.project.plugins.dir"); // NOI18N
+                if (pluginsDir == null) {
+                    File projectWorkDirFile;
+                    String projectWorkDir = System.getProperty("grails.project.work.dir"); // NOI18N
+                    if (projectWorkDir == null) {
+                        File workDirFile;
+                        String workDir = System.getProperty("grails.work.dir"); // NOI18N
+                        if (workDir == null) {
+                            workDir = System.getProperty("user.home"); // NOI18N
+                            workDir = workDir + File.separator + ".grails" + File.separator + platform.getVersion(); // NOI18N
+                            workDirFile = new File(workDir);
+                        } else {
+                            workDirFile = new File(workDir);
+                            if (!workDirFile.isAbsolute()) {
+                                workDirFile = new File(projectRoot, workDir);
+                            }
+                        }
+                        projectWorkDirFile = new File(workDirFile, "projects" + File.separator + projectRoot.getName()); // NOI18N
+                    } else {
+                        projectWorkDirFile = new File(projectWorkDir);
+                        if (!projectWorkDirFile.isAbsolute()) {
+                            projectWorkDirFile = new File(projectRoot, projectWorkDir);
+                        }
+                    }
+                    pluginsDirFile = new File(projectWorkDirFile, "plugins"); // NOI18N
+                } else {
+                    pluginsDirFile = new File(pluginsDir);
+                    if (!pluginsDirFile.isAbsolute()) {
+                        pluginsDirFile = new File(projectRoot, pluginsDir);
+                    }
+                }
+
+                System.out.println(pluginsDirFile.getAbsolutePath());
+                return pluginsDirFile;
+//            } else {
+//
+//            }
+        }
+
+        System.out.println(new File(projectRoot, "plugins").getAbsolutePath());
+        return new File(projectRoot, "plugins"); // NOI18N
     }
 
     // XXX I am handling plugin sources as 'library' for owning project, is that correct?

@@ -227,6 +227,8 @@ public final class GrailsPlatform {
                     } else {
                         version = Version.VERSION_DEFAULT;
                     }
+                } else {
+                    version = Version.VERSION_DEFAULT;
                 }
             } catch (IllegalArgumentException ex) {
                 version = Version.VERSION_DEFAULT;
@@ -264,6 +266,8 @@ public final class GrailsPlatform {
                             } else {
                                 version = Version.VERSION_DEFAULT;
                             }
+                        } else {
+                            version = Version.VERSION_DEFAULT;
                         }
                     } catch (IllegalArgumentException ex) {
                         version = Version.VERSION_DEFAULT;
