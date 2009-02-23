@@ -49,7 +49,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -228,10 +230,8 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                     ModelLineage lin = EmbedderFactory.createModelLineage(file, EmbedderFactory.createOnlineEmbedder(), false);
                     @SuppressWarnings("unchecked")
                     Iterator<File> it = lin.fileIterator();
-                    final POMModelVisitor.POMCutHolder hold = new POMModelVisitor.POMCutHolder();
+                    List<Project> prjs = new ArrayList<Project>();
                     POMQNames names = null;
-                    
-
                     while (it.hasNext()) {
                         File pom = it.next();
                         FileUtil.refreshFor(pom);
@@ -240,7 +240,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                             ModelSource ms = org.netbeans.modules.maven.model.Utilities.createModelSource(fo);
                             POMModel mdl = POMModelFactory.getDefault().getModel(ms);
                             if (mdl != null) {
-                                hold.addCut(mdl.getProject());
+                                prjs.add(mdl.getProject());
                                 names = mdl.getPOMQNames();
                             } else {
                                 System.out.println("no model for " + pom);
@@ -249,11 +249,14 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                             System.out.println("no fileobject for " + pom);
                         }
                     }
-                    final POMModelVisitor.PomChildren childs = new POMModelVisitor.PomChildren(hold, names, Project.class, filterIncludeUndefined);
+                    final POMModelVisitor.POMCutHolder hold = new POMModelVisitor.SingleObjectCH(names, names.PROJECT, "root", Project.class,  filterIncludeUndefined);
+                    for (Project p : prjs) {
+                        hold.addCut(p);
+                    }
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                            treeView.setRootVisible(false);
-                           explorerManager.setRootContext(new AbstractNode(childs, Lookups.fixed(hold)));
+                           explorerManager.setRootContext(hold.createNode());
                         } 
                     });
                 } catch (ProjectBuildingException ex) {
