@@ -75,6 +75,7 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.util.StackTraceSupport;
 import org.netbeans.modules.bugtracking.util.StackTraceSupport.StackTracePosition;
 import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.issue.BugzillaIssue.IssueField;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.HelpCtx;
 
@@ -217,7 +218,7 @@ public class IssueController extends BugtrackingController implements ActionList
                 return;
             }
             attrs = issue.getResolveAttributes((String) resolvePanel.resolutionCBO.getSelectedItem());
-            RepositoryResponse rr = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(issue.getTaskRepository(), issue.getData(), attrs, new NullProgressMonitor());
+            RepositoryResponse rr = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(issue.getTaskRepository(), issue.getTaskData(), attrs, new NullProgressMonitor());
             issue.refresh();
             refreshViewData();
         } catch (MalformedURLException ex) {
@@ -229,16 +230,16 @@ public class IssueController extends BugtrackingController implements ActionList
 
     void refreshViewData() {
         panel.idTextField.setText(issue.getID());
-        panel.priorityField.setText(issue.getPriority());
+        panel.priorityField.setText(issue.getFieldValue(IssueField.PRIORITY));
         panel.summaryField.setText(issue.getSummary());
-        String status = issue.getStatus();
-        String res = issue.getResolution();
+        String status = issue.getFieldValue(IssueField.STATUS);
+        String res = issue.getFieldValue(IssueField.RESOLUTION);
         if(res != null && !res.trim().equals("")) {
             status += ":" + res;
         }
         panel.statusField.setText(status);
-        panel.typeField.setText(issue.getSeverity());
-        panel.descTextArea.setText(issue.getDescription());
+        panel.typeField.setText(issue.getFieldValue(IssueField.SEVERITY));
+        panel.descTextArea.setText(issue.getFieldValue(IssueField.SUMMARY));
         BugzillaIssue.Comment[] comments = issue.getComments();
         refreshComents(comments);
         BugzillaIssue.Attachment[] attachements = issue.getAttachments();
