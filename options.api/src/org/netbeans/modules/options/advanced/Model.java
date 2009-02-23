@@ -251,8 +251,13 @@ public final class Model extends TabbedPanelModel {
             // don't lookup in subfolders
             if(item.getId().substring(0, item.getId().lastIndexOf('/')).equals(path)) {  // NOI18N
                 AdvancedOption option = item.getInstance();
-                categoryToOption.put(option.getDisplayName(), option);
-                idToCategory.put(item.getId().substring(path.length()+1), item.getInstance().getDisplayName());
+                String displayName = option.getDisplayName();
+                if (displayName != null) {
+                    categoryToOption.put(option.getDisplayName(), option);
+                    idToCategory.put(item.getId().substring(path.length()+1), item.getInstance().getDisplayName());
+                } else {
+                    assert false : "Display name not defined: " + item.toString();  //NOI18N
+                }
             }
         }
     }
