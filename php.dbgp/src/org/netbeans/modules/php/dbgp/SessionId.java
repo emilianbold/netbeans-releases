@@ -127,6 +127,7 @@ public class SessionId {
     public FileObject toSourceFile( String uri ){
         if (uriMapper != null) {
             File localFile = uriMapper.toSourceFile(URI.create(uri));
+            localFile = (localFile != null) ? FileUtil.normalizeFile(localFile) : null;
             return (localFile != null) ? FileUtil.toFileObject(localFile) : null;
         }
         return null;
