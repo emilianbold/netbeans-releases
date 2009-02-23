@@ -236,6 +236,8 @@ abstract class AbstractEntry implements ModuleEntry {
     }
 
     public URL getJavadoc(final NbPlatform platform) {
+        if (platform == null)
+            return null;
         String cnbdashes = getCodeNameBase().replace('.', '-');
         URL[] roots = platform.getJavadocRoots();
         return roots == null ? null : Util.findJavadocURL(cnbdashes, roots);

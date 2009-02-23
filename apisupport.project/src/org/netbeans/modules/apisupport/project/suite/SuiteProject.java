@@ -298,13 +298,17 @@ public final class SuiteProject implements Project {
         });
         // refresh build.xml and build-impl.xml
         try {
+            String buildImplPath =
+                    getPlatform(true).getHarnessVersion() <= NbPlatform.HARNESS_VERSION_65
+                    && eval.getProperty(SuiteProperties.CLUSTER_PATH_PROPERTY) == null
+                    ? "build-impl-65.xsl" : "build-impl.xsl";    // NOI18N
             genFilesHelper.refreshBuildScript(
                     GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                    SuiteProject.class.getResource("resources/build-impl.xsl"),
+                    SuiteProject.class.getResource("resources/" + buildImplPath),// NOI18N
                     true);
             genFilesHelper.refreshBuildScript(
                     GeneratedFilesHelper.BUILD_XML_PATH,
-                    SuiteProject.class.getResource("resources/build.xsl"),
+                    SuiteProject.class.getResource("resources/build.xsl"),// NOI18N
                     true);
         } catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -330,9 +334,13 @@ public final class SuiteProject implements Project {
         
         protected void projectXmlSaved() throws IOException {
             // refresh build.xml and build-impl.xml
+            String buildImplPath =
+                    getPlatform(true).getHarnessVersion() <= NbPlatform.HARNESS_VERSION_65
+                    && eval.getProperty(SuiteProperties.CLUSTER_PATH_PROPERTY) == null
+                    ? "build-impl-65.xsl" : "build-impl.xsl";    // NOI18N
             genFilesHelper.refreshBuildScript(
                     GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                    SuiteProject.class.getResource("resources/build-impl.xsl"),
+                    SuiteProject.class.getResource("resources/" + buildImplPath),
                     false);
             genFilesHelper.refreshBuildScript(
                     GeneratedFilesHelper.BUILD_XML_PATH,

@@ -92,10 +92,6 @@ final class NetBeansOrgEntry extends AbstractEntryWithSources {
         return new File(getClusterDirectory(), module.replace('/', File.separatorChar));
     }
     
-    public File getDestDir() {
-        return ModuleList.findNetBeansOrgDestDir(nball);
-    }
-    
     public String getCodeNameBase() {
         return cnb;
     }
@@ -134,15 +130,14 @@ final class NetBeansOrgEntry extends AbstractEntryWithSources {
 
     public URL getJavadoc() {
         if (javadoc == null)
-            javadoc = findJavadocForNetBeansOrgModules(this);
+            javadoc = findJavadocForNetBeansOrgModules(this, ModuleList.findNetBeansOrgDestDir(nball));
         return javadoc;
     }
 
     /**
      * Find Javadoc URL for NetBeans.org modules. May return <code>null</code>.
      */
-    static URL findJavadocForNetBeansOrgModules(final ModuleEntry entry) {
-        File destDir = entry.getDestDir();
+    static URL findJavadocForNetBeansOrgModules(final ModuleEntry entry, File destDir) {
         File nbOrg = null;
         if (destDir.getParent() != null) {
             nbOrg = destDir.getParentFile().getParentFile();

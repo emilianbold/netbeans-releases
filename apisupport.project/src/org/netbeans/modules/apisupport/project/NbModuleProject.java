@@ -109,6 +109,7 @@ import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.ui.ModuleActions;
 import org.netbeans.modules.apisupport.project.ui.ModuleLogicalView;
 import org.netbeans.modules.apisupport.project.ui.ModuleOperations;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.spi.project.support.LookupProviderSupport;
@@ -755,9 +756,13 @@ public final class NbModuleProject implements Project {
     }
     
     private void refreshBuildScripts(boolean checkForProjectXmlModified) throws IOException {
+        String buildImplPath =
+                    getPlatform(true).getHarnessVersion() <= NbPlatform.HARNESS_VERSION_65
+                    && eval.getProperty(SuiteProperties.CLUSTER_PATH_PROPERTY) == null
+                    ? "build-impl-65.xsl" : "build-impl.xsl";    // NOI18N
         genFilesHelper.refreshBuildScript(
                 GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                NbModuleProject.class.getResource("resources/build-impl.xsl"), // NOI18N
+                NbModuleProject.class.getResource("resources/" + buildImplPath), // NOI18N
                 checkForProjectXmlModified);
         genFilesHelper.refreshBuildScript(
                 GeneratedFilesHelper.BUILD_XML_PATH,

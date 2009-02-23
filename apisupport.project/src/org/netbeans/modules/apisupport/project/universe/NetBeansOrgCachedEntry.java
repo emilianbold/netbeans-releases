@@ -124,10 +124,6 @@ final class NetBeansOrgCachedEntry extends AbstractEntryWithSources {
         }
     }
 
-    public File getDestDir() {
-        return nbdestdir;
-    }
-
     private synchronized void ensureOfficialEntry(String why) {
         if (officialEntry == null) {
             LOG.fine("Had to fall back to loading official entry for " + cnb + " because of " + why);
@@ -204,7 +200,7 @@ final class NetBeansOrgCachedEntry extends AbstractEntryWithSources {
 
     public URL getJavadoc() {
         if (javadoc == null)
-            javadoc = NetBeansOrgEntry.findJavadocForNetBeansOrgModules(this);
+            javadoc = NetBeansOrgEntry.findJavadocForNetBeansOrgModules(this, nbdestdir);
         return javadoc;
     }
 }

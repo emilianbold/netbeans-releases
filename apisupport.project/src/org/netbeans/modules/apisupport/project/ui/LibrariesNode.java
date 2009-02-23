@@ -445,8 +445,8 @@ final class LibrariesNode extends AbstractNode {
                 ModuleDependency dep = pxm.getModuleDependency(codeNameBase);
 
                 // XXX duplicated from CustomizerLibraries --> Refactor
-                EditDependencyPanel editPanel = new EditDependencyPanel(dep,
-                        NbPlatform.getPlatformByDestDir(dep.getModuleEntry().getDestDir()));
+                NbPlatform plaf = project.getPlatform(true);
+                EditDependencyPanel editPanel = new EditDependencyPanel(dep, plaf);
                 DialogDescriptor descriptor = new DialogDescriptor(editPanel,
                         NbBundle.getMessage(LibrariesNode.class, "CTL_EditModuleDependencyTitle",
                         dep.getModuleEntry().getLocalizedName()));

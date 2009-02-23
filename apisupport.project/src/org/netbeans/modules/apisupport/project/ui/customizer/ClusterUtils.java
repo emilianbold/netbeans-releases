@@ -142,18 +142,34 @@ public final class ClusterUtils {
         }
 
         for (String path : wp) {
-            // TODO C.P sources/javadoc
+            // TODO C.P sources/javadoc for external clusters
             boolean isPlaf = path.contains("${" + SuiteProperties.ACTIVE_NB_PLATFORM_DIR_PROPERTY + "}");
             File cd = evaluateClusterPathEntry(path, root, eval, nbPlatformRoot);
+            Project prj = null;
+            if (! cd.exists()) {
+                // fallback for not-yet-built project clusters
+                String p2 = cd.getAbsolutePath();
+
+                int b = p2.length() - SuiteProperties.CLUSTER_DIR.length();
+                if (b >= 0) {
+                    if (SuiteProperties.CLUSTER_DIR.equals(p2.substring(b).replace(File.separatorChar, '/'))) {
+                        cd = new File(p2.substring(0, b));
+                    }
+                }
+            }
             FileObject fo = FileUtil.toFileObject(cd);
-            Project prj = FileOwnerQuery.getOwner(fo);
-            if (prj.getLookup().lookup(NbModuleProvider.class) == null && prj.getLookup().lookup(SuiteProvider.class) == null) {
-                // probably found nbbuild above the platform, use only regular NB module projects
-                prj = null;
+            if (fo != null) {
+                prj = FileOwnerQuery.getOwner(fo);
+                if (prj != null
+                        && prj.getLookup().lookup(NbModuleProvider.class) == null
+                        && prj.getLookup().lookup(SuiteProvider.class) == null) {
+                    // probably found nbbuild above the platform, use only regular NB module projects
+                    prj = null;
+                }
             }
             boolean enabled = (pathsWDC == null) || enabledPaths.contains(path);
             clusterPath.add(ClusterInfo.createFromCP(cd, prj, isPlaf, enabled));
         }
         return clusterPath;
-    }   // TODO C.P test non-existent project clusters
+    }
 }

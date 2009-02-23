@@ -363,7 +363,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         Set<String> disabledModules = new TreeSet<String>();
         List<ClusterInfo> clusterPath = new ArrayList<ClusterInfo>();
 
-        boolean oldPlaf = ((NbPlatform) platformValue.getSelectedItem()).getHarnessVersion() < NbPlatform.HARNESS_VERSION_70;
+        boolean oldPlaf = ((NbPlatform) platformValue.getSelectedItem()).getHarnessVersion() < NbPlatform.HARNESS_VERSION_67;
 
         for (ClusterNode e : libChildren.platformNodes) {
             if (e.isEnabled()) {
@@ -1336,13 +1336,15 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
 
     private RequestProcessor.Task updateDependencyWarningsTask;
+    private RequestProcessor RP = new RequestProcessor(SuiteCustomizerLibraries.class.getName());
+
     private void updateDependencyWarnings(final boolean refreshUniverse) {
         if (TEST || ! cpLoaded) {
             return;
         }
         // XXX avoid running unless and until we become visible, perhaps
         if (updateDependencyWarningsTask == null) {
-            updateDependencyWarningsTask = RequestProcessor.getDefault().create(new Runnable() {
+            updateDependencyWarningsTask = RP.create(new Runnable() {
                 public void run() {
                     if (refreshUniverse)
                         universe = null;

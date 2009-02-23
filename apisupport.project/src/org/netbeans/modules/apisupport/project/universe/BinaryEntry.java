@@ -103,9 +103,9 @@ final class BinaryEntry extends AbstractEntry {
     //private boolean recurring;
     // TODO C.P special class for external clusters (or adjust this one)?
     public File getSourceLocation() {
-        if (getDestDir() == null)
+        if (nbdestdir == null)
             return null;
-        NbPlatform platform = NbPlatform.getPlatformByDestDir(getDestDir());
+        NbPlatform platform = NbPlatform.getPlatformByDestDir(nbdestdir);
             /*
             assert !recurring : jar;
             recurring = true;
@@ -125,10 +125,6 @@ final class BinaryEntry extends AbstractEntry {
     
     public File getJarLocation() {
         return jar;
-    }
-    
-    public File getDestDir() {
-        return nbdestdir;
     }
     
     public String getCodeNameBase() {

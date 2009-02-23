@@ -332,9 +332,15 @@ public final class SuiteProperties extends ModuleProperties {
     }
 
     public void setClusterPath(ClusterInfo[] clusterPathList) {
+        assert clusterPath != null; // there is a small chance that this may get correctly called even before getClusterPath(), but probably not
         Set<ClusterInfo> newClusterPath = new LinkedHashSet<ClusterInfo>(Arrays.asList(clusterPathList));
         if (newClusterPath.equals(clusterPath))
             return;
+        if (clusterPath.isEmpty()) {
+            // setting cluster.path for the 1st time, needs to adjust build-impl.xml of all sub-projects
+            Set<NbModuleProject> subprojects = SuiteUtils.getSubProjects(getProject());
+
+        }
         clusterPath = newClusterPath;
         clusterPathChanged = true;
     }

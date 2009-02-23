@@ -76,14 +76,11 @@ made subject to such option by the copyright holder.
             <sproject:property name="harness.dir" value="nbplatform.${{nbplatform.active}}.harness.dir"/>
             <sproject:property name="nbplatform.active.dir" value="nbplatform.${{nbplatform.active}}.netbeans.dest.dir"/>
             <sproject:evalprops property="cluster.path.evaluated" value="${{cluster.path}}"/>
-            <fail message="You must specify path to 'platform' cluster in $${{cluster.path}} property.">
+            <fail message="You must specify at least path to 'platform' cluster in $${{cluster.path}} property.">
                 <condition>
-                    <or>
-                        <not>
-                            <available file="${{harness.dir}}" type="dir"/>
-                        </not>
-                        <equals arg1="${{harness.dir}}" arg2=""/>
-                    </or>
+                    <not>
+                        <contains string="${{cluster.path.evaluated}}" substring="platform"/>
+                    </not>
                 </condition>
             </fail>
             <import file="${{harness.dir}}/suite.xml"/>
