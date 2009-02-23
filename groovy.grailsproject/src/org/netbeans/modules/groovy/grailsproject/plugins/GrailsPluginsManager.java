@@ -71,8 +71,8 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
-import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
-import org.netbeans.modules.groovy.grails.api.GrailsRuntime.Version;
+import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
+import org.netbeans.modules.groovy.grails.api.GrailsPlatform.Version;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.actions.RefreshProjectRunnable;
 import org.openide.DialogDescriptor;
@@ -134,7 +134,7 @@ public class GrailsPluginsManager {
     }
 
     public List<GrailsPlugin> loadInstalledPlugins() {
-        Version version = GrailsRuntime.getInstance().getVersion();
+        Version version = GrailsPlatform.getDefault().getVersion();
         if (Version.VERSION_1_1.compareTo(version) <= 0) {
             return loadInstalledPlugins11();
         }
@@ -195,7 +195,7 @@ public class GrailsPluginsManager {
     }
 
     public boolean uninstallPlugins(Collection<GrailsPlugin> selectedPlugins) {
-        Version version = GrailsRuntime.getInstance().getVersion();
+        Version version = GrailsPlatform.getDefault().getVersion();
         if (Version.VERSION_1_1.compareTo(version) <= 0) {
             return uninstallPlugins11(selectedPlugins);
         }

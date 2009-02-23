@@ -50,7 +50,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
-import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
+import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.GrailsServerState;
 import org.netbeans.modules.groovy.grailsproject.actions.ConfigurationSupport;
@@ -75,7 +75,7 @@ public class GrailsCommandAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent arg0) {
-        final GrailsRuntime runtime = GrailsRuntime.getInstance();
+        final GrailsPlatform runtime = GrailsPlatform.getDefault();
         if (!runtime.isConfigured()) {
             ConfigurationSupport.showConfigurationWarning(runtime);
             return;
@@ -102,7 +102,7 @@ public class GrailsCommandAction extends AbstractAction {
         Callable<Process> callable;
         ExecutionDescriptor descriptor;
 
-        if (GrailsRuntime.IDE_RUN_COMMAND.equals(commandDescriptor.getGrailsCommand().getCommand())) {
+        if (GrailsPlatform.IDE_RUN_COMMAND.equals(commandDescriptor.getGrailsCommand().getCommand())) {
             final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
             if (serverState != null && serverState.isRunning()) {
                 URL url = serverState.getRunningUrl();
