@@ -197,6 +197,17 @@ public class Bugzilla {
     }
 
     /**
+     * Returns all operating systems defined in the given repository
+     * @param repository
+     * @return
+     * @throws java.io.IOException
+     * @throws org.eclipse.core.runtime.CoreException
+     */
+    public List<String> getOSs(BugzillaRepository repository) throws IOException, CoreException {
+        return getRepositoryConfiguration(repository).getOSs();
+    }
+
+    /**
      * Returns all severities defined in the given repository
      * @param repository
      * @return
