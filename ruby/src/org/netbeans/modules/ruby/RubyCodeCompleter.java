@@ -40,9 +40,6 @@
  */
 package org.netbeans.modules.ruby;
 
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.Index;
-import org.netbeans.modules.ruby.elements.CommentElement;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,11 +50,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-
 import org.jruby.nb.ast.ArgsNode;
 import org.jruby.nb.ast.ArgumentNode;
 import org.jruby.nb.ast.ClassNode;
@@ -68,15 +63,6 @@ import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.ast.types.INameNode;
 import org.jruby.nb.lexer.yacc.ISourcePosition;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.CodeCompletionHandler;
-import org.netbeans.modules.gsf.api.CompletionProposal;
-import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
-import org.netbeans.modules.ruby.elements.Element;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.ruby.elements.IndexedField;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -84,9 +70,18 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.CodeCompletionContext;
-import org.netbeans.modules.gsf.api.CodeCompletionResult;
-import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
+import org.netbeans.modules.csl.api.CodeCompletionContext;
+import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
+import org.netbeans.modules.csl.api.CodeCompletionResult;
+import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.ParameterInfo;
+import org.netbeans.modules.csl.spi.DefaultCompletionResult;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.ruby.RubyCompletionItem.CallItem;
 import org.netbeans.modules.ruby.RubyCompletionItem.ClassItem;
 import org.netbeans.modules.ruby.RubyCompletionItem.FieldItem;
@@ -95,14 +90,17 @@ import org.netbeans.modules.ruby.RubyCompletionItem.ParameterItem;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.AstFieldElement;
 import org.netbeans.modules.ruby.elements.AstNameElement;
+import org.netbeans.modules.ruby.elements.CommentElement;
+import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
+import org.netbeans.modules.ruby.elements.IndexedField;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.elements.IndexedVariable;
 import org.netbeans.modules.ruby.elements.KeywordElement;
 import org.netbeans.modules.ruby.elements.RubyElement;
-import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.Call;
+import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyStringTokenId;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.openide.filesystems.FileObject;
@@ -112,6 +110,7 @@ import org.openide.util.NbBundle;
 
 /**
  * Code completion handler for Ruby.
+ * 
  * Bug: I add lists of fields etc. But if these -overlap- the current line,
  *  I throw them away. The problem is that there may be other references
  *  to the field that I should -not- throw away, elsewhere!
@@ -251,9 +250,9 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
      * kick in.
      */
     @SuppressWarnings("unchecked")
-    public String getPrefix(CompilationInfo info, int lexOffset, boolean upToOffset) {
+    public String getPrefix(ParserResult info, int lexOffset, boolean upToOffset) {
         try {
-            BaseDocument doc = (BaseDocument)info.getDocument();
+            BaseDocument doc = RubyUtils.getDocument(info);
             if (doc == null) {
                 return null;
             }
@@ -520,7 +519,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         String prefix = request.prefix;
         int lexOffset = request.lexOffset;
         TokenHierarchy<Document> th = request.th;
-        NameKind kind = request.kind;
+        QuerySupport.Kind kind = request.kind;
         
         TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
 
@@ -623,7 +622,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
     private void completeGlobals(List<CompletionProposal> proposals, CompletionRequest request, boolean showSymbols) {
         RubyIndex index = request.index;
         String prefix = request.prefix;
-        NameKind kind = request.kind;
+        QuerySupport.Kind kind = request.kind;
         
         Set<IndexedVariable> globals = index.getGlobals(prefix, kind);
         for (IndexedVariable global : globals) {
@@ -644,7 +643,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         Set<IndexedMethod>[] alternatesHolder = new Set[1];
         int[] paramIndexHolder = new int[1];
         int[] anchorOffsetHolder = new int[1];
-        CompilationInfo info = request.info;
+        ParserResult info = request.parserResult;
         int lexOffset = request.lexOffset;
         int astOffset = request.astOffset;
         if (!RubyMethodCompleter.computeMethodCall(info, lexOffset, astOffset,
@@ -1042,7 +1041,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
     }
 
     private void completeModels(List<CompletionProposal> proposals, IndexedMethod target, CompletionRequest request, boolean isLastArg) {
-        Set<IndexedClass> clz = request.index.getSubClasses(request.prefix, "ActiveRecord::Base", request.kind, RubyIndex.SOURCE_SCOPE);
+        Set<IndexedClass> clz = request.index.getSubClasses(request.prefix, "ActiveRecord::Base", request.kind);
         
         String prefix = request.prefix;
         // I originally stripped ":" to make direct (INameNode)getName()
@@ -1078,15 +1077,15 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
     
 
     // TODO: Move to the top
-    public CodeCompletionResult complete(CodeCompletionContext context) {
-        CompilationInfo info = context.getInfo();
+    public CodeCompletionResult complete(final CodeCompletionContext context) {
+        ParserResult ir = context.getParserResult();
         int lexOffset = context.getCaretOffset();
         String prefix = context.getPrefix();
-        NameKind kind = context.getNameKind();
+        QuerySupport.Kind kind = context.isPrefixMatch() ? QuerySupport.Kind.PREFIX : QuerySupport.Kind.EXACT;
         QueryType queryType = context.getQueryType();
         this.caseSensitive = context.isCaseSensitive();
 
-        final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
+        final int astOffset = AstUtilities.getAstOffset(ir, lexOffset);
         if (astOffset == -1) {
             return null;
         }
@@ -1101,20 +1100,20 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
         anchor = lexOffset - prefix.length();
 
-        final RubyIndex index = RubyIndex.get(info.getIndex(RubyInstallation.RUBY_MIME_TYPE), info.getFileObject());
+        final RubyIndex index = RubyIndex.get(ir);
 
-        final Document document = info.getDocument();
+        final Document document = RubyUtils.getDocument(ir);
         if (document == null) {
             return CodeCompletionResult.NONE;
         }
 
         // TODO - move to LexUtilities now that this applies to the lexing offset?
-        lexOffset = AstUtilities.boundCaretOffset(info, lexOffset);
+        lexOffset = AstUtilities.boundCaretOffset(ir, lexOffset);
 
         // Discover whether we're in a require statement, and if so, use special completion
         final TokenHierarchy<Document> th = TokenHierarchy.get(document);
         final BaseDocument doc = (BaseDocument)document;
-        final FileObject fileObject = info.getFileObject();
+        final FileObject fileObject = RubyUtils.getFileObject(ir);
         
         boolean showLower = true;
         boolean showUpper = true;
@@ -1151,9 +1150,9 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         
         // Carry completion context around since this logic is split across lots of methods
         // and I don't want to pass dozens of parameters from method to method; just pass
-        // a request context with supporting info needed by the various completion helpers.
+        // a request context with supporting parserResult needed by the various completion helpers.
         CompletionRequest request = new CompletionRequest(
-                completionResult, th, info, lexOffset, astOffset,
+                completionResult, th, ir, lexOffset, astOffset,
                 doc, prefix, index, kind, queryType, fileObject);
         
         // See if we're inside a string or regular expression and if so,
@@ -1168,7 +1167,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
         // Fields
         // This is a bit stupid at the moment, not looking at the current typing context etc.
-        Node root = AstUtilities.getRoot(info);
+        Node root = AstUtilities.getRoot(ir);
 
         if (root == null) {
             RubyKeywordCompleter.complete(proposals, request, anchor, caseSensitive, showSymbols);
@@ -1181,8 +1180,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         final int astLineEnd;
 
         try {
-            astLineBegin = AstUtilities.getAstOffset(info, Utilities.getRowStart(doc, lexOffset));
-            astLineEnd = AstUtilities.getAstOffset(info, Utilities.getRowEnd(doc, lexOffset));
+            astLineBegin = AstUtilities.getAstOffset(ir, Utilities.getRowStart(doc, lexOffset));
+            astLineEnd = AstUtilities.getAstOffset(ir, Utilities.getRowEnd(doc, lexOffset));
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
             return CodeCompletionResult.NONE;
@@ -1270,7 +1269,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             RubyConstantCompleter.complete(proposals, request, anchor, caseSensitive, call);
         }
         
-        // If we're in a call, add in some info and help for the code completion call
+        // If we're in a call, add in some parserResult and help for the code completion call
         boolean inCall = addParameters(proposals, request);
 
         // Code completion from the index.
@@ -1375,18 +1374,18 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 RubyClassCompleter.complete(proposals, request, anchor, caseSensitive, call, showSymbols);
             }
         }
-        assert (kind == NameKind.PREFIX) || (kind == NameKind.CASE_INSENSITIVE_PREFIX) ||
-        (kind == NameKind.EXACT_NAME);
+        assert (kind == QuerySupport.Kind.PREFIX) || (kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX) ||
+        (kind == QuerySupport.Kind.EXACT);
 
         // TODO
         // Remove fields and variables whose names are already taken, e.g. do a fields.removeAll(variables) etc.
         for (String variable : variables.keySet()) {
-            if (((kind == NameKind.EXACT_NAME) && prefix.equals(variable)) ||
-                    ((kind != NameKind.EXACT_NAME) && startsWith(variable, prefix))) {
+            if (((kind == QuerySupport.Kind.EXACT) && prefix.equals(variable)) ||
+                    ((kind != QuerySupport.Kind.EXACT) && startsWith(variable, prefix))) {
                 Node node = variables.get(variable);
 
                 if (!overlapsLine(node, astLineBegin, astLineEnd)) {
-                    AstElement co = new AstNameElement(info, node, variable,
+                    AstElement co = new AstNameElement(ir, node, variable,
                             ElementKind.VARIABLE);
                     RubyCompletionItem item = new RubyCompletionItem(co, anchor, request);
                     item.setSmart(true);
@@ -1401,15 +1400,15 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         }
 
         for (String field : fields.keySet()) {
-            if (((kind == NameKind.EXACT_NAME) && prefix.equals(field)) ||
-                    ((kind != NameKind.EXACT_NAME) && startsWith(field, prefix))) {
+            if (((kind == QuerySupport.Kind.EXACT) && prefix.equals(field)) ||
+                    ((kind != QuerySupport.Kind.EXACT) && startsWith(field, prefix))) {
                 Node node = fields.get(field);
 
                 if (overlapsLine(node, astLineBegin, astLineEnd)) {
                     continue;
                 }
 
-                Element co = new AstFieldElement(info, node);
+                Element co = new AstFieldElement(ir, node);
                 FieldItem item = new FieldItem(co, anchor, request);
                 item.setSmart(true);
 
@@ -1423,7 +1422,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
         // TODO - model globals and constants using different icons / etc.
         for (String variable : globals.keySet()) {
-            // TODO - kind.EXACT_NAME
+            // TODO - kind.EXACT
             if (startsWith(variable, prefix) ||
                     (showSymbols && startsWith(variable.substring(1), prefix))) {
                 Node node = globals.get(variable);
@@ -1432,7 +1431,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     continue;
                 }
 
-                AstElement co = new AstNameElement(info, node, variable,
+                AstElement co = new AstNameElement(ir, node, variable,
                         ElementKind.VARIABLE);
                 RubyCompletionItem item = new RubyCompletionItem(co, anchor, request);
                 item.setSmart(true);
@@ -1447,8 +1446,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         
         // TODO - model globals and constants using different icons / etc.
         for (String variable : constants.keySet()) {
-            if (((kind == NameKind.EXACT_NAME) && prefix.equals(variable)) ||
-                    ((kind != NameKind.EXACT_NAME) && startsWith(variable, prefix))) {
+            if (((kind == QuerySupport.Kind.EXACT) && prefix.equals(variable)) ||
+                    ((kind != QuerySupport.Kind.EXACT) && startsWith(variable, prefix))) {
                 // Skip constants that are known to be classes
                 Node node = constants.get(variable);
 
@@ -1465,7 +1464,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 //                } else {
                 //                    co = new DefaultComVariable(variable, false, -1, -1);
                 //                    ((DefaultComVariable)co).setNode(target);
-                AstElement co = new AstNameElement(info, node, variable,
+                AstElement co = new AstNameElement(ir, node, variable,
                         ElementKind.VARIABLE);
 
                 RubyCompletionItem item = new RubyCompletionItem(co, anchor, request);
@@ -1484,7 +1483,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         }
 
         if (queryType == QueryType.DOCUMENTATION) {
-            proposals = filterDocumentation(proposals, root, doc, info, astOffset, lexOffset, prefix, path,
+            proposals = filterDocumentation(proposals, root, doc, ir, astOffset, lexOffset, prefix, path,
                     index);
         }
         } finally {
@@ -1495,7 +1494,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
     }
         
     private void addActionViewMethods(Set<IndexedMethod> inheritedMethods, FileObject fileObject, RubyIndex index, String prefix, 
-            NameKind kind) { 
+            QuerySupport.Kind kind) { 
         // RHTML and Markaby: Add in the helper methods etc. from the associated files
         boolean isMarkaby = RubyUtils.isMarkabyFile(fileObject);
         if (isMarkaby) {
@@ -1526,7 +1525,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
     }       
 
     private void addActionViewFields(Set<IndexedField> inheritedFields, FileObject fileObject, RubyIndex index, String prefix, 
-            NameKind kind) { 
+            QuerySupport.Kind kind) { 
         // RHTML and Markaby: Add in the helper methods etc. from the associated files
         boolean isMarkaby = RubyUtils.isMarkabyFile(fileObject);
         if (isMarkaby) {
@@ -1566,12 +1565,12 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
      */
     // TODO - pass in request object here!
     private List<CompletionProposal> filterDocumentation(List<CompletionProposal> proposals,
-        Node root, BaseDocument doc, CompilationInfo info, int astOffset, int lexOffset, String name,
+        Node root, BaseDocument doc, ParserResult parserResult, int astOffset, int lexOffset, String name,
         AstPath path, RubyIndex index) {
         // Look to see if this symbol is either a "class Foo" or a "def foo", and if we invoke
         // completion on it, prefer this element provided it has documentation
         List<CompletionProposal> candidates = new ArrayList<CompletionProposal>();
-        FileObject fo = info.getFileObject();
+        FileObject fo = RubyUtils.getFileObject(parserResult);
         Map<IndexedElement, CompletionProposal> elementMap =
             new HashMap<IndexedElement, CompletionProposal>();
         Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
@@ -1614,15 +1613,15 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
             if (node != null) {
                 ISourcePosition pos = node.getPosition();
-                int startPos = LexUtilities.getLexerOffset(info, pos.getStartOffset());
+                int startPos = LexUtilities.getLexerOffset(parserResult, pos.getStartOffset());
 
                 try {
-                    int lineBegin = AstUtilities.getAstOffset(info, Utilities.getRowFirstNonWhite(doc, startPos));
-                    int lineEnd = AstUtilities.getAstOffset(info, Utilities.getRowEnd(doc, startPos));
+                    int lineBegin = AstUtilities.getAstOffset(parserResult, Utilities.getRowFirstNonWhite(doc, startPos));
+                    int lineEnd = AstUtilities.getAstOffset(parserResult, Utilities.getRowEnd(doc, startPos));
 
                     if ((astOffset >= lineBegin) && (astOffset <= lineEnd)) {
                         // Look for documentation
-                        List<String> rdoc = AstUtilities.gatherDocumentation(info, doc, node);
+                        List<String> rdoc = AstUtilities.gatherDocumentation(parserResult, doc, node);
 
                         if (rdoc != null && !rdoc.isEmpty()) {
                             return Collections.singletonList(candidate);
@@ -1641,7 +1640,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         IndexedElement candidate = null;
 
         if (!classes.isEmpty()) {
-            RubyClassDeclarationFinder cdf = new RubyClassDeclarationFinder(info, null, path, index, path.leaf());
+            RubyClassDeclarationFinder cdf = new RubyClassDeclarationFinder(parserResult, null, path, index, path.leaf());
             candidate = cdf.findBestElementMatch(classes);
         } else if (!methods.isEmpty()) {
             RubyDeclarationFinder finder = new RubyDeclarationFinder();
@@ -1969,7 +1968,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         for (IndexedElement o : result) {
             String url = o.getFileUrl();
 
-            if (url.indexOf("rubystubs") != -1) {
+            if (RubyUtils.isRubyStubsURL(url)) {
                 candidates.add(o);
             }
         }
@@ -1992,12 +1991,12 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
      *   the documentation for that symbol!
      * 
      * @param element The element we want to look up comments for
-     * @param info The (optional) compilation info for a document referencing the element.
+     * @param parserResult The (optional) compilation parserResult for a document referencing the element.
      *   This is used to consult require-statements in the given compilation context etc.
      *   to choose among many alternatives. May be null, in which case the element had
      *   better be an IndexedElement.
      */
-    static List<String> getComments(CompilationInfo info, Element element) {
+    static List<String> getComments(ParserResult info, Element element) {
         assert info != null || element instanceof IndexedElement;
         
         if (element == null) {
@@ -2022,7 +2021,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 element = com;
             }
 
-            node = AstUtilities.getForeignNode(com, (Node[])null);
+            node = AstUtilities.getForeignNode(com);
 
             if (node == null) {
                 return null;
@@ -2049,7 +2048,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             doc = ((IndexedElement)element).getDocument();
             info = null;
         } else if (info != null) {
-            doc = info.getDocument();
+            doc = RubyUtils.getDocument(info);
         }
 
         if (doc instanceof BaseDocument) {
@@ -2090,7 +2089,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         return comments;
     }
     
-    public String document(CompilationInfo info, ElementHandle handle) {
+    public String document(ParserResult info, ElementHandle handle) {
         Element element = null;
         if (handle instanceof ElementHandle.UrlHandle) {
             String url = ((ElementHandle.UrlHandle)handle).getUrl();
@@ -2195,7 +2194,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         return null;
     }
     
-    public Set<String> getApplicableTemplates(CompilationInfo info, int selectionBegin,
+    public Set<String> getApplicableTemplates(ParserResult info, int selectionBegin,
         int selectionEnd) {
 
         // TODO - check the code at the AST path and determine whether it makes sense to
@@ -2205,7 +2204,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         boolean valid = false;
 
         if (selectionEnd != -1) {
-            BaseDocument doc = (BaseDocument) info.getDocument();
+            BaseDocument doc = RubyUtils.getDocument(info);
             if (doc == null) {
                 return Collections.emptySet();
             }
@@ -2265,7 +2264,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         }
     }
 
-    private String suggestName(CompilationInfo info, int caretOffset, String prefix, Map params) {
+    private String suggestName(ParserResult info, int caretOffset, String prefix, Map params) {
         // Look at the given context, compute fields and see if I can find a free name
         caretOffset = AstUtilities.boundCaretOffset(info, caretOffset);
 
@@ -2355,7 +2354,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         }
     }
 
-    public String resolveTemplateVariable(String variable, CompilationInfo info, int caretOffset,
+    public String resolveTemplateVariable(String variable, ParserResult result, int caretOffset,
         String name, Map params) {
         if (variable.equals(KEY_PIPE)) {
             return "||";
@@ -2363,11 +2362,11 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
         // Old-style format - support temporarily
         if (variable.equals(ATTR_UNUSEDLOCAL)) { // TODO REMOVEME
-            return suggestName(info, caretOffset, name, params);            
+            return suggestName(result, caretOffset, name, params);
         }
 
         if (params != null && params.containsKey(ATTR_UNUSEDLOCAL)) {
-            return suggestName(info, caretOffset, name, params);
+            return suggestName(result, caretOffset, name, params);
         }
 
         if ((!(variable.equals(KEY_METHOD) || variable.equals(KEY_METHOD_FQN) ||
@@ -2377,9 +2376,9 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             return null;
         }
 
-        caretOffset = AstUtilities.boundCaretOffset(info, caretOffset);
+        caretOffset = AstUtilities.boundCaretOffset(result, caretOffset);
 
-        Node root = AstUtilities.getRoot(info);
+        Node root = AstUtilities.getRoot(result);
 
         if (root == null) {
             return null;
@@ -2416,9 +2415,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             ClassNode node = AstUtilities.findClass(path);
 
             if (node != null) {
-                Index idx = info.getIndex(RubyInstallation.RUBY_MIME_TYPE);
-                if (idx != null) {
-                    RubyIndex index = RubyIndex.get(idx, info.getFileObject());
+                RubyIndex index = RubyIndex.get(result);
+                if (index != null) {
                     IndexedClass cls = index.getSuperclass(AstUtilities.getFqnName(path));
 
                     if (cls != null) {
@@ -2437,21 +2435,21 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         } else if (variable.equals(KEY_CLASS_FQN)) {
             return AstUtilities.getFqnName(path);
         } else if (variable.equals(KEY_FILE)) {
-            return FileUtil.toFile(info.getFileObject()).getName();
+            return FileUtil.toFile(result.getSnapshot().getSource().getFileObject()).getName();
         } else if (variable.equals(KEY_PATH)) {
-            return FileUtil.toFile(info.getFileObject()).getPath();
+            return FileUtil.toFile(RubyUtils.getFileObject(result)).getPath();
         }
 
         return null;
     }
 
-    public ParameterInfo parameters(CompilationInfo info, int lexOffset, CompletionProposal proposal) {
+    public ParameterInfo parameters(ParserResult info, int lexOffset, CompletionProposal proposal) {
         IndexedMethod[] methodHolder = new IndexedMethod[1];
         int[] paramIndexHolder = new int[1];
         int[] anchorOffsetHolder = new int[1];
         int astOffset = AstUtilities.getAstOffset(info, lexOffset);
         if (!RubyMethodCompleter.computeMethodCall(info, lexOffset, astOffset,
-                methodHolder, paramIndexHolder, anchorOffsetHolder, null, NameKind.PREFIX)) {
+                methodHolder, paramIndexHolder, anchorOffsetHolder, null, QuerySupport.Kind.PREFIX)) {
 
             return ParameterInfo.NONE;
         }
@@ -2503,7 +2501,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         }
 
         int offset = component.getCaretPosition();
-        BaseDocument doc = (BaseDocument)component.getDocument();
+        BaseDocument doc = (BaseDocument) component.getDocument();
 
         if (".".equals(typedText)) { // NOI18N
             // See if we're in Ruby context

@@ -41,13 +41,12 @@
 
 package org.netbeans.modules.ruby;
 
-import org.netbeans.modules.gsf.GsfTestCompilationInfo;
-import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
-import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 
 /**
- *
  * @author Tor Norbye
  */
 public class RubyCodeCompleterTest extends RubyTestBase {
@@ -80,13 +79,15 @@ public class RubyCodeCompleterTest extends RubyTestBase {
 
 
     @Override
-    protected void checkCall(GsfTestCompilationInfo info, int caretOffset, String expectedParameter, boolean expectSuccess) {
+    protected void checkCall(ParserResult parserResult, int caretOffset, String expectedParameter, boolean expectSuccess) {
         IndexedMethod[] methodHolder = new IndexedMethod[1];
         int[] paramIndexHolder = new int[1];
         int[] anchorOffsetHolder = new int[1];
         int lexOffset = caretOffset;
         int astOffset = caretOffset;
-        boolean ok = RubyMethodCompleter.computeMethodCall(info, lexOffset, astOffset, methodHolder, paramIndexHolder, anchorOffsetHolder, null, NameKind.PREFIX);
+        boolean ok = RubyMethodCompleter.computeMethodCall(
+                parserResult, lexOffset, astOffset, methodHolder, paramIndexHolder,
+                anchorOffsetHolder, null, QuerySupport.Kind.PREFIX);
 
         if (expectSuccess) {
             assertTrue(ok);

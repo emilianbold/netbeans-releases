@@ -44,7 +44,7 @@ import org.netbeans.modules.php.editor.index.IndexedInterface;
 import org.netbeans.modules.php.editor.model.*;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
@@ -84,7 +84,7 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
         Set<InterfaceScope> interfaceScopes = new HashSet<InterfaceScope>();
         interfaceScopes.addAll(getSuperInterfaces());
         for (InterfaceScope iface : interfaceScopes) {
-            Collection<IndexedFunction> indexedFunctions = index.getAllMethods(null, iface.getName(), "", NameKind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
+            Collection<IndexedFunction> indexedFunctions = index.getAllMethods(null, iface.getName(), "", QuerySupport.Kind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
             for (IndexedFunction indexedFunction : indexedFunctions) {
                 allMethods.add(new MethodScopeImpl((InterfaceScopeImpl) iface, indexedFunction, PhpKind.METHOD));
             }

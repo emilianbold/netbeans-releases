@@ -41,19 +41,19 @@ package org.netbeans.modules.ruby;
 import java.util.HashSet;
 import java.util.Set;
 import org.jruby.nb.ast.Node;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 
 abstract class RubyBaseDeclarationFinder<T extends IndexedElement> extends RubyDeclarationFinderHelper {
 
-    protected final CompilationInfo info;
+    protected final ParserResult info;
     protected final Node root;
     protected final AstPath path;
     protected final RubyIndex index;
 
     protected RubyBaseDeclarationFinder(
-            final CompilationInfo info,
+            final ParserResult info,
             final Node root,
             final AstPath path,
             final RubyIndex index) {
@@ -72,7 +72,7 @@ abstract class RubyBaseDeclarationFinder<T extends IndexedElement> extends RubyD
 
         while (!elements.isEmpty()) {
             T ele = findBestMatchHelper(elements);
-            Node node = AstUtilities.getForeignNode(ele, (Node[]) null);
+            Node node = AstUtilities.getForeignNode(ele);
 
             if (node != null) {
                 return ele;
@@ -99,9 +99,9 @@ abstract class RubyBaseDeclarationFinder<T extends IndexedElement> extends RubyD
         final T candidate = findBestElementMatch(elements);
 
         if (candidate != null) {
-            Node node = AstUtilities.getForeignNode(candidate, (Node[]) null);
+            Node node = AstUtilities.getForeignNode(candidate);
 
-            DeclarationLocation loc = new DeclarationLocation(candidate.getFile().getFileObject(),
+            DeclarationLocation loc = new DeclarationLocation(candidate.getFileObject(),
                     node.getPosition().getStartOffset(), candidate);
 
             if (!CHOOSE_ONE_DECLARATION && elements.size() > 1) {

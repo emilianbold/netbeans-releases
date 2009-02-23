@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.php.editor.model.nodes;
 
-import org.netbeans.modules.gsf.api.annotations.NonNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.php.editor.model.Parameter;
 
 /**

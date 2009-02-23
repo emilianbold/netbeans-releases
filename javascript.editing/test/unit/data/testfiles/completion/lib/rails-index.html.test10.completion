@@ -1,6 +1,6 @@
 Code completion result for source line:
 x = getElementsByTagName('|');
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 TAG        a                                          <i>rails-index.html</i>
 TAG        body                                       <i>rails-index.html</i>
 TAG        div                                        <i>rails-index.html</i>

@@ -42,7 +42,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.ClassScope;

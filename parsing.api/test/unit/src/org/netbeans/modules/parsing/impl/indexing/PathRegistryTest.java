@@ -56,17 +56,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
+import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
@@ -111,7 +116,7 @@ public class PathRegistryTest extends NbTestCase {
         final File _wd = this.getWorkDir();
         final FileObject wd = FileUtil.toFileObject(_wd);
 
-        MockServices.setServices(FooPathRecognizer.class, SFBQImpl.class, DeadLockSFBQImpl.class);
+        MockServices.setServices(FooPathRecognizer.class, SFBQImpl.class, DeadLockSFBQImpl.class, OpenProject.class);
 
         assertNotNull("No masterfs",wd);
         srcRoot1 = wd.createFolder("src1");
@@ -213,8 +218,12 @@ public class PathRegistryTest extends NbTestCase {
         assertTrue(l.await());        
         result = PathRegistry.getDefault().getSources();
         assertNotNull (result);
-        assertEquals(2,result.size());
-        assertEquals(new FileObject[] {srcRoot2, bootSrc1},result);
+        assertEquals(1,result.size());
+        assertEquals(new FileObject[] {srcRoot2},result);
+        result = PathRegistry.getDefault().getLibraries();
+        assertNotNull (result);
+        assertEquals(1,result.size());
+        assertEquals(new FileObject[] {bootSrc1},result);
         
         //Testing registering classpath with SFBQ - register LIBS
         l = new PRListener();
@@ -225,52 +234,60 @@ public class PathRegistryTest extends NbTestCase {
         assertTrue(l.await());
         result = PathRegistry.getDefault().getSources();
         assertNotNull (result);
-        assertEquals(3,result.size());
-        assertEquals(new FileObject[] {srcRoot2, bootSrc1, compSrc1},result);
-        
+        assertEquals(1,result.size());
+        assertEquals(new FileObject[] {srcRoot2},result);
+        result = PathRegistry.getDefault().getLibraries();
+        assertNotNull (result);
+        assertEquals(2,result.size());
+        assertEquals(new FileObject[] {bootSrc1, compSrc1},result);
+
         //Testing registering classpath with SFBQ - add into LIBS
         l = new PRListener();
         mcpi4.addResource(compRoot2);
         assertTrue(l.await());
-        result = PathRegistry.getDefault().getSources();
+        result = PathRegistry.getDefault().getLibraries();
         assertNotNull (result);
-        assertEquals(4,result.size());
-        assertEquals(new FileObject[] {srcRoot2, bootSrc1, compSrc1, compSrc2},result);
+        assertEquals(3,result.size());
+        assertEquals(new FileObject[] {bootSrc1, compSrc1, compSrc2},result);
         
         //Testing registering classpath with SFBQ - remove from LIBS
         l = new PRListener();
         mcpi4.removeResource(compRoot1);
         assertTrue(l.await());
-        result = PathRegistry.getDefault().getSources();
+        result = PathRegistry.getDefault().getLibraries();
         assertNotNull (result);
-        assertEquals(3,result.size());               
-        assertEquals(new FileObject[] {srcRoot2, bootSrc1, compSrc2},result);
+        assertEquals(2,result.size());
+        assertEquals(new FileObject[] {bootSrc1, compSrc2},result);
         
         //Testing registering classpath with SFBQ - unregister PLATFORM
         l = new PRListener();
         regs.unregister(PLATFORM,new ClassPath[] {cp3});
         result = PathRegistry.getDefault().getSources();
         assertNotNull (result);
-        assertEquals(2,result.size());               
-        assertEquals(new FileObject[] {srcRoot2, compSrc2},result);
+        assertEquals(1,result.size());
+        assertEquals(new FileObject[] {srcRoot2},result);
+        result = PathRegistry.getDefault().getLibraries();
+        assertNotNull (result);
+        assertEquals(1,result.size());
+        assertEquals(new FileObject[] {compSrc2},result);
         
         //Testing listening on SFBQ.Results - bind source
         l = new PRListener();
         SFBQImpl.register(compRoot2,compSrc1);
         assertTrue(l.await());
-        result = PathRegistry.getDefault().getSources();
+        result = PathRegistry.getDefault().getLibraries();
         assertNotNull (result);
-        assertEquals(2,result.size());               
-        assertEquals(new FileObject[] {srcRoot2, compSrc1},result);
+        assertEquals(1,result.size());
+        assertEquals(new FileObject[] {compSrc1},result);
         
         //Testing listening on SFBQ.Results - rebind (change) source
         l = new PRListener();
         SFBQImpl.register(compRoot2,compSrc2);
         assertTrue(l.await());
-        result = PathRegistry.getDefault().getSources();
+        result = PathRegistry.getDefault().getLibraries();
         assertNotNull (result);
-        assertEquals(2,result.size());               
-        assertEquals(new FileObject[] {srcRoot2, compSrc2},result);        
+        assertEquals(1,result.size());
+        assertEquals(new FileObject[] {compSrc2},result);        
     }
     
     /**
@@ -393,9 +410,9 @@ public class PathRegistryTest extends NbTestCase {
         cps = GlobalPathRegistry.getDefault().getPaths(LIBS);
         GlobalPathRegistry.getDefault().unregister(LIBS, cps.toArray(new ClassPath[cps.size()]));
         Collection<? extends URL> sources = PathRegistry.getDefault().getSources();
-        Collection<? extends URL> binaries = PathRegistry.getDefault().getBinaries();
+        Collection<? extends URL> binaryLibraries = PathRegistry.getDefault().getBinaryLibraries();
         assertEquals (0,sources.size());
-        assertEquals (0,binaries.size());
+        assertEquals (0,binaryLibraries.size());
 
 
         ClassPath src = ClassPathSupport.createClassPath(new FileObject[] {srcRoot1, srcRoot2, srcRoot3});
@@ -407,16 +424,20 @@ public class PathRegistryTest extends NbTestCase {
         GlobalPathRegistry.getDefault().register(PLATFORM, new ClassPath[] {platform});
 
         Collection <? extends URL>  res = PathRegistry.getDefault().getSources();
-        assertEquals(new FileObject[] {srcRoot1, srcRoot2, srcRoot3, compSrc1, compSrc2, bootSrc1}, res);
-        res = PathRegistry.getDefault().getBinaries();
+        assertEquals(new FileObject[] {srcRoot1, srcRoot2, srcRoot3}, res);
+        res = PathRegistry.getDefault().getLibraries();
+        assertEquals(new FileObject[] {compSrc1, compSrc2, bootSrc1}, res);
+        res = PathRegistry.getDefault().getBinaryLibraries();
         assertEquals(new FileObject[] {bootRoot2}, res);
 
         ClassPath compile2 = ClassPathSupport.createClassPath(new FileObject[] {unknown1, unknown2});
         GlobalPathRegistry.getDefault().register(LIBS, new ClassPath[] {compile2});
 
         res = PathRegistry.getDefault().getSources();
-        assertEquals(new FileObject[] {srcRoot1, srcRoot2, srcRoot3, compSrc1, compSrc2, bootSrc1, unknownSrc2}, res);
-        res = PathRegistry.getDefault().getBinaries();
+        assertEquals(new FileObject[] {srcRoot1, srcRoot2, srcRoot3}, res);
+        res = PathRegistry.getDefault().getLibraries();
+        assertEquals(new FileObject[] {compSrc1, compSrc2, bootSrc1, unknownSrc2}, res);
+        res = PathRegistry.getDefault().getBinaryLibraries();
         assertEquals(new FileObject[] {bootRoot2, unknown1}, res);
     }
 
@@ -428,14 +449,14 @@ public class PathRegistryTest extends NbTestCase {
 
         class L implements PropertyChangeListener {
 
-            Set ids = new HashSet ();
+            Set<Object> ids = new HashSet<Object> ();
 
             public void propertyChange(PropertyChangeEvent e) {
                 if (ClassPath.PROP_INCLUDES.equals(e.getPropertyName())) {
                     ids.add (e.getPropagationId());
                 }
             }
-        };
+        }
         L l = new L ();
         cp.addPropertyChangeListener(l);
         Object propId = "ID0";
@@ -459,7 +480,7 @@ public class PathRegistryTest extends NbTestCase {
         final PathRegistry pr = PathRegistry.getDefault();
         final List<URL> result = new LinkedList<URL>();
         result.addAll(pr.getSources());
-        result.addAll(pr.getBinaries());
+        result.addAll(pr.getBinaryLibraries());
         result.addAll(pr.getUnknownRoots());
         return result;
     }
@@ -603,7 +624,7 @@ public class PathRegistryTest extends NbTestCase {
         }
 
         public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
-            FileObject srcRoot = this.map.get(binaryRoot);
+            FileObject srcRoot = SFBQImpl.map.get(binaryRoot);
             if (srcRoot == null) {
                 return null;
             }
@@ -688,7 +709,7 @@ public class PathRegistryTest extends NbTestCase {
         }
 
         @Override
-        public Set<String> getBinaryPathIds() {
+        public Set<String> getBinaryLibraryPathIds() {
             final Set<String> res = new HashSet<String>();
             res.add(PLATFORM);
             res.add(LIBS);
@@ -696,7 +717,12 @@ public class PathRegistryTest extends NbTestCase {
         }
 
         @Override
-        public Set<String> getMimeType() {
+        public Set<String> getLibraryPathIds() {
+            return null;
+        }
+
+        @Override
+        public Set<String> getMimeTypes() {
             return Collections.singleton("text/foo");
         }        
 
@@ -724,6 +750,63 @@ public class PathRegistryTest extends NbTestCase {
                 latch.countDown();
             }
         }
+    }
+
+    public static class OpenProject implements  OpenProjectsTrampoline {
+
+        public Project[] getOpenProjectsAPI() {
+            return new Project[0];
+        }
+
+        public void openAPI(Project[] projects, boolean openRequiredProjects) {
+
+        }
+
+        public void closeAPI(Project[] projects) {
+
+        }
+
+        public void addPropertyChangeListenerAPI(PropertyChangeListener listener, Object source) {
+            
+        }
+
+        public Future<Project[]> openProjectsAPI() {
+            return new Future<Project[]>() {
+
+                public boolean cancel(boolean mayInterruptIfRunning) {
+                    return true;
+                }
+
+                public boolean isCancelled() {
+                    return false;
+                }
+
+                public boolean isDone() {
+                    return true;
+                }
+
+                public Project[] get() throws InterruptedException, ExecutionException {
+                    return new Project[0];
+                }
+
+                public Project[] get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                    return new Project[0];
+                }
+            };
+        }
+
+        public void removePropertyChangeListenerAPI(PropertyChangeListener listener) {
+            
+        }
+
+        public Project getMainProject() {
+            return null;
+        }
+
+        public void setMainProject(Project project) {
+            
+        }
+
     }
 
 }
