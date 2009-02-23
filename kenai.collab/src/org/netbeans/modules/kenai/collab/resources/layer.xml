@@ -27,7 +27,6 @@
         <folder name="Modes">
             <folder name="properties">
                 <file name="ChatTopComponent.wstcref" url="ChatTopComponentWstcref.xml">
-                    <attr name="position" intvalue="1150"/>
                 </file>
             </folder>
         </folder>
