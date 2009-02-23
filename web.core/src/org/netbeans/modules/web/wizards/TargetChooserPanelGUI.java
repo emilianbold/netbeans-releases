@@ -72,6 +72,9 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
     private static final String TAG_FILE_IN_JAVALIB_FOLDER="META-INF/tags"; //NOI18N
     private static final String TLD_FOLDER="WEB-INF/tlds"; //NOI18N
     private static final String TLD_IN_JAVALIB_FOLDER="META-INF"; //NOI18N
+    private static final String NEW_FILE_PREFIX =
+        NbBundle.getMessage( TargetChooserPanelGUI.class, "LBL_TargetChooserPanelGUI_NewFilePrefix" ); // NOI18N
+
     
     private TargetChooserPanel wizardPanel;
     private Project project;
@@ -542,6 +545,25 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
             folderTextField.setText( target == null ? "" : target ); // NOI18N      
         String ext = template == null ? "" : template.getExt(); // NOI18N
         expectedExtension = ext.length() == 0 ? "" : "." + ext; // NOI18N
+
+        //set default new file name
+        String documentName = NEW_FILE_PREFIX + fileType.toString();
+        String newDocumentName = documentName;
+        File targetFolder = getFileCreationRoot();
+        if (targetFolder != null) {
+            FileObject folder = FileUtil.toFileObject(targetFolder);
+            if (folder != null) {
+                int index = 0;
+                while (true) {
+                    FileObject _tmp = folder.getFileObject(documentName, ext);
+                    if (_tmp == null) {
+                        break;
+                    }
+                    documentName = newDocumentName + (++index);
+                }
+            }
+        }
+        documentNameTextField.setText(documentName);
     }
     
     private Object[] getLocations(SourceGroup[] folders) {
@@ -1093,6 +1115,15 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
     
     public String getCreatedFilePath() {
         return fileTextField.getText();
+    }
+
+    private File getFileCreationRoot() {
+        File rootDirFile = FileUtil.toFile(((LocationItem) locationCB.getSelectedItem()).getFileObject());
+        if (rootDirFile != null) {
+            return new File(rootDirFile, folderTextField.getText().replace('/', File.separatorChar));
+        } else {
+            return null;
+        }
     }
 
 }
