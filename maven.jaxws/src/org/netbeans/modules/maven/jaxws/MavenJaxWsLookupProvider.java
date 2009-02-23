@@ -41,21 +41,12 @@ package org.netbeans.modules.maven.jaxws;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.prefs.Preferences;
-import javax.xml.namespace.QName;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.j2ee.dd.api.webservices.PortComponent;
-import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
-import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
-import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
@@ -66,10 +57,10 @@ import org.netbeans.modules.websvc.project.spi.LookupMergerSupport;
 import org.netbeans.modules.websvc.project.spi.WebServiceDataProvider;
 import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.LookupProvider;
-import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -80,6 +71,8 @@ import org.openide.util.lookup.Lookups;
 
 @LookupProvider.Registration(projectType="org-netbeans-modules-maven")
 public class MavenJaxWsLookupProvider implements LookupProvider {
+
+    PropertyChangeListener wsdlFolderListener;
 
     public Lookup createAdditionalLookup(Lookup baseContext) {
         final Project prj = baseContext.lookup(Project.class);
@@ -94,233 +87,82 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
 
         };
 
-        ProjectOpenedHook openhook = new ProjectOpenedHook() {
+        NbMavenProject mp = prj.getLookup().lookup(NbMavenProject.class);
+        if (mp != null) {
+            wsdlFolderListener = new PropertyChangeListener() {
 
-            private PropertyChangeListener pcl;
-            private PropertyChangeListener wsdlFolderListener;
-
-            protected void projectOpened() {
-                final MetadataModel<WebservicesMetadata> wsModel = jaxWsSupport.getWebservicesMetadataModel();
-                if (wsModel != null) {
-                    try {
-                        wsModel.runReadActionWhenReady(new MetadataModelAction<WebservicesMetadata, Void>() {
-
-                            public Void run(final WebservicesMetadata metadata) {
-                                Webservices webServices = metadata.getRoot();
-                                pcl = new WebservicesChangeListener(jaxWsSupport, wsModel);
-                                webServices.addPropertyChangeListener(pcl);
-                                return null;
-                            }
-                        });
-                    } catch (java.io.IOException ex) {
-                        ex.printStackTrace();
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
+                        updateClients(prj, jaxWsSupport);
                     }
                 }
-
-                FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
-
-                if (wsdlFolder != null) {
-                    detectWsdlClients(prj, jaxWsSupport, wsdlFolder);
-                }
-                NbMavenProject mp = prj.getLookup().lookup(NbMavenProject.class);
-                if (mp != null) {
-                    wsdlFolderListener = new PropertyChangeListener() {
-
-                        public void propertyChange(PropertyChangeEvent evt) {
-                            if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
-                                updateClients();
-                            }
-                        }
-                    };
-                    mp.addPropertyChangeListener(wsdlFolderListener);
-                }
-
-            }
-
-            protected void projectClosed() {
-                final MetadataModel<WebservicesMetadata> wsModel = jaxWsSupport.getWebservicesMetadataModel();
-                if (wsModel != null) {
-                    try {
-                        wsModel.runReadActionWhenReady(new MetadataModelAction<WebservicesMetadata, Void>() {
-
-                            public Void run(final WebservicesMetadata metadata) {
-                                Webservices webServices = metadata.getRoot();
-                                webServices.removePropertyChangeListener(pcl);
-                                return null;
-                            }
-                        });
-                    } catch (java.io.IOException ex) {
-                        ex.printStackTrace();
-                    }
-                }
-                NbMavenProject mp = prj.getLookup().lookup(NbMavenProject.class);
-                if (mp != null) {
-                    mp.removePropertyChangeListener(wsdlFolderListener);
-                }
-            }
-
-            void updateClients() {
-                // get old clients
-                List<JaxWsService> oldClients = new ArrayList<JaxWsService>();
-                Set<String> oldNames = new HashSet<String>();
-                for (JaxWsService s : jaxWsSupport.getServices()) {
-                    if (!s.isServiceProvider()) {
-                        oldClients.add(s);
-                        oldNames.add(s.getLocalWsdl());
-                    }
-                }
-                FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
-                if (wsdlFolder != null) {
-                    List<JaxWsService> newClients = getJaxWsClients(prj, jaxWsSupport, wsdlFolder);
-                    Set<String> commonNames = new HashSet<String>();
-                    for (JaxWsService client : newClients) {
-                        String localWsdl = client.getLocalWsdl();
-                        if (oldNames.contains(localWsdl)) {
-                            commonNames.add(localWsdl);
-                        }
-                    }
-                    // removing old clients
-                    for (JaxWsService oldClient : oldClients) {
-                        if (!commonNames.contains(oldClient.getLocalWsdl())) {
-                            jaxWsSupport.removeService(oldClient);
-                        }
-                    }
-                    // add new clients
-                    for (JaxWsService newClient : newClients) {
-                        if (!commonNames.contains(newClient.getLocalWsdl())) {
-                            jaxWsSupport.addService(newClient);
-                        }
-                    }
-                } else {
-                    // removing all clients
-                    for (JaxWsService client : oldClients) {
-                        jaxWsSupport.removeService(client);
-                    }
-                }
-
-            }
-        };
+            };
+            mp.addPropertyChangeListener(
+                    WeakListeners.propertyChange(wsdlFolderListener, mp));
+        }
+        
         WebServiceDataProvider jaxWsServiceDataProvider = new MavenJaxWsServicesProvider(prj, jaxWsSupport);
         LookupMerger<WebServiceDataProvider> wsDataProviderMerger =
                 LookupMergerSupport.createWebServiceDataProviderMerger();
-        return Lookups.fixed(openhook, jaxWsSupportProvider, jaxWsServiceDataProvider, wsDataProviderMerger);
+
+        final FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
+        if (wsdlFolder != null) {
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                public void run() {
+                    
+                    detectWsdlClients(prj, jaxWsSupport, wsdlFolder);
+                }
+
+            });
+            
+        }
+
+        return Lookups.fixed(jaxWsSupportProvider, jaxWsServiceDataProvider, wsDataProviderMerger);
     }
 
-    private class WebservicesChangeListener implements PropertyChangeListener {
 
-        private JAXWSLightSupport jaxWsSupport;
-
-        private MetadataModel<WebservicesMetadata> wsModel;
-        private Project prj;
-        private RequestProcessor.Task updateJaxWsTask = RequestProcessor.getDefault().create(new Runnable() {
-
-            public void run() {
-                updateJaxWs();
+    private void updateClients(Project prj, JAXWSLightSupport jaxWsSupport) {
+        // get old clients
+        List<JaxWsService> oldClients = new ArrayList<JaxWsService>();
+        Set<String> oldNames = new HashSet<String>();
+        for (JaxWsService s : jaxWsSupport.getServices()) {
+            if (!s.isServiceProvider()) {
+                oldClients.add(s);
+                oldNames.add(s.getLocalWsdl());
             }
-        });
-
-        WebservicesChangeListener(JAXWSLightSupport jaxWsSupport, MetadataModel<WebservicesMetadata> wsModel) {
-            this.jaxWsSupport = jaxWsSupport;
-            this.wsModel = wsModel;
         }
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            //requestModelUpdate();
-            updateJaxWsTask.schedule(100);
-        }
-
-        private void updateJaxWs() {
-
-            try {
-                Map<String, ServiceInfo> newServices = wsModel.runReadAction(
-                        new MetadataModelAction<WebservicesMetadata, Map<String, ServiceInfo>>() {
-
-                    public Map<String, ServiceInfo> run(WebservicesMetadata metadata) {
-                        Map<String, ServiceInfo> result = new HashMap<String, ServiceInfo>();
-                        Webservices webServices = metadata.getRoot();
-                        for (WebserviceDescription wsDesc : webServices.getWebserviceDescription()) {
-                            PortComponent[] ports = wsDesc.getPortComponent();
-                            for (PortComponent port : ports) {
-                                // key = imlpementation class package name
-                                // value = service name
-                                QName portName = port.getWsdlPort();
-                                result.put(port.getDisplayName(),
-                                           new ServiceInfo(wsDesc.getWebserviceDescriptionName(),
-                                                        (portName == null ? null : portName.getLocalPart()),
-                                                        port.getDisplayName(),
-                                                        wsDesc.getWsdlFile()));
-//                                if ("javax.xml.ws.WebServiceProvider".equals(wsDesc.getDisplayName())) { //NOI18N
-//                                    result.put("fromWsdl:"+wsDesc.getWebserviceDescriptionName(), port.getDisplayName()); //NOI18N
-//                                } else if (JaxWsUtils.isInSourceGroup(prj, port.getServiceEndpointInterface())) {
-//                                    result.put(port.getDisplayName(), port.getPortComponentName());
-//                                } else if (wsDesc.getWsdlFile() != null) {
-//                                    result.put("fromWsdl:"+wsDesc.getWebserviceDescriptionName(), port.getDisplayName()); //NOI18N
-//                                }
-                            }
-
-                        }
-                        return result;
-                    }
-                });
-                List<JaxWsService> oldJaxWsServices = jaxWsSupport.getServices();
-                Map<String, JaxWsService> oldServices = new HashMap<String, JaxWsService>();
-
-                for (JaxWsService s : oldJaxWsServices) {
-                    // implementationClass -> Service
-                    if (s.isServiceProvider()) {
-                        oldServices.put(s.getImplementationClass(), s);
-                    }
+        FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
+        if (wsdlFolder != null) {
+            List<JaxWsService> newClients = getJaxWsClients(prj, jaxWsSupport, wsdlFolder);
+            Set<String> commonNames = new HashSet<String>();
+            for (JaxWsService client : newClients) {
+                String localWsdl = client.getLocalWsdl();
+                if (oldNames.contains(localWsdl)) {
+                    commonNames.add(localWsdl);
                 }
-                // compare new services with existing
-                // looking for common services (implementationClass)
-                Set<String> commonServices = new HashSet<String>();
-                Set<String> keys1 = oldServices.keySet();
-                Set<String> keys2 = newServices.keySet();
-                for (String key : keys1) {
-                    if (keys2.contains(key)) {
-                        commonServices.add(key);
-                    }
-                }
-                for (String key : commonServices) {
-                    oldServices.remove(key);
-                    newServices.remove(key);
-                }
-
-                // remove old services
-                boolean needToSave = false;
-                for (String key : oldServices.keySet()) {
-                    jaxWsSupport.removeService(oldServices.get(key));
-                }
-                // add new services
-                for (String key : newServices.keySet()) {
-                    ServiceInfo serviceInfo = newServices.get(key);
-                    if (serviceInfo.getWsdlLocation() == null) {
-                        jaxWsSupport.addService(new JaxWsService(serviceInfo.getServiceName(), key));
-                    } else {
-                        JaxWsService service = new JaxWsService(serviceInfo.getServiceName(), key);
-                        String wsdlLocation = serviceInfo.getWsdlLocation();
-                        service.setWsdlLocation(wsdlLocation);
-                        if (wsdlLocation.startsWith("WEB-INF/wsdl/")) {
-                            service.setLocalWsdl(wsdlLocation.substring(13));
-                        } else if (wsdlLocation.startsWith("META-INF/wsdl/")) {
-                            service.setLocalWsdl(wsdlLocation.substring(14));
-                        } else {
-                            service.setLocalWsdl(wsdlLocation);
-                        }
-                        if (serviceInfo.getPortName() != null) {
-                            service.setPortName(serviceInfo.getPortName());
-                        }
-                        jaxWsSupport.addService(service);
-                    }
-                }
-            } catch (java.io.IOException ioe) {
-                ioe.printStackTrace();
             }
-
+            // removing old clients
+            for (JaxWsService oldClient : oldClients) {
+                if (!commonNames.contains(oldClient.getLocalWsdl())) {
+                    jaxWsSupport.removeService(oldClient);
+                }
+            }
+            // add new clients
+            for (JaxWsService newClient : newClients) {
+                if (!commonNames.contains(newClient.getLocalWsdl())) {
+                    jaxWsSupport.addService(newClient);
+                }
+            }
+        } else {
+            // removing all clients
+            for (JaxWsService client : oldClients) {
+                jaxWsSupport.removeService(client);
+            }
         }
+
     }
-
-    private void detectWsdlClients(Project prj, JAXWSLightSupport jaxWsSupport, FileObject wsdlFolder)  {
+    public void detectWsdlClients(Project prj, JAXWSLightSupport jaxWsSupport, FileObject wsdlFolder)  {
         List<WsimportPomInfo> candidates = MavenModelUtils.getWsdlFiles(prj);
         if (candidates.size() > 0) {
             for (WsimportPomInfo candidate : candidates) {
@@ -385,52 +227,4 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
         }
         return null;
     }
-
-    private class ServiceInfo {
-        private String serviceName;
-        private String portName;
-        private String implClass;
-        private String wsdlLocation;
-
-        public ServiceInfo(String serviceName, String portName, String implClass, String wsdlLocation) {
-            this.serviceName = serviceName;
-            this.portName = portName;
-            this.implClass = implClass;
-            this.wsdlLocation = wsdlLocation;
-        }
-        
-        public String getImplClass() {
-            return implClass;
-        }
-
-        public void setImplClass(String implClass) {
-            this.implClass = implClass;
-        }
-
-        public String getPortName() {
-            return portName;
-        }
-
-        public void setPortName(String portName) {
-            this.portName = portName;
-        }
-
-        public String getServiceName() {
-            return serviceName;
-        }
-
-        public void setServiceName(String serviceName) {
-            this.serviceName = serviceName;
-        }
-
-        public String getWsdlLocation() {
-            return wsdlLocation;
-        }
-
-        public void setWsdlLocation(String wsdlLocation) {
-            this.wsdlLocation = wsdlLocation;
-        }
-
-    }
-
 }
