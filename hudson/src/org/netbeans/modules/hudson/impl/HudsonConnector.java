@@ -142,7 +142,7 @@ public class HudsonConnector {
         handle.start();
         
         try {
-            final URL url = new URL(Utilities.getURLWithoutSpaces(job.getUrl() + "/" + XML_API_BUILD_URL));
+            final URL url = new URL(Utilities.getURLWithoutSpaces(job.getUrl() + XML_API_BUILD_URL));
             
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
