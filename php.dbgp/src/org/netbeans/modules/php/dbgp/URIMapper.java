@@ -41,7 +41,10 @@ package org.netbeans.modules.php.dbgp;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -88,13 +91,14 @@ abstract class URIMapper {
             } else {
                 File sourceRootFile = FileUtil.toFile(sourceRoot);
                 assert sourceRootFile != null;
-                File[] bases = findBases(webServerFile, sourceFile, sourceRootFile);
+                //File[] bases = findBases(webServerFile, sourceFile, sourceRootFile);
+                URI[] bases = findBases(webServerURI, sourceFile, sourceRootFile);                
                 if (bases != null) {
-                    File webServerBase = bases[0];
-                    File sourceBase = bases[1];
+                    URI webServerBase = bases[0];
+                    File sourceBase = new File(bases[1]);
                     assert webServerBase != null;
                     assert sourceBase != null;
-                    return new DefaultMapper(toURI(webServerBase, true), sourceBase);
+                    return new DefaultMapper(webServerBase, sourceBase);
                 }
             }
         }
@@ -124,21 +128,34 @@ abstract class URIMapper {
         return new DefaultMapper(baseRemoteURI, baseLocalFolder);
     }
 
-    private static File[] findBases(File initWebServerFile, File initSourceFileFile, File sourceRoot) {
+    private static URI[] findBases(URI webServerURI, File sourceFile, File sourceRoot) {
+        File baseFile = sourceFile;
         boolean nullRetVal = true;
-        while (initWebServerFile != null && initSourceFileFile != null) {
-            if (initWebServerFile.getName().equals(initSourceFileFile.getName()) && !initSourceFileFile.equals(sourceRoot)) {
+        List<String> pathFragments = new ArrayList<String>();
+        Collections.addAll(pathFragments, webServerURI.getPath().split("/"));//NOI18N
+        Collections.reverse(pathFragments);
+        for (String path : pathFragments) {
+            if (baseFile != null && path.equals(baseFile.getName()) && !baseFile.equals(sourceRoot)) {
                 nullRetVal = false;
-                if (initSourceFileFile.equals(sourceRoot)) {
+                if (baseFile.equals(sourceRoot)) {
                     break;
                 }
-                initWebServerFile = initWebServerFile.getParentFile();
-                initSourceFileFile = initSourceFileFile.getParentFile();
+                baseFile = baseFile.getParentFile();
             } else {
                 break;
             }
         }
-        return nullRetVal ? null : new File[]{initWebServerFile, initSourceFileFile};
+        if (nullRetVal) {
+            return null;
+        }
+        assert baseFile.isDirectory();
+        int basePathLen = webServerURI.getPath().length() -
+                (sourceFile.getAbsolutePath().length() - baseFile.getAbsolutePath().length());
+        String basePath = webServerURI.getPath().substring(0, basePathLen);
+        URI baseURI = createURI(webServerURI.getScheme(), webServerURI.getHost(),
+               basePath, webServerURI.getFragment(),
+                true, true);
+        return new URI[]{baseURI, baseFile.toURI()};
     }
 
     private static class DefaultMapper extends URIMapper {
@@ -183,7 +200,11 @@ abstract class URIMapper {
             } else {
                 URI relativizedURI = baseSourceURI.relativize(sourceFile.toURI());
                 if (!relativizedURI.isAbsolute()) {
-                    return toURI(new File(baseWebServerURI.resolve(relativizedURI)), includeHostPart);
+                    URI retval = baseWebServerURI.resolve(relativizedURI);
+                    retval = createURI(retval.getScheme(), retval.getHost(),
+                            retval.getPath(), retval.getFragment(),
+                            true, false);
+                    return retval;
                 }
             }
             return toURI(sourceFile, includeHostPart);
@@ -226,23 +247,26 @@ abstract class URIMapper {
         }
     }
 
-    private static URI toURI(File webServerBase, boolean includeHostPart) {
-        URI webServerBaseURI = webServerBase.toURI();
-        String scheme = webServerBaseURI.getScheme();
-        String host = webServerBaseURI.getHost();
-        String path = webServerBaseURI.getPath();
-        String fragment = webServerBaseURI.getFragment();
-        if (webServerBase.exists() && webServerBase.isDirectory() && !path.endsWith("/")) {//NOI18N
+    private static URI createURI(String scheme, String host, String path, String fragment,
+            boolean includeHostPart, boolean pathEndsWithSlash) {
+        if (pathEndsWithSlash && !path.endsWith("/")) {//NOI18N
             path = path + "/"; //NOI18N
         }
         if (host == null && includeHostPart) {
             host = ""; //NOI18N
         }
         try {
-            webServerBaseURI = new URI(scheme, host, path, fragment);
+            return new URI(scheme, host, path, fragment);
         } catch (URISyntaxException ex) {
             Exceptions.printStackTrace(ex);
+            return null;
         }
-        return webServerBaseURI;
+    }
+
+    private static URI toURI(File webServerBase, boolean includeHostPart) {
+        URI webServerBaseURI = webServerBase.toURI();
+        return createURI(webServerBaseURI.getScheme(), webServerBaseURI.getHost(),
+                webServerBaseURI.getPath(),webServerBaseURI.getFragment(),
+                includeHostPart, webServerBase.exists() && webServerBase.isDirectory());
     }
 }
