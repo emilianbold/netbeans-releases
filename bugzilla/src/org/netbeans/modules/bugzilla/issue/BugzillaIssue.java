@@ -345,24 +345,24 @@ public class BugzillaIssue extends Issue {
     }
 
     Comment[] getComments() {
-        List<TaskAttribute> attributes = data.getAttributeMapper().getAttributesByType(data, TaskAttribute.TYPE_COMMENT);
-        if (attributes == null) {
+        List<TaskAttribute> attrs = data.getAttributeMapper().getAttributesByType(data, TaskAttribute.TYPE_COMMENT);
+        if (attrs == null) {
             return new Comment[0];
         }
         List<Comment> comments = new ArrayList<Comment>();
-        for (TaskAttribute taskAttribute : attributes) {
+        for (TaskAttribute taskAttribute : attrs) {
             comments.add(new Comment(taskAttribute));
         }
         return comments.toArray(new Comment[comments.size()]);
     }
 
     Attachment[] getAttachments() {
-        List<TaskAttribute> attributes = data.getAttributeMapper().getAttributesByType(data, TaskAttribute.TYPE_ATTACHMENT);
-        if (attributes == null) {
+        List<TaskAttribute> attrs = data.getAttributeMapper().getAttributesByType(data, TaskAttribute.TYPE_ATTACHMENT);
+        if (attrs == null) {
             return new Attachment[0];
         }
-        List<Attachment> attachments = new ArrayList<Attachment>(attributes.size());
-        for (TaskAttribute taskAttribute : attributes) {
+        List<Attachment> attachments = new ArrayList<Attachment>(attrs.size());
+        for (TaskAttribute taskAttribute : attrs) {
             attachments.add(new Attachment(taskAttribute));
         }
         return attachments.toArray(new Attachment[attachments.size()]);
