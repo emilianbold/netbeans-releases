@@ -119,7 +119,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
     @Override
     public void visitDeclarationExpression(DeclarationExpression expression) {
         if (leaf instanceof DeclarationExpression) {
-            DeclarationExpression visitedDeclaration = (DeclarationExpression) expression;
+            DeclarationExpression visitedDeclaration = expression;
             DeclarationExpression declaration = (DeclarationExpression) leaf;
             VariableExpression variable = declaration.getVariableExpression();
             VariableExpression visited = visitedDeclaration.getVariableExpression();
@@ -308,7 +308,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
             }
         } else if (leaf instanceof DeclarationExpression) {
             DeclarationExpression declaration = (DeclarationExpression) leaf;
-            VariableExpression variable = (VariableExpression) declaration.getVariableExpression();
+            VariableExpression variable = declaration.getVariableExpression();
             if (!variable.isDynamicTyped() && clazz.getType().getName().equals(variable.getType().getName())) {
                 occurrences.add(clazz);
             }
@@ -334,7 +334,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
             }
         } else if (leaf instanceof DeclarationExpression) {
             DeclarationExpression declaration = (DeclarationExpression) leaf;
-            VariableExpression variable = (VariableExpression) declaration.getVariableExpression();
+            VariableExpression variable = declaration.getVariableExpression();
             if (!variable.isDynamicTyped() && classNode.getName().equals(variable.getType().getName())) {
                 occurrences.add(classNode);
             }

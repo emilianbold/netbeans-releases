@@ -46,17 +46,14 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.XMLFileSystem;
-import org.openide.util.NotImplementedException;
 
 /** Interface for a manager which can handle XML layer caching.
  * @see "#20168"

@@ -229,7 +229,7 @@ public class DebugSession implements Runnable {
             SessionId id = (SessionId) engine.lookupFirst(null, SessionId.class);
             if (id != null && id.getId().equals(sessionId)) {
                 mySessionId.set(id);
-                id.setFileUri(message.getFileUri());
+                id.initialize(message.getFileUri());
                 myEngine.set(engine);
             }
         }

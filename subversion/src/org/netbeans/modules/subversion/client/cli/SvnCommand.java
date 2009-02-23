@@ -45,11 +45,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.util.*;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.cli.CommandlineClient.NotificationHandler;
 import org.netbeans.modules.subversion.client.cli.Parser.Line;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.tigris.subversion.svnclientadapter.SVNBaseDir;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -273,6 +276,21 @@ public abstract class SvnCommand implements CommandNotificationListener {
         arguments.add("--non-interactive");
         arguments.addCredentials(username, password);
     }
+
+    /**
+     * Solves the problem with malformed URLs (e.g. "xxx[]")
+     * Decodes and then encodes given URL
+     * @param url url to be encoded
+     * @return encoded URL
+     */
+    protected static SVNUrl encodeUrl(SVNUrl url) {
+        try {
+            url = SvnUtils.decodeAndEncodeUrl(url);
+        } catch (MalformedURLException ex) {
+            Subversion.LOG.log(Level.INFO, "Url: " + url, ex);
+        }
+        return url;
+    }
         
     public final class Arguments implements Iterable<String> {
 
@@ -297,7 +315,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
         
         public void add(SVNUrl url) {
             if(url != null) {
-                add(url.toString());   
+                add(encodeUrl(url).toString());
             }            
         }
 
@@ -310,7 +328,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
         
         public void add(SVNUrl url, SVNRevision pegging) {
             if(url != null) {
-                add(url.toString() + "@" + (pegging == null ? "HEAD" : pegging));   
+                add(encodeUrl(url).toString() + "@" + (pegging == null ? "HEAD" : pegging));
             }            
         }
         
@@ -332,7 +350,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
         public void addUrlArguments(SVNUrl... urls) throws IOException {        
             String[] paths = new String[urls.length];
             for (int i = 0; i < urls.length; i++) {
-                paths[i] = urls[i].toString();                
+                paths[i] = encodeUrl(urls[i]).toString();
             }
             add("--targets");
             add(createTempCommandFile(paths));

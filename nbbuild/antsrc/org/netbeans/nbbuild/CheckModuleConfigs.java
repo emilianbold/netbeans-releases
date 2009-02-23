@@ -158,6 +158,9 @@ public final class CheckModuleConfigs extends Task {
     
     @SuppressWarnings("unchecked")
     private Set<String> split(String list, boolean warnIfUnsorted, String what) {
+        if (list.contains(" ")) {
+            throw new BuildException("remove spaces from " + what + ": " + list);
+        }
         List elements = Collections.list(new StringTokenizer(list, ", "));
         if (warnIfUnsorted) {
             List sorted = new ArrayList(elements);
@@ -236,7 +239,7 @@ public final class CheckModuleConfigs extends Task {
         if (masterProjectXml == null) {
             return;
         }
-        log("Writing module list  to " + masterProjectXml);
+        log("Writing module list to " + masterProjectXml);
         Document doc = XMLUtil.parse(new InputSource(masterProjectXml.toURI().toString()), false, true, null, null);
         NodeList nl = doc.getElementsByTagName("subprojects");
         if (nl.getLength() != 1) {
@@ -247,7 +250,7 @@ public final class CheckModuleConfigs extends Task {
         while (nl.getLength() > 0) {
             sp.removeChild(nl.item(0));
         }
-        sp.appendChild(doc.createComment(" To update, run: ant -f nbbuild/build.xml check-module-configs "));
+        sp.appendChild(doc.createComment(" To update, run target listed above "));
         for (String module : allClusterModules) {
             if (new File(nbroot, (module + "/nbproject/project.xml").replace('/', File.separatorChar)).isFile()) {
                 Element e = doc.createElementNS("http://www.netbeans.org/ns/freeform-project/2", "project");

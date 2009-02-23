@@ -555,6 +555,7 @@ public class Term extends JComponent implements Accessible {
      *
      * @deprecated Replaced by {@link #addInputListener(TermInputListener)}.
      */
+    @Deprecated
     public void setInputListener(TermInputListener l) {
         addInputListener(l);
     }
@@ -596,6 +597,7 @@ public class Term extends JComponent implements Accessible {
      *
      * @deprecated Replaced by{@link #addListener(TermListener)}.
      */
+    @Deprecated
     public void setListener(TermListener l) {
         addListener(l);
     }
@@ -4349,6 +4351,7 @@ public class Term extends JComponent implements Accessible {
      * like context menus.
      * @deprecated
      */
+    @Deprecated
     public JComponent getCanvas() {
         return screen;
     }
@@ -4514,6 +4517,7 @@ public class Term extends JComponent implements Accessible {
      *
      * @deprecated, replaced by{@link #setCursorCoord(Coord)}
      */
+    @Deprecated
     public void goTo(Coord coord) {
         setCursorCoord(coord);
     }
@@ -4624,6 +4628,7 @@ public class Term extends JComponent implements Accessible {
      * @deprecated selections now always get copied to systemSelection if
      * it exists.
      */
+    @Deprecated
     public void setAutoCopy(boolean auto_copy) {
         // no-op
     }
@@ -4633,6 +4638,7 @@ public class Term extends JComponent implements Accessible {
      *
      * @deprecated Now always returns 'true'.
      */
+    @Deprecated
     public boolean isAutoCopy() {
         return true;
     }

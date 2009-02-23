@@ -76,6 +76,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         loc (cbFoldImports, "Fold_Imports");
         loc (cbFoldJavadocComments, "Fold_JavaDoc");
         loc (cbFoldInitialComments, "Fold_Licence");
+        loc (cbFoldTags, "Fold_Tags");
 
         loc (lCamelCaseBehavior, "Camel_Case_Behavior");
         loc (cbCamelCaseBehavior, "Enable_Camel_Case_In_Java");
@@ -100,6 +101,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         cbFoldImports = new javax.swing.JCheckBox();
         cbFoldJavadocComments = new javax.swing.JCheckBox();
         cbFoldInitialComments = new javax.swing.JCheckBox();
+        cbFoldTags = new javax.swing.JCheckBox();
         jSeparator1 = new javax.swing.JSeparator();
         lCamelCaseBehavior = new javax.swing.JLabel();
         jSeparator3 = new javax.swing.JSeparator();
@@ -114,27 +116,21 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
 
         lCollapseByDefault.setText("Collapse by Default:");
 
-        cbUseCodeFolding.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-
         cbFoldMethods.setText("Methods");
-        cbFoldMethods.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         cbFoldInnerClasses.setText("Inner Classes");
-        cbFoldInnerClasses.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         cbFoldImports.setText("Imports");
-        cbFoldImports.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         cbFoldJavadocComments.setText("Javadoc Comments");
-        cbFoldJavadocComments.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         cbFoldInitialComments.setText("Initial Comments");
-        cbFoldInitialComments.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
+        cbFoldTags.setText("Tags and Other Code Blocks");
 
         lCamelCaseBehavior.setText("Camel Case  Behavior");
 
         cbCamelCaseBehavior.setText("Enable Camel Case Navigation For Java");
-        cbCamelCaseBehavior.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         lCamelCaseBehaviorExample.setText("Example: Caret stops at J, T, N in \"JavaTypeName\" when using next/previous word acctions");
 
@@ -143,36 +139,35 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(lUseCodeFolding)
-                    .add(lCollapseByDefault))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(cbFoldInitialComments)
-                    .add(cbFoldJavadocComments)
-                    .add(cbFoldImports)
-                    .add(cbFoldInnerClasses)
-                    .add(cbFoldMethods)
-                    .add(cbUseCodeFolding)
-                    .add(lCamelCaseBehaviorExample))
-                .addContainerGap(205, Short.MAX_VALUE))
+                .add(439, 439, 439)
+                .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(lCodeFolding)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 828, Short.MAX_VALUE))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(lCamelCaseBehavior)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 838, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(15, 15, 15)
+                        .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(cbCamelCaseBehavior)
-                            .add(lCamelCaseBehaviorExample))
-                        .addContainerGap(205, Short.MAX_VALUE))
+                            .add(lUseCodeFolding)
+                            .add(lCollapseByDefault)))
+                    .add(lCamelCaseBehavior))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(lCamelCaseBehaviorExample)
                     .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(cbUseCodeFolding)
+                            .add(cbFoldMethods)
+                            .add(cbFoldInnerClasses)
+                            .add(cbFoldImports)
+                            .add(cbFoldJavadocComments)
+                            .add(cbFoldInitialComments)
+                            .add(cbCamelCaseBehavior))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 776, Short.MAX_VALUE))))
+                        .add(cbFoldTags)))
+                .addContainerGap(205, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -188,7 +183,8 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lCollapseByDefault)
-                    .add(cbFoldMethods))
+                    .add(cbFoldMethods)
+                    .add(cbFoldTags))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(layout.createSequentialGroup()
@@ -196,15 +192,15 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(cbFoldImports)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cbFoldJavadocComments)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(cbFoldJavadocComments, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(1, 1, 1)
                         .add(cbFoldInitialComments)
-                        .add(19, 19, 19)
+                        .add(18, 18, 18)
                         .add(jSeparator3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(lCamelCaseBehavior))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(2, 2, 2)
                 .add(cbCamelCaseBehavior)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(lCamelCaseBehaviorExample)
                 .addContainerGap(155, Short.MAX_VALUE))
         );
@@ -218,6 +214,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
     private javax.swing.JCheckBox cbFoldInnerClasses;
     private javax.swing.JCheckBox cbFoldJavadocComments;
     private javax.swing.JCheckBox cbFoldMethods;
+    private javax.swing.JCheckBox cbFoldTags;
     private javax.swing.JCheckBox cbUseCodeFolding;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator3;
@@ -264,6 +261,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
             cbFoldJavadocComments.addActionListener (this);
             cbFoldInitialComments.addActionListener (this);
             cbCamelCaseBehavior.addActionListener (this);
+            cbFoldTags.addActionListener (this);
         }
         
         // init code folding
@@ -273,6 +271,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         cbFoldInnerClasses.setSelected (model.isFoldInnerClasses ());
         cbFoldJavadocComments.setSelected (model.isFoldJavaDocComments ());
         cbFoldMethods.setSelected (model.isFoldMethods ());
+        cbFoldTags.setSelected (model.isFoldTag());
 
         // Java Camel Case Navigation
         Boolean ccJava = model.isCamelCaseJavaNavigation();
@@ -301,7 +300,8 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
             cbFoldInitialComments.isSelected (),
             cbFoldInnerClasses.isSelected (),
             cbFoldJavadocComments.isSelected (),
-            cbFoldMethods.isSelected ()
+            cbFoldMethods.isSelected (),
+            cbFoldTags.isSelected ()
         );
         
         // java camel case navigation

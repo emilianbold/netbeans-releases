@@ -58,7 +58,6 @@ public final class TableVisualizerConfiguration implements VisualizerConfigurati
     private DataTableMetadata metadata;
     private String emptyRuntimeMessage;
     private String emptyAnalyzeMessage;
-    private Action doubleClickRowAction;
 
     static{
         TableVisualizerConfigurationAccessor.setDefault(new TableVisualizerConfigurationAccessorImpl());
@@ -80,9 +79,7 @@ public final class TableVisualizerConfiguration implements VisualizerConfigurati
         this.emptyAnalyzeMessage = emptyAnalyzeMessage;
     }
 
-    public void setRowDoubleClickAction(Action action){
-        this.doubleClickRowAction = action;
-    }
+    
 
     String getEmptyRunningMessage(){
         return emptyRuntimeMessage;
@@ -92,9 +89,6 @@ public final class TableVisualizerConfiguration implements VisualizerConfigurati
         return emptyAnalyzeMessage;
     }
 
-    Action getDoubleClickRowAction(){
-        return doubleClickRowAction;
-    }
 
     public final DataTableMetadata getMetadata() {
         return metadata;
@@ -118,11 +112,6 @@ public final class TableVisualizerConfiguration implements VisualizerConfigurati
         @Override
         public String getEmptyAnalyzeMessage(TableVisualizerConfiguration configuration) {
             return configuration.getEmptyAnalyzeMessage();
-        }
-
-        @Override
-        public Action getDoubleClickRowAction(TableVisualizerConfiguration configuration) {
-            return configuration.getDoubleClickRowAction();
         }
     }
     

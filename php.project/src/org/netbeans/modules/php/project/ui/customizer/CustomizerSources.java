@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -111,8 +112,12 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         copyFilesPanel.add(BorderLayout.NORTH, copyFilesVisual);
 
         PhpEnvironment.get().readDocumentRoots(new PhpEnvironment.ReadDocumentRootsNotifier() {
-            public void finished(List<DocumentRoot> documentRoots) {
-                initCopyTargets(documentRoots, copyTarget);
+            public void finished(final List<DocumentRoot> documentRoots) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        initCopyTargets(documentRoots, copyTarget);
+                    }
+                });
             }
         }, getSourcesFolderName());
 
