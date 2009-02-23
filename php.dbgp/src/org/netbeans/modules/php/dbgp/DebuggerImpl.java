@@ -75,8 +75,7 @@ public class DebuggerImpl implements XDebugStarter {
             options.debugForFirstPageOnly = closeSession;
             debug(sessionId, options, run);
             long started = System.currentTimeMillis();
-            String serverFileUri = sessionId.waitServerFile(true);
-            if (serverFileUri == null) {
+            if (!sessionId.isInitialized(true)) {
                 ConnectionErrMessage.showMe(((int) (System.currentTimeMillis() - started) / 1000));
                 return;
             }
