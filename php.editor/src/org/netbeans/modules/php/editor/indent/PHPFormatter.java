@@ -40,11 +40,10 @@
  */
 package org.netbeans.modules.php.editor.indent;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import java.util.Set;
@@ -63,10 +62,11 @@ import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.spi.Context;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.SourceModelFactory;
-import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.nav.NavUtils;
@@ -447,17 +447,15 @@ public class PHPFormatter implements Formatter {
             public void run() {
                 final WSTransformer wsTransformer = new WSTransformer(context);
                 FileObject file = NavUtils.getFile(doc);
+                Source source = Source.create(file);
                 try {
-                    SourceModelFactory.getInstance().getModel(file).runUserActionTask(new CancellableTask<CompilationInfo>() {
-
-                        public void cancel() {}
-
-                        public void run(CompilationInfo parameter) throws Exception {
-                            PHPParseResult result = (PHPParseResult) parameter.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, 0);
+                    ParserManager.parse(Collections.singleton(source), new UserTask() {
+                        public void run(ResultIterator resultIterator) throws Exception {
+                            PHPParseResult result = (PHPParseResult) resultIterator.getParserResult();
                             result.getProgram().accept(wsTransformer);
                         }
-                    }, true);
-                } catch (IOException ex) {
+                    });
+                } catch (ParseException ex) {
                     Exceptions.printStackTrace(ex);
                 }
 
