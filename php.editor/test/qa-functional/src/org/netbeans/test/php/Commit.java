@@ -41,35 +41,26 @@
 
 package org.netbeans.test.php;
 
-import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.jemmy.JemmyException;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.jemmy.operators.JListOperator;
 import junit.framework.Test;
-import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
-import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JLabelOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
-import java.util.List;
 import java.io.*;
 import java.util.Enumeration;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
+import org.netbeans.jemmy.operators.JFileChooserOperator;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -132,6 +123,7 @@ public class Commit extends GeneralPHP
       );
   }
 
+    @Override
     public void setUp( )
     {
       if( !bUnzipped )
@@ -251,7 +243,7 @@ public class Commit extends GeneralPHP
     // Check file in tree
     ProjectsTabOperator pto = new ProjectsTabOperator( );
     ProjectRootNode prn = pto.getProjectRootNode(
-        sProjectName + "|Source Files|" + sFileName
+        sProjectName + "|" + NbBundle.getBundle( "org.netbeans.modules.php.project.Bundle" ).getString( "LBL_Node_Sources" ) + "|" + sFileName
       );
     prn.select( );
 
@@ -310,7 +302,7 @@ public class Commit extends GeneralPHP
         //Sleep( 500 );
         //CheckResult( eoPHP, "$GLOBALS" );
 
-        completionInfo.listItself.hideAll( );
+        CompletionJListOperator.hideAll( );
       }
     }
     catch( Exception ex )
@@ -392,18 +384,30 @@ public class Commit extends GeneralPHP
     TypeCode( eoPHP, "public $a, $b;\nprotected $c, $d;\nprivate $e, $f;\n" );
 
     // Check existing notes
-    Sleep( 5000 );
-    Object[] oo = eoPHP.getAnnotations( );
-    if( iAnnotations != oo.length )
+    int iErrorChecks = 0;
+    boolean bRecheck = true;
+    while( bRecheck )
     {
-      fail( "Invalid number of detected errors. Found: " + oo.length + ", expected: " + iAnnotations );
+      Sleep( 5000 );
+      Object[] oo = eoPHP.getAnnotations( );
+      if( iAnnotations == oo.length )
+      {
+        bRecheck = false;
+      }
+      else
+      if( 5 <= ++iErrorChecks )
+      {
+        for( Object o : oo )
+        {
+          System.out.println( "***" + eoPHP.getAnnotationType( o ) + " : " + eoPHP.getAnnotationShortDescription( o ) );
+        }
+        fail( "Invalid number of detected errors. Found: " + oo.length + ", expected: " + iAnnotations );
+      }
+      else
+      {
+        System.out.println( "---Error check failed (" + iErrorChecks + ")" );
+      }
     }
-    /*
-    for( Object o : oo )
-    {
-      System.out.println( "***" + eoPHP.getAnnotationType( o ) + " : " + eoPHP.getAnnotationShortDescription( o ) );
-    }
-    */
 
     // Insert constructor
     Sleep( 1500 );
@@ -415,7 +419,10 @@ public class Commit extends GeneralPHP
 
     ClickListItemNoBlock( jlList, 0, 1 );
 
-    JDialogOperator jdGenerator = new JDialogOperator( "Generate Constructor" );
+    JDialogOperator jdGenerator = new JDialogOperator(
+        NbBundle.getBundle( "org.netbeans.modules.php.editor.codegen.Bundle" ).getString( "LBL_TITLE_CONSTRUCTOR" )
+        //"Generate Constructor"
+      );
 
     // Select all but $c
     JTreeOperator jtTree = new JTreeOperator( jdGenerator, 0 );
@@ -445,7 +452,10 @@ public class Commit extends GeneralPHP
 
     ClickListItemNoBlock( jlList, 3, 1 );
 
-    jdGenerator = new JDialogOperator( "Generate Getters and Setters" );
+    jdGenerator = new JDialogOperator(
+        NbBundle.getBundle( "org.netbeans.modules.php.editor.codegen.Bundle" ).getString( "LBL_TITLE_GETTERS_AND_SETTERS" )
+        //"Generate Getters and Setters"
+      );
 
     // Select all but $c
     jtTree = new JTreeOperator( jdGenerator, 0 );
@@ -573,7 +583,10 @@ public class Commit extends GeneralPHP
 
     NewProjectWizardOperator opNewProjectWizard = NewProjectWizardOperator.invoke( );
     opNewProjectWizard.selectCategory( PHP_CATEGORY_NAME );
-    opNewProjectWizard.selectProject( "PHP Application with Existing Sources" );
+    opNewProjectWizard.selectProject(
+        NbBundle.getBundle( "org.netbeans.modules.php.project.ui.wizards.Bundle" ).getString( "Templates/Project/PHP/existingPHPProject.php" )
+        //"PHP Application with Existing Sources"
+      );
 
     opNewProjectWizard.next( );
 
@@ -581,14 +594,21 @@ public class Commit extends GeneralPHP
 
     JButtonOperator jbBrowse = new JButtonOperator( jdNew, "Browse...", 1 );
     jbBrowse.pushNoBlock( );
-    JDialogOperator jdBrowse = new JDialogOperator( "Select Project Folder" );
+
+    JDialogOperator jdBrowse = new JDialogOperator(
+        NbBundle.getBundle( "org.netbeans.modules.php.project.ui.wizards.Bundle" ).getString( "LBL_SelectProjectFolder" )
+        //"Select Project Folder"
+      );
 
     JTextComponentOperator jtLocation = new JTextComponentOperator( jdBrowse, 0 );
     String sProjectPath = getDataDir( ).getPath( ) + File.separator + "LoginSample";
     jtLocation.setText( sProjectPath );
 
-    JButtonOperator jbOpen = new JButtonOperator( jdBrowse, "Open" );
-    jbOpen.push( );
+    JFileChooserOperator jfcOpen = new JFileChooserOperator( );
+    jfcOpen.approve( );
+
+    //JButtonOperator jbOpen = new JButtonOperator( jdBrowse, "Open" );
+    //jbOpen.push( );
 
     jdBrowse.waitClosed( );
 

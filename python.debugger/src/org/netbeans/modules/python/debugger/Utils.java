@@ -44,6 +44,8 @@ import org.openide.text.Annotatable;
 import javax.swing.SwingUtilities;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import javax.swing.JEditorPane;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -56,6 +58,7 @@ import javax.swing.text.Caret;
 import org.netbeans.modules.python.debugger.backend.PluginEvent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
@@ -220,7 +223,7 @@ public class Utils {
     return null;
   }
 
-  public static Object getLine(final String filePath, final int lineNumber) {
+  public static Object getLineAnnotatable(final String filePath, final int lineNumber) {
     Annotatable[] annotables = null;
 
     if (filePath == null || lineNumber < 0) {
@@ -369,6 +372,43 @@ public class Utils {
     }
     return false;
   }
+
+  
+  public static Line getLine(String url, int lineNumber) {
+    FileObject file;
+    try {
+      file = URLMapper.findFileObject(new URL(url));
+    } catch (MalformedURLException e) {
+      return null;
+    }
+    if (file == null) {
+      return null;
+    }
+    DataObject dataObject = null;
+    try {
+      dataObject = DataObject.find(file);
+    } catch (DataObjectNotFoundException ex) {
+      return null;
+    }
+    if (dataObject == null) {
+      return null;
+    }
+    LineCookie lineCookie = (LineCookie) dataObject.getCookie(LineCookie.class);
+    if (lineCookie == null) {
+      return null;
+    }
+    Line.Set ls = lineCookie.getLineSet();
+    if (ls == null) {
+      return null;
+    }
+    try {
+      return ls.getCurrent(lineNumber);
+    } catch (IndexOutOfBoundsException e) {
+    } catch (IllegalArgumentException e) {
+    }
+    return null;
+  }
+  
 
   public static Line getCurrentLine() {
     Node[] nodes = TopComponent.getRegistry().getCurrentNodes();

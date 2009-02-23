@@ -137,7 +137,7 @@ public class MakeProjectGenerator {
         }
 
         FileObject dirFO = createProjectDir(projectNameFile);
-        createProject(dirFO, projectName, makefileName, confs, null, null, true);
+        createProject(dirFO, projectName, makefileName, confs, null, null, true, null);
         MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
 
@@ -156,9 +156,9 @@ public class MakeProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static MakeProject createProject(File dir, String name, String makefileName, MakeConfiguration[] confs, Iterator<SourceFolderInfo> sourceFolders, Iterator<String> importantItems) throws IOException {
+    public static MakeProject createProject(File dir, String name, String makefileName, MakeConfiguration[] confs, Iterator<SourceFolderInfo> sourceFolders, Iterator<String> importantItems, String mainFile) throws IOException {
         FileObject dirFO = createProjectDir(dir);
-        AntProjectHelper h = createProject(dirFO, name, makefileName, confs, sourceFolders, importantItems, false); //NOI18N
+        AntProjectHelper h = createProject(dirFO, name, makefileName, confs, sourceFolders, importantItems, false, mainFile); //NOI18N
         MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         //FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
@@ -207,7 +207,7 @@ public class MakeProjectGenerator {
     return null;
     }
      */
-    private static AntProjectHelper createProject(FileObject dirFO, String name, String makefileName, Configuration[] confs, final Iterator<SourceFolderInfo> sourceFolders, final Iterator<String> importantItems, boolean saveNow) throws IOException {
+    private static AntProjectHelper createProject(FileObject dirFO, String name, String makefileName, Configuration[] confs, final Iterator<SourceFolderInfo> sourceFolders, final Iterator<String> importantItems, boolean saveNow, String mainFile) throws IOException {
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, MakeProjectType.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -236,17 +236,25 @@ public class MakeProjectGenerator {
         projectDescriptor.setState(State.READY);
 
         Project project = projectDescriptor.getProject();
+        // create main source file
+        final String mainFilePath;
+        if (mainFile != null) {
+            mainFilePath = createMain(mainFile, dirFO);
+        } else {
+            mainFilePath = null;
+        }
+
         if (project instanceof MakeProject && !saveNow) { // How can it not be an instance of MakeProject???
             MakeProject makeProject = (MakeProject) project;
             makeProject.addOpenedTask(new Runnable() {
 
                 public void run() {
-                    projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, importantItems); // FIXUP: need a better check whether logical folder should be ccreated or not.
+                    projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, importantItems, mainFilePath); // FIXUP: need a better check whether logical folder should be ccreated or not.
                     projectDescriptor.save();
                 }
             });
         } else {
-            projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, importantItems); // FIXUP: need a better check whether logical folder should be ccreated or not.
+            projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, importantItems, mainFilePath); // FIXUP: need a better check whether logical folder should be ccreated or not.
             projectDescriptor.save();
         }
         // create Makefile
@@ -306,38 +314,25 @@ public class MakeProjectGenerator {
         return dirFO;
     }
 
-    private static void createMainClass(String mainClassName, FileObject srcFolder) throws IOException {
+    private static String createMain(String mainFile, FileObject srcFolder) throws IOException {
+        String mainName = mainFile.substring(0, mainFile.indexOf('|'));
+        String template = mainFile.substring(mainFile.indexOf('|') + 1);
 
-        int lastDotIdx = mainClassName.lastIndexOf('.');
-        String mName, pName;
-        if (lastDotIdx == -1) {
-            mName = mainClassName.trim();
-            pName = null;
-        } else {
-            mName = mainClassName.substring(lastDotIdx + 1).trim();
-            pName = mainClassName.substring(0, lastDotIdx).trim();
+        if (mainName.length() == 0) {
+            return null;
         }
 
-        if (mName.length() == 0) {
-            return;
-        }
-
-        FileObject mainTemplate = FileUtil.getConfigFile("Templates/Classes/Main.java"); // NOI18N
+        FileObject mainTemplate = FileUtil.getConfigFile(template);
 
         if (mainTemplate == null) {
-            return; // Don't know the template
+            return null; // Don't know the template
         }
 
         DataObject mt = DataObject.find(mainTemplate);
+        DataFolder pDf = DataFolder.findFolder(srcFolder);
+        mt.createFromTemplate(pDf, mainName);
 
-        FileObject pkgFolder = srcFolder;
-        if (pName != null) {
-            String fName = pName.replace('.', '/'); // NOI18N
-            pkgFolder = FileUtil.createFolder(srcFolder, fName);
-        }
-        DataFolder pDf = DataFolder.findFolder(pkgFolder);
-        mt.createFromTemplate(pDf, mName);
-
+        return mainName;
     }
 //    private static void refreshFileSystem (final File dir) throws FileStateInvalidException {
 //        File rootF = dir;

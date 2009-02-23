@@ -43,25 +43,8 @@ package org.netbeans.test.php.insert;
 
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.test.php.GeneralPHP;
-import org.netbeans.jemmy.JemmyException;
-import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.junit.NbModuleSuite;
-import junit.framework.Test;
-import org.netbeans.jemmy.operators.JToggleButtonOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JLabelOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import java.util.List;
 
 /**
  *

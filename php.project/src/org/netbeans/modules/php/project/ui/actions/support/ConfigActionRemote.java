@@ -46,14 +46,13 @@ import org.netbeans.modules.php.project.ui.actions.UploadCommand;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 
 /**
  * Action implementation for REMOTE configuration.
  * It means uploading, running and debugging web pages on a remote web server.
  * @author Tomas Mysik
  */
-public class ConfigActionRemote extends ConfigActionLocal {
+class ConfigActionRemote extends ConfigActionLocal {
 
     protected ConfigActionRemote(PhpProject project) {
         super(project);
@@ -90,7 +89,7 @@ public class ConfigActionRemote extends ConfigActionLocal {
     }
 
     @Override
-    protected void preShowUrl(Lookup context) {
+    protected void preShowUrl() {
         eventuallyUploadFiles(CommandUtils.filesForSelectedNodes());
     }
 

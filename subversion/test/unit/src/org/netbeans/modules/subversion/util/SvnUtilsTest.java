@@ -47,6 +47,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * Tests org.netbeans.modules.subversion.util.SVNUtils utility methods
@@ -169,6 +170,27 @@ public class SvnUtilsTest extends NbTestCase {
             System.out.println("testGetMatchinIgnoreParterns: value=" + entry.getKey());
             List<String> result = SvnUtils.getMatchinIgnoreParterns(patterns, entry.getKey(), onlyFirstMatch);
             assertEquals(entry.getValue(), result);
+        }
+    }
+
+    /**
+     * Test of decodeAndEncodeUrl method, of class SvnUtils.
+     */
+    @Test
+    public void testDecodeAndEncodeUrl() throws Exception {
+        System.out.println("testDecodeAndEncodeUrl test");
+        final HashMap<SVNUrl, SVNUrl> testingData = new HashMap<SVNUrl, SVNUrl>();
+        testingData.put(new SVNUrl("file:///var/lib/repository/svn/ja1/file"), new SVNUrl("file:///var/lib/repository/svn/ja1/file"));
+        testingData.put(new SVNUrl("file:///var/lib/repository/svn/ja1/file[]"), new SVNUrl("file:///var/lib/repository/svn/ja1/file%5B%5D"));
+        testingData.put(new SVNUrl("file:///var/lib/repository/svn/ja1/file%5b%5d"), new SVNUrl("file:///var/lib/repository/svn/ja1/file%5B%5D"));
+        testingData.put(new SVNUrl("file:///var/lib/repository/svn/ja1/file%5B%5D"), new SVNUrl("file:///var/lib/repository/svn/ja1/file%5B%5D"));
+        testingData.put(new SVNUrl("file:///var/lib/repository/svn/ja1/file[ ]"), new SVNUrl("file:///var/lib/repository/svn/ja1/file%5B %5D"));
+        testingData.put(new SVNUrl("file:///var/lib/repository/svn/ja1/file-*_.java@"), new SVNUrl("file:///var/lib/repository/svn/ja1/file-*_.java@")); // do not escape '@', '/', ':'
+        testingData.put(new SVNUrl("file:///var/lib/repository/svn/ja1/file;?#%[]@"), new SVNUrl("file:///var/lib/repository/svn/ja1/file%3B%23%25%5B%5D@")); // do not escape '@', '/', ':'
+
+        // test
+        for (Entry<SVNUrl, SVNUrl> entry : testingData.entrySet()) {
+            assertEquals(entry.getValue(), SvnUtils.decodeAndEncodeUrl(entry.getKey()));
         }
     }
 }

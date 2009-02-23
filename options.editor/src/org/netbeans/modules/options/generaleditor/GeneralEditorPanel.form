@@ -21,7 +21,16 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace min="-2" pref="439" max="-2" attributes="0"/>
+              <Component id="jSeparator3" pref="494" max="32767" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <Component id="lCodeFolding" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Component id="jSeparator1" pref="838" max="32767" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
@@ -34,47 +43,22 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="cbCamelCaseBehavior" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbFoldInitialComments" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="lCamelCaseBehaviorExample" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="cbUseCodeFolding" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbFoldMethods" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbFoldInnerClasses" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbFoldImports" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbFoldJavadocComments" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbFoldInitialComments" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbCamelCaseBehavior" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="cbFoldTags" min="-2" max="-2" attributes="0"/>
+                  </Group>
               </Group>
               <EmptySpace pref="205" max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" attributes="0">
-              <EmptySpace min="146" pref="146" max="146" attributes="0"/>
-              <Component id="jSeparator3" pref="787" max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="155" pref="155" max="155" attributes="0"/>
-              <Component id="cbUseCodeFolding" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="750" max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="155" pref="155" max="155" attributes="0"/>
-              <Component id="cbFoldMethods" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="85" max="-2" attributes="0"/>
-              <Component id="cbFoldTags" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="398" max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="155" pref="155" max="155" attributes="0"/>
-              <Component id="cbFoldInnerClasses" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="662" max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="155" pref="155" max="155" attributes="0"/>
-              <Component id="cbFoldImports" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="697" max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="155" pref="155" max="155" attributes="0"/>
-              <Component id="cbFoldJavadocComments" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="626" max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <Component id="lCodeFolding" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="jSeparator1" pref="838" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -104,10 +88,10 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="cbFoldImports" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="cbFoldJavadocComments" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="cbFoldJavadocComments" min="-2" pref="23" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
                       <Component id="cbFoldInitialComments" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="19" max="-2" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="jSeparator3" min="-2" pref="10" max="-2" attributes="0"/>
                   </Group>
                   <Component id="lCamelCaseBehavior" min="-2" max="-2" attributes="0"/>

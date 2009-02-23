@@ -145,7 +145,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         if (!typedefs.getTypesefs().isEmpty()) {
                             for (CsmTypedef typedef : typedefs.getTypesefs()) {
                                 // It could be important to register in project before add as member...
-                                ((FileImpl) getContainingFile()).getProjectImpl(true).registerDeclaration(typedef);
+                                if (!isRenderingLocalContext()) {
+                                    ((FileImpl) getContainingFile()).getProjectImpl(true).registerDeclaration(typedef);
+                                }
                                 addMember((MemberTypedef) typedef,!isRenderingLocalContext());
                                 if (typedefs.getEnclosingClassifier() != null){
                                     typedefs.getEnclosingClassifier().addEnclosingTypedef(typedef);
@@ -205,7 +207,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                             if (!typedefs.getTypesefs().isEmpty()) {
                                 for (CsmTypedef typedef : typedefs.getTypesefs()) {
                                     // It could be important to register in project before add as member...
-                                    ((FileImpl) getContainingFile()).getProjectImpl(true).registerDeclaration(typedef);
+                                    if (!isRenderingLocalContext()) {
+                                        ((FileImpl) getContainingFile()).getProjectImpl(true).registerDeclaration(typedef);
+                                    }
                                     addMember((MemberTypedef) typedef,!isRenderingLocalContext());
                                     if (typedefs.getEnclosingClassifier() != null) {
                                         typedefs.getEnclosingClassifier().addEnclosingTypedef(typedef);
@@ -416,7 +420,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         @Override
         protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, String name) {
             type = TemplateUtils.checkTemplateType(type, ClassImpl.this);
-            return new MemberTypedef(ClassImpl.this, ast, type, name, curentVisibility);
+            return new MemberTypedef(ClassImpl.this, ast, type, name, curentVisibility, !isRenderingLocalContext());
         }
 
         @Override
@@ -432,8 +436,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
         private CsmVisibility visibility;
 
-        public MemberTypedef(CsmClass containingClass, AST ast, CsmType type, String name, CsmVisibility curentVisibility) {
-            super(ast, containingClass.getContainingFile(), containingClass, type, name);
+        public MemberTypedef(CsmClass containingClass, AST ast, CsmType type, String name, CsmVisibility curentVisibility, boolean global) {
+            super(ast, containingClass.getContainingFile(), containingClass, type, name, global);
             visibility = curentVisibility;
         }
 

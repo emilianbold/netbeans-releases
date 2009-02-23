@@ -134,6 +134,56 @@ public class GrailsRuntimeTest extends NbTestCase {
         assertEquals(correctProps, desc.getProps());
     }
 
+    public void testVersion() {
+        GrailsRuntime.Version version1 = new GrailsRuntime.Version(1, null, null, null, null);
+        GrailsRuntime.Version version2 = new GrailsRuntime.Version(1, 0, 0, null, null);
+        assertEquals(version1, version2);
+        assertEquals(version1.hashCode(), version2.hashCode());
+        assertEquals("1", version1.toString());
+        assertEquals("1.0.0", version2.toString());
+
+        version2 = new GrailsRuntime.Version(1, null, 0, null, "a");
+        assertFalse(version1.equals(version2));
+        assertEquals("1.0.0-a", version2.toString());
+
+        version2 = new GrailsRuntime.Version(0, null, 0, null, "a");
+        assertFalse(version1.equals(version2));
+        assertEquals("0.0.0-a", version2.toString());
+
+        version2 = new GrailsRuntime.Version(1, null, null, null, null);
+        assertEquals(new GrailsRuntime.Version(1, 0, 0, 0, null), version2);
+        assertEquals(GrailsRuntime.Version.VERSION_DEFAULT, version2);
+        assertEquals("1", version2.toString());
+    }
+
+    public void testVersionParsing() {
+        GrailsRuntime.Version version = GrailsRuntime.Version.valueOf("1.0");
+        assertEquals(new GrailsRuntime.Version(1, 0, 0, 0, null), version);
+        assertEquals("1.0", version.toString());
+
+        version = GrailsRuntime.Version.valueOf("1.1");
+        assertEquals(GrailsRuntime.Version.VERSION_1_1, version);
+        assertEquals("1.1", version.toString());
+
+        version = GrailsRuntime.Version.valueOf("2.0-a");
+        assertEquals(new GrailsRuntime.Version(2, 0, 0, 0, "a"), version);
+        assertEquals("2.0-a", version.toString());
+    }
+
+    public void testVersionCompare() {
+        GrailsRuntime.Version version1 = GrailsRuntime.Version.valueOf("1.0");
+        GrailsRuntime.Version version2 = GrailsRuntime.Version.valueOf("1.0");
+        assertEquals(0, version1.compareTo(version2));
+
+        version2 = GrailsRuntime.Version.valueOf("1.0-a");
+        assertTrue(version1.compareTo(version2) < 0);
+        assertTrue(version2.compareTo(version1) > 0);
+
+        version2 = GrailsRuntime.Version.valueOf("2.0");
+        assertTrue(version1.compareTo(version2) < 0);
+        assertTrue(version2.compareTo(version1) > 0);
+    }
+
     private static void assertEquals(String[] expected, String[] value) {
         assertEquals(expected.length, value.length);
 
