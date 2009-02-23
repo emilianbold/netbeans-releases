@@ -1706,6 +1706,7 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals("a3", snapshot.get(2).getName());
     }
 
+    @RandomlyFails // from ChildrenFilterAsKeysTest in NB-Core-Build #2180
     public void testSnapshotSize() {
         class K extends Keys {
 
