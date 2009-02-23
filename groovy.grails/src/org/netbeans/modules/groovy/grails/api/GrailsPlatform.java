@@ -43,16 +43,22 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -61,6 +67,7 @@ import org.netbeans.modules.groovy.grails.KillableProcess;
 import org.netbeans.modules.groovy.grails.RuntimeHelper;
 import org.netbeans.modules.groovy.grails.server.GrailsInstanceProvider;
 import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.NbProcessDescriptor;
@@ -86,6 +93,8 @@ public final class GrailsPlatform {
     public static final String IDE_RUN_COMMAND = "run-app"; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(GrailsPlatform.class.getName());
+
+    private static ClassPath EMPTY_CLASSPATH = ClassPathSupport.createClassPath(new URL[] {});
 
     private static final Set<String> GUARDED_COMMANDS = new HashSet<String>();
 
@@ -160,20 +169,46 @@ public final class GrailsPlatform {
         return RuntimeHelper.isValidRuntime(new File(grailsBase));
     }
 
-    /**
-     * Returns the grails home of the configured runtime.
-     *
-     * @return the grails home
-     * @throws IllegalStateException if the runtime is not configured
-     */
-    // TODO this should be removed with CP abstraction
-    public File getGrailsHome() {
-        String grailsBase = GrailsSettings.getInstance().getGrailsBase();
-        if (grailsBase == null || !RuntimeHelper.isValidRuntime(new File(grailsBase))) {
-            throw new IllegalStateException("Grails not configured"); // NOI18N
+    public ClassPath getClassPath() {
+        if (!isConfigured()) {
+            return EMPTY_CLASSPATH;
         }
 
-        return new File(grailsBase);
+        File grailsHome = getGrailsHome();
+        if (!grailsHome.exists()) {
+            return EMPTY_CLASSPATH;
+        }
+
+        List<File> jars = new ArrayList<File>();
+
+        File distDir = new File(grailsHome, "dist"); // NOI18N
+        File[] files = distDir.listFiles();
+        if (files != null) {
+            jars.addAll(Arrays.asList(files));
+        }
+
+        File libDir = new File(grailsHome, "lib"); // NOI18N
+        files = libDir.listFiles();
+        if (files != null) {
+            jars.addAll(Arrays.asList(files));
+        }
+
+        List<URL> urls = new ArrayList<URL>(jars.size());
+
+        for (File f : jars) {
+            try {
+                if (f.isFile()) {
+                    URL entry = f.toURI().toURL();
+                    if (FileUtil.isArchiveFile(entry)) {
+                        entry = FileUtil.getArchiveRoot(entry);
+                        urls.add(entry);
+                    }
+                }
+            } catch (MalformedURLException mue) {
+                assert false : mue;
+            }
+        }
+        return ClassPathSupport.createClassPath(urls.toArray(new URL[urls.size()]));
     }
 
     // TODO not public API unless it is really needed
@@ -237,6 +272,21 @@ public final class GrailsPlatform {
                 }
             }
         });
+    }
+
+    /**
+     * Returns the grails home of the configured runtime.
+     *
+     * @return the grails home
+     * @throws IllegalStateException if the runtime is not configured
+     */
+    private File getGrailsHome() {
+        String grailsBase = GrailsSettings.getInstance().getGrailsBase();
+        if (grailsBase == null || !RuntimeHelper.isValidRuntime(new File(grailsBase))) {
+            throw new IllegalStateException("Grails not configured"); // NOI18N
+        }
+
+        return new File(grailsBase);
     }
 
     private static String createJvmArguments(Properties properties) {

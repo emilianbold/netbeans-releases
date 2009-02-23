@@ -93,7 +93,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             currentId = eventId;
         }
 
-        JavaPlatform jp = findActivePlatform();
+        JavaPlatform jp = config.getJavaPlatform();
         final List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
         if (jp != null) {
             //TODO: May also listen on CP, but from Platform it should be fixed.
@@ -104,7 +104,14 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             }
         }
 
-        result.addAll(findGroovyPlatform());
+        GrailsPlatform gp = config.getGrailsPlatform();
+        if (gp != null) {
+            final ClassPath cp = gp.getClassPath();
+            assert cp != null : gp;
+            for (ClassPath.Entry entry : cp.entries()) {
+                result.add(ClassPathSupport.createResource(entry.getURL()));
+            }
+        }
 
         synchronized (this) {
             if (currentId == eventId) {
@@ -132,52 +139,6 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         this.support.removePropertyChangeListener(listener);
-    }
-
-    private JavaPlatform findActivePlatform() {
-        return config.getJavaPlatform();
-    }
-
-    private List<PathResourceImplementation> findGroovyPlatform() {
-        List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
-
-        final GrailsPlatform runtime = GrailsPlatform.getDefault();
-        if (!runtime.isConfigured()) {
-            return Collections.unmodifiableList(result);
-        }
-        File grailsHome = runtime.getGrailsHome();
-        if (!grailsHome.exists()) {
-            return Collections.unmodifiableList(result);
-        }
-
-        List<File> jars = new ArrayList<File>();
-
-        File distDir = new File(grailsHome, "dist"); // NOI18N
-        File[] files = distDir.listFiles();
-        if (files != null) {
-            jars.addAll(Arrays.asList(files));
-        }
-
-        File libDir = new File(grailsHome, "lib"); // NOI18N
-        files = libDir.listFiles();
-        if (files != null) {
-            jars.addAll(Arrays.asList(files));
-        }
-
-        for (File f : jars) {
-            try {
-                if (f.isFile()) {
-                    URL entry = f.toURI().toURL();
-                    if (FileUtil.isArchiveFile(entry)) {
-                        entry = FileUtil.getArchiveRoot(entry);
-                        result.add(ClassPathSupport.createResource(entry));
-                    }
-                }
-            } catch (MalformedURLException mue) {
-                assert false : mue;
-            }
-        }
-        return Collections.unmodifiableList(result);
     }
 
 }
