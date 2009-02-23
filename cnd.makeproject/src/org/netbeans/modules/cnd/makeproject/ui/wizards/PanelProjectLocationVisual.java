@@ -58,8 +58,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class PanelProjectLocationVisual extends SettingsPanel
-        implements DocumentListener, HelpCtx.Provider {
+public class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener, HelpCtx.Provider {
 
     public static final String PROP_PROJECT_NAME = "projectName"; // NOI18N
     private PanelConfigureProject panel;
@@ -92,20 +91,21 @@ public class PanelProjectLocationVisual extends SettingsPanel
         setAsMainCheckBox.setVisible(true);
 
         createMainTextField.setText("main"); // NOI18N
-        createMainComboBox.addItem("C"); // NOI18N
-        createMainComboBox.addItem("C++"); // NOI18N
-        createMainComboBox.setSelectedIndex(0);
 
         if (type == NewMakeProjectWizardIterator.TYPE_APPLICATION) {
             createMainCheckBox.setVisible(true);
             createMainTextField.setVisible(true);
             createMainComboBox.setVisible(true);
+            createMainComboBox.addItem("C"); // NOI18N
+            createMainComboBox.addItem("C++"); // NOI18N
+            createMainComboBox.setSelectedIndex(0);
         } else if (type == NewMakeProjectWizardIterator.TYPE_QT_APPLICATION) {
             createMainCheckBox.setVisible(true);
             createMainTextField.setVisible(true);
-            createMainComboBox.setVisible(false);
+            createMainComboBox.setVisible(true);
+            createMainComboBox.addItem("C++"); // NOI18N
+            createMainComboBox.setSelectedIndex(0);
         } else {
-            createMainCheckBox.setSelected(false);
             createMainCheckBox.setVisible(false);
             createMainTextField.setVisible(false);
             createMainComboBox.setVisible(false);
