@@ -37,27 +37,20 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui;
-
-import org.netbeans.modules.kenai.ui.spi.LinkNode;
-import org.netbeans.modules.kenai.ui.spi.KenaiProjectUIQuery;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
+package org.openide.awt;
 
 /**
+ * Controller for a notification message obtained from NotificationDisplayer.
  *
- * @author Jan Becicka
+ * @see NotificationDisplayer
+ * @since 7.6
+ *
+ * @author S. Aubrecht
  */
-public class KenaiProjectsTreeModel extends DefaultTreeModel {
-
-    public KenaiProjectsTreeModel() {
-        super(new DefaultMutableTreeNode("Root"));
-        DefaultMutableTreeNode project1 = new DefaultMutableTreeNode("My Kenai Project");
-        DefaultMutableTreeNode project1Builds = new DefaultMutableTreeNode("Builds");
-        project1.add(project1Builds);
-        for (LinkNode line :  KenaiProjectUIQuery.getNodes(null, null, null)) {
-            project1Builds.add(new DefaultMutableTreeNode(line));
-        }
-        ((DefaultMutableTreeNode) getRoot()).add(project1);
-    }
+public abstract class Notification {
+    
+    /**
+     * Remove this notification from the list of active notifications.
+     */
+    public abstract void dispose();
 }
