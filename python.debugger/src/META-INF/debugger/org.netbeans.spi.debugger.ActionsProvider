@@ -1,1 +1,1 @@
-org.netbeans.modules.python.debugger.breakpoints.ToggleBreakpointActionProvider
+org.netbeans.modules.python.debugger.breakpoints.PythonBreakpointActionProvider
