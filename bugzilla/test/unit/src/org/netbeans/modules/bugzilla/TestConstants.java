@@ -46,7 +46,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
  * @author tomas
  */
 public interface TestConstants {
-    public static final String TEST_PROJECT = "TESTPROJECT";
+    public static final String TEST_PROJECT = "TestProduct";
     public static final String REPO_PASSWD  = "dilino";
 //    public static final String REPO_URL     = "http://192.168.0.7/bugzilla";
     public static final String REPO_URL     = "http://129.157.20.136/bugzilla"; //

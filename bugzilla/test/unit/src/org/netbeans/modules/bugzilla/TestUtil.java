@@ -108,19 +108,18 @@ public class TestUtil implements TestConstants {
         ta = rta.createMappedAttribute(BugzillaAttribute.OP_SYS.getKey());
         ta.setValue(os);
 
-        String product = client.getRepositoryConfiguration().getProducts().get(0);
         ta = rta.createMappedAttribute(BugzillaAttribute.PRODUCT.getKey());
-        ta.setValue(product);
+        ta.setValue(TEST_PROJECT);
 
         String platform = client.getRepositoryConfiguration().getPlatforms().get(0);
         ta = rta.createMappedAttribute(BugzillaAttribute.REP_PLATFORM.getKey());
         ta.setValue(platform);
 
-        String version = client.getRepositoryConfiguration().getVersions(product).get(0);
+        String version = client.getRepositoryConfiguration().getVersions(TEST_PROJECT).get(0);
         ta = rta.createMappedAttribute(BugzillaAttribute.VERSION.getKey());
         ta.setValue(version);
 
-        String component = client.getRepositoryConfiguration().getComponents(product).get(0);
+        String component = client.getRepositoryConfiguration().getComponents(TEST_PROJECT).get(0);
         ta = rta.createMappedAttribute(BugzillaAttribute.COMPONENT.getKey());
         ta.setValue(component);
 
