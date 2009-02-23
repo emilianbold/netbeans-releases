@@ -41,12 +41,14 @@ package org.netbeans.modules.groovy.grails.api;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.groovy.grails.RuntimeHelper;
 import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 
 
@@ -286,6 +288,14 @@ public final class GrailsProjectConfig {
             settings.setJavaPlatformForProject(prj, platform.getProperties().get("platform.ant.name"));
         }
         propertyChangeSupport.firePropertyChange(GRAILS_JAVA_PLATFORM_PROPERTY, oldValue, platform);
+    }
+
+    public GrailsRuntime getGrailsPlatform() {
+        GrailsRuntime runtime = GrailsRuntime.getInstance();
+        if (runtime.isConfigured()) {
+            return runtime;
+        }
+        return null;
     }
 
     /**
