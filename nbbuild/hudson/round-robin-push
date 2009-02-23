@@ -48,7 +48,7 @@ dobuild() {
     rm -f $RESULT
 
     ant build $ANT_PARAM || exit 2
-    ant commit-validation -Dvalidation.nb.cluster.php="" $ANT_PARAM || exit 3
+    ant commit-validation $ANT_PARAM || exit 3
     ant check-sigtests-release $ANT_PARAM || exit 35
     ant build-test-dist $ANT_PARAM || exit 4
 
