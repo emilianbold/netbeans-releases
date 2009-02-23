@@ -53,6 +53,7 @@ import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
+import org.netbeans.modules.maven.MavenProjectPropsImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
@@ -273,7 +274,7 @@ public final class NbMavenProject {
      * @return 
      */
     public String getPackagingType() {
-        AuxiliaryProperties props = project.getAuxProps();
+        MavenProjectPropsImpl props = project.getAuxProps();
         String custom = props.get(Constants.HINT_PACKAGING, true);
         MavenProject orig = project.getOriginalMavenProject();
 // ignore the old solution. getRawMappings() is expensive in this context..

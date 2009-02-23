@@ -160,7 +160,7 @@ public final class NbMavenProjectImpl implements Project {
     private ProjectState state;
     private ConfigurationProviderEnabler configEnabler;
     private M2AuxilaryConfigImpl auxiliary;
-    private AuxiliaryProperties auxprops;
+    private MavenProjectPropsImpl auxprops;
     private ProjectProfileHandler profileHandler;
     public static WatcherAccessor ACCESSOR = null;
     
@@ -538,7 +538,7 @@ public final class NbMavenProjectImpl implements Project {
         return EmbedderFactory.getProjectEmbedder();
     }
 
-    public AuxiliaryProperties getAuxProps() {
+    public MavenProjectPropsImpl getAuxProps() {
         return auxprops;
     }
 
@@ -747,6 +747,7 @@ public final class NbMavenProjectImpl implements Project {
                     new ActionProviderImpl(this),
                     auxiliary,
                     auxprops,
+                    new MavenProjectPropsImpl.Merger(auxprops),
                     profileHandler,
                     new CustomizerProviderImpl(this),
                     new LogicalViewProviderImpl(this),
@@ -783,7 +784,7 @@ public final class NbMavenProjectImpl implements Project {
                     new CosChecker(),
                     CosChecker.createResultChecker(),
                     new ReactorChecker(),
-                    new PrereqCheckerMerger()
+                    new PrereqCheckerMerger(),
                 });
         return staticLookup;
     }
