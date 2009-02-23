@@ -376,8 +376,8 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
         // create & set a new model for document roots
         File projectFolder = FileUtil.normalizeFile(getProjectFolder(projectName));
-        MutableComboBoxModel model = new LocalServer.ComboBoxModel(new LocalServer(projectFolder.getAbsolutePath()));
-        LocalServer selected = new LocalServer(""); // NOI18N
+        LocalServer selected = new LocalServer(projectFolder.getAbsolutePath());
+        MutableComboBoxModel model = new LocalServer.ComboBoxModel(selected);
         for (DocumentRoot root : documentRoots) {
             LocalServer ls = new LocalServer(root.getDocumentRoot() + File.separator + projectName);
             ls.setHint(root.getHint());
