@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.web.core.syntax.formatting;
 
+import java.io.File;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
@@ -65,6 +66,7 @@ import org.netbeans.modules.web.core.syntax.indent.JspIndentTaskFactory;
 import org.netbeans.test.web.core.syntax.TestBase2;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 
@@ -82,6 +84,7 @@ public class JspIndenterTest extends TestBase2 {
     protected void setUp() throws Exception {
         super.setUp();
         initParserJARs();
+        copyWebProjectJarsTo(new File(getDataDir(), "FormattingProject/lib"));
         NbReaderProvider.setupReaders();
 
         

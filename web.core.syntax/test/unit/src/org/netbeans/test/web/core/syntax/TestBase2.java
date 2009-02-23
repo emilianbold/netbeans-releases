@@ -42,6 +42,7 @@
 package org.netbeans.test.web.core.syntax;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -55,6 +56,8 @@ import org.netbeans.modules.web.core.syntax.JSPKit;
 import org.netbeans.modules.web.core.syntax.gsf.JspFormatter;
 import org.netbeans.modules.web.core.syntax.gsf.JspLanguage;
 import org.netbeans.modules.web.jspparser.JspParserImpl;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Common ancestor for all test classes.
@@ -119,4 +122,24 @@ public class TestBase2 extends GsfTestBase {
         }
         JspParserImpl.setParserJARs(list.toArray(new URL[list.size()]));
     }
+
+    public final void copyWebProjectJarsTo(File p) throws MalformedURLException, IOException {
+        String path = System.getProperty("web.project.jars");
+        StringTokenizer st = new StringTokenizer(path, ":");
+        if (p.exists()) {
+            return;
+        }
+        p.mkdir();
+        FileObject dest = FileUtil.toFileObject(p);
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            File f = new File(token);
+            if (!f.exists()) {
+                fail("cannot find file "+token);
+            }
+            FileObject fo = FileUtil.toFileObject(f);
+            FileUtil.copyFile(fo, dest, fo.getName(), fo.getExt());
+        }
+    }
+
 }
