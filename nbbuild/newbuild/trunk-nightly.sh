@@ -65,13 +65,19 @@ if [ -n $BUILD_ID ]; then
 fi
 
 cd $TRUNK_NIGHTLY_DIRNAME
-#bash build-nbi.sh
-#ERROR_CODE=$?
-#
-#if [ $ERROR_CODE != 0 ]; then
-#    echo "ERROR: $ERROR_CODE - NBI installers build failed"
-#    exit $ERROR_CODE;
-#fi
+
+## No installers build for sustaining builds
+if [ "${SUSTAINING_BUILD}" == 1 ]; then
+   echo "This is sustaining build, installers are not produced"
+else 
+   bash build-nbi.sh
+   ERROR_CODE=$?
+
+   if [ $ERROR_CODE != 0 ]; then
+      echo "ERROR: $ERROR_CODE - NBI installers build failed"
+      exit $ERROR_CODE;
+   fi
+fi
 
 if [ -n $BUILD_ID ]; then
     mkdir -p $DIST_SERVER2/${BUILD_ID}
@@ -89,10 +95,13 @@ if [ -n $BUILD_ID ]; then
     fi
 fi
 
-mkdir -p $DIST/deploy
-mv $DIST/uc* $DIST/deploy/
-mkdir -p $DIST/deploy/ml
-mv $DIST/ml/uc* $DIST/deploy/ml/
+## Sustaining build deploys only NBMs to bits.netbeans.org
+if [ "${SUSTAINING_BUILD}" == 1 ]; then
+   mkdir -p $DIST/deploy
+   mv $DIST/uc* $DIST/deploy/
+   mkdir -p $DIST/deploy/ml
+   mv $DIST/ml/uc* $DIST/deploy/ml/
+fi
 
 cp $DIST_SERVER2/latest/zip/netbeans-$BUILDNUM.zip $TEST_LOCATION/NetBeans.zip
 cp $DIST_SERVER2/latest/zip/netbeans-$BUILDNUM-java.zip $TEST_LOCATION/NetBeansJavaEE.zip

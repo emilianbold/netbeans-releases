@@ -7,6 +7,7 @@ set -x
 if [ -z ${ML_BUILD} ]; then
     export ML_BUILD=1
 fi
+${SUSTAINING_BUILD
 if [ -z ${LOCALES} ]; then
     export LOCALES=ja,zh_CN,pt_BR
 fi
@@ -17,6 +18,10 @@ fi
 
 if [ -z ${UPLOAD_JDK} ]; then
     export UPLOAD_JDK=0
+fi
+
+if [ -z ${SUSTAINING_BUILD} ]; then
+    export SUSTAINING_BUILD=0
 fi
 
 export ANT_OPTS="-Xmx512m"
