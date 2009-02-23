@@ -11,9 +11,6 @@ then
     fi
     dir=`dirname $0`/../..
     cd $dir
-else
-    hg up -C . # in case previous build mistakenly modified some source files
-    hg --config extensions.purge= clean --all || exit
 fi
 
 DIST=$PWD/nbbuild/dist
