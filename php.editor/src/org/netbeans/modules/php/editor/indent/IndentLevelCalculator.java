@@ -43,7 +43,14 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
+import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.openide.util.Exceptions;
 
@@ -84,5 +91,54 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
         }
 
         super.visit(node);
+    }
+
+    @Override
+    public void visit(IfStatement node) {
+        indentNonBlockStatement(node.getFalseStatement());
+        indentNonBlockStatement(node.getTrueStatement());
+
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(DoStatement node) {
+        indentNonBlockStatement(node.getBody());
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(ForEachStatement node) {
+        indentNonBlockStatement(node.getStatement());
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(ForStatement node) {
+        indentNonBlockStatement(node.getBody());
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(WhileStatement node) {
+        indentNonBlockStatement(node.getBody());
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(ExpressionStatement node) {
+        indentContinuationWithinStatement(node);
+        super.visit(node);
+    }
+
+    private void indentContinuationWithinStatement(ASTNode node){
+
+    }
+
+    private void indentNonBlockStatement(ASTNode node){
+        if (!(node instanceof Block)){
+            indentLevels.put(node.getStartOffset(), indentSize);
+            indentLevels.put(node.getEndOffset(), -1 * indentSize);
+        }
     }
 }
