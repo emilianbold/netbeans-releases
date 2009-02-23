@@ -59,12 +59,12 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
  *
  * @author Nick Krasilnikov
  */
-/* package */ final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<CppTokenId>> {
+public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<CppTokenId>>, MacroCallback {
 
     private final CndTokenProcessor<Token<CppTokenId>> tp;
     private final Document doc;
     private final int offset;
-    private boolean afterMacro;
+    private boolean inMacro;
     private final CsmFile file;
     private List<CsmReference> macros;
 
@@ -82,12 +82,16 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
             if (file != null) {
                 List<CsmReference> macros = CsmFileInfoQuery.getDefault().getMacroUsages(file);
                 if (macros != null) {
-                    CsmMacroExpansion.expand(doc, file, 0, 0);
-                    return new CsmExpandedTokenProcessor(doc, file, tp, offset, macros);
+                    return create(doc, file, tp, offset, macros);
                 }
             }
         }
         return tp;
+    }
+
+    public static CndTokenProcessor<Token<CppTokenId>> create(Document doc, CsmFile file, CndTokenProcessor<Token<CppTokenId>> tp, int offset, List<CsmReference> macros) {
+        CsmMacroExpansion.expand(doc, file, 0, 0);
+        return new CsmExpandedTokenProcessor(doc, file, tp, offset, macros);
     }
 
     public void start(int startOffset, int firstTokenOffset) {
@@ -102,20 +106,28 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
         return tp.isStopped();
     }
 
+    public boolean isMacroExpansion() {
+        return inMacro;
+    }
+
+    public boolean isMacro(Token token, int tokenOffset) {
+        return Character.isJavaIdentifierStart(token.text().charAt(0)) && ReferencesSupport.findMacro(macros, tokenOffset) != null;
+    }
+
     public boolean token(Token<CppTokenId> token, int tokenOffset) {
         // Additional logic only for macros
-        if (isMacro(token, tokenOffset) || afterMacro) {
+        if (isMacro(token, tokenOffset) || inMacro) {
             TokenSequence<CppTokenId> expTS = null;
             String expansion = CsmMacroExpansion.expand(doc, file, tokenOffset, tokenOffset + token.length());
             if (expansion != null) {
                 if (expansion.equals("")) { // NOI18N
-                    if (tokenOffset + token.length() < offset) {
+                    if (offset == -1 || tokenOffset + token.length() < offset) {
                         return false;
                     }
-                } else if (afterMacro) {
-                    afterMacro = false;
+                } else if (inMacro) {
+                    inMacro = false;
                 } else {
-                    afterMacro = true;
+                    inMacro = true;
                     TokenHierarchy<String> hi = TokenHierarchy.create(expansion, CndLexerUtilities.getLanguage(doc));
                     List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(tokenOffset + token.length(), true);
                     // Go from inner to outer TSes
@@ -154,7 +166,7 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
             }
         }
         if (!isWhitespace(token)) {
-            afterMacro = false;
+            inMacro = false;
         }
         return tp.token(token, tokenOffset);
     }
@@ -169,9 +181,5 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
             default:
                 return false;
         }
-    }
-
-    private boolean isMacro(Token token, int tokenOffset) {
-        return  Character.isJavaIdentifierStart(token.text().charAt(0)) && ReferencesSupport.findMacro(macros, tokenOffset) != null;
     }
 }

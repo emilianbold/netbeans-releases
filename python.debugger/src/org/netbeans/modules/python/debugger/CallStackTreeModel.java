@@ -253,7 +253,7 @@ public class CallStackTreeModel
 
     public Object getValueAt(Object node, String columnID)
             throws UnknownTypeException {
-        if (columnID == Constants.CALL_STACK_FRAME_LOCATION_COLUMN_ID) {
+        if (columnID.equals(  Constants.CALL_STACK_FRAME_LOCATION_COLUMN_ID ) ) {
             if (node instanceof StackInfo) {
                 return ((StackInfo) node).get_name();
             }
@@ -278,7 +278,7 @@ public class CallStackTreeModel
     public String getDisplayName(Object node)
             throws UnknownTypeException {
         if (node == ROOT) {
-            return ROOT.toString();
+            return ROOT ;
         }
         if (node instanceof StackInfo) {
             return ((StackInfo) node).get_name();

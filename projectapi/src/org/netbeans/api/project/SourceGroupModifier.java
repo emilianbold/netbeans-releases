@@ -80,7 +80,7 @@ public final class SourceGroupModifier {
      * Typically a type is a constant for java/groovy/ruby source roots and hint is a constant for main sources or test sources.
      * Please consult specific APIs fro the supported types/hints. Eg. <code>JavaProjectConstants</code> for java related project sources.
      * @param project
-     * @param type
+     * @param type constant for type of sources
      * @param hint
      * @return Future instance that is capable of creating a SourceGroup or null
      */
@@ -90,7 +90,10 @@ public final class SourceGroupModifier {
         if (impl == null) {
             return null;
         }
-        return new Future(impl, type, hint);
+        if (impl.canCreateSourceGroup(type, hint)) {
+            return new Future(impl, type, hint);
+        }
+        return null;
     }
 
     /**
@@ -111,8 +114,6 @@ public final class SourceGroupModifier {
         /**
          * Create the instance of {@link org.netbeans.api.project.SourceGroup} wrapped by
          * this object.
-         * @param type
-         * @param hint
          * @return
          */
         public final SourceGroup createSourceGroup() {
@@ -120,10 +121,18 @@ public final class SourceGroupModifier {
         }
 
 
+        /**
+         * The type of sources associated with the current instance.
+         * @return type constant for type of sources
+         */
         public String getType() {
             return type;
         }
 
+        /**
+         * The source hint associated with the current instance.
+         * @return hint constant for type of sources
+         */
         public String getHint() {
             return hint;
         }

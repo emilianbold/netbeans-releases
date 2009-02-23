@@ -70,6 +70,9 @@ public final class PropertiesDataLoader extends MultiFileLoader {
     /** Extension for properties files. */
     static final String PROPERTIES_EXTENSION = "properties"; // NOI18N
 
+    /** Properties MIME type*/
+    static final String PROPERTIES_MIME_TYPE = "text/x-properties"; //NOI18N
+
     /** Character used to separate parts of bundle properties file name */
     public static final char PRB_SEPARATOR_CHAR = '_';
 
@@ -167,6 +170,9 @@ public final class PropertiesDataLoader extends MultiFileLoader {
                     index = fName.indexOf(PRB_SEPARATOR_CHAR, index + 1);
                 }
             }
+            return fo;
+        } else if(fo.getMIMEType().equalsIgnoreCase(PROPERTIES_MIME_TYPE)) {
+//            getExtensions().addExtension(fo.getExt());
             return fo;
         } else {
             return getExtensions().isRegistered(fo) ? fo : null;

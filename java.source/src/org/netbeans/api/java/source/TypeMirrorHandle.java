@@ -49,7 +49,7 @@ import com.sun.tools.javac.code.Type.TypeVar;
 import com.sun.tools.javac.code.TypeTags;
 import com.sun.tools.javac.code.Types.DefaultTypeVisitor;
 import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.Name;
+import com.sun.tools.javac.util.Names;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -318,11 +318,11 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
                     String[] signatures = element.getSignature();
                     assert signatures.length == 1;
                     Context context = info.impl.getJavacTask().getContext();
-                    return (T)new Type.ErrorType(Name.Table.instance(context).fromString(signatures[0]), Symtab.instance(context).rootPackage); 
+                    return (T)new Type.ErrorType(Names.instance(context).table.fromString(signatures[0]), Symtab.instance(context).rootPackage, Type.noType);
                 }
                 if (!(e instanceof ClassSymbol))
                     return null;
-                return (T)new com.sun.tools.javac.code.Type.ErrorType((ClassSymbol)e);
+                return (T)new Type.ErrorType((ClassSymbol)e, Type.noType);
             default:
                 throw new IllegalStateException("Internal error: unknown TypeHandle kind: " + kind);
         }

@@ -207,6 +207,10 @@ public class SVGComboBox extends SVGComponent implements
         myModel = model;
         model.addDataListener( this );
         myList.setModel( model );
+
+        if ( model != null && model.getSize()>0 ){
+            setSelected( model.getElementAt(0));
+        }
     }
     
     public ComboBoxEditor getEditor(){

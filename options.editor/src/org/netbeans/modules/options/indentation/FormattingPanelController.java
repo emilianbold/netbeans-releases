@@ -132,11 +132,30 @@ public final class FormattingPanelController extends OptionsPanelController {
             // and make sure that they do NOT override basic settings from All Languages
             for(String mimeType : mimeTypes) {
                 Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
-                prefs.remove(SimpleValueNames.EXPAND_TABS);
-                prefs.remove(SimpleValueNames.INDENT_SHIFT_WIDTH);
-                prefs.remove(SimpleValueNames.SPACES_PER_TAB);
-                prefs.remove(SimpleValueNames.TAB_SIZE);
-                prefs.remove(SimpleValueNames.TEXT_LIMIT_WIDTH);
+                EditorSettingsStorage<String, TypedValue> storage = EditorSettingsStorage.<String, TypedValue>get("Preferences"); //NOI18N
+                for(String key : BASIC_SETTINGS_NAMES) {
+                    try {
+                        Map<String, TypedValue> mimePathLocalPrefs = storage.load(MimePath.parse(mimeType), null, false);
+                        Map<String, TypedValue> moduleMimePathLocalPrefs = storage.load(MimePath.parse(mimeType), null, true);
+                        
+                        if (mimePathLocalPrefs.containsKey(key) || moduleMimePathLocalPrefs.containsKey(key)) {
+                            TypedValue value = moduleMimePathLocalPrefs.get(key);
+                            if (value != null) {
+                                if (value.getJavaType().equals(Integer.class.getName())) {
+                                    prefs.putInt(key, Integer.parseInt(value.getValue()));
+                                } else if (value.getJavaType().equals(Boolean.class.getName())) {
+                                    prefs.putBoolean(key, Boolean.parseBoolean(value.getValue()));
+                                } else {
+                                    prefs.put(key, value.getValue());
+                                }
+                            } else {
+                                prefs.remove(key);
+                            }
+                        }
+                    } catch (IOException ioe) {
+                        LOG.log(Level.WARNING, null, ioe);
+                    }
+                }
             }
 
             pf.destroy();
@@ -217,7 +236,15 @@ public final class FormattingPanelController extends OptionsPanelController {
     // ------------------------------------------------------------------------
 
     private static final Logger LOG = Logger.getLogger(FormattingPanelController.class.getName());
-    
+
+    private static String [] BASIC_SETTINGS_NAMES = new String [] {
+        SimpleValueNames.EXPAND_TABS,
+        SimpleValueNames.INDENT_SHIFT_WIDTH,
+        SimpleValueNames.SPACES_PER_TAB,
+        SimpleValueNames.TAB_SIZE,
+        SimpleValueNames.TEXT_LIMIT_WIDTH,
+    };
+
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     private MimeLookupPreferencesFactory pf;
@@ -264,11 +291,9 @@ public final class FormattingPanelController extends OptionsPanelController {
 
                     if (!pp.getBoolean(OVERRIDE_GLOBAL_FORMATTING_OPTIONS, false)) {
                         // remove the basic settings if a language is not overriding the 'all languages' values
-                        pp.remove(SimpleValueNames.EXPAND_TABS);
-                        pp.remove(SimpleValueNames.INDENT_SHIFT_WIDTH);
-                        pp.remove(SimpleValueNames.SPACES_PER_TAB);
-                        pp.remove(SimpleValueNames.TAB_SIZE);
-                        pp.remove(SimpleValueNames.TEXT_LIMIT_WIDTH);
+                        for(String key : BASIC_SETTINGS_NAMES) {
+                            pp.remove(key);
+                        }
                     }
                     pp.remove(OVERRIDE_GLOBAL_FORMATTING_OPTIONS);
                 } else {

@@ -470,6 +470,11 @@ public final class Util extends Object {
             if(propertiesDataObject != null) {
 //                FileObject file = propertiesDataObject.getPrimaryFile();
                 FileObject file = propertiesDataObject.getBundleStructure().getNthEntry(0).getFile();
+                String extension = PropertiesDataLoader.PROPERTIES_EXTENSION;
+                if (!file.hasExt(extension)) {
+                    if (file.getMIMEType().equalsIgnoreCase(PropertiesDataLoader.PROPERTIES_MIME_TYPE))
+                        extension = file.getExt();
+                }
                 //Default locale may be deleted
                 final String newName = getBaseName(file.getName()) + PropertiesDataLoader.PRB_SEPARATOR_CHAR + locale;
                 final FileObject folder = file.getParent();
@@ -485,32 +490,33 @@ public final class Util extends Object {
                 }
 
                 if (copyInitialContent) {
-                    if (folder.getFileObject(newName, PropertiesDataLoader.PROPERTIES_EXTENSION) == null) {
+                    if (folder.getFileObject(newName, extension) == null) {
                         SaveCookie save = (SaveCookie) propertiesDataObject.getCookie(SaveCookie.class);
                         if (save != null) {
                             save.save();
                         }
                         final FileObject templateFile = file;
+                        final String ext = extension;
                         folder.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                             public void run() throws IOException {
-                                templateFile.copy(folder, newName, PropertiesDataLoader.PROPERTIES_EXTENSION);
+                                templateFile.copy(folder, newName, ext);
                             }
                         });
                         //find just created DataObject
-                        PropertiesDataObject dataObject = (PropertiesDataObject) DataObject.find(folder.getFileObject(newName, PropertiesDataLoader.PROPERTIES_EXTENSION));
+                        PropertiesDataObject dataObject = (PropertiesDataObject) DataObject.find(folder.getFileObject(newName, extension));
                         dataObject.setBundleStructure(propertiesDataObject.getBundleStructure());
                         //update entries in BundleStructure
                         propertiesDataObject.getBundleStructure().updateEntries();
                         //Add it to OpenSupport
                         propertiesDataObject.getOpenSupport().addDataObject(dataObject);
                         //Notify BundleStructure that one file changed
-                        propertiesDataObject.getBundleStructure().notifyOneFileChanged(folder.getFileObject(newName, PropertiesDataLoader.PROPERTIES_EXTENSION));
+                        propertiesDataObject.getBundleStructure().notifyOneFileChanged(folder.getFileObject(newName, extension));
                     }
                 } else {
                     // Create an empty file - creating from template via DataObject
                     // API would create a separate DataObject for the locale file.
                     // After creation force the DataObject to refresh its entries.
-                    DataObject.find(folder.createData(newName, PropertiesDataLoader.PROPERTIES_EXTENSION));
+                    DataObject.find(folder.createData(newName, extension));
                 }
             }
         } catch(IOException ioe) {
@@ -569,10 +575,15 @@ public final class Util extends Object {
      */
     static BundleStructure findBundleStructure (FileObject f, FileObject parent, String baseName) throws DataObjectNotFoundException{
             String fName;
-            PropertiesDataObject dataObject;
+            PropertiesDataObject dataObject = null;
             BundleStructure structure;
+            String extension = PropertiesDataLoader.PROPERTIES_EXTENSION;
+            if (!f.hasExt(extension)) {
+                if (f.getMIMEType().equalsIgnoreCase(PropertiesDataLoader.PROPERTIES_MIME_TYPE))
+                    extension = f.getExt();
+            }
             for (FileObject file : parent.getChildren()) {
-                if (!file.hasExt(PropertiesDataLoader.PROPERTIES_EXTENSION) || file.equals(f)) {
+                if (!file.hasExt(extension) || file.equals(f)) {
                     continue;
                 }
                 fName = file.getName();
@@ -592,7 +603,12 @@ public final class Util extends Object {
                     while (index != -1) {
                         FileObject candidate = file;
                         if (candidate != null && isValidLocaleSuffix(fName.substring(index)) && file.isValid()) {
-                            dataObject = (PropertiesDataObject) DataObject.find(candidate);
+                            DataObject defaultDataObject = DataObject.find(candidate);
+                            if (defaultDataObject instanceof PropertiesDataObject) {
+                                dataObject = (PropertiesDataObject) DataObject.find(candidate);
+                            } else {
+                                index = -1;
+                            }
                             if (dataObject == null) continue;
                             structure = dataObject.getBundleStructureOrNull();
                             if (structure != null) 

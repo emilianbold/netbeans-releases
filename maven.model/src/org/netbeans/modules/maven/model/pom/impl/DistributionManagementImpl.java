@@ -91,4 +91,13 @@ public class DistributionManagementImpl extends POMComponentImpl implements Dist
         visitor.visit(this);
     }
 
+    public String getDownloadUrl() {
+        return getChildElementText(getModel().getPOMQNames().DOWNLOADURL.getQName());
+    }
+
+    public void setDownloadUrl(String url) {
+        setChildElementText(getModel().getPOMQNames().DOWNLOADURL.getName(), url,
+                getModel().getPOMQNames().DOWNLOADURL.getQName());
+    }
+
 }

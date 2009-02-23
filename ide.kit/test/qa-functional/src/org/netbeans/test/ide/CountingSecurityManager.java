@@ -433,11 +433,47 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
     }
 
     private boolean acceptFileRead(String file) {
-        if (!file.endsWith(".jar")) {
+        if (prefix != null && !file.startsWith(prefix)) {
             return false;
         }
 
-        return prefix == null || file.startsWith(prefix);
+        if (!file.endsWith(".jar")) {
+            return false;
+        }
+        if (file.endsWith("tests.jar")) {
+            return false;
+        }
+        if (file.startsWith(System.getProperty("java.home").replaceAll("/[^/]*$", ""))) {
+            return false;
+        }
+        if (!acceptFileInDir(file, System.getProperty("netbeans.home"))) {
+            return false;
+        }
+        String dirs = System.getProperty("netbeans.dirs");
+        if (dirs != null) {
+            for (String dir : dirs.split(File.pathSeparator)) {
+                if (!acceptFileInDir(file, dir)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private static boolean acceptFileInDir(String file, String dir) {
+        if (file.startsWith(dir + File.separator + "lib")) {
+            return false;
+        }
+        if (file.startsWith(dir + File.separator + "core")) {
+            return false;
+        }
+        if (file.startsWith(dir)) {
+            String sub = file.substring(dir.length() + 1);
+            if (allowed.contains(sub)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override

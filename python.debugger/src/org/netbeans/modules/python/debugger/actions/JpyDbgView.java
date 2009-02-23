@@ -278,6 +278,15 @@ public class JpyDbgView extends TopComponent
   }
 
   /**
+   * execute step out debug command
+   */
+  public void stepOut() {
+    if (_pyContainer != null) {
+      _pyContainer.activateStepOut();
+    }
+  }
+
+  /**
    * proceed with StepOver
    */
   public void stepOver() {
@@ -303,7 +312,12 @@ public class JpyDbgView extends TopComponent
       if (bp.isEnabled()) {
         _pyContainer.setBreakPoint(
                 Utils.getPath(fo),
-                line.getLineNumber() + 1);
+                line.getLineNumber() + 1  ,
+                false ,  // Not a TEMP breakpoint
+                bp.getCondition() ,
+                bp.getHitCountFilter() ,
+                bp.getHitCountFilteringStyle()
+                                 );
       } else {
         _pyContainer.clearBreakPoint(
                 Utils.getPath(fo),
@@ -345,9 +359,9 @@ public class JpyDbgView extends TopComponent
   /**
    * go ahead until next breakpoint or script termination
    */
-  public void doContinue() {
+  public void doContinue( boolean toCursor ) {
     if (_pyContainer != null) {
-      _pyContainer.activateContinue();
+      _pyContainer.activateContinue(toCursor);
     }
   }
 

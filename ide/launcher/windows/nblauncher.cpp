@@ -88,7 +88,8 @@ int NbLauncher::start(char *cmdLine) {
 int NbLauncher::start(int argc, char *argv[]) {
     SetErrorMode(SetErrorMode(0) | SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
 
-    if (!checkLoggingArg(argc, argv, true) || !setUpProcess(argc, argv, CON_ATTACH_MSG) || !initBaseNames() || !readClusterFile()) {
+    DWORD parentProcID = 0;
+    if (!checkLoggingArg(argc, argv, true) || !setupProcess(argc, argv, parentProcID, CON_ATTACH_MSG) || !initBaseNames() || !readClusterFile()) {
         return -1;
     }
 
@@ -134,6 +135,11 @@ int NbLauncher::start(int argc, char *argv[]) {
     }
     for (int i = 0; i < argc; i++) {
         newArgs.add(argv[i]);
+    }
+    if (parentProcID) {
+        newArgs.add(ARG_NAME_LA_PPID);
+        char tmp[16] = "";
+        newArgs.add(itoa(parentProcID, tmp, 10));
     }
     nbexecPath += NBEXEC_FILE_PATH;
 

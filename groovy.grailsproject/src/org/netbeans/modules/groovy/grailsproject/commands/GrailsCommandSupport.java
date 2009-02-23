@@ -103,8 +103,6 @@ public final class GrailsCommandSupport {
 
     private static final Logger LOGGER = Logger.getLogger(GrailsCommandSupport.class.getName());
 
-    private static final Pattern COMMAND_PATTERN = Pattern.compile("grails\\s(.*)"); // NOI18N
-
     private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
 
     private final GrailsProject project;
@@ -295,12 +293,22 @@ public final class GrailsCommandSupport {
 
     private static class HelpLineProcessor implements LineProcessor {
 
+        private static final Pattern COMMAND_PATTERN = Pattern.compile("grails\\s(.*)"); // NOI18N
+
+        private static final Pattern EXCLUDE_PATTERN = Pattern.compile("Usage.*|Examples.*"); // NOI18N
+
         private List<String> commands = Collections.synchronizedList(new ArrayList<String>());
+
+        private boolean excluded;
 
         public void processLine(String line) {
             Matcher matcher = COMMAND_PATTERN.matcher(line);
             if (matcher.matches()) {
-                commands.add(matcher.group(1));
+                if (!excluded) {
+                    commands.add(matcher.group(1));
+                }
+            } else {
+                excluded = EXCLUDE_PATTERN.matcher(line).matches();
             }
         }
 
