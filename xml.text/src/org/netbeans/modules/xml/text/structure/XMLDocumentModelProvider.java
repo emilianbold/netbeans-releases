@@ -402,7 +402,17 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                             sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
                 } else {
                     //everything else is content
-                    addedElements.add(dtm.addDocumentElement("...", XML_CONTENT, Collections.EMPTY_MAP, sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
+                    int from = sel.getElementOffset();
+                    int to = getSyntaxElementEndOffset(sel);
+                    if(from < to) {
+                        //Do not allow empty elements to be added:
+                        //Otherwise it causes problems in DocumentModel.ELEMENTS_COMPARATOR
+                        //(idential elements are considered as unequal (the reason why this
+                        //required is distinguishing elements after text deletion) and subsequently
+                        //the empty elements are added and removed all over again after each model
+                        //update which causes performance problems.
+                        addedElements.add(dtm.addDocumentElement("...", XML_CONTENT, Collections.EMPTY_MAP, from, to));
+                    }
                 }
                 //find next syntax element
                 //                sel = sel.getNext();     //this cannot be used since it chains the results and they are hard to GC then.

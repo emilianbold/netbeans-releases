@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
-import org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
@@ -84,7 +83,6 @@ public class MakeConfiguration extends Configuration {
         getString("QtDynamicLibraryName"),
         getString("QtStaticLibraryName")
     };
-
     public static final int TYPE_MAKEFILE = 0;
     public static final int TYPE_APPLICATION = 1;
     public static final int TYPE_DYNAMIC_LIB = 2;
@@ -795,6 +793,8 @@ public class MakeConfiguration extends Configuration {
         val = IpeUtils.expandMacro(val, "${OUTPUT_BASENAME}", IpeUtils.getBaseName(getOutputValue())); // NOI18N
         val = IpeUtils.expandMacro(val, "${PLATFORM}", getVariant()); // Backward compatibility // NOI18N
         val = IpeUtils.expandMacro(val, "${CND_PLATFORM}", getVariant()); // NOI18N
+        val = IpeUtils.expandMacro(val, "${CND_CONF}", getName()); // NOI18N
+        val = IpeUtils.expandMacro(val, "${CND_DISTDIR}", MakeConfiguration.DIST_FOLDER); // NOI18N
         return val;
     }
 //

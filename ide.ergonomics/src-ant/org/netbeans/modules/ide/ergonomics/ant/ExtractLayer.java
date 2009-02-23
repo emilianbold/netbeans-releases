@@ -298,8 +298,11 @@ public final class ExtractLayer extends Task {
                     if (name.equals("SystemFileSystem.localizingBundle")) {
                         String bundlepath = attributes.getValue("stringvalue").replace('.', '/') + ".*properties";
                         concat.add(bundlepath);
-                        additionalKeys.add(prefix);
-    //                    String key = prefix.replaceAll("/$", "");
+                        if (prefix.endsWith("/")) {
+                            additionalKeys.add(prefix.substring(0, prefix.length() - 1));
+                        } else {
+                            additionalKeys.add(prefix);
+                        }
                     } else if (attributes.getValue("bundlevalue") != null) {
                         String bundlevalue = attributes.getValue("bundlevalue");
                         int idx = bundlevalue.indexOf('#');

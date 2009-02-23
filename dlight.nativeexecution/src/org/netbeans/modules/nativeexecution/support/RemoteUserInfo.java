@@ -45,6 +45,7 @@ import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -75,7 +76,7 @@ public final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
     private Component parent;
     private final Encrypter crypter;
     private String passwordProperyKey;
-    private String encryptedPassword;
+    private char[] encryptedPassword;
     private ExecutionEnvironment execEnv;
 
     private RemoteUserInfo(ExecutionEnvironment execEnv) {
@@ -83,8 +84,10 @@ public final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         String key = execEnv.toString();
         crypter = new Encrypter(key);
         passwordProperyKey = crypter.encrypt(KEY_PREFIX + key);
-        encryptedPassword = NbPreferences.forModule(RemoteUserInfo.class).get(
+        String savePassword = NbPreferences.forModule(RemoteUserInfo.class).get(
                 passwordProperyKey, null);
+        encryptedPassword = savePassword == null
+                ? null : savePassword.toCharArray();
         setParentComponent(this);
     }
 
@@ -125,16 +128,16 @@ public final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
 
     public String getPassword() {
         return encryptedPassword == null
-                ? null : crypter.decrypt(encryptedPassword);
+                ? null : String.valueOf(crypter.decrypt(encryptedPassword));
     }
 
-    final public void setPassword(final String password,
+    final public void setPassword(final char[] password,
             final boolean rememberPassword) {
         encryptedPassword = password == null ? null : crypter.encrypt(password);
 
         if (rememberPassword && encryptedPassword != null) {
             NbPreferences.forModule(RemoteUserInfo.class).put(
-                    passwordProperyKey, encryptedPassword);
+                    passwordProperyKey, String.valueOf(encryptedPassword));
         } else {
             NbPreferences.forModule(RemoteUserInfo.class).remove(
                     passwordProperyKey);
@@ -176,8 +179,10 @@ public final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
                 }
 
                 if (result) {
-                    setPassword(pwdDlg.getPassword(),
-                            pwdDlg.isRememberPassword());
+                    char[] clearPassword = pwdDlg.getPassword();
+                    setPassword(clearPassword, pwdDlg.isRememberPassword());
+                    Arrays.fill(clearPassword, (char)0);
+                    pwdDlg.clearPassword();
                     return true;
                 } else {
                     setPassword(null, false);

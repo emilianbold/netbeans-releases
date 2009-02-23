@@ -40,11 +40,6 @@
  */
 package org.netbeans.modules.java.source.pretty;
 
-import java.io.*;
-
-import com.sun.tools.javac.util.*;
-import com.sun.tools.javac.code.*;
-import com.sun.tools.javac.code.Symbol.*;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.*;
 

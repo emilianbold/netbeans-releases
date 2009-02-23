@@ -38,17 +38,26 @@
  */
 package org.netbeans.modules.python.debugger.breakpoints;
 
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import java.util.Set;
 import java.util.Collections;
+import javax.swing.JComponent;
 import org.netbeans.modules.python.debugger.Utils;
 import org.netbeans.modules.python.debugger.actions.JpyDbgView;
 import org.netbeans.api.debugger.ActionsManager;
 import org.openide.text.Line;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.spi.debugger.ui.Controller;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.util.WeakListeners;
 
@@ -125,8 +134,55 @@ public class PythonBreakpointActionProvider
     return _ACTIONS_;
   }
 
+  public static JComponent getCustomizerComponent(Breakpoint b) {
+    return new PythonBreakpointPanel((PythonBreakpoint) b);
+
+  }
+
   public void propertyChange(PropertyChangeEvent evt) {
     boolean enabled = Utils.getCurrentLine() != null;
     setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, enabled);
+  }
+
+  public static void customize(Breakpoint b) {
+    JComponent c = getCustomizerComponent(b);
+    HelpCtx helpCtx = HelpCtx.findHelp(c);
+    if (helpCtx == null) {
+      helpCtx = new HelpCtx("debug.add.breakpoint");  // NOI18N
+    }
+    final Controller[] cPtr = new Controller[]{(Controller) c};
+    final DialogDescriptor[] descriptorPtr = new DialogDescriptor[1];
+    final Dialog[] dialogPtr = new Dialog[1];
+    ActionListener buttonsActionListener = new ActionListener() {
+
+      public void actionPerformed(ActionEvent ev) {
+        if (descriptorPtr[0].getValue() == DialogDescriptor.OK_OPTION) {
+          boolean ok = cPtr[0].ok();
+          if (ok) {
+            dialogPtr[0].setVisible(false);
+          }
+        } else {
+          dialogPtr[0].setVisible(false);
+        }
+      }
+    };
+    DialogDescriptor descriptor = new DialogDescriptor(
+            c,
+            NbBundle.getMessage(
+            PythonBreakpointActionProvider.class,
+            "CTL_Breakpoint_Customizer_Title" // NOI18N
+            ),
+            true,
+            DialogDescriptor.OK_CANCEL_OPTION,
+            DialogDescriptor.OK_OPTION,
+            DialogDescriptor.DEFAULT_ALIGN,
+            helpCtx,
+            buttonsActionListener);
+    descriptor.setClosingOptions(new Object[]{});
+    Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
+    d.pack();
+    descriptorPtr[0] = descriptor;
+    dialogPtr[0] = d;
+    d.setVisible(true);
   }
 }

@@ -40,7 +40,6 @@
 package org.netbeans.modules.cnd.api.compilers;
 
 import java.util.List;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -58,5 +57,5 @@ public interface CompilerSetProvider {
 
     public String[] getCompilerSetData(String hkey, String path);
 
-    public RequestProcessor.Task loadCompilerSetData(List<CompilerSet> sets);
+    public Runnable createCompilerSetDataLoader(List<CompilerSet> sets);
 }

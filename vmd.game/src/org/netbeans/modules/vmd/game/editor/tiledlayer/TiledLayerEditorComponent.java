@@ -123,6 +123,8 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
     private static final Color ANIMATED_TILE_GRID_COLOR = Color.CYAN;
     private static final Color INCORRECT_TILE_GRID_COLOR = Color.RED;
     private static final Color HILITE_COLOR = new Color(0, 0, 255, 20);
+    private static final float ZOOM_STEP = (float) 1.1;
+    private static final String[] ZOOM_VALUES = new String[]{"400%", "300%", "200%", "100%", "75%", "50%", "25%"}; //NOI18N
         
     private static final int CELL_BORDER_WIDTH = 0;
     private static final int SELECTION_BORDER_WIDTH = 2;
@@ -154,6 +156,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
     private int editMode;
     // layer size can be extended by mouse dragging in paint mode
     private boolean autoResizable;
+    private float zoom = 1;
     
     private static Cursor paintCursor;
     private static Cursor selectionCursor;
@@ -248,8 +251,12 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
     
     public void setTiledLayer(TiledLayer tiledLayer) {
         this.tiledLayer = tiledLayer;
-        this.cellWidth = this.tiledLayer.getTileWidth() + (CELL_BORDER_WIDTH*2);
-        this.cellHeight = this.tiledLayer.getTileHeight() + (CELL_BORDER_WIDTH*2);
+        updateCellSize(tiledLayer);
+    }
+
+    private void updateCellSize(TiledLayer tiledLayer){
+        this.cellWidth = (int)(this.tiledLayer.getTileWidth() * getZoom()) + (CELL_BORDER_WIDTH * 2);
+        this.cellHeight = (int)(this.tiledLayer.getTileHeight() * getZoom()) + (CELL_BORDER_WIDTH * 2);
     }
     
     @Override
@@ -258,15 +265,30 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
         if (g instanceof DebugGraphics)
             return;
         Graphics2D g2d = (Graphics2D) g;
-        if (gridMode == GRID_MODE_DOTS)
+        if (gridMode == GRID_MODE_DOTS){
             this.paintGridDots(g2d);
-        else
+        } else {
             this.paintGridLines(g2d);
+        }
         this.paintCells(g2d);
         
         if (this.cellHiLited != null) {
             this.paintGridHiLite((Graphics2D) g, cellHiLited, ColorConstants.COLOR_OUTLINE_SELECTED);
         }
+    }
+
+    protected void setZoom(float zoomNew){
+        this.zoom = zoomNew;
+        updateCellSize(tiledLayer);
+        
+        this.revalidate();
+        this.repaint();
+        this.rulerHorizontal.repaint();
+        this.rulerVertical.repaint();
+    }
+
+    protected float getZoom(){
+        return this.zoom;
     }
     
     //paints GRID as dots
@@ -366,7 +388,9 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
             Rectangle rect = this.getCellArea(cell);
             int x = rect.x + CELL_BORDER_WIDTH;
             int y = rect.y + CELL_BORDER_WIDTH;
-            tile.paint(g, x, y);
+            int width = (int)(tile.getWidth() * getZoom());
+            int height = (int)(tile.getHeight() * getZoom());
+            tile.paint(g, x, y, width, height);
             return true;
         } else {
             return false;

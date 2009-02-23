@@ -40,9 +40,76 @@
 
 package org.netbeans.modules.dlight.core.stack.spi;
 
+
+
 /**
  *
  */
 public interface SourceFileInfoProvider {
-  String fileName(String functionName);
+  LineInfo fileName(String functionName);
+  
+  public final class LineInfo {
+
+    private String fileName;
+    private int lineNumber;
+    private int offset;
+
+    /** Creates a new instance of LineInfo
+     * @param fileName
+     * @param lineNumber
+     */
+     LineInfo(String fileName, int lineNumber) {
+        this(fileName, lineNumber, -1);
+    }
+
+    /**
+     *
+     * @param fileName
+     * @param lineNumber
+     * @param offset
+     */
+    private LineInfo(String fileName, int lineNumber, int offset) {
+        this.fileName = fileName;
+        this.lineNumber = lineNumber;
+        this.offset = offset;
+    }
+
+    public boolean isSourceKnown() {
+        return (fileName != null && !fileName.equals("(unknown)")); // NOI18N
+    }
+
+    public boolean hasOffset() {
+        return offset != -1;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public int getLine() {
+        return lineNumber;
+    }
+
+    public int getOffset() {
+        return offset;
+    }
+
+    static LineInfo valueOf(String toParse) {
+        if (toParse == null) {
+            return null;
+        }
+        int index = toParse.lastIndexOf(":"); // NOI18N
+        if (index == -1) {
+            return null;
+        }
+        String fileName = toParse.substring(0, index);
+        int lineNumber = -1;
+        try {
+            lineNumber = Integer.parseInt(toParse.substring(index + 1, toParse.length()));
+        } catch (NumberFormatException e) {
+        }
+        LineInfo result = new LineInfo(fileName, lineNumber);
+        return result;
+    }
+}
 }

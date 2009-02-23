@@ -39,56 +39,12 @@
 require 'rubygems'
 require 'autotest'
 
-
 Autotest.add_hook :initialize do |at|
   load(__FILE__)
 end
 
 Autotest.add_hook :run_command do |at|
   puts "%AUTOTEST% reset"
-end
-
-rspec = false
-begin
-  rspec = require 'autotest/rspec'
-rescue LoadError
-end
-
-if rspec
-  # turn temporarily off warnings for method redefinitions
-  org_verbose_level = $VERBOSE
-  $VERBOSE = nil
-  # Loads NbRspecMediator for running specs.
-  class Autotest::Rspec < Autotest
-
-    alias_method :nb_loader_existing_add_options_if_present, :add_options_if_present unless
-    instance_methods.include?("nb_loader_existing_add_options_if_present")
-    def add_options_if_present # :nodoc:
-      "#{ENV['NB_RSPEC_MEDIATOR']} #{nb_loader_existing_add_options_if_present}"
-    end
-
-    def hook(name, *args)
-      super
-      # needs to done here instead of adding a hook -- that would
-      # confuse the test/unit runner
-      if name == :initialize
-        # the lines below are from rspec-1.1.4/lib/autotest/rspec.rb
-        self.clear_mappings
-        # watch out: Ruby bug (1.8.6):
-        # %r(/) != /\//
-        self.add_mapping(%r%^spec/.*\.rb$%) { |filename, _|
-          filename
-        }
-        self.add_mapping(%r%^lib/(.*)\.rb$%) { |_, m|
-          ["spec/#{m[1]}_spec.rb"]
-        }
-        self.add_mapping(%r%^spec/(spec_helper|shared/.*)\.rb$%) {
-          self.files_matching %r%^spec/.*_spec\.rb$%
-        }
-      end
-    end
-  end
-  $VERBOSE = org_verbose_level
 end
 
 # Loads NbTestRunner for test/unit tests

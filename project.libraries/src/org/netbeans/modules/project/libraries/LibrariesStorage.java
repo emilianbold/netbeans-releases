@@ -307,7 +307,7 @@ implements WritableLibraryProvider<LibraryImplementation>, TaskListener {
     /**
      * Return all libraries in memory.
      */
-    public final LibraryImplementation[] getLibraries() {
+    public final synchronized LibraryImplementation[] getLibraries() {
         this.initStorage();
         assert this.storage != null : "Storage is not initialized";
         return libraries.values().toArray(new LibraryImplementation[libraries.size()]);

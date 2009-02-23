@@ -59,7 +59,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grails.KillableProcess;
 import org.netbeans.modules.groovy.grails.RuntimeHelper;
-import org.netbeans.modules.groovy.grails.server.GrailsInstance;
 import org.netbeans.modules.groovy.grails.server.GrailsInstanceProvider;
 import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 import org.openide.DialogDisplayer;
@@ -91,14 +90,6 @@ public final class GrailsRuntime {
     private static final Set<String> GUARDED_COMMANDS = new HashSet<String>();
 
     static {
-        GrailsInstance.Accessor.DEFAULT = new GrailsInstance.Accessor() {
-
-            @Override
-            public String getVersion(GrailsRuntime runtime) {
-                return runtime.getVersion();
-            }
-        };
-
         Collections.addAll(GUARDED_COMMANDS, "run-app", "run-app-https", "run-war", "shell"); //NOI18N
     }
 
@@ -106,7 +97,7 @@ public final class GrailsRuntime {
 
     private boolean initialized;
 
-    private String version;
+    private Version version;
 
     private GrailsRuntime() {
         super();
@@ -186,15 +177,24 @@ public final class GrailsRuntime {
     }
 
     // TODO not public API unless it is really needed
-    private String getVersion() {
+    public Version getVersion() {
         synchronized (this) {
             if (initialized) {
                 return version;
             }
 
             String grailsBase = GrailsSettings.getInstance().getGrailsBase();
-            if (grailsBase != null) {
-                version = RuntimeHelper.getRuntimeVersion(new File(grailsBase));
+            try {
+                if (grailsBase != null) {
+                    String stringVersion = RuntimeHelper.getRuntimeVersion(new File(grailsBase));
+                    if (stringVersion != null) {
+                        version = Version.valueOf(stringVersion);
+                    } else {
+                        version = Version.VERSION_DEFAULT;
+                    }
+                }
+            } catch (IllegalArgumentException ex) {
+                version = Version.VERSION_DEFAULT;
             }
             initialized = true;
 
@@ -221,8 +221,17 @@ public final class GrailsRuntime {
                     }
 
                     String grailsBase = GrailsSettings.getInstance().getGrailsBase();
-                    if (grailsBase != null) {
-                        version = RuntimeHelper.getRuntimeVersion(new File(grailsBase));
+                    try {
+                        if (grailsBase != null) {
+                            String stringVersion = RuntimeHelper.getRuntimeVersion(new File(grailsBase));
+                            if (stringVersion != null) {
+                                version = Version.valueOf(stringVersion);
+                            } else {
+                                version = Version.VERSION_DEFAULT;
+                            }
+                        }
+                    } catch (IllegalArgumentException ex) {
+                        version = Version.VERSION_DEFAULT;
                     }
                     initialized = true;
                 }
@@ -351,6 +360,205 @@ public final class GrailsRuntime {
         public Properties getProps() {
             return new Properties(props);
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final CommandDescriptor other = (CommandDescriptor) obj;
+            if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 41 * hash + (this.name != null ? this.name.hashCode() : 0);
+            return hash;
+        }
+
+
+    }
+
+    public static final class Version implements Comparable<Version> {
+
+        public static final Version VERSION_DEFAULT = new Version(1, null, null, null, null);
+
+        public static final Version VERSION_1_1 = new Version(1, 1, null, null, null);
+
+        private final int major;
+
+        private final Integer minor;
+
+        private final Integer micro;
+
+        private final Integer update;
+
+        private final String qualifier;
+
+        private String asString;
+
+        protected Version(int major, Integer minor, Integer micro, Integer update, String qualifier) {
+            this.major = major;
+            this.minor = minor;
+            this.micro = micro;
+            this.update = update;
+            this.qualifier = qualifier;
+        }
+
+        public static Version valueOf(String version) {
+            String[] stringParts = version.split("-"); // NOI18N
+
+            String qualifier = null;
+            if (stringParts.length > 2) {
+                throw new IllegalArgumentException(version);
+            }
+            if (stringParts.length == 2) {
+                qualifier = stringParts[1];
+            }
+
+
+            String[] numberParts = stringParts[0].split("\\."); // NOI18N
+            if (numberParts.length < 1 || numberParts.length > 4) {
+                throw new IllegalArgumentException(version);
+            }
+            try {
+                Integer[] parsed = new Integer[4];
+                for (int i = 0; i < numberParts.length; i++) {
+                    parsed[i] = Integer.valueOf(numberParts[i]);
+                }
+                return new Version(parsed[0], parsed[1], parsed[2], parsed[3], qualifier);
+            } catch (NumberFormatException ex) {
+                throw new IllegalArgumentException(version, ex);
+            }
+        }
+
+        public int getMajor() {
+            return major;
+        }
+
+        public int getMinor() {
+            return minor == null ? 0 : minor.intValue();
+        }
+
+        public int getMicro() {
+            return micro == null ? 0 : micro.intValue();
+        }
+
+        public int getUpdate() {
+            return update == null ? 0 : update.intValue();
+        }
+
+        public String getQualifier() {
+            return qualifier == null ? "" : qualifier; // NOI18N
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Version other = (Version) obj;
+            if (this.getMajor() != other.getMajor()) {
+                return false;
+            }
+            if (this.getMinor() != other.getMinor()) {
+                return false;
+            }
+            if (this.getMicro() != other.getMicro()) {
+                return false;
+            }
+            if (this.getUpdate() != other.getUpdate()) {
+                return false;
+            }
+            if (!this.getQualifier().equals(other.getQualifier())) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 71 * hash + this.getMajor();
+            hash = 71 * hash + this.getMinor();
+            hash = 71 * hash + this.getMicro();
+            hash = 71 * hash + this.getUpdate();
+            hash = 71 * hash + this.getQualifier().hashCode();
+            return hash;
+        }
+
+        public int compareTo(Version o) {
+            if (this == o) {
+                return 0;
+            }
+
+            int result = this.getMajor() - o.getMajor();
+            if (result != 0) {
+                return result;
+            }
+
+            result = this.getMinor() - o.getMinor();
+            if (result != 0) {
+                return result;
+            }
+
+            result = this.getMicro() - o.getMicro();
+            if (result != 0) {
+                return result;
+            }
+
+            result = this.getUpdate() - o.getUpdate();
+            if (result != 0) {
+                return result;
+            }
+
+            return this.getQualifier().compareTo(o.getQualifier());
+        }
+
+        @Override
+        public String toString() {
+            if (asString == null) {
+                StringBuilder builder = new StringBuilder();
+                builder.append(major);
+
+                if (minor != null || micro != null || update != null) {
+                    appendSeparator(builder);
+                    builder.append(minor == null ? 0 : minor);
+                }
+                if (micro != null || update != null) {
+                    appendSeparator(builder);
+                    builder.append(micro == null ? 0 : micro);
+                }
+                if (update != null) {
+                    appendSeparator(builder);
+                    builder.append(update == null ? 0 : update);
+                }
+                if (qualifier != null) {
+                    builder.append('-'); // NOI18N
+                    builder.append(qualifier);
+                }
+
+                asString = builder.toString();
+            }
+            return asString;
+        }
+
+        private void appendSeparator(StringBuilder builder) {
+            if (builder.length() > 0 && builder.charAt(builder.length() - 1) != '.') { // NOI18N
+                builder.append('.'); // NOI18N
+            }
+        }
+
     }
 
     private static class GrailsCallable implements Callable<Process> {

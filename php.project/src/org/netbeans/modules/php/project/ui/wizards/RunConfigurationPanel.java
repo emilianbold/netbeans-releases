@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import javax.swing.MutableComboBoxModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.project.api.PhpOptions;
@@ -57,6 +58,7 @@ import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.environment.PhpEnvironment.DocumentRoot;
 import org.netbeans.modules.php.project.ui.LocalServer;
+import org.netbeans.modules.php.project.ui.LocalServer.ComboBoxModel;
 import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
@@ -194,11 +196,14 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             runAsLocalWeb.setCopyFilesState(false);
             canceled = false;
             PhpEnvironment.get().readDocumentRoots(new PhpEnvironment.ReadDocumentRootsNotifier() {
-                public void finished(List<DocumentRoot> documentRoots) {
-                    initLocalServerModel(documentRoots);
+                public void finished(final List<DocumentRoot> documentRoots) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            initLocalServerModel(documentRoots);
+                        }
+                    });
                 }
             });
-            fireChangeEvent();
         }
         runAsLocalWeb.setCopyFiles(getCopyFiles());
 
@@ -244,13 +249,23 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         }
         int size = documentRoots.size();
         List<LocalServer> localServers = new ArrayList<LocalServer>(size);
+        LocalServer selected = new LocalServer(""); // NOI18N
         for (DocumentRoot root : documentRoots) {
             String srcRoot = new File(root.getDocumentRoot(), sourcesFolderProvider.getSourcesFolderName()).getAbsolutePath();
             LocalServer ls = new LocalServer(null, root.getUrl(), root.getDocumentRoot(), srcRoot, true);
             localServers.add(ls);
+            if (selected == null) {
+                selected = ls;
+            }
         }
 
-        runAsLocalWeb.setLocalServerModel(new LocalServer.ComboBoxModel(localServers.toArray(new LocalServer[size])));
+        ComboBoxModel model = new LocalServer.ComboBoxModel(localServers.toArray(new LocalServer[size]));
+        model.setSelectedItem(selected);
+        // store settings
+        descriptor.putProperty(COPY_SRC_TARGET, selected);
+        descriptor.putProperty(COPY_SRC_TARGETS, model);
+        // update UI
+        runAsLocalWeb.setLocalServerModel(model);
         runAsLocalWeb.setCopyFilesState(true);
         readingDocumentRoots = false;
         fireChangeEvent();

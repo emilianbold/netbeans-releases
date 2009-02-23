@@ -71,7 +71,7 @@ public class FixImportsHelper {
 
     private final Logger LOG = Logger.getLogger(FixImportsHelper.class.getName());
 
-    public class ImportCandidate {
+    public static class ImportCandidate {
 
         String name;
         String fqnName;

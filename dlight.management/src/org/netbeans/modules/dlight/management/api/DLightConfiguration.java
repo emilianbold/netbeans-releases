@@ -42,6 +42,7 @@ package org.netbeans.modules.dlight.management.api;
 import java.util.List;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 
 /**
@@ -79,9 +80,9 @@ public final class DLightConfiguration {
  }
 
  static DLightConfiguration createDefault(){
-    FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-    FileObject toolConfigurations =  fs.getRoot().getFileObject("DLight/ToolConfigurationProviders");//NOI18N
-    return new DLightConfiguration(fs.getRoot().getFileObject("DLight"),ToolsConfiguration.createDefault(toolConfigurations));//NOI18N
+    FileObject fsRoot  = FileUtil.getConfigRoot();//epository.getDefault().getDefaultFileSystem();
+    FileObject toolConfigurations =  fsRoot.getFileObject("DLight/ToolConfigurationProviders");//NOI18N
+    return new DLightConfiguration(fsRoot.getFileObject("DLight"),ToolsConfiguration.createDefault(toolConfigurations));//NOI18N
  }
   private DLightConfiguration(FileObject configurationRoot) {
     this(configurationRoot, ToolsConfiguration.create(configurationRoot));

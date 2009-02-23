@@ -52,7 +52,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
@@ -62,7 +61,6 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWriter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -191,7 +189,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         initTask = null;
     }
 
-    public void initLogicalFolders(Iterator<SourceFolderInfo> sourceFileFolders, boolean createLogicalFolders, Iterator<String> importantItems) {
+    public void initLogicalFolders(Iterator<SourceFolderInfo> sourceFileFolders, boolean createLogicalFolders, Iterator<String> importantItems, String mainFilePath) {
         if (createLogicalFolders) {
             rootFolder.addNewFolder(SOURCE_FILES_FOLDER, getString("SourceFilesTxt"), true);
             rootFolder.addNewFolder(HEADER_FILES_FOLDER, getString("HeaderFilesTxt"), true);
@@ -206,7 +204,15 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 externalFileItems.addItem(new Item(importantItems.next()));
             }
         }
-//        addSourceFilesFromFolders(sourceFileFolders, false, false, true);
+//        addSourceFilesFromFolders(sourceFileFolders, false, false, true
+        // Add main file
+        if (mainFilePath != null) {
+            Folder srcFolder = rootFolder.findFolderByName(MakeConfigurationDescriptor.SOURCE_FILES_FOLDER);
+            if (srcFolder != null) {
+                srcFolder.addItem(new Item(mainFilePath));
+            }
+        }
+        // Handle source root folders
         if (sourceFileFolders != null) {
             while (sourceFileFolders.hasNext()) {
                 SourceFolderInfo sourceFolderInfo = sourceFileFolders.next();
