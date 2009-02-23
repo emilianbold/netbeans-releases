@@ -63,4 +63,40 @@ public class ScmImpl extends POMComponentImpl implements Scm {
         visitor.visit(this);
     }
 
+    public String getConnection() {
+        return getChildElementText(getModel().getPOMQNames().CONNECTION.getQName());
+    }
+
+    public void setConnection(String connection) {
+        setChildElementText(getModel().getPOMQNames().CONNECTION.getName(), connection,
+                getModel().getPOMQNames().CONNECTION.getQName());
+    }
+
+    public String getDeveloperConnection() {
+        return getChildElementText(getModel().getPOMQNames().DEVELOPERCONNECTION.getQName());
+    }
+
+    public void setDeveloperConnection(String connection) {
+        setChildElementText(getModel().getPOMQNames().DEVELOPERCONNECTION.getName(), connection,
+                getModel().getPOMQNames().DEVELOPERCONNECTION.getQName());
+    }
+
+    public String getUrl() {
+        return getChildElementText(getModel().getPOMQNames().URL.getQName());
+    }
+
+    public void setUrl(String url) {
+        setChildElementText(getModel().getPOMQNames().URL.getName(), url,
+                getModel().getPOMQNames().URL.getQName());
+    }
+
+    public String getTag() {
+        return getChildElementText(getModel().getPOMQNames().TAG.getQName());
+    }
+
+    public void setTag(String tag) {
+        setChildElementText(getModel().getPOMQNames().TAG.getName(), tag,
+                getModel().getPOMQNames().TAG.getQName());
+    }
+
 }
