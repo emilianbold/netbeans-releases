@@ -45,8 +45,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,7 +62,6 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.GuardedDocument;
-import org.netbeans.editor.MarkBlockChain;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
@@ -85,6 +86,8 @@ public final class TaskHandler {
 
     private List<MimeItem> items;
 
+    private Map<Integer, Integer> lineIndents;
+
     /**
      * Start position of the currently formatted chunk.
      */
@@ -103,6 +106,7 @@ public final class TaskHandler {
     TaskHandler(boolean indent, Document doc) {
         this.indent = indent;
         this.doc = doc;
+        this.lineIndents = new HashMap<Integer, Integer>();
     }
 
     public boolean isIndent() {
@@ -201,21 +205,27 @@ public final class TaskHandler {
                 }
             }
             
+            if (jspItem != null) {
+                newItems.add(jspItem);
+            }
+            
             if (htmlItem != null) {
                 newItems.add(0, htmlItem);
             }
-            
-            if (jspItem != null) {
-                newItems.add(0, jspItem);
-            }
-            
+
             items = newItems;
+        }
+
+        if (items != null && items.size() > 0) {
+            items.get(0).setPrimaryFormatter(true);
         }
 
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("Collected items: "); //NOI18N
-            for (MimeItem mi : items) {
-                LOG.fine("  Item: " + mi); //NOI18N
+            if (items != null) {
+                for (MimeItem mi : items) {
+                    LOG.fine("  Item: " + mi); //NOI18N
+                }
             }
             LOG.fine("-----------------"); //NOI18N
         }
@@ -265,6 +275,19 @@ public final class TaskHandler {
         // Run top-level task and possibly embedded tasks according to the context
         if (items == null) // Do nothing for no items
             return;
+
+        List<IndentTask.FormattingContext> l = new ArrayList<IndentTask.FormattingContext>();
+        for (MimeItem item : items) {
+            if (item.indentTask instanceof IndentTask.ContextAwareIndentTask) {
+                l.add(((IndentTask.ContextAwareIndentTask)item.indentTask).createFormattingContext());
+            }
+        }
+
+        for (MimeItem item : items) {
+            if (item.indentTask instanceof IndentTask.ContextAwareIndentTask) {
+                ((IndentTask.ContextAwareIndentTask)item.indentTask).beforeReindent(l);
+            }
+        }
 
         // Start with the doc's mime type's task
         for (MimeItem item : items) {
@@ -340,11 +363,17 @@ public final class TaskHandler {
         private ExtraLock extraLock;
         
         private Context context;
-        
+
+        private boolean primaryFormatter;
+
         MimeItem(TaskHandler handler, MimePath mimePath, LanguagePath languagePath) {
             this.handler = handler;
             this.mimePath = mimePath;
             this.languagePath = languagePath;
+        }
+
+        public Map<Integer, Integer> getLineIndents() {
+            return handler.lineIndents;
         }
 
         public MimePath mimePath() {
@@ -354,7 +383,15 @@ public final class TaskHandler {
         public LanguagePath languagePath() {
             return languagePath;
         }
-        
+
+        void setPrimaryFormatter(boolean primaryFormatter) {
+            this.primaryFormatter = primaryFormatter;
+        }
+
+        public boolean isPrimaryFormatter() {
+            return primaryFormatter;
+        }
+
         public Context context() {
             if (context == null) {
                 context = IndentSpiPackageAccessor.get().createContext(this);

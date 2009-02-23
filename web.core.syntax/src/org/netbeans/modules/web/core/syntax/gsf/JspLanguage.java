@@ -101,4 +101,6 @@ public class JspLanguage extends DefaultLanguageConfig {
     public StructureScanner getStructureScanner() {
         return new JspStructureScanner();
     }
+
+
 }

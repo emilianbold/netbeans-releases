@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,43 +31,38 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
+ * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.css.gsf;
 
-import org.netbeans.modules.css.editor.test.TestBase;
+import org.netbeans.modules.css.editor.CSSIndenter;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.Formatter;
+import org.netbeans.modules.editor.indent.spi.Context;
 
-/**
- */
-public class CSSFormatterTest extends TestBase {
+public class CSSFormatter2 implements Formatter {
 
-    public CSSFormatterTest(String name) {
-        super(name);
+    public boolean needsParserResult() {
+        return false;
     }
 
-    @Override
-    protected boolean runInEQ() {
-        return true;
+    public void reformat(Context context, CompilationInfo info) {
+        new CSSIndenter(context).reindent();
     }
 
-    public void testFormatting() throws Exception {
-        format("a{\nbackground: red;\n  }\n",
-               "a{\n    background: red;\n}\n", null);
+    public void reindent(final Context context) {
+        new CSSIndenter(context).reindent();
     }
 
-    public void XXXtestIndentation() throws Exception {
-
-        // TODO: CSS indentation has to be fixed before these tests can be enabled
-        
-        insertNewline("a{^background: red;\n  }\n", "a{\n    ^background: red;\n  }\n", null);
-        insertNewline("a{\n    background:^red;\n  }\n", "a{\n    background:\n        ^red;\n  }\n", null);
-        insertNewline("a{\n    background: red;^\n  }\n", "a{\n    background: red;\n    ^\n  }\n", null);
-        insertNewline("a{\n    background: red;\n  }^", "a{\n    background: red;\n  }\n  ^", null);
+    public int indentSize() {
+        return 4;
     }
 
+    public int hangingIndentSize() {
+        return 4;
+    }
 
 }

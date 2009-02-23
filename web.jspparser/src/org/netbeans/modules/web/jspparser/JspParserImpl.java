@@ -88,9 +88,11 @@ public class JspParserImpl implements JspParserAPI {
         // Project-s and FileObject-s (wmRoots)
         tldChangeSupport = new TldChangeSupport(this);
     }
-    
-    private static void initReflection() {
-        if (webAppParserImplFactoryMethod == null) {
+
+    private static URL[] urls;
+
+    private static void initURLs() throws MalformedURLException {
+        if (urls == null) {
             File[] files = new File[5];
             files[0] = InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false); // NOI18N
             files[1] = InstalledFileLocator.getDefault().locate("modules/ext/glassfish-jspparser-2.0.jar", null, false); // NOI18N
@@ -99,12 +101,26 @@ public class JspParserImpl implements JspParserAPI {
             files[3] = InstalledFileLocator.getDefault().locate("modules/ext/servlet2.5-jsp2.1-api.jar", null, false); // NOI18N
             //Glassfish V2
             files[4] = InstalledFileLocator.getDefault().locate("ant/lib/ant-launcher.jar", null, false); // NOI18N
-            
+            URL[] urls2 = new URL[files.length];
+            for (int i = 0; i < files.length; i++) {
+                urls2[i] = files[i].toURI().toURL();
+            }
+            urls = urls2;
+        }
+    }
+
+    /**
+     * This method is designed to be called only from unit tests to initialize
+     * parser JARs.
+     */
+    public static void setParserJARs(URL[] urls) {
+        JspParserImpl.urls = urls;
+    }
+
+    private static void initReflection() {
+        if (webAppParserImplFactoryMethod == null) {
             try {
-                URL[] urls = new URL[files.length];
-                for (int i = 0; i < files.length; i++) {
-                    urls[i] = files[i].toURI().toURL();
-                }
+                initURLs();
                 ExtClassLoader urlCL = new ExtClassLoader(urls, JspParserImpl.class.getClassLoader());
                 Class<?> cl = urlCL.loadClass("org.netbeans.modules.web.jspparser_ext.WebAppParseSupport"); // NOI18N
                 webAppParserImplFactoryMethod = cl.getDeclaredMethod("create", JspParserImpl.class, WebModule.class); // NOI18N

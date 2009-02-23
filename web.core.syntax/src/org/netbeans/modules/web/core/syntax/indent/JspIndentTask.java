@@ -27,11 +27,13 @@
  */
 package org.netbeans.modules.web.core.syntax.indent;
 
+import java.util.List;
 import javax.swing.text.BadLocationException;
-import org.netbeans.modules.web.core.syntax.formatting.JSPLexerFormatter;
+import org.netbeans.modules.editor.indent.spi.IndentTask.FormattingContext;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
+import org.netbeans.modules.web.core.syntax.formatting.JspIndenter;
 
 /**
  * Implementation of IndentTask for text/x-jsp mimetype.
@@ -40,19 +42,30 @@ import org.netbeans.modules.editor.indent.spi.IndentTask;
  */
                                         
 
-public class JspIndentTask implements IndentTask {
+public class JspIndentTask implements IndentTask.ContextAwareIndentTask {
 
     private Context context;
+    private JspIndenter indenter;
     
     JspIndentTask(Context context) {
         this.context = context;
+        indenter = new JspIndenter(context);
     }
 
     public void reindent() throws BadLocationException {
-        new JSPLexerFormatter().process(context);
+        //new JSPLexerFormatter().process(context);
+        indenter.reindent();
     }
     
     public ExtraLock indentLock() {
         return null;
-    }  
+    }
+
+    public void beforeReindent(List<FormattingContext> contexts) {
+        indenter.beforeReindent(contexts);
+    }
+
+    public FormattingContext createFormattingContext() {
+        return indenter.createFormattingContext();
+    }
 }

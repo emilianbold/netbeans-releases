@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.editor.indent.spi;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
@@ -69,11 +71,32 @@ public final class Context {
         IndentSpiPackageAccessor.register(new PackageAccessor());
     }
 
+    /** Value type: Map<Integer, Integer> */
+    private static final String CONTEXT_LINE_INDENTS = "context.line.indents";
+
     private TaskHandler.MimeItem mimeItem;
 
     Context(TaskHandler.MimeItem mimeItem) {
         this.mimeItem = mimeItem;
     }
+
+    public boolean isPrimaryFormatter() {
+        return this.mimeItem.isPrimaryFormatter();
+    }
+
+    public int getLineInitialIndent(int lineIndex) {
+        Integer i = mimeItem.getLineIndents().get(lineIndex);
+        if (i != null) {
+            return i.intValue();
+        }
+        return -1;
+    }
+
+    public void setLineInitialIndent(int lineIndex, int indent) {
+        mimeItem.getLineIndents().put(lineIndex, indent);
+    }
+
+
 
     /**
      * Document for which the reformatting or indenting is being done.
