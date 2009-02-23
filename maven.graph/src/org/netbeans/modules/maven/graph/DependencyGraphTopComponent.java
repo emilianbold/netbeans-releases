@@ -63,9 +63,11 @@ import javax.swing.event.DocumentListener;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
+import org.netbeans.api.project.Project;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -386,12 +388,13 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     private void createScene() {
         Iterator<? extends DependencyNode> it1 = result.allInstances().iterator();
         Iterator<? extends MavenProject> it2 = result2.allInstances().iterator();
+        final Project nbProj = getLookup().lookup(Project.class);
         if (it2.hasNext() && it1.hasNext()) {
             final MavenProject prj = it2.next();
             final DependencyNode root = it1.next();
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    scene = new DependencyGraphScene(prj);
+                    scene = new DependencyGraphScene(prj, nbProj);
                     GraphConstructor constr = new GraphConstructor(scene);
                     root.accept(constr);
                     SwingUtilities.invokeLater(new Runnable() {

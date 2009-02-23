@@ -46,6 +46,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.MoveProvider;
 import org.netbeans.api.visual.action.PopupMenuProvider;
@@ -53,8 +54,6 @@ import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.graph.GraphScene;
-import org.netbeans.api.visual.graph.layout.GraphLayout;
-import org.netbeans.api.visual.graph.layout.GraphLayoutFactory;
 import org.netbeans.api.visual.model.ObjectSceneEvent;
 import org.netbeans.api.visual.model.ObjectSceneEventType;
 import org.netbeans.api.visual.model.ObjectSceneListener;
@@ -63,6 +62,7 @@ import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.maven.api.CommonArtifactActions;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 
 /**
@@ -98,10 +98,12 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
     private FruchtermanReingoldLayout layout;
     private MavenProject project;
     private int maxDepth = 0;
+    private Project nbProject;
     
     /** Creates a new instance ofla DependencyGraphScene */
-    DependencyGraphScene(MavenProject prj) {
+    DependencyGraphScene(MavenProject prj, Project nbProj) {
         project = prj;
+        nbProject = nbProj;
         mainLayer = new LayerWidget(this);
         addChild(mainLayer);
         connectionLayer = new LayerWidget(this);
@@ -132,6 +134,9 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         return maxDepth;
     }
 
+    Project getNbProject () {
+        return nbProject;
+    }
 
     ArtifactGraphNode getGraphNodeRepresentant(DependencyNode node) {
         for (ArtifactGraphNode grnode : getNodes()) {

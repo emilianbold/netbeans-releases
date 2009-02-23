@@ -40,7 +40,8 @@ package org.netbeans.modules.maven.graph;
 
 import java.awt.Color;
 import java.awt.GradientPaint;
-import java.awt.Paint;
+import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.List;
 import org.apache.maven.artifact.Artifact;
@@ -57,6 +58,7 @@ import org.openide.util.NbBundle;
  * @author mkleint
  */
 class ArtifactWidget extends Widget {
+
     final Color ROOT = new Color(71, 215, 217);
     final Color DIRECTS = new Color(50, 217, 217);
     final Color DIRECTS_CONFLICT = new Color(235, 88, 194);
@@ -64,11 +66,18 @@ class ArtifactWidget extends Widget {
     final Color HIGHTLIGHT = new Color(255, 255, 129);
     final Color DISABLE_CONFLICT = new Color(255, 168, 168);
     final Color CONFLICT = new Color(255, 103, 103);
+    final Color MANAGED = new Color(30, 255, 150);
+    final Color OVERRIDES_MANAGED = new Color(255, 150, 20);
 
     final Color PROVIDED = new Color(191, 255, 255);
     final Color COMPILE = new Color(191, 191, 255);
     final Color RUNTIME = new Color(191, 255, 191);
     final Color TEST = new Color(202, 151, 151);
+
+    private static final int LEFT_TOP = 1;
+    private static final int LEFT_BOTTOM = 2;
+    private static final int RIGHT_TOP = 3;
+    private static final int RIGHT_BOTTOM = 4;
 
     private Widget defaultCard;
     private Widget hiddenCard;
@@ -220,7 +229,7 @@ class ArtifactWidget extends Widget {
         } else {
             root.setBorder(BorderFactory.createLineBorder(10,Color.lightGray));
         }
-        root.setOpaque(true);
+        //root.setOpaque(true);
         root.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 1));
         LabelWidget lbl = new LabelWidget(scene);
         lbl.setLabel(artifact.getArtifactId() + "  ");
@@ -242,4 +251,99 @@ class ArtifactWidget extends Widget {
         checkBackground(node, root, shown);
         return root;
     }
+
+    @Override
+    protected void paintBackground() {
+        super.paintBackground();
+        Graphics2D g = getScene().getGraphics();
+        Rectangle bounds = getClientArea();
+
+        int state = node.getManagedState();
+        if (ArtifactGraphNode.UNMANAGED != state) {
+            Color c = state == ArtifactGraphNode.MANAGED ? MANAGED : OVERRIDES_MANAGED;
+            paintCorner(RIGHT_TOP, g, bounds, c, Color.WHITE);
+        }
+
+        if (node.isRoot()) {
+            g.setColor(ROOT);
+            g.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+        } else {
+            if (scopes != null && scopes.size() > 0 && scopes.contains(node.getArtifact().getArtifact().getScope())) {
+                Color scopeC = colorForScope(node.getArtifact().getArtifact().getScope());
+                paintCorner(RIGHT_BOTTOM, g, bounds, scopeC, Color.WHITE);
+            }
+            boolean conflict = false;
+            for (DependencyNode src : node.getDuplicatesOrConflicts()) {
+                if (src.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
+                    conflict = true;
+                }
+            }
+            Color leftTopC = Color.WHITE;
+            if (conflict) {
+                if (node.getPrimaryLevel() == 1) {
+                    leftTopC = DIRECTS_CONFLICT;
+                } else if (true) { // TODO
+                    leftTopC = CONFLICT;
+                } else {
+                    leftTopC = DISABLE_CONFLICT;
+                }
+            } else {
+                if (node.getPrimaryLevel() == 1) {
+                    leftTopC = DIRECTS;
+                }
+            }
+            paintCorner(LEFT_TOP, g, bounds, leftTopC, Color.WHITE);
+        }
+
+
+    }
+
+    private static void paintCorner (int corner, Graphics2D g, Rectangle bounds, Color c1, Color c2) {
+        int b = bounds.width / 3;
+        int a = bounds.height / 2;
+
+        double h = a*a + b*b;
+        int x = (int)(a*a*b / h);
+        int y = (int)(a*b*b / h);
+
+        Point startPoint = new Point();
+        Point direction = new Point();
+        switch (corner) {
+            case LEFT_TOP:
+                startPoint.x = bounds.x;
+                startPoint.y = bounds.y;
+                direction.x = 1;
+                direction.y = 1;
+            break;
+            case LEFT_BOTTOM:
+                startPoint.x = bounds.x;
+                startPoint.y = bounds.y + bounds.height;
+                direction.x = 1;
+                direction.y = -1;
+            break;
+            case RIGHT_TOP:
+                startPoint.x = bounds.x + bounds.width;
+                startPoint.y = bounds.y;
+                direction.x = -1;
+                direction.y = 1;
+            break;
+            case RIGHT_BOTTOM:
+                startPoint.x = bounds.x + bounds.width;
+                startPoint.y = bounds.y + bounds.height;
+                direction.x = -1;
+                direction.y = -1;
+            break;
+            default:
+                throw new IllegalArgumentException("Corner id not valid"); //NOI18N
+        }
+        
+        g.setPaint(new GradientPaint(startPoint.x, startPoint.y, c1,
+                startPoint.x + direction.x * x,
+                startPoint.y + direction.y * y, c2));
+        g.fillRect(
+                Math.min(startPoint.x, startPoint.x + direction.x * b),
+                Math.min(startPoint.y, startPoint.y + direction.y * a),
+                b, a);
+    }
+
 }

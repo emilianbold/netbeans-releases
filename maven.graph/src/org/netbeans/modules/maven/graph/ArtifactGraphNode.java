@@ -48,6 +48,11 @@ import org.netbeans.api.visual.widget.Widget;
  * @author Milos Kleint 
  */
 public class ArtifactGraphNode {
+
+    public static final int UNMANAGED = 0;
+    public static final int MANAGED = 1;
+    public static final int OVERRIDES_MANAGED = 2;
+
     private DependencyNode artifact;
     //for the layout
     double locX;
@@ -60,6 +65,7 @@ public class ArtifactGraphNode {
     private boolean root;
     private HashSet<DependencyNode> dupl;
     private int level;
+    private int managedState;
 
     /** Creates a new instance of ArtifactGraphNode */
     public ArtifactGraphNode(DependencyNode art) {
@@ -125,4 +131,13 @@ public class ArtifactGraphNode {
     void setWidget(Widget wid) {
         widget = wid;
     }
+
+    public int getManagedState() {
+        return managedState;
+    }
+
+    public void setManagedState(int state) {
+        this.managedState = state;
+    }
+
 }

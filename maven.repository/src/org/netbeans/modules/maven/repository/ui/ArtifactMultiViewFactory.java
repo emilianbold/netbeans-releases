@@ -102,6 +102,7 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
         if (artifact == null && prj != null) {
             NbMavenProject mvPrj = prj.getLookup().lookup(NbMavenProject.class);
             MavenProject mvn = mvPrj.getMavenProject();
+            ic.add(prj);
             artifact = mvn.getArtifact();
         }
         assert artifact != null;
