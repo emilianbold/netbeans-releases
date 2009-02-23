@@ -104,23 +104,6 @@ abstract class URIMapper {
         return null;
     }
 
-    private static File[] findBases(File initWebServerFile, File initSourceFileFile, File sourceRoot) {
-        boolean nullRetVal = true;
-        while (initWebServerFile != null && initSourceFileFile != null) {
-            if (initWebServerFile.getName().equals(initSourceFileFile.getName()) && !initSourceFileFile.equals(sourceRoot)) {
-                nullRetVal = false;
-                if (initSourceFileFile.equals(sourceRoot)) {
-                    break;
-                }
-                initWebServerFile = initWebServerFile.getParentFile();
-                initSourceFileFile = initSourceFileFile.getParentFile();
-            } else {
-                break;
-            }
-        }
-        return nullRetVal ? null : new File[]{initWebServerFile, initSourceFileFile};
-    }
-
     static URIMapper createOneToOne() {
         return new URIMapper() {
 
@@ -139,6 +122,23 @@ abstract class URIMapper {
 
     static URIMapper createBasedInstance(URI baseRemoteURI, File baseLocalFolder) {
         return new DefaultMapper(baseRemoteURI, baseLocalFolder);
+    }
+
+    private static File[] findBases(File initWebServerFile, File initSourceFileFile, File sourceRoot) {
+        boolean nullRetVal = true;
+        while (initWebServerFile != null && initSourceFileFile != null) {
+            if (initWebServerFile.getName().equals(initSourceFileFile.getName()) && !initSourceFileFile.equals(sourceRoot)) {
+                nullRetVal = false;
+                if (initSourceFileFile.equals(sourceRoot)) {
+                    break;
+                }
+                initWebServerFile = initWebServerFile.getParentFile();
+                initSourceFileFile = initSourceFileFile.getParentFile();
+            } else {
+                break;
+            }
+        }
+        return nullRetVal ? null : new File[]{initWebServerFile, initSourceFileFile};
     }
 
     private static class DefaultMapper extends URIMapper {
@@ -198,7 +198,7 @@ abstract class URIMapper {
             return this;
         }
 
-        MultiMapper addLastMapper(URIMapper mapper) {
+        MultiMapper addAsLastMapper(URIMapper mapper) {
             mappers.addLast(mapper);
             return this;
         }
