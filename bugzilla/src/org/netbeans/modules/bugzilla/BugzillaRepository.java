@@ -232,9 +232,7 @@ public class BugzillaRepository extends Repository {
         TaskRepository repository = new TaskRepository(name, url);
         AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user, password);
 
-        // XXX using AuthenticationType.REPOSITORY with kenai doesn't seem to work
         repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
-        repository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
         return repository;
     }
 
