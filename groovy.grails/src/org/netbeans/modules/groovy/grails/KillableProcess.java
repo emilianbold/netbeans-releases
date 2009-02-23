@@ -76,6 +76,7 @@ public class KillableProcess extends Process {
     @Override
     public void destroy() {
         if (!Utilities.isWindows()) {
+            LOGGER.log(Level.FINEST, "Not windows - normal exit");
             nativeProcess.destroy();
             return;
         }
@@ -88,6 +89,7 @@ public class KillableProcess extends Process {
                 Utilities.escapeParameters(params), directory.getAbsolutePath(), command);
 
         Thread t = new Thread(executor);
+        LOGGER.log(Level.FINEST, "About to run wmic.exe");
         t.start();
 
         boolean interrupted = Thread.interrupted();
@@ -111,8 +113,10 @@ public class KillableProcess extends Process {
                     "taskkill.exe", "/F /PID " + pidToKill + " /T", null, null);
 
             Thread tk = new Thread(killer);
+            LOGGER.log(Level.FINEST, "About to run taskkill.exe");
             tk.start();
         } else {
+            LOGGER.log(Level.FINEST, "No pid acquired - normal exit");
             nativeProcess.destroy();
         }
     }
@@ -168,6 +172,8 @@ public class KillableProcess extends Process {
         public void run() {
             NbProcessDescriptor cmdProcessDesc = new NbProcessDescriptor(cmd, args);
 
+            LOGGER.log(Level.FINEST, "Running {0} {1}", new Object[] {cmd, args});
+
             try {
                 Process utilityProcess = cmdProcessDesc.exec(null, null, true, null);
 
@@ -192,12 +198,16 @@ public class KillableProcess extends Process {
                         + Pattern.quote(commandToFilter) + "\\s+REM NB:" + Pattern.quote(nameToFilter)
                         + ".*");
 
+                LOGGER.log(Level.FINEST, "Process pattern {0}", pattern);
+
                 BufferedReader procOutput = new BufferedReader(
                         new InputStreamReader(utilityProcess.getInputStream()));
                 try {
                     String errString;
                     while ((errString = procOutput.readLine()) != null) {
+                        LOGGER.log(Level.FINEST, "Line: {0}", errString);
                         if (pattern.matcher(errString).matches()) {
+                            LOGGER.log(Level.FINEST, "Match: {0}", errString);
                             String nbTag = "REM NB:" + nameToFilter; // NOI18N
                             int idx = errString.indexOf(nbTag);
                             idx = idx + nbTag.length();

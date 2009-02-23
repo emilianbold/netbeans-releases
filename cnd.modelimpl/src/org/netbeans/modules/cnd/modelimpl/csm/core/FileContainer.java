@@ -145,7 +145,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         addAlternativeFileKey(path, newEntry.canonical);
 
         if (old != null){
-            System.err.println("Replace file "+file.getAbsoluteFile());
+            System.err.println("Replace file info for "+ old.fileNew + " with " + impl);
         }
 	put();
     }
@@ -162,7 +162,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         if (f != null) {
             if (f.fileNew != null){
                 // clean repository
-                if (false) RepositoryUtils.remove(f.fileNew);
+                if (false) { RepositoryUtils.remove(f.fileNew) ;}
             }
         }
 	put();

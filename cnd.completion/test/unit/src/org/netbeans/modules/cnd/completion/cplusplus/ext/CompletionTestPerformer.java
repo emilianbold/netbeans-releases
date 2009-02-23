@@ -215,6 +215,7 @@ public class CompletionTestPerformer {
                 throw new DataObjectNotFoundException(testFileObject);
             }
             try {
+                final Throwable[] asserts = new Throwable[] { null };
                 final BaseDocument doc = CndCoreTestUtils.getBaseDocument(testFile);
                 Runnable run = new Runnable() {
                     public void run() {
@@ -224,6 +225,8 @@ public class CompletionTestPerformer {
                             ex.printStackTrace(log);
                         } catch (BadLocationException ex) {
                             ex.printStackTrace(log);
+                        } catch (Throwable as) {
+                            asserts[0] = as;
                         }
                     }
                 };
@@ -237,6 +240,9 @@ public class CompletionTestPerformer {
                             invocationTargetException.getCause().printStackTrace(System.err);
                         }
                     }
+                }
+                if (asserts[0] != null) {
+                    new Exception("\nhappens in ", asserts[0]).printStackTrace(System.err);
                 }
             } finally {
                 testFile.setModified(false);
@@ -282,6 +288,9 @@ public class CompletionTestPerformer {
 //            }
 //        }
         CsmFile csmFile = CsmUtilities.getCsmFile(dob, false);
+        if (csmFile == null) {
+            csmFile = CsmUtilities.getCsmFile(dob, false);
+        }
         assert csmFile != null : "Must be csmFile for data object " + dob;
         CsmProject prj = csmFile.getProject();
         assert prj != null : "Must be project for csm file " + csmFile;

@@ -48,36 +48,41 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
  */
 public class FunctionCallImpl extends FunctionCall {
 
-  private final Map<FunctionMetric, Object> metrics;
+    private final Map<FunctionMetric, Object> metrics;
 
-  public FunctionCallImpl(Function function, Map<FunctionMetric, Object> metrics) {
-    super(function);
-    this.metrics = metrics;
-  }
-
-  public Object getMetricValue(FunctionMetric metric) {
-    return metrics.get(metric);
-  }
-
-  @Override
-  public String toString() {
-    StringBuffer sb = new StringBuffer(getFunction().toString());
-    sb.append(" ["); // NOI18N
-    for (FunctionMetric m : metrics.keySet()) {
-      sb.append(m.getMetricDisplayedName()).append(" == ").append(metrics.get(m)); // NOI18N
+    public FunctionCallImpl(
+            final Function function,
+            final Map<FunctionMetric, Object> metrics) {
+        super(function);
+        this.metrics = metrics;
     }
-    sb.append("]"); // NOI18N
 
-    return sb.toString();
-  }
-
-  @Override
-  public Object getMetricValue(String metric_id) {
-    for (FunctionMetric metric: metrics.keySet()){
-      if (metric.getMetricID().equals(metric_id)){
+    public Object getMetricValue(FunctionMetric metric) {
         return metrics.get(metric);
-      }
     }
-    return null;
-  }
+
+    @Override
+    public String toString() {
+        StringBuffer sb = new StringBuffer(getFunction().toString());
+        sb.append(" [ "); // NOI18N
+
+        for (FunctionMetric m : metrics.keySet()) {
+            sb.append(m.getMetricDisplayedName()).append(" == "); // NOI18N
+            sb.append(metrics.get(m)).append("; "); // NOI18N
+        }
+
+        sb.append("]"); // NOI18N
+
+        return sb.toString();
+    }
+
+    @Override
+    public Object getMetricValue(String metric_id) {
+        for (FunctionMetric metric : metrics.keySet()) {
+            if (metric.getMetricID().equals(metric_id)) {
+                return metrics.get(metric);
+            }
+        }
+        return null;
+    }
 }

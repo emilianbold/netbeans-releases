@@ -81,6 +81,11 @@ public abstract class RubyBaseActionProvider implements ActionProvider, ScriptDe
      * @see org.netbeans.spi.project.ActionProvider
      */
     public static final String COMMAND_AUTOTEST = "autotest"; // NOI18N
+    /**
+     * Command for running autospec on this project (if installed)
+     * @see org.netbeans.spi.project.ActionProvider
+     */
+    public static final String COMMAND_AUTOSPEC = "autospec"; // NOI18N
 
     /**
      * Command for running RSpec tests on this project (if installed)

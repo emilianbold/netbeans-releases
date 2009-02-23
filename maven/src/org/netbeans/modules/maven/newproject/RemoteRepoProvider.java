@@ -51,6 +51,7 @@ import org.netbeans.modules.maven.api.archetype.ArchetypeProvider;
  *
  * @author mkleint
  */
+@SuppressWarnings("deprecation")
 public class RemoteRepoProvider implements ArchetypeProvider {
 
     public List<Archetype> getArchetypes() {

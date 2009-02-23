@@ -49,10 +49,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.SourceGroupModifier;
 import org.netbeans.modules.properties.BundleStructure;
 import org.netbeans.modules.properties.PropertiesDataObject;
+import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -295,6 +300,16 @@ class ResourceUtils {
     }
 
     static FileObject createResourcesFolder(FileObject srcFile) throws IOException {
+        Project owner = FileOwnerQuery.getOwner(srcFile);
+        if (owner != null) {
+            SourceGroup grp = SourceGroupModifier.createSourceGroup(owner, JavaProjectConstants.SOURCES_TYPE_RESOURCES, JavaProjectConstants.SOURCES_HINT_MAIN);
+            if (grp != null) {
+                //maven project with split sources/resources
+                FileObject root = JavadocAndSourceRootDetection.findPackageRoot(srcFile);
+                String path = FileUtil.getRelativePath(root, srcFile.getParent());
+                return FileUtil.createFolder(grp.getRootFolder(), path + "/resources");
+            }
+        }
         return FileUtil.createFolder(srcFile.getParent(), "resources"); // NOI18N
     }
 
@@ -312,7 +327,18 @@ class ResourceUtils {
             bundleName = bundleName.substring(0, bundleName.length()-".properties".length()); // NOI18N
         if (bundleName.contains(".")) // NOI18N
             bundleName = bundleName.replace('.', '/');
-        FileObject folder = ClassPath.getClassPath(srcFile, ClassPath.SOURCE).getRoots()[0];
+
+        Project owner = FileOwnerQuery.getOwner(srcFile);
+        FileObject folder = null;
+        if (owner != null) {
+            SourceGroup grp = SourceGroupModifier.createSourceGroup(owner, JavaProjectConstants.SOURCES_TYPE_RESOURCES, JavaProjectConstants.SOURCES_HINT_MAIN);
+            if (grp != null) {
+                folder = grp.getRootFolder();
+            }
+        }
+        if (folder == null) {
+            folder = ClassPath.getClassPath(srcFile, ClassPath.SOURCE).getRoots()[0];
+        }
         
         return org.netbeans.modules.properties.Util.createPropertiesDataObject(folder, bundleName);
     }

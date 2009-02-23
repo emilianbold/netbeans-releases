@@ -46,7 +46,6 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import org.netbeans.modules.profiler.attach.providers.AbstractIntegrationProvider;
 import org.netbeans.modules.profiler.attach.providers.IntegrationCategorizer;
-import org.netbeans.modules.profiler.attach.providers.TargetPlatformEnum;
 import org.netbeans.modules.profiler.attach.spi.IntegrationProvider;
 import org.netbeans.modules.profiler.attach.wizard.steps.NullWizardStep;
 import org.netbeans.modules.profiler.attach.wizard.steps.WizardStep;
@@ -61,7 +60,7 @@ import org.netbeans.modules.profiler.attach.wizard.steps.WizardStep;
 public class GenericWebAppServerIntegrationProvider extends AbstractIntegrationProvider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    private static final ResourceBundle messages = ResourceBundle.getBundle("org.netbeans.modules.profiler.j2ee.Bundle"); // NOI18N
+    private static final ResourceBundle messages = ResourceBundle.getBundle("org.netbeans.modules.profiler.j2ee.generic.Bundle"); // NOI18N
     private static final String GENERIC_WEBAPP_SERVER_STRING = messages.getString("GenericWebAppServerIntegrationProvider_GenericWebappServerString"); // NOI18N
     private static final String PATH_TO_JDK_DIRECTORY_STRING = messages.getString("GenericWebAppServerIntegrationProvider_PathToJdkDirectory"); // NOI18N
     private static final String MANUAL_REMOTE_STEP3_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_ManualRemoteStep3Message"); // NOI18N

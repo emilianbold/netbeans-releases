@@ -50,10 +50,12 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=ProjectActionHandlerFactory.class, position=4000)
 public class GizmoRunActionHandlerFactory implements ProjectActionHandlerFactory {
 
+    private static final boolean ENABLE = Boolean.getBoolean("gizmo.enable");
+
     public boolean canHandle(Type type) {
         switch (type) {
             case RUN:
-                return true;
+                return ENABLE;
             default:
                 return false;
         }

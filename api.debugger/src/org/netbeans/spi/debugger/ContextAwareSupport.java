@@ -174,7 +174,11 @@ public final class ContextAwareSupport {
      */
     static ContextAwareService createService(Map attrs) throws ClassNotFoundException {
         String serviceName = (String) attrs.get(ContextAwareServiceHandler.SERVICE_NAME);
-        String[] serviceClassNames = splitClasses((String) attrs.get(ContextAwareServiceHandler.SERVICE_CLASSES));
+        String serviceClasses = (String) attrs.get(ContextAwareServiceHandler.SERVICE_CLASSES);
+        if (serviceClasses == null) {
+            serviceClasses = (String) attrs.get("instanceOf");
+        }
+        String[] serviceClassNames = splitClasses(serviceClasses);
 
         //Map methodValues = new HashMap(attrs); - MUST NOT DO THAT! Creates a loop initializing the entries from XML
         //methodValues.remove(SERVICE_NAME);

@@ -1618,7 +1618,13 @@ final class ModuleList implements Stamps.Updater {
                     Map<String, Object> props = dirtyprops.get(cnb);
                     if (! cnb.equals(props.get("name"))) throw new IOException("Code name mismatch"); // NOI18N
                     String jar = (String)props.get("jar"); // NOI18N
-                    File jarFile = findJarByName(jar, cnb);
+                    File jarFile;
+                    try {
+                        jarFile = findJarByName(jar, cnb);
+                    } catch (FileNotFoundException fnfe) {
+                        ev.log(Events.MISSING_JAR_FILE, new File(fnfe.getMessage()), true);
+                        continue;
+                    }
                     Boolean reloadableB = (Boolean)props.get("reloadable"); // NOI18N
                     boolean reloadable = (reloadableB != null ? reloadableB.booleanValue() : false);
                     Boolean autoloadB = (Boolean)props.get("autoload"); // NOI18N

@@ -47,6 +47,7 @@ import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
@@ -142,6 +143,7 @@ public class MethodCompletionTest extends GroovyTestBase {
     }    
 
     // FIXME this test randomly fails
+    @RandomlyFails
     public void testCompletionInsideFor2() throws Exception {
         checkCompletion(TEST_BASE + "" + "Methods9.groovy", "for (String other in [1:\"Alice\", 2:\"Bob\"].^", false);
     }

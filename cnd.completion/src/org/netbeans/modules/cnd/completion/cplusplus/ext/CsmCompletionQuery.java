@@ -225,6 +225,9 @@ abstract public class CsmCompletionQuery {
             final int lastSepOffset = sup.getLastCommandSeparator(offset);
             final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset, lastSepOffset);
             final CndTokenProcessor<Token<CppTokenId>> etp = CsmExpandedTokenProcessor.create(doc, tp, offset);
+            if(etp instanceof CsmExpandedTokenProcessor) {
+                tp.setMacroCallback((CsmExpandedTokenProcessor)etp);
+            }
             tp.enableTemplateSupport(true);
             doc.readLock();
             try {
@@ -899,7 +902,8 @@ abstract public class CsmCompletionQuery {
         }
 
         @SuppressWarnings({"fallthrough", "unchecked"})
-        boolean resolveExp(CsmCompletionExpression exp) {            boolean lastDot = false; // dot at the end of the whole expression?
+        boolean resolveExp(CsmCompletionExpression exp) {
+            boolean lastDot = false; // dot at the end of the whole expression?
             boolean ok = true;
 
             switch (exp.getExpID()) {
@@ -1753,7 +1757,7 @@ abstract public class CsmCompletionQuery {
                     }
                 }
                 CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
-                return ip.instantiate(template, params);
+                return ip.instantiate(template, params, getFinder().getCsmFile());
             }
             return null;
         }

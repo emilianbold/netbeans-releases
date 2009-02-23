@@ -56,13 +56,32 @@ public interface DistributionManagement extends POMComponent {
 //    </xs:all>
 //  </xs:complexType-->
 //
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     public DeploymentRepository getRepository();
     public void setRepository(DeploymentRepository distRepository);
 
+        /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     public DeploymentRepository getSnapshotRepository();
     public void setSnapshotRepository(DeploymentRepository distSnapshotRepository);
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     public Site getSite();
     public void setSite(Site site);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getDownloadUrl();
+    void setDownloadUrl(String url);
 
 }

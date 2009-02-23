@@ -57,7 +57,7 @@ public class ReferenceContextImpl implements CsmReferenceContext {
     private int popCount;
 
     public ReferenceContextImpl() {
-        this(null);
+        this(null, false);
     }
 
     public ReferenceContextImpl(CsmReferenceContext parent) {
@@ -79,6 +79,18 @@ public class ReferenceContextImpl implements CsmReferenceContext {
             this.parentSize = parent == null ? 0 : parent.size();
             this.stack = new ArrayList();
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public ReferenceContextImpl(ReferenceContextImpl c) {
+        this.parentSize = c.parentSize;
+        if(c.parent != null) {
+            this.parent = new ReferenceContextImpl(c.parent);
+        } else {
+            parent =  null;
+        }
+        this.stack = new ArrayList(c.stack);
+        this.popCount = c.popCount;
     }
 
     public int size() {

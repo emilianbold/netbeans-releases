@@ -38,7 +38,10 @@
  */
 package org.netbeans.modules.maven.search;
 
+import java.util.List;
 import org.netbeans.modules.maven.indexer.api.NBArtifactInfo;
+import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
+import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 
 /**
  *
@@ -53,6 +56,9 @@ public class OpenArtifactInfo implements Runnable {
     }
 
     public void run() {
-        
+        List<NBVersionInfo> infos = artifactInfo.getVersionInfos();
+        if (infos != null && infos.size() > 0) {
+            ArtifactViewer.showArtifactViewer(infos.get(0));
+        }
     }
 }

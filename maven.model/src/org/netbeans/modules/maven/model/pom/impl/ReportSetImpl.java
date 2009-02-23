@@ -48,6 +48,11 @@ import org.netbeans.modules.maven.model.pom.POMComponentVisitor;
  */
 public class ReportSetImpl extends IdPOMComponentImpl implements ReportSet {
 
+    private static final Class<? extends POMComponent>[] ORDER = new Class[] {
+        Configuration.class,
+        StringList.class //reports
+    };
+
     public ReportSetImpl(POMModel model, Element element) {
         super(model, element);
     }
@@ -57,6 +62,71 @@ public class ReportSetImpl extends IdPOMComponentImpl implements ReportSet {
     }
 
     // attributes
+
+
+    public Boolean isInherited() {
+        String str = getChildElementText(getModel().getPOMQNames().INHERITED.getQName());
+        if (str != null) {
+            return Boolean.valueOf(str);
+        }
+        return Boolean.TRUE;
+    }
+
+    public void setInherited(Boolean inherited) {
+        setChildElementText(getModel().getPOMQNames().INHERITED.getName(),
+                inherited == null ? null : inherited.toString(),
+                getModel().getPOMQNames().INHERITED.getQName());
+    }
+
+    public Configuration getConfiguration() {
+        return getChild(Configuration.class);
+    }
+
+    public void setConfiguration(Configuration config) {
+        setChild(Configuration.class, getModel().getPOMQNames().CONFIGURATION.getName(), config,
+                getClassesBefore(ORDER, Configuration.class));
+    }
+
+    public java.util.List<String> getReports() {
+        java.util.List<StringList> lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (getModel().getPOMQNames().REPORTS.getName().equals(list.getPeer().getLocalName())) {
+                return list.getListChildren();
+            }
+        }
+        return null;
+    }
+
+    public void addReport(String report) {
+        java.util.List<StringList> lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (getModel().getPOMQNames().REPORTS.getName().equals(list.getPeer().getLocalName())) {
+                list.addListChild(report);
+                return;
+            }
+        }
+        setChild(StringListImpl.class,
+                 getModel().getPOMQNames().REPORTS.getName(),
+                 getModel().getFactory().create(this, getModel().getPOMQNames().REPORTS.getQName()),
+                 getClassesBefore(ORDER, StringListImpl.class));
+        lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (getModel().getPOMQNames().REPORTS.getName().equals(list.getPeer().getLocalName())) {
+                list.addListChild(report);
+                return;
+            }
+        }
+    }
+
+    public void removeReport(String report) {
+        java.util.List<StringList> lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (getModel().getPOMQNames().REPORTS.getName().equals(list.getPeer().getLocalName())) {
+                list.removeListChild(report);
+                return;
+            }
+        }
+    }
 
     // child elements
     public void accept(POMComponentVisitor visitor) {

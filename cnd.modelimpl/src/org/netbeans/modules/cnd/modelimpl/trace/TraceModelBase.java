@@ -586,18 +586,26 @@ public class TraceModelBase {
     protected final void initDataObjects() {
         ProjectBase prj = getProject();
         if (prj != null) {
-            Collection<CsmFile> allFiles = prj.getAllFiles();
+            Set<CsmFile> allFiles = new HashSet<CsmFile>(prj.getAllFiles());
+            for (CsmProject lib : prj.getLibraries()) {
+                allFiles.addAll(lib.getAllFiles());
+            }
             for (CsmFile csmFile : allFiles) {
                 if (csmFile instanceof FileImpl) {
                     try {
                         FileImpl impl = (FileImpl) csmFile;
                         NativeFileItem item = impl.getNativeFileItem();
-                        FileObject fo = item == null ? null : FileUtil.toFileObject(item.getFile());
+                        FileObject fo = item == null ? FileUtil.toFileObject(impl.getFile()) : FileUtil.toFileObject(item.getFile());
                         DataObject dobj = fo == null ? null : DataObject.find(fo);
+                        //if (dobj == null){
+                        //    System.err.println("no DO for " + item + " of file " + impl);
+                        //}
                         NativeProjectProvider.registerItemInDataObject(dobj, item);
                     } catch (DataObjectNotFoundException ex) {
                         Exceptions.printStackTrace(ex);
                     }
+                } else {
+                    System.err.println("unexpected file " + csmFile);
                 }
             }
         }

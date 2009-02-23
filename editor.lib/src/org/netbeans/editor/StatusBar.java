@@ -561,7 +561,9 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
                         org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(editorUI.getComponent()), 
                         FontColorNames.STATUS_BAR_COLORING
                     );
-                    applyColoring((Cell) c, col);
+                    if (col != null) {
+                        applyColoring((Cell) c, col);
+                    }
                 }
             }
 

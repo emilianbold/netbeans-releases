@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -40,26 +40,28 @@
  */
 package org.netbeans.modules.collab.ui.wizard;
 
-import javax.swing.*;
-import javax.swing.event.*;
-
-import org.openide.util.NbBundle;
-
 import com.sun.collablet.Account;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.openide.util.NbBundle;
 
 /**
  *
  *
  */
-public class AccountUserInfoPanel extends WizardPanelBase {
+public class AccountUserInfoPanel extends JPanel {
+
+    private WizardPanelBase wizardPanel;
 
     /**
      *
      *
      */
-    public AccountUserInfoPanel() {
-        super(NbBundle.getMessage(AccountUserInfoPanel.class, "LBL_AccountUserInfoPanel_Name")); // NOI18N
-
+    public AccountUserInfoPanel (WizardPanelBase wizardPanel) {
+        this.wizardPanel = wizardPanel;
+        setName(NbBundle.getMessage(AccountUserInfoPanel.class, "LBL_AccountUserInfoPanel_Name"));
         initComponents();
         initAccessibility();
 
@@ -85,7 +87,7 @@ public class AccountUserInfoPanel extends WizardPanelBase {
      *
      *
      */
-    public void readSettings(Object object) {
+    void readSettings(Object object) {
         Account account = AccountWizardSettings.narrow(object).getAccount();
         firstNameField.setText(account.getFirstName());
         lastNameField.setText(account.getLastName());
@@ -96,7 +98,7 @@ public class AccountUserInfoPanel extends WizardPanelBase {
      *
      *
      */
-    public void storeSettings(Object object) {
+    void storeSettings(Object object) {
         Account account = AccountWizardSettings.narrow(object).getAccount();
         account.setFirstName(firstNameField.getText().trim());
         account.setLastName(lastNameField.getText().trim());
@@ -113,7 +115,7 @@ public class AccountUserInfoPanel extends WizardPanelBase {
         String email = emailField.getText().trim();
 
         boolean valid = (firstName.length() > 0) && (lastName.length() > 0) && (email.length() > 0);
-        setValid(valid);
+        wizardPanel.setValid(valid);
     }
 
     /**
@@ -131,7 +133,7 @@ public class AccountUserInfoPanel extends WizardPanelBase {
         );
     }
 
-    public void initAccessibility() {
+    private void initAccessibility() {
         emailField.getAccessibleContext().setAccessibleDescription(
             NbBundle.getMessage(AccountUserInfoPanel.class, "ACSD_DESC_AccountUserInfoPanel_EmailField")
         ); // NOI18N

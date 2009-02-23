@@ -209,33 +209,6 @@ made subject to such option by the copyright holder.
   
   <target name="all-installer" description="Dummy target for build system compatibility"/>
 
-  <target name="all-translatedfiles" depends="init">
-    <echo message="Building module translatedfiles..."/>
-    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
-    <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-    <ant dir="../translatedfiles" target="netbeans"/>
-  </target>
-
-  <target name="all-xtest" depends="init">
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
-    <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-    <ant dir="../nbjunit"/>
-    <echo message="Building module xtest..."/>
-    <ant dir="../xtest" antfile="build.xml" target="netbeans"/>
-  </target>
-  
-  <!-- this is project is not a netbeans module project, so we do a no-op
-       here.  The code in appsrvbridge gets built by XXX -->
-  <target name="all-serverplugins/sun/appsrvbridge" depends="init">
-    <echo message="Building module serverplugins/sun/appsrvbridge... NO-OP"/>
-  </target>
-
   <!-- build NBMs for selected modules -->
   <target name="build-nbms" depends="init" description="Build all NBMs, all modules have to be built before proceed">
       <mkdir dir="nbms" />

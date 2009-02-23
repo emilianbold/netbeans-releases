@@ -100,7 +100,7 @@ public class PersistenceManager
   }
 
   public void propertyChange(PropertyChangeEvent evt) {
-    if (evt.getSource() instanceof Breakpoint) {
+    if (evt.getSource() instanceof PythonBreakpoint) {
       Properties.getDefault().getProperties(_DEBUGGER_).
               getProperties(DebuggerManager.PROP_BREAKPOINTS).setArray(
               _PYTHON_,
@@ -120,6 +120,7 @@ public class PersistenceManager
     for (int ii = 0; ii < wkArray.length; ii++) {
       PythonBreakpoint cur = (PythonBreakpoint) wkArray[ii];
       if (cur.getLine() != null) {
+        cur.addPropertyChangeListener(this);
         wk.add(cur);
       }
     }
@@ -128,12 +129,15 @@ public class PersistenceManager
   }
 
   public void breakpointAdded(Breakpoint breakpoint) {
-    Properties p = Properties.getDefault().getProperties(_DEBUGGER_).
-            getProperties(DebuggerManager.PROP_BREAKPOINTS);
-    p.setArray(
-            _PYTHON_,
-            getBreakpoints());
-    breakpoint.addPropertyChangeListener(this);
+    if (breakpoint instanceof PythonBreakpoint) {
+
+      Properties p = Properties.getDefault().getProperties(_DEBUGGER_).
+              getProperties(DebuggerManager.PROP_BREAKPOINTS);
+      p.setArray(
+              _PYTHON_,
+              getBreakpoints());
+      breakpoint.addPropertyChangeListener(this);
+    }
   }
 
   private static Breakpoint[] getBreakpoints() {

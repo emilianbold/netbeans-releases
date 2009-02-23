@@ -550,6 +550,8 @@ public class PluginProperties  {
                                     displayName = NbBundle.getMessage(PluginProperties.class, "LBL_GLASSFISH_V1");  // NOI18N   
                                 } else if (versionId == ServerLocationManager.GF_V2) {
                                     displayName = NbBundle.getMessage(PluginProperties.class, "LBL_GLASSFISH_V2");  // NOI18N
+                                } else if (versionId == ServerLocationManager.GF_V2point1) {
+                                    displayName = NbBundle.getMessage(PluginProperties.class, "LBL_GLASSFISH_V2point1");  // NOI18N
                                 }
                             }
 
