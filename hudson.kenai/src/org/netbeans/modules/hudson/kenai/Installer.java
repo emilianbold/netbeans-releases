@@ -99,7 +99,7 @@ public class Installer extends ModuleInstall {
 
         private synchronized void updateNotifications() {
             // XXX should keep track of which build a notification is for.
-            // Otherwise when the user clears a notifications we might readd it.
+            // Otherwise when the user clears a notification we might readd it.
             clear();
             Collection<HudsonJob> jobs = instance.getPreferredJobs();
             if (jobs.isEmpty()) {
@@ -109,6 +109,7 @@ public class Installer extends ModuleInstall {
                 Notification n;
                 switch (job.getColor()) {
                 case red:
+                    // XXX should check if the user is among the culprits (need API)
                     n = new ProblemNotification(job, true, false);
                     break;
                 case red_anime:
