@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.web.core.syntax.formatting;
 
+import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -48,15 +49,19 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.MockServices;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
+import org.netbeans.modules.css.editor.indent.CssIndentTaskFactory;
 import org.netbeans.modules.css.lexer.api.CSSTokenId;
-import org.netbeans.modules.gsf.GsfIndentTaskFactory;
-import org.netbeans.modules.gsf.GsfReformatTaskFactory;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.Formatter;
+import org.netbeans.modules.html.editor.HTMLKit;
 import org.netbeans.modules.html.editor.NbReaderProvider;
+import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
 import org.netbeans.modules.java.source.parsing.ClassParserFactory;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.save.Reformatter;
 import org.netbeans.modules.web.core.syntax.EmbeddingProviderImpl;
 import org.netbeans.modules.web.core.syntax.JSPKit;
+import org.netbeans.modules.web.core.syntax.indent.JspIndentTaskFactory;
 import org.netbeans.test.web.core.syntax.TestBase2;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -90,16 +95,20 @@ public class JspIndenterTest extends TestBase2 {
         TestLanguageProvider.register(JspTokenId.language());
         TestLanguageProvider.register(JavaTokenId.language());
 
-        GsfIndentTaskFactory cssReformatFactory = new GsfIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/x-css"), cssReformatFactory);
-        GsfIndentTaskFactory htmlReformatFactory = new GsfIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory);
+        CssIndentTaskFactory cssFactory = new CssIndentTaskFactory();
+        MockMimeLookup.setInstances(MimePath.parse("text/x-css"), cssFactory);
+        JspIndentTaskFactory jspReformatFactory = new JspIndentTaskFactory();
+        MockMimeLookup.setInstances(MimePath.parse("text/x-jsp"), new JSPKit("text/x-jsp"), jspReformatFactory, new EmbeddingProviderImpl.Factory());
+        HtmlIndentTaskFactory htmlReformatFactory = new HtmlIndentTaskFactory();
+        MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HTMLKit("text/x-jsp"));
         Reformatter.Factory factory = new Reformatter.Factory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-java"), factory, new JavacParserFactory(), new ClassParserFactory());
-        MockMimeLookup.setInstances(MimePath.parse("text/x-jsp"), new JSPKit("text/x-jsp"), 
-                new EmbeddingProviderImpl.Factory(), new GsfIndentTaskFactory(), new GsfReformatTaskFactory());
+    }
 
-        //MimeLookup.getLookup(MimePath.parse("text/x-jsp")).lookup(EditorKit.class);
+    @Override
+    protected void configureIndenters(final BaseDocument document, final Formatter formatter,
+            final CompilationInfo compilationInfo, boolean indentOnly, String mimeType) throws BadLocationException {
+        // override it because I've already done in setUp()
     }
 
     @Override
@@ -164,6 +173,32 @@ public class JspIndenterTest extends TestBase2 {
 
     public void testFormattingIssue89174() throws Exception {
         reformatFileContents("FormattingProject/web/issue89174.jsp",new IndentPrefs(4,4));
+    }
+
+    public void testIndentation() throws Exception {
+        insertNewline("<jsp:useBean>^", "<jsp:useBean>\n    ^", null);
+        insertNewline("^<jsp:body>", "\n^<jsp:body>", null);
+
+        insertNewline("<jsp:body>\n    <html>^", "<jsp:body>\n    <html>\n        ^", null);
+        insertNewline("<jsp:body>\n^<html>", "<jsp:body>\n\n    ^<html>", null);
+
+        insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>^", "<jsp:body>\n    <html>\n        <jsp:useBean>\n            ^", null);
+        insertNewline("<jsp:body>\n    <html>\n^<jsp:useBean>", "<jsp:body>\n    <html>\n\n        ^<jsp:useBean>", null);
+
+        insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n            <table>^", "<jsp:body>\n    <html>\n        <jsp:useBean>\n            <table>\n                ^", null);
+        insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n^<table>", "<jsp:body>\n    <html>\n        <jsp:useBean>\n\n            ^<table>", null);
+
+        insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>^", "<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n        ^", null);
+        insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n^</jsp:useBean>", "<jsp:body>\n    <html>\n        <jsp:useBean>\n\n        ^</jsp:useBean>", null);
+        insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>^</jsp:useBean>", "<jsp:body>\n    <html>\n        <jsp:useBean>\n        ^</jsp:useBean>", null);
+
+        insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n    </html>^", "<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n    </html>\n    ^", null);
+        insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>^</html>", "<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n    ^</html>", null);
+        insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>^<table>", "<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n        ^<table>", null);
+
+        // TODO: impl matching of INDENT/RETURN and use it to properly match incorrect document:
+        //insertNewline("<jsp:body>\n    <html>^</jsp:body>", "<jsp:body>\n    <html>\n^</jsp:body>", null);
+
     }
 
 }

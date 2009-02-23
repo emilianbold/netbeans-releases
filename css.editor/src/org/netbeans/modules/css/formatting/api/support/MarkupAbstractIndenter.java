@@ -68,8 +68,8 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
     private boolean inUnformattableTagContent;
     private int attributesIndent;
 
-    public MarkupAbstractIndenter(Language<T1> language, Context context, boolean compoundIndent) {
-        super(language, context, compoundIndent);
+    public MarkupAbstractIndenter(Language<T1> language, Context context) {
+        super(language, context);
         stack = new Stack<MarkupItem>();
     }
 
@@ -646,12 +646,6 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
 
     public void setInUnformattableTagContent(boolean inUnformattableTagContent) {
         this.inUnformattableTagContent = inUnformattableTagContent;
-    }
-
-    @Override
-    protected void debugIndentation(JoinedTokenSequence<T1> j, IndenterContextData cd, List<IndentCommand> iis, String text) {
-        super.debugIndentation(j, cd, iis, text);
-        //System.err.println(" #"+getStack());
     }
 
 }

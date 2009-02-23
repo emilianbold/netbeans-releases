@@ -57,7 +57,7 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
     private DTD dtd;
 
     public HtmlIndenter(Context context) {
-        super(HTMLTokenId.language(), context, false);
+        super(HTMLTokenId.language(), context);
         dtd = HTMLSyntaxSupport.get(getDocument()).getDTD();
         assert dtd != null : "cannot find any DTD - perhaps NbReaderProvider.setupReaders() was not called?";
     }

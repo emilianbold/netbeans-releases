@@ -276,6 +276,19 @@ public final class TaskHandler {
         if (items == null) // Do nothing for no items
             return;
 
+        List<IndentTask.FormattingContext> l = new ArrayList<IndentTask.FormattingContext>();
+        for (MimeItem item : items) {
+            if (item.indentTask instanceof IndentTask.ContextAwareIndentTask) {
+                l.add(((IndentTask.ContextAwareIndentTask)item.indentTask).createFormattingContext());
+            }
+        }
+
+        for (MimeItem item : items) {
+            if (item.indentTask instanceof IndentTask.ContextAwareIndentTask) {
+                ((IndentTask.ContextAwareIndentTask)item.indentTask).beforeReindent(l);
+            }
+        }
+
         // Start with the doc's mime type's task
         for (MimeItem item : items) {
             item.runTask();

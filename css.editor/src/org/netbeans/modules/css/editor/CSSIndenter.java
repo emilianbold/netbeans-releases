@@ -61,7 +61,7 @@ public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
     private Stack<CssStackItem> stack;
 
     public CSSIndenter(Context context) {
-        super(CSSTokenId.language(), context, false);
+        super(CSSTokenId.language(), context);
         stack = new Stack<CssStackItem>();
     }
 
@@ -315,14 +315,6 @@ public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
             return "CssStackItem[state="+state+",indent="+indent+",processed="+processed+"]";
         }
 
-    }
-
-    @Override
-    protected void debugIndentation(JoinedTokenSequence<CSSTokenId> j, IndenterContextData cd, List<IndentCommand> iis, String text) {
-        super.debugIndentation(j, cd, iis, text);
-        if (getStack().size() > 0) {
-            System.err.println("      "+getStack());
-        }
     }
 
 }

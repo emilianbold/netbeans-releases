@@ -43,7 +43,6 @@ package org.netbeans.modules.css.gsf;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.css.lexer.api.CSSTokenId;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler;
-import org.netbeans.modules.gsf.api.Formatter;
 import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.SemanticAnalyzer;
@@ -103,16 +102,6 @@ public class CSSLanguage extends DefaultLanguageConfig {
     @Override
     public StructureScanner getStructureScanner() {
         return new CSSStructureScanner();
-    }
-
-    @Override
-    public boolean hasFormatter() {
-        return true;
-    }
-
-    @Override
-    public Formatter getFormatter() {
-        return new CSSFormatter2();
     }
 
     @Override

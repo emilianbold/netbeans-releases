@@ -40,10 +40,13 @@
 package org.netbeans.modules.css.formatting.api.support;
 
 /**
- *
+ * Indentation command descriptor.
  */
 public final class IndentCommand {
 
+    /**
+     * Enumeration of indentation command types.
+     */
     public static enum Type {
 
         /**
@@ -52,27 +55,24 @@ public final class IndentCommand {
         INDENT,
 
         /**
-         * Similar to INDENT but does not need to be finished with RETURN - it
-         * will end automatically on next line which is not CONITNUE. The purpose
-         * is to handle "hanging" indent of multiline statements.
-         */
-        SINGLE_INDENT,
-
-        /**
          * This line should be un-indented.
          */
         RETURN,
 
         /**
-         * This line is continuation of statement from previous line and first
-         * (and only first) occurance of CONTINUE should be indented.
-         */
-        CONTINUE,
-
-        /**
-         * Re-apply indent from previous line.
+         * There was no change, apply whatever indentation was set for
+         * previous line.
          */
         NO_CHANGE,
+
+        /**
+         * This line is continuation of statement from previous line and first
+         * (and only first) occurance of CONTINUE should be indented. Similar
+         * to INDENT but does not need to be finished with RETURN - it
+         * will end automatically on first occurance of command whic is not
+         * CONITNUE.
+         */
+        CONTINUE,
 
         /**
          * Ignore line's formatting, for example content of HTML's <pre> tag
@@ -91,12 +91,14 @@ public final class IndentCommand {
          */
         PRESERVE_INDENTATION,
 
-//        /**
-//         * Sets initial indent of language block. AbstractFormatter class
-//         * sets this indent automatically and client do not have to worry about it.
-//         * More explicitly it is forbidden to set this command in client code.
-//         */
-//        BLOCK_INDENT,
+        /**
+         * Foreign language block between lines carying BLOCK_START and BLOCK_END
+         * will be automatically shifted. Blocks cannot overlap or be nested.
+         * Useful for example in case of JSP's scriptlet tag which contains block
+         * of Java code and which starts with &lt;% and ends with %&gt;.
+         */
+        BLOCK_START,
+        BLOCK_END,
 
         /**
          * Checkpoint to be set whenever indentation code can deduce without
@@ -117,13 +119,11 @@ public final class IndentCommand {
         //INDENT_CHECKPOINT,
 
         /**
-         * Foreign language block between lines carying BLOCK_START and BLOCK_END
-         * will be automatically shift. Blocks cannot overlap or be nested.
-         * Useful for example in case of JSP's scriptlet tag which contains block
-         * of Java code and which starts with <% and ends with %>.
+         * Similar to INDENT but does not need to be finished with RETURN - it
+         * will end automatically on next line which is not CONITNUE. The purpose
+         * is to handle "hanging" indent of multiline statements.
          */
-        BLOCK_START,
-        BLOCK_END,
+        //SINGLE_INDENT,
 
     }
 
@@ -167,6 +167,10 @@ public final class IndentCommand {
         return "IndentCommand[type="+type+
                 (fixedIndentSize != -1 ? " fixedIndent="+fixedIndentSize : "")+
                 " lineOffset="+lineOffset+"]"; // NOI18N
+    }
+
+    void updateOffset(int diff) {
+        lineOffset += diff;
     }
 
 }

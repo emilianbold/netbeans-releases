@@ -57,7 +57,7 @@ public class JspIndenter extends MarkupAbstractIndenter<JspTokenId> {
 //    private boolean inScriptlet;
 
     public JspIndenter(Context context) {
-        super(JspTokenId.language(), context, true);
+        super(JspTokenId.language(), context);
     }
 
     @Override

@@ -25,31 +25,24 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.core.syntax.indent;
+package org.netbeans.modules.css.editor.indent;
 
 import java.util.List;
 import javax.swing.text.BadLocationException;
+import org.netbeans.modules.css.editor.CSSIndenter;
 import org.netbeans.modules.editor.indent.spi.IndentTask.FormattingContext;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
-import org.netbeans.modules.web.core.syntax.formatting.JspIndenter;
 
-/**
- * Implementation of IndentTask for text/x-jsp mimetype.
- *
- * @author Marek Fukala
- */
-                                        
-
-public class JspIndentTask implements IndentTask.ContextAwareIndentTask {
+public class CssIndentTask implements IndentTask.ContextAwareIndentTask {
 
     private Context context;
-    private JspIndenter indenter;
+    private CSSIndenter indenter;
     
-    JspIndentTask(Context context) {
+    CssIndentTask(Context context) {
         this.context = context;
-        indenter = new JspIndenter(context);
+        indenter = new CSSIndenter(context);
     }
 
     public void reindent() throws BadLocationException {

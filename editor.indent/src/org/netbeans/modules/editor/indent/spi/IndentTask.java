@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.editor.indent.spi;
 
+import java.util.List;
 import javax.swing.text.BadLocationException;
 
 /**
@@ -74,6 +75,36 @@ public interface IndentTask {
      * Get an extra locking or null if no extra locking is necessary.
      */
     ExtraLock indentLock();
+
+
+    /**
+     * Enhanced IndentTask capable of creating a formatting context and
+     * sharing that context with other ContextAwareIndentTask.
+     */
+    public interface ContextAwareIndentTask extends IndentTask {
+
+        /**
+         * Create formatting context.
+         */
+        FormattingContext createFormattingContext();
+
+        /**
+         * This method is called before indentation starts with formatting
+         * contexts from all other ContextAwareIndentTasks which will be called
+         * on given document. It allows IndentTasks to discover and communicate
+         * with other IndentTask before they are executed on given document.
+         */
+        void beforeReindent(List<FormattingContext> contexts);
+    }
+    
+
+    /**
+     * Marker interface describing formatting context. It is up to subclasses
+     * to define behaviour.
+     */
+    public interface FormattingContext {
+
+    }
 
     /**
      * Indent task factory produces indent tasks for the given context.

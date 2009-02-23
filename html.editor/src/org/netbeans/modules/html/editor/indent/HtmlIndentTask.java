@@ -41,40 +41,40 @@
 
 package org.netbeans.modules.html.editor.indent;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.List;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.ext.html.HTMLLexerFormatter;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
-import org.openide.filesystems.FileObject;
 
 /**
  * Implementation of IndentTask for text/html mimetype.
  *
  * @author Marek Fukala
  */
-public class HtmlIndentTask implements IndentTask {
+public class HtmlIndentTask implements IndentTask.ContextAwareIndentTask {
 
     private Context context;
+    private HtmlIndenter indenter;
 
-    private FileObject fo;
+//    private FileObject fo;
     
     HtmlIndentTask(Context context) {
         this.context = context;
-        fo = NbEditorUtilities.getFileObject(context.document());
+        //fo = NbEditorUtilities.getFileObject(context.document());
+        indenter = new HtmlIndenter(context);
     }
 
     public void reindent() throws BadLocationException {
-        long st = System.currentTimeMillis();
-        getFormatter().process(context);
-        Logger.getLogger("TIMER").log(Level.FINE, "HTML Reindent",
-                    new Object[] {fo, System.currentTimeMillis() - st});                
+//        long st = System.currentTimeMillis();
+//        getFormatter().process(context);
+//        Logger.getLogger("TIMER").log(Level.FINE, "HTML Reindent",
+//                    new Object[] {fo, System.currentTimeMillis() - st});
+        indenter.reindent();
     }
 
     public ExtraLock indentLock() {
@@ -90,5 +90,13 @@ public class HtmlIndentTask implements IndentTask {
         }
 
         return new HTMLLexerFormatter(languagePath);
+    }
+    
+    public void beforeReindent(List<FormattingContext> contexts) {
+        indenter.beforeReindent(contexts);
+    }
+
+    public FormattingContext createFormattingContext() {
+        return indenter.createFormattingContext();
     }
 }

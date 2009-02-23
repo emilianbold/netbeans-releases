@@ -43,7 +43,6 @@ package org.netbeans.modules.html.editor.gsf;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler;
-import org.netbeans.modules.gsf.api.Formatter;
 import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.SemanticAnalyzer;
@@ -115,16 +114,6 @@ public class HtmlLanguage extends DefaultLanguageConfig {
 
     public KeystrokeHandler getKeystrokeHandler() {
         return new HtmlKeystrokeHandler();
-    }
-
-    @Override
-    public Formatter getFormatter() {
-        return new HtmlFormatter();
-    }
-
-    @Override
-    public boolean hasFormatter() {
-        return true;
     }
 
 }

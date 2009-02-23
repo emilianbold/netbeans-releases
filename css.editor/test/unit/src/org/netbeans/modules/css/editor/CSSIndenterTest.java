@@ -41,6 +41,7 @@ package org.netbeans.modules.css.editor;
 
 import java.util.List;
 import java.util.concurrent.Semaphore;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
@@ -54,15 +55,20 @@ import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.SyntaxParser;
 import org.netbeans.junit.MockServices;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
+import org.netbeans.modules.css.editor.indent.CssIndentTaskFactory;
 import org.netbeans.modules.css.editor.test.TestBase;
 import org.netbeans.modules.css.lexer.api.CSSTokenId;
-import org.netbeans.modules.gsf.GsfIndentTaskFactory;
-import org.netbeans.modules.gsf.GsfReformatTaskFactory;
 import org.netbeans.modules.gsf.GsfTestBase.IndentPrefs;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.Formatter;
 import org.netbeans.modules.html.editor.HTMLKit;
 import org.netbeans.modules.html.editor.NbReaderProvider;
 import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
+import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
 import org.netbeans.modules.java.source.save.Reformatter;
+import org.netbeans.modules.web.core.syntax.EmbeddingProviderImpl;
+import org.netbeans.modules.web.core.syntax.JSPKit;
+import org.netbeans.modules.web.core.syntax.indent.JspIndentTaskFactory;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -87,10 +93,12 @@ public class CSSIndenterTest extends TestBase {
         TestLanguageProvider.register(JspTokenId.language());
         TestLanguageProvider.register(JavaTokenId.language());
 
-        GsfIndentTaskFactory jspReformatFactory = new GsfIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/x-jsp"), jspReformatFactory, new GsfReformatTaskFactory());
-        GsfIndentTaskFactory htmlReformatFactory = new GsfIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new GsfReformatTaskFactory(), new HTMLKit("text/x-jsp"));
+        CssIndentTaskFactory cssFactory = new CssIndentTaskFactory();
+        MockMimeLookup.setInstances(MimePath.parse("text/x-css"), cssFactory);
+        JspIndentTaskFactory jspReformatFactory = new JspIndentTaskFactory();
+        MockMimeLookup.setInstances(MimePath.parse("text/x-jsp"), new JSPKit("text/x-jsp"), jspReformatFactory, new EmbeddingProviderImpl.Factory());
+        HtmlIndentTaskFactory htmlReformatFactory = new HtmlIndentTaskFactory();
+        MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HTMLKit("text/x-jsp"));
         Reformatter.Factory factory = new Reformatter.Factory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-java"), factory);
     }
@@ -118,6 +126,12 @@ public class CSSIndenterTest extends TestBase {
             fail(ex.toString());
             return null;
         }
+    }
+
+    @Override
+    protected void configureIndenters(final BaseDocument document, final Formatter formatter,
+            final CompilationInfo compilationInfo, boolean indentOnly, String mimeType) throws BadLocationException {
+        // override it because I've already done in setUp()
     }
 
     private static class Listener extends EmbeddingUpdater {
