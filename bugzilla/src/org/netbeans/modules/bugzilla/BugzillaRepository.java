@@ -44,10 +44,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JComponent;
@@ -114,6 +112,16 @@ public class BugzillaRepository extends Repository {
 
     public String getDisplayName() {
         return name;
+    }
+
+    public String getUsername() {
+        AuthenticationCredentials c = getTaskRepository().getCredentials(AuthenticationType.REPOSITORY);
+        return c.getUserName();
+    }
+
+    public String getPassword() {
+        AuthenticationCredentials c = getTaskRepository().getCredentials(AuthenticationType.REPOSITORY);
+        return c.getPassword();
     }
 
     public Issue getIssue(String id) {

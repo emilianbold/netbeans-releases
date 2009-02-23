@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.bugzilla.util;
 
-import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -49,19 +48,18 @@ import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugzilla.Bugzilla;
-import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomas Stupka
  */
-// XXX get rid of this
 public class BugzillaUtil {
     public static boolean show(JPanel panel, String title, String okName) {
         JButton ok = new JButton(okName);
-        JButton cancel = new JButton("Cancel");
+        JButton cancel = new JButton(NbBundle.getMessage(BugzillaUtil.class, "LBL_Cancel"));
         NotifyDescriptor descriptor = new NotifyDescriptor (
                 panel,
                 title,

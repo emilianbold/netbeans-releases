@@ -44,9 +44,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
-import org.eclipse.mylyn.commons.net.AuthenticationType;
-import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.openide.util.NbPreferences;
@@ -59,9 +56,9 @@ public class BugzillaConfig {
 
     private static BugzillaConfig instance = null;
     private static final String LAST_CHANGE_FROM = "bugzilla.last_change_from"; // XXX
-    private static final String REPO_NAME     = "bugzilla.repository_"; // XXX
-    private static final String QUERY_NAME    = "bugzilla.query_"; // XXX
-    private static final String DELIMITER     = "<=>";
+    private static final String REPO_NAME        = "bugzilla.repository_";
+    private static final String QUERY_NAME       = "bugzilla.query_";
+    private static final String DELIMITER        = "<=>";
 
     private BugzillaConfig() { }
 
@@ -75,29 +72,6 @@ public class BugzillaConfig {
     public Preferences getPreferences() {
         return NbPreferences.forModule(BugzillaConfig.class);
     }
-//
-//    public void setRepoUsername(String value) {
-//        getPreferences().put(REPO_USERNAME, value);
-//    }
-//
-//    public void setRepoPassword(String value) {
-//        getPreferences().put(REPO_PASSWORD, value);
-//    }
-//    public void setRepoUrl(String value) {
-//        getPreferences().put(REPO_URL, value);
-//    }
-//
-//    public String getRepoUsername() {
-//        return getPreferences().get(REPO_USERNAME, "");
-//    }
-//
-//    public String getRepoPassword() {
-//        return getPreferences().get(REPO_PASSWORD, "");
-//    }
-//
-//    public String getRepoUrl() {
-//        return getPreferences().get(REPO_URL, "");
-//    }
 
     public void putQuery(BugzillaRepository repository, BugzillaQuery query) {
         getPreferences().put(getQueryKey(repository.getDisplayName(), query.getDisplayName()), query.getUrlParameters() + DELIMITER + query.getLastRefresh());
@@ -107,7 +81,6 @@ public class BugzillaConfig {
         getPreferences().remove(getQueryKey(repository.getDisplayName(), query.getDisplayName()));
     }
 
-    // XXX move to query
     public BugzillaQuery getQuery(BugzillaRepository repository, String queryName) {
         String value = getStoredQuery(repository, queryName);
         if(value == null) {
@@ -135,11 +108,10 @@ public class BugzillaConfig {
     }
 
     public void putRepository(String repoName, BugzillaRepository repository) {
-        AuthenticationCredentials c = repository.getTaskRepository().getCredentials(AuthenticationType.REPOSITORY);
-        String user = c.getUserName();
-        String password = BugtrackingUtil.scramble(c.getPassword());
+        String user = repository.getUsername();
+        String password = BugtrackingUtil.scramble(repository.getPassword());
         // XXX AuthenticationType.HTTP, AuthenticationType.PROXY
-        String url = repository.getTaskRepository().getUrl();
+        String url = repository.getUrl();
         getPreferences().put(REPO_NAME + repoName, url + DELIMITER + user + DELIMITER + password);
     }
 

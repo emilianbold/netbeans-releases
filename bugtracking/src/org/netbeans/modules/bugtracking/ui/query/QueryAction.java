@@ -45,6 +45,7 @@ import org.openide.util.HelpCtx;
 
 import java.awt.event.ActionEvent;
 import javax.swing.SwingUtilities;
+import org.openide.util.NbBundle;
 
 /**
  * 
@@ -58,7 +59,7 @@ public class QueryAction extends SystemAction {
     }
 
     public String getName() {
-        return "&Query...";
+        return NbBundle.getMessage(QueryAction.class, "CTL_QueryAction");
     }
 
     public HelpCtx getHelpCtx() {

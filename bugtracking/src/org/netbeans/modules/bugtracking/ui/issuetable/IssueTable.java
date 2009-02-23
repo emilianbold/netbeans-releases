@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.bugtracking.ui.issuetable;
 
-import javax.swing.event.TableModelEvent;
 import java.awt.Component;
 import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
@@ -70,7 +69,6 @@ import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
@@ -99,36 +97,26 @@ public class IssueTable implements MouseListener, AncestorListener {
     private Filter filter;
 
     private static MessageFormat issueUnseenFormat = getFormat("issueUnseenFormat");     // NOI18N
-    private static MessageFormat issueObsoleteFormat = getFormat("issueObsoleteFormat");           // NOI18N
+    private static MessageFormat issueObsoleteFormat = getFormat("issueObsoleteFormat"); // NOI18N
     private static MessageFormat issueModifiedFormat = getFormat("issueModifiedFormat"); // NOI18N
 
-    private static Icon seenHeaderIcon;
-    private static Icon seenValueIcon;
-    static {
-        seenHeaderIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/seen-header.png"));
-        seenValueIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/seen-value.png"));
-    }    
+    private static Icon seenHeaderIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/seen-header.png")); // NOI18N
+    private static Icon seenValueIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/seen-value.png")); // NOI18N
 
     private static final Comparator NodeComparator = new Comparator() {
         public int compare(Object o1, Object o2) {
             Node.Property p1 = (Node.Property) o1;
             Node.Property p2 = (Node.Property) o2;
-            String sk1 = (String) p1.getValue("sortkey"); // NOI18N
+            Integer sk1 = (Integer) p1.getValue("sortkey"); // NOI18N
             if (sk1 != null) {
-                String sk2 = (String) p2.getValue("sortkey"); // NOI18N
-                return sk1.compareToIgnoreCase(sk2);
+                Integer sk2 = (Integer) p2.getValue("sortkey"); // NOI18N
+                return sk1.compareTo(sk2);
             } else {
                 try {
-                    assert p1.getValue() instanceof Comparable;
-                    if (p1.getValue() instanceof String) {
-                        String s1 = (String) p1.getValue();
-                        String s2 = (String) p2.getValue();
-                        return s1.compareToIgnoreCase(s2);
-                    } else {
-                        Comparable c1 = (Comparable) p1.getValue();
-                        Comparable c2 = (Comparable) p2.getValue();
-                        return c1.compareTo(c2);
-                    }
+                    assert p1 instanceof Comparable;
+                    Comparable c1 = (Comparable) p1;
+                    Comparable c2 = (Comparable) p2;
+                    return c1.compareTo(c2);
                 } catch (Exception e) {
                     BugtrackingManager.LOG.log(Level.SEVERE, null, e);
                     return 0;
@@ -161,7 +149,7 @@ public class IssueTable implements MouseListener, AncestorListener {
         table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IssueTable.class, "ACSD_IssueTable")); // NOI18N
         initColumns();
         table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put(
-                KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction");
+                KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction"); // NOI18N
     }
 
     public void setFilter(Filter filter) {
@@ -310,7 +298,7 @@ public class IssueTable implements MouseListener, AncestorListener {
                     Issue issue = p.getIssue();
                     int status = query.getIssueStatus(issue);
                     if(!issue.wasSeen() || status == Query.ISSUE_STATUS_OBSOLETE) {
-                        sb.append("<html>");
+                        sb.append("<html>"); // NOI18N
                         switch(status) {
                             case Query.ISSUE_STATUS_NEW :
                                 issueUnseenFormat.format(new Object[] {s}, sb, null);
@@ -322,7 +310,7 @@ public class IssueTable implements MouseListener, AncestorListener {
                                 issueModifiedFormat.format(new Object[] {s}, sb, null);
                                 break;
                         }
-                        sb.append("</html>");
+                        sb.append("</html>"); // NOI18N
                     } else {
                         sb.append(s);
                     }
@@ -388,7 +376,7 @@ public class IssueTable implements MouseListener, AncestorListener {
 
     private class SeenDescriptor extends ColumnDescriptor {
         public SeenDescriptor() {
-            super(Issue.LABEL_NAME_SEEN, Boolean.class, "", NbBundle.getBundle(Issue.class).getString("CTL_Issue_Seen_Desc"));
+            super(Issue.LABEL_NAME_SEEN, Boolean.class, "", NbBundle.getBundle(Issue.class).getString("CTL_Issue_Seen_Desc")); // NOI18N
         }
     }
 }

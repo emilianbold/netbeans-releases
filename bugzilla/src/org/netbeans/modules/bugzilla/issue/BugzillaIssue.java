@@ -176,7 +176,7 @@ public class BugzillaIssue extends Issue {
         BugzillaTaskAttachmentHandler.AttachmentPartSource source = new BugzillaTaskAttachmentHandler.AttachmentPartSource(attachmentSource);
 
         try {
-            Bugzilla.getInstance().getRepositoryConnector().getClientManager().getClient(getRepository(), new NullProgressMonitor()).
+            Bugzilla.getInstance().getRepositoryConnector().getClientManager().getClient(getTaskRepository(), new NullProgressMonitor()).
                 postAttachment(getID(), comment, desc, attachmentSource.getContentType(), false, source, new NullProgressMonitor());
         } catch (HttpException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
@@ -204,8 +204,12 @@ public class BugzillaIssue extends Issue {
         return getMappedValue(TaskAttribute.DESCRIPTION); // XXX WTF???!!!
     }
 
-    TaskRepository getRepository() {
+    TaskRepository getTaskRepository() {
         return repository.getTaskRepository();
+    }
+
+    BugzillaRepository getRepository() {
+        return repository;
     }
      
     String getStatus() {
@@ -302,7 +306,7 @@ public class BugzillaIssue extends Issue {
         }
         try {
             // done
-            RepositoryResponse rr = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(getRepository(), data, attrs, new NullProgressMonitor());
+            RepositoryResponse rr = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(getTaskRepository(), data, attrs, new NullProgressMonitor());
         } catch (CoreException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
         }
