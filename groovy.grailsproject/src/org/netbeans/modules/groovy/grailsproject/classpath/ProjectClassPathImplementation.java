@@ -177,14 +177,12 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, F
                     }
                 }
 
-                System.out.println(pluginsDirFile.getAbsolutePath());
                 return pluginsDirFile;
 //            } else {
 //
 //            }
         }
 
-        System.out.println(new File(projectRoot, "plugins").getAbsolutePath());
         return new File(projectRoot, "plugins"); // NOI18N
     }
 
