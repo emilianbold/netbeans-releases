@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.css.formatting.api.support;
 
-import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
 
@@ -85,20 +84,6 @@ public final class IndenterContextData<T1 extends TokenId> {
 
     public boolean isBlankLine() {
         return blankLine;
-    }
-
-    // TODO: rename this method:
-    public boolean containsLanguage() {
-        joinedTS.move(lineStartOffset);
-        boolean found = false;
-        while (joinedTS.moveNext() && joinedTS.offset() <=lineEndOffset) {
-            if (joinedTS.embedded() == null) {
-                found = true;
-                break;
-            }
-        }
-        joinedTS.move(lineStartOffset);
-        return found;
     }
 
     public boolean isLanguageBlockStart() {

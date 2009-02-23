@@ -73,7 +73,40 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         stack = new Stack<MarkupItem>();
     }
 
-    protected Stack<MarkupItem> getStack() {
+    abstract protected boolean isOpenTagNameToken(Token<T1> token);
+    abstract protected boolean isCloseTagNameToken(Token<T1> token);
+    /**  <   */
+    abstract protected boolean isStartTagSymbol(Token<T1> token);
+    /**  </   */
+    abstract protected boolean isStartTagClosingSymbol(Token<T1> token);
+    /**  >    */
+    abstract protected boolean isEndTagSymbol(Token<T1> token);
+    /**  />    */
+    abstract protected boolean isEndTagClosingSymbol(Token<T1> token);
+
+    abstract protected boolean isTagArgumentToken(Token<T1> token);
+
+    abstract protected boolean isBlockCommentToken(Token<T1> token);
+
+    abstract protected boolean isTagContentToken(Token<T1> token);
+
+    abstract protected boolean isClosingTagOptional(String tagName);
+
+    abstract protected boolean isOpeningTagOptional(String tagName);
+
+    abstract protected Boolean isEmptyTag(String tagName);
+
+    abstract protected boolean isTagContentUnformattable(String tagName);
+
+    abstract protected Set<String> getTagChildren(String tagName);
+
+    abstract protected boolean isPreservedLine(Token<T1> token, IndenterContextData<T1> context);
+
+    abstract protected boolean isForeignLanguageStartToken(Token<T1> token);
+
+    abstract protected boolean isForeignLanguageEndToken(Token<T1> token);
+
+    private Stack<MarkupItem> getStack() {
         return stack;
     }
 
@@ -81,7 +114,9 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
     protected int getFormatStableStart(JoinedTokenSequence<T1> ts, int startOffset, int endOffset) {
 
         // find open tag (with manadatory close tag) we are inside and use it
-        // as formatting start
+        // as formatting start; by "we are inside" is meant that all tags between
+        // startOffset and endOffset lies wihtin it - that's why we start searching
+        // form endOffset here:
         ts.move(endOffset, false);
 
         // go backwards and find a tag in which reformatting area lies:
@@ -96,23 +131,6 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             }
         }
 
-//        try {
-//            int offset = ts.offset();
-//            do {
-//                // now go backward and find opening tag on the beginning of line:
-//                int firstNonWhite = Utilities.getRowFirstNonWhite(getDocument(), offset);
-//                if (firstNonWhite != -1) {
-//                    Token<T1> token = LexUtilities.getTokenAtOffset(ts, firstNonWhite);
-//                    if (token.id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
-//                        return firstNonWhite;
-//                    }
-//                }
-//                offset = Utilities.getRowStart(getDocument(), offset)-1;
-//            } while (offset > 0);
-//        } catch (BadLocationException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
-
         // now go backward and find opening tag on the beginning of line:
         while (ts.movePrevious()) {
             Token tk = ts.token();
@@ -126,21 +144,12 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-//                int index = ts.index();
-//                if (ts.movePrevious()) {
-//                    tk = LexUtilities.findPrevious(ts, getWhiteSpaceTokens());
-//                    if (tk.id() == HTMLTokenId.EOL) {
-//                        return index;
-//                    }
-//                }
-//                ts.moveIndex(index);
-//                ts.movePrevious();
             }
         }
         return LexUtilities.getTokenSequenceStartOffset(ts);
     }
 
-    protected final MarkupItem createMarkupItem(Token<T1> token, boolean openingTag, int indentation) {
+    private final MarkupItem createMarkupItem(Token<T1> token, boolean openingTag, int indentation) {
         String tagName = token.text().toString();
         if (openingTag) {
             boolean optionalEnd = isClosingTagOptional(token.text().toString());
@@ -189,35 +198,6 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         return false;
     }
 
-    abstract protected boolean isOpenTagNameToken(Token<T1> token);
-    abstract protected boolean isCloseTagNameToken(Token<T1> token);
-    /**  <   */
-    abstract protected boolean isStartTagSymbol(Token<T1> token);
-    /**  </   */
-    abstract protected boolean isStartTagClosingSymbol(Token<T1> token);
-    /**  >    */
-    abstract protected boolean isEndTagSymbol(Token<T1> token);
-    /**  />    */
-    abstract protected boolean isEndTagClosingSymbol(Token<T1> token);
-
-    abstract protected boolean isTagArgumentToken(Token<T1> token);
-
-    abstract protected boolean isBlockCommentToken(Token<T1> token);
-
-    abstract protected boolean isTagContentToken(Token<T1> token);
-
-    abstract protected boolean isClosingTagOptional(String tagName);
-
-    abstract protected boolean isOpeningTagOptional(String tagName);
-
-    abstract protected Boolean isEmptyTag(String tagName);
-
-    abstract protected boolean isTagContentUnformattable(String tagName);
-
-    abstract protected Set<String> getTagChildren(String tagName);
-
-    abstract protected boolean isPreservedLine(Token<T1> token, IndenterContextData<T1> context);
-
     private void getIndentFromState(List<IndentCommand> iis, boolean updateState, int lineStartOffset) {
         Stack<MarkupItem> fileStack = getStack();
 
@@ -261,35 +241,6 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         List<IndentCommand> iis = new ArrayList<IndentCommand>();
         getIndentFromState(iis, true, context.getLineStartOffset());
 
-//        // find index of last stack item which was not processed:
-//        int lastUnprocessedItem = fileStack.size();
-//        for (int i = fileStack.size()-1; i>=0; i--) {
-//            if (!fileStack.get(i).processed) {
-//                lastUnprocessedItem = i;
-//            } else {
-//                break;
-//            }
-//
-//        }
-//        // iterate over stack state and generated indent command for current line:
-//        for (int i=lastUnprocessedItem; i< fileStack.size(); i++) {
-//            MarkupItem item = fileStack.get(i);
-//            assert !item.processed : item;
-//            if (!item.empty) {
-//                iis.add(new IndentCommand(item.openingTag ? IndentCommand.Type.INDENT : IndentCommand.Type.RETURN,
-//                    context.getLineStartOffset()));
-//            }
-//            item.processed = true;
-//        }
-//        if (inOpeningTagAttributes) {
-//            IndentCommand ii = new IndentCommand(IndentCommand.Type.CONTINUE, context.getLineStartOffset());
-//            if (getAttributesIndent() != -1) {
-//                ii.setFixedIndentSize(getAttributesIndent());
-//            }
-//            iis.add(ii);
-//        }
-//        removeFullyProcessedTags();
-
         JoinedTokenSequence<T1> ts = context.getJoinedTokenSequences();
         ts.move(context.getLineStartOffset());
 
@@ -321,7 +272,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 int index = ts.index();
                 int offset = ts.offset();
                 ts.movePrevious();
-                Token<T1> tk = LexUtilities.findPrevious(ts, getWhiteSpaceTokens());
+                Token<T1> tk = findPreviousNonWhiteSpaceToken(ts);
                 if (isOpenTagNameToken(tk)) {
                     setAttributesIndent(offset - context.getLineNonWhiteStartOffset());
                 }
@@ -354,9 +305,9 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 }
             } else if (isPreservedLine(token, context)) {
                 iis.add(new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset()));
-            } else if (isInlineBlockStartToken(token)) {
+            } else if (isForeignLanguageStartToken(token)) {
                 iis.add(new IndentCommand(IndentCommand.Type.BLOCK_START, context.getLineStartOffset()));
-            } else if (isInlineBlockEndToken(token)) {
+            } else if (isForeignLanguageEndToken(token)) {
                 iis.add(new IndentCommand(IndentCommand.Type.BLOCK_END, context.getLineStartOffset()));
             }
         }
@@ -414,7 +365,12 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         return iis;
     }
 
-    public static class MarkupItem {
+    private Token<T1> findPreviousNonWhiteSpaceToken(JoinedTokenSequence<T1> ts) {
+        while (isWhiteSpaceToken(ts.token()) && ts.movePrevious()) {}
+        return ts.token();
+    }
+
+    private static class MarkupItem {
         public String tagName;
         public boolean openingTag;
         public int indentLevel;
@@ -452,7 +408,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
     }
 
 
-    public void addTags(List<MarkupItem> lineItems) {
+    private void addTags(List<MarkupItem> lineItems) {
         // if a tag was opened and closed within one line then it can be ignored:
         lineItems = eliminateTagsOpenedAndClosedOnOneLine(lineItems);
 
@@ -623,28 +579,28 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         // XXX: TODO: impl this
     }
 
-    public boolean isInOpeningTagAttributes() {
+    private boolean isInOpeningTagAttributes() {
         return inOpeningTagAttributes;
     }
 
-    public void setInOpeningTagAttributes(boolean inOpeningTagAttributes) {
+    private void setInOpeningTagAttributes(boolean inOpeningTagAttributes) {
         this.inOpeningTagAttributes = inOpeningTagAttributes;
         attributesIndent = -1;
     }
 
-    public int getAttributesIndent() {
+    private int getAttributesIndent() {
         return attributesIndent;
     }
 
-    public void setAttributesIndent(int attributesIndent) {
+    private void setAttributesIndent(int attributesIndent) {
         this.attributesIndent = attributesIndent;
     }
 
-    public boolean isInUnformattableTagContent() {
+    private boolean isInUnformattableTagContent() {
         return inUnformattableTagContent;
     }
 
-    public void setInUnformattableTagContent(boolean inUnformattableTagContent) {
+    private void setInUnformattableTagContent(boolean inUnformattableTagContent) {
         this.inUnformattableTagContent = inUnformattableTagContent;
     }
 

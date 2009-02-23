@@ -65,7 +65,7 @@ public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
         stack = new Stack<CssStackItem>();
     }
 
-    protected Stack<CssStackItem> getStack() {
+    private Stack<CssStackItem> getStack() {
         return stack;
     }
 
@@ -81,11 +81,6 @@ public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
     }
 
     @Override
-    protected List<CSSTokenId> getWhiteSpaceTokens() {
-        return Collections.singletonList(CSSTokenId.S);
-    }
-
-    @Override
     protected int getFormatStableStart(JoinedTokenSequence<CSSTokenId> ts, int startOffset, int endOffset) {
         ts.move(startOffset);
 
@@ -93,8 +88,7 @@ public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
             return LexUtilities.getTokenSequenceStartOffset(ts);
         }
 
-        // Look backwards to find a suitable context - a class, module or method definition
-        // which we will assume is properly indented and balanced
+        // Look backwards to find a suitable context - beginning of a rule
         do {
             Token<CSSTokenId> token = ts.token();
             TokenId id = token.id();
@@ -292,7 +286,7 @@ public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
         return false;
     }
 
-    public static enum StackItemState {
+    private static enum StackItemState {
         IN_RULE,
         IN_VALUE,
         RULE_FINISHED,
@@ -300,12 +294,12 @@ public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
         ;
     }
 
-    public static class CssStackItem  {
+    private static class CssStackItem  {
         private StackItemState state;
         private Boolean processed;
         private int indent;
 
-        public CssStackItem(StackItemState state) {
+        private CssStackItem(StackItemState state) {
             this.state = state;
             this.indent = -1;
         }

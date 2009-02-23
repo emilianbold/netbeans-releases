@@ -79,15 +79,15 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
     public AbstractIndenter(Language<T1> language, Context context) {
         this.language = language;
         this.context = context;
-        initialize();
+        indentationSize = IndentUtils.indentLevelSize(getDocument());
         formattingContext = new IndenterFormattingContext(getDocument());
     }
 
-    public IndentTask.FormattingContext createFormattingContext() {
+    public final IndentTask.FormattingContext createFormattingContext() {
         return formattingContext;
     }
 
-    public void beforeReindent(List<IndentTask.FormattingContext> contexts) {
+    public final void beforeReindent(List<IndentTask.FormattingContext> contexts) {
         IndenterFormattingContext first = null;
         IndenterFormattingContext last = null;
         for (IndentTask.FormattingContext ctx : contexts) {
@@ -108,10 +108,6 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         last.setLastIndenter();
     }
 
-    protected void initialize() {
-        indentationSize = IndentUtils.indentLevelSize(getDocument());
-    }
-
     protected final int getIndentationSize() {
         return indentationSize;
     }
@@ -129,35 +125,30 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
     }
 
     /**
-     * Iterate backwards from given offset and return offset in document which
-     * is good start to base formatting of the rest of document on.
+     * Iterate backwards from given start offset and return offset in document which
+     * is good start to base formatting of document between given offsets. Returned
+     * formatting start should ideally be a begining of language block which
+     * encompasses everything between startOffset and endOffset.
+     *
+     * @return offset representing stable start for formatting
      */
     abstract protected int getFormatStableStart(JoinedTokenSequence<T1> ts, int startOffset, int endOffset);
 
+    /**
+     * Calculate and return list of indentation commands for the given line.
+     *
+     * @param context descriptor of line to be formatted
+     * @param preliminaryNextLineIndent list of indentation commands to apply
+     *  for next lines based on available data; correctness is limited as nothing
+     *  is known about next line yet
+     * @return list of indentation commands to apply when formatting this line
+     */
     abstract protected List<IndentCommand> getLineIndent(IndenterContextData<T1> context, List<IndentCommand> preliminaryNextLineIndent);
 
-    abstract protected List<T1> getWhiteSpaceTokens();
-
-    protected boolean isWhiteSpaceToken(Token<T1> token) {
-        return getWhiteSpaceTokens().contains(token.id());
-    }
-
-
-
-
-
-    // TODO: refactor these two methods:
-    protected boolean isInlineBlockStartToken(Token<T1> token) {
-        return false;
-    }
-    protected boolean isInlineBlockEndToken(Token<T1> token) {
-        return false;
-    }
-
-
-
-
-    
+    /**
+     * Is this whitespace token?
+     */
+    abstract protected boolean isWhiteSpaceToken(Token<T1> token);
 
 //    private boolean isWithinLanguage(int startOffset, int endOffset) {
 //        for (Context.Region r : context.indentRegions()) {
@@ -170,7 +161,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
 //        return false;
 //    }
 
-    public void reindent() {
+    public final void reindent() {
         formattingContext.disableListener();
         try {
             if (!formattingContext.isFirstIndenter()) {
@@ -666,7 +657,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         return lps;
     }
 
-    public final class LinePair {
+    private final class LinePair {
         private int startingLine;
         private int endingLine;
 
@@ -711,7 +702,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
      * If line does not start with language of the formatter then line.indentThisLine
      * is set to false.
      */
-    protected void processLanguage(JoinedTokenSequence<T1> joinedTS, List<LinePair> lines,
+    private void processLanguage(JoinedTokenSequence<T1> joinedTS, List<LinePair> lines,
             int overallStartOffset, int overallEndOffset,
             List<Line> lineIndents) throws BadLocationException {
 
@@ -1058,7 +1049,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         return null;
     }
 
-    protected void applyIndents(final List<Line> indentedLines,
+    private void applyIndents(final List<Line> indentedLines,
             final int lineStart, final int lineEnd, final boolean justAfterOurLanguage) {
         getDocument().runAtomic(new Runnable() {
             public void run() {
@@ -1071,7 +1062,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         });
     }
 
-    protected void applyIndents0(List<Line> indentedLines,
+    private void applyIndents0(List<Line> indentedLines,
             int lineStart, int lineEnd, boolean justAfterOurLanguage) throws BadLocationException {
 
         if (DEBUG) {
@@ -1284,7 +1275,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         System.err.println(sb.toString());
     }
 
-    public static final class Line {
+    static final class Line {
         private List<IndentCommand> lineIndent;
         private List<IndentCommand> preliminaryNextLineIndent;
         private int offset;

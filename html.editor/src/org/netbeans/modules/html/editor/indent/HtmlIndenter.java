@@ -40,8 +40,6 @@
 package org.netbeans.modules.html.editor.indent;
 
 import org.netbeans.modules.css.formatting.api.support.MarkupAbstractIndenter;
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -62,18 +60,13 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
         assert dtd != null : "cannot find any DTD - perhaps NbReaderProvider.setupReaders() was not called?";
     }
 
-    protected DTD getDTD() {
+    private DTD getDTD() {
         return dtd;
     }
 
     @Override
-    protected List<HTMLTokenId> getWhiteSpaceTokens() {
-        return Collections.singletonList(HTMLTokenId.WS);
-    }
-
-    @Override
     protected boolean isWhiteSpaceToken(Token<HTMLTokenId> token) {
-        return getWhiteSpaceTokens().contains(token.id()) ||
+        return token.id() == HTMLTokenId.WS ||
                 (token.id() == HTMLTokenId.TEXT && token.text().toString().replace("\n", "").replace("\r", "").trim().length() == 0);
     }
 
@@ -192,16 +185,7 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
             }
         }
         if (tagName.equalsIgnoreCase("HTML")) {
-
-
-
-
-
-            // XXXXXXXXXXXXXXXXX
-
-
-
-
+            // XXXXXXXXXXXXXXXXX TODO:
             set.add("BODY");
         }
         return set;
@@ -215,6 +199,18 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
                 return true;
             }
         }
+        return false;
+    }
+
+    @Override
+    protected boolean isForeignLanguageStartToken(Token<HTMLTokenId> token) {
+        // TODO: should probabaly return <SCRIPT>; will need token context to do that
+        return false;
+    }
+
+    @Override
+    protected boolean isForeignLanguageEndToken(Token<HTMLTokenId> token) {
+        // TODO: should probabaly return <SCRIPT>; will need token context to do that
         return false;
     }
 

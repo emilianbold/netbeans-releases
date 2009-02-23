@@ -140,7 +140,7 @@ public final class IndenterFormattingContext implements IndentTask.FormattingCon
         doc.putProperty(LISTENER, null);
     }
 
-    public List<List<AbstractIndenter.Line>> getIndentationData() {
+    List<List<AbstractIndenter.Line>> getIndentationData() {
         return (List<List<AbstractIndenter.Line>>)doc.getProperty(DATA);
     }
 

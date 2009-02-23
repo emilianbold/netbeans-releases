@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.web.core.syntax.formatting;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
@@ -61,9 +59,10 @@ public class JspIndenter extends MarkupAbstractIndenter<JspTokenId> {
     }
 
     @Override
-    protected List<JspTokenId> getWhiteSpaceTokens() {
-        return Collections.singletonList(JspTokenId.WHITESPACE);
+    protected boolean isWhiteSpaceToken(Token<JspTokenId> token) {
+        return token.id() == JspTokenId.WHITESPACE;
     }
+
 
     @Override
     protected boolean isOpenTagNameToken(Token<JspTokenId> token) {
@@ -147,32 +146,11 @@ public class JspIndenter extends MarkupAbstractIndenter<JspTokenId> {
                 return true;
             }
         }
-//        if (token.id() == JspTokenId.SYMBOL2) {
-//            if ("<%".equals(text)) {
-//                inScriptlet = true;
-//            } else if ("%>".equals(text)) {
-//                inScriptlet = false;
-//            }
-//        }
-//        if (inScriptlet) {
-//            try {
-//                int start = context.getLineStartOffset();
-//                int end = context.getLineEndOffset();
-//                int length = end - start;
-//                text = getDocument().getText(start, length).trim();
-//                if (!text.contains("<%") && !text.startsWith("%>")) {
-//                    return true;
-//                }
-//            } catch (BadLocationException ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-//
-//        }
         return false;
     }
 
     @Override
-    protected boolean isInlineBlockStartToken(Token<JspTokenId> token) {
+    protected boolean isForeignLanguageStartToken(Token<JspTokenId> token) {
         return token.id() == JspTokenId.SYMBOL2 && (
                 token.text().toString().equals("<%") || 
                 token.text().toString().equals("<%=") ||
@@ -180,7 +158,7 @@ public class JspIndenter extends MarkupAbstractIndenter<JspTokenId> {
     }
 
     @Override
-    protected boolean isInlineBlockEndToken(Token<JspTokenId> token) {
+    protected boolean isForeignLanguageEndToken(Token<JspTokenId> token) {
         return token.id() == JspTokenId.SYMBOL2 && token.text().toString().equals("%>");
     }
 
