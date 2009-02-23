@@ -51,6 +51,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.items.ItemCD;
 import org.netbeans.modules.vmd.midp.components.items.SpacerCD;
 
@@ -79,7 +80,8 @@ public class SpacerDisplayPresenter extends ScreenDisplayPresenter {
 
 
 
-        panel.setLayout(new FlowLayout() {
+        panel.setLayout(//new FlowLayout() {
+                new BoxLayout(panel, BoxLayout.LINE_AXIS ){
 
             @Override
             public void layoutContainer(Container parent) {
@@ -124,22 +126,36 @@ public class SpacerDisplayPresenter extends ScreenDisplayPresenter {
         int sepHeight = (int)separator.getMinimumSize().getHeight();
         innerPanel.setMinimumSize( new Dimension( minWidth , sepHeight));
 
-        int prefHeight = Integer.parseInt(getComponent().readProperty(
-                ItemCD.PROP_PREFERRED_HEIGHT).getPrimitiveValue().toString());
-        int prefWidth = Integer.parseInt(getComponent().readProperty(
-                ItemCD.PROP_PREFERRED_WIDTH).getPrimitiveValue().toString());
+        int prefHeight = -1;
+        int prefWidth = -1;
+        PropertyValue val = getComponent().readProperty(ItemCD.PROP_PREFERRED_HEIGHT);
+        if ( val!= null && val .getPrimitiveValue()!= null ) {
+            prefHeight = Integer.valueOf(val.getPrimitiveValue().toString());
+        }
+
+        val = getComponent().readProperty(ItemCD.PROP_PREFERRED_WIDTH);
+        if ( val!= null && val .getPrimitiveValue()!= null ) {
+            prefWidth = Integer.valueOf(val.getPrimitiveValue().toString());
+        }
 
         if ( prefHeight == -1 ){
-            prefHeight = minHeight;
+            panel.setPreferredSize( null );
         }
-        if ( prefWidth == -1){
-            prefWidth = minWidth;
+        else {
+            panel.setPreferredSize( new Dimension( (int)panel.getPreferredSize().
+                    getWidth() ,prefHeight ));
         }
 
-        panel.setPreferredSize( new Dimension( (int)panel.getPreferredSize().getWidth() , prefHeight));
-
-        innerPanel.setPreferredSize( new Dimension( prefWidth , (int)separator.getPreferredSize().getHeight()) );
-        innerPanel.setMaximumSize( new Dimension( prefWidth , (int) separator.getMaximumSize().getHeight()) );
+        if ( prefWidth ==-1 ){
+            innerPanel.setPreferredSize( null );
+            innerPanel.setMaximumSize( null );
+        }
+        else {
+            innerPanel.setPreferredSize( new Dimension(prefWidth ,
+                    (int)separator.getPreferredSize().getHeight()) );
+            innerPanel.setMaximumSize( new Dimension( prefWidth ,
+                    (int) separator.getMaximumSize().getHeight()) );
+        }
 
         innerPanel.invalidate();
         innerPanel.revalidate();

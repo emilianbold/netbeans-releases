@@ -284,7 +284,7 @@ public class CallStackModel extends ViewModelSupport
     
     private String getFile( Stack stack ){
         String fileName = stack.getFileName();
-        FileObject fileObject = getSessionId().getFileObjectByRemote( fileName );
+        FileObject fileObject = getSessionId().toSourceFile( fileName );
         if ( fileObject == null ){
             // TODO inform somehow about local file is not found , output remote file
             return fileName;

@@ -57,6 +57,7 @@ import org.netbeans.modules.subversion.client.WizardStepProgressSupport;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -220,7 +221,7 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
                 }
 
                 if(info != null) {
-                    SVNUrl repositoryUrl = info.getRepository();
+                    SVNUrl repositoryUrl = SvnUtils.decode(info.getRepository());
                     if(repositoryUrl==null) {
                         // XXX see issue #72810 and #72921. workaround!
                         repositoryUrl = rc.getSvnUrl();

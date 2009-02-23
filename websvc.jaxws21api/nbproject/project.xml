@@ -57,9 +57,18 @@ made subject to such option by the copyright holder.
                 </dependency>
             </module-dependencies>
             <public-packages>
-                <subpackages>javax.jws</subpackages>
-                <subpackages>javax.xml</subpackages>
-                <subpackages>javax.annotation</subpackages>
+                <package>javax.annotation</package>
+                <package>javax.annotation.security</package>
+                <package>javax.jws</package>
+                <package>javax.jws.soap</package>
+                <package>javax.xml.soap</package>
+                <package>javax.xml.ws</package>
+                <package>javax.xml.ws.handler</package>
+                <package>javax.xml.ws.handler.soap</package>
+                <package>javax.xml.ws.http</package>
+                <package>javax.xml.ws.soap</package>
+                <package>javax.xml.ws.spi</package>
+                <package>javax.xml.ws.wsaddressing</package>
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxws21/api/jaxws-api.jar</runtime-relative-path>

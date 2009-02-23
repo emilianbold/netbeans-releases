@@ -116,7 +116,13 @@ implements LookupListener {
     }
     
     private ModuleLayeredFileSystem(FileSystem writableLayer, boolean addLookup, FileSystem[] otherLayers, LayerCacheManager mgr, FileSystem cacheLayer) throws IOException {
-        super(appendLayers(writableLayer, addLookup, otherLayers, cacheLayer, addLookup));
+        super(
+            appendLayers(
+                writableLayer, addLookup, otherLayers,
+                cacheLayer == null ? mgr.createEmptyFileSystem() : cacheLayer,
+                addLookup
+            )
+        );
         this.manager = mgr;
         this.writableLayer = writableLayer;
         this.otherLayers = otherLayers;
@@ -160,7 +166,7 @@ implements LookupListener {
                 }
             }
         }
-        return fs != null ? fs : mgr.createEmptyFileSystem();
+        return fs;
     }
     
     private static FileSystem[] appendLayers(FileSystem fs1, boolean addLookup, FileSystem[] fs2s, FileSystem fs3, boolean addClasspathLayers) {
@@ -319,8 +325,15 @@ implements LookupListener {
             }
 
         }
-        Updater u = new Updater();
-        runAtomicAction(u);
+        if (this.urls == null && cacheLayer != null) {
+            // start where the BinaryFS was used to initialize the content
+        } else {
+            if (cacheLayer == null) {
+                cacheLayer = manager.createEmptyFileSystem();
+            }
+            Updater u = new Updater();
+            runAtomicAction(u);
+        }
         
         this.urls = urls;
         firePropertyChange ("layers", null, null); // NOI18N

@@ -38,7 +38,9 @@
  */
 
 package org.netbeans.modules.maven.graph;
-import org.apache.maven.artifact.resolver.ResolutionNode;
+import java.util.HashSet;
+import java.util.Set;
+import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.visual.widget.Widget;
 
 /**
@@ -46,7 +48,12 @@ import org.netbeans.api.visual.widget.Widget;
  * @author Milos Kleint 
  */
 public class ArtifactGraphNode {
-    private ResolutionNode artifact;
+
+    public static final int UNMANAGED = 0;
+    public static final int MANAGED = 1;
+    public static final int OVERRIDES_MANAGED = 2;
+
+    private DependencyNode artifact;
     //for the layout
     double locX;
     double locY;
@@ -56,26 +63,49 @@ public class ArtifactGraphNode {
     private Widget widget;
     
     private boolean root;
+    private HashSet<DependencyNode> dupl;
+    private int level;
+    private int managedState;
+
     /** Creates a new instance of ArtifactGraphNode */
-    public ArtifactGraphNode(ResolutionNode art) {
+    public ArtifactGraphNode(DependencyNode art) {
         artifact = art;
+        dupl = new HashSet<DependencyNode>();
     }
     
     
-    ResolutionNode getArtifact() {
+    DependencyNode getArtifact() {
         return artifact;
     }
     
-    void setArtifact(ResolutionNode ar) {
+    void setArtifact(DependencyNode ar) {
         artifact = ar;
     }
-    
-    public void setRoot(boolean r) {
-        root = r;
+
+    void addDuplicateOrConflict(DependencyNode nd) {
+        dupl.add(nd);
     }
+
+    Set<DependencyNode> getDuplicatesOrConflicts() {
+        return dupl;
+    }
+
+    boolean represents(DependencyNode node) {
+        if (artifact.equals(node)) {
+            return true;
+        }
+        for (DependencyNode nd : dupl) {
+            if (nd.equals(node)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    
     
     public boolean isRoot() {
-        return root;
+        return level == 0;
     }
     
     public void setFixed(boolean fixed) {
@@ -89,8 +119,25 @@ public class ArtifactGraphNode {
     public boolean isVisible() {
         return widget != null ? widget.isVisible() : true;
     }
+
+    void setPrimaryLevel(int i) {
+        level = i;
+    }
+    
+    public int getPrimaryLevel() {
+        return level;
+    }
     
     void setWidget(Widget wid) {
         widget = wid;
     }
+
+    public int getManagedState() {
+        return managedState;
+    }
+
+    public void setManagedState(int state) {
+        this.managedState = state;
+    }
+
 }

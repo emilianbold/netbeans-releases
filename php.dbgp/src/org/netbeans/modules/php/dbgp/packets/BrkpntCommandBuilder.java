@@ -57,26 +57,12 @@ public class BrkpntCommandBuilder {
     private BrkpntCommandBuilder() {
         // avoid inst-n
     }
-    
-    public static BrkpntSetCommand buildLineBreakpoint( SessionId id , 
-            String transactionId, String localFileName , int lineNumber ) 
-    {
-        BrkpntSetCommand command = new BrkpntSetCommand( transactionId );
-        String uri = id.getFileUriByLocal(localFileName);
-        if ( uri == null ) {
-            return null;
-        }
-        command.setType( Types.LINE );
-        command.setFile( uri );
-        command.setLineNumber(lineNumber);
-        return command;
-    }
-    
+        
     public static BrkpntSetCommand buildLineBreakpoint( SessionId id , 
             String transactionId, FileObject localFile, int lineNumber ) 
     {
         BrkpntSetCommand command = new BrkpntSetCommand( transactionId );
-        String uri = id.getFileUriByLocal(localFile);
+        String uri = id.toWebServerURI(localFile);
         if ( uri == null ) {
             return null;
         }
@@ -143,18 +129,7 @@ public class BrkpntCommandBuilder {
         command.setException( excName );
         return command;
     }
-    
-    public static BrkpntSetCommand buildConditionalBreakpoint( SessionId id , 
-            String transactionId, String localFileName , String expression ) 
-    {
-        BrkpntSetCommand command = new BrkpntSetCommand( transactionId );
-        command.setType( Types.CONDITIONAL );
-        String uri = id.getFileUriByLocal(localFileName);
-        command.setFile( uri );
-        command.setExpression( expression );
-        return command;
-    }
-    
+
     public static BrkpntSetCommand buildConditionalBreakpoint(  
             String transactionId, String expression ) 
     {
@@ -163,4 +138,29 @@ public class BrkpntCommandBuilder {
         command.setExpression( expression );
         return command;
     }
+    /*
+       public static BrkpntSetCommand buildLineBreakpoint( SessionId id ,
+            String transactionId, String localFileName , int lineNumber )
+    {
+        BrkpntSetCommand command = new BrkpntSetCommand( transactionId );
+        String uri = id.getFileUriByLocal(localFileName);
+        if ( uri == null ) {
+            return null;
+        }
+        command.setType( Types.LINE );
+        command.setFile( uri );
+        command.setLineNumber(lineNumber);
+        return command;
+    }
+
+    public static BrkpntSetCommand buildConditionalBreakpoint( SessionId id ,
+            String transactionId, String localFileName , String expression )
+    {
+        BrkpntSetCommand command = new BrkpntSetCommand( transactionId );
+        command.setType( Types.CONDITIONAL );
+        String uri = id.getFileUriByLocal(localFileName);
+        command.setFile( uri );
+        command.setExpression( expression );
+        return command;
+    }*/
 }

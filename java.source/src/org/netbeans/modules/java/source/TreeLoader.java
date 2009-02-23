@@ -404,7 +404,7 @@ public class TreeLoader extends LazyTreeLoader {
                         assert paramTypes.size() == paramNames.size() : "Inconsistent param types/names. Signature: [" + signature + "], Names: [" + names + "]";
                         if (paramNames.size() > 0) {
                             for (Scope.Entry e = clazz.members().lookup(isCtor
-                                    ? clazz.name.table.init
+                                    ? clazz.name.table.names.init
                                     : clazz.name.table.fromString(methodName)); e.scope != null; e = e.next()) {
                                 if (e.sym.kind == Kinds.MTH && e.sym.owner == clazz) {
                                     MethodSymbol sym = (MethodSymbol)e.sym;

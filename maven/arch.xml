@@ -145,6 +145,24 @@ made subject to such option by the copyright holder.
        It's content is expected to be <code>Action</code> instances.
      </p>
     </api>
+
+    <api group="layer" name="MavenArchetypes" type="export" category="official">
+     <p>
+       "Projects/org-netbeans-modules-maven/Archetypes" folder contains fileobjects
+       that represent archetypes. The archetypes are defined by the following file attributes:
+     </p>
+       <table>
+           <tbody>
+               <tr><td>groupId</td><td>mandatory</td><td></td></tr>
+               <tr><td>artifactId</td><td>mandatory</td><td></td></tr>
+               <tr><td>version</td><td>mandatory</td><td></td></tr>
+               <tr><td>repository</td><td>optional</td><td>url of the archetype's repository</td></tr>
+               <tr><td>nameBundleKey</td><td>optional</td><td>key in bundle file that holds localized name</td></tr>
+               <tr><td>descriptionBundleKey</td><td>optional</td><td>key in bundle file that holds localized description</td></tr>
+           </tbody>
+       </table>
+    </api>
+
  </answer>
 
 

@@ -82,12 +82,14 @@ const char *PlatformLauncher::REG_PROXY_SERVER_NAME = "ProxyServer";
 const char *PlatformLauncher::REG_PROXY_OVERRIDE_NAME = "ProxyOverride";
 const char *PlatformLauncher::PROXY_DIRECT = "DIRECT";
 const char *PlatformLauncher::HEAP_DUMP_PATH =  "\\var\\log\\heapdump.hprof";
+const char *PlatformLauncher::RESTART_FILE_PATH =  "\\var\\restart";
 
 const char *PlatformLauncher::UPDATER_MAIN_CLASS = "org/netbeans/updater/UpdaterFrame";
 const char *PlatformLauncher::IDE_MAIN_CLASS = "org/netbeans/Main";
 
 PlatformLauncher::PlatformLauncher()
-    : separateProcess(false) {
+    : separateProcess(false)
+    , suppressConsole(false) {
 }
 
 PlatformLauncher::PlatformLauncher(const PlatformLauncher& orig) {
@@ -131,7 +133,7 @@ bool PlatformLauncher::start(char* argv[], int argc, DWORD *retCode) {
                 if (!run(true, retCode)) {
                     return false;
                 }
-            } else {
+            } else if (!restartRequested()) {
                 break;
             }
         }
@@ -156,6 +158,7 @@ bool PlatformLauncher::run(bool updater, DWORD *retCode) {
         mainClass = UPDATER_MAIN_CLASS;
         nextAction = ARG_NAME_LA_START_APP;
     } else {
+        DeleteFile((userDir + RESTART_FILE_PATH).c_str());
         mainClass = bootclass.empty() ? IDE_MAIN_CLASS : bootclass.c_str();
         nextAction = ARG_NAME_LA_START_AU;
     }
@@ -163,6 +166,8 @@ bool PlatformLauncher::run(bool updater, DWORD *retCode) {
     string option = OPT_CLASS_PATH;
     option += classPath;
     javaOptions.push_back(option);
+
+    jvmLauncher.setSuppressConsole(suppressConsole);
     bool rc = jvmLauncher.start(mainClass, progArgs, javaOptions, separateProcess, retCode);
     javaOptions.pop_back();
     return rc;
@@ -212,6 +217,11 @@ bool PlatformLauncher::parseArgs(int argc, char *argv[]) {
                 || strcmp(ARG_NAME_LA_START_AU, argv[i]) == 0) {
             nextAction = argv[i++];
             logMsg("Next launcher action: %s", nextAction.c_str());
+        } else if (strcmp(ARG_NAME_LA_PPID, argv[i]) == 0) {
+            CHECK_ARG;
+            suppressConsole = false;
+            parentProcID = argv[++i];
+            logMsg("Parent process ID found: %s", parentProcID.c_str());
         } else if (strcmp(ARG_NAME_USER_DIR, argv[i]) == 0) {
             CHECK_ARG;
             char tmp[MAX_PATH + 1] = {0};
@@ -623,13 +633,24 @@ void PlatformLauncher::appendToHelp(const char *msg) {
     }
 }
 
+bool PlatformLauncher::restartRequested() {
+    return fileExists((userDir + RESTART_FILE_PATH).c_str());
+}
+
 void PlatformLauncher::onExit() {
     logMsg("onExit()");
     if (separateProcess) {
         logMsg("JVM in separate process, no need to restart");
         return;
     }
-    if (nextAction == ARG_NAME_LA_START_APP || (nextAction == ARG_NAME_LA_START_AU && shouldAutoUpdateClusters(false))) {
+
+    bool restart = (nextAction == ARG_NAME_LA_START_APP || (nextAction == ARG_NAME_LA_START_AU && shouldAutoUpdateClusters(false)));
+    if (!restart && restartRequested()) {
+        restart = true;
+        nextAction = ARG_NAME_LA_START_APP;
+    }
+
+    if (restart) {
         string cmdLine = GetCommandLine();
         logMsg("Old command line: %s", cmdLine.c_str());
         string::size_type bslashPos = cmdLine.find_last_of('\\');
@@ -641,12 +662,22 @@ void PlatformLauncher::onExit() {
         if (bslashPos < pos && pos != string::npos) {
             cmdLine.erase(pos, strlen(ARG_NAME_LA_START_AU));
         }
+
+        if (*cmdLine.rbegin() != ' ') {
+            cmdLine += ' ';
+        }
+        if (!parentProcID.empty() && cmdLine.find(ARG_NAME_LA_PPID) == string::npos) {
+            cmdLine += ARG_NAME_LA_PPID;
+            cmdLine += ' ';
+            cmdLine += parentProcID;
+        }
+
         if (*cmdLine.rbegin() != ' ') {
             cmdLine += ' ';
         }
         cmdLine += nextAction;
-        logMsg("New command line: %s", cmdLine.c_str());
 
+        logMsg("New command line: %s", cmdLine.c_str());
         char cmdLineStr[32 * 1024] = "";
         strcpy(cmdLineStr, cmdLine.c_str());
         STARTUPINFO si = {0};
@@ -656,8 +687,6 @@ void PlatformLauncher::onExit() {
             logErr(true, true, "Failed to create process.");
             return;
         }
-        // wait for a while so our child process can attach our console
-        Sleep(1000);
         CloseHandle(pi.hThread);
         CloseHandle(pi.hProcess);
     }

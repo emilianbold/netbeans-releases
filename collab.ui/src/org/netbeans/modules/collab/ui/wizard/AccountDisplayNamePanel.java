@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -40,25 +40,28 @@
  */
 package org.netbeans.modules.collab.ui.wizard;
 
-import javax.swing.*;
-import javax.swing.event.*;
-
-import org.openide.util.NbBundle;
-
 import com.sun.collablet.Account;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.openide.util.NbBundle;
 
 /**
  *
  *
  */
-public class AccountDisplayNamePanel extends WizardPanelBase {
+public class AccountDisplayNamePanel extends JPanel {
+
+    private WizardPanelBase wizardPanel;
 
     /**
      *
      *
      */
-    public AccountDisplayNamePanel() {
-        super(NbBundle.getMessage(AccountDisplayNamePanel.class, "LBL_AccountDisplayNamePanel_Name")); // NOI18N
+    public AccountDisplayNamePanel (WizardPanelBase wizardPanel) {
+        this.wizardPanel = wizardPanel;
+        setName(NbBundle.getMessage(AccountDisplayNamePanel.class, "LBL_AccountDisplayNamePanel_Name"));
 
         initComponents();
         initAccessibility();
@@ -83,7 +86,7 @@ public class AccountDisplayNamePanel extends WizardPanelBase {
      *
      *
      */
-    public void readSettings(Object object) {
+    void readSettings(Object object) {
         Account account = AccountWizardSettings.narrow(object).getAccount();
 
         displayNameField.setText(account.getDisplayName());
@@ -119,7 +122,7 @@ public class AccountDisplayNamePanel extends WizardPanelBase {
      *
      *
      */
-    public void storeSettings(Object object) {
+    void storeSettings(Object object) {
         if (object instanceof AccountWizardSettings) {
             Account account = AccountWizardSettings.narrow(object).getAccount();
             account.setDisplayName(displayNameField.getText().trim());
@@ -131,7 +134,7 @@ public class AccountDisplayNamePanel extends WizardPanelBase {
      *
      */
     protected void checkValidity() {
-        setValid(displayNameField.getText().trim().length() > 0);
+        wizardPanel.setValid(displayNameField.getText().trim().length() > 0);
     }
 
     /**
@@ -149,7 +152,7 @@ public class AccountDisplayNamePanel extends WizardPanelBase {
         );
     }
 
-    public void initAccessibility() {
+    private void initAccessibility() {
         displayNameField.getAccessibleContext().setAccessibleDescription(
             NbBundle.getMessage(AccountUserInfoPanel.class, "ACSD_DESC_AccountDisplayNamePanel_DisplayNameField")
         ); // NOI18N

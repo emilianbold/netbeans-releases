@@ -336,7 +336,7 @@ public class ThreadsModel extends ViewModelSupport
             return "";
         }
         String fileName = session.getFileName();
-        FileObject script = id.getFileObjectByRemote( fileName );
+        FileObject script = id.toSourceFile( fileName );
         Project project = FileOwnerQuery.getOwner( script );
         return FileUtil.getRelativePath( project.getProjectDirectory(), script );
     }

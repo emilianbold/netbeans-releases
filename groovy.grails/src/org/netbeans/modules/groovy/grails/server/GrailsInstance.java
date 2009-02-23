@@ -46,6 +46,7 @@ import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grails.api.GrailsConstants;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
+import org.netbeans.modules.groovy.grails.api.GrailsRuntime.Version;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
@@ -94,11 +95,8 @@ public final class GrailsInstance implements ServerInstanceImplementation {
     }
 
     public final String getDisplayName() {
-        String version = Accessor.DEFAULT.getVersion(runtime);
-        if (version == null) {
-            version = NbBundle.getMessage(GrailsInstance.class, "GrailsInstance.unknownVersion");
-        }
-        return NbBundle.getMessage(GrailsInstance.class, "GrailsInstance.displayName", version);
+        Version version = runtime.getVersion();
+        return NbBundle.getMessage(GrailsInstance.class, "GrailsInstance.displayName", version.toString());
     }
 
     public final String getServerDisplayName() {
@@ -121,29 +119,6 @@ public final class GrailsInstance implements ServerInstanceImplementation {
 
     public final void remove() {
         // noop
-    }
-
-    /**
-     * The accessor pattern class.
-     */
-    public abstract static class Accessor {
-
-        /** The default accessor. */
-        public static Accessor DEFAULT;
-
-        static {
-            // invokes static initializer of GrailsRuntime.class
-            // that will assign value to the DEFAULT field above
-            Class c = GrailsRuntime.class;
-            try {
-                Class.forName(c.getName(), true, c.getClassLoader());
-            } catch (ClassNotFoundException ex) {
-                assert false : ex;
-            }
-        }
-
-        public abstract String getVersion(GrailsRuntime runtime);
-
     }
 
     private static class GrailsNode extends AbstractNode {

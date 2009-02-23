@@ -8,5 +8,6 @@
         <copy todir="${cluster}" file="release/nb_suite_runner.rb"/>
         <copy todir="${cluster}" file="release/nb_rspec_mediator.rb"/>
         <copy todir="${cluster}" file="release/nb_autotest_loader.rb"/>
+        <copy todir="${cluster}" file="release/nb_autospec_loader.rb"/>
     </target>
 </project>

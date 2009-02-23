@@ -66,13 +66,17 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
     private final CsmUID<CsmClass> parentUID;
     private CsmUID<CsmClass> friendUID;
     
-    public FriendClassImpl(AST ast, FileImpl file, CsmClass parent) {
+    public FriendClassImpl(AST ast, FileImpl file, CsmClass parent, boolean register) {
         super(ast, file);
         this.parentUID = UIDs.get(parent);
         AST qid = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
         name = (qid == null) ? CharSequenceKey.empty() : QualifiedNameCache.getManager().getString(AstRenderer.getQualifiedName(qid));
         nameParts = initNameParts(qid);
-        registerInProject();
+        if (register) {
+            registerInProject();
+        } else {
+            Utils.setSelfUID(this);
+        }
     }
 
     private void registerInProject() {

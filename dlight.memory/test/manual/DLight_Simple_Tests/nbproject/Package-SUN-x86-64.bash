@@ -6,7 +6,7 @@
 
 # Macros
 TOP=`pwd`
-CND_PLATFORM=
+CND_PLATFORM=SunStudio-Solaris-x86
 TMPDIR=build/SUN-x86-64/${CND_PLATFORM}/tmp-packaging
 TMPDIRNAME=tmp-packaging
 OUTPUT_PATH=dist/SUN-x86-64/${CND_PLATFORM}/dlight_simple_tests
