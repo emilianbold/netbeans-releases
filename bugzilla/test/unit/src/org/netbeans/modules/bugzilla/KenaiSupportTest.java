@@ -39,41 +39,32 @@
 
 package org.netbeans.modules.bugzilla;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.logging.Level;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.commons.net.WebUtil;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
-import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
-import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
-import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
-import org.eclipse.mylyn.tasks.core.data.TaskData;
-import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiProject;
 
 /**
  *
  * @author tomas
  */
-public class KenaiTest extends NbTestCase implements TestConstants {
+public class KenaiSupportTest extends NbTestCase implements TestConstants {
 
-    public static final String REPO_PASSWD  = "XXX";
-    public static final String REPO_URL     = "https://testkenai.com/bugzilla";
-    public static final String REPO_USER    = "XXX";
-
-    private TaskRepository repository;
-    private BugzillaRepositoryConnector brc;
+    private Kenai instance;
     private TaskRepositoryManager trm;
+    private BugzillaRepositoryConnector brc;
 
-    public KenaiTest(String arg0) {
+    public KenaiSupportTest(String arg0) {
         super(arg0);
     }
 
@@ -84,56 +75,54 @@ public class KenaiTest extends NbTestCase implements TestConstants {
 
     @Override
     protected void setUp() throws Exception {
-        super.setUp();
+        try {
+            System.setProperty("kenai.com.url","http://testkenai.com");
+            instance = Kenai.getDefault();
+            BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
+            String username = br.readLine();
+            String password = br.readLine();
+            br.close();
+            instance.login(username, password.toCharArray());
+
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+
         BugzillaCorePlugin bcp = new BugzillaCorePlugin();
         try {
             bcp.start(null);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        repository = new TaskRepository("bugzilla", REPO_URL);
-        AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(REPO_USER, REPO_PASSWD);
-        repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
-//        authenticationCredentials = new AuthenticationCredentials("", "fabuloso09");
-//        repository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
 
         trm = new TaskRepositoryManager();
         brc = new BugzillaRepositoryConnector();
 
-        trm.addRepository(repository);
         trm.addRepositoryConnector(brc);
 
         WebUtil.init();
-
     }
 
-    public void testValidate () throws Throwable {
-        TestUtil.validate(brc, repository);
+    public void testGetRepositoryNullProject () throws Throwable {
+
+        BugzillaConnector.KenaiSupportImpl support = new BugzillaConnector.KenaiSupportImpl();
+        BugzillaRepository repo = (BugzillaRepository) support.getRepository(null);
+        assertNotNull(repo);
+
+        trm.addRepository(repo.getTaskRepository());
+        TestUtil.validate(brc, repo.getTaskRepository());
     }
+    
+    public void testGetRepository () throws Throwable {
+        KenaiProject prj = instance.getProject("koliba");
+        assertNotNull(prj);
 
-    public void testQuery() throws Throwable {
-        try {
+        BugzillaConnector.KenaiSupportImpl support = new BugzillaConnector.KenaiSupportImpl();
+        BugzillaRepository repo = (BugzillaRepository) support.getRepository(prj);
+        assertNotNull(repo);
 
-            String dateString = repository.getSynchronizationTimeStamp();
-            if (dateString == null) {
-                dateString = "";
-            }
-
-            String url = "/buglist.cgi?query_format=advanced&product=koliba";
-            IRepositoryQuery query = new RepositoryQuery(repository.getConnectorKind(), "");
-            query.setUrl(url);
-            final List<TaskData> collectedData = new ArrayList<TaskData>();
-            TaskDataCollector collector = new TaskDataCollector() {
-                public void accept(TaskData taskData) {
-                    collectedData.add(taskData);
-                }
-            };
-            brc.performQuery(repository, query, collector, null, NULL_PROGRESS_MONITOR);
-            assertTrue(collectedData.size() > 0);
-
-        } catch (Exception e) {
-            TestUtil.handleException(e);
-        }
+        trm.addRepository(repo.getTaskRepository());
+        TestUtil.validate(brc, repo.getTaskRepository());
     }
 
 }
