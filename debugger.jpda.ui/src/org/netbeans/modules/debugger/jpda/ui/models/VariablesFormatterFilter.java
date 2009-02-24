@@ -269,7 +269,11 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
             return original.getValueAt (variable, columnID);
         }
         VariablesFormatter f = getFormatterForType(ct);
-        if (f != null) {
+        if (f != null &&
+            ( columnID == Constants.LOCALS_VALUE_COLUMN_ID ||
+              columnID == Constants.WATCH_VALUE_COLUMN_ID ||
+              columnID == Constants.LOCALS_TO_STRING_COLUMN_ID ||
+              columnID == Constants.WATCH_TO_STRING_COLUMN_ID)) {
             String code = f.getValueFormatCode();
             if (code != null && code.length() > 0) {
                 try {

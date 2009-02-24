@@ -38,16 +38,11 @@
  */
 package org.netbeans.modules.python.debugger.breakpoints;
 
+import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.api.debugger.Properties;
+import org.netbeans.modules.python.debugger.Utils;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileObject;
-import org.openide.text.Line;
-import org.openide.filesystems.URLMapper;
-import java.net.URL;
-import java.net.MalformedURLException;
-import org.openide.loaders.DataObject;
-import org.openide.cookies.LineCookie;
-import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
@@ -55,6 +50,13 @@ import org.openide.loaders.DataObjectNotFoundException;
  */
 public class BreakpointsReader
         implements Properties.Reader {
+
+  private final static String _EQUAL_ = "EQUAL";
+  private final static String _URL_ = "url";
+  private final static String _LINENUMBER_ = "lineNumber";
+  private final static String _CONDITION_ = "condition";
+  private final static String _COUNTFILTER_ = "countFilter";
+  private final static String _FILTERINGSTYLE_ = "filteringStyle";
 
   /** Creates a new instance of BreakpointsReader */
   public BreakpointsReader() {
@@ -71,10 +73,16 @@ public class BreakpointsReader
             (b.getLine() != null)) {
       FileObject fo = (FileObject) b.getLine().getLookup().lookup(FileObject.class);
       try {
-        properties.setString("url", fo.getURL().toString());
+        properties.setString(_URL_, fo.getURL().toString());
         properties.setInt(
-                "lineNumber",
+                _LINENUMBER_,
                 b.getLine().getLineNumber());
+        // set complementary optional breakpoint stuff
+        properties.setString(_CONDITION_, b.getCondition());
+        properties.setInt(_COUNTFILTER_, b.getHitCountFilter());
+        if (b.getHitCountFilteringStyle() != null) {
+          properties.setString(_FILTERINGSTYLE_, b.getHitCountFilteringStyle().toString());
+        }
       } catch (FileStateInvalidException ex) {
         ex.printStackTrace();
       }
@@ -85,44 +93,15 @@ public class BreakpointsReader
     if (!(typeID.equals(PythonBreakpoint.class.getName()))) {
       return null;
     }
+    PythonBreakpoint b = new PythonBreakpoint(Utils.getLine(
+            properties.getString(_URL_, null),
+            properties.getInt(_LINENUMBER_, 1)));
+    // get optionals hitcount and conditions
+    b.setCondition(properties.getString(_CONDITION_, null));
+    HIT_COUNT_FILTERING_STYLE style = HIT_COUNT_FILTERING_STYLE.valueOf(properties.getString(_FILTERINGSTYLE_, _EQUAL_));
+    int countFilter = properties.getInt(_COUNTFILTER_, -1);
+    b.setHitCountFilter(countFilter, style);
 
-    return new PythonBreakpoint(getLine(
-            properties.getString("url", null),
-            properties.getInt("lineNumber", 1)));
-  }
-
-  private Line getLine(String url, int lineNumber) {
-    FileObject file;
-    try {
-      file = URLMapper.findFileObject(new URL(url));
-    } catch (MalformedURLException e) {
-      return null;
-    }
-    if (file == null) {
-      return null;
-    }
-    DataObject dataObject = null;
-    try {
-      dataObject = DataObject.find(file);
-    } catch (DataObjectNotFoundException ex) {
-      return null;
-    }
-    if (dataObject == null) {
-      return null;
-    }
-    LineCookie lineCookie = (LineCookie) dataObject.getCookie(LineCookie.class);
-    if (lineCookie == null) {
-      return null;
-    }
-    Line.Set ls = lineCookie.getLineSet();
-    if (ls == null) {
-      return null;
-    }
-    try {
-      return ls.getCurrent(lineNumber);
-    } catch (IndexOutOfBoundsException e) {
-    } catch (IllegalArgumentException e) {
-    }
-    return null;
+    return b;
   }
 }

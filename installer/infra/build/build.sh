@@ -158,18 +158,18 @@ fi
 
 if [ -n "$BASE_DIR" ] ; then
     if [ -z "$NB_BUILDS_HOST_EN" ] ; then
-        NB_BUILDS_HOST_EN=file:/$BASE_DIR/dist/zip/moduleclusters
+        NB_BUILDS_HOST_EN="file:$BASE_DIR/dist/zip/moduleclusters"
     fi
     if [ -z "$NB_BUILDS_HOST_ML" ] ; then
-        NB_BUILDS_HOST_ML=file:/$BASE_DIR/dist/ml/zip/moduleclusters
+        NB_BUILDS_HOST_ML="file:$BASE_DIR/dist/ml/zip/moduleclusters"
     fi
 fi
 
-if [ -z "$BUILD_NUMBER" ] && [ -n "$DATESTAMP" ]; then
-    BUILD_NUMBER="$DATESTAMP"
+if [ -n "$DATESTAMP" ] ; then
+    NB_BUILD_NUMBER="$DATESTAMP"
 fi
 
-if [ -z "$BUILD_NUMBER" ] ; then
+if [ -z "$NB_BUILD_NUMBER" ] ; then
     echo "Build number is not defined"
     exit 1;
 fi
@@ -183,7 +183,7 @@ run() {
     ################################################################################
     # run the build
     ant build\
-            \"-Dbuild.number=${BUILD_NUMBER}\" \
+            \"-Dbuild.number=${NB_BUILD_NUMBER}\" \
             \"-Doutput.dir=${OUTPUT_DIR}\" \
             \"-Dbinary.cache.host=${BINARY_CACHE_HOST}\" \
             \"-Dnb.builds.host=${NB_BUILDS_HOST}\" \

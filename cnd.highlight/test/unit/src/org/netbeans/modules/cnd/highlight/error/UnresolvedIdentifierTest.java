@@ -117,6 +117,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("iz158730.cpp");
     }
 
+    public void testIZ158831() throws Exception {
+        // IZ#158831 : False positive error highlighting errors on typedefs in local methods of templates
+        performStaticTest("iz158831.cpp");
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
 

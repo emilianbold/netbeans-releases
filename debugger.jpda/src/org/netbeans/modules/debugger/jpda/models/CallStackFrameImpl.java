@@ -775,9 +775,9 @@ public class CallStackFrameImpl implements CallStackFrame {
             EqualsInfo ei = (EqualsInfo) obj;
             return thread == ei.thread &&
                    depth == ei.depth &&
-                   locationType.equals(ei.locationType) &&
-                   locationMethodName.equals(ei.locationMethodName) &&
-                   locationMethodSignature.equals(ei.locationMethodSignature) &&
+                   (locationType == null && ei.locationType == null || locationType != null && locationType.equals(ei.locationType)) &&
+                   (locationMethodName == null && ei.locationMethodName == null || locationMethodName != null && locationMethodName.equals(ei.locationMethodName)) &&
+                   (locationMethodSignature == null && ei.locationMethodSignature == null || locationMethodSignature != null && locationMethodSignature.equals(ei.locationMethodSignature)) &&
                    locationCodeIndex == ei.locationCodeIndex;
         }
 

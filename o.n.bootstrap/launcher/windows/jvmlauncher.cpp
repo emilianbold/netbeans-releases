@@ -52,13 +52,15 @@ const char *JvmLauncher::CUR_VERSION_NAME = "CurrentVersion";
 const char *JvmLauncher::JAVA_HOME_NAME = "JavaHome";
 const char *JvmLauncher::JAVA_BIN_DIR = "\\bin";
 const char *JvmLauncher::JAVA_EXE_FILE = "\\bin\\java.exe";
+const char *JvmLauncher::JAVAW_EXE_FILE = "\\bin\\javaw.exe";
 const char *JvmLauncher::JAVA_CLIENT_DLL_FILE = "\\bin\\client\\jvm.dll";
 const char *JvmLauncher::JAVA_SERVER_DLL_FILE = "\\bin\\server\\jvm.dll";
 const char *JvmLauncher::JAVA_JRE_PREFIX = "\\jre";
 const char *JvmLauncher::JNI_CREATEVM_FUNC = "JNI_CreateJavaVM";
 
 
-JvmLauncher::JvmLauncher() {
+JvmLauncher::JvmLauncher()
+    : suppressConsole(false) {
 }
 
 JvmLauncher::JvmLauncher(const JvmLauncher& orig) {
@@ -76,6 +78,7 @@ bool JvmLauncher::checkJava(const char *path, const char *prefix) {
         javaPath.erase(javaPath.length() - 1, 1);
     }
     javaExePath = javaPath + prefix + JAVA_EXE_FILE;
+    javawExePath = javaPath + prefix + JAVAW_EXE_FILE;
     javaClientDllPath = javaPath + prefix + JAVA_CLIENT_DLL_FILE;
     javaServerDllPath = javaPath + prefix + JAVA_SERVER_DLL_FILE;
     if (!fileExists(javaClientDllPath.c_str())) {
@@ -86,12 +89,17 @@ bool JvmLauncher::checkJava(const char *path, const char *prefix) {
     }
     javaBinPath = javaPath + prefix + JAVA_BIN_DIR;
     if (fileExists(javaExePath.c_str()) && (!javaClientDllPath.empty() || !javaServerDllPath.empty())) {
+        if (!fileExists(javawExePath.c_str())) {
+            logMsg("javaw.exe not exists, forcing java.exe");
+            javawExePath = javaExePath;
+        }
         return true;
     }
 
     javaPath.clear();
     javaBinPath.clear();
     javaExePath.clear();
+    javawExePath.clear();
     javaClientDllPath.clear();
     javaServerDllPath.clear();
     return false;
@@ -314,10 +322,7 @@ bool JvmLauncher::startInProcJvm(const char *mainClassName, std::list<std::strin
 
 
 bool JvmLauncher::startOutProcJvm(const char *mainClassName, std::list<std::string> args, std::list<std::string> options, DWORD *retCode) {
-    STARTUPINFO si = {0};
-    si.cb = sizeof(STARTUPINFO);
-    PROCESS_INFORMATION pi = {0};
-    string cmdLine = '\"' + javaExePath + '\"';
+    string cmdLine = '\"' + (suppressConsole ? javawExePath : javaExePath) + '\"';
     cmdLine.reserve(32*1024);
     for (list<string>::iterator it = options.begin(); it != options.end(); ++it) {
         cmdLine += " \"";
@@ -344,6 +349,10 @@ bool JvmLauncher::startOutProcJvm(const char *mainClassName, std::list<std::stri
         logErr(false, true, "Command line is too long. Length: %u. Maximum length: %u.", cmdLine.c_str(), 32*1024);
         return false;
     }
+
+    STARTUPINFO si = {0};
+    si.cb = sizeof (STARTUPINFO);
+    PROCESS_INFORMATION pi = {0};
 
     char cmdLineStr[32*1024] = "";
     strcpy(cmdLineStr, cmdLine.c_str());

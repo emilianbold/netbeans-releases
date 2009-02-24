@@ -79,11 +79,11 @@ public class IgnoreAction extends ContextAction {
     }
 
     protected int getFileEnabledStatus() {
-        return FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
+        return FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY | FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
     }
 
     protected int getDirectoryEnabledStatus() {
-        return FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
+        return FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY | FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
     }
     
     public int getActionStatus(Node [] nodes) {
@@ -100,7 +100,9 @@ public class IgnoreAction extends ContextAction {
                 break;
             }
             FileInformation info = cache.getStatus(files[i]);
-            if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
+            if ((info.getStatus()
+                    & (FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)
+                    ) != 0) {
                 if (actionStatus == UNIGNORING) {
                     actionStatus = UNDEFINED;
                     break;
@@ -136,7 +138,7 @@ public class IgnoreAction extends ContextAction {
         final File files[] = SvnUtils.getCurrentContext(nodes).getRootFiles();                                                
 
         ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
-            public void perform() {                
+            public void perform() {
                 Map<File, Set<String>> names = splitByParent(files);
                 // do not attach onNotify listeners because the ignore command forcefully fires change events on ALL files
                 // in the parent directory and NONE of them interests us, see #89516
@@ -146,7 +148,23 @@ public class IgnoreAction extends ContextAction {
                 } catch (SVNClientException e) {
                     SvnClientExceptionHandler.notifyException(e, true, true);
                     return;
-                }                
+                }
+                if (actionStatus == IGNORING) {
+                    FileStatusCache cache = Subversion.getInstance().getStatusCache();
+                    try {
+                        for (File file : files) {
+                            // revert all locally added files (svn added but not comitted)
+                            // #108369 - added files cannot be ignored
+                            FileInformation s = cache.getStatus(file);
+                            if (s.getStatus() == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) {
+                                client.revert(file, true); // revert the tree to NEWLOCALLY
+                            }
+                        }
+                    } catch (SVNClientException ex) {
+                        SvnClientExceptionHandler.notifyException(ex, true, true);
+                        return;
+                    }
+                }
                 for (File parent : names.keySet()) {
                     Set<String> patterns = names.get(parent);
                     if(isCanceled()) {

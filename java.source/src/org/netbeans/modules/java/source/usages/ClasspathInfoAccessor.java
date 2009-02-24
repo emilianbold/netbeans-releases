@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.java.source.usages;
 
-import com.sun.tools.javac.util.JavacFileManager;
 import javax.tools.JavaFileManager;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;

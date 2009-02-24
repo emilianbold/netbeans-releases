@@ -264,6 +264,7 @@ final class RDocAnalyzer {
         private static final Map<String, String> COMMENT_TYPE_TO_REAL_TYPE = new HashMap<String, String>();
 
         static {
+            COMMENT_TYPE_TO_REAL_TYPE.put("!obj", "FalseClass"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("a_class", "Class"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("aDir", "Dir"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("aFixnum", "Fixnum"); // NOI18N
@@ -277,7 +278,10 @@ final class RDocAnalyzer {
             COMMENT_TYPE_TO_REAL_TYPE.put("anIO", "IO"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("a_proc", "Proc"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("array", "Array"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("aStructTms", "Struct::Tms"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("a_str", "String"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("big", "Bignum"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("bignum", "Bignum"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("binding", "Binding"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("class", "Class"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("dir", "Dir"); // NOI18N
@@ -297,6 +301,7 @@ final class RDocAnalyzer {
             COMMENT_TYPE_TO_REAL_TYPE.put("matchdata", "MatchData"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("method", "Method"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("mod", "Module"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("name_error", "NameError"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("new_method", "UnboundMethod"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("new_regexp", "Regexp"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("new_str", "String"); // NOI18N
@@ -307,14 +312,18 @@ final class RDocAnalyzer {
             COMMENT_TYPE_TO_REAL_TYPE.put("numeric_result", "Numeric"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("num", "Numeric"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("obj", "Object"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("object", "Object"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("other_big", "Bignum"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("prc", "Proc"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("proc", "Proc"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("range", "Range"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("regexp", "Regexp"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("rng", "Range"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("stat", "File::Stat"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("string", "String"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("str", "String"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("struct", "Struct"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("struct_tms", "Struct::Tms"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("symbol", "Symbol"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("sym", "Symbol"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("thgrp", "ThreadGroup"); // NOI18N
