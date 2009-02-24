@@ -85,23 +85,12 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
     private ProjectClassPathImplementation(GrailsProjectConfig projectConfig) {
         this.projectConfig = projectConfig;
         this.projectRoot = FileUtil.toFile(projectConfig.getProject().getProjectDirectory());
-
-        this.pluginsDir = GrailsPluginsManager.getInstance((GrailsProject) projectConfig.getProject())
-                .getPluginsDir();
     }
 
     public static ProjectClassPathImplementation forProject(Project project) {
         ProjectClassPathImplementation impl = new ProjectClassPathImplementation(
                 GrailsProjectConfig.forProject(project));
 
-        File libDir = FileUtil.normalizeFile(new File(FileUtil.toFile(project.getProjectDirectory()), "lib")); // NOI18N
-
-        impl.listenerPluginsLib = new PluginsLibListener(impl);
-
-        // it is weakly referenced
-        // FIXME move this to non-null path
-        FileUtil.addFileChangeListener(impl.listenerPluginsLib, impl.pluginsDir);
-        FileUtil.addFileChangeListener(impl.listenerPluginsLib, libDir);
         return impl;
     }
 
@@ -113,11 +102,14 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
     }
 
     private List<PathResourceImplementation> getPath() {
-        // When called from EDT we do not retunr plugin classpath immediately
+        assert Thread.holdsLock(this);
+
+        // When called from EDT we do not return plugin classpath immediately
         // as it may take really long time. It usually happens when project is
         // opened on startup and file is visible in editor. Does not happen
         // much in CSL.
-        if (SwingUtilities.isEventDispatchThread() && GrailsPlatform.Version.VERSION_1_1.compareTo(projectConfig.getGrailsPlatform().getVersion()) <= 0) {
+        if (SwingUtilities.isEventDispatchThread()
+                && GrailsPlatform.Version.VERSION_1_1.compareTo(projectConfig.getGrailsPlatform().getVersion()) <= 0) {
             List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
             // lib directory from project root
             addLibs(projectRoot, result);
@@ -127,7 +119,8 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
                     synchronized (ProjectClassPathImplementation.this) {
                         ProjectClassPathImplementation.this.resources = null;
                     }
-                    ProjectClassPathImplementation.this.support.firePropertyChange(ClassPathImplementation.PROP_RESOURCES, null, null);
+                    ProjectClassPathImplementation.this.support.firePropertyChange(
+                            ClassPathImplementation.PROP_RESOURCES, null, null);
                 }
             });
 
@@ -137,6 +130,12 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
         List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
         // lib directory from project root
         addLibs(projectRoot, result);
+
+
+        if (pluginsDir == null) {
+            this.pluginsDir = GrailsPluginsManager.getInstance((GrailsProject) projectConfig.getProject())
+                    .getPluginsDir();
+        }
 
         if (pluginsDir.isDirectory()) {
             if (GrailsPlatform.Version.VERSION_1_1.compareTo(projectConfig.getGrailsPlatform().getVersion()) <= 0) {
@@ -151,6 +150,16 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
             } else {
                 addPlugin(result, null);
             }
+        }
+
+        if (listenerPluginsLib == null) {
+            File libDir = FileUtil.normalizeFile(new File(projectRoot, "lib")); // NOI18N
+
+            listenerPluginsLib = new PluginsLibListener(this);
+
+            // it is weakly referenced
+            FileUtil.addFileChangeListener(listenerPluginsLib, pluginsDir);
+            FileUtil.addFileChangeListener(listenerPluginsLib, libDir);
         }
 
         return Collections.unmodifiableList(result);
