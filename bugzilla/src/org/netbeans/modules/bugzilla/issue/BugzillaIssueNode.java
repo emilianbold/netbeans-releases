@@ -47,7 +47,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.bugtracking.spi.IssueNode.SeenProperty;
 import org.netbeans.modules.bugzilla.Bugzilla;
-import org.netbeans.modules.bugzilla.BugzillaRepository;
+import org.netbeans.modules.bugzilla.issue.BugzillaIssue.IssueField;
 import org.openide.nodes.Node.Property;
 import org.openide.util.NbBundle;
 
@@ -152,10 +152,10 @@ public class BugzillaIssueNode extends IssueNode {
                   String.class,
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Severity_Title"), // NOI18N
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Severity_Desc")); // NOI18N
-            setValue("sortkey", getSeveritySortKey(getBugzillaIssue().getSeverity())); // NOI18N
+            setValue("sortkey", getSeveritySortKey(getBugzillaIssue().getFieldValue(IssueField.SEVERITY))); // NOI18N
         }
         public Object getValue() {
-            return getBugzillaIssue().getSeverity();
+            return getBugzillaIssue().getFieldValue(IssueField.SEVERITY);
         }
     }
 
@@ -165,10 +165,10 @@ public class BugzillaIssueNode extends IssueNode {
                   String.class,
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Priority_Title"), // NOI18N
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Priority_Desc")); // NOI18N
-            setValue("sortkey", getPrioritySortKey(getBugzillaIssue().getPriority())); // NOI18N
+            setValue("sortkey", getPrioritySortKey(getBugzillaIssue().getFieldValue(IssueField.PRIORITY))); // NOI18N
         }
         public Object getValue() {
-            return getBugzillaIssue().getPriority();
+            return getBugzillaIssue().getFieldValue(IssueField.PRIORITY);
         }
     }
 
@@ -180,12 +180,12 @@ public class BugzillaIssueNode extends IssueNode {
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Status_Desc")); // NOI18N
         }
         public Object getValue() {
-            return getBugzillaIssue().getStatus();
+            return getBugzillaIssue().getFieldValue(IssueField.STATUS);
         }
         public int compareTo(IssueProperty p) {
             if(p == null) return 1;
-            String s1 = getBugzillaIssue().getStatus();
-            String s2 = ((BugzillaIssue)p.getIssue()).getStatus();
+            String s1 = getBugzillaIssue().getFieldValue(IssueField.STATUS);
+            String s2 = ((BugzillaIssue)p.getIssue()).getFieldValue(IssueField.STATUS);
             return s1.compareTo(s2);
         }
     }
@@ -196,10 +196,10 @@ public class BugzillaIssueNode extends IssueNode {
                   String.class,
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Resolution_Title"), // NOI18N
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_ID_Desc")); // NOI18N
-            setValue("sortkey", getResolutionSortKey(getBugzillaIssue().getResolution())); // NOI18N
+            setValue("sortkey", getResolutionSortKey(getBugzillaIssue().getFieldValue(IssueField.RESOLUTION))); // NOI18N
         }
         public Object getValue() {
-            return getBugzillaIssue().getResolution();
+            return getBugzillaIssue().getFieldValue(IssueField.RESOLUTION);
         }
     }
 

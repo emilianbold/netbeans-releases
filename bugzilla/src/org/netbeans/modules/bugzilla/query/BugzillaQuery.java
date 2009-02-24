@@ -118,6 +118,10 @@ public class BugzillaQuery extends Query {
                 if(isSaved()) {
                     List<String> ids;
                     if(!wasRun()) {
+                        
+                        assert issues.size() == 0;
+                        issues.clear(); // XXX just in case
+                        
                         firstRun = false;
                         ids = repository.getCache().readQuery(BugzillaQuery.this);
                     } else {

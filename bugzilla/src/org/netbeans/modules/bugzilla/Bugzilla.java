@@ -175,6 +175,17 @@ public class Bugzilla {
     }
 
     /**
+     * Returns all keywords defined in the given repository
+     * @param repository
+     * @return
+     * @throws java.io.IOException
+     * @throws org.eclipse.core.runtime.CoreException
+     */
+    public List<String> getKeywords(BugzillaRepository repository) throws IOException, CoreException {
+        return getRepositoryConfiguration(repository).getKeywords();
+    }
+
+    /**
      * Returns all platforms defined in the given repository
      * @param repository
      * @return
@@ -183,6 +194,17 @@ public class Bugzilla {
      */
     public List<String> getPlatforms(BugzillaRepository repository) throws IOException, CoreException {
         return getRepositoryConfiguration(repository).getPlatforms();
+    }
+
+    /**
+     * Returns all operating systems defined in the given repository
+     * @param repository
+     * @return
+     * @throws java.io.IOException
+     * @throws org.eclipse.core.runtime.CoreException
+     */
+    public List<String> getOSs(BugzillaRepository repository) throws IOException, CoreException {
+        return getRepositoryConfiguration(repository).getOSs();
     }
 
     /**
@@ -205,6 +227,24 @@ public class Bugzilla {
      */
     public List<BugzillaCustomField> getCustomFields(BugzillaRepository repository) throws IOException, CoreException {
         return getRepositoryConfiguration(repository).getCustomFields();
+    }
+
+    /**
+     * Returns target milestones defined for the given product or all available 
+     * milestones if product is null
+     *
+     * @param repository
+     * @param product
+     * @return
+     * @throws java.io.IOException
+     * @throws org.eclipse.core.runtime.CoreException
+     */
+    public List<String> getTargetMilestones(BugzillaRepository repository, String product) throws IOException, CoreException {
+        if(product == null) {
+            return getRepositoryConfiguration(repository).getTargetMilestones();
+        } else {
+            return getRepositoryConfiguration(repository).getTargetMilestones(product);
+        }
     }
 
     /**

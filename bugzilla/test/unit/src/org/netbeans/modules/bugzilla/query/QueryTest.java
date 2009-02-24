@@ -49,7 +49,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.Issue;
-import quicktime.app.actions.NotifyListener;
+import org.netbeans.modules.bugtracking.spi.Query;
 
 /**
  *
@@ -97,25 +97,30 @@ public class QueryTest extends NbTestCase implements TestConstants {
 
         String p =  MessageFormat.format(PARAMETERS_FORMAT, summary);
         BugzillaQuery q = new BugzillaQuery(QUERY_NAME, getRepository(), p, ts);
-        TestQueryNotifyListener nl = new TestQueryNotifyListener();
-        q.addNotifyListener(nl);
-        
+        TestQueryNotifyListener nl = new TestQueryNotifyListener(q);
+
+        nl.reset();
         q.refresh();
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        assertEquals(1, nl.issues.size());
-        Issue i = nl.issues.get(0);
+        List<Issue> il = nl.getIssues(Query.ISSUE_STATUS_NOT_OBSOLETE);
+        assertEquals(1, il.size());
+        Issue i = il.get(0);
         assertEquals(summary, i.getSummary());
         assertEquals(id1, i.getID());
+//        Issue[] is = q.getIssues();
+//        assertEquals(1, is.length);
 
         nl.reset();
         q.refresh(p);
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        assertEquals(1, nl.issues.size());
-        i = nl.issues.get(0);
+        assertEquals(1, nl.getIssues(Query.ISSUE_STATUS_NOT_OBSOLETE).size());
+        i = il.get(0);
         assertEquals(summary, i.getSummary());
         assertEquals(id1, i.getID());
+//        is = q.getIssues();
+//        assertEquals(1, is.length);
     }
 
     public void testGetIssues() throws MalformedURLException, CoreException {
@@ -128,8 +133,7 @@ public class QueryTest extends NbTestCase implements TestConstants {
         // query for issue1
         String p =  MessageFormat.format(PARAMETERS_FORMAT, summary1);
         BugzillaQuery q = new BugzillaQuery(QUERY_NAME, getRepository(), p, ts);
-        TestQueryNotifyListener nl = new TestQueryNotifyListener();
-        q.addNotifyListener(nl);
+        TestQueryNotifyListener nl = new TestQueryNotifyListener(q);
 
         Issue[] issues = q.getIssues();
         assertEquals(0, nl.issues.size());
@@ -138,7 +142,7 @@ public class QueryTest extends NbTestCase implements TestConstants {
         q.refresh();
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        assertEquals(1, nl.issues.size());
+        assertEquals(1, nl.getIssues(Query.ISSUE_STATUS_NOT_OBSOLETE).size());
         assertEquals(1, q.getIssues().length);
         Issue i = q.getIssues()[0];
         assertEquals(summary1, i.getSummary());
@@ -148,7 +152,7 @@ public class QueryTest extends NbTestCase implements TestConstants {
         q.refresh(p);
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        assertEquals(1, nl.issues.size());
+        assertEquals(1, nl.getIssues(Query.ISSUE_STATUS_NOT_OBSOLETE).size());
         assertEquals(1, q.getIssues().length);
         i = q.getIssues()[0];
         assertEquals(summary1, i.getSummary());
@@ -161,7 +165,7 @@ public class QueryTest extends NbTestCase implements TestConstants {
         issues = q.getIssues();
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        assertEquals(2, nl.issues.size());
+        assertEquals(2, nl.getIssues(Query.ISSUE_STATUS_NOT_OBSOLETE).size());
         assertEquals(2, issues.length);
         List<String> summaries = new ArrayList<String>();
         List<String> ids = new ArrayList<String>();
@@ -192,6 +196,8 @@ public class QueryTest extends NbTestCase implements TestConstants {
         assertEquals(id1, issues[0].getID());
         assertEquals(summary1, issues[0].getSummary());
     }
+
+    // XXX test obsolete status
 
     // XXX shoud be on the spi
     public void testLastRefresh() {

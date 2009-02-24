@@ -64,7 +64,10 @@ public abstract class Query implements Comparable<Query> {
     public static final int ISSUE_STATUS_NEW            = 4; 
     public static final int ISSUE_STATUS_MODIFIED       = 8;
     public static final int ISSUE_STATUS_OBSOLETE       = 16;
-    public static final int ISSUE_STATUS_NOT_OBSOLETE   = 32;
+    public static final int ISSUE_STATUS_NOT_OBSOLETE   =
+                                ISSUE_STATUS_UPTODATE |
+                                ISSUE_STATUS_NEW |
+                                ISSUE_STATUS_MODIFIED;
 
     /**
      * queries data were changed

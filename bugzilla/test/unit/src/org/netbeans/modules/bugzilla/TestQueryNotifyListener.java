@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
+import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 
 /**
  *
@@ -52,6 +53,11 @@ public class TestQueryNotifyListener implements QueryNotifyListener {
     public boolean started = false;
     public boolean finished = false;
     public List<Issue> issues = new ArrayList<Issue>();
+    private BugzillaQuery q;
+    public TestQueryNotifyListener(BugzillaQuery q) {
+        this.q = q;
+        q.addNotifyListener(this);
+    }
     public void started() {
         started = true;
     }
@@ -61,9 +67,18 @@ public class TestQueryNotifyListener implements QueryNotifyListener {
     public void finished() {
         finished = true;
     }
-    public void reset(){
+    public void reset() {
         started = false;
         finished = false;
         issues = new ArrayList<Issue>();
+    }
+    public List<Issue> getIssues(int includeStatus) {
+        List<Issue> ret = new ArrayList<Issue>();
+        for (Issue issue : issues) {
+            if (q == null || (q.getIssueStatus(issue) & includeStatus) != 0) {
+                ret.add(issue);
+            }
+        }
+        return ret;
     }
 }

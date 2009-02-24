@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -56,6 +57,7 @@ import org.apache.commons.httpclient.HttpException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaAttribute;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaOperation;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaTaskAttachmentHandler;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
@@ -84,17 +86,52 @@ public class BugzillaIssue extends Issue {
     private IssueController controller;
     private IssueNode node;
 
-    static String LABEL_NAME_ID         = "bugzilla.issue.id";
-    static String LABEL_NAME_SEVERITY   = "bugzilla.issue.severity";
-    static String LABEL_NAME_PRIORITY   = "bugzilla.issue.priority";
-    static String LABEL_NAME_STATUS     = "bugzilla.issue.status";
-    static String LABEL_NAME_RESOLUTION = "bugzilla.issue.resolution";
-    static String LABEL_NAME_SUMMARY    = "bugzilla.issue.summary";
+    static final String LABEL_NAME_ID           = "bugzilla.issue.id";
+    static final String LABEL_NAME_SEVERITY     = "bugzilla.issue.severity";
+    static final String LABEL_NAME_PRIORITY     = "bugzilla.issue.priority";
+    static final String LABEL_NAME_STATUS       = "bugzilla.issue.status";
+    static final String LABEL_NAME_RESOLUTION   = "bugzilla.issue.resolution";
+    static final String LABEL_NAME_SUMMARY      = "bugzilla.issue.summary";
+
+    enum IssueField {
+        SUMMARY(TaskAttribute.SUMMARY),
+        STATUS(TaskAttribute.STATUS),
+        PRIORITY(TaskAttribute.PRIORITY),
+        RESOLUTION(TaskAttribute.RESOLUTION),
+        PRODUCT(BugzillaAttribute.PRODUCT.getKey()),
+        COMPONENT(BugzillaAttribute.COMPONENT.getKey()),
+        VERSION(BugzillaAttribute.VERSION.getKey()),
+        PLATFORM(BugzillaAttribute.REP_PLATFORM.getKey()),
+        MILESTONE(BugzillaAttribute.TARGET_MILESTONE.getKey()),
+        REPORTER(BugzillaAttribute.REPORTER.getKey()),
+        ASSIGEND_TO(BugzillaAttribute.ASSIGNED_TO.getKey()),
+        ASSIGNED_TO_NAME(BugzillaAttribute.ASSIGNED_TO_NAME.getKey()),
+        QA_CONTACT(BugzillaAttribute.QA_CONTACT.getKey()),
+        QA_CONTACT_NAME(BugzillaAttribute.QA_CONTACT_NAME.getKey()),
+        NEWCC(BugzillaAttribute.NEWCC.getKey()),        
+        REMOVECC(BugzillaAttribute.REMOVECC.getKey()),
+        CC(BugzillaAttribute.CC.getKey()),
+        DEPENDS_ON(BugzillaAttribute.DEPENDSON.getKey()),
+        BLOCKS(BugzillaAttribute.BLOCKED.getKey()),
+        URL(BugzillaAttribute.BUG_FILE_LOC.getKey()),
+        KEYWORDS(BugzillaAttribute.KEYWORDS.getKey()),
+        SEVERITY(BugzillaAttribute.BUG_SEVERITY.getKey());
+
+        private final String key;
+
+        public static int STATUS_UPTODATE = 1;
+        public static int STATUS_NEW = 2;
+        public static int STATUS_MODIFIED = 4;
+
+        IssueField(String key) {
+            this.key = key;
+        }
+    }
 
     private Map<String, String> attributes;
 
     /**
-     * Defines column labels for a view table.
+     * Defines columns for a view table.
      */
     public static ColumnDescriptor[] DESCRIPTORS;
 
@@ -143,184 +180,10 @@ public class BugzillaIssue extends Issue {
         setSeen(seen, true);
     }
 
-    public void setSeen(boolean seen, boolean cacheRefresh) {
-        super.setSeen(seen);
-        if(cacheRefresh) {
-            repository.getCache().setSeen(getID(), seen, getAttributes());
-        }
-    }
-
-    public void save() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void setTaskData(TaskData taskData) {
-        data = taskData;
-        attributes = null; // reset
-        ((BugzillaIssueNode)getNode()).fireDataChanged();
-    }
-
-    public void update() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     @Override
     public String toString() {
-        String str = getID() + " : "  + getSeverity() + " : " + getStatus() + " : " + getPriority() + " : " + getSummary();
+        String str = getID() + " : "  + getSummary();
         return str;
-    }
-
-    void addAttachment(File f, String comment, String desc) {
-        FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(f);
-        attachmentSource.setContentType("text/plain");
-        BugzillaTaskAttachmentHandler.AttachmentPartSource source = new BugzillaTaskAttachmentHandler.AttachmentPartSource(attachmentSource);
-
-        try {
-            Bugzilla.getInstance().getRepositoryConnector().getClientManager().getClient(getTaskRepository(), new NullProgressMonitor()).
-                postAttachment(getID(), comment, desc, attachmentSource.getContentType(), false, source, new NullProgressMonitor());
-        } catch (HttpException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        }
-    }
-
-    public String getID() {
-        return getID(data);
-    }
-    
-    public static String getID(TaskData taskData) {
-        try {
-            return Integer.toString(BugzillaRepositoryConnector.getBugId(taskData.getTaskId()));
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        }
-        return "";
-    }
-
-    String getDescription() {
-        return getMappedValue(TaskAttribute.DESCRIPTION); // XXX WTF???!!!
-    }
-
-    TaskRepository getTaskRepository() {
-        return repository.getTaskRepository();
-    }
-
-    BugzillaRepository getRepository() {
-        return repository;
-    }
-     
-    String getStatus() {
-        return getMappedValue(TaskAttribute.STATUS);
-    }
-
-    String getPriority() {
-        return getMappedValue(TaskAttribute.PRIORITY);
-    }
-
-    public String getSummary() {
-        return getMappedValue(TaskAttribute.SUMMARY);
-    }
-
-    String getResolution() {
-        return getMappedValue(TaskAttribute.RESOLUTION);
-    }
-
-    String getSeverity() {
-        return getValue(BugzillaAttribute.BUG_SEVERITY.getKey());
-    }
-
-    Set<TaskAttribute> getResolveAttributes(String resolution) {
-        Set<TaskAttribute> attrs = new HashSet<TaskAttribute>();
-        TaskAttribute rta = data.getRoot();
-        TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.OPERATION);
-        ta.setValue("resolve");
-        attrs.add(ta);
-        ta = rta.getMappedAttribute(TaskAttribute.RESOLUTION);
-        ta.setValue(resolution);
-        attrs.add(ta);
-        return attrs;
-    }
-
-    private IssueNode createNode() {
-        return new BugzillaIssueNode(this);
-    }
-
-    private String getMappedValue(String key) {
-        TaskAttribute a = data.getRoot().getMappedAttribute(key);
-        return a != null ? a.getValue() : "";
-    }
-
-    TaskData getData() {
-        return data;
-    }
-
-    private String getValue(String key) {
-        TaskAttribute a = data.getRoot().getMappedAttribute(key);
-        return a != null ? a.getValue() : "";
-    }
-
-    Comment[] getComments() {
-        List<TaskAttribute> attributes = data.getAttributeMapper().getAttributesByType(data, TaskAttribute.TYPE_COMMENT);
-        if (attributes == null) {
-            return new Comment[0];
-        }
-        List<Comment> comments = new ArrayList<Comment>();
-        for (TaskAttribute taskAttribute : attributes) {
-            comments.add(new Comment(taskAttribute));
-        }
-        return comments.toArray(new Comment[comments.size()]);
-    }
-
-    Attachment[] getAttachments() {
-        List<TaskAttribute> attributes = data.getAttributeMapper().getAttributesByType(data, TaskAttribute.TYPE_ATTACHMENT);
-        if (attributes == null) {
-            return new Attachment[0];
-        }
-        List<Attachment> attachments = new ArrayList<Attachment>(attributes.size());
-        for (TaskAttribute taskAttribute : attributes) {
-            attachments.add(new Attachment(taskAttribute));
-        }
-        return attachments.toArray(new Attachment[attachments.size()]);
-    }
-
-    // XXX carefull - implicit refresh
-    public void addComment(String comment, boolean close) {
-        if(comment == null && !close) {
-            return;
-        }
-        refresh();
-
-        // resolved attrs
-        Set<TaskAttribute> attrs = null;
-        if(close) {
-            attrs = getResolveAttributes("FIXED");
-        }
-        // commet attrs
-        if(comment != null) {
-            TaskAttribute ta = data.getRoot().createMappedAttribute(TaskAttribute.COMMENT_NEW);
-            ta.setValue(comment);
-            attrs.add(ta);
-        }
-        try {
-            // done
-            RepositoryResponse rr = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(getTaskRepository(), data, attrs, new NullProgressMonitor());
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        }
-    }
-
-    public void refresh() {
-        try {
-            data = Bugzilla.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), data.getTaskId(), new NullProgressMonitor());
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        }
-        if(controller != null) {
-            controller.refreshViewData();
-        }
     }
 
     @Override
@@ -336,12 +199,230 @@ public class BugzillaIssue extends Issue {
         if(attributes == null) {
             attributes = new HashMap<String, String>();
             attributes.put("id", getID());
-            attributes.put("summary", getSummary());
-            attributes.put("status", getStatus());
-            attributes.put("priority", getPriority());
+            for (IssueField field : IssueField.values()) {
+                attributes.put(field.key, getFieldValue(field));
+            }
         }
         attributes.put("seen", wasSeen() ? "1" : "0"); // XXX
         return attributes;
+    }
+
+    public static String getID(TaskData taskData) {
+        try {
+            return Integer.toString(BugzillaRepositoryConnector.getBugId(taskData.getTaskId()));
+        } catch (CoreException ex) {
+            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+        }
+        return "";
+    }
+
+    TaskRepository getTaskRepository() {
+        return repository.getTaskRepository();
+    }
+
+    BugzillaRepository getRepository() {
+        return repository;
+    }
+
+    public String getID() {
+        return getID(data);
+    }
+
+    public String getSummary() {
+        return getFieldValue(IssueField.SUMMARY);
+    }
+
+    public void setTaskData(TaskData taskData) {
+        data = taskData;
+        attributes = null; // reset
+        ((BugzillaIssueNode)getNode()).fireDataChanged();
+    }
+
+    TaskData getTaskData() {
+        return data;
+    }
+
+    public void setSeen(boolean seen, boolean cacheRefresh) {
+        super.setSeen(seen);
+        if(cacheRefresh) {
+            repository.getCache().setSeen(getID(), seen, getAttributes());
+        }
+    }
+
+    String getFieldValue(IssueField f) {
+        TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
+        return a != null ? a.getValue() : "";
+    }
+
+    void setFieldValue(IssueField f, String value) {
+        TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
+        if(a == null) {
+            a = new TaskAttribute(data.getRoot(), f.key);
+        }
+        a.setValue(value);
+    }
+
+
+    List<String> getFieldValues(IssueField f) {
+        TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
+        return a != null ? a.getValues() : Collections.EMPTY_LIST;
+    }
+
+    void setFieldValues(IssueField f, List<String> ccs) {
+        TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
+        if(a == null) {
+            a = new TaskAttribute(data.getRoot(), f.key);
+        }
+        a.setValues(ccs);
+    }
+
+    int getFieldStatus(IssueField f) {
+        Map<String, String> a = getAttributes();
+        String seenValue = a.get(f.key);
+        if(seenValue == null) {
+            return IssueField.STATUS_NEW;
+        } else if (!seenValue.equals(getFieldValue(f))) {
+            return IssueField.STATUS_MODIFIED;
+        }
+        return IssueField.STATUS_UPTODATE;
+    }
+
+
+    // XXX get rid of this
+    Set<TaskAttribute> getResolveAttributes(String resolution) {
+        Set<TaskAttribute> attrs = new HashSet<TaskAttribute>();
+        TaskAttribute rta = data.getRoot();
+        TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.OPERATION);
+        ta.setValue(BugzillaOperation.resolve.getInputId());
+        attrs.add(ta);
+        ta = rta.getMappedAttribute(TaskAttribute.RESOLUTION);
+        ta.setValue(resolution);
+        attrs.add(ta);
+        return attrs;
+    }
+
+    private IssueNode createNode() {
+        return new BugzillaIssueNode(this);
+    }
+
+    void resolve(String resolution) {
+        setOperation(BugzillaOperation.resolve);
+        TaskAttribute rta = data.getRoot();
+        TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.RESOLUTION);
+        ta.setValue(resolution);        
+    }
+
+    void duplicate(String id) {
+        setOperation(BugzillaOperation.duplicate);
+        TaskAttribute rta = data.getRoot();
+        TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.duplicate.getInputId());
+        ta.setValue(id);
+    }
+
+    void reassigne(String user) {
+        setOperation(BugzillaOperation.reassign);
+        TaskAttribute rta = data.getRoot();
+        TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.reassign.getInputId());
+        ta.setValue(user);
+    }
+
+    void verify() {
+        setOperation(BugzillaOperation.verify);
+    }
+
+    void close() {
+        setOperation(BugzillaOperation.close);
+    }
+
+    void reopen() {
+        setOperation(BugzillaOperation.reopen);
+    }
+
+    private void setOperation(BugzillaOperation operation) {
+        TaskAttribute rta = data.getRoot();
+        TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.OPERATION);
+        ta.setValue(operation.name());
+    }
+
+    Attachment[] getAttachments() {
+        List<TaskAttribute> attrs = data.getAttributeMapper().getAttributesByType(data, TaskAttribute.TYPE_ATTACHMENT);
+        if (attrs == null) {
+            return new Attachment[0];
+        }
+        List<Attachment> attachments = new ArrayList<Attachment>(attrs.size());
+        for (TaskAttribute taskAttribute : attrs) {
+            attachments.add(new Attachment(taskAttribute));
+        }
+        return attachments.toArray(new Attachment[attachments.size()]);
+    }
+
+    void addAttachment(File f, String comment, String desc) {
+        FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(f);
+        attachmentSource.setContentType("text/plain");
+        BugzillaTaskAttachmentHandler.AttachmentPartSource source = new BugzillaTaskAttachmentHandler.AttachmentPartSource(attachmentSource);
+
+        try {
+            Bugzilla.getInstance().getRepositoryConnector().getClientManager().getClient(getTaskRepository(), new NullProgressMonitor()).
+            postAttachment(getID(), comment, desc, attachmentSource.getContentType(), false, source, new NullProgressMonitor());
+        } catch (HttpException ex) {
+            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+        } catch (CoreException ex) {
+            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+        }
+    }
+
+    Comment[] getComments() {
+        List<TaskAttribute> attrs = data.getAttributeMapper().getAttributesByType(data, TaskAttribute.TYPE_COMMENT);
+        if (attrs == null) {
+            return new Comment[0];
+        }
+        List<Comment> comments = new ArrayList<Comment>();
+        for (TaskAttribute taskAttribute : attrs) {
+            comments.add(new Comment(taskAttribute));
+        }
+        return comments.toArray(new Comment[comments.size()]);
+    }
+
+    // XXX carefull - implicit refresh
+    public void addComment(String comment, boolean close) {
+        if(comment == null && !close) {
+            return;
+        }
+        refresh();
+
+        // resolved attrs
+        Set<TaskAttribute> attrs = null; // XXX looks like we don't need this at all - see in submmit -> attr = null
+        if(close) {
+            attrs = getResolveAttributes("FIXED");
+        }
+        // commet attrs
+        if(comment != null) {
+            TaskAttribute ta = data.getRoot().createMappedAttribute(TaskAttribute.COMMENT_NEW);
+            ta.setValue(comment);
+            attrs.add(ta);
+        }
+        try {
+            submit();
+        } catch (CoreException ex) {
+            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+        }
+    }
+
+    void submit() throws CoreException {
+        RepositoryResponse rr = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(getTaskRepository(), data, null, new NullProgressMonitor());
+    }
+
+    public void refresh() {
+        try {
+            data = Bugzilla.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), data.getTaskId(), new NullProgressMonitor());
+        } catch (CoreException ex) {
+            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+        }
+        if(controller != null) {
+            controller.refreshViewData();
+        }
     }
     
     class Comment {
