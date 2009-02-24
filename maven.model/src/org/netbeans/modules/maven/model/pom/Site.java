@@ -52,5 +52,18 @@ public interface Site extends IdPOMComponent {
 //      <xs:element name="url" minOccurs="0" type="xs:string">
 //    </xs:all>
 //  </xs:complexType-->
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getUrl();
+    void setUrl(String url);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getName();
+    void setName(String name);
 
 }

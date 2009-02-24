@@ -73,6 +73,8 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  * @author eu155513
  */
 public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> implements CsmOffsetableDeclaration, CsmInstantiation, CsmIdentifiable {
+    private static final int MAX_INHERITANCE_DEPTH = 20;
+
     protected final T declaration;
     protected final Map<CsmTemplateParameter, CsmType> mapping;
     private String fullName = null;
@@ -225,6 +227,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         public Class(CsmClass clazz, CsmType type) {
             super(clazz, type);
             assert type.isInstantiation() : "Instantiation without parameters"; // NOI18N
+            assert !isRecursion(this, MAX_INHERITANCE_DEPTH) : "infinite recursion in "+toString();
         }
         
         public Class(CsmClass clazz, Map<CsmTemplateParameter, CsmType> mapping) {
@@ -241,6 +244,17 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
 
         public boolean isTemplate() {
             return ((CsmTemplate)declaration).isTemplate();
+        }
+
+        private boolean isRecursion(CsmTemplate type, int i){
+            if (i == 0) {
+                return true;
+            }
+            if (type instanceof Class) {
+                Class t = (Class) type;
+                return isRecursion((CsmTemplate)t.declaration, i-1);
+            }
+            return false;
         }
 
         private CsmMember createMember(CsmMember member) {
@@ -782,6 +796,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             }
             this.originalType = origType;
             this.instantiatedType = newType;
+            assert !isRecursion(this, MAX_INHERITANCE_DEPTH) : "infinite recursion in "+this.toString();
         }
         
         private boolean instantiationHappened() {
@@ -829,6 +844,35 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         public boolean isInstantiation() {
             return instantiatedType.isInstantiation();
         }
+
+        private boolean isRecursion(CsmType type, int i){
+            if (i == 0) {
+                return true;
+            }
+            if (type instanceof Instantiation.NestedType) {
+                Instantiation.NestedType t = (NestedType) type;
+                if (t.parentType != null) {
+                    return isRecursion(t.parentType, i-1);
+                } else {
+                    return isRecursion(t.instantiatedType, i-1);
+                }
+            } else if (type instanceof Type) {
+                return isRecursion(((Type)type).instantiatedType, i-1);
+            } else if (type instanceof org.netbeans.modules.cnd.modelimpl.csm.NestedType) {
+                org.netbeans.modules.cnd.modelimpl.csm.NestedType t = (org.netbeans.modules.cnd.modelimpl.csm.NestedType) type;
+                if (t.getParent() != null) {
+                    return isRecursion(t.getParent(), i-1);
+                } else {
+                    return false;
+                }
+            } else if (type instanceof TypeImpl){
+                return false;
+            } else if (type instanceof TemplateParameterTypeImpl){
+                return isRecursion(((TemplateParameterTypeImpl)type).getTemplateType(), i-1);
+            }
+            return false;
+        }
+
 
         public boolean isTemplateBased() {
             return isTemplateBased(new HashSet<CsmType>());

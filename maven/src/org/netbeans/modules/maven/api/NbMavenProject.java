@@ -45,12 +45,15 @@ import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import javax.swing.SwingUtilities;
 import org.apache.maven.embedder.MavenEmbedder;
 import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.dependency.tree.DependencyNode;
+import org.netbeans.modules.maven.MavenProjectPropsImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
@@ -222,6 +225,17 @@ public final class NbMavenProject {
     }
 
     /**
+     *
+     * @param embedder
+     * @param activeProfiles
+     * @param properties
+     * @return
+     */
+    public MavenProject loadAlternateMavenProject(MavenEmbedder embedder, List<String> activeProfiles, Properties properties) {
+        return project.loadMavenProject(embedder, activeProfiles, properties);
+    }
+
+    /**
      * 
      * @param test are test resources requested, if false, resources for base sources are returned
      * @return
@@ -260,7 +274,7 @@ public final class NbMavenProject {
      * @return 
      */
     public String getPackagingType() {
-        AuxiliaryProperties props = project.getAuxProps();
+        MavenProjectPropsImpl props = project.getAuxProps();
         String custom = props.get(Constants.HINT_PACKAGING, true);
         MavenProject orig = project.getOriginalMavenProject();
 // ignore the old solution. getRawMappings() is expensive in this context..
