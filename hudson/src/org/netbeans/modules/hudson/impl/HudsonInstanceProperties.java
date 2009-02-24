@@ -112,10 +112,17 @@ public class HudsonInstanceProperties extends HashMap<String,String> {
                         NbBundle.getMessage(HudsonInstanceProperties.class, "TXT_Instance_Prop_Url"),
                         NbBundle.getMessage(HudsonInstanceProperties.class, "DESC_Instance_Prop_Url"),
                         true, false),
-                        new HudsonInstanceProperty(INSTANCE_SYNC,
+                        new PropertySupport<Integer>(INSTANCE_SYNC, Integer.class,
                         NbBundle.getMessage(HudsonInstanceProperties.class, "TXT_Instance_Prop_Sync"),
                         NbBundle.getMessage(HudsonInstanceProperties.class, "DESC_Instance_Prop_Sync"),
-                        true, true)
+                        true, true) {
+                            public Integer getValue() {
+                                return Integer.valueOf(get(INSTANCE_SYNC));
+                            }
+                            public void setValue(Integer val) {
+                                put(INSTANCE_SYNC, val.toString());
+                            }
+                        }
             });
         }
         
