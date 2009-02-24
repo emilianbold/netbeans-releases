@@ -58,12 +58,14 @@ import org.openide.util.Utilities;
 import javax.swing.*;
 import javax.swing.border.*;
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.python.api.PythonOptions;
 import org.netbeans.modules.python.api.PythonPlatform;
 import org.netbeans.modules.python.debugger.CompositeCallback;
 import org.netbeans.modules.python.debugger.Debuggee;
 import org.netbeans.modules.python.debugger.PythonDebugParameters;
+import org.netbeans.modules.python.debugger.Utils;
 import org.netbeans.modules.python.debugger.backend.DebuggerContextChangeListener;
 import org.netbeans.modules.python.debugger.backend.PluginEvent;
 import org.netbeans.modules.python.debugger.backend.PluginEventListener;
@@ -82,6 +84,7 @@ import org.netbeans.modules.python.debugger.utils.CommandLineListener;
 import org.netbeans.modules.python.debugger.utils.MiscStatic;
 import org.netbeans.modules.python.debugger.utils.Swing;
 import org.netbeans.modules.python.debugger.utils.SwingEhnStatusBar;
+import org.openide.text.Line;
 
 /**
  * Main Python container Panel class
@@ -112,6 +115,7 @@ public class PythonDebugContainer implements PythonContainer {
   private final static String _READSRC_ = "GLBCMD READSRC ";
   private final static String _NEXT_ = "NEXT ";
   private final static String _STEP_ = "STEP ";
+  private final static String _STEP_OUT_ = "STEPOUT ";
   private final static String _RUN_ = "RUN ";
   private final static String _STOP_ = "GLBCMD STOP ";
   private final static String _STACK_ = "STACK ";
@@ -124,7 +128,7 @@ public class PythonDebugContainer implements PythonContainer {
   private final static String _COMPOSITE_ = "COMPOSITE ";
   private final static String _LASTFRAME_ = "<LastFrame>";
   private final static String _SPACE_ = " ";
-  private final static String _EMPTY_ = "";
+  private final static String _NONE_ = "None";
   public final static PythonVariableTreeDataNode ROOTNODE =
           PythonVariableTreeDataNode.buildDataNodes(null, "", "",
           PythonVariableTreeDataNode.COMPOSITE);
@@ -156,7 +160,6 @@ public class PythonDebugContainer implements PythonContainer {
   private PythonDebugClient _pyClient = new PythonDebugClient();
   /** debug pane Stdout container */
   private SwingEhnStatusBar _msgBar = new SwingEhnStatusBar();
-
   // private DebugToolbar _dbgToolbar = new DebugToolbar();
   private _REPORT_TABPANE_ _reportTab = new _REPORT_TABPANE_();
   private PythonOutputPanel _setoutPane;
@@ -164,7 +167,6 @@ public class PythonDebugContainer implements PythonContainer {
   private _STATUS_BAR_ _statusBar;
   private boolean _debugging = false;
   private boolean _newSource = false;
-
   //private ActionListener     _sendCommandListener = new _SEND_COMMAND_();
   // private EditableEnterCombo _command             =
   //  _dbgToolbar.buildCombo(DebugEvent.COMMANDFIELD, true, _sendCommandListener);
@@ -175,10 +177,8 @@ public class PythonDebugContainer implements PythonContainer {
   private _LOCAL_VARIABLES_ _locals;
   private _GLOBAL_VARIABLES_ _globals;
   private _DEBUGEVENT_MANAGER_ _evtListener = null;
-
   // current debugging script start arguments
   private String _scriptArgs = null;
-
   // private Hashtable _breakpoints      = new Hashtable();
   private Hashtable<String, String> _changedVariables = new Hashtable<String, String>();
   // private boolean   _bpPopulated      = false;
@@ -230,12 +230,20 @@ public class PythonDebugContainer implements PythonContainer {
    * @param source
    * @param line
    */
-  public void setBreakPoint(String source, int line) {
+  public void setBreakPoint(String source,
+          int line,
+          boolean temp,
+          String condition,
+          int filter,
+          HIT_COUNT_FILTERING_STYLE fst) {
     // storeBreakPoint(source, line);
     if (_state != INACTIVE) {
-
+      String fstStyle = null;
+      if (fst != null) {
+        fstStyle = fst.toString();
+      }
       // server running populate breakpoint
-      breakpointSubcommand(_BPSET_, source, line);
+      breakpointSubcommand(_BPSET_, source, line, temp, condition, filter, fstStyle);
     }
   }
 
@@ -249,12 +257,13 @@ public class PythonDebugContainer implements PythonContainer {
     // releaseBreakPoint(source, line);
     if (_state != INACTIVE) // server running populate breakpoint
     {
-      breakpointSubcommand(_BPCLEAR_, source, line);
+      breakpointSubcommand(_BPCLEAR_, source, line, false, null, -1, null);
     }
   }
 
   private void debugSubcommand(String subcommand) {
-    if (subcommand.equals(_STEP_) ||
+    if (    subcommand.equals(_STEP_) ||
+            subcommand.equals(_STEP_OUT_) ||
             subcommand.equals(_RUN_) ||
             subcommand.equals(_NEXT_)) {
       _statusBar.setBusy();
@@ -269,7 +278,28 @@ public class PythonDebugContainer implements PythonContainer {
     }
   }
 
-  private void breakpointSubcommand(String fx, String source, int line) {
+  private String buildConditionString(String condition) {
+    char quote = '\'';
+    StringBuffer returned = new StringBuffer();
+
+    if (condition.indexOf('\'') != -1) {
+      quote = '"';
+    }
+
+    returned.append(quote);
+    returned.append(condition);
+    returned.append(quote);
+
+    return returned.toString();
+  }
+
+  private void breakpointSubcommand(String fx,
+          String source,
+          int line,
+          boolean temp,
+          String condition,
+          int filter,
+          String filterStyle) {
     StringBuffer sent = new StringBuffer(fx);
 
     // make local / remote fname translation
@@ -283,11 +313,36 @@ public class PythonDebugContainer implements PythonContainer {
       sent.append(_SPACE_);
       sent.append(line);
     }
+
+    // temporary breakpoints
+    sent.append(_SPACE_);
+    if (temp) {
+      sent.append('1');
+    } else {
+      sent.append('0');
+    }
+
+    sent.append(_SPACE_);
+    // conditional stuff
+    if (condition == null) {
+      sent.append(_NONE_);
+    } else {
+      sent.append(buildConditionString(condition));
+    }
+
+    if (filter > 0) {
+      sent.append(_SPACE_);
+      sent.append(filter);
+      sent.append(_SPACE_);
+      sent.append(filterStyle);
+    }
+
     try {
       _pyClient.sendCommand(sent.toString());
     } catch (PythonDebugException ex) {
       _msgBar.setError("breakpoint subcommand failed : " + ex.getMessage());
     }
+
   }
 
   private String convertDosFiles(String candidate) {
@@ -392,19 +447,6 @@ public class PythonDebugContainer implements PythonContainer {
     }
   }
 
-  /**
-   * populate toolbar action listeners
-   */
-  private void setActions() {
-    Hashtable<String, Object> actions = new Hashtable<String, Object>();
-
-    actions.put(DebugEvent.STOP, new _DEBUGGING_STOP_());
-    // actions.put(DebugEvent.SENDCOMMAND, _sendCommandListener);
-    actions.put(DebugEvent.STEPOVER, new _STEP_OVER_());
-    actions.put(DebugEvent.STEPINTO, new _STEP_INTO_());
-    actions.put(DebugEvent.RUN, new _RUN_());
-    // _dbgToolbar.setActions(actions);
-  }
 
   public void dbgVariableChanged(String name, String value, boolean global) {
     _changedVariables.put(name, value);
@@ -439,14 +481,33 @@ public class PythonDebugContainer implements PythonContainer {
 
   }
 
+  public void activateStepOut() {
+    if (_state != INACTIVE) {
+      debugSubcommand(_STEP_OUT_);
+    }
+
+  }
+
   public void activateNext() {
     if (_state != INACTIVE) {
       debugSubcommand(_NEXT_);
     }
   }
 
-  public void activateContinue() {
+  public void activateContinue( boolean toCursor ) {
     if (_state != INACTIVE) {
+      if (toCursor) {
+        // just put a temporary breakpoint at current cursor line location
+        // if Run To Cursor is requested
+        Line cursor = Utils.getCurrentLine();
+        int lineLoc = cursor.getLineNumber()+1;
+        setBreakPoint(_curDebuggee.getScript(),
+                lineLoc,
+                true,
+                null,
+                -1,
+                HIT_COUNT_FILTERING_STYLE.EQUAL);
+      }
       debugSubcommand(_RUN_);
     }
   }
@@ -517,7 +578,7 @@ public class PythonDebugContainer implements PythonContainer {
       //_callLevel--;
 
       // end of python Program Reached
-      if ( e.get_retVal().equals(_LASTFRAME_) ) {
+      if (e.get_retVal().equals(_LASTFRAME_)) {
         _DEBUGGING_TERMINATOR_ terminator = new _DEBUGGING_TERMINATOR_();
         terminator.start();
       }
@@ -1116,7 +1177,6 @@ public class PythonDebugContainer implements PythonContainer {
     }
   }
 
-
   // TODO : FULLY REVISIT THE CLASS BELLOW TO IMPLEMENT NETBEANS
   // STACK CHANGE
   class _STACK_ITEM_CHANGED_ implements ItemListener {
@@ -1194,29 +1254,6 @@ public class PythonDebugContainer implements PythonContainer {
     }
   }
 
-  /*
-  class _SEND_COMMAND_ implements ActionListener
-  {
-  public void actionPerformed(ActionEvent e)
-  {
-  try
-  {
-
-  // System.out.println("entering _SEND_COMMAND_") ;
-  String curSelected = _command.getText();
-  if ((curSelected != null) && (curSelected.length() > 0))
-  {
-  _setoutPane.writeHeader(curSelected);
-  _pyClient.sendCommand(_COMMAND_ + curSelected);
-  }
-  }
-  catch (PythonDebugException ex)
-  {
-  _msgBar.setError("SendCommand Exception occured : " + ex.getMessage());
-  }
-  }
-  }
-   */
   class _SEND_SHELL_COMMAND_
           implements CommandLineListener {
 
@@ -1234,49 +1271,10 @@ public class PythonDebugContainer implements PythonContainer {
     }
   }
 
-  /*
-  class _COMMAND_PANEL_ extends JPanel
-  {
-
-  public _COMMAND_PANEL_()
-  {
-  JLabel text = new JLabel(" command : ");
-  setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-  _command.setEnabled(false);
-  _dbgSend.setEnabled(false);
-  _dbgSend.setBorderPainted(false);
-  _dbgSend.setRolloverEnabled(true);
-  _dbgSend.setBorder(null);
-
-  // _dbgSendLabel.setEnabled(false) ;
-  // prevent height expansion of the _command JText field area
-  Dimension d = _command.getMaximumSize();
-  Dimension e = _command.getPreferredSize();
-  d.height = e.height;
-  _command.setMaximumSize(d);
-
-  add(text);
-  add(_command);
-  add(Box.createRigidArea(new Dimension(5, 5)));
-  add(_dbgSend);
-  add(Box.createRigidArea(new Dimension(5, 5)));
-
-  // add ( _dbgSendLabel ) ;
-  super.setBorder(Swing.buildBorder("Python shell",
-  TitledBorder.LEFT,
-  TitledBorder.TOP,
-  Swing.BOXBOLDGRAY,
-  Swing.BEVELRAISED
-  )
-  );
-  }
-  }
-   */
   class _STATUS_BAR_ extends JPanel {
 
     private JLabel _elapsedTimeLabel = new JLabel(_INACTIVE_TEXT_);
     private JLabel _cancel = new JLabel(_INACTIVE_);
-
     // private ActionListener _cancelAction = null ;
     private boolean _busy = false;
     private AnimatedCursor _cursor = new AnimatedCursor(_parent);
@@ -1369,8 +1367,7 @@ public class PythonDebugContainer implements PythonContainer {
 
       add(BorderLayout.NORTH, _statusBar);
       add(BorderLayout.CENTER, _setoutPane);
-      add(BorderLayout.SOUTH, _msgBar ) ; 
-      setActions();
+      add(BorderLayout.SOUTH, _msgBar);
 
       add(BorderLayout.CENTER, _setoutPane);
       setContext(INACTIVE);

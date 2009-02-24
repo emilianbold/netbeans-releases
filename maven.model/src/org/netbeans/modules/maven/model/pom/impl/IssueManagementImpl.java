@@ -63,4 +63,22 @@ public class IssueManagementImpl extends POMComponentImpl implements IssueManage
         visitor.visit(this);
     }
 
+    public String getUrl() {
+        return getChildElementText(getModel().getPOMQNames().URL.getQName());
+    }
+
+    public void setUrl(String url) {
+        setChildElementText(getModel().getPOMQNames().URL.getName(), url,
+                getModel().getPOMQNames().URL.getQName());
+    }
+
+    public String getSystem() {
+        return getChildElementText(getModel().getPOMQNames().SYSTEM.getQName());
+    }
+
+    public void setSystem(String system) {
+        setChildElementText(getModel().getPOMQNames().SYSTEM.getName(), system,
+                getModel().getPOMQNames().SYSTEM.getQName());
+    }
+
 }

@@ -373,6 +373,9 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                         int n = tabbedPane.getTabCount();
                         for (int i = 0; i < n; i++) {
                             java.awt.Component c = tabbedPane.getComponentAt(i);
+                            if (c instanceof javax.swing.JPanel) {
+                                c = (java.awt.Component) ((javax.swing.JPanel) c).getClientProperty(javax.swing.JLabel.class.getName());
+                            }
                             if (c instanceof javax.swing.JLabel) {
                                 String id = ((javax.swing.JLabel) c).getText();
                                 if (providerToDisplay != null) {
@@ -387,6 +390,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                                     viewIcon
                                 ));
                                 tabbedPane.setComponentAt(i, contentComponent);
+                                contentComponent.putClientProperty(javax.swing.JLabel.class.getName(), c);
                             }
                         }
                         view.add(tabbedPane);

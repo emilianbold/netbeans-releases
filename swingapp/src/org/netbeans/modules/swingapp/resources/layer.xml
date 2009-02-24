@@ -103,6 +103,19 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
         </folder>
+        <folder name="org-netbeans-modules-maven">
+            <folder name="Archetypes">
+                <file name="appframework-archetype">
+                    <attr name="position" intvalue="300"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.swingapp.resources.Bundle"/>
+                    <attr name="groupId" stringvalue="org.codehaus.mojo.archetypes"/>
+                    <attr name="artifactId" stringvalue="appframework"/>
+                    <attr name="version" stringvalue="1.0"/>
+                    <!--attr name="repository" stringvalue=""/-->
+                    <attr name="nameBundleKey" stringvalue="TIT_Appframework_Archetype"/>
+                    <attr name="descriptionBundleKey" stringvalue="DESC_Appframework_Archetype"/>
+                </file>
+            </folder>
+        </folder>
     </folder>
-
 </filesystem>

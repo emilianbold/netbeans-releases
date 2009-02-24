@@ -101,12 +101,13 @@ public class SourceRoots {
         addRoot(projectRoot, SourceCategory.SRC_JAVA, result);
         addRoot(projectRoot, SourceCategory.TEST_INTEGRATION, result);
         addRoot(projectRoot, SourceCategory.TEST_UNIT, result);
-        for (FileObject child : projectRoot.getChildren()) {
-            if (child.isFolder() && VisibilityQuery.getDefault().isVisible(child) &&
-                    !GrailsSources.KNOWN_FOLDERS.contains(child.getName())) {
-                result.add(child);
-            }
-        }
+// this may lead to OOME when plugin dir is in project root
+//        for (FileObject child : projectRoot.getChildren()) {
+//            if (child.isFolder() && VisibilityQuery.getDefault().isVisible(child) &&
+//                    !GrailsSources.KNOWN_FOLDERS.contains(child.getName())) {
+//                result.add(child);
+//            }
+//        }
         FileObject grailsAppFo = projectRoot.getFileObject("grails-app"); // NOI18N
         if (grailsAppFo != null) {
             for (FileObject child : grailsAppFo.getChildren()) {

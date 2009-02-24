@@ -40,7 +40,11 @@
 package org.netbeans.nbbuild;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.Collections;
+import java.util.Enumeration;
 import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -140,7 +144,16 @@ public class CustomJavac extends Javac {
             Commandline cmd = setupModernJavacCommand();
             try {
                 Path cp = ((CustomJavac) getJavac()).javacClasspath;
-                AntClassLoader cl = new AntClassLoader(getJavac().getProject(), cp, false);
+                AntClassLoader cl = new AntClassLoader(getJavac().getProject(), cp, false) {
+                    public @Override Enumeration<URL> getResources(String name) throws IOException {
+                        // #158934 - ACL.gR is unimplemented.
+                        if (name.equals("META-INF/services/javax.annotation.processing.Processor")) {
+                            return Collections.enumeration(Collections.<URL>emptySet());
+                        } else {
+                            return super.getResources(name);
+                        }
+                    }
+                };
                 cl.setIsolated(true); // otherwise RB.gB("c.s.t.j.r.compiler") -> tools.jar's compiler.class despite our compiler.properties
                 Class<?> c = Class.forName("com.sun.tools.javac.Main", true, cl);
                 getJavac().log("Running javac from " + c.getProtectionDomain().getCodeSource().getLocation(), Project.MSG_VERBOSE);

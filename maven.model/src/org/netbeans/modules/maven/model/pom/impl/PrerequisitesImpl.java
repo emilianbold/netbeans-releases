@@ -63,4 +63,13 @@ public class PrerequisitesImpl extends POMComponentImpl implements Prerequisites
         visitor.visit(this);
     }
 
+    public String getMaven() {
+        return getChildElementText(getModel().getPOMQNames().MAVEN.getQName());
+    }
+
+    public void setMaven(String maven) {
+        setChildElementText(getModel().getPOMQNames().MAVEN.getName(), maven,
+                getModel().getPOMQNames().MAVEN.getQName());
+    }
+
 }

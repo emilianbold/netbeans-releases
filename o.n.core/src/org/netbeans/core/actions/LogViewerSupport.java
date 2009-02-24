@@ -45,17 +45,11 @@
 
 package org.netbeans.core.actions;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.File;
 import java.util.*;
 import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.filesystems.*;
 import org.openide.util.*;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
 import org.openide.windows.*;
 
 /** Connects the output stream of a file to the IDE output window.
@@ -110,27 +104,8 @@ public class LogViewerSupport implements Runnable {
         final int MAX_LINES = 10000;
         String line;
 
-        ////System.out.println("io close or not"+io.isClosed());
-        if (io.isClosed()){//tab is closed by the user
-            shouldStop =true;
-        }
-        else{
-                        // it is possilbe in the case of only
-                        // 1 tab, that the tab is hidden, not
-                        // closed. In this case we need to
-                        // detect that and close our stream
-                        // anyway to unlock the log file
-            shouldStop =true; //assume the tab is hidden
-            TopComponent.Registry rr= TopComponent.getRegistry();
-            for (TopComponent tc: rr.getOpened()) {
-                if (tc.toString().startsWith("org.netbeans.core.output2.OutputWindow")){
-                    // the tab is not hidden so we should not stopped!!!
-                    shouldStop =false;
-                    break;
-                }
-            }
-        }
-        
+        shouldStop = io.isClosed();
+
         if (!shouldStop) {
             try {
                 if (lines >= MAX_LINES) {

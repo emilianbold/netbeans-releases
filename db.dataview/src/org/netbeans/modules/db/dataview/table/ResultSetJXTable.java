@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR parent HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of parent file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of parent file to be governed by only the CDDL
@@ -45,7 +45,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.sql.Timestamp;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -70,6 +69,8 @@ import org.jdesktop.swingx.renderer.JRendererCheckBox;
 import org.jdesktop.swingx.table.DatePickerCellEditor;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.output.DataView;
+import org.netbeans.modules.db.dataview.util.DateType;
+import org.netbeans.modules.db.dataview.util.TimestampType;
 
 /**
  * A better-looking table than JTable, implements JXTable and a decorator to draw empty rows 
@@ -163,10 +164,10 @@ public class ResultSetJXTable extends JXTableDecorator {
         b.addKeyListener(kl);
         setDefaultEditor(Boolean.class, new BooleanTableCellEditor(b));
 
-        DatePickerCellEditor dateEditor = new DatePickerCellEditor(DateFormat.getDateInstance());
+        DatePickerCellEditor dateEditor = new DatePickerCellEditor(DateType.DEFAULT_FOMAT);
         setDefaultEditor(java.sql.Date.class, dateEditor);
 
-        DateTimePickerCellEditor dateTimeEditor = new DateTimePickerCellEditor(DateFormat.getDateTimeInstance());
+        DateTimePickerCellEditor dateTimeEditor = new DateTimePickerCellEditor(TimestampType.DEFAULT_FORMAT);
         dateTimeEditor.addKeyListener(kl);
         setDefaultEditor(Timestamp.class, dateTimeEditor);
         setDefaultEditor(java.util.Date.class, dateTimeEditor);

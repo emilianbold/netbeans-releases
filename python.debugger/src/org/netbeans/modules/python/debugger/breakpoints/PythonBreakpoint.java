@@ -39,6 +39,7 @@
 package org.netbeans.modules.python.debugger.breakpoints;
 
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.modules.python.debugger.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.Line;
@@ -50,6 +51,15 @@ import org.openide.text.Line;
 public class PythonBreakpoint
         extends Breakpoint {
 
+  /** The style of filtering of hit counts.
+   * The breakpoint is reported when the actual hit count is "equal to",
+   * "greater than" or "multiple of" the number specified by the hit count filter. */
+  public static enum HIT_COUNT_FILTERING_STYLE {
+
+    EQUAL, GREATER, MULTIPLE
+  }
+  private final static String _UPDATED_ = "updated";
+  private String _condition = ""; // NOI18N
   private boolean _enabled = true;
   private Line _line;
 
@@ -65,6 +75,11 @@ public class PythonBreakpoint
    */
   public boolean isEnabled() {
     return _enabled;
+
+  }
+
+  public String getCondition() {
+    return _condition;
   }
 
   /**
@@ -80,6 +95,15 @@ public class PythonBreakpoint
 
   public Line getLine() {
     return _line;
+  }
+
+  protected void fireUpdated() {
+    firePropertyChange(_UPDATED_, null, null);
+  }
+
+
+  public void setCondition(String condition) {
+    _condition = condition;
   }
 
   /**
@@ -104,5 +128,10 @@ public class PythonBreakpoint
   public int getLineNumber() {
     // Note that Line.getLineNumber() starts at zero
     return getLine().getLineNumber() + 1;
+  }
+
+  public void setLine(String url, int lineNumber) {
+    // Note that Line.getLineNumber() starts at zero
+    _line = Utils.getLine(url, lineNumber - 1);
   }
 }
