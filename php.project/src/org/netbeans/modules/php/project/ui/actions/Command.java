@@ -85,12 +85,19 @@ public abstract class Command {
         return ConfigAction.get(ConfigAction.convert(ProjectPropertiesSupport.getRunAs(project)), project);
     }
 
-    protected boolean isTestFile(Lookup context) {
-        FileObject fileObj = CommandUtils.fileForContextOrSelectedNodes(context);
+    protected boolean isTestFile(FileObject fileObj) {
         // #156939
         if (fileObj == null) {
             return false;
         }
         return CommandUtils.isUnderTests(project, fileObj, false);
+    }
+
+    protected boolean isSeleniumFile(FileObject fileObj) {
+        // #156939
+        if (fileObj == null) {
+            return false;
+        }
+        return CommandUtils.isUnderSelenium(project, fileObj, false);
     }
 }

@@ -45,7 +45,10 @@ import java.util.HashMap;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Breakpoint;
 import java.beans.PropertyChangeEvent;
-import org.netbeans.modules.python.debugger.DebuggerAnnotation;
+import org.netbeans.modules.python.debugger.DebuggerBreakpointAnnotation;
+import org.openide.text.AnnotationProvider;
+import org.openide.text.Line.Set;
+import org.openide.util.Lookup;
 
 /**
  * Netbeans breakpoint semantics
@@ -54,15 +57,13 @@ import org.netbeans.modules.python.debugger.DebuggerAnnotation;
  * property and annotates JPDA Debugger line breakpoints in NetBeans editor.
  * @author jean-yves Mengant
  */
+
+@org.openide.util.lookup.ServiceProvider(service=org.openide.text.AnnotationProvider.class)
 public class BreakpointAnnotationListener
         extends DebuggerManagerAdapter
-        implements PropertyChangeListener {
+        implements PropertyChangeListener , AnnotationProvider {
 
   private Map _breakpointToAnnotation = new HashMap();
-
-  /** Creates a new instance of BreakpointAnnotationListener */
-  public BreakpointAnnotationListener() {
-  }
 
   @Override
   public String[] getProperties() {
@@ -112,16 +113,19 @@ public class BreakpointAnnotationListener
   private void addAnnotation(Breakpoint b) {
     _breakpointToAnnotation.put(
             b,
-            new DebuggerAnnotation(
-            b.isEnabled() ? DebuggerAnnotation.BREAKPOINT_ANNOTATION_TYPE : DebuggerAnnotation.DISABLED_BREAKPOINT_ANNOTATION_TYPE,
-            ((PythonBreakpoint) b).getLine()));
+            new DebuggerBreakpointAnnotation(
+              b.isEnabled() ? DebuggerBreakpointAnnotation.BREAKPOINT_ANNOTATION_TYPE :
+                              DebuggerBreakpointAnnotation.DISABLED_BREAKPOINT_ANNOTATION_TYPE,
+              ( (PythonBreakpoint) b).getLine() ,
+              b ) );
     b.addPropertyChangeListener(
             Breakpoint.PROP_ENABLED,
             this);
   }
 
+
   private void removeAnnotation(Breakpoint b) {
-    DebuggerAnnotation annotation = (DebuggerAnnotation) _breakpointToAnnotation.remove(b);
+    DebuggerBreakpointAnnotation annotation = (DebuggerBreakpointAnnotation) _breakpointToAnnotation.remove(b);
     if (annotation == null) {
       return;
     }
@@ -130,4 +134,9 @@ public class BreakpointAnnotationListener
             Breakpoint.PROP_ENABLED,
             this);
   }
+
+    public void annotate(Set set, Lookup context) {
+        DebuggerManager.getDebuggerManager().getBreakpoints();
+    }
+
 }

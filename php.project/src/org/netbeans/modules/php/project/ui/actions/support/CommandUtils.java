@@ -203,6 +203,21 @@ public final class CommandUtils {
     }
 
     /**
+     * Return <code>true</code> if {@link FileObject} is underneath project Selenium tests directory
+     * or Selenium tests directory itself.
+     * @param project project to get tests directory from.
+     * @param fileObj {@link FileObject} to check.
+     * @return <code>true</code> if {@link FileObject} is underneath project Selenium tests directory
+     *         or Selenium tests directory itself.
+     */
+    public static boolean isUnderSelenium(PhpProject project, FileObject fileObj, boolean showFileChooser) {
+        assert project != null;
+        assert fileObj != null;
+        FileObject selenium = ProjectPropertiesSupport.getSeleniumDirectory(project, showFileChooser);
+        return selenium != null && (selenium.equals(fileObj) || FileUtil.isParentOf(selenium, fileObj));
+    }
+
+    /**
      * Get {@link FileObject}s for context.
      * @param context context to search in.
      * @return {@link FileObject}s for context.

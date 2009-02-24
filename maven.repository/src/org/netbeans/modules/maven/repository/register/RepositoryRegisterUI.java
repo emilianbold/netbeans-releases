@@ -104,7 +104,6 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
         btnOK.setText(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "CMB_Repo_ADD", new Object[] {})); // NOI18N
         btnOK.setEnabled(false);
 
-        lblHeader.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         lblHeader.setText(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_Register_Header", new Object[] {})); // NOI18N
 
         lblRepoId.setText(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_ID", new Object[] {})); // NOI18N
@@ -191,18 +190,17 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(lblValidate, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 548, Short.MAX_VALUE)
-                            .add(lblHeader, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 548, Short.MAX_VALUE)
+                            .add(lblValidate, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 780, Short.MAX_VALUE)
+                            .add(lblHeader, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 780, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(lblRepoName)
-                                    .add(lblRepoId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 136, Short.MAX_VALUE)
+                                    .add(lblRepoId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
                                     .add(lblType))
                                 .add(14, 14, 14)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(txtRepoId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 398, Short.MAX_VALUE)
-                                    .add(txtRepoName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 398, Short.MAX_VALUE)
+                                    .add(txtRepoId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 468, Short.MAX_VALUE)
+                                    .add(txtRepoName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 468, Short.MAX_VALUE)
                                     .add(org.jdesktop.layout.GroupLayout.LEADING, comType, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 220, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(22, 22, 22)
@@ -224,10 +222,10 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
                                                 .add(org.jdesktop.layout.GroupLayout.LEADING, lblRepoUrl)))))))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(txtIndexUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 398, Short.MAX_VALUE)
-                            .add(txtRepoUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 398, Short.MAX_VALUE)
+                            .add(txtIndexUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 611, Short.MAX_VALUE)
+                            .add(txtRepoUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 611, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
-                                .add(txtRepoPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 325, Short.MAX_VALUE)
+                                .add(txtRepoPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(btnBrowse)))))
                 .addContainerGap())
@@ -268,7 +266,7 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblIndexUrl)
                     .add(txtIndexUrl, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 25, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 24, Short.MAX_VALUE)
                 .add(lblValidate, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 17, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents

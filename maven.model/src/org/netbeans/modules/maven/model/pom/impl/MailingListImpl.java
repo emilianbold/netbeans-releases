@@ -63,6 +63,51 @@ public class MailingListImpl extends POMComponentImpl implements MailingList {
         visitor.visit(this);
     }
 
+    public String getName() {
+        return getChildElementText(getModel().getPOMQNames().NAME.getQName());
+    }
+
+    public void setName(String name) {
+        setChildElementText(getModel().getPOMQNames().NAME.getName(), name,
+                getModel().getPOMQNames().NAME.getQName());
+    }
+
+    public String getSubscribe() {
+        return getChildElementText(getModel().getPOMQNames().SUBSCRIBE.getQName());
+    }
+
+    public void setSubscribe(String subscribe) {
+        setChildElementText(getModel().getPOMQNames().SUBSCRIBE.getName(), subscribe,
+                getModel().getPOMQNames().SUBSCRIBE.getQName());
+    }
+
+    public String getUnsubscribe() {
+        return getChildElementText(getModel().getPOMQNames().UNSUBSCRIBE.getQName());
+    }
+
+    public void setUnsubscribe(String unsubscribe) {
+        setChildElementText(getModel().getPOMQNames().UNSUBSCRIBE.getName(), unsubscribe,
+                getModel().getPOMQNames().UNSUBSCRIBE.getQName());
+    }
+
+    public String getPost() {
+        return getChildElementText(getModel().getPOMQNames().POST.getQName());
+    }
+
+    public void setPost(String post) {
+        setChildElementText(getModel().getPOMQNames().POST.getName(), post,
+                getModel().getPOMQNames().POST.getQName());
+    }
+
+    public String getArchive() {
+        return getChildElementText(getModel().getPOMQNames().ARCHIVE.getQName());
+    }
+
+    public void setArchive(String archive) {
+        setChildElementText(getModel().getPOMQNames().ARCHIVE.getName(), archive,
+                getModel().getPOMQNames().ARCHIVE.getQName());
+    }
+
     public static class List extends ListImpl<MailingList> {
         public List(POMModel model, Element element) {
             super(model, element, model.getPOMQNames().MAILINGLIST, MailingList.class);
