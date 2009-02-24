@@ -39,55 +39,64 @@
 
 package org.netbeans.modules.kenai.collab.im;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.LinkedList;
 import javax.swing.Icon;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.StringUtils;
 import org.netbeans.modules.kenai.collab.chat.ui.ChatTopComponent;
-import org.netbeans.modules.notifications.spi.Notification;
+import org.openide.awt.Notification;
+import org.openide.awt.NotificationDisplayer;
+import org.openide.awt.NotificationDisplayer.Priority;
 
 /**
  *
  * @author Jan Becicka
  */
-class GroupChatNotification extends Notification{
+class GroupChatNotification implements ActionListener{
 
     private Message lastMessage;
+    private Notification thisN;
 
-    @Override
     public String getLinkTitle() {
         return "read";
     }
 
-    @Override
     public String getTitle() {
-        return "<b>New Message</b>";
+        return "New Message";
     }
 
-    @Override
     public String getDescription() {
         String from= StringUtils.parseName(lastMessage.getFrom());
-        return "<i>"+from + " says: </i>" + lastMessage.getBody();
+        return from+" says: " + lastMessage.getBody();
     }
 
-    @Override
     public void showDetails() {
         ChatTopComponent.getDefault().open();
         ChatTopComponent.getDefault().requestActive();
         ChatTopComponent.getDefault().setActive(StringUtils.parseName(lastMessage.getFrom()));
     }
 
-    @Override
     public Priority getPriority() {
         return Priority.NORMAL;
     }
 
-    @Override
     public Icon getIcon() {
         return null;
     }
 
+    void add() {
+        if (thisN!=null)
+            thisN.dispose();
+        thisN = NotificationDisplayer.getDefault().notify(getTitle(), getIcon(), getDescription(), this, getPriority());
+    }
+
     void setMessage(Message msg) {
         lastMessage=msg;
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        showDetails();
     }
 }

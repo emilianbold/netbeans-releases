@@ -108,7 +108,7 @@ public class PresenceIndicator {
     
     private PresenceIndicator() {
         helper = new MouseL();
-        label = new JLabel(NbBundle.getMessage(PresenceIndicator.class, "CTL_PresenceOffline"), OFFLINE, JLabel.HORIZONTAL);
+        label = new JLabel(OFFLINE, JLabel.HORIZONTAL);
         label.addMouseListener(helper);
     }
     

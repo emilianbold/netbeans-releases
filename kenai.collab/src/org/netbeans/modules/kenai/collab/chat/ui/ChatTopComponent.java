@@ -129,6 +129,7 @@ public class ChatTopComponent extends TopComponent {
         KenaiConnection.getDefault();
         Kenai.getDefault().addKenaiListener(new KenaiL());
         chats.addChangeListener(changeListener);
+        putChatsScreen();
 
         //putClientProperty("netbeans.winsys.tc.keep_preferred_size_when_slided_in", Boolean.TRUE);
     }
@@ -212,9 +213,8 @@ public class ChatTopComponent extends TopComponent {
     }
 
 
-
-    public boolean isHandled(Message msg) {
-        return open.contains(StringUtils.parseName(msg.getFrom()));
+    public static boolean isInitedAndVisible() {
+        return instance==null?false:instance.isVisible();
     }
 
     private void putChats() {
