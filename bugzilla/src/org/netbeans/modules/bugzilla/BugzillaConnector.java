@@ -107,18 +107,18 @@ public class BugzillaConnector extends BugtrackingConnector {
             }
             KenaiProjectFeature[] features = project.getFeatures(KenaiFeature.ISSUES);
             for (KenaiProjectFeature f : features) {
-                if(!f.getName().equals("bz")) { // XXX constant?
+                if(!f.getName().equals("bz")) { // XXX constant?                // NOI18N
                     return null;
                 }
                 String url = f.getLocation();
                 int idx = url.indexOf(IBugzillaConstants.URL_BUGLIST);
                 if(idx <= 0) {
-                    Bugzilla.LOG.warning("can't get bugtracking url from [" + project.getName() + ", " + url + "]");
+                    Bugzilla.LOG.warning("can't get bugtracking url from [" + project.getName() + ", " + url + "]"); // NOI18N
                     return null;
                 }
                 url = url.substring(0, idx);
-                if(url.startsWith("http:")) { // XXX hack???
-                    url = "https" + url.substring(4);
+                if(url.startsWith("http:")) { // XXX hack???                    // NOI18N
+                    url = "https" + url.substring(4);                           // NOI18N
                 }
                 String user = Kenai.getDefault().getPasswordAuthentication().getUserName();
                 String psswd = new String(Kenai.getDefault().getPasswordAuthentication().getPassword());
