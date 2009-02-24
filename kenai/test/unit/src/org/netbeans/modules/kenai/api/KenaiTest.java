@@ -58,7 +58,7 @@ public class KenaiTest extends junit.framework.TestCase {
     static String UNITTESTUNIQUENAME_BASE = "testuniquename";
     static String UNITTESTUNIQUENAME = "testuniquename00"; // initial value, will be changed in setUpClass method
     private static Kenai instance;
-    private boolean firstRun = true;
+    private static boolean firstRun = true;
 
     public KenaiTest() {
     }
