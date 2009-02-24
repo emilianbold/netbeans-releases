@@ -256,7 +256,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
 
     }
 
-    public void testReassigne() throws Throwable {
+    public void testReassign() throws Throwable {
         long ts = System.currentTimeMillis();
         String summary = "somary" + ts;
         String id = TestUtil.createIssue(getRepository(), summary);
