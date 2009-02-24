@@ -54,7 +54,7 @@ import java.util.StringTokenizer;
  * Use {@link PtyExecutor} or subclasses thereof to run the program.
  * @author ivan
  */
-public class Command extends Shell {
+public final class Command extends Shell {
     private final String name;
 
     public Command(String command) {
