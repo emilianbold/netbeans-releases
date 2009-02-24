@@ -87,6 +87,7 @@ import org.openide.modules.Dependency;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInstall;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
@@ -296,7 +297,7 @@ final class ModuleList implements Stamps.Updater {
                 // Will only really be flushed if mgr props != disk props, i.e
                 // if version changed or could not be enabled.
                 //status.pendingFlush = true;
-                status.diskProps = props;
+                status.setDiskProps(props);
                 statuses.put(name, status);
             } catch (Exception e) {
                 LOG.log(Level.WARNING, "Error encountered while reading " + name, e);
@@ -1031,7 +1032,7 @@ final class ModuleList implements Stamps.Updater {
         if (old == null) {
             nue = new DiskStatus();
             nue.module = m;
-            nue.diskProps = computeProperties(m);
+            nue.setDiskProps(computeProperties(m));
         } else {
             nue = old;
         }
@@ -1251,7 +1252,7 @@ final class ModuleList implements Stamps.Updater {
                     LOG.fine("ModuleList: changes are " + changes);
                 }
                 // We need to write changes.
-                status.diskProps = newProps;
+                status.setDiskProps(newProps);
                 try {
                     writeOut(m, status);
                 } catch (IOException ioe) {
@@ -1652,7 +1653,7 @@ final class ModuleList implements Stamps.Updater {
                     DiskStatus status = new DiskStatus();
                     status.module = m;
                     status.file = xmlfile;
-                    status.diskProps = statusProps;
+                    status.setDiskProps(statusProps);
                     statuses.put(cnb, status);
                 }
             }
@@ -1681,7 +1682,10 @@ final class ModuleList implements Stamps.Updater {
                 Map<String, Object> props = entry.getValue();
                 if (props.get("enabled") == null || ! ((Boolean)props.get("enabled")).booleanValue()) { // NOI18N
                     DiskStatus status = statuses.get(cnb);
-                    if (status.diskProps.get("enabled") != null && ((Boolean)status.diskProps.get("enabled")).booleanValue()) { // NOI18N
+                    if (status == null) { // Possible? #159001
+                        continue;
+                    }
+                    if (Boolean.TRUE.equals(status.diskProps.get("enabled"))) { // NOI18N
                         if (! status.module.isEnabled()) throw new IllegalStateException("Already disabled: " + status.module); // NOI18N
                         todisable.add(status.module);
                     }
@@ -1770,7 +1774,7 @@ final class ModuleList implements Stamps.Updater {
                 DiskStatus status = statuses.get(cnb);
                 if (status != null) {
                     Map<String,Object> props = entry.getValue();
-                    status.diskProps = props;
+                    status.setDiskProps(props);
                 }
             }
         }
@@ -1797,6 +1801,10 @@ final class ModuleList implements Stamps.Updater {
         public boolean pendingInstall = false;
         /** properties of the module on disk */
         public Map<String,Object /*String|Integer|Boolean|SpecificationVersion*/> diskProps;
+        void setDiskProps(Map<String,Object> diskProps) {
+            Parameters.notNull("diskProps", diskProps);
+            this.diskProps = diskProps;
+        }
         /** if true, the XML was changed on disk by someone else */
         public boolean dirty = false;
         /** for debugging: */

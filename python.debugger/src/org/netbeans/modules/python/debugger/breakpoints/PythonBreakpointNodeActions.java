@@ -55,6 +55,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 public final class PythonBreakpointNodeActions implements NodeActionsProviderFilter {
 
   private static final Action GO_TO_SOURCE_ACTION;
+  private static final Action PROPERTIES_ACTION;
 
   static {
     String name = "GoTo Source";
@@ -66,16 +67,32 @@ public final class PythonBreakpointNodeActions implements NodeActionsProviderFil
 
       public void perform(Object[] nodes) {
         PythonBreakpoint bp = (PythonBreakpoint) nodes[0];
-        Utils.showLine(Utils.getLine(bp.getFilePath(), bp.getLineNumber() - 1));
+        Utils.showLine(Utils.getLineAnnotatable(bp.getFilePath(), bp.getLineNumber() - 1));
       }
     };
     GO_TO_SOURCE_ACTION = Models.createAction(name, ap, Models.MULTISELECTION_TYPE_EXACTLY_ONE);
   }
 
+  static {
+    String name = "Properties ";
+    ActionPerformer ap = new ActionPerformer() {
+
+      public boolean isEnabled(Object node) {
+        return true;
+      }
+
+      public void perform(Object[] nodes) {
+        PythonBreakpoint bp = (PythonBreakpoint) nodes[0];
+        PythonBreakpointActionProvider.customize(bp);
+      }
+    };
+    PROPERTIES_ACTION = Models.createAction(name, ap, Models.MULTISELECTION_TYPE_EXACTLY_ONE);
+  }
+
   public void performDefaultAction(NodeActionsProvider original, Object node) throws UnknownTypeException {
     if (node instanceof PythonBreakpoint) {
       PythonBreakpoint bp = (PythonBreakpoint) node;
-      Utils.showLine(Utils.getLine(bp.getFilePath(), bp.getLineNumber() - 1));
+      Utils.showLine(Utils.getLineAnnotatable(bp.getFilePath(), bp.getLineNumber() - 1));
     } else {
       original.performDefaultAction(node);
     }
@@ -84,10 +101,12 @@ public final class PythonBreakpointNodeActions implements NodeActionsProviderFil
   public Action[] getActions(NodeActionsProvider original, Object node) throws UnknownTypeException {
     Action[] origActions = original.getActions(node);
     if (node instanceof PythonBreakpoint) {
-      Action[] actions = new Action[origActions.length + 2];
+      Action[] actions = new Action[origActions.length + 4];
       actions[0] = GO_TO_SOURCE_ACTION;
       actions[1] = null;
       System.arraycopy(origActions, 0, actions, 2, origActions.length);
+      actions[origActions.length] = null;
+      actions[origActions.length + 1] = PROPERTIES_ACTION;
       return actions;
     } else {
       return origActions;

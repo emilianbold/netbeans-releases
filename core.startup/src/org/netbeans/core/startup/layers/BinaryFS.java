@@ -112,7 +112,7 @@ public class BinaryFS extends FileSystem {
 
     private FileObject root;
     /** list of URLs or time of their modification */
-    private List<Union2<String,Long>> modifications;
+    private final List<Union2<String,Long>> modifications;
     private final Date lastModified = new Date();
 
     @SuppressWarnings("deprecation")
@@ -506,8 +506,7 @@ public class BinaryFS extends FileSystem {
                         throw new IllegalStateException("Bad index: " + index); // NOI18N
                 }
             } catch (Exception exc) {
-                Exceptions.attachMessage(exc, "value = " + value + " from " + foProvider.getPath()); //NOI18N
-                Logger.getLogger(BinaryFS.class.getName()).log(Level.WARNING, null, exc);
+                Logger.getLogger(BinaryFS.class.getName()).log(Level.WARNING, "value = " + value + " from " + foProvider.getPath(), exc); // NOI18N
             }
             return null; // problem getting the value...
         }

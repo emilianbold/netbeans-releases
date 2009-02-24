@@ -52,20 +52,20 @@ public final class ExecutionSupport {
 
     private static ExecutionSupport instance;
 
-    private final GrailsRuntime runtime;
+    private final GrailsPlatform runtime;
 
-    private ExecutionSupport(GrailsRuntime runtime) {
+    private ExecutionSupport(GrailsPlatform runtime) {
         this.runtime = runtime;
     }
 
     public static synchronized ExecutionSupport getInstance() {
         if (instance == null) {
-            instance = new ExecutionSupport(GrailsRuntime.getInstance());
+            instance = new ExecutionSupport(GrailsPlatform.getDefault());
         }
         return instance;
     }
 
-    private static ExecutionSupport forRuntime(GrailsRuntime runtime) {
+    private static ExecutionSupport forRuntime(GrailsPlatform runtime) {
         if (runtime == null) {
             throw new NullPointerException("Runtime is null"); // NOI18N
         }
@@ -87,7 +87,7 @@ public final class ExecutionSupport {
                 FileUtil.createFolder(work);
                 String name = directory.getName();
 
-                GrailsRuntime.CommandDescriptor descriptor = GrailsRuntime.CommandDescriptor.forProject(
+                GrailsPlatform.CommandDescriptor descriptor = GrailsPlatform.CommandDescriptor.forProject(
                         "create-app", work, null, new String[] {name}, null); // NOI18N
 
                 return runtime.createCommand(descriptor).call();
@@ -101,8 +101,8 @@ public final class ExecutionSupport {
             public Process call() throws Exception {
                 File directory = FileUtil.toFile(config.getProject().getProjectDirectory());
 
-                GrailsRuntime.CommandDescriptor descriptor = GrailsRuntime.CommandDescriptor.forProject(
-                        GrailsRuntime.IDE_RUN_COMMAND, directory, config, arguments, null);
+                GrailsPlatform.CommandDescriptor descriptor = GrailsPlatform.CommandDescriptor.forProject(
+                        GrailsPlatform.IDE_RUN_COMMAND, directory, config, arguments, null);
 
                 return runtime.createCommand(descriptor).call();
             }
@@ -116,7 +116,7 @@ public final class ExecutionSupport {
 
             public Process call() throws Exception {
                 File directory = FileUtil.toFile(config.getProject().getProjectDirectory());
-                GrailsRuntime.CommandDescriptor descriptor = GrailsRuntime.CommandDescriptor.forProject(
+                GrailsPlatform.CommandDescriptor descriptor = GrailsPlatform.CommandDescriptor.forProject(
                         command, directory, config, arguments, null);
                 return runtime.createCommand(descriptor).call();
             }

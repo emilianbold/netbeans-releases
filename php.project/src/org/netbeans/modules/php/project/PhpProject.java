@@ -49,7 +49,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -58,6 +57,7 @@ import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
 import org.netbeans.modules.php.project.api.PhpSeleniumProvider;
 import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.php.project.classpath.IncludePathClassPathProvider;
+import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
@@ -495,7 +495,7 @@ public class PhpProject implements Project {
         }
 
         public void runAllTests() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            ConfigAction.get(ConfigAction.Type.SELENIUM, PhpProject.this).runProject();
         }
     }
 }
