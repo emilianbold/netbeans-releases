@@ -545,7 +545,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
-    private void post(Runnable r) {
+    private synchronized void post(Runnable r) {
         if(task != null) {
             task.cancel();
         }
