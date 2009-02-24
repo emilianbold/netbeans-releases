@@ -72,8 +72,13 @@ public class CurrentDocumentScheduler extends CurrentEditorTaskScheduler {
             source = null;
         }
     }
-    
+
+    /**
+     * for tests only
+     * @param source
+     */
     void schedule (Source source) {
+        this.source = source;
         schedule (source, new SchedulerEvent (this) {});
     }
     
@@ -84,7 +89,9 @@ public class CurrentDocumentScheduler extends CurrentEditorTaskScheduler {
 
     @Override
     protected SchedulerEvent createSchedulerEvent (SourceModificationEvent event) {
-        return new SchedulerEvent (this) {};
+        if (event.getModifiedSource () == source)
+            return new SchedulerEvent (this) {};
+        return null;
     }
 }
 

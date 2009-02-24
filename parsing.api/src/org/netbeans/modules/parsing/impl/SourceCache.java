@@ -381,15 +381,23 @@ public final class SourceCache {
         Map<Class<? extends Scheduler>,SchedulerEvent> schedulerEvents = new HashMap<Class<? extends Scheduler>, SchedulerEvent> ();
         for (Scheduler scheduler : Schedulers.getSchedulers ()) {
             SchedulerEvent schedulerEvent = SchedulerAccessor.get ().createSchedulerEvent (scheduler, sourceModificationEvent);
-            schedulerEvents.put (scheduler.getClass (), schedulerEvent);
+            if (schedulerEvent != null)
+                schedulerEvents.put (scheduler.getClass (), schedulerEvent);
         }
         SourceAccessor.getINSTANCE ().setSchedulerEvents (source, schedulerEvents);
+        if (schedulerEvents.isEmpty ())
+            return;
         final List<SchedulerTask> remove = new ArrayList<SchedulerTask> ();
         final List<SchedulerTask> add = new ArrayList<SchedulerTask> ();
         synchronized (this) {
             if (tasks == null)
                 createTasks ();
             for (SchedulerTask task : tasks) {
+                Class<? extends Scheduler> schedulerClass = task.getSchedulerClass ();
+                if (schedulerClass != null &&
+                    !schedulerEvents.containsKey (schedulerClass)
+                )
+                    continue;
                 if (pendingTasks.remove (task)) {
                     add.add (task);
                 }
