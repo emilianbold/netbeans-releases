@@ -6,8 +6,8 @@ package org.netbeans.modules.dlight.visualizers.api.impl;
 
 import java.util.Collection;
 import java.util.Iterator;
-import org.netbeans.modules.dlight.core.stack.spi.SourceFileInfoProvider;
-import org.netbeans.modules.dlight.core.stack.spi.SourceFileInfoProvider.LineInfo;
+import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
+import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.netbeans.modules.dlight.visualizers.SourceSupportProvider;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -43,17 +43,17 @@ public final class OpenFunctionInEditorActionProvider {
         Iterator<? extends SourceFileInfoProvider> iterator = sourceInforFileProviders.iterator();
         while (iterator.hasNext()){
             SourceFileInfoProvider provider = iterator.next();
-            final LineInfo lineInfo = provider.fileName(functionName);
-            if (lineInfo != null && lineInfo.isSourceKnown()){
-                RequestProcessor.getDefault().post(new Runnable() {
-
-                    public void run() {
-                        sourceSupportProvider.showSource(lineInfo);
-                    }
-                });
-                
-                return;
-
+            try{
+                final SourceFileInfo lineInfo = provider.fileName(functionName);
+                if (lineInfo != null && lineInfo.isSourceKnown()){
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            sourceSupportProvider.showSource(lineInfo);
+                        }
+                    });
+                    return;
+                }
+            }catch(SourceFileInfoProvider.SourceFileInfoCannotBeProvided e){                
             }
         }
 

@@ -22,7 +22,7 @@ import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.modules.dlight.core.stack.spi.SourceFileInfoProvider.LineInfo;
+import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
@@ -52,7 +52,7 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
     return NbBundle.getMessage(SourceSupportProviderImpl.class, key, arg);
   }
 
-  public void showSource(LineInfo lineInfo, boolean isReadOnly) {
+  public void showSource(SourceFileInfo lineInfo, boolean isReadOnly) {
     File f = new File(lineInfo.getFileName());
     FileObject fo = FileUtil.toFileObject(f);
     try {
@@ -93,7 +93,7 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
    * 
    * @param lineInfo
    */
-  public void showSource(LineInfo lineInfo) {
+  public void showSource(final SourceFileInfo lineInfo) {
     if (lineInfo == null) {
       StatusDisplayer.getDefault().setStatusText(loc("SourceSupportProviderImpl.NoInfo")); // NOI18N
       return;
@@ -111,7 +111,7 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
 //        String fname = lineInfo[0];
 //        int line = Integer.parseInt(lineInfo[1]);
 
-    final int lineNum = lineInfo.getLine() < 1 ? 1 : lineInfo.getLine();
+//    final int lineNum = lineInfo.getLine() < 1 ? 1 : lineInfo.getLine();
     String fileName = lineInfo.getFileName();
 
 //        // xxx remove after testing
@@ -200,7 +200,7 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
             }
             ((TopComponent) temp).requestActive();
 
-            jumpToLine(pane, lineNum);
+            jumpToLine(pane, lineInfo);
           }
         });
       }
@@ -210,12 +210,18 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
     }
   }
 
-  private static void jumpToLine(JEditorPane pane, int line) {
+  private static void jumpToLine(JEditorPane pane, SourceFileInfo sourceFileInfo) {
     int caretPos = pane.getCaretPosition();
     Container parent = pane.getParent();
     Point viewPos = parent instanceof JViewport ? ((JViewport) parent).getViewPosition()
             : null;
-    int start = lineToPosition(pane, line);
+    int start;
+    if (sourceFileInfo.hasOffset()){
+        start = sourceFileInfo.getOffset();
+    }else{
+        start = lineToPosition(pane, sourceFileInfo.getLine());
+    }
+    
     if (start > 0 && pane.getCaretPosition() == caretPos &&
             pane.getDocument() != null && start < pane.getDocument().getLength() &&
             (viewPos == null || viewPos.equals(((JViewport) parent).getViewPosition()))) {

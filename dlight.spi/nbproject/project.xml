@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
+            <code-name-base>org.netbeans.modules.dlight.spi</code-name-base>
+            <suite-component/>
+            <module-dependencies/>
+            <friend-packages>
+                <friend>org.netbeans.modules.cnd.gizmo</friend>
+                <friend>org.netbeans.modules.dlight.core.stack</friend>
+                <friend>org.netbeans.modules.dlight.visualizers</friend>
+                <package>org.netbeans.modules.dlight.spi</package>
+            </friend-packages>
+        </data>
+    </configuration>
+</project>
