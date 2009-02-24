@@ -54,7 +54,7 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
-import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
+import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
 import org.netbeans.modules.groovy.grailsproject.actions.RefreshProjectRunnable;
@@ -177,7 +177,7 @@ public class NewArtifactWizardIterator implements
         }
         this.serverCommand = sourceCategory.getCommand();
 
-        if(!GrailsRuntime.getInstance().isConfigured()) {
+        if(!GrailsPlatform.getDefault().isConfigured()) {
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(NewArtifactWizardIterator.class,
                     "NewGrailsProjectWizardIterator.NoGrailsServerConfigured"));

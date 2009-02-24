@@ -50,11 +50,7 @@ import org.openide.util.NbBundle;
 public class PanelConfigureProjectVisual extends JPanel {
 
     private PanelConfigureProject panel;
-    private boolean ignoreProjectDirChanges;
-    private boolean ignoreAntProjectNameChanges;
-    private boolean noDir = true;
     private SettingsPanel projectLocationPanel;
-    private PanelOptionsVisual optionsPanel;
 
     /** Creates new form PanelInitProject */
     public PanelConfigureProjectVisual(PanelConfigureProject panel, String name, String wizardTitle, String wizardACSD, boolean showMakefileTextField, int type) {
@@ -63,32 +59,29 @@ public class PanelConfigureProjectVisual extends JPanel {
 
         setName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NameAndLoc")); // NOI18N
 
-        projectLocationPanel = new PanelProjectLocationVisual(panel, name, showMakefileTextField);
+        projectLocationPanel = new PanelProjectLocationVisual(panel, name, showMakefileTextField, type);
         putClientProperty("NewProjectWizard_Title", wizardTitle); // NOI18N
         jSeparator1.setVisible(true);
         getAccessibleContext().setAccessibleName(wizardTitle); // NOI18N
         getAccessibleContext().setAccessibleDescription(wizardACSD); // NOI18N
 
         locationContainer.add(projectLocationPanel, java.awt.BorderLayout.CENTER);
-        optionsPanel = new PanelOptionsVisual(panel, type);
-        //projectLocationPanel.addPropertyChangeListener(optionsPanel);
-        optionsContainer.add(optionsPanel, java.awt.BorderLayout.CENTER);
     }
 
     boolean valid(WizardDescriptor wizardDescriptor) {
         wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
-        return projectLocationPanel.valid(wizardDescriptor) && optionsPanel.valid(wizardDescriptor);
+        return projectLocationPanel.valid(wizardDescriptor);
     }
 
     void read(WizardDescriptor d) {
         projectLocationPanel.read(d);
-        optionsPanel.read(d);
+    //optionsPanel.read(d);
     }
 
     void store(WizardDescriptor d) {
 
         projectLocationPanel.store(d);
-        optionsPanel.store(d);
+    //.store(d);
     }
 
     /** This method is called from within the constructor to

@@ -40,7 +40,6 @@
 package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -59,7 +58,6 @@ import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpUnitCoverageLogParser;
 import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.netbeans.modules.php.project.ui.testrunner.UnitTestRunner;
-import org.netbeans.modules.php.project.util.Pair;
 import org.netbeans.modules.php.project.util.PhpUnit;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -74,7 +72,7 @@ import org.openide.util.NbBundle;
  * It means running and debugging tests.
  * @author Tomas Mysik
  */
-public class ConfigActionTest extends ConfigAction {
+class ConfigActionTest extends ConfigAction {
     private static final String CWD = "."; // NOI18N
     final PhpCoverageProvider coverageProvider;
 
@@ -82,6 +80,14 @@ public class ConfigActionTest extends ConfigAction {
         super(project);
         coverageProvider = project.getLookup().lookup(PhpCoverageProvider.class);
         assert coverageProvider != null;
+    }
+
+    protected FileObject getTestDirectory(boolean showCustomizer) {
+        return ProjectPropertiesSupport.getTestDirectory(project, showCustomizer);
+    }
+
+    protected boolean isCoverageEnabled() {
+        return coverageProvider.isEnabled();
     }
 
     @Override
@@ -96,7 +102,7 @@ public class ConfigActionTest extends ConfigAction {
 
     @Override
     public boolean isRunFileEnabled(Lookup context) {
-        FileObject rootFolder = ProjectPropertiesSupport.getTestDirectory(project, false);
+        FileObject rootFolder = getTestDirectory(false);
         assert rootFolder != null : "Test directory not found but isRunFileEnabled() for a test file called?!";
         FileObject file = CommandUtils.fileForContextOrSelectedNodes(context, rootFolder);
         return file != null && CommandUtils.isPhpFile(file);
@@ -113,7 +119,7 @@ public class ConfigActionTest extends ConfigAction {
     @Override
     public void runProject() {
         // first, let user select test directory
-        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, true);
+        FileObject testDirectory = getTestDirectory(true);
         if (testDirectory == null) {
             return;
         }
@@ -126,7 +132,7 @@ public class ConfigActionTest extends ConfigAction {
             return;
         }
 
-        run();
+        run(getPhpUnitInfo(null));
     }
 
     @Override
@@ -136,83 +142,84 @@ public class ConfigActionTest extends ConfigAction {
 
     @Override
     public void runFile(Lookup context) {
-        run(context);
+        run(getPhpUnitInfo(context));
     }
 
     @Override
     public void debugFile(Lookup context) {
-        debug(context);
+        debug(getPhpUnitInfo(context));
     }
 
-    private void run() {
-        run(null);
-    }
-
-    private void run(Lookup context) {
-        Pair<FileObject, String> pair = getValidPair(context);
-        if (pair == null) {
+    void run(PhpUnitInfo info) {
+        if (info == null) {
             return;
         }
 
-        new RunScript(new RunScriptProvider(pair, context)).run();
+        new RunScript(new RunScriptProvider(info)).run();
     }
 
-    private void debug(Lookup context) {
-        Pair<FileObject, String> pair = getValidPair(context);
-        if (pair == null) {
+    void debug(PhpUnitInfo info) {
+        if (info == null) {
             return;
         }
 
-        new DebugScript(new DebugScriptProvider(pair, context)).run();
+        new DebugScript(new DebugScriptProvider(info)).run();
     }
 
-    private Pair<FileObject, String> getValidPair(Lookup context) {
+    private PhpUnitInfo getPhpUnitInfo(Lookup context) {
         PhpUnit phpUnit = CommandUtils.getPhpUnit(true);
         if (phpUnit == null) {
             return null;
         }
-        return getPair(context);
-    }
-
-    // <working directory, unit test name (script name without extension)>
-    private Pair<FileObject, String> getPair(Lookup context) {
-        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, true);
+        FileObject testDirectory = getTestDirectory(true);
         if (testDirectory == null) {
             return null;
         }
         if (context == null) {
-            return getProjectPair(testDirectory);
+            return getProjectPhpUnitInfo(testDirectory);
         }
-        return getFilePair(testDirectory, context);
+        return getFilePhpUnitInfo(testDirectory, context);
     }
 
-    private Pair<FileObject, String> getProjectPair(FileObject testDirectory) {
-        assert testDirectory != null : "Test directory should be defined for running a test file";
-        return Pair.of(testDirectory, CWD);
+    private PhpUnitInfo getProjectPhpUnitInfo(FileObject testDirectory) {
+        return new PhpUnitInfo(testDirectory, null, CWD);
     }
 
-    private Pair<FileObject, String> getFilePair(FileObject testDirectory, Lookup context) {
-        assert testDirectory != null : "Test directory should be defined for running a test file";
+    private PhpUnitInfo getFilePhpUnitInfo(FileObject testDirectory, Lookup context) {
         FileObject fileObj = CommandUtils.fileForContextOrSelectedNodes(context, testDirectory);
         assert fileObj != null : "Fileobject not found for context: " + context;
-        return Pair.of(fileObj.getParent(), fileObj.getName());
+        if (!fileObj.isValid()) {
+            return null;
+        }
+        return new PhpUnitInfo(fileObj.getParent(), fileObj, fileObj.getName());
+    }
+
+    private static class PhpUnitInfo {
+        public final FileObject workingDirectory;
+        public final FileObject startFile;
+        public final String testName;
+
+        public PhpUnitInfo(FileObject workingDirectory, FileObject startFile, String testName) {
+            this.workingDirectory = workingDirectory;
+            this.startFile = startFile;
+            this.testName = testName;
+        }
     }
 
     private class RunScriptProvider implements RunScript.Provider {
-        protected final Lookup context;
-        protected final Pair<FileObject, String> pair;
+        protected final PhpUnitInfo info;
         protected final PhpUnit phpUnit;
         protected final UnitTestRunner testRunner;
         protected final RerunUnitTestHandler rerunUnitTestHandler;
 
-        public RunScriptProvider(Pair<FileObject, String> pair, Lookup context) {
-            assert pair != null;
+        public RunScriptProvider(PhpUnitInfo info) {
+            assert info != null;
 
-            this.pair = pair;
-            this.context = context;
+            this.info = info;
             rerunUnitTestHandler = getRerunUnitTestHandler();
             testRunner = getTestRunner();
             phpUnit = CommandUtils.getPhpUnit(false);
+            assert phpUnit != null;
         }
 
         public ExecutionDescriptor getDescriptor() throws IOException {
@@ -224,13 +231,14 @@ public class ConfigActionTest extends ConfigAction {
                 executionDescriptor = executionDescriptor
                         .preExecution(new Runnable() {
                             public void run() {
+                                rerunUnitTestHandler.disable();
                                 testRunner.start();
                             }
                         })
                         .postExecution(new Runnable() {
                             public void run() {
-                                rerunUnitTestHandler.enable();
                                 testRunner.showResults();
+                                rerunUnitTestHandler.enable();
                                 handleCodeCoverage();
                             }
                         });
@@ -243,39 +251,39 @@ public class ConfigActionTest extends ConfigAction {
 
         public ExternalProcessBuilder getProcessBuilder() {
             ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getProgram())
-                    .workingDirectory(FileUtil.toFile(pair.first));
+                    .workingDirectory(FileUtil.toFile(info.workingDirectory));
             for (String param : phpUnit.getParameters()) {
                 externalProcessBuilder = externalProcessBuilder.addArgument(param);
             }
             externalProcessBuilder = externalProcessBuilder
                     .addArgument(PhpUnit.PARAM_XML_LOG)
                     .addArgument(PhpUnit.XML_LOG.getAbsolutePath());
-            if (coverageProvider.isEnabled()) {
+            if (isCoverageEnabled()) {
                 externalProcessBuilder = externalProcessBuilder
                         .addArgument(PhpUnit.PARAM_COVERAGE_LOG)
                         .addArgument(PhpUnit.COVERAGE_LOG.getAbsolutePath());
             }
             externalProcessBuilder = externalProcessBuilder
-                    .addArgument(pair.second);
+                    .addArgument(info.testName);
             return externalProcessBuilder;
         }
 
         public String getOutputTabTitle() {
             String title = null;
-            if (pair.second == CWD) {
+            if (info.testName == CWD) {
                 title = NbBundle.getMessage(ConfigActionTest.class, "LBL_UnitTestsForTestSourcesSuffix");
             } else {
-                title = pair.second;
+                title = info.testName;
             }
             return String.format("%s - %s", phpUnit.getProgram(), title);
         }
 
         public boolean isValid() {
-            return phpUnit.isValid() && pair.first != null && pair.second != null;
+            return phpUnit.isValid() && info.workingDirectory != null && info.testName != null;
         }
 
         protected RerunUnitTestHandler getRerunUnitTestHandler() {
-            return new RerunUnitTestHandler(context);
+            return new RerunUnitTestHandler(info);
         }
 
         protected UnitTestRunner getTestRunner() {
@@ -283,9 +291,9 @@ public class ConfigActionTest extends ConfigAction {
         }
 
         void handleCodeCoverage() {
-            if (!coverageProvider.isEnabled()
-                    || pair.second != CWD) {
-                // XXX no provider or not enabled or just one test case (could be handled later)
+            if (!isCoverageEnabled()
+                    || info.testName != CWD) {
+                // XXX not enabled or just one test case (could be handled later)
                 return;
             }
 
@@ -302,28 +310,23 @@ public class ConfigActionTest extends ConfigAction {
     }
 
     private final class DebugScriptProvider extends RunScriptProvider implements DebugScript.Provider {
-        protected final File startFile;
-
-        public DebugScriptProvider(Pair<FileObject, String> pair, Lookup context) {
-            super(pair, context);
-            startFile = getStartFile(context);
+        public DebugScriptProvider(PhpUnitInfo info) {
+            super(info);
         }
 
         public Project getProject() {
-            assert context != null : "Only particular test files can be debugged";
-            assert startFile != null;
+            assert info.startFile != null : "Only particular test files can be debugged";
             return project;
         }
 
         public FileObject getStartFile() {
-            assert context != null : "Only particular test files can be debugged";
-            assert startFile != null;
-            return FileUtil.toFileObject(startFile);
+            assert info.startFile != null : "Only particular test files can be debugged";
+            return info.startFile;
         }
 
         @Override
         protected RerunUnitTestHandler getRerunUnitTestHandler() {
-            return new RedebugUnitTestHandler(context);
+            return new RedebugUnitTestHandler(info);
         }
 
         @Override
@@ -331,30 +334,20 @@ public class ConfigActionTest extends ConfigAction {
             assert rerunUnitTestHandler instanceof RedebugUnitTestHandler;
             return new UnitTestRunner(project, TestSession.SessionType.DEBUG, rerunUnitTestHandler);
         }
-
-        private File getStartFile(Lookup context) {
-            if (context == null) {
-                return null;
-            }
-            FileObject testRoot = ProjectPropertiesSupport.getTestDirectory(project, false);
-            assert testRoot != null : "Test root must be known already";
-            FileObject file = CommandUtils.fileForContextOrSelectedNodes(context, testRoot);
-            assert file != null : "Start file must be found";
-            return FileUtil.toFile(file);
-        }
     }
 
     private class RerunUnitTestHandler implements RerunHandler {
-        protected final Lookup context;
+        protected final PhpUnitInfo info;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
         private volatile boolean enabled = false;
 
-        public RerunUnitTestHandler(Lookup context) {
-            this.context = context;
+        public RerunUnitTestHandler(PhpUnitInfo info) {
+            assert info != null;
+            this.info = info;
         }
 
         public void rerun() {
-            run(context);
+            run(info);
         }
 
         public boolean enabled() {
@@ -370,19 +363,28 @@ public class ConfigActionTest extends ConfigAction {
         }
 
         void enable() {
-            enabled = true;
-            changeSupport.fireChange();
+            if (!enabled) {
+                enabled = true;
+                changeSupport.fireChange();
+            }
+        }
+
+        void disable() {
+            if (enabled) {
+                enabled = false;
+                changeSupport.fireChange();
+            }
         }
     }
 
     private class RedebugUnitTestHandler extends RerunUnitTestHandler {
-        public RedebugUnitTestHandler(Lookup context) {
-            super(context);
+        public RedebugUnitTestHandler(PhpUnitInfo info) {
+            super(info);
         }
 
         @Override
         public void rerun() {
-            debug(context);
+            debug(info);
         }
     }
 

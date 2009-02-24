@@ -65,22 +65,13 @@ class PathLookup extends org.openide.util.Lookup {
 
     @Override
     public <T> T lookup(Class<T> clazz) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Item<T> item = lookupItem(new Template<T>(clazz));
+        return (item == null) ? null : item.getInstance();
     }
 
     @Override
     public <T> Result<T> lookup(Template<T> template) {
         return resultJustForPath(delegate.lookup(template));
-    }
-
-    @Override
-    public <T> Collection<? extends T> lookupAll(Class<T> clazz) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public <T> Item<T> lookupItem(Template<T> template) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
