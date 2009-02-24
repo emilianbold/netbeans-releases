@@ -62,7 +62,6 @@ import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.maven.api.CommonArtifactActions;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 
 /**
@@ -250,8 +249,12 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         }
 
         public void hoverChanged(ObjectSceneEvent event, Object previousHoveredObject, Object newHoveredObject) {
-            ArtifactGraphNode nd = (ArtifactGraphNode)newHoveredObject;
-            if (nd == null) {
+            ArtifactGraphNode newH = (ArtifactGraphNode)newHoveredObject;
+            ArtifactGraphNode prevH = (ArtifactGraphNode)previousHoveredObject;
+            if (prevH != null) {
+                // prevH.setHovering(false);
+            }
+            if (newH == null) {
                 //hide detail component
             } else {
                 //show detail component

@@ -105,7 +105,7 @@ class GraphConstructor implements DependencyNodeVisitor {
             edges.add(ed);
         }
 
-        if (grNode.getArtifact() != null) {
+        if (node != root && grNode.getArtifact() != null) {
             grNode.setManagedState(
                     obtainManagedState(grNode.getArtifact().getArtifact(), scene));
         }

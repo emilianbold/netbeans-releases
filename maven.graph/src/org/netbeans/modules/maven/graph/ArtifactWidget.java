@@ -41,6 +41,7 @@ package org.netbeans.modules.maven.graph;
 import java.awt.Color;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.List;
@@ -48,9 +49,11 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.LevelOfDetailsWidget;
 import org.netbeans.api.visual.widget.Widget;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -59,13 +62,13 @@ import org.openide.util.NbBundle;
  */
 class ArtifactWidget extends Widget {
 
-    final Color ROOT = new Color(71, 215, 217);
-    final Color DIRECTS = new Color(50, 217, 217);
+    final Color ROOT = new Color(178, 228, 255);
+    final Color DIRECTS = new Color(178, 228, 255);
     final Color DIRECTS_CONFLICT = new Color(235, 88, 194);
     final Color DISABLE_HIGHTLIGHT = new Color(255, 255, 194);
     final Color HIGHTLIGHT = new Color(255, 255, 129);
-    final Color DISABLE_CONFLICT = new Color(255, 168, 168);
-    final Color CONFLICT = new Color(255, 103, 103);
+    final Color DISABLE_CONFLICT = new Color(219, 155, 153);
+    final Color CONFLICT = new Color(219, 11, 5);
     final Color MANAGED = new Color(30, 255, 150);
     final Color OVERRIDES_MANAGED = new Color(255, 150, 20);
 
@@ -78,6 +81,9 @@ class ArtifactWidget extends Widget {
     private static final int LEFT_BOTTOM = 2;
     private static final int RIGHT_TOP = 3;
     private static final int RIGHT_BOTTOM = 4;
+
+    private static final Image lockImg = ImageUtilities.loadImage("org/netbeans/modules/maven/graph/lock.png");
+    private static final Image brokenLockImg = ImageUtilities.loadImage("org/netbeans/modules/maven/graph/lock-broken.png");
 
     private Widget defaultCard;
     private Widget hiddenCard;
@@ -117,44 +123,6 @@ class ArtifactWidget extends Widget {
         bringToFront();
         setVisible(true);
         this.revalidate();
-    }
-
-    public void checkBackground(ArtifactGraphNode node, Widget widget, boolean shown) {
-        if (node.isRoot()) {
-            widget.setBackground(ROOT);
-        } else {
-            Color primaryBackground = Color.WHITE;
-            if (scopes != null && scopes.size() > 0 && scopes.contains(node.getArtifact().getArtifact().getScope())) {
-                primaryBackground = colorForScope(node.getArtifact().getArtifact().getScope());
-            }
-            boolean conflict = false;
-            for (DependencyNode src : node.getDuplicatesOrConflicts()) {
-                if (src.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
-                    conflict = true;
-                }
-            }
-            Rectangle bnds = widget.getBounds();
-            int h;
-            int w;
-                h = 25;
-                w = 25;
-            if (conflict) {
-                if (node.getPrimaryLevel() == 1) {
-                    widget.setBackground(new GradientPaint(0, 0, DIRECTS_CONFLICT, w, h, primaryBackground));
-                }
-                else if (shown) {
-                    widget.setBackground(new GradientPaint(0, 0, CONFLICT, w, h, primaryBackground));
-                } else {
-                    widget.setBackground(new GradientPaint(0, 0, DISABLE_CONFLICT, w, h, primaryBackground));
-                }
-            } else {
-                if (node.getPrimaryLevel() == 1) {
-                    widget.setBackground(new GradientPaint(0, 0, DIRECTS, w, h, primaryBackground));
-                } else {
-                    widget.setBackground(primaryBackground);
-                }
-            }
-        }
     }
 
     void hightlightText(String searchTerm) {
@@ -199,11 +167,7 @@ class ArtifactWidget extends Widget {
 
     void hightlightScopes(List<String> scopes) {
         this.scopes = scopes;
-        checkBackground(node, defaultCard, true);
-        checkBackground(node, hiddenCard, false);
     }
-
-
 
     private Color colorForScope(String scope) {
         if (Artifact.SCOPE_COMPILE.equals(scope)) {
@@ -240,15 +204,24 @@ class ArtifactWidget extends Widget {
         root.addChild(lbl);
         label1 = lbl;
         Widget details1 = new LevelOfDetailsWidget(scene, 0.5, 0.7, Double.MAX_VALUE, Double.MAX_VALUE);
-        details1.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 1));
+        details1.setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 2));
         root.addChild(details1);
         LabelWidget lbl2 = new LabelWidget(scene);
-        lbl2.setLabel(artifact.getVersion() + "  ");
+        lbl2.setLabel(artifact.getVersion());
+        int mngState = node.getManagedState();
+        ImageWidget img = null;
+        if (mngState != ArtifactGraphNode.UNMANAGED) {
+             img = new ImageWidget(scene,
+                    mngState == ArtifactGraphNode.MANAGED ? lockImg : brokenLockImg);
+        }
         if (!shown) {
             lbl2.setForeground(Color.lightGray);
         }
         details1.addChild(lbl2);
-        checkBackground(node, root, shown);
+        if (img != null) {
+            img.setPaintAsDisabled(!shown);
+            details1.addChild(img);
+        }
         return root;
     }
 
@@ -258,19 +231,12 @@ class ArtifactWidget extends Widget {
         Graphics2D g = getScene().getGraphics();
         Rectangle bounds = getClientArea();
 
-        int state = node.getManagedState();
-        if (ArtifactGraphNode.UNMANAGED != state) {
-            Color c = state == ArtifactGraphNode.MANAGED ? MANAGED : OVERRIDES_MANAGED;
-            paintCorner(RIGHT_TOP, g, bounds, c, Color.WHITE);
-        }
-
         if (node.isRoot()) {
-            g.setColor(ROOT);
-            g.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+            paintBottom(g, bounds, ROOT, Color.WHITE, bounds.height / 2);
         } else {
             if (scopes != null && scopes.size() > 0 && scopes.contains(node.getArtifact().getArtifact().getScope())) {
                 Color scopeC = colorForScope(node.getArtifact().getArtifact().getScope());
-                paintCorner(RIGHT_BOTTOM, g, bounds, scopeC, Color.WHITE);
+                paintCorner(RIGHT_BOTTOM, g, bounds, scopeC, Color.WHITE, bounds.width / 2, bounds.height / 2);
             }
             boolean conflict = false;
             for (DependencyNode src : node.getDuplicatesOrConflicts()) {
@@ -280,31 +246,27 @@ class ArtifactWidget extends Widget {
             }
             Color leftTopC = Color.WHITE;
             if (conflict) {
-                if (node.getPrimaryLevel() == 1) {
-                    leftTopC = DIRECTS_CONFLICT;
-                } else if (true) { // TODO
-                    leftTopC = CONFLICT;
-                } else {
-                    leftTopC = DISABLE_CONFLICT;
-                }
+                leftTopC = LayoutFactory.getActiveCard(this) == defaultCard ?
+                    CONFLICT : DISABLE_CONFLICT;
             } else {
-                if (node.getPrimaryLevel() == 1) {
-                    leftTopC = DIRECTS;
+                int state = node.getManagedState();
+                if (ArtifactGraphNode.OVERRIDES_MANAGED == state) {
+                    leftTopC = OVERRIDES_MANAGED;
                 }
             }
-            paintCorner(LEFT_TOP, g, bounds, leftTopC, Color.WHITE);
+            paintCorner(LEFT_TOP, g, bounds, leftTopC, Color.WHITE, bounds.width, bounds.height / 2);
+
+            if (node.getPrimaryLevel() == 1) {
+                paintBottom(g, bounds, DIRECTS, Color.WHITE, bounds.height / 6);
+            }
         }
-
-
     }
 
-    private static void paintCorner (int corner, Graphics2D g, Rectangle bounds, Color c1, Color c2) {
-        int b = bounds.width / 3;
-        int a = bounds.height / 2;
-
-        double h = a*a + b*b;
-        int x = (int)(a*a*b / h);
-        int y = (int)(a*b*b / h);
+    private static void paintCorner (int corner, Graphics2D g, Rectangle bounds,
+            Color c1, Color c2, int x, int y) {
+        double h = y*y + x*x;
+        int gradX = (int)(y*y*x / h);
+        int gradY = (int)(y*x*x / h);
 
         Point startPoint = new Point();
         Point direction = new Point();
@@ -338,12 +300,18 @@ class ArtifactWidget extends Widget {
         }
         
         g.setPaint(new GradientPaint(startPoint.x, startPoint.y, c1,
-                startPoint.x + direction.x * x,
-                startPoint.y + direction.y * y, c2));
+                startPoint.x + direction.x * gradX,
+                startPoint.y + direction.y * gradY, c2));
         g.fillRect(
-                Math.min(startPoint.x, startPoint.x + direction.x * b),
-                Math.min(startPoint.y, startPoint.y + direction.y * a),
-                b, a);
+                Math.min(startPoint.x, startPoint.x + direction.x * x),
+                Math.min(startPoint.y, startPoint.y + direction.y * y),
+                x, y);
+    }
+
+    private static void paintBottom (Graphics2D g, Rectangle bounds, Color c1, Color c2, int thickness) {
+        g.setPaint(new GradientPaint(bounds.x, bounds.y + bounds.height, c1,
+                bounds.x, bounds.y + bounds.height - thickness, c2));
+        g.fillRect(bounds.x, bounds.y + bounds.height - thickness, bounds.width, thickness);
     }
 
 }
