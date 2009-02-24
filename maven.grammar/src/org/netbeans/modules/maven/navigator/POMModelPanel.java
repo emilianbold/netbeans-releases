@@ -93,7 +93,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -101,7 +100,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager.Provider, Runnable {
 
-    private static final String NAVIGATOR_SHOW_UNDEFINED = "navigator.showUndefined"; //NOi18N
+    private static final String NAVIGATOR_SHOW_UNDEFINED = "navigator.showUndefined"; //NOI18N
     private transient ExplorerManager explorerManager = new ExplorerManager();
     
     private BeanTreeView treeView;
@@ -121,7 +120,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
     public POMModelPanel() {
         initComponents();
         configuration = new Configuration();
-        boolean filterIncludeUndefined = NbPreferences.forModule(POMModelPanel.class).getBoolean(NAVIGATOR_SHOW_UNDEFINED, false);
+        boolean filterIncludeUndefined = NbPreferences.forModule(POMModelPanel.class).getBoolean(NAVIGATOR_SHOW_UNDEFINED, true);
         configuration.setFilterUndefined(filterIncludeUndefined);
 
         treeView = (BeanTreeView)jScrollPane1;
@@ -183,7 +182,6 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
             public void run() {
                 EditorCookie.Observable ec = current.getLookup().lookup(EditorCookie.Observable.class);
                 if (ec == null) {
-                    System.out.println("ec is null");
                     return;
                 }
                 JEditorPane[] panes = ec.getOpenedPanes();
@@ -251,7 +249,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                             System.out.println("no fileobject for " + pom);
                         }
                     }
-                    final POMModelVisitor.POMCutHolder hold = new POMModelVisitor.SingleObjectCH(names, names.PROJECT, "root", Project.class,  configuration);
+                    final POMModelVisitor.POMCutHolder hold = new POMModelVisitor.SingleObjectCH(names, names.PROJECT, "root", Project.class,  configuration); //NOI18N
                     for (Project p : prjs) {
                         hold.addCut(p);
                     }
@@ -359,7 +357,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
     
     private static Node createWaitNode() {
         AbstractNode an = new AbstractNode(Children.LEAF);
-        an.setIconBaseWithExtension("org/netbeans/modules/maven/navigator/wait.gif");
+        an.setIconBaseWithExtension("org/netbeans/modules/maven/navigator/wait.gif"); //NOI18N
         an.setDisplayName(NbBundle.getMessage(POMInheritancePanel.class, "LBL_Wait"));
         return an;
     }
@@ -449,8 +447,8 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
     private class ShowUndefinedAction extends AbstractAction {
 
         public ShowUndefinedAction() {
-            putValue(SMALL_ICON, ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/filterHideFields.gif")));
-            putValue(SHORT_DESCRIPTION, "Show only POM elements defined in at least one place.");
+            putValue(SMALL_ICON, ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/filterHideFields.gif"))); //NOI18N
+            putValue(SHORT_DESCRIPTION, org.openide.util.NbBundle.getMessage(POMModelPanel.class, "DESC_FilterUndefined"));
         }
 
 
@@ -465,7 +463,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
     static class Configuration {
 
         private boolean filterUndefined;
-        public static final String PROP_FILTERUNDEFINED = "filterUndefined";
+        public static final String PROP_FILTERUNDEFINED = "filterUndefined"; //NOI18N
 
         /**
          * Get the value of filterUndefined
