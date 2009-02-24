@@ -1561,9 +1561,9 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                 JMenuItem item = new JMenuItem();
                 item.setAction(new SelectAction(node, index));
                 if (index == 0) {
-                    item.setText("Current : " + artifact != null ? artifact : "project");
+                    item.setText("Current : " + (artifact != null ? artifact : "project"));
                 } else {
-                    item.setText("Parent: " + artifact != null ? artifact : "project");
+                    item.setText("Parent: " + (artifact != null ? artifact : "project"));
                 }
                 item.setEnabled(val[index] != null);
                 menu.add(item);
