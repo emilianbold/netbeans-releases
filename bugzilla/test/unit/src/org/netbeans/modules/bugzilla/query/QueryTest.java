@@ -103,19 +103,24 @@ public class QueryTest extends NbTestCase implements TestConstants {
         q.refresh();
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        assertEquals(1, nl.getIssues(Query.ISSUE_STATUS_NOT_OBSOLETE).size());
-        Issue i = nl.issues.get(0);
+        List<Issue> il = nl.getIssues(Query.ISSUE_STATUS_NOT_OBSOLETE);
+        assertEquals(1, il.size());
+        Issue i = il.get(0);
         assertEquals(summary, i.getSummary());
         assertEquals(id1, i.getID());
+//        Issue[] is = q.getIssues();
+//        assertEquals(1, is.length);
 
         nl.reset();
         q.refresh(p);
         assertTrue(nl.started);
         assertTrue(nl.finished);
         assertEquals(1, nl.getIssues(Query.ISSUE_STATUS_NOT_OBSOLETE).size());
-        i = nl.issues.get(0);
+        i = il.get(0);
         assertEquals(summary, i.getSummary());
         assertEquals(id1, i.getID());
+//        is = q.getIssues();
+//        assertEquals(1, is.length);
     }
 
     public void testGetIssues() throws MalformedURLException, CoreException {
