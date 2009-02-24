@@ -57,6 +57,7 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.css.editor.indent.CssIndentTaskFactory;
 import org.netbeans.modules.css.editor.test.TestBase;
+import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
 import org.netbeans.modules.css.lexer.api.CSSTokenId;
 import org.netbeans.modules.gsf.GsfTestBase.IndentPrefs;
 import org.netbeans.modules.gsf.api.CompilationInfo;
@@ -84,6 +85,7 @@ public class CSSIndenterTest extends TestBase {
     protected void setUp() throws Exception {
         super.setUp();
         NbReaderProvider.setupReaders();
+        AbstractIndenter.inUnitTestRun = true;
 
         MockServices.setServices(TestLanguageProvider.class, MockMimeLookup.class);
         // init TestLanguageProvider
@@ -182,9 +184,14 @@ public class CSSIndenterTest extends TestBase {
         s.release();
     }
 
-    public void testNativeEmbeddingFormatting() throws Exception {
+    public void testNativeEmbeddingFormattingCase1() throws Exception {
         forceHTMLParsingAndWait("testfiles/format1.html", "text/html", HTMLTokenId.language());
         reformatFileContents("testfiles/format1.html", "text/html", HTMLTokenId.language(), new IndentPrefs(4,4));
+    }
+
+    public void testNativeEmbeddingFormattingCase2() throws Exception {
+        forceHTMLParsingAndWait("testfiles/format2.html", "text/html", HTMLTokenId.language());
+        reformatFileContents("testfiles/format2.html", "text/html", HTMLTokenId.language(), new IndentPrefs(4,4));
     }
 
     public void testFormattingNetBeansCSS() throws Exception {

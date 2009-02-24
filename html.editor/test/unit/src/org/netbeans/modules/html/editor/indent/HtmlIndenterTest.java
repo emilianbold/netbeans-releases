@@ -49,6 +49,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.MockServices;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.css.editor.indent.CssIndentTaskFactory;
+import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
 import org.netbeans.modules.css.lexer.api.CSSTokenId;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Formatter;
@@ -72,6 +73,7 @@ public class HtmlIndenterTest extends TestBase2 {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        AbstractIndenter.inUnitTestRun = true;
 
         MockServices.setServices(TestLanguageProvider.class, MockMimeLookup.class);
         // init TestLanguageProvider

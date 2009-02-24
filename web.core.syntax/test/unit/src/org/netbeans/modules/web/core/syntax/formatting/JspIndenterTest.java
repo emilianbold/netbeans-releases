@@ -51,6 +51,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.MockServices;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.css.editor.indent.CssIndentTaskFactory;
+import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
 import org.netbeans.modules.css.lexer.api.CSSTokenId;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Formatter;
@@ -66,7 +67,6 @@ import org.netbeans.modules.web.core.syntax.indent.JspIndentTaskFactory;
 import org.netbeans.test.web.core.syntax.TestBase2;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 
@@ -86,6 +86,7 @@ public class JspIndenterTest extends TestBase2 {
         initParserJARs();
         copyWebProjectJarsTo(new File(getDataDir(), "FormattingProject/lib"));
         NbReaderProvider.setupReaders();
+        AbstractIndenter.inUnitTestRun = true;
 
         
         

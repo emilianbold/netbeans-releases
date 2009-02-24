@@ -74,6 +74,8 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
 
     protected static final boolean DEBUG = true;
 
+    public static boolean inUnitTestRun = false;
+
     private IndenterFormattingContext formattingContext;
 
     public AbstractIndenter(Language<T1> language, Context context) {
@@ -174,6 +176,11 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             }
             calculateIndentation();
             applyIndentation();
+        } catch (BadLocationException ble) {
+            if (inUnitTestRun) {
+                throw new RuntimeException(ble);
+            }
+            Exceptions.printStackTrace(ble);
         } finally {
             if (formattingContext.isLastIndenter()) {
                 formattingContext.removeListener();
@@ -183,7 +190,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         }
     }
 
-    private void calculateIndentation() {
+    private void calculateIndentation() throws BadLocationException {
         final BaseDocument doc = getDocument();
         int startOffset = context.startOffset();
         int endOffset = context.endOffset();
@@ -234,90 +241,80 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             //System.err.println(TokenHierarchy.get(doc));
         }
 
-        try {
-
-            // create chunks of our language from the document:
-            List<JoinedTokenSequence.CodeBlock<T1>> blocks = LexUtilities.createCodeBlocks(doc, language);
-            if (blocks == null) {
-                // nothing to do:
-                return;
-            }
-            if (DEBUG) {
-                //System.err.println(">> Code blocks:\n"+blocks);
-            }
-
-            // create joined TokenSequence for our language
-            JoinedTokenSequence joinedTS = JoinedTokenSequence.createFromCodeBlocks(blocks);
-
-            // start on the beginning of line:
-            int start = Utilities.getRowStart(doc, startOffset);
-            // end after the last line:
-            int end = Utilities.getRowEnd(doc, endOffset)+1;
-            if (end > doc.getLength()) {
-                end = doc.getLength();
-            }
-
-            int initialOffset = 0;
-            if (start > 0) {
-                // find point of stable formatting start if start position not zero
-                TokenSequence<T1> ts = (TokenSequence<T1>)LexUtilities.getTokenSequence(doc, start, language);
-                if (ts == null) {
-                    initialOffset = start;
-                } else {
-                    initialOffset = getFormatStableStart(joinedTS, start, end);
-                }
-            }
-
-            // list of lines with their indentation
-            final List<Line> indentedLines = new ArrayList<Line>();
-
-            // get list of code blocks of our language in form of [line start number, line end number]
-            List<LinePair> linePairs = calculateLinePairs(blocks, initialOffset, end);
-            if (DEBUG) {
-                System.err.println("line pairs to process="+linePairs);
-            }
-
-            // process blocks of our language and record data for each line:
-            processLanguage(joinedTS, linePairs, initialOffset, end, indentedLines);
-
-            assert formattingContext.getIndentationData() != null;
-            List<List<Line>> indentationData = formattingContext.getIndentationData();
-            indentationData.add(indentedLines);
-        } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
+        // create chunks of our language from the document:
+        List<JoinedTokenSequence.CodeBlock<T1>> blocks = LexUtilities.createCodeBlocks(doc, language);
+        if (blocks == null) {
+            // nothing to do:
+            return;
         }
+        if (DEBUG) {
+            //System.err.println(">> Code blocks:\n"+blocks);
+        }
+
+        // create joined TokenSequence for our language
+        JoinedTokenSequence joinedTS = JoinedTokenSequence.createFromCodeBlocks(blocks);
+
+        // start on the beginning of line:
+        int start = Utilities.getRowStart(doc, startOffset);
+        // end after the last line:
+        int end = Utilities.getRowEnd(doc, endOffset)+1;
+        if (end > doc.getLength()) {
+            end = doc.getLength();
+        }
+
+        int initialOffset = 0;
+        if (start > 0) {
+            // find point of stable formatting start if start position not zero
+            TokenSequence<T1> ts = (TokenSequence<T1>)LexUtilities.getTokenSequence(doc, start, language);
+            if (ts == null) {
+                initialOffset = start;
+            } else {
+                initialOffset = getFormatStableStart(joinedTS, start, end);
+            }
+        }
+
+        // list of lines with their indentation
+        final List<Line> indentedLines = new ArrayList<Line>();
+
+        // get list of code blocks of our language in form of [line start number, line end number]
+        List<LinePair> linePairs = calculateLinePairs(blocks, initialOffset, end);
+        if (DEBUG) {
+            System.err.println("line pairs to process="+linePairs);
+        }
+
+        // process blocks of our language and record data for each line:
+        processLanguage(joinedTS, linePairs, initialOffset, end, indentedLines);
+
+        assert formattingContext.getIndentationData() != null;
+        List<List<Line>> indentationData = formattingContext.getIndentationData();
+        indentationData.add(indentedLines);
     }
 
-    private void applyIndentation() {
-        try {
-            if (!formattingContext.isLastIndenter()) {
-                // last formatter will apply changes
-                return;
-            }
-
-            // recalcualte line numbers according to new offsets
-            recalculateLineIndexes();
-
-            // apply line data into concrete indentation:
-            int lineStart = Utilities.getLineOffset(getDocument(), context.startOffset());
-            int lineEnd = Utilities.getLineOffset(getDocument(), context.endOffset());
-            assert formattingContext.getIndentationData() != null;
-            List<List<Line>> indentationData = formattingContext.getIndentationData();
-
-            List<Line> indentedLines = mergeIndentedLines(indentationData);
-            if (DEBUG) {
-                System.err.println("Merged line data:");
-                for (Line l : indentedLines) {
-                    debugIndentation(l.lineStartOffset, l.lineIndent, getDocument().getText(l.lineStartOffset, l.lineEndOffset-l.lineStartOffset+1).
-                            replace("\n", "").replace("\r", "").trim(), l.indentThisLine);
-                }
-            }
-            
-            applyIndents(indentedLines, lineStart, lineEnd, false);
-            
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
+    private void applyIndentation() throws BadLocationException {
+        if (!formattingContext.isLastIndenter()) {
+            // last formatter will apply changes
+            return;
         }
+
+        // recalcualte line numbers according to new offsets
+        recalculateLineIndexes();
+
+        // apply line data into concrete indentation:
+        int lineStart = Utilities.getLineOffset(getDocument(), context.startOffset());
+        int lineEnd = Utilities.getLineOffset(getDocument(), context.endOffset());
+        assert formattingContext.getIndentationData() != null;
+        List<List<Line>> indentationData = formattingContext.getIndentationData();
+
+        List<Line> indentedLines = mergeIndentedLines(indentationData);
+        if (DEBUG) {
+            System.err.println("Merged line data:");
+            for (Line l : indentedLines) {
+                debugIndentation(l.lineStartOffset, l.lineIndent, getDocument().getText(l.lineStartOffset, l.lineEndOffset-l.lineStartOffset+1).
+                        replace("\n", "").replace("\r", "").trim(), l.indentThisLine);
+            }
+        }
+
+        applyIndents(indentedLines, lineStart, lineEnd, false);
     }
 
     private static class LineCommandsPair {
@@ -772,6 +769,21 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     if (rowStartOffset == -1 || rowEndOffset == -1) {
                         continue;
                     }
+
+                    if (rowStartOffset > rowEndOffset) {
+                        // trying to handle properly following CSS case:
+                        //
+                        // 03:       }/*CC */
+                        // 04:   </style>
+                        //
+                        // when line 4 is being processed the CSS token text
+                        // is "/*CC */\n        " which results in rowEndOffset
+                        // pointing just after '\n' and rowStartOffset just to
+                        // the end of token text. This happens because token is
+                        // not whitespace. For now I will ignore these lines and see.
+                        continue;
+                    }
+
                     if (rowEndOffset > overallEndOffset) {
                         rowEndOffset = overallEndOffset;
                     }
@@ -1084,16 +1096,20 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
     }
 
     private void applyIndents(final List<Line> indentedLines,
-            final int lineStart, final int lineEnd, final boolean justAfterOurLanguage) {
+            final int lineStart, final int lineEnd, final boolean justAfterOurLanguage) throws BadLocationException {
+        final BadLocationException ex[] = new BadLocationException[1];
         getDocument().runAtomic(new Runnable() {
             public void run() {
                 try {
                     applyIndents0(indentedLines, lineStart, lineEnd, justAfterOurLanguage);
                 } catch (BadLocationException ble) {
-                    Exceptions.printStackTrace(ble);
+                    ex[0] = ble;
                 }
             }
         });
+        if (ex[0] != null) {
+            throw ex[0];
+        }
     }
 
     private void applyIndents0(List<Line> indentedLines,
@@ -1269,19 +1285,15 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         }
     }
 
-    private void debugIndentation(int lineOffset, List<IndentCommand> iis, String text, boolean indentable) {
-        try {
-            int index = Utilities.getLineOffset(getDocument(), lineOffset);
-            char ch = ' ';
-            if (indentable) {
-                ch = '*';
-            }
-            System.err.println(String.format("%1c[%4d]", ch, index+1)+text);
-            for (IndentCommand ii : iis) {
-                System.err.println("      "+ii);
-            }
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
+    private void debugIndentation(int lineOffset, List<IndentCommand> iis, String text, boolean indentable) throws BadLocationException {
+        int index = Utilities.getLineOffset(getDocument(), lineOffset);
+        char ch = ' ';
+        if (indentable) {
+            ch = '*';
+        }
+        System.err.println(String.format("%1c[%4d]", ch, index+1)+text);
+        for (IndentCommand ii : iis) {
+            System.err.println("      "+ii);
         }
     }
 
