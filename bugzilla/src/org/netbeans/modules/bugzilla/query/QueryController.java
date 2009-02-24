@@ -615,7 +615,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                         panel.setLastRefresh(getLastRefresh());
                         panel.showNoContentPanel(false);
                         if(size == 0) {
-                            panel.tableSummaryLabel.setText(NbBundle.getMessage(QueryController.class, "LBL_MatchingIssues", new Object[] {0})); // XXX
+                            panel.tableSummaryLabel.setText(NbBundle.getMessage(QueryController.class, "LBL_MatchingIssues", new Object[] {0})); // NOI18N // XXX
                         }
                     }
                 });
