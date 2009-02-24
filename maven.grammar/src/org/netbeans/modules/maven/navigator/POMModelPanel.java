@@ -178,7 +178,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                 if (pos != -1) {
                     select(nd, pos, layer);
                 }
-            } else if (objs[0] != null && name == null) {
+            } else if (objs[layer] != null && name == null) {
                 selectByNode(nd.getParentNode(), nd.getLookup().lookup(POMQName.class), layer);
             }
         }
@@ -220,6 +220,14 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                         if (panes != null && panes.length > 0) {
                             JTextComponent component = panes[0];
                             component.setCaretPosition(pos);
+                            if ("pom".equals(dobj.getPrimaryFile().getExt())) {
+                                //make temporarily non-editable??
+//                                component.setEditable(false);
+//                                TopComponent tc = NbEditorUtilities.getOuterTopComponent(component);
+//                                String dn = tc.getDisplayName();
+//                                tc.setDisplayName(dn + " r/o");
+
+                            }
                         }
                     } catch (IOException ioe) {
                     }
@@ -479,7 +487,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         public void actionPerformed(ActionEvent e) {
             boolean current = configuration.isFilterUndefined();
             configuration.setFilterUndefined(!current);
-            NbPreferences.forModule(POMModelPanel.class).putBoolean( NAVIGATOR_SHOW_UNDEFINED, current);
+            NbPreferences.forModule(POMModelPanel.class).putBoolean( NAVIGATOR_SHOW_UNDEFINED, !current);
         }
         
     }
