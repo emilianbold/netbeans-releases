@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -46,22 +45,20 @@ made subject to such option by the copyright holder.
     <action>
         <actionName>run</actionName>
         <packagings>
-            <packaging>pom</packaging>
-            <packaging>nbm</packaging>
+            <packaging>nbm-application</packaging>
         </packagings>
         <goals>
-            <goal>nbm:cluster</goal>
+            <goal>install</goal>
             <goal>nbm:run-platform</goal>
         </goals>
     </action>
     <action>
         <actionName>debug</actionName>
         <packagings>
-            <packaging>pom</packaging>
-            <packaging>nbm</packaging>
+            <packaging>nbm-application</packaging>
         </packagings>
         <goals>
-            <goal>nbm:cluster</goal>
+            <goal>install</goal>
             <goal>nbm:run-platform</goal>
         </goals>
         <properties>

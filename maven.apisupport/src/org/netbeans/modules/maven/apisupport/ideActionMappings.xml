@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -46,7 +45,6 @@ made subject to such option by the copyright holder.
     <action>
         <actionName>run</actionName>
         <packagings>
-            <packaging>pom</packaging>
             <packaging>nbm</packaging>
         </packagings>
         <goals>
@@ -57,7 +55,6 @@ made subject to such option by the copyright holder.
     <action>
         <actionName>debug</actionName>
         <packagings>
-            <packaging>pom</packaging>
             <packaging>nbm</packaging>
         </packagings>
         <goals>
