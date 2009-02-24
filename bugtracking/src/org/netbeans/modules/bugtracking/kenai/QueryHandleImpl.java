@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,52 +31,66 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking.ui.query;
 
-import org.openide.util.actions.SystemAction;
-import org.openide.util.HelpCtx;
+package org.netbeans.modules.bugtracking.kenai;
 
 import java.awt.event.ActionEvent;
-import javax.swing.SwingUtilities;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.List;
 import org.netbeans.modules.bugtracking.spi.Query;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.bugtracking.ui.query.QueryAction;
+import org.netbeans.modules.kenai.ui.spi.QueryHandle;
+import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
 
 /**
- * 
- * @author Maros Sandor
+ *
+ * @author Tomas Stupka
  */
-public class QueryAction extends SystemAction {
+public class QueryHandleImpl extends QueryHandle implements ActionListener, PropertyChangeListener {
+    private final Query query;
+    private final PropertyChangeSupport changeSupport;
 
-    public QueryAction() {
-        setIcon(null);
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+    public QueryHandleImpl(Query query) {
+        this.query = query;
+        query.addPropertyChangeListener(this);
+        changeSupport = new PropertyChangeSupport(query);
     }
 
-    public String getName() {
-        return NbBundle.getMessage(QueryAction.class, "CTL_QueryAction");
+    @Override
+    public String getDisplayName() {
+        return query.getDisplayName();
     }
 
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(QueryAction.class);
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        changeSupport.addPropertyChangeListener(l);
     }
 
-    public void actionPerformed(ActionEvent ev) {
-        openQuery(null);
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        changeSupport.removePropertyChangeListener(l);
     }
 
-    public static void openQuery(final Query query) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                QueryTopComponent tc;
-                if(query != null) {
-                    tc = new QueryTopComponent();
-                } else {
-                    tc = new QueryTopComponent();
-                }
-                tc.open();
-                tc.requestActive();
-            }
-        });
+    public void actionPerformed(ActionEvent e) {
+        QueryAction.openQuery(query);
     }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if(evt.getPropertyName().equals(Query.EVENT_QUERY_DATA_CHANGED)) {
+            changeSupport.firePropertyChange(null); // XXX add result handles
+        }
+    }
+
+    public List<QueryResultHandle> getQueryResults() {
+        return null;
+    }
+
 }
