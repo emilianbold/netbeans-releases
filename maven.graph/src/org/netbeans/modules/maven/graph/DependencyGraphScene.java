@@ -138,6 +138,10 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         return nbProject;
     }
 
+    MavenProject getMavenProject () {
+        return project;
+    }
+
     ArtifactGraphNode getGraphNodeRepresentant(DependencyNode node) {
         for (ArtifactGraphNode grnode : getNodes()) {
             if (grnode.represents(node)) {
