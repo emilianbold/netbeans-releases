@@ -117,7 +117,7 @@ public class BugzillaConnector extends BugtrackingConnector {
                     return null;
                 }
                 url = url.substring(0, idx);
-                if(url.startsWith("http:")) {
+                if(url.startsWith("http:")) { // XXX hack???
                     url = "https" + url.substring(4);
                 }
                 String user = Kenai.getDefault().getPasswordAuthentication().getUserName();
