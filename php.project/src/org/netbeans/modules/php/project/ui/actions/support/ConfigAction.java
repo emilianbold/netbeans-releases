@@ -46,7 +46,6 @@ import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 /**
@@ -61,6 +60,7 @@ public abstract class ConfigAction {
         REMOTE,
         SCRIPT,
         TEST,
+        SELENIUM,
     }
 
     protected static final Logger LOGGER = Logger.getLogger(ConfigAction.class.getName());
@@ -84,8 +84,7 @@ public abstract class ConfigAction {
                 type = Type.SCRIPT;
                 break;
             default:
-                assert false : "Unknown type: " + runAsType;
-                break;
+                throw new IllegalArgumentException("Unknown type: " + runAsType);
         }
         return type;
     }
@@ -106,9 +105,11 @@ public abstract class ConfigAction {
             case TEST:
                 action = new ConfigActionTest(project);
                 break;
-            default:
-                assert false : "Unknown type: " + type;
+            case SELENIUM:
+                action = new ConfigActionSelenium(project);
                 break;
+            default:
+                throw new IllegalArgumentException("Unknown type: " + type);
         }
         assert action != null;
         return action;

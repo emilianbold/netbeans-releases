@@ -63,6 +63,24 @@ public class LicenseImpl extends POMComponentImpl implements License {
         visitor.visit(this);
     }
 
+    public String getUrl() {
+        return getChildElementText(getModel().getPOMQNames().URL.getQName());
+    }
+
+    public void setUrl(String url) {
+        setChildElementText(getModel().getPOMQNames().URL.getName(), url,
+                getModel().getPOMQNames().URL.getQName());
+    }
+
+    public String getName() {
+        return getChildElementText(getModel().getPOMQNames().NAME.getQName());
+    }
+
+    public void setName(String name) {
+        setChildElementText(getModel().getPOMQNames().NAME.getName(), name,
+                getModel().getPOMQNames().NAME.getQName());
+    }
+
     public static class List extends ListImpl<License> {
         public List(POMModel model, Element element) {
             super(model, element, model.getPOMQNames().LICENSE, License.class);

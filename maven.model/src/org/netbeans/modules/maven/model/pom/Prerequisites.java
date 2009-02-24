@@ -51,4 +51,6 @@ public interface Prerequisites extends POMComponent {
 //    </xs:all>
 //  </xs:complexType-->
 
+    String getMaven();
+    void setMaven(String maven);
 }

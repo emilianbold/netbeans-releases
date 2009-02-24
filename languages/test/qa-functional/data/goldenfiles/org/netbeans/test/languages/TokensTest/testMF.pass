@@ -1,37 +1,30 @@
-keyword:Name
-operator::
-identifier: java/util/
-whitespace:
+KEYWORD:Name
+OPERATOR::
+IDENTIFIER: java/util/
 
-keyword:Specification-Title
-operator::
-identifier: "Java Utility Classes" 
-whitespace:
+KEYWORD:Specification-Title
+OPERATOR::
+IDENTIFIER: "Java Utility Classes" 
 
-keyword:Specification-Version
-operator::
-identifier: "1.2"
-whitespace:
+KEYWORD:Specification-Version
+OPERATOR::
+IDENTIFIER: "1.2"
 
-keyword:Specification-Vendor
-operator::
-identifier: "Sun Microsystems, Inc.".
-whitespace:
+KEYWORD:Specification-Vendor
+OPERATOR::
+IDENTIFIER: "Sun Microsystems, Inc.".
 
-keyword:Implementation-Title
-operator::
-identifier: "java.util" 
-whitespace:
+KEYWORD:Implementation-Title
+OPERATOR::
+IDENTIFIER: "java.util" 
 
-keyword:Implementation-Version
-operator::
-identifier: "build57"
-whitespace:
+KEYWORD:Implementation-Version
+OPERATOR::
+IDENTIFIER: "build57"
 
-keyword:Implementation-Vendor
-operator::
-identifier: "Sun Microsystems, Inc."
-whitespace:
+KEYWORD:Implementation-Vendor
+OPERATOR::
+IDENTIFIER: "Sun Microsystems, Inc."
 
 
 

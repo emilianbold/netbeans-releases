@@ -53,4 +53,14 @@ public interface RepositoryPolicy extends POMComponent {
 //    </xs:all>
 //  </xs:complexType-->
 
+    Boolean isEnabled();
+    void setEnabled(Boolean enabled);
+
+    String getUpdatePolicy();
+    void setUpdatePolicy(String updatePolicy);
+
+    String getChecksumPolicy();
+    void setChecksumPolicy(String checksumPolicy);
+
+
 }
