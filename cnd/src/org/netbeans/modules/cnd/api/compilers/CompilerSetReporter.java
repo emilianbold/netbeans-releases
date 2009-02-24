@@ -57,7 +57,7 @@ public class CompilerSetReporter {
      * Sets a writer to report the process of compiler set setup to
      * @param writer if null, no reporting occurs
      */
-    public static void setWriter(Writer writer) {
+    public static synchronized void setWriter(Writer writer) {
         CompilerSetReporter.writer = writer;
     }
 
@@ -67,7 +67,7 @@ public class CompilerSetReporter {
     }
 
     /* package-local */
-    static void report(String msgKey, boolean addLineFeed, Object... params) {
+    static synchronized void report(String msgKey, boolean addLineFeed, Object... params) {
         if (writer != null) {
             try {
                 writer.write(NbBundle.getMessage(CompilerSetReporter.class, msgKey, params));
