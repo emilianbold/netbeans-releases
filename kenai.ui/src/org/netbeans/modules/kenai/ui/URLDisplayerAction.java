@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,63 +34,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.api;
+package org.netbeans.modules.kenai.ui;
 
-import java.net.MalformedURLException;
+import java.awt.event.ActionEvent;
 import java.net.URL;
-import org.netbeans.modules.kenai.FeatureData;
+import javax.swing.AbstractAction;
+import org.openide.awt.HtmlBrowser.URLDisplayer;
 
 /**
  *
- * @author Maros Sandor
  * @author Jan Becicka
  */
-public final class KenaiProjectFeature {
+public class URLDisplayerAction extends AbstractAction {
 
-    private FeatureData featureData;
-    private URL webL;
-    private URL loc;
-    
-    KenaiProjectFeature(FeatureData data) {
-        this.featureData = data;
-        try {
-            this.webL = new URL(featureData.web_url);
-            this.loc = new URL(featureData.url);
-        } catch (MalformedURLException malformedURLException) {
-            throw new IllegalArgumentException(malformedURLException);
-        }
+    private URL url;
+
+    public URLDisplayerAction(String name, URL url) {
+        super(name);
+        this.url = url;
     }
 
-    public String getName() {
-        return featureData.name;
+    public void actionPerformed(ActionEvent arg0) {
+        URLDisplayer.getDefault().showURL(url);
     }
-
-    public KenaiFeature getType() {
-        return KenaiFeature.forId(featureData.type);
-    }
-
-    public String getService() {
-        return featureData.service;
-    }
-
-    public URL getLocation() {
-        return loc;
-    }
-
-    public URL getWebLocation() {
-        return webL;
-    }
-
-    public String getDisplayName() {
-        return featureData.display_name;
-    }
-
-    @Override
-    public String toString() {
-        return "KenaiProjectFeature " + getName() + ", url=" + getLocation() ;
-    }
-
 }

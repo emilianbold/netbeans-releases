@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,63 +34,62 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.kenai.ui;
 
-package org.netbeans.modules.kenai.api;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import org.netbeans.modules.kenai.FeatureData;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.net.PasswordAuthentication;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiEvent;
+import org.netbeans.modules.kenai.api.KenaiListener;
+import org.netbeans.modules.kenai.ui.spi.LoginHandle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- *
- * @author Maros Sandor
+ * Implementation of LoginHandle. Currently fires events when user logs in/out
  * @author Jan Becicka
  */
-public final class KenaiProjectFeature {
+@ServiceProvider(service=LoginHandle.class)
+public class LoginHandleImpl extends LoginHandle implements KenaiListener {
 
-    private FeatureData featureData;
-    private URL webL;
-    private URL loc;
-    
-    KenaiProjectFeature(FeatureData data) {
-        this.featureData = data;
-        try {
-            this.webL = new URL(featureData.web_url);
-            this.loc = new URL(featureData.url);
-        } catch (MalformedURLException malformedURLException) {
-            throw new IllegalArgumentException(malformedURLException);
-        }
-    }
+    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
-    public String getName() {
-        return featureData.name;
-    }
-
-    public KenaiFeature getType() {
-        return KenaiFeature.forId(featureData.type);
-    }
-
-    public String getService() {
-        return featureData.service;
-    }
-
-    public URL getLocation() {
-        return loc;
-    }
-
-    public URL getWebLocation() {
-        return webL;
-    }
-
-    public String getDisplayName() {
-        return featureData.display_name;
+    public LoginHandleImpl() {
+        Kenai.getDefault().addKenaiListener(this);
     }
 
     @Override
-    public String toString() {
-        return "KenaiProjectFeature " + getName() + ", url=" + getLocation() ;
+    public String getUserName() {
+        final PasswordAuthentication passwordAuthentication = Kenai.getDefault().getPasswordAuthentication();
+        if (passwordAuthentication==null) {
+            return null;
+        }
+        return passwordAuthentication.getUserName();
     }
 
+    /**
+     * Add PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Remove PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+
+    public void stateChanged(KenaiEvent e) {
+        if (e.getType()==KenaiEvent.LOGIN) {
+            propertyChangeSupport.firePropertyChange(PROP_MEMBER_PROJECT_LIST, null, null);
+        }
+    }
 }

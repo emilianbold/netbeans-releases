@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,63 +34,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.api;
+package org.netbeans.modules.kenai.collab.im;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import org.netbeans.modules.kenai.FeatureData;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import org.netbeans.modules.kenai.collab.chat.ui.ChatTopComponent;
+import org.netbeans.modules.kenai.ui.spi.MessagingAccessor;
+import org.netbeans.modules.kenai.ui.spi.MessagingHandle;
+import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Maros Sandor
  * @author Jan Becicka
  */
-public final class KenaiProjectFeature {
+@ServiceProvider(service=MessagingAccessor.class)
+public class MessagingAccessorImpl extends MessagingAccessor {
 
-    private FeatureData featureData;
-    private URL webL;
-    private URL loc;
-    
-    KenaiProjectFeature(FeatureData data) {
-        this.featureData = data;
-        try {
-            this.webL = new URL(featureData.web_url);
-            this.loc = new URL(featureData.url);
-        } catch (MalformedURLException malformedURLException) {
-            throw new IllegalArgumentException(malformedURLException);
-        }
-    }
-
-    public String getName() {
-        return featureData.name;
-    }
-
-    public KenaiFeature getType() {
-        return KenaiFeature.forId(featureData.type);
-    }
-
-    public String getService() {
-        return featureData.service;
-    }
-
-    public URL getLocation() {
-        return loc;
-    }
-
-    public URL getWebLocation() {
-        return webL;
-    }
-
-    public String getDisplayName() {
-        return featureData.display_name;
+    @Override
+    public MessagingHandle getMessaging(ProjectHandle project) {
+        return new MessagingHandleImpl(KenaiConnection.getDefault().getChat(project.getId()));
     }
 
     @Override
-    public String toString() {
-        return "KenaiProjectFeature " + getName() + ", url=" + getLocation() ;
+    public ActionListener getOpenMessagesAction(final ProjectHandle project) {
+        return new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                final ChatTopComponent aDefault = ChatTopComponent.getDefault();
+                aDefault.requestActive();
+                aDefault.setActive(project.getId());
+            }
+        };
     }
-
 }
