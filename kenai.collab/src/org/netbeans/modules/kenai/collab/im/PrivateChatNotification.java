@@ -39,42 +39,43 @@
 
 package org.netbeans.modules.kenai.collab.im;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.LinkedList;
 import javax.swing.Icon;
 import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.StringUtils;
-import org.netbeans.modules.notifications.spi.Notification;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.Notification;
+import org.openide.awt.NotificationDisplayer;
+import org.openide.awt.NotificationDisplayer.Priority;
 
 /**
  *
  * @author Jan Becicka
  */
-class PrivateChatNotification extends Notification{
+class PrivateChatNotification implements ActionListener {
 
     private LinkedList<Message> messageQueue = new LinkedList<Message>();
+    private Notification thisN;
 
-    @Override
     public String getLinkTitle() {
         return "read";
     }
 
-    @Override
     public String getTitle() {
-        return "<b>New Private Message</b>";
+        return "New Private Message";
     }
 
-    @Override
     public String getDescription() {
         final Message top = messageQueue.getFirst();
         String from= StringUtils.parseName(top.getFrom());
-        return "<i>"+from + " says: </i>" + top.getBody();
+        return from + " says: " + top.getBody();
     }
 
-    @Override
     public void showDetails() {
         JEditorPane pane = new JEditorPane();
         pane.setEditable(false);
@@ -90,14 +91,16 @@ class PrivateChatNotification extends Notification{
         clear();
     }
 
-    @Override
-    public Priority getPriority() {
-        return Priority.NORMAL;
+    public NotificationDisplayer.Priority getPriority() {
+        return NotificationDisplayer.Priority.NORMAL;
     }
 
-    @Override
     public Icon getIcon() {
         return null;
+    }
+
+    void add() {
+        thisN = NotificationDisplayer.getDefault().notify(getTitle(), getIcon(), getDescription(), this, getPriority());
     }
 
     void addMessage(Message msg) {
@@ -113,7 +116,12 @@ class PrivateChatNotification extends Notification{
     }
 
     void clear() {
-        this.remove();
+        if (thisN!=null)
+            thisN.dispose();
         messageQueue.clear();
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        showDetails();
     }
 }

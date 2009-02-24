@@ -49,7 +49,6 @@ import org.netbeans.modules.hudson.api.HudsonChangeAdapter;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonManager;
-import org.netbeans.modules.notifications.spi.Notification;
 import org.openide.modules.ModuleInstall;
 
 public class Installer extends ModuleInstall {
@@ -85,7 +84,7 @@ public class Installer extends ModuleInstall {
     private static class InstanceHandler {
 
         private final HudsonInstance instance;
-        private final Collection<Notification> notifications = new LinkedList<Notification>();
+        private final Collection<ProblemNotification> notifications = new LinkedList<ProblemNotification>();
 
         InstanceHandler(HudsonInstance instance) {
             this.instance = instance;
@@ -106,7 +105,7 @@ public class Installer extends ModuleInstall {
                 jobs = instance.getJobs();
             }
             for (HudsonJob job : jobs) {
-                Notification n;
+                ProblemNotification n;
                 switch (job.getColor()) {
                 case red:
                     // XXX should check if the user is among the culprits (need API)
@@ -132,7 +131,7 @@ public class Installer extends ModuleInstall {
         }
 
         void clear() {
-            for (Notification n : notifications) {
+            for (ProblemNotification n : notifications) {
                 n.remove();
             }
         }

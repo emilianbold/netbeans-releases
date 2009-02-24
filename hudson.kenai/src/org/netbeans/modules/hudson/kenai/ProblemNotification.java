@@ -39,13 +39,17 @@
 
 package org.netbeans.modules.hudson.kenai;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.CharConversionException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.Icon;
 import org.netbeans.modules.hudson.api.HudsonJob;
-import org.netbeans.modules.notifications.spi.Notification;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
+import org.openide.awt.Notification;
+import org.openide.awt.NotificationDisplayer;
+import org.openide.awt.NotificationDisplayer.Priority;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.xml.XMLUtil;
@@ -53,11 +57,12 @@ import org.openide.xml.XMLUtil;
 /**
  * Build failed or was unstable.
  */
-class ProblemNotification extends Notification {
+class ProblemNotification implements ActionListener {
 
     private final HudsonJob job;
     private final boolean failed;
     private final boolean running;
+    private Notification thisN;
 
     ProblemNotification(HudsonJob job, boolean failed, boolean running) {
         this.job = job;
@@ -101,4 +106,17 @@ class ProblemNotification extends Notification {
                 (failed ? "red" : "yellow") + (running ? "_run" : "") + ".png", true); // NOI18N
     }
 
+    public void actionPerformed(ActionEvent e) {
+        showDetails();
+    }
+
+    void add() {
+        thisN = NotificationDisplayer.getDefault().notify(getTitle(), getIcon(), getDescription(), this, getPriority());
+    }
+
+    void remove() {
+        if (thisN!=null) {
+            thisN.dispose();
+        }
+    }
 }
