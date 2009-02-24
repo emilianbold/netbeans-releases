@@ -40,6 +40,8 @@
 package org.netbeans.modules.maven.navigator;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -110,11 +112,11 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     private Map<String, POMCutHolder> childs = new LinkedHashMap<String, POMCutHolder>();
     private int count = 0;
     private POMQNames names;
-    private boolean filterUndefined;
+    private POMModelPanel.Configuration configuration;
 
-    public POMModelVisitor(POMQNames names, boolean filterUndefined) {
+    POMModelVisitor(POMQNames names, POMModelPanel.Configuration configuration) {
         this.names = names;
-        this.filterUndefined = filterUndefined;
+        this.configuration = configuration;
     }
 
     public void reset() {
@@ -807,7 +809,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             if (any != null && !any.isEmpty()) {
                 POMCutHolder nd = childs.get(el.getQName().getLocalPart());
                 if (nd == null) {
-                    nd = new SingleObjectCH(names, el.getQName(), el.getQName().getLocalPart(), POMExtensibilityElement.class, filterUndefined);
+                    nd = new SingleObjectCH(names, el.getQName(), el.getQName().getLocalPart(), POMExtensibilityElement.class, configuration);
                     childs.put(el.getQName().getLocalPart(), nd);
                 }
                 fillValues(count, nd, el);
@@ -865,7 +867,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     private void checkChildObject(POMQName qname, Class type, String displayName, POMComponent value) {
         POMCutHolder  nd = childs.get(qname.getName());
         if (nd == null) {
-            nd = new SingleObjectCH(names, qname, displayName, type, filterUndefined);
+            nd = new SingleObjectCH(names, qname, displayName, type, configuration);
             childs.put(qname.getName(), nd);
         }
         fillValues(count, nd, value);
@@ -875,7 +877,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     private <T extends POMComponent> void checkListObject(POMQName qname, POMQName childName, Class type, String displayName, List<T> values, KeyGenerator<T> keygen) {
         POMCutHolder nd = childs.get(qname.getName());
         if (nd == null) {
-            nd = new ListObjectCH<T>(names, qname, childName, type, keygen, displayName, filterUndefined);
+            nd = new ListObjectCH<T>(names, qname, childName, type, keygen, displayName, configuration);
             childs.put(qname.getName(), nd);
         }
         fillValues(count, nd, values);
@@ -884,7 +886,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     private void checkStringListObject(POMQName qname, POMQName childName, String displayName, List<String> values) {
         POMCutHolder nd = childs.get(qname.getName());
         if (nd == null) {
-            nd =  new ListStringCH(qname, childName, displayName, filterUndefined);
+            nd =  new ListStringCH(qname, childName, displayName, configuration);
             childs.put(qname.getName(), nd);
         }
         fillValues(count, nd, values);
@@ -917,50 +919,6 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                 });
 
     }
-
-//    private static Children createOverrideListChildren(ChildrenCreator subs, List<List> values) {
-//        Children toRet = new Children.Array();
-//        int count = 0;
-//        for (List lst : values) {
-//            if (lst != null && lst.size() > 0) {
-//                for (Object o : lst) {
-//                    List objectList = new ArrayList(Collections.nCopies(count, null));
-//                    objectList.add(o);
-//                    toRet.add(new Node[] {
-//                        new ObjectNode(Lookup.EMPTY, subs.createChildren(objectList),  subs.createName(o), objectList)
-//                    });
-//                }
-//                break;
-//            }
-//            count = count + 1;
-//        }
-//
-//        return toRet;
-//    }
-//
-//    private static Children createMergeListChildren(ChildrenCreator2 subs, List<POMModel> key, List<List> values) {
-//        Children toRet = new Children.Array();
-//        HashMap<Object, List> content = new HashMap<Object, List>();
-//        List order = new ArrayList();
-//
-//        int count = 0;
-//        for (List lst : values) {
-//            if (lst != null && lst.size() > 0) {
-//                for (Object o : lst) {
-//                    processObjectList(o, content, count, subs);
-//                            new ArrayList(Collections.nCopies(count, null));
-//                }
-//            }
-//            count = count + 1;
-//        }
-//        for (Map.Entry<Object, List> entry : content.entrySet()) {
-//            toRet.add(new Node[] {
-//                new ObjectNode(Lookup.EMPTY, subs.createChildren(entry.getValue(), key), key, subs.createName(entry.getKey()), entry.getValue())
-//            });
-//        }
-//
-//        return toRet;
-//    }
 
 
     private interface KeyGenerator<T extends POMComponent> {
@@ -1035,22 +993,22 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         private String display;
         private Class type;
         private POMQNames names;
-        private boolean filterUndefined;
+        private POMModelPanel.Configuration configuration;
 
-        SingleObjectCH(POMQNames names, POMQName qname, String displayName, Class type, boolean filter) {
+        SingleObjectCH(POMQNames names, POMQName qname, String displayName, Class type, POMModelPanel.Configuration config) {
             this.qname = qname;
             this.display = displayName;
             this.type = type;
             this.names = names;
-            this.filterUndefined = filter;
+            this.configuration = config;
         }
 
-        private SingleObjectCH(POMQNames names, QName qname, String displayName, Class type, boolean filter) {
+        private SingleObjectCH(POMQNames names, QName qname, String displayName, Class type, POMModelPanel.Configuration config) {
             this.qname = qname;
             this.display = displayName;
             this.type = type;
             this.names = names;
-            this.filterUndefined = filter;
+            this.configuration = config;
         }
 
         private SingleObjectCH(POMQName qname, String displayName) {
@@ -1064,7 +1022,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             if (type == null) {
                 return new ObjectNode(Lookups.fixed(this, qname), Children.LEAF, display);
             }
-            return new ObjectNode(Lookups.fixed(this, qname), new PomChildren(this, names, type, filterUndefined), display);
+            return new ObjectNode(Lookups.fixed(this, qname), new PomChildren(this, names, type, configuration), display);
         }
     }
 
@@ -1075,21 +1033,21 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         private String displayName;
         private Class type;
         private KeyGenerator<T> keygen;
-        private boolean filterUndefined;
+        private POMModelPanel.Configuration configuration;
 
-        private ListObjectCH(POMQNames names, POMQName qname, POMQName childName, Class type, KeyGenerator<T> keygen, String displayName, boolean filterUndefined) {
+        private ListObjectCH(POMQNames names, POMQName qname, POMQName childName, Class type, KeyGenerator<T> keygen, String displayName, POMModelPanel.Configuration configuration) {
             this.names = names;
             this.qname = qname;
             this.childName = childName;
             this.displayName = displayName;
             this.type = type;
             this.keygen = keygen;
-            this.filterUndefined = filterUndefined;
+            this.configuration = configuration;
         }
 
         @Override
         Node createNode() {
-            return new ListNode(Lookups.fixed(this, qname), new PomListChildren<T>(this, names, type, keygen, filterUndefined, childName), displayName);
+            return new ListNode(Lookups.fixed(this, qname), new PomListChildren<T>(this, names, type, keygen, configuration, childName), displayName);
         }
 
     }
@@ -1097,15 +1055,14 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     private static class ListStringCH extends POMCutHolder {
         private POMQName qname;
         private String display;
-        private boolean filterUndefined;
         private POMQName childName;
+        private POMModelPanel.Configuration configuration;
 
-
-        private ListStringCH(POMQName qname, POMQName childName, String displayName, boolean filter) {
+        private ListStringCH(POMQName qname, POMQName childName, String displayName, POMModelPanel.Configuration configuration) {
             this.qname = qname;
             this.display = displayName;
-            this.filterUndefined = filter;
             this.childName = childName;
+            this.configuration = configuration;
         }
 
         @Override
@@ -1255,33 +1212,45 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
     }
 
-    static class PomChildren extends Children.Keys<POMCutHolder> {
+    static class PomChildren extends Children.Keys<POMCutHolder> implements PropertyChangeListener {
         private POMCutHolder parentHolder;
         private POMQNames names;
         private POMModelVisitor visitor;
         private Class type;
-        private boolean filterUndefined;
-        public PomChildren(POMCutHolder parent, POMQNames names, Class type, boolean filterUndefined) {
+        private POMModelPanel.Configuration configuration;
+        private List<POMCutHolder> children;
+
+        public PomChildren(POMCutHolder parent, POMQNames names, Class type, POMModelPanel.Configuration config) {
             this.parentHolder = parent;
             this.names = names;
             this.type = type;
-            this.filterUndefined = filterUndefined;
+            this.configuration = config;
         }
 
-        public void reshow(boolean filterUndefined) {
-            this.filterUndefined = filterUndefined;
-//TODO            this.refreshKey(one[0]);
+        private void reshow() {
+            List<POMCutHolder> childs = children;
+            if (childs != null) {
+                for (POMCutHolder h : childs) {
+                    if (!POMModelPanel.definesValue(h.getCutValues())) {
+                        refreshKey(h);
+                    }
+                }
+            }
         }
 
         @Override
         protected void addNotify() {
             super.addNotify();
-            setKeys(rescan(new POMModelVisitor(names, filterUndefined)));
+            setKeys(rescan(new POMModelVisitor(names, configuration)));
+            configuration.addPropertyChangeListener(this);
         }
 
         @Override
         protected void removeNotify() {
             super.removeNotify();
+            children = null;
+            configuration.removePropertyChangeListener(this);
+
         }
 
         private List<POMCutHolder> rescan(POMModelVisitor visitor) {
@@ -1297,18 +1266,20 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
-            return Arrays.asList(visitor.getChildValues());
+            children = Arrays.asList(visitor.getChildValues());
+            return children;
         }
 
         @Override
         protected Node[] createNodes(POMCutHolder childkey) {
-            boolean hasNonNullValue = false;
-                for (Object comp : childkey.getCutValues()) {
-                    if (comp != null) {
-                        hasNonNullValue = true;
-                    }
-                }
-            return hasNonNullValue ? new Node[] {childkey.createNode()} : new Node[0];
+            if (configuration.isFilterUndefined() && !POMModelPanel.definesValue(childkey.getCutValues())) {
+                return new Node[0];
+            }
+            return new Node[] {childkey.createNode()};
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            reshow();
         }
 
 
@@ -1321,15 +1292,15 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         private Class type;
         private KeyGenerator<T> keyGenerator;
         private POMQName childName;
-        private boolean filterUndefined;
-        public PomListChildren(POMCutHolder holder, POMQNames names, Class type, KeyGenerator<T> generator, boolean filterUndefined, POMQName childName) {
+        private POMModelPanel.Configuration configuration;
+        public PomListChildren(POMCutHolder holder, POMQNames names, Class type, KeyGenerator<T> generator, POMModelPanel.Configuration configuration, POMQName childName) {
             setKeys(one);
             this.holder = holder;
             this.names = names;
             this.type = type;
             this.keyGenerator = generator;
             this.childName = childName;
-            this.filterUndefined = filterUndefined;
+            this.configuration = configuration;
         }
 
         public void reshow() {
@@ -1369,13 +1340,13 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                 }
 
                 String itemName = keyGenerator.createName(topMost);
-                POMCutHolder cutHolder = new SingleObjectCH(names, childName, itemName, type, filterUndefined);
+                POMCutHolder cutHolder = new SingleObjectCH(names, childName, itemName, type, configuration);
                 for (T c : lst) {
                     cutHolder.addCut(c);
                 }
                 growToSize(holder.getCutsSize(), cutHolder);
 
-                toRet.add(new ObjectNode(Lookups.fixed(cutHolder, childName), new PomChildren(cutHolder, names, type, filterUndefined), itemName));
+                toRet.add(new ObjectNode(Lookups.fixed(cutHolder, childName), new PomChildren(cutHolder, names, type, configuration), itemName));
             }
 
             return toRet.toArray(new Node[0]);

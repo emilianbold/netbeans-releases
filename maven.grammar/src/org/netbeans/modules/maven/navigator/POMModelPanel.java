@@ -115,12 +115,14 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         };
     private TapPanel filtersPanel;
 
-    private boolean filterIncludeUndefined;
+    private Configuration configuration;
 
     /** Creates new form POMInheritancePanel */
     public POMModelPanel() {
         initComponents();
-        filterIncludeUndefined = NbPreferences.forModule(POMModelPanel.class).getBoolean(NAVIGATOR_SHOW_UNDEFINED, false);
+        configuration = new Configuration();
+        boolean filterIncludeUndefined = NbPreferences.forModule(POMModelPanel.class).getBoolean(NAVIGATOR_SHOW_UNDEFINED, false);
+        configuration.setFilterUndefined(filterIncludeUndefined);
 
         treeView = (BeanTreeView)jScrollPane1;
         // filters
@@ -249,7 +251,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                             System.out.println("no fileobject for " + pom);
                         }
                     }
-                    final POMModelVisitor.POMCutHolder hold = new POMModelVisitor.SingleObjectCH(names, names.PROJECT, "root", Project.class,  filterIncludeUndefined);
+                    final POMModelVisitor.POMCutHolder hold = new POMModelVisitor.SingleObjectCH(names, names.PROJECT, "root", Project.class,  configuration);
                     for (Project p : prjs) {
                         hold.addCut(p);
                     }
@@ -324,7 +326,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
             toolbar.setOpaque(false);
             toolbar.setFocusable(false);
             JToggleButton tg1 = new JToggleButton(new ShowUndefinedAction());
-            tg1.setSelected(filterIncludeUndefined);
+            tg1.setSelected(configuration.isFilterUndefined());
             toolbar.add(tg1);
             Dimension space = new Dimension(3, 0);
             toolbar.addSeparator(space);
@@ -453,13 +455,57 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
 
 
         public void actionPerformed(ActionEvent e) {
-            filterIncludeUndefined = !filterIncludeUndefined;
-            NbPreferences.forModule(POMModelPanel.class).putBoolean( NAVIGATOR_SHOW_UNDEFINED, filterIncludeUndefined);
-
-            POMModelVisitor.PomChildren keys = (POMModelVisitor.PomChildren) explorerManager.getRootContext().getChildren();
-            keys.reshow(filterIncludeUndefined);
+            boolean current = configuration.isFilterUndefined();
+            configuration.setFilterUndefined(!current);
+            NbPreferences.forModule(POMModelPanel.class).putBoolean( NAVIGATOR_SHOW_UNDEFINED, current);
         }
         
+    }
+
+    static class Configuration {
+
+        private boolean filterUndefined;
+        public static final String PROP_FILTERUNDEFINED = "filterUndefined";
+
+        /**
+         * Get the value of filterUndefined
+         *
+         * @return the value of filterUndefined
+         */
+        public boolean isFilterUndefined() {
+            return filterUndefined;
+        }
+
+        /**
+         * Set the value of filterUndefined
+         *
+         * @param filterUndefined new value of filterUndefined
+         */
+        public void setFilterUndefined(boolean filterUndefined) {
+            boolean oldFilterUndefined = this.filterUndefined;
+            this.filterUndefined = filterUndefined;
+            propertyChangeSupport.firePropertyChange(PROP_FILTERUNDEFINED, oldFilterUndefined, filterUndefined);
+        }
+        private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
+
+        /**
+         * Add PropertyChangeListener.
+         *
+         * @param listener
+         */
+        public void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
+            propertyChangeSupport.addPropertyChangeListener(listener);
+        }
+
+        /**
+         * Remove PropertyChangeListener.
+         *
+         * @param listener
+         */
+        public void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
+            propertyChangeSupport.removePropertyChangeListener(listener);
+        }
+
     }
 }
 
