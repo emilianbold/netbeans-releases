@@ -395,8 +395,10 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
     private void onNewClick() {
         RepositorySelector rs = new RepositorySelector();
         Repository repo = rs.create();
-        repositoryComboBox.addItem(repo);
-        repositoryComboBox.setSelectedItem(repo);
+        if(repo != null) {
+            repositoryComboBox.addItem(repo);
+            repositoryComboBox.setSelectedItem(repo);
+        }
     }
 
     private void onRepoSelected() {

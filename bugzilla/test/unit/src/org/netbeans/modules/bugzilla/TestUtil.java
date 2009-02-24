@@ -143,4 +143,12 @@ public class TestUtil implements TestConstants {
         return new BugzillaRepository(name, url, user, psswd);
     }
 
+    static void validate(BugzillaRepositoryConnector brc, TaskRepository repository) throws Throwable {
+        try {
+            brc.getClientManager().getClient(repository, NULL_PROGRESS_MONITOR).validate(NULL_PROGRESS_MONITOR);
+        } catch (Exception ex) {
+            handleException(ex);
+        }
+    }
+
 }

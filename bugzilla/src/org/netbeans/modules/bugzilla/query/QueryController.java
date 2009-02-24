@@ -420,13 +420,37 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void onGotoIssue() {
-        // XXX progress, assync, disable fields?
-        Issue issue = repository.getIssue(panel.idTextField.getText());
-        if(issue != null) {
-            issue.open();
-        } else {
-            // XXX nice message?
+        final String id = panel.idTextField.getText().trim();
+        if(id == null || id.trim().equals("") ) {
+            return;
         }
+        
+        final Task[] t = new Task[1];
+        Cancellable c = new Cancellable() {
+            public boolean cancel() {
+                if(t[0] != null) {
+                    return t[0].cancel();
+                }
+                return true;
+            }
+        };
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_Opening", new Object[] {id}), c);
+        t[0] = Bugzilla.getInstance().getRequestProcessor().create(new Runnable() {
+            public void run() {
+                handle.start();
+                try {
+                    Issue issue = repository.getIssue(id);
+                    if (issue != null) {
+                        issue.open();
+                    } else {
+                        // XXX nice message?
+                    }
+                } finally {
+                    handle.finish();
+                }
+            }
+        });
+        t[0].schedule(0);
     }
 
     private void onWeb() {
@@ -559,7 +583,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
         };
 
-        final ProgressHandle handle = ProgressHandleFactory.createHandle("Searching " + query.getDisplayName(), c);
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(this.getClass(), "MSG_SearchingQuery", new Object[] {query.getDisplayName()}), c);
         final JComponent progressBar = ProgressHandleFactory.createProgressComponent(handle);
         panel.showSearchingProgress(true, progressBar, NbBundle.getMessage(this.getClass(), "MSG_Searching"));
 

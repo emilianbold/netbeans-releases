@@ -39,10 +39,18 @@
 
 package org.netbeans.modules.bugzilla;
 
+import java.lang.String;
 import java.util.ArrayList;
 import java.util.List;
+import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
+import org.netbeans.modules.bugtracking.spi.KenaiSupport;
+import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.api.KenaiProjectFeature;
 
 /**
  *
@@ -50,6 +58,8 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class)
 public class BugzillaConnector extends BugtrackingConnector {
+
+    private KenaiSupport kenaiSupport;
 
     public String getDisplayName() {
         return "Bugzilla"; // XXX bundle me!
@@ -79,5 +89,48 @@ public class BugzillaConnector extends BugtrackingConnector {
         }
         return ret.toArray(new Repository[ret.size()]);
     }
-    
+
+    @Override
+    public KenaiSupport getKenaiSupport() {
+        if(kenaiSupport == null) {
+            kenaiSupport = new KenaiSupportImpl();
+        }
+        return kenaiSupport;
+    }
+
+    static class KenaiSupportImpl extends KenaiSupport {
+
+        @Override
+        public Repository getRepository(KenaiProject project) {
+            if(project == null) {
+                return null;
+            }
+            KenaiProjectFeature[] features = project.getFeatures(KenaiFeature.ISSUES);
+            for (KenaiProjectFeature f : features) {
+                if(!f.getName().equals("bz")) { // XXX constant?
+                    return null;
+                }
+                String url = f.getLocation();
+                int idx = url.indexOf(IBugzillaConstants.URL_BUGLIST);
+                if(idx <= 0) {
+                    Bugzilla.LOG.warning("can't get bugtracking url from [" + project.getName() + ", " + url + "]");
+                    return null;
+                }
+                url = url.substring(0, idx);
+                if(url.startsWith("http:")) { // XXX hack???
+                    url = "https" + url.substring(4);
+                }
+                String user = Kenai.getDefault().getPasswordAuthentication().getUserName();
+                String psswd = new String(Kenai.getDefault().getPasswordAuthentication().getPassword());
+                return new BugzillaRepository(project.getDisplayName(), url, user, psswd);
+            }
+            return null;
+        }
+
+        @Override
+        public Query[] getQueries(KenaiProject project) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+    }
 }
