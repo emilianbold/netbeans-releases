@@ -1745,19 +1745,24 @@ abstract public class CsmCompletionQuery {
         }
 
         private CsmObject createInstantiation(CsmTemplate template, CsmCompletionExpression exp) {
-            if (exp.getExpID() == CsmCompletionExpression.GENERIC_TYPE) {
-                List<CsmType> params = new ArrayList<CsmType>();
-                int paramsNumber = (template.getTemplateParameters().size() < exp.getParameterCount() - 1) ? template.getTemplateParameters().size() : exp.getParameterCount() - 1;
-                for (int i = 0; i < paramsNumber; i++) {
-                    CsmCompletionExpression paramInst = exp.getParameter(i + 1);
-                    if (paramInst != null) {
-                        params.add(resolveType(paramInst));
-                    } else {
-                        break;
+            if (CsmKindUtilities.isClass(template) || CsmKindUtilities.isFunction(template)) {
+                if (exp.getExpID() == CsmCompletionExpression.GENERIC_TYPE) {
+                    List<CsmType> params = new ArrayList<CsmType>();
+                    int paramsNumber = (template.getTemplateParameters().size() < exp.getParameterCount() - 1) ? template.getTemplateParameters().size() : exp.getParameterCount() - 1;
+                    for (int i = 0; i < paramsNumber; i++) {
+                        CsmCompletionExpression paramInst = exp.getParameter(i + 1);
+                        if (paramInst != null) {
+                            params.add(resolveType(paramInst));
+                        } else {
+                            break;
+                        }
                     }
+                    CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
+                    return ip.instantiate(template, params, getFinder().getCsmFile());
                 }
-                CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
-                return ip.instantiate(template, params, getFinder().getCsmFile());
+            }
+            if (CsmKindUtilities.isClassForwardDeclaration(template)) {
+                return template;
             }
             return null;
         }
