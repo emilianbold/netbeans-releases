@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,53 +34,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.bugtracking.spi;
 
+import org.netbeans.modules.kenai.api.KenaiProject;
+
 /**
- * Represents a bugtracking connector.
- * 
+ *
  * @author Tomas Stupka
  */
-public abstract class BugtrackingConnector {
-    
-    /**
-     * Returns the display name for this connector
-     *
-     * @return the display name for this connector
-     */
-    public abstract String getDisplayName();
+public abstract class KenaiSupport {
 
-    /**
-     * Returns tooltip for this connector
-     * 
-     * @return tooltip for this connector
-     */
-    public abstract String getTooltip();
+    public abstract Repository getRepository(KenaiProject project);
 
-    /**
-     * Creates a repository
-     * @return the created repository
-     */
-    public abstract Repository createRepository();
-
-    /**
-     * Returns all known repositories for this connector
-     * @return known repositories
-     */
-    public abstract Repository[] getRepositories();
-
-    /**
-     *
-     * Returns a {@link KenaiSupport} instance or null if not
-     * provided by the connector
-     *
-     * @return KenaiSupport or null if not provided
-     */
-    public KenaiSupport getKenaiSupport() {
-        return null;
-    }
+    // XXX 
+    public abstract Query[] getQueries(KenaiProject project);
 
 }
