@@ -40,6 +40,7 @@
 package org.netbeans.modules.maven.navigator;
 
 import java.awt.Image;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
@@ -48,6 +49,10 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.maven.model.pom.Activation;
 import org.netbeans.modules.maven.model.pom.ActivationCustom;
@@ -95,6 +100,7 @@ import org.netbeans.modules.maven.model.pom.Resource;
 import org.netbeans.modules.maven.model.pom.Scm;
 import org.netbeans.modules.maven.model.pom.Site;
 import org.netbeans.modules.maven.model.pom.StringList;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -102,6 +108,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -1176,6 +1183,14 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         }
 
         @Override
+        public Action[] getActions(boolean context) {
+            return new Action[] {
+                new SelectAction(this)
+            };
+        }
+
+
+        @Override
         public String getHtmlDisplayName() {
             String[] values = getLookup().lookup(POMCutHolder.class).getCutValuesAsString();
 
@@ -1219,6 +1234,13 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         }
 
         @Override
+        public Action[] getActions(boolean context) {
+            return new Action[] {
+                new SelectAction(this)
+            };
+        }
+
+        @Override
         public String getHtmlDisplayName() {
             Object[] values = getLookup().lookup(POMCutHolder.class).getCutValues();
             String dispVal = POMModelPanel.definesValue(values) ? "" : NbBundle.getMessage(POMModelVisitor.class, "UNDEFINED");
@@ -1257,6 +1279,13 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             super(childs , lkp);
             setName(name);
             this.key = name;
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[] {
+                new SelectAction(this)
+            };
         }
 
         @Override
@@ -1501,5 +1530,48 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
     }
 
+
+    static class SelectAction extends AbstractAction implements Presenter.Popup {
+        private Node node;
+        private int layer = -1;
+
+        SelectAction(Node node) {
+            this.node = node;
+        }
+
+        private SelectAction(Node node, int layer) {
+            this.node = node;
+            this.layer = layer;
+        }
+        public void actionPerformed(ActionEvent e) {
+            if (layer != -1) {
+                POMModelPanel.selectByNode(node, null, layer);
+            }
+        }
+
+        public JMenuItem getPopupPresenter() {
+            JMenu menu = new JMenu();
+            menu.setText("Show in");
+            POMCutHolder pch = node.getLookup().lookup(POMCutHolder.class);
+            POMModel[] mdls = pch.getSource();
+            Object[] val = pch.getCutValues();
+            int index = 0;
+            for (POMModel mdl : mdls) {
+                String artifact = mdl.getProject().getArtifactId();
+                JMenuItem item = new JMenuItem();
+                item.setAction(new SelectAction(node, index));
+                if (index == 0) {
+                    item.setText("Current : " + artifact != null ? artifact : "project");
+                } else {
+                    item.setText("Parent: " + artifact != null ? artifact : "project");
+                }
+                item.setEnabled(val[index] != null);
+                menu.add(item);
+                index++;
+            }
+            return menu;
+        }
+
+    }
 
 }

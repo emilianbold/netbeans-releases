@@ -69,6 +69,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.text.JTextComponent;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.build.model.ModelLineage;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.model.pom.POMComponent;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -94,6 +95,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -154,7 +156,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         });
     }
 
-    private static void selectByNode(Node nd, POMQName name, int layer) {
+    static void selectByNode(Node nd, POMQName name, int layer) {
         if (nd == null) {
             return;
         }
@@ -205,6 +207,10 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                     // editor already opened, so just select
                     JTextComponent component = panes[0];
                     component.setCaretPosition(pos);
+                    TopComponent tc = NbEditorUtilities.getOuterTopComponent(component);
+                    if (!tc.isVisible()) {
+                        tc.requestVisible();
+                    }
                 } else {
                     // editor not opened yet
                     ec.open();
