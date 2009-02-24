@@ -56,7 +56,7 @@ class LMListener {
 
     private MemoryPoolMXBean pool;
 
-    private static final float DEFAULT_HEAP_LIMIT = 0.9f;
+    private static final float DEFAULT_HEAP_LIMIT = 0.7f;
 
     private final float heapLimit;
 

@@ -52,6 +52,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -84,26 +85,101 @@ import org.openide.util.Exceptions;
  */
 public class LuceneIndex implements IndexImpl {
 
-    private static final Logger LOGGER = Logger.getLogger(LuceneIndex.class.getName());
-    private static final boolean debugIndexMerging = Boolean.getBoolean("LuceneIndex.debugIndexMerge");     // NOI18N
+    // -----------------------------------------------------------------------
+    // IndexImpl implementation
+    // -----------------------------------------------------------------------
+    
+    /**
+     * Adds document
+     * @param document
+     */
+    public void addDocument(final IndexDocumentImpl document) {
+        final boolean forceFlush;
 
-    static final int VERSION = 1;
+        synchronized (this) {
+            assert document instanceof LuceneDocument;
+            
+            toAdd.add((LuceneDocument) document);
+            forceFlush = toAdd.size() > MAX_DOCS || lmListener.isLowMemory();
+        }
 
-    private File indexFolder;
+        if (forceFlush) {
+            try {
+                LOGGER.fine("Extra flush forced"); //NOI18N
+                store();
+            } catch (IOException ioe) {
+                LOGGER.log(Level.WARNING, null, annotateException(ioe, indexFolder));
+            }
+        }
+    }
 
-    private Directory directory;
-    //@GuardedBy (this)
-    private IndexReader reader; //Cache, do not use this dirrectly, use getReader
-    private volatile boolean closed;
+    /**
+     * Removes all documents for given path
+     * @param relativePath
+     */
+    public void removeDocument(final String relativePath) {
+        final boolean forceFlush;
 
-    private final List<LuceneDocument> toAdd = new LinkedList<LuceneDocument>();
-    private final List<String> toRemove = new LinkedList<String>();
+        synchronized (this) {
+            toRemove.add(relativePath);
+            forceFlush = toAdd.size() > MAX_DOCS || lmListener.isLowMemory();
+        }
 
-    public LuceneIndex (final URL root) throws IOException {
+        if (forceFlush) {
+            try {
+                LOGGER.fine("Extra flush forced"); //NOI18N
+                store();
+            } catch (IOException ioe) {
+                LOGGER.log(Level.WARNING, null, annotateException(ioe, indexFolder));
+            }
+        }
+    }
+
+    public void store() throws IOException {
+        LuceneIndexManager.getDefault().writeAccess(new LuceneIndexManager.Action<Void>() {
+            public Void run() throws IOException {
+                checkPreconditions();
+                flush();
+                return null;
+            }
+        });
+    }
+
+    public Collection<? extends IndexDocumentImpl> query(
+            final String fieldName,
+            final String value,
+            final QuerySupport.Kind kind,
+            final String... fieldsToLoad
+    ) throws IOException {
+        assert fieldName != null;
+        assert value != null;
+        assert kind != null;
+
+        return LuceneIndexManager.getDefault().readAccess(new LuceneIndexManager.Action<List<IndexDocumentImpl>>() {
+            public List<IndexDocumentImpl> run() throws IOException {
+                checkPreconditions();
+                
+                final IndexReader r = getReader();
+                if (r != null) {
+                    // index exists
+                    return _query(r, fieldName, value, kind, fieldsToLoad);
+                } else {
+                    // no index
+                    return Collections.<IndexDocumentImpl>emptyList();
+                }
+            }
+        });        
+    }
+    
+    // -----------------------------------------------------------------------
+    // Public implementation
+    // -----------------------------------------------------------------------
+
+    public LuceneIndex(final URL root) throws IOException {
         assert root != null;
         try {
-            indexFolder = new File (root.toURI());
-            directory = FSDirectory.getDirectory(indexFolder,NoLockFactory.getNoLockFactory());
+            indexFolder = new File(root.toURI());
+            directory = FSDirectory.getDirectory(indexFolder, NoLockFactory.getNoLockFactory());
         } catch (URISyntaxException e) {
             IOException ioe = new IOException();
             ioe.initCause(e);
@@ -111,99 +187,261 @@ public class LuceneIndex implements IndexImpl {
         }
     }
 
-    /**
-     * Adds document
-     * No need to guard it as it run always in single thread (TaskProcessor)
-     * @param document
-     */
-    public void addDocument(final IndexDocumentImpl document) {
-        assert document instanceof LuceneDocument;       
-        toAdd.add((LuceneDocument)document);
+    public void clear() throws IOException {
+        checkPreconditions();
+        LuceneIndexManager.getDefault().writeAccess(new LuceneIndexManager.Action<Void>() {
+            public Void run() throws IOException {
+                _clear();
+                return null;
+            }
+        });
+    }
+    
+    public void close() throws IOException {
+        checkPreconditions();
+        LuceneIndexManager.getDefault().writeAccess(new LuceneIndexManager.Action<Void>() {
+            public Void run() throws IOException {
+                _close();
+                return null;
+            }
+        });
     }
 
-    /**
-     * Removes all documents for given path
-     * No need to guard it as it run always in single thread (TaskProcessor)
-     * @param relativePath
-     */
-    public void removeDocument(final String relativePath) {
-        toRemove.add(relativePath);
-    }
+    // -----------------------------------------------------------------------
+    // Private implementation
+    // -----------------------------------------------------------------------
 
-    public void store() throws IOException {
+    private static final Logger LOGGER = Logger.getLogger(LuceneIndex.class.getName());
+    private static final boolean debugIndexMerging = Boolean.getBoolean("LuceneIndex.debugIndexMerge");     // NOI18N
+
+    /* package */ static final int VERSION = 1;
+    private static final int MAX_DOCS = 2000;
+
+    private final File indexFolder;
+
+    //@GuardedBy (LuceneIndexManager.writeAccess)
+    private volatile Directory directory;
+    private volatile IndexReader reader; //Cache, do not use this directly, use getReader
+    private volatile boolean closed;
+
+    private final LMListener lmListener = new LMListener();
+
+    //@GuardedBy (this)
+    private final List<LuceneDocument> toAdd = new LinkedList<LuceneDocument>();
+    private final List<String> toRemove = new LinkedList<String>();
+
+    // called under LuceneIndexManager.writeAccess
+    private void _clear() throws IOException {
+        _close();
         try {
-            checkPreconditions();
-            LuceneIndexManager.getDefault().writeAccess(new LuceneIndexManager.Action<Void>() {
-
-                public Void run() throws IOException {
-                    final boolean create = !isValid (false);
-                    if (!create) {
-                        IndexReader in = getReader();
-                        final Searcher searcher = new IndexSearcher (in);
-                        try {
-                            for (Iterator<String> it = toRemove.iterator(); it.hasNext();) {
-                                String toRemoveItem = it.next();
-                                it.remove();
-                                deleteFile (in, searcher, toRemoveItem);
-                            }
-                            for (LuceneDocument toRemoveItem : toAdd) {
-                                deleteFile(in, searcher, toRemoveItem.getSourceName());
-                            }
-                        } finally {
-                            searcher.close();
-                        }
+            final String[] content = this.directory.list();
+            boolean dirty = false;
+            for (String file : content) {
+                try {
+                    directory.deleteFile(file);
+                } catch (IOException e) {
+                    //Some temporary files
+                    if (directory.fileExists(file)) {
+                        dirty = true;
                     }
-                    //2) add all documents form to add
-                    final IndexWriter out = getWriter(create);
-                    try {
-                        if (debugIndexMerging) {
-                            out.setInfoStream (System.err);
-                        }
-
-                        LMListener lmListener = new LMListener ();
-                        Directory memDir = null;
-                        IndexWriter activeOut = null;
-                        if (lmListener.isLowMemory()) {
-                            activeOut = out;
-                        }
-                        else {
-                            memDir = new RAMDirectory ();
-                            activeOut = new IndexWriter (memDir, new KeywordAnalyzer(), true);
-                        }
-                        for (Iterator<LuceneDocument> it = toAdd.iterator(); it.hasNext();) {
-                            final LuceneDocument doc = it.next();
-                            it.remove();
-                            activeOut.addDocument(doc.doc);
-                            if (memDir != null && lmListener.isLowMemory()) {
-                                activeOut.close();
-                                out.addIndexes(new Directory[] {memDir});
-                                memDir = new RAMDirectory ();
-                                activeOut = new IndexWriter (memDir, new KeywordAnalyzer(), true);
-                            }
-                        }
-                        if (memDir != null) {
-                            activeOut.close();
-                            out.addIndexes(new Directory[] {memDir});
-                            activeOut = null;
-                            memDir = null;
-                        }
-
-                    } finally {
-                        out.close();
-                    }
-                    return null;
                 }
-            });
+            }
+            if (dirty) {
+                //Try to delete dirty files and log what's wrong
+                final File cacheDir = ((FSDirectory)this.directory).getFile();
+                final File[] children = cacheDir.listFiles();
+                if (children != null) {
+                    for (final File child : children) {
+                        if (!child.delete()) {
+                            final Class c = this.directory.getClass();
+                            int refCount = -1;
+                            try {
+                                final Field field = c.getDeclaredField("refCount"); //NOI18N
+                                field.setAccessible(true);
+                                refCount = field.getInt(this.directory);
+                            } catch (NoSuchFieldException e) {/*Not important*/}
+                              catch (IllegalAccessException e) {/*Not important*/}
+
+                            throw new IOException("Cannot delete: " + child.getAbsolutePath() + "(" +   //NOI18N
+                                    child.exists()  +","+                                               //NOI18N
+                                    child.canRead() +","+                                               //NOI18N
+                                    child.canWrite() +","+                                              //NOI18N
+                                    cacheDir.canRead() +","+                                            //NOI18N
+                                    cacheDir.canWrite() +","+                                           //NOI18N
+                                    refCount+")");                                                      //NOI18N
+                        }
+                    }
+                }
+            }
         } finally {
-            toRemove.clear();
-            toAdd.clear();
+            //Need to recreate directory, see issue: #148374
+            this.directory = FSDirectory.getDirectory(indexFolder, NoLockFactory.getNoLockFactory());      //Locking controlled by rwlock
+            closed = false;
         }
     }
 
+    // called under LuceneIndexManager.writeAccess
+    private void _close() throws IOException {
+        try {
+            if (reader != null) {
+                reader.close();
+                reader = null;
+            }
+        } finally {
+           directory.close();
+           closed = true;
+        }
+    }
 
-    private static void deleteFile (final IndexReader in,
-            final Searcher searcher,
-            final String toRemoveItem) throws IOException {
+    // called under LuceneIndexManager.readAccess
+    private static List<IndexDocumentImpl> _query(
+            final IndexReader in,
+            final String fieldName,
+            final String value,
+            final QuerySupport.Kind kind,
+            final String... fieldsToLoad
+    ) throws IOException {
+        
+        final List<IndexDocumentImpl> result = new LinkedList<IndexDocumentImpl>();
+        final Set<Term> toSearch = new TreeSet<Term> (new TermComparator());
+
+        switch (kind) {
+            case EXACT:
+                {
+                    toSearch.add(new Term (fieldName,value));
+                    break;
+                }
+            case PREFIX:
+                if (value.length() == 0) {
+                    //Special case (all) handle in different way
+                    emptyPrefixSearch(in, fieldsToLoad, result);
+                    return result;
+                }
+                else {
+                    final Term nameTerm = new Term (fieldName, value);
+                    prefixSearch(nameTerm, in, toSearch);
+                    break;
+                }
+            case CASE_INSENSITIVE_PREFIX:
+                if (value.length() == 0) {
+                    //Special case (all) handle in different way
+                    emptyPrefixSearch(in, fieldsToLoad, result);
+                    return result;
+                }
+                else {
+                    final Term nameTerm = new Term (fieldName,value.toLowerCase());     //XXX: I18N, Locale
+                    prefixSearch(nameTerm, in, toSearch);
+                    break;
+                }
+            case CAMEL_CASE:
+                if (value.length() == 0) {
+                    throw new IllegalArgumentException ();
+                }
+                {
+                    StringBuilder sb = new StringBuilder();
+                    String prefix = null;
+                    int lastIndex = 0;
+                    int index;
+                    do {
+                        index = findNextUpper(value, lastIndex + 1);
+                        String token = value.substring(lastIndex, index == -1 ? value.length(): index);
+                        if ( lastIndex == 0 ) {
+                            prefix = token;
+                        }
+                        sb.append(token);
+                        sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
+                        lastIndex = index;
+                    }
+                    while(index != -1);
+
+                    final Pattern pattern = Pattern.compile(sb.toString());
+                    regExpSearch(pattern, new Term (fieldName,prefix),in,toSearch);
+                }
+                break;
+            case CASE_INSENSITIVE_REGEXP:
+                if (value.length() == 0) {
+                    throw new IllegalArgumentException ();
+                }
+                else {
+                    final Pattern pattern = Pattern.compile(value,Pattern.CASE_INSENSITIVE);
+                    if (Character.isJavaIdentifierStart(value.charAt(0))) {
+                        regExpSearch(pattern, new Term (fieldName, value.toLowerCase()), in, toSearch);      //XXX: Locale
+                    }
+                    else {
+                        regExpSearch(pattern, new Term (fieldName,""), in, toSearch);      //NOI18N
+                    }
+                    break;
+                }
+            case REGEXP:
+                if (value.length() == 0) {
+                    throw new IllegalArgumentException ();
+                } else {
+                    final Pattern pattern = Pattern.compile(value);
+                    if (Character.isJavaIdentifierStart(value.charAt(0))) {
+                        regExpSearch(pattern, new Term (fieldName, value), in, toSearch);
+                    }
+                    else {
+                        regExpSearch(pattern, new Term(fieldName,""), in, toSearch);             //NOI18N
+                    }
+                    break;
+                }
+            case CASE_INSENSITIVE_CAMEL_CASE:
+                if (value.length() == 0) {
+                    //Special case (all) handle in different way
+                    emptyPrefixSearch(in, fieldsToLoad, result);
+                    return result;
+                }
+                else {
+                    final Term nameTerm = new Term(fieldName,value.toLowerCase());     //XXX: I18N, Locale
+                    prefixSearch(nameTerm, in, toSearch);
+                    StringBuilder sb = new StringBuilder();
+                    String prefix = null;
+                    int lastIndex = 0;
+                    int index;
+                    do {
+                        index = findNextUpper(value, lastIndex + 1);
+                        String token = value.substring(lastIndex, index == -1 ? value.length(): index);
+                        if ( lastIndex == 0 ) {
+                            prefix = token;
+                        }
+                        sb.append(token);
+                        sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
+                        lastIndex = index;
+                    }
+                    while(index != -1);
+                    final Pattern pattern = Pattern.compile(sb.toString());
+                    regExpSearch(pattern,new Term (fieldName, prefix),in,toSearch);
+                    break;
+                }
+            default:
+                throw new UnsupportedOperationException (kind.toString());
+        }
+        TermDocs tds = in.termDocs();
+        final Iterator<Term> it = toSearch.iterator();
+        Set<Integer> docNums = new TreeSet<Integer>();
+        int[] docs = new int[25];
+        int[] freq = new int [25];
+        int len;
+        while (it.hasNext()) {
+            tds.seek(it.next());
+            while ((len = tds.read(docs, freq))>0) {
+                for (int i = 0; i < len; i++) {
+                    docNums.add (docs[i]);
+                }
+                if (len < docs.length) {
+                    break;
+                }
+            }
+        }
+        final FieldSelector selector = DocumentUtil.selector(fieldsToLoad);
+        for (Integer docNum : docNums) {
+            final Document doc = in.document(docNum, selector);
+            result.add (new LuceneDocument(doc));
+        }
+        return result;
+    }
+
+    private static void deleteFile (final IndexReader in, final Searcher searcher, final String toRemoveItem) throws IOException {
         Hits hits = searcher.search(DocumentUtil.sourceNameQuery(toRemoveItem));
         //Create copy of hists
         int[] dindx = new int[hits.length()];
@@ -216,133 +454,118 @@ public class LuceneIndex implements IndexImpl {
         }
     }
 
-
-    public void close () throws IOException {
-        LuceneIndexManager.getDefault().writeAccess(new LuceneIndexManager.Action<Void>() {
-
-            public Void run() throws IOException {
-                synchronized (LuceneIndex.this) {
-                    try {
-                        if (reader != null) {
-                            reader.close();
-                            reader = null;
-                        }
-                    } finally {
-                        directory.close();
-                        closed = true;
-                    }
-                }
-                return null;
-            }
-        });
-    }
-    
-    private void checkPreconditions () {
-        if (closed) {
-            //throw new ClassIndexImpl.IndexAlreadyClosedException();
-        }
-    }
-
-    private boolean isValid (boolean tryOpen) throws IOException {
-        checkPreconditions();
-        boolean res = false;
+    // called under LuceneIndexManager.writeAccess and synchronized(this)
+    private void flush() throws IOException {
+        LOGGER.fine("Flushing: " + indexFolder); //NOI18N
         try {
-            res = IndexReader.indexExists(this.directory);
-        } catch (IOException e) {
-            return res;
-        }
-        if (res && tryOpen) {
-            try {
-                getReader();
-            } catch (java.io.IOException e) {
-                res = false;
-                clear();
-            }
-        }
-        return res;
-    }
-
-    public synchronized void clear () throws IOException {
-        checkPreconditions();
-        LuceneIndexManager.getDefault().writeAccess(new LuceneIndexManager.Action<Void>() {
-
-            public Void run() throws IOException {
-                close ();
+            //assert ClassIndexManager.getDefault().holdsWriteLock();
+            //1) delete all documents from to delete and toAdd
+            IndexReader in = getReader();
+            if (in != null) {
+                final Searcher searcher = new IndexSearcher (in);
                 try {
-                    final String[] content = directory.list();
-                    boolean dirty = false;
-                    for (String file : content) {
-                        try {
-                            directory.deleteFile(file);
-                        } catch (IOException e) {
-                            //Some temporary files
-                            if (directory.fileExists(file)) {
-                                dirty = true;
-                            }
-                        }
+                    for (Iterator<String> it = toRemove.iterator(); it.hasNext();) {
+                        String toRemoveItem = it.next();
+                        it.remove();
+                        deleteFile (in, searcher, toRemoveItem);
                     }
-                    if (dirty) {
-                        //Try to delete dirty files and log what's wrong
-                        final File cacheDir = ((FSDirectory)directory).getFile();
-                        final File[] children = cacheDir.listFiles();
-                        if (children != null) {
-                            for (final File child : children) {
-                                if (!child.delete()) {
-                                    final Class c = directory.getClass();
-                                    int refCount = -1;
-                                    try {
-                                        final Field field = c.getDeclaredField("refCount");
-                                        field.setAccessible(true);
-                                        refCount = field.getInt(directory);
-                                    } catch (NoSuchFieldException e) {/*Not important*/}
-                                      catch (IllegalAccessException e) {/*Not important*/}
-
-                                    throw new IOException("Cannot delete: " + child.getAbsolutePath() + "(" +   //NOI18N
-                                            child.exists()  +","+                                               //NOI18N
-                                            child.canRead() +","+                                               //NOI18N
-                                            child.canWrite() +","+                                              //NOI18N
-                                            cacheDir.canRead() +","+                                            //NOI18N
-                                            cacheDir.canWrite() +","+                                           //NOI18N
-                                            refCount+")");                                                      //NOI18N
-                                }
-                            }
-                        }
+                    for (LuceneDocument toRemoveItem : toAdd) {
+                        deleteFile(in, searcher, toRemoveItem.getSourceName());
                     }
                 } finally {
-                    //Need to recreate directory, see issue: #148374
-                    directory = FSDirectory.getDirectory(indexFolder, NoLockFactory.getNoLockFactory());      //Locking controlled by rwlock
-                    closed = false;
+                    searcher.close();
                 }
-                return null;
             }
-        });
+            
+            //2) add all documents form to add
+            boolean createIndex = in == null; // no reader => index does not exist
+            final IndexWriter out = getWriter(createIndex);
+            try {
+                if (debugIndexMerging) {
+                    out.setInfoStream (System.err);
+                }
+
+                Directory memDir = null;
+                IndexWriter activeOut = null;
+                if (lmListener.isLowMemory()) {
+                    activeOut = out;
+                }
+                else {
+                    memDir = new RAMDirectory ();
+                    activeOut = new IndexWriter (memDir, new KeywordAnalyzer(), true);
+                }
+                for (Iterator<LuceneDocument> it = toAdd.iterator(); it.hasNext();) {
+                    final LuceneDocument doc = it.next();
+                    it.remove();
+                    activeOut.addDocument(doc.doc);
+                    if (memDir != null && lmListener.isLowMemory()) {
+                        activeOut.close();
+                        out.addIndexes(new Directory[] {memDir});
+                        memDir = new RAMDirectory ();
+                        activeOut = new IndexWriter (memDir, new KeywordAnalyzer(), true);
+                    }
+                    LOGGER.finest("LuceneDocument merged: " + doc); //NOI18N
+                }
+                if (memDir != null) {
+                    activeOut.close();
+                    out.addIndexes(new Directory[] {memDir});
+                    activeOut = null;
+                    memDir = null;
+                }
+            } finally {
+                out.close();
+            }
+        } finally {
+            toRemove.clear();
+            toAdd.clear();
+            LOGGER.fine("Index flushed: " + indexFolder); //NOI18N
+        }
     }
 
-    private synchronized IndexReader getReader () throws IOException {
+    // called under LuceneIndexManager.readAccess
+    private void checkPreconditions() throws IOException {
+        if (closed) {
+            throw new IOException("Index already closed: " + indexFolder); //NOI18N
+        }
+    }
+
+    // called either under LuceneIndexManager.readAccess and synchronized(this) or
+    // under LuceneIndexManager.writeAccess
+    private IndexReader getReader() throws IOException {
         if (this.reader == null) {
-            //Issue #149757 - logging
-            try {
-                //It's important that no Query will get access to original IndexReader
-                //any norms call to it will initialize the HashTable of norms: sizeof (byte) * maxDoc() * max(number of unique fields in document)
-                this.reader = new NoNormsReader(IndexReader.open(this.directory));
-            } catch (IOException ioe) {
-                throw annotateException (ioe);
+            boolean exists = IndexReader.indexExists(this.directory);
+            if (exists) {
+                //Issue #149757 - logging
+                try {
+                    //It's important that no Query will get access to original IndexReader
+                    //any norms call to it will initialize the HashTable of norms: sizeof (byte) * maxDoc() * max(number of unique fields in document)
+                    this.reader = new NoNormsReader(IndexReader.open(this.directory));
+                } catch (IOException ioe) {
+                    throw annotateException(ioe, indexFolder);
+                }
+            } else {
+                LOGGER.fine(String.format("LuceneIndex[%s] does not exist.", this.toString())); //NOI18N
             }
         }
         return this.reader;
     }
 
-    private synchronized IndexWriter getWriter (final boolean create) throws IOException {
+    // called under LuceneIndexManager.writeAccess
+    private IndexWriter getWriter (final boolean create) throws IOException {
         if (this.reader != null) {
             this.reader.close();
             this.reader = null;
         }
         //Issue #149757 - logging
         try {
-            IndexWriter writer = new IndexWriter (this.directory, new KeywordAnalyzer(), create);
-            return writer;
+            return new IndexWriter(
+                this.directory, // index directory
+                false, // auto-commit each flush
+                new KeywordAnalyzer(),
+                create // open existing or create new index
+            );
         } catch (IOException ioe) {
-            throw annotateException (ioe);
+            throw annotateException(ioe, indexFolder);
         }
     }
 
@@ -351,12 +574,11 @@ public class LuceneIndex implements IndexImpl {
         return getClass().getSimpleName()+"["+indexFolder.getAbsolutePath()+"]";  //NOI18N
     }
 
-
-    private IOException annotateException (final IOException ioe) {
+    private static IOException annotateException (final IOException ioe, final File indexFolder) {
         String message;
-        File[] children = indexFolder.listFiles();
+        File[] children = indexFolder == null ? null : indexFolder.listFiles();
         if (children == null) {
-            message = "Non existing index folder";
+            message = "Non existing index folder"; //NOI18N
         }
         else {
             StringBuilder b = new StringBuilder();
@@ -368,161 +590,7 @@ public class LuceneIndex implements IndexImpl {
         return Exceptions.attachMessage(ioe, message);
     }
 
-    public Collection<? extends IndexDocumentImpl> query(final String fieldName, final String value,
-            final QuerySupport.Kind kind, final String... fieldsToLoad) throws IOException {
-        checkPreconditions();
-        if (!isValid(false)) {
-            LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));
-            return Collections.emptySet();
-        }
-        assert fieldName != null;
-        assert value != null;
-        assert kind != null;
-        return LuceneIndexManager.getDefault().readAccess(new LuceneIndexManager.Action<List<IndexDocumentImpl>>() {
-
-            public List<IndexDocumentImpl> run() throws IOException {
-                final List<IndexDocumentImpl> result = new LinkedList<IndexDocumentImpl>();
-                final Set<Term> toSearch = new TreeSet<Term> (new TermComparator());
-                final IndexReader in = getReader();
-                switch (kind) {
-                    case EXACT:
-                        {
-                            toSearch.add(new Term (fieldName,value));
-                            break;
-                        }
-                    case PREFIX:
-                        if (value.length() == 0) {
-                            //Special case (all) handle in different way
-                            emptyPrefixSearch(in, fieldsToLoad, result);
-                            return result;
-                        }
-                        else {
-                            final Term nameTerm = new Term (fieldName, value);
-                            prefixSearch(nameTerm, in, toSearch);
-                            break;
-                        }
-                    case CASE_INSENSITIVE_PREFIX:
-                        if (value.length() == 0) {
-                            //Special case (all) handle in different way
-                            emptyPrefixSearch(in, fieldsToLoad, result);
-                            return result;
-                        }
-                        else {
-                            final Term nameTerm = new Term (fieldName,value.toLowerCase());     //XXX: I18N, Locale
-                            prefixSearch(nameTerm, in, toSearch);
-                            break;
-                        }
-                    case CAMEL_CASE:
-                        if (value.length() == 0) {
-                            throw new IllegalArgumentException ();
-                        }
-                        {
-                            StringBuilder sb = new StringBuilder();
-                            String prefix = null;
-                            int lastIndex = 0;
-                            int index;
-                            do {
-                                index = findNextUpper(value, lastIndex + 1);
-                                String token = value.substring(lastIndex, index == -1 ? value.length(): index);
-                                if ( lastIndex == 0 ) {
-                                    prefix = token;
-                                }
-                                sb.append(token);
-                                sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
-                                lastIndex = index;
-                            }
-                            while(index != -1);
-
-                            final Pattern pattern = Pattern.compile(sb.toString());
-                            regExpSearch(pattern, new Term (fieldName,prefix),in,toSearch);
-                        }
-                        break;
-                    case CASE_INSENSITIVE_REGEXP:
-                        if (value.length() == 0) {
-                            throw new IllegalArgumentException ();
-                        }
-                        else {
-                            final Pattern pattern = Pattern.compile(value,Pattern.CASE_INSENSITIVE);
-                            if (Character.isJavaIdentifierStart(value.charAt(0))) {
-                                regExpSearch(pattern, new Term (fieldName, value.toLowerCase()), in, toSearch);      //XXX: Locale
-                            }
-                            else {
-                                regExpSearch(pattern, new Term (fieldName,""), in, toSearch);      //NOI18N
-                            }
-                            break;
-                        }
-                    case REGEXP:
-                        if (value.length() == 0) {
-                            throw new IllegalArgumentException ();
-                        } else {
-                            final Pattern pattern = Pattern.compile(value);
-                            if (Character.isJavaIdentifierStart(value.charAt(0))) {
-                                regExpSearch(pattern, new Term (fieldName, value), in, toSearch);
-                            }
-                            else {
-                                regExpSearch(pattern, new Term(fieldName,""), in, toSearch);             //NOI18N
-                            }
-                            break;
-                        }
-                    case CASE_INSENSITIVE_CAMEL_CASE:
-                        if (value.length() == 0) {
-                            //Special case (all) handle in different way
-                            emptyPrefixSearch(in, fieldsToLoad, result);
-                            return result;
-                        }
-                        else {
-                            final Term nameTerm = new Term(fieldName,value.toLowerCase());     //XXX: I18N, Locale
-                            prefixSearch(nameTerm, in, toSearch);
-                            StringBuilder sb = new StringBuilder();
-                            String prefix = null;
-                            int lastIndex = 0;
-                            int index;
-                            do {
-                                index = findNextUpper(value, lastIndex + 1);
-                                String token = value.substring(lastIndex, index == -1 ? value.length(): index);
-                                if ( lastIndex == 0 ) {
-                                    prefix = token;
-                                }
-                                sb.append(token);
-                                sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
-                                lastIndex = index;
-                            }
-                            while(index != -1);
-                            final Pattern pattern = Pattern.compile(sb.toString());
-                            regExpSearch(pattern,new Term (fieldName, prefix),in,toSearch);
-                            break;
-                        }
-                    default:
-                        throw new UnsupportedOperationException (kind.toString());
-                }
-                TermDocs tds = in.termDocs();
-                final Iterator<Term> it = toSearch.iterator();
-                Set<Integer> docNums = new TreeSet<Integer>();
-                int[] docs = new int[25];
-                int[] freq = new int [25];
-                int len;
-                while (it.hasNext()) {
-                    tds.seek(it.next());
-                    while ((len = tds.read(docs, freq))>0) {
-                        for (int i = 0; i < len; i++) {
-                            docNums.add (docs[i]);
-                        }
-                        if (len < docs.length) {
-                            break;
-                        }
-                    }
-                }
-                final FieldSelector selector = DocumentUtil.selector(fieldsToLoad);
-                for (Integer docNum : docNums) {
-                    final Document doc = in.document(docNum, selector);
-                    result.add (new LuceneDocument(doc));
-                }
-                return result;
-            }
-        });        
-    }
-
-    private void emptyPrefixSearch (final IndexReader in, final String[] fieldsToLoad, final List<? super IndexDocumentImpl> result) throws IOException {
+    private static void emptyPrefixSearch (final IndexReader in, final String[] fieldsToLoad, final List<? super IndexDocumentImpl> result) throws IOException {
         final int bound = in.maxDoc();
         for (int i=0; i<bound; i++) {
             if (!in.isDeleted(i)) {
@@ -534,7 +602,7 @@ public class LuceneIndex implements IndexImpl {
         }
     }
 
-    private void prefixSearch (final Term valueTerm, final IndexReader in, final Set<? super Term> toSearch) throws IOException {
+    private static void prefixSearch (final Term valueTerm, final IndexReader in, final Set<? super Term> toSearch) throws IOException {
         final String prefixField = valueTerm.field();
         final String name = valueTerm.text();
         final TermEnum en = in.terms(valueTerm);
@@ -553,7 +621,7 @@ public class LuceneIndex implements IndexImpl {
         }
     }
 
-    private void regExpSearch (final Pattern pattern, Term startTerm, final IndexReader in, final Set< ? super Term> toSearch) throws IOException {
+    private static void regExpSearch (final Pattern pattern, Term startTerm, final IndexReader in, final Set< ? super Term> toSearch) throws IOException {
         final String startText = startTerm.text();
         String startPrefix;
         if (startText.length() > 0) {
@@ -605,7 +673,7 @@ public class LuceneIndex implements IndexImpl {
     /**
      * Expert: Bypass read of norms
      */
-    private static class NoNormsReader extends FilterIndexReader {
+    private static final class NoNormsReader extends FilterIndexReader {
 
 
         //@GuardedBy (this)
@@ -617,14 +685,14 @@ public class LuceneIndex implements IndexImpl {
 
         @Override
         public byte[] norms(String field) throws IOException {
-            byte[] norms = fakeNorms ();
-            return norms;
+            byte[] fakes = fakeNorms ();
+            return fakes;
         }
 
         @Override
         public void norms(String field, byte[] norm, int offset) throws IOException {
-            byte[] norms = fakeNorms ();
-            System.arraycopy(norms, 0, norm, offset, norms.length);
+            byte[] fakes = fakeNorms ();
+            System.arraycopy(fakes, 0, norm, offset, fakes.length);
         }
 
         @Override
@@ -655,6 +723,6 @@ public class LuceneIndex implements IndexImpl {
             }
             return this.norms;
         }
-    }
+    } // End of NoNormsReader class
 
 }
