@@ -57,6 +57,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
@@ -65,6 +66,7 @@ import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPlugin;
 import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPluginsManager;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.filesystems.FileChangeListener;
+import org.openide.util.RequestProcessor;
 
 final class ProjectClassPathImplementation implements ClassPathImplementation {
 
@@ -85,7 +87,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
         this.projectRoot = FileUtil.toFile(projectConfig.getProject().getProjectDirectory());
 
         this.pluginsDir = GrailsPluginsManager.getInstance((GrailsProject) projectConfig.getProject())
-                .getPluginsDir(projectConfig.getGrailsPlatform());
+                .getPluginsDir();
     }
 
     public static ProjectClassPathImplementation forProject(Project project) {
@@ -97,6 +99,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
         impl.listenerPluginsLib = new PluginsLibListener(impl);
 
         // it is weakly referenced
+        // FIXME move this to non-null path
         FileUtil.addFileChangeListener(impl.listenerPluginsLib, impl.pluginsDir);
         FileUtil.addFileChangeListener(impl.listenerPluginsLib, libDir);
         return impl;
@@ -110,6 +113,27 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
     }
 
     private List<PathResourceImplementation> getPath() {
+        // When called from EDT we do not retunr plugin classpath immediately
+        // as it may take really long time. It usually happens when project is
+        // opened on startup and file is visible in editor. Does not happen
+        // much in CSL.
+        if (SwingUtilities.isEventDispatchThread() && GrailsPlatform.Version.VERSION_1_1.compareTo(projectConfig.getGrailsPlatform().getVersion()) <= 0) {
+            List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
+            // lib directory from project root
+            addLibs(projectRoot, result);
+
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    synchronized (ProjectClassPathImplementation.this) {
+                        ProjectClassPathImplementation.this.resources = null;
+                    }
+                    ProjectClassPathImplementation.this.support.firePropertyChange(ClassPathImplementation.PROP_RESOURCES, null, null);
+                }
+            });
+
+            return Collections.unmodifiableList(result);
+        }
+
         List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
         // lib directory from project root
         addLibs(projectRoot, result);

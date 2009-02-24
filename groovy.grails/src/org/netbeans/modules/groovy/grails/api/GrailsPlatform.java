@@ -293,7 +293,7 @@ public final class GrailsPlatform {
      * @return the grails home
      * @throws IllegalStateException if the runtime is not configured
      */
-    private File getGrailsHome() {
+    public File getGrailsHome() {
         String grailsBase = GrailsSettings.getInstance().getGrailsBase();
         if (grailsBase == null || !RuntimeHelper.isValidRuntime(new File(grailsBase))) {
             throw new IllegalStateException("Grails not configured"); // NOI18N
