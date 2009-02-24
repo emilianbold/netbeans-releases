@@ -88,7 +88,7 @@ made subject to such option by the copyright holder.
             <folder name="NetBeans">
                 <file name="DTD_J2ME_PlatformDefinition_1_0.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.cldcplatform.PlatformConvertor"/>
-                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment.Provider"/>
+                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment$Provider"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.cldcplatform.PlatformConvertor.createProvider"/>
                 </file>
             </folder>
