@@ -343,7 +343,6 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         // to simple INDENT/RETURN commands
         for (List<Line> l : indentationData) {
             addLanguageEndLine(l);
-            simplifyIndentationCommands(l);
         }
 
         // iterate over individual List<Line> and move indents after GAP
@@ -352,6 +351,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         // INDENT follow above procedure but set line number to removed line;
         List<LineCommandsPair> pairs = new ArrayList<LineCommandsPair>();
         for (List<Line> l : indentationData) {
+            simplifyIndentationCommands(pairs, l);
             handleLanguageGaps(pairs, l);
             removeNonIndentableLines(pairs, l);
         }
@@ -539,10 +539,11 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
     /**
      * Replace CONTINUE with simple INDENT and RETURN commands.
      */
-    private void simplifyIndentationCommands(List<Line> lines) {
+    private void simplifyIndentationCommands(List<LineCommandsPair> pairs, List<Line> lines) {
         boolean firstContinue = true;
         boolean inContinue = false;
         boolean fixedIndentContinue = false;
+        Line lastLineWithContinue = null;
         for (Line l : lines) {
             List<IndentCommand> commands = new ArrayList<IndentCommand>();
             for (IndentCommand ic : l.lineIndent) {
@@ -561,13 +562,21 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                         firstContinue = false;
                         inContinue = true;
                     }
+                    lastLineWithContinue = l;
                 } else {
                     if (inContinue) {
+                        List<IndentCommand> listToAddTo = commands;
+                        assert lastLineWithContinue != null;
+                        if (l.index - lastLineWithContinue.index > 1) {
+                            List<IndentCommand> list = new ArrayList<IndentCommand>();
+                            pairs.add(new LineCommandsPair(lastLineWithContinue.index+1, list));
+                            listToAddTo = list;
+                        }
                         if (fixedIndentContinue) {
-                            commands.add(new IndentCommand(IndentCommand.Type.RETURN, ic.getLineOffset()));
+                            listToAddTo.add(new IndentCommand(IndentCommand.Type.RETURN, ic.getLineOffset()));
                         } else {
-                            commands.add(new IndentCommand(IndentCommand.Type.RETURN, ic.getLineOffset()));
-                            //commands.add(new IndentCommand(IndentCommand.Type.RETURN, ic.getLineOffset()));
+                            listToAddTo.add(new IndentCommand(IndentCommand.Type.RETURN, ic.getLineOffset()));
+                            //listToAddTo.add(new IndentCommand(IndentCommand.Type.RETURN, ic.getLineOffset()));
                         }
                         inContinue = false;
                         firstContinue = true;
@@ -793,6 +802,9 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 List<IndentCommand> iis = getLineIndent(cd, preliminaryNextLineIndent);
                 if (iis.isEmpty()) {
                     throw new IllegalStateException("getLineIndent must always return at least IndentInstance.Type.NO_CHANGE");
+                }
+                if (preliminaryNextLineIndent.isEmpty()) {
+                    throw new IllegalStateException("preliminaryNextLineIndent from getLineIndent must always return at least IndentInstance.Type.NO_CHANGE");
                 }
 
                 // record line indentation:

@@ -229,8 +229,16 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 break;
             }
             if (!item.empty) {
-                iis.add(new IndentCommand(item.openingTag ? IndentCommand.Type.INDENT : IndentCommand.Type.RETURN,
-                    lineStartOffset));
+                // eliminate opening and closing sequence on one line:
+                IndentCommand ic = new IndentCommand(item.openingTag ? IndentCommand.Type.INDENT : IndentCommand.Type.RETURN,
+                    lineStartOffset);
+                if (ic.getType() == IndentCommand.Type.RETURN && iis.size() > 0 &&
+                        iis.get(iis.size()-1).getType() == IndentCommand.Type.INDENT) {
+                    // instead of adding RETURN after INDENT remove both of them:
+                    iis.remove(iis.size()-1);
+                } else {
+                    iis.add(ic);
+                }
             }
             if (updateState) {
                 item.processed = true;
@@ -373,6 +381,9 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
 
         if (context.getNextLineStartOffset() != -1) {
             getIndentFromState(preliminaryNextLineIndent, false, context.getNextLineStartOffset());
+            if (preliminaryNextLineIndent.size() == 0) {
+                preliminaryNextLineIndent.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, context.getNextLineStartOffset()));
+            }
         }
 
         return iis;

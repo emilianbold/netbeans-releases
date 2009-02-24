@@ -272,6 +272,9 @@ public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
 
         if (context.getNextLineStartOffset() != -1) {
             getIndentFromState(preliminaryNextLineIndent, false, context.getNextLineStartOffset());
+            if (preliminaryNextLineIndent.size() == 0) {
+                preliminaryNextLineIndent.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, context.getNextLineStartOffset()));
+            }
         }
 
         return iis;

@@ -20,7 +20,6 @@ String c =
 <title>JSP Page</title>
 </head>
 <body>
-<body>
 <!-- test
      comment -->
 <%! int count = 1;%>
