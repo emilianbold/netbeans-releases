@@ -104,9 +104,9 @@ public final class GrailsPlatform {
 
     private static GrailsPlatform instance;
 
-    private boolean initialized;
-
     private Version version;
+
+    private ClassPath classpath;
 
     private GrailsPlatform() {
         super();
@@ -170,51 +170,61 @@ public final class GrailsPlatform {
     }
 
     public ClassPath getClassPath() {
-        if (!isConfigured()) {
-            return EMPTY_CLASSPATH;
-        }
-
-        File grailsHome = getGrailsHome();
-        if (!grailsHome.exists()) {
-            return EMPTY_CLASSPATH;
-        }
-
-        List<File> jars = new ArrayList<File>();
-
-        File distDir = new File(grailsHome, "dist"); // NOI18N
-        File[] files = distDir.listFiles();
-        if (files != null) {
-            jars.addAll(Arrays.asList(files));
-        }
-
-        File libDir = new File(grailsHome, "lib"); // NOI18N
-        files = libDir.listFiles();
-        if (files != null) {
-            jars.addAll(Arrays.asList(files));
-        }
-
-        List<URL> urls = new ArrayList<URL>(jars.size());
-
-        for (File f : jars) {
-            try {
-                if (f.isFile()) {
-                    URL entry = f.toURI().toURL();
-                    if (FileUtil.isArchiveFile(entry)) {
-                        entry = FileUtil.getArchiveRoot(entry);
-                        urls.add(entry);
-                    }
-                }
-            } catch (MalformedURLException mue) {
-                assert false : mue;
+        synchronized (this) {
+            if (classpath != null) {
+                return classpath;
             }
+
+            if (!isConfigured()) {
+                classpath = EMPTY_CLASSPATH;
+                return classpath;
+            }
+
+            File grailsHome = getGrailsHome();
+            if (!grailsHome.exists()) {
+                classpath = EMPTY_CLASSPATH;
+                return classpath;
+            }
+
+            List<File> jars = new ArrayList<File>();
+
+            File distDir = new File(grailsHome, "dist"); // NOI18N
+            File[] files = distDir.listFiles();
+            if (files != null) {
+                jars.addAll(Arrays.asList(files));
+            }
+
+            File libDir = new File(grailsHome, "lib"); // NOI18N
+            files = libDir.listFiles();
+            if (files != null) {
+                jars.addAll(Arrays.asList(files));
+            }
+
+            List<URL> urls = new ArrayList<URL>(jars.size());
+
+            for (File f : jars) {
+                try {
+                    if (f.isFile()) {
+                        URL entry = f.toURI().toURL();
+                        if (FileUtil.isArchiveFile(entry)) {
+                            entry = FileUtil.getArchiveRoot(entry);
+                            urls.add(entry);
+                        }
+                    }
+                } catch (MalformedURLException mue) {
+                    assert false : mue;
+                }
+            }
+
+            classpath = ClassPathSupport.createClassPath(urls.toArray(new URL[urls.size()]));
+            return classpath;
         }
-        return ClassPathSupport.createClassPath(urls.toArray(new URL[urls.size()]));
     }
 
     // TODO not public API unless it is really needed
     public Version getVersion() {
         synchronized (this) {
-            if (initialized) {
+            if (version != null) {
                 return version;
             }
 
@@ -233,7 +243,6 @@ public final class GrailsPlatform {
             } catch (IllegalArgumentException ex) {
                 version = Version.VERSION_DEFAULT;
             }
-            initialized = true;
 
             return version;
         }
@@ -244,7 +253,8 @@ public final class GrailsPlatform {
      */
     private void reload() {
         synchronized (this) {
-            initialized = false;
+            version = null;
+            classpath = null;
         }
 
         // figure out the version on background
@@ -253,7 +263,7 @@ public final class GrailsPlatform {
 
             public void run() {
                 synchronized (GrailsPlatform.this) {
-                    if (initialized) {
+                    if (version != null) {
                         return;
                     }
 
@@ -272,7 +282,6 @@ public final class GrailsPlatform {
                     } catch (IllegalArgumentException ex) {
                         version = Version.VERSION_DEFAULT;
                     }
-                    initialized = true;
                 }
             }
         });
