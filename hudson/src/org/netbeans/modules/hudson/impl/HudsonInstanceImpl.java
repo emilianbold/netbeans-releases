@@ -450,7 +450,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         }
         
         public void run() {
-            long milis = 0;
+            long pause;
             
             try {
                 do {
@@ -459,11 +459,11 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
                     
                     // Refresh wait time
                     String s = getProperties().get(INSTANCE_SYNC);
-                    milis = Integer.parseInt(s) * 60 * 1000;
+                    pause = Integer.parseInt(s) * 60 * 1000;
                     
                     // Wait for the specified amount of time
-                    Thread.sleep(milis);
-                } while (milis > 0);
+                    Thread.sleep(pause);
+                } while (pause > 0);
             } catch (InterruptedException e) {
                 // Synchronization is stopped or terminated
             } finally {
