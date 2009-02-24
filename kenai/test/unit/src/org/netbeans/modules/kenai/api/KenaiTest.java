@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.kenai.api;
 
 import java.io.BufferedReader;
@@ -54,12 +53,18 @@ import org.junit.Test;
  * @author Maros Sandor
  * @author Jan Becicka
  */
-public class KenaiTest {
-    static String UNITTESTUNIQUENAME = "unittestuniquename01";
+public class KenaiTest extends junit.framework.TestCase {
 
-    private Kenai instance;
+    static String UNITTESTUNIQUENAME_BASE = "testuniquename";
+    static String UNITTESTUNIQUENAME = "testuniquename00"; // initial value, will be changed in setUpClass method
+    private static Kenai instance;
+    private boolean firstRun = true;
 
     public KenaiTest() {
+    }
+
+    public KenaiTest(String S) {
+        super(S);
     }
 
     @BeforeClass
@@ -71,22 +76,28 @@ public class KenaiTest {
     }
 
     @Before
+    @Override
     public void setUp() {
         try {
-            System.setProperty("kenai.com.url","http://testkenai.com");
+            System.setProperty("kenai.com.url", "http://testkenai.com");
             instance = Kenai.getDefault();
             BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
             String username = br.readLine();
             String password = br.readLine();
             br.close();
             instance.login(username, password.toCharArray());
-            
+            if (firstRun) {
+                UNITTESTUNIQUENAME = UNITTESTUNIQUENAME_BASE + instance.getMyProjects().size();
+                System.out.println("== Name: " + UNITTESTUNIQUENAME);
+                firstRun = false;
+            }
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
 
     @After
+    @Override
     public void tearDown() {
     }
 
@@ -98,7 +109,7 @@ public class KenaiTest {
         String pattern = "jav";
         Collection<KenaiProject> result = instance.searchProjects(pattern);
 
-        for (KenaiProject prj:result) {
+        for (KenaiProject prj : result) {
             System.out.println("Search projects: " + prj.getDisplayName());
         }
     }
@@ -107,7 +118,6 @@ public class KenaiTest {
     public void testGetProject() throws Exception {
         String name = "java-inline";
         KenaiProject prj = instance.getProject(name);
-
         System.out.println("Project: " + prj.getDisplayName());
     }
 
@@ -140,9 +150,7 @@ public class KenaiTest {
 
         boolean authorized = instance.isAuthorized(prj, KenaiActivity.PROJECTS_ADMIN);
         System.out.println("PROJECTS_ADMIN? " + authorized);
-
     }
-
 
     /**
      * Test of createProject method, of class Kenai.
@@ -187,7 +195,7 @@ public class KenaiTest {
     public void testGetFeatures() throws KenaiException {
         System.out.println("getFeature");
         KenaiProject project = instance.getProject(UNITTESTUNIQUENAME);
-        for (KenaiProjectFeature feature: project.getFeatures()) {
+        for (KenaiProjectFeature feature : project.getFeatures()) {
             System.out.println(feature.getName());
         }
     }
@@ -195,7 +203,7 @@ public class KenaiTest {
     @Test
     public void testGetLicenses() throws KenaiException {
         System.out.println("testGetLicenses");
-        for(KenaiLicense lic: Kenai.getDefault().getLicenses()) {
+        for (KenaiLicense lic : Kenai.getDefault().getLicenses()) {
             System.out.println(lic.getName());
             System.out.println(lic.getDisplayName());
             System.out.println(lic.getUri());
@@ -205,7 +213,7 @@ public class KenaiTest {
     @Test
     public void testGetServices() throws KenaiException {
         System.out.println("testGetServices");
-        for(KenaiService ser:Kenai.getDefault().getServices()) {
+        for (KenaiService ser : Kenai.getDefault().getServices()) {
             System.out.println(ser.getName());
             System.out.println(ser.getDescription());
             System.out.println(ser.getDisplayName());
@@ -216,9 +224,27 @@ public class KenaiTest {
     @Test
     public void testGetMyProjects() throws Exception {
         Collection<KenaiProject> result = instance.getMyProjects();
+        System.out.println("size: " + result.size());
 
-        for (KenaiProject prj:result) {
+        for (KenaiProject prj : result) {
             System.out.println("My projects: " + prj.getDisplayName());
         }
     }
+
+    static public junit.framework.Test suite() {
+        junit.framework.TestSuite _suite = new junit.framework.TestSuite();
+        _suite.addTest(new KenaiTest("testSearchProjects"));
+        _suite.addTest(new KenaiTest("testGetProject"));
+        _suite.addTest(new KenaiTest("testLogin"));
+        _suite.addTest(new KenaiTest("testCreateProject"));
+        _suite.addTest(new KenaiTest("testCreateFeature"));
+        _suite.addTest(new KenaiTest("testIsAuthorized"));
+        _suite.addTest(new KenaiTest("testIsAuthorized2"));
+        _suite.addTest(new KenaiTest("testGetFeatures"));
+        _suite.addTest(new KenaiTest("testGetLicenses"));
+        _suite.addTest(new KenaiTest("testGetServices"));
+        _suite.addTest(new KenaiTest("testGetMyProjects"));
+        return _suite;
+    }
+    ;
 }
