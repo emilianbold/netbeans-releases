@@ -128,6 +128,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             // findFile is expensive - don't call it twice!
             CsmFile csmFile = ModelImpl.instance().findFile(name);
             if (csmFile != null) {
+                if (TRACE) {trace("returns file %s", csmFile);} //NOI18N
                 return csmFile;
             }
             NativeProject platformProject = NativeProjectImpl.getNativeProjectImpl(FileUtil.toFile(file));
@@ -138,7 +139,9 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
         if (project != null && project.isValid()) {
             try {
-                return project.getFile(javaIoFile);
+                CsmFile out = project.getFile(javaIoFile);
+                if (TRACE) {trace("returns standalone file %s", out);} //NOI18N
+                return out;
             } catch (BufferUnderflowException ex) {
                 // FIXUP: IZ#148840
                 DiagnosticExceptoins.register(ex);
