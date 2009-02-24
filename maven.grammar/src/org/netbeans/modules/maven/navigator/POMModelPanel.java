@@ -76,6 +76,7 @@ import org.netbeans.modules.maven.model.pom.POMModelFactory;
 import org.netbeans.modules.maven.model.pom.POMQName;
 import org.netbeans.modules.maven.model.pom.POMQNames;
 import org.netbeans.modules.maven.model.pom.Project;
+import org.netbeans.modules.maven.navigator.POMModelVisitor.POMCutHolder;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.cookies.EditorCookie;
 import org.openide.explorer.ExplorerManager;
@@ -145,42 +146,57 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                 if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
                     Node[] nds = getExplorerManager().getSelectedNodes();
                     if (nds.length == 1) {
-                        selectByNode(nds[0], null);
+                        selectByNode(nds[0], null, 0);
                     }
                 }
             }
 
-            private void selectByNode(Node nd, POMQName name) {
-                if (nd == null) {
-                    return;
-                }
-                POMModelVisitor.POMCutHolder holder = nd.getLookup().lookup(POMModelVisitor.POMCutHolder.class);
-                if (holder != null) {
-                    Object[] objs = holder.getCutValues();
-                    if (objs[0] != null && objs[0] instanceof POMComponent) {
-                        POMComponent pc = (POMComponent) objs[0];
-                        int pos;
-                        if (name != null) {
-                            //TODO if not a simple child, then this fails.
-                            pos = pc.findChildElementPosition(name.getQName());
-                        } else {
-                            pos = pc.getModel().getAccess().findPosition(pc.getPeer());
-                        }
-                        if (pos != -1) {
-                            select(pos);
-                        }
-                    } else if (objs[0] != null && name == null) {
-                        selectByNode(nd.getParentNode(), nd.getLookup().lookup(POMQName.class));
-                    }
-                }
-            }
         });
     }
 
-    private void select(final int pos) {
+    private static void selectByNode(Node nd, POMQName name, int layer) {
+        if (nd == null) {
+            return;
+        }
+        POMModelVisitor.POMCutHolder holder = nd.getLookup().lookup(POMModelVisitor.POMCutHolder.class);
+        if (holder != null) {
+            Object[] objs = holder.getCutValues();
+            if (layer >= objs.length) {
+                return;
+            }
+            if (objs[layer] != null && objs[layer] instanceof POMComponent) {
+                POMComponent pc = (POMComponent) objs[layer];
+                int pos;
+                if (name != null) {
+                    //TODO if not a simple child, then this fails.
+                    pos = pc.findChildElementPosition(name.getQName());
+                } else {
+                    pos = pc.getModel().getAccess().findPosition(pc.getPeer());
+                }
+                if (pos != -1) {
+                    select(nd, pos, layer);
+                }
+            } else if (objs[0] != null && name == null) {
+                selectByNode(nd.getParentNode(), nd.getLookup().lookup(POMQName.class), layer);
+            }
+        }
+    }
+
+
+    private static void select(final Node node, final int pos, final int layer) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                EditorCookie.Observable ec = current.getLookup().lookup(EditorCookie.Observable.class);
+                POMCutHolder hold = node.getLookup().lookup(POMCutHolder.class);
+                POMModel[] models = hold.getSource();
+                if (models.length <= layer) {
+                    return;
+                }
+                POMModel mdl = models[layer];
+                DataObject dobj = mdl.getModelSource().getLookup().lookup(DataObject.class);
+                if (dobj == null) {
+                    return;
+                }
+                EditorCookie.Observable ec = dobj.getLookup().lookup(EditorCookie.Observable.class);
                 if (ec == null) {
                     return;
                 }
@@ -189,7 +205,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                     // editor already opened, so just select
                     JTextComponent component = panes[0];
                     component.setCaretPosition(pos);
-                } else  {
+                } else {
                     // editor not opened yet
                     ec.open();
                     try {
@@ -200,9 +216,9 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                             component.setCaretPosition(pos);
                         }
                     } catch (IOException ioe) {
-
                     }
                 }
+
             }
         });
     }
@@ -231,9 +247,10 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                     @SuppressWarnings("unchecked")
                     Iterator<File> it = lin.fileIterator();
                     List<Project> prjs = new ArrayList<Project>();
+                    List<POMModel> mdls = new ArrayList<POMModel>();
                     POMQNames names = null;
                     while (it.hasNext()) {
-                        File pom = it.next();
+                        File pom = FileUtil.normalizeFile(it.next());
                         FileUtil.refreshFor(pom);
                         FileObject fo = FileUtil.toFileObject(pom);
                         if (fo != null) {
@@ -241,6 +258,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                             POMModel mdl = POMModelFactory.getDefault().getModel(ms);
                             if (mdl != null) {
                                 prjs.add(mdl.getProject());
+                                mdls.add(mdl);
                                 names = mdl.getPOMQNames();
                             } else {
                                 System.out.println("no model for " + pom);
@@ -249,7 +267,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                             System.out.println("no fileobject for " + pom);
                         }
                     }
-                    final POMModelVisitor.POMCutHolder hold = new POMModelVisitor.SingleObjectCH(names, names.PROJECT, "root", Project.class,  configuration); //NOI18N
+                    final POMModelVisitor.POMCutHolder hold = new POMModelVisitor.SingleObjectCH(mdls.toArray(new POMModel[0]), names, names.PROJECT, Project.class,  configuration); //NOI18N
                     for (Project p : prjs) {
                         hold.addCut(p);
                     }
