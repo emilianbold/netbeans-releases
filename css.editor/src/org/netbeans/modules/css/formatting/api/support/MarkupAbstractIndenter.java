@@ -215,6 +215,19 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         for (int i=lastUnprocessedItem; i< fileStack.size(); i++) {
             MarkupItem item = fileStack.get(i);
             assert !item.processed : item;
+            if (i+1 == fileStack.size() && inOpeningTagAttributes) {
+                // if we are in tag attributes then last stack item must
+                // be opening tag which has to be ignored for now, eg.:
+                //
+                // 01: <sometag a=b
+                // 02:          x=y>
+                //
+                // when line 1 is processed there will be MarkupItem for sometag
+                // but INDENT command for such MarkupItem should be processed
+                // after inOpeningTagAttributes is false, that is on line 2.
+                assert item.openingTag;
+                break;
+            }
             if (!item.empty) {
                 iis.add(new IndentCommand(item.openingTag ? IndentCommand.Type.INDENT : IndentCommand.Type.RETURN,
                     lineStartOffset));
@@ -337,8 +350,8 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                                     context.getLineStartOffset()));
                                 item.processed = true;
                             } else {
-                                assert item.tagName.equalsIgnoreCase(tokenName) : "was expecting tag "+tokenName+" but was "+item+ ": "+fileStack+" index="+index;
                                 if (closingTag) {
+                                    assert item.tagName.equalsIgnoreCase(tokenName) : "was expecting tag "+tokenName+" but was "+item+ ": "+fileStack+" index="+index;
                                     iis.add(new IndentCommand(IndentCommand.Type.RETURN,
                                         context.getLineStartOffset()));
                                     item.processed = true;
@@ -413,13 +426,12 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         lineItems = eliminateTagsOpenedAndClosedOnOneLine(lineItems);
 
         for (MarkupItem newItem : lineItems) {
-            if (newItem.virtual) {
-                continue;
-            }
-            if (newItem.openingTag) {
-                getStack().addAll(calculateAllVirtualCloseTagsForOpenTag(newItem));
-            } else {
-                getStack().addAll(calculateAllVirtualCloseTagsForCloseTag(newItem));
+            if (!newItem.virtual) {
+                if (newItem.openingTag) {
+                    getStack().addAll(calculateAllVirtualCloseTagsForOpenTag(newItem));
+                } else {
+                    getStack().addAll(calculateAllVirtualCloseTagsForCloseTag(newItem));
+                }
             }
             getStack().push(newItem);
         }

@@ -342,6 +342,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         // iterate over individual List<Line> and translate CONTINUE 
         // to simple INDENT/RETURN commands
         for (List<Line> l : indentationData) {
+            addLanguageEndLine(l);
             simplifyIndentationCommands(l);
         }
 
@@ -353,7 +354,6 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         for (List<Line> l : indentationData) {
             handleLanguageGaps(pairs, l);
             removeNonIndentableLines(pairs, l);
-            checkLanguageEnd(pairs, l);
         }
 
         // merge all the lines
@@ -399,6 +399,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
 
     private void removeNonIndentableLines(List<LineCommandsPair> pairs, List<Line> lines) {
         List<Line> newLines = new ArrayList<Line>();
+        Line previousLine = null;
         for (Line l : lines) {
             if (!l.indentThisLine) {
                 List<IndentCommand> accepted = new ArrayList<IndentCommand>();
@@ -409,7 +410,22 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                             ic.getType() == IndentCommand.Type.BLOCK_START) {
                         accepted.add(ic);
                     } else if (ic.getType() == IndentCommand.Type.RETURN) {
-                        nextLine.add(ic);
+                        if ((previousLine == null || previousLine.index+1 != l.index) && !l.emptyLine) {
+                            // if this is first line of language block then put commands
+                            // on next line rather than current, for example
+                            //
+                            // 05:      color:red;
+                            // 06:   } </style>
+                            //
+                            // line 6 is end of CSS within HTML's <style> tag and
+                            // if RETURN command corresponding to </style> was
+                            // applied on line 06 it would be wrong - it needs to
+                            // be applied to next line and line 6 should be indented
+                            // fully by CSS formatter
+                            nextLine.add(ic);
+                        } else {
+                            accepted.add(ic);
+                        }
                     }
                 }
                 if (accepted.size() > 0) {
@@ -418,34 +434,34 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 if (nextLine.size() > 0) {
                     pairs.add(new LineCommandsPair(l.index+1, nextLine));
                 }
-                continue;
+            } else {
+                newLines.add(l);
             }
-            newLines.add(l);
+            previousLine = l;
         }
         lines.clear();
         lines.addAll(newLines);
     }
 
-    private void checkLanguageEnd(List<LineCommandsPair> pairs, List<Line> lines) {
+    private void addLanguageEndLine(List<Line> lines) throws BadLocationException {
         // check what last line of language suggests about next line:
         if (lines.size() == 0) {
             return;
         }
         Line lastLine = lines.get(lines.size()-1);
-        List<IndentCommand> accepted = new ArrayList<IndentCommand>();
-        for (IndentCommand ic : lastLine.preliminaryNextLineIndent) {
-            if (ic.getType() == IndentCommand.Type.INDENT) {
-                accepted.add(ic);
-            } else if (ic.getType() == IndentCommand.Type.CONTINUE) {
-                // translated CONTINUE to INDENT because mergeIndentedLines does
-                // it only for regular indentation commands and not preliminary ones:
-                accepted.add(new IndentCommand(IndentCommand.Type.INDENT, ic.getLineOffset()));
-                //accepted.add(new IndentCommand(IndentCommand.Type.INDENT, ic.getLineOffset()));
-            }
+        if (lastLine.preliminaryNextLineIndent.size() == 0) {
+            return;
         }
-        if (accepted.size() > 0) {
-            pairs.add(new LineCommandsPair(lastLine.index+1, accepted));
+        int lineIndex = lastLine.index+1;
+        int offset = Utilities.getRowStartFromLineOffset(getDocument(), lineIndex);
+        if (offset == -1) {
+            return;
         }
+        Line l = generateBasicLine(lineIndex);
+        l.indentThisLine = false;
+        l.lineIndent = new ArrayList<IndentCommand>(lastLine.preliminaryNextLineIndent);
+        l.preliminaryNextLineIndent = new ArrayList<IndentCommand>();
+        lines.add(l);
     }
 
     private List<Line> mergeIndentedLines(List<Line> originalLines, List<Line> newLines) {
@@ -796,6 +812,12 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     debugIndentation(cd.getLineStartOffset(), iis, getDocument().getText(rowStartOffset, rowEndOffset-rowStartOffset+1).
                             replace("\n", "").replace("\r", "").trim(), ln.indentThisLine);
                 }
+            }
+        }
+        if (DEBUG && lineIndents.size() > 0) {
+            List<IndentCommand> l = lineIndents.get(lineIndents.size()-1).preliminaryNextLineIndent;
+            if (l.size() > 0) {
+                System.err.println("Preliminary indent commands for next line:"+l);
             }
         }
     }

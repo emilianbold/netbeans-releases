@@ -77,7 +77,8 @@ public class JspIndenter extends MarkupAbstractIndenter<JspTokenId> {
     @Override
     protected boolean isStartTagSymbol(Token<JspTokenId> token) {
         return token.id() == JspTokenId.SYMBOL &&
-            (token.text().toString().equals("<") || token.text().toString().equals("<%"));
+            (token.text().toString().equals("<") || 
+            token.text().toString().equals("<%@"));
     }
 
     @Override

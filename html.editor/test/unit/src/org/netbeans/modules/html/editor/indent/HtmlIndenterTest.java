@@ -112,13 +112,17 @@ public class HtmlIndenterTest extends TestBase2 {
         format("<html>\n<body>\n<pre>Some\ntext which\n  should not be formatted.\n \n </pre>\n</body>\n</html>\n",
                "<html>\n    <body>\n        <pre>Some\ntext which\n  should not be formatted.\n \n        </pre>\n    </body>\n</html>\n", null);
         format("<html>\n<head id=someid\nclass=class/>\n<body>",
-                "<html>\n    <head id=someid\n          class=class/>\n    <body>",null);
+               "<html>\n    <head id=someid\n          class=class/>\n    <body>",null);
 
+        // there was assertion failure discovered by this test:
+        format("<html>\n        <head>\n<title>Localized Dates</title></head>",
+               "<html>\n    <head>\n        <title>Localized Dates</title></head>", null);
         // TODO: impl this:
 //        format("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\"\n\"http://www.w3.org/TR/html4/loose.dtd\">\n<table>",
 //                "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\"\n        \"http://www.w3.org/TR/html4/loose.dtd\">\n<table>",null);
 
     }
+
     public void testFormattingHTML() throws Exception {
         reformatFileContents("testfiles/simple.html",new IndentPrefs(4,4));
     }
@@ -132,7 +136,7 @@ public class HtmlIndenterTest extends TestBase2 {
         insertNewline("<html>\n           <body>^<table>", "<html>\n           <body>\n               ^<table>", null);
         insertNewline("<html><div/>^<table>", "<html><div/>\n    ^<table>", null);
         // tab attriutes indentation:
-        insertNewline("<html><table^>", "<html><table\n            ^>", null);
+        insertNewline("<html><table^>", "<html><table\n        ^>", null);
         insertNewline("<html>^\n    <table>\n", "<html>\n    ^\n    <table>\n", null);
 
         // test that returning </body> tag matches opening one:

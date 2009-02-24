@@ -199,6 +199,9 @@ public class JspIndenterTest extends TestBase2 {
         insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>^</html>", "<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n    ^</html>", null);
         insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>^<table>", "<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n        ^<table>", null);
 
+        insertNewline("<%@ taglib uri=\"http://java.sun.com/jsp/jstl/core\"\n        prefix=\"c\" %>^",
+                      "<%@ taglib uri=\"http://java.sun.com/jsp/jstl/core\"\n        prefix=\"c\" %>\n^",null);
+        
         // TODO: impl matching of INDENT/RETURN and use it to properly match incorrect document:
         //insertNewline("<jsp:body>\n    <html>^</jsp:body>", "<jsp:body>\n    <html>\n^</jsp:body>", null);
 
