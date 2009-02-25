@@ -56,7 +56,7 @@ public class Installer extends ModuleInstall {
         Collection<? extends RepositoryIndexerImplementation> res = Lookup.getDefault().lookupAll(RepositoryIndexerImplementation.class);
         for (RepositoryIndexerImplementation impl : res) {
             if (impl.getType().equals(RepositoryPreferences.TYPE_NEXUS)) {
-                ((NexusRepositoryIndexserImpl)impl).shutdownAll();
+                ((NexusRepositoryIndexerImpl)impl).shutdownAll();
             }
         }
     }

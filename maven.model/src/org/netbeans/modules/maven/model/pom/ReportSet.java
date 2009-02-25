@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.maven.model.pom;
 
+import java.util.List;
+
 
 /**
  *
@@ -55,5 +57,27 @@ public interface ReportSet extends IdPOMComponent {
 //            <xs:element name="report" minOccurs="0" maxOccurs="unbounded" type="xs:string"/>
 //    </xs:all>
 //  </xs:complexType-->
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    Boolean isInherited();
+    void setInherited(Boolean inherited);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    List<String> getReports();
+    void addReport(String report);
+    void removeReport(String report);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    Configuration getConfiguration();
+    void setConfiguration(Configuration config);
 
 }

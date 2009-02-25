@@ -41,7 +41,7 @@ public class TokensTest extends BasicTokensTest {
         testRun("sample.diff");
     }
     
-    public void testBAT(){ //DISABLED BECAUSE OF FAILTURES
+    public void testBAT(){ 
         testRun("sample.bat");
     }
 

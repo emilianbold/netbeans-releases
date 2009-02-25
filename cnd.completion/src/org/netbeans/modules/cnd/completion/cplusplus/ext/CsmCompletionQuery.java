@@ -225,6 +225,9 @@ abstract public class CsmCompletionQuery {
             final int lastSepOffset = sup.getLastCommandSeparator(offset);
             final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset, lastSepOffset);
             final CndTokenProcessor<Token<CppTokenId>> etp = CsmExpandedTokenProcessor.create(doc, tp, offset);
+            if(etp instanceof CsmExpandedTokenProcessor) {
+                tp.setMacroCallback((CsmExpandedTokenProcessor)etp);
+            }
             tp.enableTemplateSupport(true);
             doc.readLock();
             try {
@@ -899,7 +902,8 @@ abstract public class CsmCompletionQuery {
         }
 
         @SuppressWarnings({"fallthrough", "unchecked"})
-        boolean resolveExp(CsmCompletionExpression exp) {            boolean lastDot = false; // dot at the end of the whole expression?
+        boolean resolveExp(CsmCompletionExpression exp) {
+            boolean lastDot = false; // dot at the end of the whole expression?
             boolean ok = true;
 
             switch (exp.getExpID()) {
@@ -1741,19 +1745,24 @@ abstract public class CsmCompletionQuery {
         }
 
         private CsmObject createInstantiation(CsmTemplate template, CsmCompletionExpression exp) {
-            if (exp.getExpID() == CsmCompletionExpression.GENERIC_TYPE) {
-                List<CsmType> params = new ArrayList<CsmType>();
-                int paramsNumber = (template.getTemplateParameters().size() < exp.getParameterCount() - 1) ? template.getTemplateParameters().size() : exp.getParameterCount() - 1;
-                for (int i = 0; i < paramsNumber; i++) {
-                    CsmCompletionExpression paramInst = exp.getParameter(i + 1);
-                    if (paramInst != null) {
-                        params.add(resolveType(paramInst));
-                    } else {
-                        break;
+            if (CsmKindUtilities.isClass(template) || CsmKindUtilities.isFunction(template)) {
+                if (exp.getExpID() == CsmCompletionExpression.GENERIC_TYPE) {
+                    List<CsmType> params = new ArrayList<CsmType>();
+                    int paramsNumber = (template.getTemplateParameters().size() < exp.getParameterCount() - 1) ? template.getTemplateParameters().size() : exp.getParameterCount() - 1;
+                    for (int i = 0; i < paramsNumber; i++) {
+                        CsmCompletionExpression paramInst = exp.getParameter(i + 1);
+                        if (paramInst != null) {
+                            params.add(resolveType(paramInst));
+                        } else {
+                            break;
+                        }
                     }
+                    CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
+                    return ip.instantiate(template, params, getFinder().getCsmFile());
                 }
-                CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
-                return ip.instantiate(template, params);
+            }
+            if (CsmKindUtilities.isClassForwardDeclaration(template)) {
+                return template;
             }
             return null;
         }

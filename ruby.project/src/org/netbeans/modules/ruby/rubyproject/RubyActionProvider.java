@@ -85,6 +85,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
 
 
 /**
@@ -103,6 +104,7 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
         COMMAND_CLEAN,
         COMMAND_REBUILD,
         COMMAND_AUTOTEST,
+        COMMAND_AUTOSPEC,
         COMMAND_RDOC,
         COMMAND_IRB_CONSOLE,
         COMMAND_RUN,
@@ -508,12 +510,22 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
         }
         
         if (COMMAND_AUTOTEST.equals(command)) {
-            if (AutoTestSupport.isInstalled(project)) {
+            if (AutoTestSupport.isInstalled(project, TestType.AUTOTEST)) {
                 AutoTestSupport support = new AutoTestSupport(context, project, getSourceEncoding());
                 support.setClassPath(project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH));
-                support.start();
+                support.start(TestType.AUTOTEST);
             }
             
+            return;
+        }
+
+        if (COMMAND_AUTOTEST.equals(command)) {
+            if (AutoTestSupport.isInstalled(project, TestType.AUTOSPEC)) {
+                AutoTestSupport support = new AutoTestSupport(context, project, getSourceEncoding());
+                support.setClassPath(project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH));
+                support.start(TestType.AUTOSPEC);
+            }
+
             return;
         }
         

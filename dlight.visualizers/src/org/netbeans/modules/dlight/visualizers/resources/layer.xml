@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <!--
     <folder name="Actions">
         <folder name="Window">
             <file name="org-netbeans-modules-dlight-visualizers-VisualizerTopComponentAction.instance">
@@ -11,6 +12,7 @@
             </file>
         </folder>
     </folder>
+    -->
     <folder name="Windows2">
         <folder name="Components">
             <file name="VisualizerTopComponentTopComponent.settings" url="VisualizerTopComponentTopComponentSettings.xml"/>
@@ -22,10 +24,12 @@
         </folder>
     </folder>
     <folder name="Menu">
-        <folder name="Window">  
+        <folder name="Window">
+            <!--
             <file name="VisualizerTopComponentAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-dlight-core-ui-actions-VisualizerTopComponentAction.instance"/>
-            </file>           
+            </file>
+            -->
         </folder>
     </folder>
 </filesystem>

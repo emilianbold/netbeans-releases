@@ -117,17 +117,4 @@ public final class RuntimeHelper {
         return props.getProperty("grails.version"); // NOI18N
     }
 
-    public static File getSystemDefaultRuntime() {
-        String grailsHome = System.getenv(GRAILS_HOME_PROPERTY);
-        if (grailsHome == null) {
-            return null;
-        }
-        File grailsBase = new File(grailsHome);
-        if (isValidRuntime(grailsBase)) {
-            return grailsBase;
-        }
-
-        return null;
-    }
-
 }

@@ -337,6 +337,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                     } catch (InterruptedException iex) {}
                 }
                 List<? extends Component> usedButtons = usedToolbarButtons.remove(engine);
+                ToolbarPool.getDefault().waitFinished();
                 if (!ToolbarPool.getDefault ().getConfiguration ().equals("Debugging")) {
                     return ;
                 }
@@ -414,6 +415,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
             }
             OPENED_COMPONENTS.clear();
         }
+        ToolbarPool.getDefault().waitFinished();
         if (ToolbarPool.getDefault().getConfiguration().equals("Debugging")) { // NOI18N
             ToolbarPool.getDefault().setConfiguration(ToolbarPool.DEFAULT_CONFIGURATION);
         }

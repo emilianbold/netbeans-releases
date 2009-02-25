@@ -95,6 +95,7 @@ import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -195,6 +196,11 @@ public class WebProjectValidation extends J2eeTestCase {
     
     /** checks if the Server ports are not used */
     public void testPreconditions() throws Exception {
+        File projectLoc = new File(PROJECT_LOCATION);
+        if (projectLoc.exists()){
+            FileObject fo = FileUtil.createData(projectLoc);
+            fo.delete();
+        }
         URLConnection connection = server.getServerURL().openConnection();
         try {
             connection.connect();

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.java.source.save;
 
+import com.sun.tools.javac.util.Names;
 import java.util.*;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
@@ -62,7 +63,6 @@ import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Position;
 import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.openide.util.NbBundle;
@@ -1372,7 +1372,7 @@ public class CasualDiff {
             copyTo(localPointer, localPointer = tokenSequence.offset());
         } else {
             tokenSequence.move(selectedBounds[1]);
-            if (oldT.name != Name.Table.instance(context).error) {
+            if (oldT.name != Names.instance(context).error) {
                 moveToSrcRelevant(tokenSequence, Direction.FORWARD); // go to dot (.)
                 moveToSrcRelevant(tokenSequence, Direction.FORWARD); // go to oldT.name token
                 copyTo(localPointer, localPointer = tokenSequence.offset());

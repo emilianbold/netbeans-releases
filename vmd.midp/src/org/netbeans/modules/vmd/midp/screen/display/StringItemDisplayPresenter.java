@@ -64,7 +64,7 @@ import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSuppo
 public class StringItemDisplayPresenter extends ItemDisplayPresenter {
 
     private WrappedLabel label;
-    private int preferedHeight =-1;
+    //private int preferedHeight =-1;
 
     public StringItemDisplayPresenter() {
         label = label = new WrappedLabel(){
@@ -113,16 +113,18 @@ public class StringItemDisplayPresenter extends ItemDisplayPresenter {
                 ItemCD.PROP_PREFERRED_HEIGHT).getPrimitiveValue().toString());
         if ( prefHeight != -1 ){
             Dimension dimension = getView().getPreferredSize();
-            if ( preferedHeight == -1){
+            /*if ( preferedHeight == -1){
                 preferedHeight = (int)dimension.getHeight();
-            }
+            }*/
             getView().setPreferredSize( new Dimension ((int)dimension.getWidth(),
                     prefHeight));
         }
-        else if (preferedHeight != -1) {
+        else {
+            /*if (preferedHeight != -1) {
             Dimension dimension = getView().getPreferredSize();
             getView().setPreferredSize(new Dimension((int) dimension.getWidth(),
-                    preferedHeight));
+                    preferedHeight));*/
+            getView().setPreferredSize(null);
         }
         getView().revalidate();
         getView().invalidate();

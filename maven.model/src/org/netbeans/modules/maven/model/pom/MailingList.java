@@ -57,4 +57,41 @@ public interface MailingList extends POMComponent {
 //    </xs:all>
 //  </xs:complexType-->
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getName();
+    void setName(String name);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getSubscribe();
+    void setSubscribe(String subscribe);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getUnsubscribe();
+    void setUnsubscribe(String unsubscribe);
+
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getPost();
+    void setPost(String post);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getArchive();
+    void setArchive(String archive);
+
+
 }

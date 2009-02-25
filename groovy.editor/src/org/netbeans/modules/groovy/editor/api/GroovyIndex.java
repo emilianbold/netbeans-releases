@@ -532,14 +532,15 @@ public final class GroovyIndex {
             return foundIt;
         }
 
-        String extendsClass = null;
-
-        String classIn = null;
-        int fqnIndex = classFqn.lastIndexOf("."); // NOI18N
-
-        if (fqnIndex != -1) {
-            classIn = classFqn.substring(0, fqnIndex);
-        }
+// XXX looks like copied from Ruby
+//        String extendsClass = null;
+//
+//        String classIn = null;
+//        int fqnIndex = classFqn.lastIndexOf("."); // NOI18N
+//
+//        if (fqnIndex != -1) {
+//            classIn = classFqn.substring(0, fqnIndex);
+//        }
 
         for (SearchResult map : result) {
             assert map != null;
@@ -618,33 +619,34 @@ public final class GroovyIndex {
 //            }
         }
 
-        if (extendsClass == null) {
+//        if (extendsClass == null) {
             // XXX GroovyObject, GroovyScript
-            addMethodsFromClass(prefix, kind, "java.lang.Object", methods, seenSignatures, scannedClasses,
+            addMethodsFromClass(prefix, kind, "java.lang.Object", methods, seenSignatures, scannedClasses, // NOI18N
                 true, true);
-        } else {
-            // We're not sure we have a fully qualified path, so try some different candidates
-            if (!addMethodsFromClass(prefix, kind, extendsClass, methods, seenSignatures,
-                        scannedClasses, haveRedirected, true)) {
-                // Search by classIn
-                String fqn = classIn;
-
-                while (fqn != null) {
-                    if (addMethodsFromClass(prefix, kind, fqn + "." + extendsClass, methods,
-                                seenSignatures, scannedClasses, haveRedirected, true)) {
-                        break;
-                    }
-
-                    int f = fqn.lastIndexOf("."); // NOI18N
-
-                    if (f == -1) {
-                        break;
-                    } else {
-                        fqn = fqn.substring(0, f);
-                    }
-                }
-            }
-        }
+// XXX looks like copied from Ruby
+//        } else {
+//            // We're not sure we have a fully qualified path, so try some different candidates
+//            if (!addMethodsFromClass(prefix, kind, extendsClass, methods, seenSignatures,
+//                        scannedClasses, haveRedirected, true)) {
+//                // Search by classIn
+//                String fqn = classIn;
+//
+//                while (fqn != null) {
+//                    if (addMethodsFromClass(prefix, kind, fqn + "." + extendsClass, methods,
+//                                seenSignatures, scannedClasses, haveRedirected, true)) {
+//                        break;
+//                    }
+//
+//                    int f = fqn.lastIndexOf("."); // NOI18N
+//
+//                    if (f == -1) {
+//                        break;
+//                    } else {
+//                        fqn = fqn.substring(0, f);
+//                    }
+//                }
+//            }
+//        }
 
         return foundIt;
     }
@@ -699,7 +701,7 @@ public final class GroovyIndex {
 
         String fileUrl = map.getPersistentUrl();
 
-        String fqn = map.getValue(GroovyIndexer.FQN_NAME);
+        //String fqn = map.getValue(GroovyIndexer.FQN_NAME);
 
         int typeIndex = signature.indexOf(';');
         String methodSignature = signature;
@@ -727,7 +729,7 @@ public final class GroovyIndex {
 
         }
 
-        IndexedMethod m = IndexedMethod.create(this, methodSignature, type, fqn, clz, fileUrl, attributes, flags);
+        IndexedMethod m = IndexedMethod.create(this, methodSignature, type, clz, fileUrl, attributes, flags);
 
         m.setInherited(inherited);
         return m;
@@ -746,7 +748,7 @@ public final class GroovyIndex {
 
         String fileUrl = map.getPersistentUrl();
 
-        String fqn = map.getValue(GroovyIndexer.FQN_NAME);
+        //String fqn = map.getValue(GroovyIndexer.FQN_NAME);
 
         int typeIndex = signature.indexOf(';');
         String name = signature;
@@ -775,7 +777,7 @@ public final class GroovyIndex {
         }
 
         IndexedField m =
-            IndexedField.create(this, name, type, fqn, fileUrl, attributes, flags);
+            IndexedField.create(this, name, type, clz, fileUrl, attributes, flags);
         m.setInherited(inherited);
 
         return m;

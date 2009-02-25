@@ -473,8 +473,8 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(ReportPlugin context) {
-        if (isElementQName(context.getModel().getPOMQNames().REPORTSET)) {
-            created = new ReportSetImpl(context.getModel(), element);
+        if (isElementQName(context.getModel().getPOMQNames().REPORTSETS)) {
+            created = new ReportSetImpl.List(context.getModel(), element);
             return;
         }
         if (isElementQName(context.getModel().getPOMQNames().CONFIGURATION)) {
@@ -487,6 +487,15 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(ReportSet context) {
+        if (isElementQName(context.getModel().getPOMQNames().REPORTS)) {
+            created = new StringListImpl(context.getModel(), element, context.getModel().getPOMQNames().REPORT);
+            return;
+        }
+        if (isElementQName(context.getModel().getPOMQNames().CONFIGURATION)) {
+            created = new ConfigurationImpl(context.getModel(), element);
+            return;
+        }
+
         createExtensibilityElement(context);
     }
 
@@ -637,6 +646,14 @@ class POMComponentCreateVisitor extends DefaultVisitor {
         }
         if (isElementQName(context.getModel().getPOMQNames().PLUGIN) && context.getListClass().equals(Plugin.class)) {
             created = new PluginImpl(context.getModel(), element);
+            return;
+        }
+        if (isElementQName(context.getModel().getPOMQNames().REPORTPLUGIN) && context.getListClass().equals(ReportPlugin.class)) {
+            created = new ReportPluginImpl(context.getModel(), element);
+            return;
+        }
+        if (isElementQName(context.getModel().getPOMQNames().REPORTSET) && context.getListClass().equals(ReportSet.class)) {
+            created = new ReportSetImpl(context.getModel(), element);
             return;
         }
         if (isElementQName(context.getModel().getPOMQNames().EXTENSION) && context.getListClass().equals(Extension.class)) {

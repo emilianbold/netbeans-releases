@@ -6,6 +6,13 @@
             <code-name-base>org.netbeans.modules.vmd.kit</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.mobility.databindingme</code-name-base>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.mobility.kit</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
@@ -31,10 +38,37 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.vmd.components.midp</code-name-base>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.vmd.components.midp.pda</code-name-base>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.vmd.components.midp.wma</code-name-base>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.vmd.components.svg</code-name-base>
                     <run-dependency>
                         <release-version>2</release-version>
                         <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.vmd.componentssupport</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -113,34 +147,6 @@
                     <code-name-base>org.netbeans.modules.vmd.structure</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.vmd.components.midp</code-name-base>
-                    <run-dependency>
-                        <release-version>2</release-version>
-                        <specification-version>1.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.vmd.components.midp.pda</code-name-base>
-                    <run-dependency>
-                        <release-version>2</release-version>
-                        <specification-version>1.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.vmd.components.midp.wma</code-name-base>
-                    <run-dependency>
-                        <release-version>2</release-version>
-                        <specification-version>1.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.mobility.databindingme</code-name-base>
-                    <run-dependency>
-                        <release-version>2</release-version>
-                        <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>

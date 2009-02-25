@@ -114,8 +114,10 @@ public class PythonDebugClient {
       return;  // not yet in debugging state
     }
     try {
-      _cmdStream.write(cmd + "\n");
-      _cmdStream.flush();
+      if (_cmdStream != null)
+        _cmdStream.write(cmd + "\n");
+      if (_cmdStream != null)
+        _cmdStream.flush();
     } catch (IOException e) {
       throw new PythonDebugException("Socket Write Command error " +
               e.toString());

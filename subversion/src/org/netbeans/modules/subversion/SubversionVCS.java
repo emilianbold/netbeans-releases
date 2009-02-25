@@ -58,11 +58,13 @@ import java.util.prefs.PreferenceChangeListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.logging.Level;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  * @author Maros Sandor
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.spi.VersioningSystem.class)
+@ServiceProviders({@ServiceProvider(service=VersioningSystem.class), @ServiceProvider(service=SubversionVCS.class)})
 public class SubversionVCS extends VersioningSystem implements VersioningListener, PreferenceChangeListener, PropertyChangeListener {
     
     private final Set<File> unversionedParents = Collections.synchronizedSet(new HashSet<File>(20));

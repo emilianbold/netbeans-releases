@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.db.dataview.util;
 
@@ -52,7 +52,6 @@ import org.netbeans.junit.NbTestCase;
 public class TimeTypeTest extends NbTestCase {
 
     private long now = System.currentTimeMillis();
-    private TimeType type = null;
 
     public TimeTypeTest(String testName) {
         super(testName);
@@ -63,28 +62,16 @@ public class TimeTypeTest extends NbTestCase {
         return suite;
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        type = new TimeType();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        type = null;
-    }
-
     //---------------- Test Case ---------------
     public void testConvertObject() {
         try {
-            type.convert(new Object());
+            TimeType.convert(new Object());
             fail("Expected Exception");
         } catch (Exception expected) {
         // expected
         }
         try {
-            type.convert("this is not a date");
+            TimeType.convert("this is not a date");
             fail("Expected Exception");
         } catch (Exception expected) {
         // expected
@@ -95,10 +82,10 @@ public class TimeTypeTest extends NbTestCase {
         long normalizedNow = TimeType.normalizeTime(now);
         Time expectedTime = new Time(normalizedNow);
         //assertEquals(expectedTime, (Time)type.convert(new Time(now)));
-        assertEquals(expectedTime, type.convert(expectedTime));
+        assertEquals(expectedTime, TimeType.convert(expectedTime));
 
         try {
-            type.convert(new Object());
+            TimeType.convert(new Object());
             fail("Expected Exception - cannot parse/convert object to timestamp");
         } catch (Exception expected) {
         // Ignore
@@ -107,7 +94,7 @@ public class TimeTypeTest extends NbTestCase {
 
     public void testToDate() throws Exception {
         try {
-            type.convert(new Date(now));
+            TimeType.convert(new Date(now));
             fail("Expected Exception - not implemented.");
         } catch (Exception expected) {
         // expected
@@ -115,7 +102,7 @@ public class TimeTypeTest extends NbTestCase {
     }
 
     public void testToTime() throws Exception {
-        Object result = type.convert(new Time(now));
+        Object result = TimeType.convert(new Time(now));
         assertNotNull("Should get object back", result);
         assertTrue("Should get Time back", result instanceof java.sql.Time);
     }
@@ -125,7 +112,7 @@ public class TimeTypeTest extends NbTestCase {
         //assertEquals("Should accept - ", expectedTime, type.convert("00:00:00"));
 
         // 12:00 PM
-        expectedTime = (Time) type.convert(new Time(new Long(expectedTime.getTime() + 12 * 60 * 60 * 1000L)));
+        expectedTime = TimeType.convert (new Time (new Long (expectedTime.getTime () + 12 * 60 * 60 * 1000L)));
         DateFormat fmt = DateFormat.getTimeInstance(DateFormat.LONG,
                 TimestampType.LOCALE);
         fmt.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -134,7 +121,7 @@ public class TimeTypeTest extends NbTestCase {
         fmt = new SimpleDateFormat("HH:mm:ss");
         fmt.setTimeZone(TimeZone.getTimeZone("GMT"));
         expectedTime = new Time(((12L * 60L * 60L) + (5L * 60L)) * 1000L);
-        assertEquals(fmt.format(expectedTime), type.convert("12:05:00").toString());
+        assertEquals(fmt.format(expectedTime), TimeType.convert("12:05:00").toString());
     }
 
     public void testNormalizeTime() {
@@ -156,7 +143,7 @@ public class TimeTypeTest extends NbTestCase {
         largeValue = value + (34L * 365L * 24L * 60L * 60L * 1000L) // 2004
                 + (8L * 24L * 60L * 60L * 1000L) // leap years (not including 2004)
                 + ((31L + 29L + 31L + 30L + 15) * 24L * 60L * 60L * 1000L); // May 15
-        int offset = TimeType.getTimeZone().getDSTSavings();
+        int offset = TimeType.TIME_ZONE.getDSTSavings();
         assertEquals(value + offset, TimeType.normalizeTime(largeValue));
     }
 }

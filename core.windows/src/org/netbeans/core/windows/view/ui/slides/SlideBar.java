@@ -564,17 +564,26 @@ public final class SlideBar extends Box implements ComplexListDataListener,
             if( null == slidingButton )
                 return false;
             ButtonModel model = slidingButton.getModel();
-            return model.isArmed() || model.isPressed() || model.isSelected() || model.isRollover();
+            return model.isArmed() || model.isPressed() || model.isSelected();
+        }
+
+        private boolean isRollover() {
+            if( null == slidingButton )
+                return false;
+            ButtonModel model = slidingButton.getModel();
+            return model.isRollover();
         }
 
         @Override
         public boolean isOpaque() {
-            return isPressed();
+            return isPressed() || isRollover();
         }
 
         @Override
         public Color getBackground() {
-            if( isPressed() )
+            if( isRollover() )
+                return UIManager.getColor("NbSlideBar.rollover"); //NOI18N
+            else if( isPressed() )
                 return UIManager.getColor("NbSplitPane.background"); //NOI18N
             return super.getBackground();
         }

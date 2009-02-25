@@ -7,7 +7,7 @@ Searchable Keys:
   fqn : Module
   method : <;01;;TrueClass|FalseClass|NilClass;
   method : <=;01;;TrueClass|FalseClass|NilClass;
-  method : <=>;01;;NilClass;
+  method : <=>;01;;Fixnum|NilClass;
   method : ===;01;;TrueClass|FalseClass;
   method : >;01;;TrueClass|FalseClass|NilClass;
   method : >=;01;;TrueClass|FalseClass|NilClass;

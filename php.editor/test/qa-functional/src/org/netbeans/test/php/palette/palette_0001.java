@@ -41,10 +41,6 @@
 
 package org.netbeans.test.php.palette;
 
-import javax.swing.tree.TreePath;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jemmy.operators.JButtonOperator;
 import javax.swing.JEditorPane;
 import java.awt.Rectangle;
 import javax.swing.text.BadLocationException;
@@ -53,33 +49,15 @@ import javax.swing.ListModel;
 import java.awt.Point;
 import org.netbeans.jemmy.drivers.input.MouseRobotDriver;
 import org.netbeans.jemmy.Timeout;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jemmy.JemmyException;
 import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
-import org.netbeans.jemmy.operators.JToggleButtonOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
-import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import java.util.List;
-import org.netbeans.jemmy.util.Dumper;
-import java.io.*;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
-import org.netbeans.jemmy.operators.WindowOperator;
-import org.netbeans.jemmy.Timeouts;
 
 /**
  *

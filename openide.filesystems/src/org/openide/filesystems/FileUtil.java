@@ -1552,6 +1552,7 @@ public final class FileUtil extends Object {
      * @since 4.48
      */
     public static File normalizeFile(final File file) {
+        // XXX should use NIO in JDK 7; see #6358641
         Parameters.notNull("file", file);  //NOI18N
         File retFile;
 

@@ -85,13 +85,21 @@ public final class UnitImpl implements Unit {
         // Use another way to control the assertion. For example by flag in unit tests.
         //assert getName().equals(key.getUnit().toString());
         Persistent data = cache.get(key);
-        if (data == null) {
-            data = getStorage(key).read(key);
-            if (data != null) {
-                // no syncronization here!!!
-                // the only possible collision here is lost of element, which is currently being deleted
-                // by processQueue - it will be reread
-                cache.put(key, data, false);
+        // use double check to speedup without locks
+        Persistent oldData = data;
+        if (oldData == null) {
+            // all work with key data under key's sync
+            synchronized (key) {
+                data = cache.get(key);
+                if (data == null) {
+                    data = oldData = getStorage(key).read(key);
+                    if (data != null) {
+                        // no syncronization here!!!
+                        // the only possible collision here is lost of element, which is currently being deleted
+                        // by processQueue - it will be reread
+                        cache.put(key, data, false);
+                    }
+                }
             }
         }
         return data;
@@ -100,31 +108,46 @@ public final class UnitImpl implements Unit {
     public void putToCache(Key key, Persistent obj) {
         assert key != null;
         assert getName().equals(key.getUnit().toString());
-        cache.put(key, obj, true);
+        // all work with key data under key's sync
+        synchronized (key) {
+            cache.put(key, obj, true);
+        }
     }
     
     public void hang(Key key, Persistent obj) {
         assert key != null;
         assert getName().equals(key.getUnit().toString());
-        cache.hang(key, obj);
+        // all work with key data under key's sync
+        synchronized (key) {
+            cache.hang(key, obj);
+        }
     }
     
     public Persistent tryGet(Key key) {
         assert key != null;
         assert getName().equals(key.getUnit().toString());
-        return cache.get(key);
+        // all work with key data under key's sync
+        synchronized (key) {
+            return cache.get(key);
+        }
     }
 
     public void removePhysically(Key key) throws IOException {
         assert key != null;
         assert getName().equals(key.getUnit().toString());
-        getStorage(key).remove(key);
+        // all work with key data under key's sync
+        synchronized (key) {
+            getStorage(key).remove(key);
+        }
     }
     
     public void removeFromCache(Key key) {
         assert key != null;
         assert getName().equals(key.getUnit().toString());
-        cache.remove(key);
+        // all work with key data under key's sync
+        synchronized (key) {
+            cache.remove(key);
+        }
     }
 
     public void close() throws IOException {
@@ -140,7 +163,10 @@ public final class UnitImpl implements Unit {
         assert key != null;
         assert getName().equals(key.getUnit().toString());
         assert object != null;
-        getStorage(key).write(key, object);
+        // all work with key data under key's sync
+        synchronized (key) {
+            getStorage(key).write(key, object);
+        }
     }
 
     public boolean maintenance(long timeout) throws IOException {

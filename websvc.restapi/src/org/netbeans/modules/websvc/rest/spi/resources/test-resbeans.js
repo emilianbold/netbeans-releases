@@ -1270,7 +1270,13 @@ WADLParser.prototype = {
                     var rs = ts.getElementsByTagName(wDocArr[i].documentElement, 'resources')[0];
                     rChilds = ts.getElementsByTagName(rs, 'resource');
                     if(rChilds != null && rChilds.length > 0) {
-                      resources.appendChild(rChilds[0]);
+                        try{
+                            var n = wDoc.importNode(rChilds[0], true);
+                            resources.appendChild(n);
+                        }
+                        catch (e) {
+                            resources.appendChild(rChilds[0]);
+                        }
                     }
                   }
                 }

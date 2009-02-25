@@ -375,6 +375,8 @@ public class AstRenderer {
                 return false;
             }
             name = child.getFirstChild();
+        } else if(child.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
+            return true;
         }
 
         if (name == null) {
@@ -854,7 +856,7 @@ public class AstRenderer {
     }
 
     protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, String name) {
-        return new TypedefImpl(ast, file, container, type, name);
+        return new TypedefImpl(ast, file, container, type, name, !isRenderingLocalContext());
     }
 
     public static boolean renderForwardClassDeclaration(

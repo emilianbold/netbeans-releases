@@ -52,7 +52,7 @@ import static com.sun.tools.javac.code.TypeTags.*;
 
 /** Estimate the printed width of a tree
  */
-public class WidthEstimator extends Visitor {
+public class WidthEstimator extends JCTree.Visitor {
     private int width;
     private int prec;
     private int maxwidth;
@@ -86,7 +86,7 @@ public class WidthEstimator extends Visitor {
 	if (ownPrec < contextPrec)
 	    width += 2;
     }
-    private void width(Name n) { width += n.len; }
+    private void width(Name n) { width += n.getByteLength(); }
     private void width(String n) { width += n.length(); }
     private void width(JCTree n) { if(width<maxwidth) n.accept(this); }
     private void width(JCTree n, Type t) { if(t==null) width(n); else width(t); }

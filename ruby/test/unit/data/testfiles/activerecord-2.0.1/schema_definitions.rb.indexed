@@ -7,7 +7,7 @@ Searchable Keys:
   class-ig : tabledefinition
   field : base
   fqn : ActiveRecord::ConnectionAdapters::TableDefinition
-  method : [](name)|DOCUMENTED|;;NilClass|Object;
+  method : [](name)|DOCUMENTED|;;Object|NilClass;
   method : column(name,type,options)|DOCUMENTED|
   method : initialize(base)|PRIVATE|
   method : native|PRIVATE|

@@ -1132,11 +1132,21 @@ public class EditorContextImpl extends EditorContext {
             synchronized (sourceHandles) {
                 handle = sourceHandles.get(js);
             }
-            handle = JavaSourceUtil.createControllerHandle(fo, handle);
-            synchronized (sourceHandles) {
-                sourceHandles.put(js, handle);
+            if (handle == null) {
+                try {
+                    handle = JavaSourceUtil.createControllerHandle(fo, handle);
+                    synchronized (sourceHandles) {
+                        sourceHandles.put(js, handle);
+                    }
+                } catch (Exception ex) {
+                    // ignore Exception since createControllerHandle(fo, handle) may get null JavaSource
+                }
             }
-            preferredCI = (CompilationController) handle.getCompilationController();
+            if (handle != null) {
+                preferredCI = (CompilationController) handle.getCompilationController();
+            } else {
+                preferredCI = null;
+            }
         } else {
             preferredCI = null;
         }

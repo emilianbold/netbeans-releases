@@ -62,6 +62,7 @@ import com.sun.tools.javac.comp.TransTypes;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.util.Name;
+import com.sun.tools.javac.util.Names;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -317,7 +318,7 @@ public class SourceAnalyser {
             this.staticImports = new HashSet<String> ();
             this.importIdents = new HashSet<CharSequence>();
             this.jt = jt;
-            this.errorName = Name.Table.instance(jt.getContext()).error;
+            this.errorName = Names.instance(jt.getContext()).error;
             this.state = State.OTHER;
             this.types = com.sun.tools.javac.code.Types.instance(jt.getContext());
             this.trans = TransTypes.instance(jt.getContext());
@@ -343,7 +344,7 @@ public class SourceAnalyser {
             this.staticImports = new HashSet<String>();
             this.importIdents = new HashSet<CharSequence>();
             this.jt = jt;
-            this.errorName = Name.Table.instance(jt.getContext()).error;
+            this.errorName = Names.instance(jt.getContext()).error;
             this.state = State.OTHER;
             this.types = com.sun.tools.javac.code.Types.instance(jt.getContext());
             this.trans = TransTypes.instance(jt.getContext());
