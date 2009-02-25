@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.TimeUnit;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -100,7 +101,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     private boolean isShown = true;
 
     AdvancedTableViewVisualizer(TableDataProvider provider, final AdvancedTableViewVisualizerConfiguration configuration) {
-        timerHandler = new OnTimerRefreshVisualizerHandler(this, 5);
+        timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
         this.provider = provider;
         this.configuration = configuration;
         treeModel = new DefaultTreeModel(TREE_ROOT);

@@ -61,12 +61,12 @@ import org.openide.util.NbBundle;
 public final class SunStudioDCConfiguration
         implements DataCollectorConfiguration, IndicatorDataProviderConfiguration {
 
-    public static final Column c_name = new _Column<String>("name");    // NOI18N
-    public static final Column c_eUser = new _Column<Double>("e.user"); // NOI18N
-    public static final Column c_iUser = new _Column<Double>("i.user"); // NOI18N
-    public static final Column c_iSync = new _Column<Double>("i.sync"); // NOI18N
-    public static final Column c_iSyncn = new _Column<Long>("i.syncn"); // NOI18N
-    public static final Column c_ulockSummary = new _Column<Long>("user_lock"); // NOI18N
+    public static final Column c_name = new _Column(String.class, "name");    // NOI18N
+    public static final Column c_eUser = new _Column(Double.class, "e.user"); // NOI18N
+    public static final Column c_iUser = new _Column(Double.class, "i.user"); // NOI18N
+    public static final Column c_iSync = new _Column(Double.class, "i.sync"); // NOI18N
+    public static final Column c_iSyncn = new _Column(Long.class, "i.syncn"); // NOI18N
+    public static final Column c_ulockSummary = new _Column(Long.class, "user_lock"); // NOI18N
 
 
     static {
@@ -169,7 +169,7 @@ public final class SunStudioDCConfiguration
      * @return name of the column which represents Function name
      */
     public static final String getFunctionNameColumnName() {
-        return "name";
+        return "name"; // NOI18N
     }
 
     public String getID() {
@@ -188,10 +188,10 @@ public final class SunStudioDCConfiguration
         }
     }
 
-    private static class _Column<T> extends Column {
+    private static class _Column extends Column {
 
-        public _Column(String name) {
-            super(name, ((T) new Object[0]).getClass(), loc("SSDataCollector.ColumnName." + name), null); // NOI18N
+        public _Column(Class clazz, String name) {
+            super(name, clazz, loc("SSDataCollector.ColumnName." + name), null); // NOI18N
         }
     }
 
