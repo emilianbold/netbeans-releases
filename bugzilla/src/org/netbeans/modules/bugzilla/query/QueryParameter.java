@@ -150,6 +150,7 @@ public abstract class QueryParameter {
     };
 
     private final String parameter;
+    protected boolean alwaysDisabled = false;
     public QueryParameter(String parameter) {
         this.parameter = parameter;
     }
@@ -157,7 +158,12 @@ public abstract class QueryParameter {
         return parameter;
     }
     abstract ParameterValue[] getValues();
-    abstract void setValues(ParameterValue[] pvs);
+    abstract void setValues(ParameterValue[] pvs);    
+    void setAlwaysDisabled(boolean bl) {
+        this.alwaysDisabled = bl;
+        setEnabled(false); // true or false, who cares. this is only to trigger the state change
+    }
+    abstract void setEnabled(boolean b);
 
     public StringBuffer get() {
         StringBuffer sb = new StringBuffer();
@@ -206,6 +212,10 @@ public abstract class QueryParameter {
                 combo.setSelectedIndex(idx);
             }
         }
+        @Override
+        void setEnabled(boolean b) {
+            combo.setEnabled(alwaysDisabled ? false : b);
+        }
     }
 
     static class ListParameter extends QueryParameter {
@@ -246,6 +256,12 @@ public abstract class QueryParameter {
                 selection[i] = ((DefaultListModel)list.getModel()).indexOf(values[i]);
             }
             list.setSelectedIndices(selection);
+            int idx = selection.length > 0 ? selection[0] : -1;
+            if(idx > -1) list.scrollRectToVisible(list.getCellBounds(idx, idx));
+        }
+        @Override
+        void setEnabled(boolean  b) {
+            list.setEnabled(alwaysDisabled ? false : b);
         }
     }
 
@@ -277,6 +293,10 @@ public abstract class QueryParameter {
             if(pvs.length == 0 || pvs[0] == null);
             txt.setText(pvs[0].getValue().replace("+", " "));
         }
+        @Override
+        void setEnabled(boolean  b) {
+            txt.setEnabled(alwaysDisabled ? false : b);
+        }
     }
 
     static class CheckBoxParameter extends QueryParameter {
@@ -295,6 +315,10 @@ public abstract class QueryParameter {
             assert pvs.length < 2;
             if(pvs.length == 0 || pvs[0] == null);
             chk.setSelected(pvs[0].getValue().equals("1"));
+        }
+        @Override
+        void setEnabled(boolean  b) {
+            chk.setEnabled(alwaysDisabled ? false : b);
         }
     }
 
@@ -350,5 +374,5 @@ public abstract class QueryParameter {
             if(value instanceof ParameterValue) value = ((ParameterValue)value).getDisplayName();
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         }
-    }
+    }   
 }

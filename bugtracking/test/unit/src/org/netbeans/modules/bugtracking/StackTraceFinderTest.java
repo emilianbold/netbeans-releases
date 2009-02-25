@@ -37,12 +37,12 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.issues;
+package org.netbeans.modules.bugtracking;
 
 import java.util.List;
 import junit.framework.TestCase;
-import org.netbeans.modules.tasks.api.StackTraceFinder;
-import org.netbeans.modules.tasks.api.StackTraceFinder.StackTracePosition;
+import org.netbeans.modules.bugtracking.util.StackTraceSupport;
+import org.netbeans.modules.bugtracking.util.StackTraceSupport.StackTracePosition;
 
 /**
  *
@@ -53,7 +53,7 @@ public class StackTraceFinderTest extends TestCase {
     public void testStackTrace() {
         String prefix = "simply something \n";
         String st ="org.netbeans.ProxyClassLoader.printDefaultPackageWarning(ProxyClassLoader.java:539)";
-        List<StackTracePosition> res = StackTraceFinder.find(prefix + st);
+        List<StackTracePosition> res = StackTraceSupport.find(prefix + st);
         assertEquals(1, res.size());
         assertEquals(prefix.length(), res.get(0).getStartOffset());
         assertEquals(prefix.length() + st.length(), res.get(0).getEndOffset());
@@ -62,7 +62,7 @@ public class StackTraceFinderTest extends TestCase {
         st ="org.netbeans.ProxyClassLoader.printDefaultPackageWarning(ProxyClassLoader.java:539)\n" +
             "   at org.netbeans.ProxyClassLoader.getResource(ProxyClassLoader.java:312)\n" +
             "   at java.lang.ClassLoader.getResourceAsStream(ClassLoader.java:1214)";
-        res = StackTraceFinder.find(prefix + st);
+        res = StackTraceSupport.find(prefix + st);
         assertEquals(1, res.size());
         assertEquals(prefix.length(), res.get(0).getStartOffset());
         assertEquals(prefix.length() + st.length(), res.get(0).getEndOffset());
@@ -77,7 +77,7 @@ public class StackTraceFinderTest extends TestCase {
             "   at java.lang.ClassLoader.getResourceAsStream(ClassLoader.java:1214)";
 
         st = (prefix1 + st1 + prefix2 + st2);
-        res = StackTraceFinder.find(st);
+        res = StackTraceSupport.find(st);
         assertEquals(2, res.size());
         assertEquals(prefix1.length(), res.get(0).getStartOffset());
         assertEquals(prefix1.length() + st1.length() - 1, res.get(0).getEndOffset()); // XXX -1 house numero?

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,54 +31,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.issues;
+package org.netbeans.modules.bugzilla.kenai;
 
-import org.netbeans.modules.bugtracking.TasksManager;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.logging.Level;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.tasks.spi.Connector;
+import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugzilla.BugzillaRepository;
+import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 
 /**
  *
- * @author tomas
+ * @author Tomas Stupka
  */
-public class ManagerTest extends NbTestCase {
-    
+public class KenaiRepository extends BugzillaRepository {
+    private String urlParam;
 
-    public ManagerTest(String arg0) {
-        super(arg0);
+    public KenaiRepository(String repoName, String url, String user, String password, String urlParam) {
+        super(repoName, url, user, password);
+        this.urlParam = urlParam;
     }
 
     @Override
-    protected Level logLevel() {
-        return Level.ALL;
-    }   
-    
-    @Override
-    protected void setUp() throws Exception {    
+    public Query createQuery() {
+        BugzillaQuery q = new BugzillaQuery(this, urlParam, true);
+        return q;
     }
 
-    @Override
-    protected void tearDown() throws Exception {        
-    }
-
-    public void testGetRepositories() {
-        Connector[] repositories = TasksManager.getInstance().getConnectors();
-        assertNotNull(repositories);
-        assertTrue(repositories.length == 2);
-        Set<String> repos = new HashSet<String>();
-        for (Connector repository : repositories) {
-            repos.add(repository.getDisplayName());
-        }
-        assertTrue(repos.contains("Jira"));
-        assertTrue(repos.contains("Bugzilla"));
-    }
 }

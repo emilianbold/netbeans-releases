@@ -46,10 +46,5 @@ import org.netbeans.modules.kenai.api.KenaiProject;
  * @author Tomas Stupka
  */
 public abstract class KenaiSupport {
-
-    public abstract Repository getRepository(KenaiProject project);
-
-    // XXX 
-    public abstract Query[] getQueries(KenaiProject project);
-
+    public abstract Repository createRepository(KenaiProject project);
 }

@@ -39,20 +39,18 @@
 
 package org.netbeans.modules.bugtracking.kenai;
 
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
 import org.netbeans.modules.kenai.ui.spi.QueryHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
-import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -61,31 +59,51 @@ import org.openide.util.actions.SystemAction;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.kenai.ui.spi.QueryAccessor.class)
 public class QueryAccessorImpl extends QueryAccessor {
 
+    private static final List<QueryHandle> EMPTY_QH_LIST = Collections.unmodifiableList(Collections.EMPTY_LIST);
+    private static final List<QueryResultHandle> EMPTY_QRH_LIST = Collections.unmodifiableList(Collections.EMPTY_LIST);
+
     @Override
     public List<QueryHandle> getQueries(ProjectHandle project) {
-        KenaiProject kenaiProject;
-        try {
-            kenaiProject = Kenai.getDefault().getProject(project.getId());
-        } catch (KenaiException ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-            return null;
-        }
+        Repository repo = KenaiRepositories.getInstance().getRepository(project, this);
+        if(repo == null) {
+            // XXX
+            return EMPTY_QH_LIST;
+        }        
+        return Collections.unmodifiableList(getQueries(repo, project));
+    }
 
-        return null;
+    List<QueryHandle> getQueries(Repository repo, ProjectHandle project) {
+        Query[] queries = repo.getQueries();
+        if(queries == null || queries.length == 0) {
+            // XXX is this possible - at least preset queries
+            return EMPTY_QH_LIST;
+        }
+        List<QueryHandle> ret = new ArrayList<QueryHandle>();
+        for (Query q : queries) {
+            QueryHandle qh = new QueryHandleImpl(q);
+            ret.add(qh);
+        }
+        return ret;
     }
 
     @Override
     public List<QueryResultHandle> getQueryResults(QueryHandle query) {
         if(query instanceof QueryHandleImpl) {
-            return ((QueryHandleImpl) query).getQueryResults();
+            return Collections.unmodifiableList(((QueryHandleImpl) query).getQueryResults());
         } else {
-            return null;
+            return EMPTY_QRH_LIST;
         }
     }
 
     @Override
     public ActionListener getFindIssueAction(ProjectHandle project) {
-        return SystemAction.get(QueryAction.class);
+        final Repository repo = KenaiRepositories.getInstance().getRepository(project, this);
+        // XXX what if repo null!
+        return new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                QueryAction.openQuery(null, repo);
+            }
+        };
     }
 
     @Override
@@ -106,4 +124,7 @@ public class QueryAccessorImpl extends QueryAccessor {
         }
     }
 
+    void fireQueriesChanged(ProjectHandle project, List<QueryHandle> newQueryList) {
+        fireQueryListChanged(project, newQueryList);
+    }
 }

@@ -46,6 +46,7 @@ import org.openide.util.HelpCtx;
 import java.awt.event.ActionEvent;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.Repository;
 import org.openide.util.NbBundle;
 
 /**
@@ -72,14 +73,13 @@ public class QueryAction extends SystemAction {
     }
 
     public static void openQuery(final Query query) {
+        openQuery(query, null);
+    }
+
+    public static void openQuery(final Query query, final Repository repository) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                QueryTopComponent tc;
-                if(query != null) {
-                    tc = new QueryTopComponent();
-                } else {
-                    tc = new QueryTopComponent();
-                }
+                QueryTopComponent tc = new QueryTopComponent(query, repository);
                 tc.open();
                 tc.requestActive();
             }

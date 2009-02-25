@@ -114,7 +114,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private final Map<String, QueryParameter> parameters;
 
-    private RequestProcessor rp = new RequestProcessor("Bugzilla queries", 1);
+    private RequestProcessor rp = new RequestProcessor("Bugzilla queries", 1);  // NOI18N
     private Task task;
 
     private final BugzillaRepository repository;
@@ -122,7 +122,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
 //    private IssueTable issueTable;
     
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss, EEE MMM d yyyy");
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss, EEE MMM d yyyy"); // NOI18N
 
     public QueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters) {
         this.repository = repository;
@@ -146,34 +146,33 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         // setup parameters
         parameters = new LinkedHashMap<String, QueryParameter>();
-        summaryParameter = createQueryParameter(ComboParameter.class, panel.summaryComboBox, "short_desc_type");
-        commentsParameter = createQueryParameter(ComboParameter.class, panel.commentComboBox, "long_desc_type");
-        keywordsParameter = createQueryParameter(ComboParameter.class, panel.keywordsComboBox, "keywords_type");
-        peopleParameter = createQueryParameter(ComboParameter.class, panel.peopleComboBox, "emailtype1");
-        productParameter = createQueryParameter(ListParameter.class, panel.productList, "product");
-        componentParameter = createQueryParameter(ListParameter.class, panel.componentList, "component");
-        versionParameter = createQueryParameter(ListParameter.class, panel.versionList, "version");
-        statusParameter = createQueryParameter(ListParameter.class, panel.statusList, "bug_status");
-        resolutionParameter = createQueryParameter(ListParameter.class, panel.resolutionList, "resolution");
-        priorityParameter = createQueryParameter(ListParameter.class, panel.priorityList, "priority");
-        changedFieldsParameter = createQueryParameter(ListParameter.class, panel.changedList, "chfield");
+        summaryParameter = createQueryParameter(ComboParameter.class, panel.summaryComboBox, "short_desc_type");    // NOI18N
+        commentsParameter = createQueryParameter(ComboParameter.class, panel.commentComboBox, "long_desc_type");    // NOI18N
+        keywordsParameter = createQueryParameter(ComboParameter.class, panel.keywordsComboBox, "keywords_type");    // NOI18N
+        peopleParameter = createQueryParameter(ComboParameter.class, panel.peopleComboBox, "emailtype1");           // NOI18N
+        productParameter = createQueryParameter(ListParameter.class, panel.productList, "product");                 // NOI18N
+        componentParameter = createQueryParameter(ListParameter.class, panel.componentList, "component");           // NOI18N
+        versionParameter = createQueryParameter(ListParameter.class, panel.versionList, "version");                 // NOI18N
+        statusParameter = createQueryParameter(ListParameter.class, panel.statusList, "bug_status");                // NOI18N
+        resolutionParameter = createQueryParameter(ListParameter.class, panel.resolutionList, "resolution");        // NOI18N
+        priorityParameter = createQueryParameter(ListParameter.class, panel.priorityList, "priority");              // NOI18N
+        changedFieldsParameter = createQueryParameter(ListParameter.class, panel.changedList, "chfield");           // NOI18N
         
-        createQueryParameter(TextFieldParameter.class, panel.summaryTextField, "short_desc");
-        createQueryParameter(TextFieldParameter.class, panel.commentTextField, "long_desc");
-        createQueryParameter(TextFieldParameter.class, panel.keywordsTextField, "keywords");
-        createQueryParameter(TextFieldParameter.class, panel.peopleTextField, "email1");
-        createQueryParameter(CheckBoxParameter.class, panel.bugAssigneeCheckBox, "emailassigned_to1");
-        createQueryParameter(CheckBoxParameter.class, panel.reporterCheckBox, "emailreporter1");
-        createQueryParameter(CheckBoxParameter.class, panel.ccCheckBox, "emailcc1");
-        createQueryParameter(CheckBoxParameter.class, panel.commenterCheckBox, "emaillongdesc1");
-        createQueryParameter(TextFieldParameter.class, panel.changedFromTextField, "chfieldfrom");
-        createQueryParameter(TextFieldParameter.class, panel.changedToTextField, "chfieldto");
-        createQueryParameter(TextFieldParameter.class, panel.changedToTextField, "chfieldvalue");
+        createQueryParameter(TextFieldParameter.class, panel.summaryTextField, "short_desc");                       // NOI18N
+        createQueryParameter(TextFieldParameter.class, panel.commentTextField, "long_desc");                        // NOI18N
+        createQueryParameter(TextFieldParameter.class, panel.keywordsTextField, "keywords");                        // NOI18N
+        createQueryParameter(TextFieldParameter.class, panel.peopleTextField, "email1");                            // NOI18N
+        createQueryParameter(CheckBoxParameter.class, panel.bugAssigneeCheckBox, "emailassigned_to1");              // NOI18N
+        createQueryParameter(CheckBoxParameter.class, panel.reporterCheckBox, "emailreporter1");                    // NOI18N
+        createQueryParameter(CheckBoxParameter.class, panel.ccCheckBox, "emailcc1");                                // NOI18N
+        createQueryParameter(CheckBoxParameter.class, panel.commenterCheckBox, "emaillongdesc1");                   // NOI18N
+        createQueryParameter(TextFieldParameter.class, panel.changedFromTextField, "chfieldfrom");                  // NOI18N
+        createQueryParameter(TextFieldParameter.class, panel.changedToTextField, "chfieldto");                      // NOI18N
+        createQueryParameter(TextFieldParameter.class, panel.changedToTextField, "chfieldvalue");                   // NOI18N
 
 
         if(query.isSaved()) {
             setAsSaved();
-            // XXX load issues
         }
         populate(urlParameters);
     }
@@ -236,9 +235,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     void populate(final String urlParameters) {
-        panel.enableFields(false);
+        enableFields(false);
 
-        final String msgPopulating = NbBundle.getMessage(this.getClass(), "MSG_Populating");
+        final String msgPopulating = NbBundle.getMessage(this.getClass(), "MSG_Populating");    // NOI18N
         final ProgressHandle handle = ProgressHandleFactory.createHandle(msgPopulating);
         final JComponent progressBar = ProgressHandleFactory.createProgressComponent(handle);
         
@@ -247,7 +246,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 handle.start();
                 panel.showRetrievingProgress(true, progressBar, msgPopulating);
                 try {
-                    Bugzilla.LOG.fine("Starting populate query controller");
+                    Bugzilla.LOG.fine("Starting populate query controller");    // NOI18N
 
                     Bugzilla bgz = Bugzilla.getInstance();
                     productParameter.setParameterValues(toParameterValues(bgz.getProducts(repository)));
@@ -286,13 +285,23 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 } catch (IOException ex) {
                     Bugzilla.LOG.log(Level.SEVERE, null, ex);
                 } finally {
-                    panel.enableFields(true);
+                    enableFields(true);
                     handle.finish();
                     panel.showRetrievingProgress(false, progressBar, null);
-                    Bugzilla.LOG.fine("Finnished populate query controller");
+                    Bugzilla.LOG.fine("Finnished populate query controller");   // NOI18N
                 }
             }
         });
+    }
+
+    void enableFields(boolean bl) {
+        // set all non parameter fields
+        panel.enableFields(bl);
+        // set the parameter fields
+        for (Map.Entry<String, QueryParameter> e : parameters.entrySet()) {
+            QueryParameter pv = parameters.get(e.getKey());
+            pv.setEnabled(bl);
+        }
     }
 
     public void insertUpdate(DocumentEvent e) {
@@ -375,7 +384,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 boolean firstTime = false;
                 if(!query.isSaved()) {
                     firstTime = true;
-                    if(BugzillaUtil.show(panel.savePanel, NbBundle.getMessage(QueryController.class, "LBL_SaveQuery"),  NbBundle.getMessage(QueryController.class, "LBL_Save"))) {
+                    if(BugzillaUtil.show(panel.savePanel, NbBundle.getMessage(QueryController.class, "LBL_SaveQuery"),  NbBundle.getMessage(QueryController.class, "LBL_Save"))) { // NOI18N
                         // XXX validate name
                         name = panel.queryNameTextField.getText();
                         if(name == null || name.trim().equals("")) {
@@ -388,6 +397,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 }
                 assert name != null;
                 repository.saveQuery(query);
+                query.setSaved(true); // XXX
                 setAsSaved();
                 if(firstTime) {
                     onSearch();
@@ -410,13 +420,14 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private void setAsSaved() {
         panel.setSaved(query.getDisplayName(), getLastRefresh());
-        query.setSaved(true);
         panel.setModifyVisible(false);
     } 
 
     private String getLastRefresh() throws MissingResourceException {
         long l = query.getLastRefresh();
-        return l > -1 ? dateFormat.format(new Date(l)) : NbBundle.getMessage(QueryController.class, "LBL_Never");
+        return l > -1 ?
+            dateFormat.format(new Date(l)) :
+            NbBundle.getMessage(QueryController.class, "LBL_Never"); // NOI18N
     }
 
     private void onGotoIssue() {
@@ -434,7 +445,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 return true;
             }
         };
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_Opening", new Object[] {id}), c);
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_Opening", new Object[] {id}), c); // NOI18N
         t[0] = Bugzilla.getInstance().getRequestProcessor().create(new Runnable() {
             public void run() {
                 handle.start();
@@ -454,7 +465,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void onWeb() {
-        final String repoURL = repository.getTaskRepository().getRepositoryUrl() + "/query.cgi" + "?format=advanced"; //XXX need constants
+        final String repoURL = repository.getTaskRepository().getRepositoryUrl() + "/query.cgi" + "?format=advanced"; // NOI18N //XXX need constants
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             public void run() {
                 URL url;
@@ -469,7 +480,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     displayer.showURL (url);
                 } else {
                     // XXX nice error message?
-                    Bugzilla.LOG.warning("No URLDisplayer found.");
+                    Bugzilla.LOG.warning("No URLDisplayer found.");             // NOI18N
                 }
             }
         });
@@ -553,8 +564,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private void onRemove() {
         NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-            NbBundle.getMessage(QueryController.class, "MSG_RemoveQuery", new Object[] { query.getDisplayName() }),
-            NbBundle.getMessage(QueryController.class, "CTL_RemoveQuery"),
+            NbBundle.getMessage(QueryController.class, "MSG_RemoveQuery", new Object[] { query.getDisplayName() }), // NOI18N
+            NbBundle.getMessage(QueryController.class, "CTL_RemoveQuery"),      // NOI18N
             NotifyDescriptor.OK_CANCEL_OPTION);
         if(DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
             Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
@@ -573,7 +584,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(task != null) {
             task.cancel();
         }
-        panel.enableFields(false);        
+        enableFields(false);        
         task = rp.create(r);
 
         Cancellable c = new Cancellable() {
@@ -583,9 +594,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
         };
 
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(this.getClass(), "MSG_SearchingQuery", new Object[] {query.getDisplayName()}), c);
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(this.getClass(), "MSG_SearchingQuery", new Object[] {query.getDisplayName()}), c);// NOI18N
         final JComponent progressBar = ProgressHandleFactory.createProgressComponent(handle);
-        panel.showSearchingProgress(true, progressBar, NbBundle.getMessage(this.getClass(), "MSG_Searching"));
+        panel.showSearchingProgress(true, progressBar, NbBundle.getMessage(this.getClass(), "MSG_Searching")); // NOI18N
 
         // XXX !!! remove !!!
         query.addNotifyListener(new QueryNotifyListener() {
@@ -594,7 +605,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         panel.showNoContentPanel(false);
-                        panel.tableSummaryLabel.setText(NbBundle.getMessage(QueryController.class, "LBL_MatchingIssues", new Object[] {++c})); // XXX
+                        panel.tableSummaryLabel.setText(NbBundle.getMessage(QueryController.class, "LBL_MatchingIssues", new Object[] {++c})); // NOI18N // XXX
                     }
                 });
             }
@@ -609,11 +620,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 final int size = query.getSize();
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        panel.enableFields(true);
+                        enableFields(true);
                         panel.setLastRefresh(getLastRefresh());
                         panel.showNoContentPanel(false);
                         if(size == 0) {
-                            panel.tableSummaryLabel.setText(NbBundle.getMessage(QueryController.class, "LBL_MatchingIssues", new Object[] {0})); // XXX
+                            panel.tableSummaryLabel.setText(NbBundle.getMessage(QueryController.class, "LBL_MatchingIssues", new Object[] {0})); // NOI18N // XXX
                         }
                     }
                 });
@@ -658,11 +669,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(urlParameters == null) {
             return;
         }
-        String[] params = urlParameters.split("&");
+        String[] params = urlParameters.split("&"); // NOI18N
         if(params == null || params.length == 0) return;
         Map<String, List<ParameterValue>> normalizedParams = new HashMap<String, List<ParameterValue>>();
         for (String p : params) {
-            int idx = p.indexOf("=");
+            int idx = p.indexOf("="); // NOI18N
             if(idx > -1) {
                 String parameter = p.substring(0, idx);
                 String value = p.substring(idx + 1, p.length());
@@ -682,10 +693,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
         for (Map.Entry<String, List<ParameterValue>> e : normalizedParams.entrySet()) {
             QueryParameter pv = parameters.get(e.getKey());
             if(pv != null) {
-                List<ParameterValue> pvs = e.getValue();
-
-                // XXX won't work for combo
+                List<ParameterValue> pvs = e.getValue();    
                 pv.setValues(pvs.toArray(new ParameterValue[pvs.size()]));
+            }
+            if(query.isKenai()) {
+                pv.setAlwaysDisabled(true);
             }
         }
     }

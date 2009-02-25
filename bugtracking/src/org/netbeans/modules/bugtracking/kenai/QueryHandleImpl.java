@@ -44,6 +44,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
@@ -84,13 +85,22 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(Query.EVENT_QUERY_DATA_CHANGED)) {
-            changeSupport.firePropertyChange(null); // XXX add result handles
+        if(evt.getPropertyName().equals(Query.EVENT_QUERY_ISSUES_CHANGED)) {
+            changeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_QUERY_RESULT, null, getQueryResults())); // XXX add result handles
         }
     }
 
     public List<QueryResultHandle> getQueryResults() {
-        return null;
+        List<QueryResultHandle> ret = new ArrayList<QueryResultHandle>();
+        QueryResultHandle qh = QueryResultHandleImpl.forStatus(query, Query.ISSUE_STATUS_NOT_OBSOLETE);
+        if(qh != null) {
+            ret.add(qh);
+        }
+        qh = QueryResultHandleImpl.forStatus(query, Query.ISSUE_STATUS_NOT_SEEN);
+        if(qh != null) {
+            ret.add(qh);
+        }
+        return ret;
     }
 
 }

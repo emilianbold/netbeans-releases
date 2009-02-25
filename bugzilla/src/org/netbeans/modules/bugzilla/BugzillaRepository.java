@@ -91,7 +91,7 @@ public class BugzillaRepository extends Repository {
 
     BugzillaRepository() { }
 
-    BugzillaRepository(String repoName, String url, String user, String password) {
+    protected BugzillaRepository(String repoName, String url, String user, String password) {
         name = repoName;
         taskRepository = createTaskRepository(name, url, user, password);
     }
@@ -108,6 +108,11 @@ public class BugzillaRepository extends Repository {
     public Query createQuery() {
         BugzillaQuery q = new BugzillaQuery(this);        
         return q;
+    }
+
+    @Override
+    public void fireQueryListChanged() {
+        super.fireQueryListChanged();
     }
 
     public String getDisplayName() {

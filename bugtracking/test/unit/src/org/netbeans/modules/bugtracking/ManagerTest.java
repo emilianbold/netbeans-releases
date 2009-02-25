@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,64 +31,53 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
+ * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla;
+package org.netbeans.modules.bugtracking;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.bugtracking.spi.KenaiSupport;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Level;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugzilla.kenai.KenaiSupportImpl;
 
 /**
  *
- * @author Tomas Stupka
+ * @author tomas
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class)
-public class BugzillaConnector extends BugtrackingConnector {
+public class ManagerTest extends NbTestCase {
+    
 
-    private KenaiSupport kenaiSupport;
-
-    public String getDisplayName() {
-        return "Bugzilla"; // XXX bundle me!
-    }
-
-    public String getTooltip() {
-        return "Bugzilla Bug-Tracking System"; // XXX bundle me!
+    public ManagerTest(String arg0) {
+        super(arg0);
     }
 
     @Override
-    public Repository createRepository() {
-        return new BugzillaRepository();
+    protected Level logLevel() {
+        return Level.ALL;
+    }   
+    
+    @Override
+    protected void setUp() throws Exception {    
     }
 
     @Override
-    public Repository[] getRepositories() {
-        String[] names = BugzillaConfig.getInstance().getRepositories();
-        if(names == null || names.length == 0) {
-            return new Repository[] {};
-        }
-        List<Repository> ret = new ArrayList<Repository>();
-        for (String name : names) {
-            Repository repo = BugzillaConfig.getInstance().getRepository(name);
-            if(repo != null) {
-                ret.add(repo);
-            }
-        }
-        return ret.toArray(new Repository[ret.size()]);
+    protected void tearDown() throws Exception {        
     }
 
-    @Override
-    public KenaiSupport getKenaiSupport() {
-        if(kenaiSupport == null) {
-            kenaiSupport = new KenaiSupportImpl();
+    public void testGetRepositories() {
+        BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
+        assertNotNull(connectors);
+        assertTrue(connectors.length == 2);
+        Set<String> repos = new HashSet<String>();
+        for (BugtrackingConnector c : connectors) {
+            repos.add(c.getDisplayName());
         }
-        return kenaiSupport;
+//        assertTrue(repos.contains("Jira"));
+        assertTrue(repos.contains("Bugzilla"));
     }
 }

@@ -218,7 +218,7 @@ public class IssueTable implements MouseListener, AncestorListener {
         tableModel.setProperties(properties.toArray(new Node.Property[properties.size()]));
     }
 
-    public void queryDataChanged() {
+    private void queryDataChanged() {
         Issue[] issues = query.getIssues();
         List<IssueNode> issueNodes = new ArrayList<IssueNode>(issues.length);
         for (Issue issue : issues) {

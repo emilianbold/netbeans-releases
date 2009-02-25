@@ -88,10 +88,13 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
     private Query query; // XXX synchronized
 
     QueryTopComponent() {
-        this(null);
+        this(null, null);
     }
 
-    private QueryTopComponent(Query query) {
+    QueryTopComponent(Query query) {
+        this(query, null);
+    }
+    QueryTopComponent(Query query, Repository toSelect) {
         initComponents();
         Font f = new JLabel().getFont();
         int s = f.getSize();
@@ -114,7 +117,11 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
             });
 
             Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
-            repositoryComboBox.setModel(new DefaultComboBoxModel(repos));
+            DefaultComboBoxModel  repoModel = new DefaultComboBoxModel(repos);
+            if(toSelect != null) {
+                repoModel.addElement(toSelect);
+            }
+            repositoryComboBox.setModel(repoModel);
             repositoryComboBox.setRenderer(new DefaultListCellRenderer() {
                 @Override
                 public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -135,7 +142,11 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
                 }
             });
             if(repositoryComboBox.getModel().getSize() > 0) {
-                repositoryComboBox.setSelectedIndex(0);
+                if(toSelect != null) {
+                    repositoryComboBox.setSelectedItem(toSelect);
+                } else {
+                    repositoryComboBox.setSelectedIndex(0);
+                }
                 onRepoSelected();
             }
         }

@@ -44,8 +44,10 @@ import java.awt.event.ActionListener;
 import java.text.MessageFormat;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.Query.Filter;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -55,10 +57,16 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
 
     private final Query query;
     private final String label;
+    private Filter filter;
 
-    public QueryResultHandleImpl(Query query, String label) {
+    private static MessageFormat totalFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultTotal"));       // NOI18N
+    private static MessageFormat unseenFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultUnseen"));     // NOI18N
+    private static MessageFormat newFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultNew"));           // NOI18N
+
+    public QueryResultHandleImpl(Query query, String label, Filter filter) {
         this.query = query;
         this.label = label;
+        this.filter = filter;
     }
 
     @Override
@@ -67,35 +75,52 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
     }
 
     public void actionPerformed(ActionEvent e) {
+        query.setFilter(filter);
         QueryAction.openQuery(query);
     }
 
     public static QueryResultHandleImpl forStatus(Query query, int status) {
-        Issue[] issues = query.getIssues(status);
+        Issue[] issues;
         switch(status) {
+
             case Query.ISSUE_STATUS_NOT_OBSOLETE:
-                return new QueryResultHandleImpl(query, MessageFormat.format(getStatusFormat(status), issues != null ? issues.length : 0));
-            case Query.ISSUE_STATUS_NEW:
-            case Query.ISSUE_STATUS_MODIFIED:
-                if(issues == null || issues.length == 0) {
+
+                issues = query.getIssues(status);
+                return new QueryResultHandleImpl(
+                        query,
+                        totalFormat.format(new Object[] {issues != null ? issues.length : 0}, new StringBuffer(), null).toString(),
+                        null);
+
+            case Query.ISSUE_STATUS_NOT_SEEN:
+
+                int newIssues = 0, modifiedIssues = 0, unseenIssues = 0;
+                issues = query.getIssues(Query.ISSUE_STATUS_NEW);
+                if(issues != null) {
+                    newIssues = issues.length;
+                }
+
+                issues = query.getIssues(Query.ISSUE_STATUS_MODIFIED);
+                if(issues != null) {
+                    modifiedIssues = issues.length;
+                }
+
+                unseenIssues = newIssues + modifiedIssues;
+                if(unseenIssues == 0) {
                     return null;
                 }
-                return new QueryResultHandleImpl(query, MessageFormat.format(getStatusFormat(status), issues.length));
+
+                StringBuffer label = new StringBuffer();
+                unseenFormat.format(new Object[] {unseenIssues}, label, null);
+                if(newIssues > 0) {
+                    label.append("; ");
+                    newFormat.format(new Object[] {newIssues}, label, null);
+                }
+                
+                return new QueryResultHandleImpl(query, label.toString(), Query.FILTER_NOT_SEEN);
+
             default:
-                throw new IllegalStateException("wrong status value" + status);
+                throw new IllegalStateException("wrong status value [" + status + "]"); // NOI18N
         }
     }
 
-    private static String getStatusFormat(int status) {
-        switch(status) {
-            case Query.ISSUE_STATUS_NOT_OBSOLETE:
-                return "{0} total";
-            case Query.ISSUE_STATUS_NEW:
-                return "{0} new";
-            case Query.ISSUE_STATUS_MODIFIED:
-                return "{0} changed";
-            default:
-                throw new IllegalStateException("wrong status value" + status);
-        }
-    }
 }
