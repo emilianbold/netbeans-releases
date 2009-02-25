@@ -40,6 +40,7 @@
 package org.netbeans.modules.css.formatting.api.support;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -384,6 +385,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 }
                 l.lineIndent = kept;
                 if (removed.size() > 0) {
+                    // should go to beginning of line:
                     pairs.add(new LineCommandsPair(prevLine.index+1, removed));
                 }
             }
@@ -402,9 +404,12 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 List<IndentCommand> accepted = new ArrayList<IndentCommand>();
                 List<IndentCommand> nextLine = new ArrayList<IndentCommand>();
                 for (IndentCommand ic : l.lineIndent) {
-                    if (ic.getType() == IndentCommand.Type.INDENT ||
-                            ic.getType() == IndentCommand.Type.BLOCK_END ||
+                    if (ic.getType() == IndentCommand.Type.INDENT) {
+                        // should go to beginning of line:
+                        accepted.add(ic);
+                    } else if (ic.getType() == IndentCommand.Type.BLOCK_END ||
                             ic.getType() == IndentCommand.Type.BLOCK_START) {
+                        // should go to end of line but does not really matter:
                         accepted.add(ic);
                     } else if (ic.getType() == IndentCommand.Type.RETURN) {
                         if ((previousLine == null || previousLine.index+1 != l.index) && !l.emptyLine) {
@@ -419,8 +424,11 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                             // applied on line 06 it would be wrong - it needs to
                             // be applied to next line and line 6 should be indented
                             // fully by CSS formatter
+
+                            // should go to beginning of line:
                             nextLine.add(ic);
                         } else {
+                            // should go to beginning of line:
                             accepted.add(ic);
                         }
                     }
@@ -489,13 +497,40 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 return o1.line - o2.line;
             }
         };
-        Set<LineCommandsPair> s1 = new TreeSet<LineCommandsPair>(c);
-        s1.addAll(pairs);
+        //
+        // sort pairs and then merge them; there can be multiple pairs
+        // for one line and their order should be preserved, eg.
+        //
+        // 01: <table    id=smth
+        // 02:           class=smth>
+        // 03:    <p>
+        //
+        // line 3 will have RETURN and INDENT commands and they have to stay
+        // in that order. If swapped the resulting indent would be
+        //
+        // 03:           <p>
+        //
+        // line was first indented and then returned back to previous position
+        // which alligns with "class" attribute
+        //
+        List<LineCommandsPair> s1 = new ArrayList<LineCommandsPair>(pairs);
+        Collections.sort(s1, c);
+        List<LineCommandsPair> s2 = new ArrayList<LineCommandsPair>();
+        LineCommandsPair previous = null;
+        for (LineCommandsPair pair : s1) {
+            if (previous != null && previous.line == pair.line) {
+                previous.commands.addAll(pair.commands);
+            } else {
+                s2.add(pair);
+                previous = pair;
+            }
+        }
+
         Iterator<Line> it = all.iterator();
         assert all.size() > 0;
         Line l = null;
         Line lastLine = null;
-        for (LineCommandsPair pair : s1) {
+        for (LineCommandsPair pair : s2) {
             while (it.hasNext() && (l == null || l.index < pair.line)) {
                 l = it.next();
             }
@@ -566,6 +601,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                         assert lastLineWithContinue != null;
                         if (l.index - lastLineWithContinue.index > 1) {
                             List<IndentCommand> list = new ArrayList<IndentCommand>();
+                            // should go to beginning of line:
                             pairs.add(new LineCommandsPair(lastLineWithContinue.index+1, list));
                             listToAddTo = list;
                         }

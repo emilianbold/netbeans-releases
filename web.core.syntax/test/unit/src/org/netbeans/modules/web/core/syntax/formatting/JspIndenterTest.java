@@ -167,6 +167,10 @@ public class JspIndenterTest extends TestBase2 {
         reformatFileContents("FormattingProject/web/case005.jsp",new IndentPrefs(4,4));
     }
 
+    public void testFormattingCase006() throws Exception {
+        reformatFileContents("FormattingProject/web/case006.jsp",new IndentPrefs(4,4));
+    }
+
     public void testFormattingIssue121102() throws Exception {
         reformatFileContents("FormattingProject/web/issue121102.jsp",new IndentPrefs(4,4));
     }
@@ -202,7 +206,7 @@ public class JspIndenterTest extends TestBase2 {
 
         insertNewline("<%@ taglib uri=\"http://java.sun.com/jsp/jstl/core\"\n        prefix=\"c\" %>^",
                       "<%@ taglib uri=\"http://java.sun.com/jsp/jstl/core\"\n        prefix=\"c\" %>\n^",null);
-        
+
         // TODO: impl matching of INDENT/RETURN and use it to properly match incorrect document:
         //insertNewline("<jsp:body>\n    <html>^</jsp:body>", "<jsp:body>\n    <html>\n^</jsp:body>", null);
 

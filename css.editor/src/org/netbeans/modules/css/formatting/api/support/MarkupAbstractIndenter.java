@@ -125,7 +125,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             if (isCloseTagNameToken(tk)) {
                 // find tag open and keep searching backwards:
                 moveToOpeningTag(ts);
-            } else if (isOpenTagNameToken(tk) && !isClosingTagOptional(tk.text().toString()) &&
+            } else if (isOpenTagNameToken(tk) && !isClosingTagOptional(getTokenName(tk)) &&
                     ts.offset() < startOffset) {
                 ts.movePrevious();
             }
@@ -150,9 +150,9 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
     }
 
     private final MarkupItem createMarkupItem(Token<T1> token, boolean openingTag, int indentation) {
-        String tagName = token.text().toString();
+        String tagName = getTokenName(token);
         if (openingTag) {
-            boolean optionalEnd = isClosingTagOptional(token.text().toString());
+            boolean optionalEnd = isClosingTagOptional(getTokenName(token));
             Set<String> children = null;
             Boolean empty = isEmptyTag(tagName);
             if (optionalEnd && empty != null && !empty.booleanValue()) {
@@ -172,7 +172,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
     private boolean moveToOpeningTag(JoinedTokenSequence<T1> tokenSequence) {
         int originalIndex = tokenSequence.index();
 
-        String searchedTagName = tokenSequence.token().text().toString();
+        String searchedTagName = getTokenName(tokenSequence.token());
         int balance = 0;
 
         while (tokenSequence.movePrevious()) {
@@ -180,7 +180,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             if (!isOpenTagNameToken(tk) && !isCloseTagNameToken(tk)) {
                 continue;
             }
-            if (searchedTagName.equalsIgnoreCase(tk.text().toString())) {
+            if (searchedTagName.equalsIgnoreCase(getTokenName(tk))) {
                 if (isOpenTagNameToken(tk)) {
                     if (balance == 0) {
                         tokenSequence.movePrevious();
@@ -212,6 +212,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
 
         }
         // iterate over stack state and generated indent command for current line:
+        MarkupItem prevItem = null;
         for (int i=lastUnprocessedItem; i< fileStack.size(); i++) {
             MarkupItem item = fileStack.get(i);
             assert !item.processed : item;
@@ -232,17 +233,12 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 // eliminate opening and closing sequence on one line:
                 IndentCommand ic = new IndentCommand(item.openingTag ? IndentCommand.Type.INDENT : IndentCommand.Type.RETURN,
                     lineStartOffset);
-                if (ic.getType() == IndentCommand.Type.RETURN && iis.size() > 0 &&
-                        iis.get(iis.size()-1).getType() == IndentCommand.Type.INDENT) {
-                    // instead of adding RETURN after INDENT remove both of them:
-                    iis.remove(iis.size()-1);
-                } else {
-                    iis.add(ic);
-                }
+                addIndentationCommand(iis, ic, item, prevItem);
             }
             if (updateState) {
                 item.processed = true;
             }
+            prevItem = item;
         }
         if (inOpeningTagAttributes) {
             IndentCommand ii = new IndentCommand(IndentCommand.Type.CONTINUE, lineStartOffset);
@@ -254,6 +250,21 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         if (updateState) {
             removeFullyProcessedTags();
         }
+    }
+
+    private void addIndentationCommand(List<IndentCommand> iis, IndentCommand ic, MarkupItem item, MarkupItem prevItem) {
+        if (ic.getType() == IndentCommand.Type.RETURN && iis.size() > 0 && prevItem != null) {
+            IndentCommand prev = iis.get(iis.size()-1);
+            if (prev.getType() == IndentCommand.Type.INDENT &&
+                    prevItem.tagName.equals(item.tagName) &&
+                    prevItem.openingTag && !item.openingTag) {
+                // tag was opened and closed on the same line and therfore do
+                // not generate INDENT and RETURN commands for them;
+                iis.remove(iis.size()-1);
+                return;
+            }
+        }
+        iis.add(ic);
     }
 
     @Override
@@ -288,7 +299,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             if (isOpenTagNameToken(token)) {
                 lineItems.add(createMarkupItem(token, true, getIndentationSize()));
                 setInOpeningTagAttributes(true);
-                lastOpenTagName = token.text().toString();
+                lastOpenTagName = getTokenName(token);
             } else if (isTagArgumentToken(token) && getAttributesIndent() == -1) {
                 int index = ts.index();
                 int offset = ts.offset();
@@ -343,7 +354,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 if (isStartTagSymbol(ts.token()) || isStartTagClosingSymbol(ts.token())) {
                     boolean closingTag = isStartTagClosingSymbol(ts.token());
                     if (ts.moveNext()) {
-                        String tokenName = ts.token().text().toString();
+                        String tokenName = getTokenName(ts.token());
                         List<IndentCommand> iis2 = new ArrayList<IndentCommand>();
                         // there can be multiple virtual closing tags before 'tokenName' one:
                         for (int i=index; i< fileStack.size(); i++) {
@@ -387,6 +398,19 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         }
 
         return iis;
+    }
+
+    private String getTokenName(Token<T1> token) {
+        //
+        // trim() is here intentionally to get rid of new line character
+        // from tag name in case of JSP like:
+        //
+        // 01: <jsp:useBean
+        // 02:     scope="application">
+        //
+        // at the moment tag is: T[ 1]: "jsp:useBean\n" <1,13> TAG[3] DefT, st=5, IHC=19351667
+        //
+        return token.text().toString().trim();
     }
 
     private Token<T1> findPreviousNonWhiteSpaceToken(JoinedTokenSequence<T1> ts) {

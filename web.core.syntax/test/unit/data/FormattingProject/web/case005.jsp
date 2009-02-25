@@ -8,10 +8,6 @@ text2
 <c:when test="">
 <tr>
 text3
-<c:set var="a"
-value="b"/>
-<b>smth</b>
-<c:set var="x" value="y"/>
 </tr>
 </c:when>
 </table>
