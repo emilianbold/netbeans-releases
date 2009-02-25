@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.dlight.cpu.graph;
+package org.netbeans.modules.dlight.indicators.graph;
 
 import org.netbeans.modules.dlight.indicators.graph.CyclicArray;
 import org.junit.Test;
