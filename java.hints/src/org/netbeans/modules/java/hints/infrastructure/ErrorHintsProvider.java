@@ -248,12 +248,14 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
     private static final Set<String> INVALID_METHOD_INVOCATION = new HashSet<String>(Arrays.asList(
         "compiler.err.prob.found.req",
         "compiler.err.cant.apply.symbol",
-        "compiler.err.cant.resolve.location"
+        "compiler.err.cant.resolve.location",
+        "compiler.err.cant.resolve.location.args"
     ));
     
     private static final Set<String> CANNOT_RESOLVE = new HashSet<String>(Arrays.asList(
             "compiler.err.cant.resolve",
             "compiler.err.cant.resolve.location",
+            "compiler.err.cant.resolve.location.args",
             "compiler.err.doesnt.exist"
     ));
     
@@ -308,7 +310,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
         Line line = lc.getLineSet().getCurrent(lineNumber);
         
         boolean rangePrepared = false;
-        
+
         if (INVALID_METHOD_INVOCATION.contains(d.getCode())) {
             int[] span = translatePositions(info, handlePossibleMethodInvocation(info, d, doc, startOffset, endOffset));
             
@@ -505,7 +507,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
         if ("compiler.err.doesnt.exist".equals(d.getCode())) {
             return d.getStartPosition();
         }
-        if ("compiler.err.cant.resolve.location".equals(d.getCode())) {
+        if ("compiler.err.cant.resolve.location".equals(d.getCode()) || "compiler.err.cant.resolve.location.args".equals(d.getCode())) {
             int[] span = findUnresolvedElementSpan(info, (int) d.getPosition());
             
             if (span != null) {
