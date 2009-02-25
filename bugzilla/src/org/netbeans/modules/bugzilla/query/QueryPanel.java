@@ -1120,9 +1120,11 @@ public class QueryPanel extends javax.swing.JPanel {
         noContentPanel.setProgressComponent(on ? progressBar : null);
     }
 
-    void showRetrievingProgress(boolean on, JComponent progressBar, String text) {
+    void showRetrievingProgress(boolean on, JComponent progressBar, String text, boolean searchPanelVisible) {
         noContentContainer.setVisible(on);
-        searchPanel.setVisible(!on);
+        if(searchPanelVisible) {
+            searchPanel.setVisible(!on);
+        }
         if(on && text != null) {
             noContentPanel.setText(text);
         }
