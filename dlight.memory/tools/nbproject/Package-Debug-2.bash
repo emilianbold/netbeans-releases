@@ -11,7 +11,7 @@ TMPDIR=build/Debug-2/${PLATFORM}/tmp-packaging
 TMPDIRNAME=tmp-packaging
 OUTPUT_PATH=../bin/SunOS-x86/mmonitor
 OUTPUT_BASENAME=mmonitor
-PACKAGE_TOP_DIR=src/
+PACKAGE_TOP_DIR=tools/
 
 # Functions
 function checkReturnCode
@@ -56,15 +56,15 @@ mkdir -p ${TMPDIR}
 
 # Copy files and create directories and links
 cd "${TOP}"
-makeDirectory ${TMPDIR}/src/bin
+makeDirectory ${TMPDIR}/tools/bin
 copyFileToTmpDir "${OUTPUT_PATH}" "${TMPDIR}/${PACKAGE_TOP_DIR}bin/${OUTPUT_BASENAME}" 0755
 
 
 # Generate tar file
 cd "${TOP}"
-rm -f dist/Debug-1/${PLATFORM}/package/src.tar
+rm -f dist/Debug-1/${PLATFORM}/package/tools.tar
 cd ${TMPDIR}
-tar -vcf ../../../../dist/Debug-1/${PLATFORM}/package/src.tar *
+tar -vcf ../../../../dist/Debug-1/${PLATFORM}/package/tools.tar *
 checkReturnCode
 
 # Cleanup

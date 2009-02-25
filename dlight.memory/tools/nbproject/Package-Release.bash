@@ -7,11 +7,11 @@
 # Macros
 TOP=`pwd`
 PLATFORM=GNU-Solaris-x86
-TMPDIR=build/Debug-1/${PLATFORM}/tmp-packaging
+TMPDIR=build/Release/${PLATFORM}/tmp-packaging
 TMPDIRNAME=tmp-packaging
 OUTPUT_PATH=MissingOutputInProject
 OUTPUT_BASENAME=MissingOutputInProject
-PACKAGE_TOP_DIR=src/
+PACKAGE_TOP_DIR=tools/
 
 # Functions
 function checkReturnCode
@@ -50,21 +50,21 @@ function copyFileToTmpDir
 
 # Setup
 cd "${TOP}"
-mkdir -p dist/Debug-1/${PLATFORM}/package
+mkdir -p dist/Release/${PLATFORM}/package
 rm -rf ${TMPDIR}
 mkdir -p ${TMPDIR}
 
 # Copy files and create directories and links
 cd "${TOP}"
-makeDirectory ${TMPDIR}/src/bin
+makeDirectory ${TMPDIR}/tools/bin
 copyFileToTmpDir "${OUTPUT_PATH}" "${TMPDIR}/${PACKAGE_TOP_DIR}bin/${OUTPUT_BASENAME}" 0755
 
 
 # Generate tar file
 cd "${TOP}"
-rm -f dist/Debug-1/${PLATFORM}/package/src.tar
+rm -f dist/Release/${PLATFORM}/package/tools.tar
 cd ${TMPDIR}
-tar -vcf ../../../../dist/Debug-1/${PLATFORM}/package/src.tar *
+tar -vcf ../../../../dist/Release/${PLATFORM}/package/tools.tar *
 checkReturnCode
 
 # Cleanup
