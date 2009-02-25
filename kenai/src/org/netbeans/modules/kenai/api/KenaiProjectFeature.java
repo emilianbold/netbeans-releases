@@ -57,8 +57,8 @@ public final class KenaiProjectFeature {
     KenaiProjectFeature(FeatureData data) {
         this.featureData = data;
         try {
-            this.webL = new URL(featureData.web_url);
-            this.loc = new URL(featureData.url);
+            this.webL = featureData.web_url==null?null:new URL(featureData.web_url);
+            this.loc = featureData.url==null?null:new URL(featureData.url);
         } catch (MalformedURLException malformedURLException) {
             throw new IllegalArgumentException(malformedURLException);
         }
