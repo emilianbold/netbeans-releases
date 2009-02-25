@@ -50,12 +50,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.core.stack.api.Function;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.DemanglingFunctionNameService;
+import org.netbeans.modules.dlight.spi.DemanglingFunctionNameServiceFactory;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  * Stack data storage over a relational database.
@@ -64,16 +70,15 @@ import org.netbeans.modules.dlight.impl.SQLDataStorage;
  */
 public class SQLStackStorage {
 
-    public static final List<FunctionMetric> METRICS =Arrays.<FunctionMetric>asList(
-          FunctionMetric.CpuTimeInclusiveMetric, FunctionMetric.CpuTimeExclusiveMetric);
-
+    public static final List<FunctionMetric> METRICS = Arrays.<FunctionMetric>asList(
+        FunctionMetric.CpuTimeInclusiveMetric, FunctionMetric.CpuTimeExclusiveMetric);
     protected final SQLDataStorage sqlStorage;
     private final Map<CharSequence, Integer> funcCache;
     private final Map<NodeCacheKey, Integer> nodeCache;
-
     private int funcIdSequence;
     private int nodeIdSequence;
     private final ExecutorThread executor;
+    private final DemanglingFunctionNameService demanglingService;
 
     public SQLStackStorage(SQLDataStorage sqlStorage) {
         this.sqlStorage = sqlStorage;
@@ -84,6 +89,12 @@ public class SQLStackStorage {
         executor = new ExecutorThread();
         executor.setPriority(Thread.MIN_PRIORITY);
         executor.start();
+        DemanglingFunctionNameServiceFactory factory = Lookup.getDefault().lookup(DemanglingFunctionNameServiceFactory.class);
+        if (factory != null) {
+            demanglingService = factory.getForCurrentSession();
+        } else {
+            demanglingService = null;
+        }
     }
 
     public int putStack(List<CharSequence> stack, long sampleDuration) {
@@ -109,8 +120,8 @@ public class SQLStackStorage {
     public List<Long> getPeriodicStacks(long startTime, long endTime, long interval) throws SQLException {
         List<Long> result = new ArrayList<Long>();
         PreparedStatement ps = sqlStorage.prepareStatement(
-                "SELECT time_stamp FROM CallStack " +
-                "WHERE ? <= time_stamp AND time_stamp < ? ORDER BY time_stamp");
+            "SELECT time_stamp FROM CallStack " +
+            "WHERE ? <= time_stamp AND time_stamp < ? ORDER BY time_stamp");
         ps.setMaxRows(1);
         for (long time1 = startTime; time1 < endTime; time1 += interval) {
             long time2 = Math.min(time1 + interval, endTime);
@@ -160,8 +171,8 @@ public class SQLStackStorage {
     public List<FunctionCall> getHotSpotFunctions(FunctionMetric metric, int limit) throws SQLException {
         List<FunctionCall> result = new ArrayList<FunctionCall>();
         PreparedStatement select = sqlStorage.prepareStatement(
-                "SELECT func_id, func_name, time_incl, time_excl " +
-                "FROM Func ORDER BY " + metric.getMetricID() + " DESC");
+            "SELECT func_id, func_name, time_incl, time_excl " +
+            "FROM Func ORDER BY " + metric.getMetricID() + " DESC");
         select.setMaxRows(limit);
         ResultSet rs = select.executeQuery();
         while (rs.next()) {
@@ -175,7 +186,6 @@ public class SQLStackStorage {
     }
 
 ////////////////////////////////////////////////////////////////////////////////
-
     private void updateMetrics(int id, boolean funcOrCall, long sampleDuration, boolean addIncl, boolean addExcl) {
         if (0 < sampleDuration) {
             UpdateMetrics cmd = new UpdateMetrics();
@@ -271,7 +281,6 @@ public class SQLStackStorage {
     }
 
 ////////////////////////////////////////////////////////////////////////////////
-
     private static class NodeCacheKey {
 
         private final int callerId;
@@ -356,25 +365,29 @@ public class SQLStackStorage {
             buf.append(", metrics=").append(metrics).append(" }");
             return buf.toString();
         }
-
     }
 
     private static class AddFunction {
+
         public int id;
         public CharSequence name;
+//        public CharSequence full_name;
     }
 
     private static class AddNode {
+
         public int id;
         public int callerId;
         public int funcId;
     }
 
     private static class UpdateMetrics {
+
         public int objId;
         public boolean funcOrNode; // false => func, true => node
         public long cpuTimeInclusive;
         public long cpuTimeExclusive;
+
         public void add(UpdateMetrics delta) {
             cpuTimeInclusive += delta.cpuTimeInclusive;
             cpuTimeExclusive += delta.cpuTimeExclusive;
@@ -421,7 +434,7 @@ public class SQLStackStorage {
                             Object cmd = cmdIterator.next();
                             if (cmd instanceof UpdateMetrics) {
                                 UpdateMetrics updateMetricsCmd = (UpdateMetrics) cmd;
-                                Map<Integer, UpdateMetrics> map = updateMetricsCmd.funcOrNode? nodeMetrics : funcMetrics;
+                                Map<Integer, UpdateMetrics> map = updateMetricsCmd.funcOrNode ? nodeMetrics : funcMetrics;
                                 UpdateMetrics original = map.get(updateMetricsCmd.objId);
                                 if (original == null) {
                                     map.put(updateMetricsCmd.objId, updateMetricsCmd);
@@ -439,16 +452,27 @@ public class SQLStackStorage {
                             try {
                                 if (cmd instanceof AddFunction) {
                                     AddFunction addFunctionCmd = (AddFunction) cmd;
-                                    PreparedStatement stmt = sqlStorage.prepareStatement("INSERT INTO Func (func_id, func_name, time_incl, time_excl) VALUES (?, ?, ?, ?)");
+                                    //demagle here
+                                    PreparedStatement stmt = sqlStorage.prepareStatement("INSERT INTO Func (func_id, func_full_name, func_name, time_incl, time_excl) VALUES (?, ?, ?, ?, ?)");
                                     stmt.setInt(1, addFunctionCmd.id);
                                     stmt.setString(2, addFunctionCmd.name.toString());
+                                    if (demanglingService == null){
+                                        stmt.setString(3, addFunctionCmd.name.toString());
+                                    }else{
+                                        Future<String> demangled = demanglingService.demangle(addFunctionCmd.name.toString());
+                                        try {
+                                            stmt.setString(3, demangled.get());
+                                        } catch (ExecutionException ex) {
+                                            stmt.setString(3, addFunctionCmd.name.toString());
+                                        }
+                                    }
                                     UpdateMetrics metrics = funcMetrics.remove(addFunctionCmd.id);
                                     if (metrics == null) {
-                                        stmt.setLong(3, 0);
                                         stmt.setLong(4, 0);
+                                        stmt.setLong(5, 0);
                                     } else {
-                                        stmt.setLong(3, metrics.cpuTimeInclusive);
-                                        stmt.setLong(4, metrics.cpuTimeExclusive);
+                                        stmt.setLong(4, metrics.cpuTimeInclusive);
+                                        stmt.setLong(5, metrics.cpuTimeExclusive);
                                     }
                                     stmt.executeUpdate();
                                 } else if (cmd instanceof AddNode) {
@@ -509,7 +533,6 @@ public class SQLStackStorage {
                 ex.printStackTrace();
             }
         }
-
     }
 
 }

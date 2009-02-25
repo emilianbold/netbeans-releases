@@ -1,8 +1,7 @@
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -35,81 +34,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.core.stack.spi;
-
-
+package org.netbeans.modules.dlight.spi;
 
 /**
  *
+ * @author mt154047
  */
-public interface SourceFileInfoProvider {
-  LineInfo fileName(String functionName);
-  
-  public final class LineInfo {
-
-    private String fileName;
-    private int lineNumber;
-    private int offset;
-
-    /** Creates a new instance of LineInfo
-     * @param fileName
-     * @param lineNumber
-     */
-     LineInfo(String fileName, int lineNumber) {
-        this(fileName, lineNumber, -1);
-    }
+public interface DemanglingFunctionNameServiceFactory {
 
     /**
      *
-     * @param fileName
-     * @param lineNumber
-     * @param offset
+     * @return
      */
-    private LineInfo(String fileName, int lineNumber, int offset) {
-        this.fileName = fileName;
-        this.lineNumber = lineNumber;
-        this.offset = offset;
+    public DemanglingFunctionNameService getForCurrentSession();
+    /**
+     * 
+     * @param cppCompiler
+     * @return
+     */
+    public DemanglingFunctionNameService geDemanglingServiceFor(CPPCompiler cppCompiler);
+    
+    public enum CPPCompiler{
+        GNU,
+        SS
     }
-
-    public boolean isSourceKnown() {
-        return (fileName != null && !fileName.equals("(unknown)")); // NOI18N
-    }
-
-    public boolean hasOffset() {
-        return offset != -1;
-    }
-
-    public String getFileName() {
-        return fileName;
-    }
-
-    public int getLine() {
-        return lineNumber;
-    }
-
-    public int getOffset() {
-        return offset;
-    }
-
-    static LineInfo valueOf(String toParse) {
-        if (toParse == null) {
-            return null;
-        }
-        int index = toParse.lastIndexOf(":"); // NOI18N
-        if (index == -1) {
-            return null;
-        }
-        String fileName = toParse.substring(0, index);
-        int lineNumber = -1;
-        try {
-            lineNumber = Integer.parseInt(toParse.substring(index + 1, toParse.length()));
-        } catch (NumberFormatException e) {
-        }
-        LineInfo result = new LineInfo(fileName, lineNumber);
-        return result;
-    }
-}
 }

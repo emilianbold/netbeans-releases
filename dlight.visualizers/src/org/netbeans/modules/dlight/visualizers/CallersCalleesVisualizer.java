@@ -53,7 +53,7 @@ import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTable
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
-import org.netbeans.modules.dlight.core.stack.spi.SourceFileInfoProvider;
+import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.TreeTableVisualizerConfiguration;
