@@ -48,11 +48,12 @@ import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import javax.swing.ImageIcon;
+import javax.swing.Icon;
 import javax.swing.JLabel;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.ui.HudsonJobView;
 import org.netbeans.modules.hudson.ui.HudsonLinkButton;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.windows.TopComponent;
 
@@ -63,7 +64,7 @@ import org.openide.windows.TopComponent;
  */
 public class HudsonNotificationPopupPanel extends javax.swing.JPanel {
     
-    private final ImageIcon RED_ICON = new ImageIcon(getClass().getResource("/org/netbeans/modules/hudson/ui/resources/red.png"));
+    private final Icon RED_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/hudson/ui/resources/red.png", true);
     
     /** Creates new form HudsonNotificationPopupPanel */
     public HudsonNotificationPopupPanel() {

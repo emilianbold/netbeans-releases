@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.hudson.ui;
 
-import javax.swing.ImageIcon;
+import javax.swing.Icon;
 
 /**
  * Hudson Job's change file panel
@@ -50,7 +50,7 @@ import javax.swing.ImageIcon;
  */
 public class HudsonFilePanel extends javax.swing.JPanel {
     
-    public HudsonFilePanel(ImageIcon icon, String file) {
+    public HudsonFilePanel(Icon icon, String file) {
         initComponents();
         
         iconLabel.setIcon(icon);

@@ -42,9 +42,10 @@
 package org.netbeans.modules.hudson.ui;
 
 import java.awt.GridLayout;
-import javax.swing.ImageIcon;
+import javax.swing.Icon;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -54,9 +55,9 @@ import org.openide.util.NbBundle;
  */
 public class HudsonJobChangePanel extends javax.swing.JPanel {
     
-    private static final String EDIT_BASE = "/org/netbeans/modules/hudson/ui/resources/document_edit.gif";
-    private static final String ADD_BASE = "/org/netbeans/modules/hudson/ui/resources/document_add.gif";
-    private static final String DELETE_BASE = "/org/netbeans/modules/hudson/ui/resources/document_delete.gif";
+    private static final Icon EDIT = ImageUtilities.loadImageIcon("org/netbeans/modules/hudson/ui/resources/document_edit.gif", true);
+    private static final Icon ADD = ImageUtilities.loadImageIcon("org/netbeans/modules/hudson/ui/resources/document_add.gif", true);
+    private static final Icon DELETE = ImageUtilities.loadImageIcon("org/netbeans/modules/hudson/ui/resources/document_delete.gif", true);
     
     /** Creates new form HudsonJobChangePanel */
     public HudsonJobChangePanel(HudsonJobChangeItem change) {
@@ -70,20 +71,20 @@ public class HudsonJobChangePanel extends javax.swing.JPanel {
         filesPanel.setLayout(new GridLayout(change.getFiles().size(), 1));
         
         for (HudsonJobChangeFile file : change.getFiles()) {
-            ImageIcon icon = null;
+            Icon icon = null;
             
             switch(file.getEditType()) {
             case add:
-                icon = new ImageIcon(getClass().getResource(ADD_BASE));
+                icon = ADD;
                 break;
             case delete:
-                icon = new ImageIcon(getClass().getResource(DELETE_BASE));
+                icon = DELETE;
                 break;
             case edit:
-                icon = new ImageIcon(getClass().getResource(EDIT_BASE));
+                icon = EDIT;
                 break;
             default:
-                icon = new ImageIcon(getClass().getResource(EDIT_BASE));
+                icon = EDIT;
                 break;
             }
             
