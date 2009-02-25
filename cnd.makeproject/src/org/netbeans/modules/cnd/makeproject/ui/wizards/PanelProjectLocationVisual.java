@@ -247,7 +247,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(1, 0, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         add(createMainCheckBox, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -263,7 +263,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 0);
         add(createMainComboBox, gridBagConstraints);
 
         setAsMainCheckBox.setSelected(true);
