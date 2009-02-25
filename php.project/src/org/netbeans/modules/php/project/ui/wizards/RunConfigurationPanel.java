@@ -249,7 +249,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         }
         int size = documentRoots.size();
         List<LocalServer> localServers = new ArrayList<LocalServer>(size);
-        LocalServer selected = new LocalServer(""); // NOI18N
+        LocalServer selected = null;
         for (DocumentRoot root : documentRoots) {
             String srcRoot = new File(root.getDocumentRoot(), sourcesFolderProvider.getSourcesFolderName()).getAbsolutePath();
             LocalServer ls = new LocalServer(null, root.getUrl(), root.getDocumentRoot(), srcRoot, true);
@@ -259,10 +259,12 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             }
         }
 
-        ComboBoxModel model = new LocalServer.ComboBoxModel(localServers.toArray(new LocalServer[size]));
-        model.setSelectedItem(selected);
+        ComboBoxModel model = new LocalServer.ComboBoxModel(localServers.toArray(new LocalServer[localServers.size()]));
         // store settings
-        descriptor.putProperty(COPY_SRC_TARGET, selected);
+        if (selected != null) {
+            model.setSelectedItem(selected);
+            descriptor.putProperty(COPY_SRC_TARGET, selected);
+        }
         descriptor.putProperty(COPY_SRC_TARGETS, model);
         // update UI
         runAsLocalWeb.setLocalServerModel(model);
