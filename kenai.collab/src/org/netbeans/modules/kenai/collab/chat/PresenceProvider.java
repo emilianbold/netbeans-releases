@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,72 +37,22 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.collab.im;
+package org.netbeans.modules.kenai.collab.chat;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.LinkedList;
-import javax.swing.Icon;
-import org.jivesoftware.smack.packet.Message;
-import org.jivesoftware.smack.util.StringUtils;
-import org.netbeans.modules.kenai.collab.chat.ui.ChatTopComponent;
-import org.openide.awt.Notification;
-import org.openide.awt.NotificationDisplayer;
-import org.openide.awt.NotificationDisplayer.Priority;
+import java.awt.Component;
+
+import org.openide.awt.StatusLineElementProvider;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Jan Becicka
  */
-class GroupChatNotification implements ActionListener{
-
-    private Message lastMessage;
-    private Notification thisN;
-
-    public String getLinkTitle() {
-        return "read";
-    }
-
-    public String getTitle() {
-        return "New Message";
-    }
-
-    public String getDescription() {
-        String from= StringUtils.parseName(lastMessage.getFrom());
-        return from+" says: " + lastMessage.getBody();
-    }
-
-    public void showDetails() {
-        ChatTopComponent.getDefault().open();
-        ChatTopComponent.getDefault().requestActive();
-        ChatTopComponent.getDefault().setActive(StringUtils.parseName(lastMessage.getFrom()));
-    }
-
-    public Priority getPriority() {
-        return Priority.NORMAL;
-    }
-
-    public Icon getIcon() {
-        return null;
-    }
-
-    void add() {
-        if (thisN!=null)
-            thisN.dispose();
-        thisN = NotificationDisplayer.getDefault().notify(getTitle(), getIcon(), getDescription(), this, getPriority());
-    }
-
-    void setMessage(Message msg) {
-        lastMessage=msg;
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        showDetails();
+@ServiceProvider(service=StatusLineElementProvider.class, position=30)
+public class PresenceProvider implements StatusLineElementProvider {
+    public Component getStatusLineElement () {
+        return PresenceIndicator.getDefault().getComponent();
     }
 }

@@ -38,68 +38,54 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.kenai.collab.chat.ui;
+package org.netbeans.modules.kenai.collab.chat;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import javax.swing.AbstractListModel;
-import org.jivesoftware.smack.PacketListener;
-import org.jivesoftware.smack.Roster;
-import org.jivesoftware.smack.RosterEntry;
-import org.jivesoftware.smack.packet.Packet;
-import org.jivesoftware.smack.packet.Presence;
-import org.jivesoftware.smack.packet.Presence.Type;
-import org.jivesoftware.smackx.muc.MultiUserChat;
-import org.jivesoftware.smackx.packet.MUCUser;
+import java.awt.Component;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
+import javax.swing.plaf.UIResource;
 
 /**
- * List model, which listens on Presence
+ * Renderer for Buddies
  * @see Buddy
  * @author Jan Becicka
  */
-public class BuddyListModel extends AbstractListModel implements PacketListener {
+final class BuddyListCellRenderer extends JLabel implements ListCellRenderer, UIResource {
 
-    /**
-     * sorted list of online Buddies
-     */
-    private final ArrayList<Buddy> usrs = new ArrayList<Buddy>();
-
-    public BuddyListModel(MultiUserChat chat) {
+    public BuddyListCellRenderer() {
         super();
-        Iterator<String> string = chat.getOccupants();
-        while (string.hasNext()) {
-            usrs.add(new Buddy(chat.getOccupant(string.next()).getJid()));
-        }
-        Collections.sort(usrs);
+        setOpaque(false);
     }
 
-    public BuddyListModel(Roster roster) {
-        for (RosterEntry re:roster.getEntries()) {
-            usrs.add(new Buddy(re.getName()));
+    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        // #93658: GTK needs name to render cell renderer "natively"
+        setName("ComboBox.listRenderer");
+        // NOI18N
+        if (value instanceof Buddy) {
+            Buddy pkgitem = (Buddy) value;
+            setText(pkgitem.getLabel());
+            setIcon(pkgitem.getIcon());
+        } else {
+            // #49954: render a specially inserted package somehow.
+            String pkgitem = (String) value;
+            setText(pkgitem);
+            setIcon(null);
         }
-        Collections.sort(usrs);
+        if (isSelected) {
+            setBackground(list.getSelectionBackground());
+            setForeground(list.getSelectionForeground());
+        } else {
+            setBackground(list.getBackground());
+            setForeground(list.getForeground());
+        }
+        return this;
     }
 
-    public int getSize() {
-        return usrs.size();
-    }
-
-    public Object getElementAt(int i) {
-        return usrs.get(i);
-    }
-
-    public void processPacket(Packet packet) {
-        final Presence presence = (Presence) packet;
-        Buddy from = new Buddy(presence.getFrom());
-        if (!usrs.contains(from) && presence.getType().equals(Type.available)) {
-            usrs.add(new Buddy(((MUCUser) presence.getExtension("http://jabber.org/protocol/muc#user")).getItem().getJid()));
-            Collections.sort(usrs);
-        }
-        if (presence.getType().equals(Type.unavailable)) {
-            usrs.remove(from);
-        }
-        fireContentsChanged(this, 0, usrs.size());
+    // #93658: GTK needs name to render cell renderer "natively"
+    @Override
+    public String getName() {
+        String name = super.getName();
+        return name == null ? "ComboBox.renderer" : name;
     }
 }
-

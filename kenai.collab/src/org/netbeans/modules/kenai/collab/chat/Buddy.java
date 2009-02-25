@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,66 +37,63 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.api;
+package org.netbeans.modules.kenai.collab.chat;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import org.netbeans.modules.kenai.FeatureData;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import org.jivesoftware.smack.util.StringUtils;
+import org.openide.util.ImageUtilities;
 
 /**
- *
- * @author Maros Sandor
+ * Participant representation.
+ * Just id with icon
  * @author Jan Becicka
  */
-public final class KenaiProjectFeature {
-
-    private FeatureData featureData;
-    private URL webL;
-    private URL loc;
+public class Buddy implements Comparable<Buddy> {
     
-    KenaiProjectFeature(FeatureData data) {
-        this.featureData = data;
-        try {
-            this.webL = new URL(featureData.web_url);
-            this.loc = new URL(featureData.url);
-        } catch (MalformedURLException malformedURLException) {
-            throw new IllegalArgumentException(malformedURLException);
-        }
+    private String jid;
+    private static final Icon ONLINE_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/online.gif"));
+
+    public Buddy(String jid) {
+        assert jid!=null:"Jid cannot be null. Show JID must be enabled on server.";
+        this.jid = jid;
     }
 
-    public String getName() {
-        return featureData.name;
+    Icon getIcon() {
+        return ONLINE_ICON;
     }
 
-    public KenaiFeature getType() {
-        return KenaiFeature.forId(featureData.type);
+    String getLabel() {
+        return StringUtils.parseName(jid);
     }
 
-    public String getService() {
-        return featureData.service;
-    }
-
-    public URL getLocation() {
-        return loc;
-    }
-
-    public URL getWebLocation() {
-        return webL;
-    }
-
-    public String getDisplayName() {
-        return featureData.display_name;
+    public String getJid() {
+        return jid;
     }
 
     @Override
-    public String toString() {
-        return "KenaiProjectFeature " + getName() + ", url=" + getLocation() ;
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Buddy other = (Buddy) obj;
+        if ((this.jid == null) ? (other.jid != null) : !this.jid.equals(other.jid)) {
+            return false;
+        }
+        return true;
     }
 
+    @Override
+    public int hashCode() {
+        return jid.hashCode();
+    }
+
+    public int compareTo(Buddy o) {
+        return this.getLabel().compareTo(o.getLabel());
+    }
 }

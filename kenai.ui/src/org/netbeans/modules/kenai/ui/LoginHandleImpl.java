@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,63 +31,65 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.kenai.ui;
 
-package org.netbeans.modules.kenai.collab.chat.ui;
-
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import org.jivesoftware.smack.util.StringUtils;
-import org.openide.util.ImageUtilities;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.net.PasswordAuthentication;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiEvent;
+import org.netbeans.modules.kenai.api.KenaiListener;
+import org.netbeans.modules.kenai.ui.spi.LoginHandle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Participant representation.
- * Just id with icon
+ * Implementation of LoginHandle. Currently fires events when user logs in/out
  * @author Jan Becicka
  */
-public class Buddy implements Comparable<Buddy> {
-    
-    private String jid;
-    private static final Icon ONLINE_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/online.gif"));
+@ServiceProvider(service=LoginHandle.class)
+public class LoginHandleImpl extends LoginHandle implements KenaiListener {
 
-    public Buddy(String jid) {
-        assert jid!=null:"Jid cannot be null. Show JID must be enabled on server.";
-        this.jid = jid;
-    }
+    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
-    Icon getIcon() {
-        return ONLINE_ICON;
-    }
-
-    String getLabel() {
-        return StringUtils.parseName(jid);
-    }
-
-    public String getJid() {
-        return jid;
+    public LoginHandleImpl() {
+        Kenai.getDefault().addKenaiListener(this);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
+    public String getUserName() {
+        final PasswordAuthentication passwordAuthentication = Kenai.getDefault().getPasswordAuthentication();
+        if (passwordAuthentication==null) {
+            return null;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Buddy other = (Buddy) obj;
-        if ((this.jid == null) ? (other.jid != null) : !this.jid.equals(other.jid)) {
-            return false;
-        }
-        return true;
+        return passwordAuthentication.getUserName();
     }
 
-    @Override
-    public int hashCode() {
-        return jid.hashCode();
+    /**
+     * Add PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
     }
 
-    public int compareTo(Buddy o) {
-        return this.getLabel().compareTo(o.getLabel());
+    /**
+     * Remove PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+
+    public void stateChanged(KenaiEvent e) {
+        if (e.getType()==KenaiEvent.LOGIN) {
+            propertyChangeSupport.firePropertyChange(PROP_MEMBER_PROJECT_LIST, null, null);
+        }
     }
 }

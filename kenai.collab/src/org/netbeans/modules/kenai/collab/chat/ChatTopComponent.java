@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.collab.chat.ui;
+package org.netbeans.modules.kenai.collab.chat;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -45,6 +45,8 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
@@ -59,14 +61,13 @@ import javax.swing.OverlayLayout;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.jivesoftware.smack.packet.Message;
-import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiEvent;
 import org.netbeans.modules.kenai.api.KenaiListener;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.collab.im.KenaiConnection;
+import org.netbeans.modules.kenai.collab.chat.ChatNotifications;
+import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.ImageUtilities;
@@ -126,11 +127,20 @@ public class ChatTopComponent extends TopComponent {
             }
         };
 
-        KenaiConnection.getDefault();
+        if (KenaiConnection.getDefault().isConnected()) {
+            putChatsScreen();
+        } else {
+            putLoginScreen();
+        }
         Kenai.getDefault().addKenaiListener(new KenaiL());
         chats.addChangeListener(changeListener);
-        putChatsScreen();
-
+        chats.addPropertyChangeListener(TabbedPaneFactory.PROP_CLOSE, new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName())) {
+                    removeChat(((Component) evt.getNewValue()));
+                }
+            }
+        });
         //putClientProperty("netbeans.winsys.tc.keep_preferred_size_when_slided_in", Boolean.TRUE);
     }
 
@@ -175,6 +185,7 @@ public class ChatTopComponent extends TopComponent {
 
 
     void addChat(ChatPanel chatPanel) {
+        ChatNotifications.getDefault().removeGroup(chatPanel.getName());
         chats.addTab(chatPanel.getName(),chatPanel);
         open.add(chatPanel.getName());
         StringBuffer b= new StringBuffer();
@@ -189,6 +200,7 @@ public class ChatTopComponent extends TopComponent {
 
     void removeChat(Component chatPanel) {
         int index = chats.indexOfComponent(chatPanel);
+        assert index>=0: "Component not found in CloseButtonTabbedPane " + chatPanel;
         open.remove(chats.getTitleAt(index));
     }
 
@@ -213,8 +225,8 @@ public class ChatTopComponent extends TopComponent {
     }
 
 
-    public static boolean isInitedAndVisible() {
-        return instance==null?false:instance.isVisible();
+    public static boolean isInitedAndVisible(String name) {
+        return instance==null?false:instance.isVisible()&&instance.open.contains(name);
     }
 
     private void putChats() {
@@ -262,13 +274,9 @@ public class ChatTopComponent extends TopComponent {
         loginLink = new javax.swing.JLabel();
         initPanel = new javax.swing.JPanel();
         initLabel = new javax.swing.JLabel();
+        jProgressBar1 = new javax.swing.JProgressBar();
 
         chats.setTabLayoutPolicy(javax.swing.JTabbedPane.SCROLL_TAB_LAYOUT);
-        chats.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                chatsPropertyChange(evt);
-            }
-        });
 
         glassPane.setOpaque(false);
 
@@ -336,21 +344,27 @@ public class ChatTopComponent extends TopComponent {
 
         org.openide.awt.Mnemonics.setLocalizedText(initLabel, org.openide.util.NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.initLabel.text")); // NOI18N
 
+        jProgressBar1.setIndeterminate(true);
+
         org.jdesktop.layout.GroupLayout initPanelLayout = new org.jdesktop.layout.GroupLayout(initPanel);
         initPanel.setLayout(initPanelLayout);
         initPanelLayout.setHorizontalGroup(
             initPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(initPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(initLabel)
-                .addContainerGap(285, Short.MAX_VALUE))
+                .add(initPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jProgressBar1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
+                    .add(initLabel))
+                .addContainerGap())
         );
         initPanelLayout.setVerticalGroup(
             initPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(initPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(initLabel)
-                .addContainerGap(272, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jProgressBar1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(248, Short.MAX_VALUE))
         );
 
         add(initPanel, java.awt.BorderLayout.CENTER);
@@ -359,12 +373,6 @@ public class ChatTopComponent extends TopComponent {
     private void addChatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addChatActionPerformed
         showPopup();
 }//GEN-LAST:event_addChatActionPerformed
-
-    private void chatsPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_chatsPropertyChange
-        if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName())) {
-            this.removeChat(((Component) evt.getNewValue()).getParent());
-        }
-    }//GEN-LAST:event_chatsPropertyChange
 
     private void loginLinkMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_loginLinkMouseClicked
         UIUtils.showLogin();
@@ -385,6 +393,7 @@ public class ChatTopComponent extends TopComponent {
     private javax.swing.JLabel initLabel;
     private javax.swing.JPanel initPanel;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JLabel loginLink;
     private javax.swing.JPanel loginScreen;
     // End of variables declaration//GEN-END:variables
@@ -462,6 +471,7 @@ public class ChatTopComponent extends TopComponent {
                 if (e.getSource()==null) {
                     putLoginScreen();
                 } else {
+                    KenaiConnection.getDefault().getMyProjects();
                     putChatsScreen();
                 }
             }
