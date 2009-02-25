@@ -38,62 +38,68 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.kenai.collab.chat;
 
-package org.netbeans.modules.kenai.collab.chat.ui;
-
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import org.jivesoftware.smack.util.StringUtils;
-import org.openide.util.ImageUtilities;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import javax.swing.AbstractListModel;
+import org.jivesoftware.smack.PacketListener;
+import org.jivesoftware.smack.Roster;
+import org.jivesoftware.smack.RosterEntry;
+import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.packet.Presence.Type;
+import org.jivesoftware.smackx.muc.MultiUserChat;
+import org.jivesoftware.smackx.packet.MUCUser;
 
 /**
- * Participant representation.
- * Just id with icon
+ * List model, which listens on Presence
+ * @see Buddy
  * @author Jan Becicka
  */
-public class Buddy implements Comparable<Buddy> {
-    
-    private String jid;
-    private static final Icon ONLINE_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/online.gif"));
+public class BuddyListModel extends AbstractListModel implements PacketListener {
 
-    public Buddy(String jid) {
-        assert jid!=null:"Jid cannot be null. Show JID must be enabled on server.";
-        this.jid = jid;
-    }
+    /**
+     * sorted list of online Buddies
+     */
+    private final ArrayList<Buddy> usrs = new ArrayList<Buddy>();
 
-    Icon getIcon() {
-        return ONLINE_ICON;
-    }
-
-    String getLabel() {
-        return StringUtils.parseName(jid);
-    }
-
-    public String getJid() {
-        return jid;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
+    public BuddyListModel(MultiUserChat chat) {
+        super();
+        Iterator<String> string = chat.getOccupants();
+        while (string.hasNext()) {
+            usrs.add(new Buddy(chat.getOccupant(string.next()).getJid()));
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Buddy other = (Buddy) obj;
-        if ((this.jid == null) ? (other.jid != null) : !this.jid.equals(other.jid)) {
-            return false;
-        }
-        return true;
+        Collections.sort(usrs);
     }
 
-    @Override
-    public int hashCode() {
-        return jid.hashCode();
+    public BuddyListModel(Roster roster) {
+        for (RosterEntry re:roster.getEntries()) {
+            usrs.add(new Buddy(re.getName()));
+        }
+        Collections.sort(usrs);
     }
 
-    public int compareTo(Buddy o) {
-        return this.getLabel().compareTo(o.getLabel());
+    public int getSize() {
+        return usrs.size();
+    }
+
+    public Object getElementAt(int i) {
+        return usrs.get(i);
+    }
+
+    public void processPacket(Packet packet) {
+        final Presence presence = (Presence) packet;
+        Buddy from = new Buddy(presence.getFrom());
+        if (!usrs.contains(from) && presence.getType().equals(Type.available)) {
+            usrs.add(new Buddy(((MUCUser) presence.getExtension("http://jabber.org/protocol/muc#user")).getItem().getJid()));
+            Collections.sort(usrs);
+        }
+        if (presence.getType().equals(Type.unavailable)) {
+            usrs.remove(from);
+        }
+        fireContentsChanged(this, 0, usrs.size());
     }
 }
+

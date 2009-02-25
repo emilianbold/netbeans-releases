@@ -38,16 +38,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.kenai.collab.im;
+package org.netbeans.modules.kenai.collab.chat;
 
 import java.net.PasswordAuthentication;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.XMPPConnection;
@@ -63,10 +63,13 @@ import org.netbeans.modules.kenai.api.KenaiEvent;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiListener;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.collab.chat.ui.ChatTopComponent;
-import org.netbeans.modules.kenai.collab.chat.ui.PresenceIndicator;
-import org.netbeans.modules.kenai.collab.chat.ui.PresenceIndicator.PresenceListener;
-import org.netbeans.modules.kenai.collab.chat.ui.PresenceIndicator.Status;
+import org.netbeans.modules.kenai.collab.chat.ChatTopComponent;
+import org.netbeans.modules.kenai.collab.chat.PresenceIndicator;
+import org.netbeans.modules.kenai.collab.chat.PresenceIndicator.PresenceListener;
+import org.netbeans.modules.kenai.collab.chat.PresenceIndicator.Status;
+import org.omg.CORBA.Request;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * Class representing connection to kenai xmpp server
@@ -89,8 +92,7 @@ public class KenaiConnection implements KenaiListener {
     // Map<name of kenai project, message queue>
     private HashMap<String, LinkedList<Message>> messageQueue = new HashMap<String, LinkedList<Message>>();
 
-    private static PrivateChatNotification privateNotification = new PrivateChatNotification();
-    private static GroupChatNotification groupNotification = new GroupChatNotification();
+    private static ChatNotifications chatNotifications = ChatNotifications.getDefault();
 
     /**
      * Default singleton instance representing XMPP connection to kenai server
@@ -164,8 +166,13 @@ public class KenaiConnection implements KenaiListener {
     private class PacketL implements PacketListener {
         public void processPacket(Packet packet) {
             final Message msg = (Message) packet;
-            privateNotification.addMessage(msg);
-            privateNotification.add();
+            try {
+                connection.getChatManager().createChat(msg.getFrom(), null).sendMessage("NetBeans IDE does not support private messages");
+                //chatNotifications.addPrivateMessage(msg);
+            } catch (XMPPException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            //chatNotifications.addPrivateMessage(msg);
         }
     }
 
@@ -179,10 +186,17 @@ public class KenaiConnection implements KenaiListener {
             if (listener != null) {
                 listener.processPacket(msg);
             } 
-            if (listener==null || !ChatTopComponent.isInitedAndVisible()) {
-                groupNotification.setMessage(msg);
-                groupNotification.add();
-            }
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    if (listener == null || !ChatTopComponent.isInitedAndVisible(name)) {
+                        RequestProcessor.getDefault().post(new Runnable() {
+                            public void run() {
+                                chatNotifications.addGroupMessage(msg);
+                            }
+                        });
+                    }
+                }
+            });
         }
     }
 
@@ -235,6 +249,8 @@ public class KenaiConnection implements KenaiListener {
             final PasswordAuthentication pa = (PasswordAuthentication) e.getSource();
             if (pa != null) {
                 myProjects = null;
+                USER=pa.getUserName();
+                PASSWORD=new String(pa.getPassword());
                 tryConnect();
             } else {
                 for (MultiUserChat muc:getChats()) {
@@ -252,16 +268,17 @@ public class KenaiConnection implements KenaiListener {
 //TODO this should be removed when xmpp server starts working on kenai.com    
 
 //    bcol4 test server
-    private static final String USER = "testuser1";
-    private static final String PASSWORD = "password";
-    private static final String XMPP_SERVER = "bco14.central.sun.com";
-    private static final String CHAT_ROOM = "@muc.central.sun.com";
+//    private static final String USER = "testuser1";
+//    private static final String PASSWORD = "password";
+//    private static final String XMPP_SERVER = "bco14.central.sun.com";
+//    private static final String CHAT_ROOM = "@muc.central.sun.com";
 
 ////  test server on localhost
-//    private static final String USER = "netbeans";
-//    private static final String PASSWORD = "netbeans";
-//    private static final String XMPP_SERVER = "127.0.0.1";
-//    private static final String CHAT_ROOM = "@conference.127.0.0.1";
+    private String USER;
+    private String PASSWORD;
+    private static final String XMPP_SERVER = System.getProperty("kenai.xmpp.url","127.0.0.1");
+    private static final String CHAT_ROOM = "@" + System.getProperty("kenai.xmpp.muc.url", "conference.127.0.0.1");
+
 
     /**
      * TODO: should return kenai account name
@@ -286,10 +303,7 @@ public class KenaiConnection implements KenaiListener {
     public Collection<KenaiProject> getMyProjects() {
         if (myProjects == null) {
             try {
-        //        myProjects = new ArrayList();
-        //        myProjects.add(Kenai.getDefault().getProject("kenai"));
-        //        myProjects.add(Kenai.getDefault().getProject("alligator"));
-                  myProjects = Kenai.getDefault().getMyProjects();
+                myProjects = new LinkedList(Kenai.getDefault().getMyProjects());
             } catch (KenaiException ex) {
                 myProjects = Collections.emptyList();
             }

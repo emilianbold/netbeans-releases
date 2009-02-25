@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.kenai.collab.chat.ui;
+package org.netbeans.modules.kenai.collab.chat;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -57,7 +57,7 @@ import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.collab.im.KenaiConnection;
+import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.omg.CORBA.Request;
 import org.openide.util.Exceptions;

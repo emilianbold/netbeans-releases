@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,42 +37,63 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.collab.im;
+package org.netbeans.modules.kenai.collab.chat;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import org.netbeans.modules.kenai.collab.chat.ui.ChatTopComponent;
-import org.netbeans.modules.kenai.ui.spi.MessagingAccessor;
-import org.netbeans.modules.kenai.ui.spi.MessagingHandle;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.openide.util.lookup.ServiceProvider;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import org.jivesoftware.smack.util.StringUtils;
+import org.openide.util.ImageUtilities;
 
 /**
- *
+ * Participant representation.
+ * Just id with icon
  * @author Jan Becicka
  */
-@ServiceProvider(service=MessagingAccessor.class)
-public class MessagingAccessorImpl extends MessagingAccessor {
+public class Buddy implements Comparable<Buddy> {
+    
+    private String jid;
+    private static final Icon ONLINE_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/online.gif"));
 
-    @Override
-    public MessagingHandle getMessaging(ProjectHandle project) {
-        return new MessagingHandleImpl(KenaiConnection.getDefault().getChat(project.getId()));
+    public Buddy(String jid) {
+        assert jid!=null:"Jid cannot be null. Show JID must be enabled on server.";
+        this.jid = jid;
+    }
+
+    Icon getIcon() {
+        return ONLINE_ICON;
+    }
+
+    String getLabel() {
+        return StringUtils.parseName(jid);
+    }
+
+    public String getJid() {
+        return jid;
     }
 
     @Override
-    public ActionListener getOpenMessagesAction(final ProjectHandle project) {
-        return new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                final ChatTopComponent aDefault = ChatTopComponent.getDefault();
-                aDefault.requestActive();
-                aDefault.setActive(project.getId());
-            }
-        };
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Buddy other = (Buddy) obj;
+        if ((this.jid == null) ? (other.jid != null) : !this.jid.equals(other.jid)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return jid.hashCode();
+    }
+
+    public int compareTo(Buddy o) {
+        return this.getLabel().compareTo(o.getLabel());
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,69 +34,57 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.collab.im;
+package org.netbeans.modules.kenai.collab.chat;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.LinkedList;
-import javax.swing.Icon;
-import org.jivesoftware.smack.packet.Message;
-import org.jivesoftware.smack.util.StringUtils;
-import org.netbeans.modules.kenai.collab.chat.ui.ChatTopComponent;
-import org.openide.awt.Notification;
-import org.openide.awt.NotificationDisplayer;
-import org.openide.awt.NotificationDisplayer.Priority;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import org.jivesoftware.smackx.muc.MultiUserChat;
+import org.netbeans.modules.kenai.ui.spi.MessagingHandle;
 
 /**
  *
  * @author Jan Becicka
  */
-class GroupChatNotification implements ActionListener{
+public class MessagingHandleImpl extends MessagingHandle {
 
-    private Message lastMessage;
-    private Notification thisN;
+    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    private MultiUserChat muc;
 
-    public String getLinkTitle() {
-        return "read";
+    MessagingHandleImpl(MultiUserChat chat) {
+        this.muc=chat;
     }
 
-    public String getTitle() {
-        return "New Message";
+    @Override
+    public int getOnlineCount() {
+        return this.muc.getOccupantsCount();
     }
 
-    public String getDescription() {
-        String from= StringUtils.parseName(lastMessage.getFrom());
-        return from+" says: " + lastMessage.getBody();
+    @Override
+    public int getMessageCount() {
+        //TODO:
+        return 0;
     }
 
-    public void showDetails() {
-        ChatTopComponent.getDefault().open();
-        ChatTopComponent.getDefault().requestActive();
-        ChatTopComponent.getDefault().setActive(StringUtils.parseName(lastMessage.getFrom()));
+    /**
+     * Add PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
     }
 
-    public Priority getPriority() {
-        return Priority.NORMAL;
+    /**
+     * Remove PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
-    public Icon getIcon() {
-        return null;
-    }
 
-    void add() {
-        if (thisN!=null)
-            thisN.dispose();
-        thisN = NotificationDisplayer.getDefault().notify(getTitle(), getIcon(), getDescription(), this, getPriority());
-    }
-
-    void setMessage(Message msg) {
-        lastMessage=msg;
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        showDetails();
-    }
 }

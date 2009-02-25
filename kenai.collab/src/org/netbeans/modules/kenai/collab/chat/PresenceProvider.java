@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.kenai.collab.chat.ui;
+package org.netbeans.modules.kenai.collab.chat;
 
 import java.awt.Component;
 
