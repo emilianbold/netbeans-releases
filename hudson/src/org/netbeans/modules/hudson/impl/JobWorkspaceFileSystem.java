@@ -130,7 +130,7 @@ final class JobWorkspaceFileSystem extends AbstractFileSystem implements
         String fSlash = f.length() > 0 ? f + "/" : ""; // NOI18N
         try {
             URL url = new URL(baseURL, fSlash + "*plain*"); // NOI18N
-            URLConnection conn = url.openConnection();
+            URLConnection conn = HudsonConnector.followRedirects(url.openConnection());
             String contentType = conn.getContentType();
             if (contentType == null || !contentType.startsWith("text/plain")) { // NOI18N
                 // Missing workspace, or Hudson prior to SVN 13601 (i.e. 1.264).
@@ -172,7 +172,7 @@ final class JobWorkspaceFileSystem extends AbstractFileSystem implements
     private URLConnection connection(String name) throws IOException {
         assert Thread.holdsLock(nonDirs);
         LOG.log(Level.FINE, "metadata in {0}: {1}", new Object[] {job, name});
-        URLConnection conn = new URL(baseURL, name).openConnection();
+        URLConnection conn = HudsonConnector.followRedirects(new URL(baseURL, name).openConnection());
         lastModified.put(name, conn.getLastModified());
         int contentLength = conn.getContentLength();
         size.put(name, contentLength);

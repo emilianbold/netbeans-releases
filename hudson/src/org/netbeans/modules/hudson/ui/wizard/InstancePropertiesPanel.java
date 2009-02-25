@@ -51,6 +51,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.hudson.api.HudsonVersion;
+import org.netbeans.modules.hudson.impl.HudsonConnector;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
 import org.netbeans.modules.hudson.impl.HudsonVersionImpl;
 import org.netbeans.modules.hudson.util.Utilities;
@@ -148,7 +149,7 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel<InstanceW
                     wizard.setErrorMessage(NbBundle.getMessage(InstancePropertiesPanel.class, "MSG_Checking"));
                     
                     try {
-                        URLConnection connection = new URL(checkingUrl).openConnection();
+                        URLConnection connection = HudsonConnector.followRedirects(new URL(checkingUrl).openConnection());
                         
                         // Resolve Hudson version
                         String sVersion = connection.getHeaderField("X-Hudson");

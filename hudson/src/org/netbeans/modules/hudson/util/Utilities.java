@@ -136,6 +136,6 @@ public class Utilities {
     }
     
     public static String getURLWithoutSpaces(String url) {
-        return url.replaceAll("\\s+", "%20");
+        return url.replaceAll(" ", "%20");
     }
 }
