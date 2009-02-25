@@ -177,7 +177,8 @@ public final class Language {
      */
     @NonNull
     public String getDisplayName() {
-        return getGsfLanguage().getDisplayName();
+        GsfLanguage l = getGsfLanguage();
+        return l == null ? mime : l.getDisplayName();
     }
 
     /** Return an icon to be used for files of this language type.
