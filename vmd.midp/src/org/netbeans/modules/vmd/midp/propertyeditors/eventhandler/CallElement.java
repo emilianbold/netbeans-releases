@@ -135,23 +135,46 @@ public class CallElement extends JPanel implements PropertyEditorEventHandlerEle
             DescriptorRegistry registry = selectedComponent.getDocument().getDescriptorRegistry();
             pointsModel.removeAllElements();
             DesignComponent targetComponent = null;
-            for (DesignComponent component : components) {
 
-                for (PropertyDescriptor descriptor : selectedComponent.getComponentDescriptor().getDeclaredPropertyDescriptors()) {
-                    if (registry.isInHierarchy(PointCD.TYPEID, descriptor.getType())) {
-                        DesignComponent targetComponent_ = selectedComponent.readProperty(descriptor.getName()).getComponent();
-                        if (targetComponent_ == component) {
-                            targetComponent = component;
+            for (DesignComponent component : components) {
+                pointsModel.addElement(component);
+            }
+            for (DesignComponent component : components) {
+                targetComponent = goThroughChildren(component, selectedComponent, registry);
+                if (targetComponent != null) {
+                    break;
+                }
+            }
+            if (targetComponent == null) {
+                search:
+                    for (DesignComponent component : components) {
+                        for (DesignComponent child : selectedComponent.getComponents()) {
+                            targetComponent = goThroughChildren(component, child, registry);
+                            if (targetComponent != null) {
+                                break search;
+                            }
                         }
                     }
-                }
-                pointsModel.addElement(component);
             }
             if (targetComponent != null) {
                 pointsModel.setSelectedItem(targetComponent);
             }
 
         }
+    }
+
+    private DesignComponent goThroughChildren(DesignComponent currentComponent, DesignComponent child, DescriptorRegistry registry) {
+        Collection<PropertyDescriptor> descriptorsList = child.getComponentDescriptor().getPropertyDescriptors();
+        if (descriptorsList != null) {
+            for (PropertyDescriptor descriptor : descriptorsList) {
+                if (registry.isInHierarchy(PointCD.TYPEID, descriptor.getType())) {
+                    if (child.readProperty(descriptor.getName()).getComponent() == currentComponent) {
+                        return currentComponent;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public void setElementEnabled(boolean enabled) {
