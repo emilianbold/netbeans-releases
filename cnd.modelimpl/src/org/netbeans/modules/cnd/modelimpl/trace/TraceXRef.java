@@ -258,7 +258,7 @@ public class TraceXRef extends TraceModel {
             }
             String oldName = Thread.currentThread().getName();
             try {
-                Thread.currentThread().setName("Testing xRef "+file.getAbsolutePath());
+		    Thread.currentThread().setName("Testing xRef "+file.getAbsolutePath()); //NOI18N
                 analyzeFile(file, params, bag, printOut, printErr, canceled);
             } finally {
                 Thread.currentThread().setName(oldName);
