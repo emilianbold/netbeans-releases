@@ -38,11 +38,10 @@
  */
 package org.netbeans.modules.php.editor.indent;
 
+import java.util.List;
 import java.util.Map;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
@@ -50,9 +49,10 @@ import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Statement;
+import org.netbeans.modules.php.editor.parser.astnodes.SwitchCase;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -75,21 +75,7 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
 
     @Override
     public void visit(Block node) {
-        if (node.isCurly()) {
-            int start = node.getStartOffset();
-            try {
-                int firstNonWS = Utilities.getFirstNonWhiteFwd(doc, start + 1);
-                if (firstNonWS > -1){
-                    start = firstNonWS;
-                }
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            
-            indentLevels.put(start, indentSize);
-            indentLevels.put(node.getEndOffset(), -1 * indentSize);
-        }
-
+        indentListOfStatements(node.getStatements());
         super.visit(node);
     }
 
@@ -131,14 +117,31 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
         super.visit(node);
     }
 
+    @Override
+    public void visit(SwitchCase node) {
+        indentListOfStatements(node.getActions());
+        super.visit(node);
+    }
+
     private void indentContinuationWithinStatement(ASTNode node){
 
     }
 
-    private void indentNonBlockStatement(ASTNode node){
-        if (!(node instanceof Block)){
-            indentLevels.put(node.getStartOffset(), indentSize);
-            indentLevels.put(node.getEndOffset(), -1 * indentSize);
+    private void indentListOfStatements(List<Statement> stmts) {
+        ASTNode firstNode = stmts.get(0);
+        ASTNode lastNode = stmts.get(stmts.size() - 1);
+        int start = firstNode.getStartOffset();
+        int end = lastNode.getEndOffset();
+        indentLevels.put(start, indentSize);
+        indentLevels.put(end, -1 * indentSize);
+    }
+
+    private void indentNonBlockStatement(ASTNode node) {
+        if (node != null && !(node instanceof Block)) {
+            int start = node.getStartOffset();
+            int end = node.getEndOffset();
+            indentLevels.put(start, indentSize);
+            indentLevels.put(end, -1 * indentSize);
         }
     }
 }
