@@ -100,7 +100,9 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     }
     
     public String getUrl() {
-        return properties.getProperty(JOB_URL, String.class);
+        String url = properties.getProperty(JOB_URL, String.class);
+        assert url.endsWith("/") : url;
+        return url;
     }
     
     public Color getColor() {
