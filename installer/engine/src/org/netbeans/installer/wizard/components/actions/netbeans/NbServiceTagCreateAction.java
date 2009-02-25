@@ -289,7 +289,13 @@ public class NbServiceTagCreateAction extends WizardAction {
                 // java.home system variable usually points to private jre with MacOS exception
                 final File jreHome = new File(gfJavaHome, "jre");
                 final File javaHome = (SystemUtils.isMacOS() || !jreHome.exists()) ? gfJavaHome : jreHome;
-                final String version = gfProduct.getVersion().getMajor() == 3 ? "v3" : "v2";
+                String version = null;
+                if(gfProduct.getVersion().getMajor() == 2) {
+                    version = gfProduct.getVersion().getMinor() == 1 ? "v2.1" : "v2";
+                } else {
+                    version = "v3";
+                }
+
                 gfST = NbServiceTagSupport.createGfServiceTag(source,
                         javaHome.getAbsolutePath(),
                         JavaUtils.getVersion(gfJavaHome).toJdkStyle(),
@@ -320,7 +326,7 @@ public class NbServiceTagCreateAction extends WizardAction {
                     map.put("<platform_arch></platform_arch>",
                             "<platform_arch>" + System.getProperty("os.arch") + "</platform_arch>");
                 }
-                map.put("<source>Sun Java System Application Server Native Packages</source>",
+                map.put("<source>Sun GlassFish Enterprise Server Native Packages</source>",
                         "<source>" + source + "</source>");
                 map.put("<source>GlassFish V3</source>",
                         "<source>" + source + "</source>");

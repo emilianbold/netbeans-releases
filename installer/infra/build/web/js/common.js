@@ -188,7 +188,7 @@ function write_page_languages() {
     }
     for(var i=0;i<LANGUAGE_SUFFIXES.length;i++) {
 	if(locale_suffix!=LANGUAGE_SUFFIXES[i]) {
-            document.write('<li><a href="' + page + get_request + LANGUAGE_SUFFIXES[i] + '">' + LANGUAGE_WEBPAGE_NAMES[i]+ '</a></li>');
+            document.write('<li><a href="' + page + get_request.replace(PAGELANG_SEP, PAGELANG_SEP + LANGUAGE_SUFFIXES[i]) + '">' + LANGUAGE_WEBPAGE_NAMES[i]+ '</a></li>');
         }
     }
 }

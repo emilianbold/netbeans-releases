@@ -184,6 +184,7 @@ run() {
             \"-Dgf.build.type=${GF_BUILD_TYPE}\" \
             \"-Dgf-mod.build.type=${GFMOD_BUILD_TYPE}\"\
             \"-Dcommunity.mlbuild=${COMMUNITY_ML_BUILD}\" \
+            \"-Dweb.page.daily.branding=${NB_WEBPAGE_DAILY_BRANDING}\" \
             \"-Dglassfish.builds.host=${GLASSFISH_BUILDS_HOST}\" \
             \"-Dopenesb.builds.host=${OPENESB_BUILDS_HOST}\" \
             \"-Dsjsam.builds.host=${SJSAM_BUILDS_HOST}\" \

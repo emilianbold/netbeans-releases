@@ -79,6 +79,7 @@ var NETBEANS_DOWNLOAD_PAGE_DESCRIPTION = "NetBeans IDE Download";
 var NETBEANS_DOWNLOAD_HEADER = "NetBeans IDE {0} Download";
 var DEVELOPMENT_TITLE        = "Development";
 var ARCHIVE_TITLE            = "Archive";
+var PYTHON_TITLE             = "Python&nbsp;EA";
 var EMAIL_LABEL              = "Email&nbsp;address&nbsp;(optional):&nbsp;";
 var SUBSCRIBE_LABEL          = "Subscribe&nbsp;to&nbsp;newsletters:";
 var MONTHLY_LABEL            = "Monthly&nbsp;&nbsp;&nbsp;&nbsp;";
@@ -95,6 +96,7 @@ var LICENSE_NOTES_LINK      = "http://www.netbeans.org/about/legal/product-licen
 
 var ARCHIVE_BUILDS_LINK      = "http://www.netbeans.info/downloads/dev.php";
 var DEVELOPMENT_BUILDS_LINK  = "http://bits.netbeans.org/download/trunk/nightly/latest/";
+var PYTHON_LINK              = "http://download.netbeans.org/netbeans/6.5/python/ea/";
 
 // TRANSLATE NOTE: change download*.gif to download*_<locale>.gif
 var DOWNLOAD_BUTTON_NORMAL    = "download.gif";
