@@ -1195,19 +1195,19 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             POMModel[] mdls = getLookup().lookup(POMCutHolder.class).getSource();
             StringBuffer buff = new StringBuffer();
             int index = 0;
-            buff.append("<html>" +
-                    "Value is defined in the following POM files:" +
-                    "<p><table><thead><tr><th>" +
-                    "POM ArtifactId" +
-                    "</th><th>" +
-                    "Value" +
-                    "</th></tr></thead><tbody>");
+            buff.append("<html>" + //NOI18N
+                    NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_Defined_in") +
+                    "<p><table><thead><tr><th>" + //NOI18N
+                    NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_ArtifactId") +
+                    "</th><th>" + //NOI18N
+                    NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_Value") +
+                    "</th></tr></thead><tbody>"); //NOI18N
             for (POMModel mdl : mdls) {
                 String artifact = mdl.getProject().getArtifactId();
                 buff.append("<tr><td>"); //NOI18N
                 buff.append(artifact != null ? artifact : "project");
                 buff.append("</td><td>"); //NOI18N
-                buff.append(values[index] != null ? values[index] : "&lt;Undefined&gt;");
+                buff.append(values[index] != null ? values[index] : org.openide.util.NbBundle.getMessage(POMModelVisitor.class, "UNDEFINED"));
                 buff.append("</td></tr>");//NOI18N
                 index++;
             }
@@ -1226,15 +1226,15 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                 dispVal = NbBundle.getMessage(POMModelVisitor.class, "UNDEFINED");
             }
             boolean override = POMModelPanel.overridesParentValue(values);
-            String overrideStart = override ? "<b>" : "";
-            String overrideEnd = override ? "</b>" : "";
+            String overrideStart = override ? "<b>" : ""; //NOI18N
+            String overrideEnd = override ? "</b>" : ""; //NOI18N
             boolean inherited = !POMModelPanel.isValueDefinedInCurrent(values);
-            String inheritedStart = inherited ? "<i>" : "";
-            String inheritedEnd = inherited ? "</i>" : "";
+            String inheritedStart = inherited ? "<i>" : ""; //NOI18N
+            String inheritedEnd = inherited ? "</i>" : ""; //NOI18N
 
-            String message = "<html>" +
+            String message = "<html>" + //NOI18N
                     inheritedStart + overrideStart +
-                    key + " : " + dispVal +
+                    key + " : " + dispVal + //NOI18N
                     overrideEnd + inheritedEnd;
             return message;
         }
@@ -1272,15 +1272,15 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             Object[] values = getLookup().lookup(POMCutHolder.class).getCutValues();
             String dispVal = POMModelPanel.definesValue(values) ? "" : NbBundle.getMessage(POMModelVisitor.class, "UNDEFINED");
             boolean override = POMModelPanel.overridesParentValue(values);
-            String overrideStart = override ? "<b>" : "";
-            String overrideEnd = override ? "</b>" : "";
+            String overrideStart = override ? "<b>" : ""; //NOI18N
+            String overrideEnd = override ? "</b>" : ""; //NOI18N
             boolean inherited = !POMModelPanel.isValueDefinedInCurrent(values);
-            String inheritedStart = inherited ? "<i>" : "";
-            String inheritedEnd = inherited ? "</i>" : "";
+            String inheritedStart = inherited ? "<i>" : ""; //NOI18N
+            String inheritedEnd = inherited ? "</i>" : ""; //NOI18N
 
-            String message = "<html>" +
+            String message = "<html>" + //NOI18N
                     inheritedStart + overrideStart +
-                    key + " " + dispVal +
+                    key + " " + dispVal + //NOI18N
                     overrideEnd + inheritedEnd;
 
             return message;
@@ -1302,19 +1302,19 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             POMModel[] mdls = getLookup().lookup(POMCutHolder.class).getSource();
             StringBuffer buff = new StringBuffer();
             int index = 0;
-            buff.append("<html>" +
-                    "Value is defined in the following POM files:" +
-                    "<p><table><thead><tr><th>" +
-                    "POM ArtifactId" +
-                    "</th><th>" +
-                    "Is Defined?" +
-                    "</th></tr></thead><tbody>");
+            buff.append("<html>" + //NOI18N
+                    NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_Defined_in") +
+                    "<p><table><thead><tr><th>" + //NOI18N
+                    NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_ArtifactId") +
+                    "</th><th>" + //NOI18N
+                    NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_IS_DEFINED") +
+                    "</th></tr></thead><tbody>"); //NOI18N
             for (POMModel mdl : mdls) {
                 String artifact = mdl.getProject().getArtifactId();
                 buff.append("<tr><td>"); //NOI18N
                 buff.append(artifact != null ? artifact : "project");
                 buff.append("</td><td>"); //NOI18N
-                buff.append(values[index] != null ? "Yes" : "No");
+                buff.append(values[index] != null ? org.openide.util.NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_YES") : org.openide.util.NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_NO"));
                 buff.append("</td></tr>");//NOI18N
                 index++;
             }
@@ -1361,6 +1361,34 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                     overrideEnd + inheritedEnd;
             return message;
         }
+
+        @Override
+        public String getShortDescription() {
+            Object[] values = getLookup().lookup(POMCutHolder.class).getCutValues();
+            POMModel[] mdls = getLookup().lookup(POMCutHolder.class).getSource();
+            StringBuffer buff = new StringBuffer();
+            int index = 0;
+            buff.append("<html>" + //NOI18N
+                    NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_Defined_in") +
+                    "<p><table><thead><tr><th>" + //NOI18N
+                    NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_ArtifactId") +
+                    "</th><th>" + //NOI18N
+                    NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_IS_DEFINED") +
+                    "</th></tr></thead><tbody>"); //NOI18N
+            for (POMModel mdl : mdls) {
+                String artifact = mdl.getProject().getArtifactId();
+                buff.append("<tr><td>"); //NOI18N
+                buff.append(artifact != null ? artifact : "project");
+                buff.append("</td><td>"); //NOI18N
+                buff.append(values[index] != null ? NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_YES") : NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_NO"));
+                buff.append("</td></tr>");//NOI18N
+                index++;
+            }
+            buff.append("</tbody></table>");//NOI18N
+
+            return buff.toString();
+        }
+
 
         @Override
         public Image getIcon(int type) {
