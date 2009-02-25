@@ -102,6 +102,8 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
     }
 
     private List<PathResourceImplementation> getPath() {
+        Thread.dumpStack();
+        
         assert Thread.holdsLock(this);
 
         // When called from EDT we do not return plugin classpath immediately
