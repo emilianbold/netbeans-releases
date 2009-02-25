@@ -1189,6 +1189,33 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             };
         }
 
+        @Override
+        public String getShortDescription() {
+            String[] values = getLookup().lookup(POMCutHolder.class).getCutValuesAsString();
+            POMModel[] mdls = getLookup().lookup(POMCutHolder.class).getSource();
+            StringBuffer buff = new StringBuffer();
+            int index = 0;
+            buff.append("<html>" +
+                    "Value is defined in the following POM files:" +
+                    "<p><table><thead><tr><th>" +
+                    "POM ArtifactId" +
+                    "</th><th>" +
+                    "Value" +
+                    "</th></tr></thead><tbody>");
+            for (POMModel mdl : mdls) {
+                String artifact = mdl.getProject().getArtifactId();
+                buff.append("<tr><td>"); //NOI18N
+                buff.append(artifact != null ? artifact : "project");
+                buff.append("</td><td>"); //NOI18N
+                buff.append(values[index] != null ? values[index] : "&lt;Undefined&gt;");
+                buff.append("</td></tr>");//NOI18N
+                index++;
+            }
+            buff.append("</tbody></table>");//NOI18N
+
+            return buff.toString();
+        }
+
 
         @Override
         public String getHtmlDisplayName() {
