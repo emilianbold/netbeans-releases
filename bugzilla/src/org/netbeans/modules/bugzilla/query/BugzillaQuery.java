@@ -75,8 +75,9 @@ public class BugzillaQuery extends Query {
         this.repository = repository;
     }
 
-    public BugzillaQuery(BugzillaRepository repository, String urlParameters, boolean kenai) {
+    public BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean kenai) {
         super();
+        this.name = name;
         this.repository = repository;
         this.urlParameters = urlParameters;
         this.kenai = kenai;
