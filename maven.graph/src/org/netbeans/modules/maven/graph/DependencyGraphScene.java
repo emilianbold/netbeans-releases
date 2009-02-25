@@ -51,6 +51,7 @@ import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.MoveProvider;
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.SelectProvider;
+import org.netbeans.api.visual.action.TwoStateHoverProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.graph.GraphScene;
@@ -73,27 +74,15 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
     private LayerWidget mainLayer;
     private LayerWidget connectionLayer;
     private ArtifactGraphNode rootNode;
-    private static final MoveProvider MOVEPROVIDER = new MoveProvider () {
-        public void movementStarted (Widget widget) {
-            widget.bringToFront();
-        }
-        public void movementFinished (Widget widget) {
-        }
-        public Point getOriginalLocation (Widget widget) {
-            return widget.getPreferredLocation ();
-        }
-        public void setNewLocation (Widget widget, Point location) {
-            widget.setPreferredLocation (location);
-        }
-    };
+    private final AllActionsProvider allActionsP = new AllActionsProvider();
     
 //    private GraphLayout layout;
-    private WidgetAction moveAction = ActionFactory.createMoveAction(null, MOVEPROVIDER);
-    private WidgetAction popupMenuAction = ActionFactory.createPopupMenuAction(new MyPopupMenuProvider());
-    private WidgetAction zoomAction = ActionFactory.createCenteredZoomAction(1.1);
+    private WidgetAction moveAction = ActionFactory.createMoveAction(null, allActionsP);
+    private WidgetAction popupMenuAction = ActionFactory.createPopupMenuAction(allActionsP);
+    private WidgetAction zoomAction = ActionFactory.createMouseCenteredZoomAction(1.1);
     private WidgetAction panAction = ActionFactory.createPanAction();
-    private WidgetAction selectAction = ActionFactory.createSelectAction(new MySelectProvider());
-    private WidgetAction hoverAction; 
+    private WidgetAction selectAction = ActionFactory.createSelectAction(allActionsP);
+    private WidgetAction hoverAction = ActionFactory.createHoverAction(allActionsP);
     private FruchtermanReingoldLayout layout;
     private MavenProject project;
     private int maxDepth = 0;
@@ -107,14 +96,13 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         addChild(mainLayer);
         connectionLayer = new LayerWidget(this);
         addChild(connectionLayer);
-        hoverAction = createObjectHoverAction();
-        getActions ().addAction (ActionFactory.createMouseCenteredZoomAction (1.1));
-        
+        //hoverAction = createObjectHoverAction();
+        //getActions ().addAction (ActionFactory.createMouseCenteredZoomAction (1.1));
         getActions().addAction(hoverAction);
         getActions().addAction(selectAction);
-//        getActions().addAction(zoomAction);
+        getActions().addAction(zoomAction);
         getActions().addAction(panAction);
-        addObjectSceneListener(new SceneListener(), ObjectSceneEventType.OBJECT_HOVER_CHANGED, ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
+        //addObjectSceneListener(new SceneListener(), ObjectSceneEventType.OBJECT_HOVER_CHANGED, ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
     }
 
 
@@ -189,10 +177,11 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         ArtifactWidget wid = (ArtifactWidget)findWidget(target);
         ((ConnectionWidget) findWidget(edge)).setTargetAnchor(AnchorFactory.createRectangularAnchor(wid));
     }
-    
-    private class MySelectProvider implements SelectProvider {
-        
-    
+
+    private class AllActionsProvider implements SelectProvider, PopupMenuProvider, TwoStateHoverProvider, MoveProvider {
+
+        /*** SelectProvider ***/
+
         public boolean isAimingAllowed(Widget arg0, Point arg1, boolean arg2) {
             return true;
         }
@@ -212,10 +201,9 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
                 w = w.getParentWidget();
             }
         }
-    }
-    
-    private class MyPopupMenuProvider implements PopupMenuProvider {
-        
+
+        /*** PopupMenuProvider ***/
+
         @SuppressWarnings("unchecked")
         public JPopupMenu getPopupMenu(Widget widget, Point localLocation) {
             JPopupMenu popupMenu = new JPopupMenu();
@@ -225,10 +213,37 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
             popupMenu.add(a);
             return popupMenu;
         }
-        
+
+        /*** MoveProvider ***/
+
+        public void movementStarted (Widget widget) {
+            widget.bringToFront();
+        }
+        public void movementFinished (Widget widget) {
+        }
+        public Point getOriginalLocation (Widget widget) {
+            return widget.getPreferredLocation ();
+        }
+        public void setNewLocation (Widget widget, Point location) {
+            widget.setPreferredLocation (location);
+        }
+
+        /*** TwoStateHoverProvider ***/
+
+        public void unsetHovering(Widget widget) {
+            if (widget instanceof TwoStateHoverProvider) {
+                ((TwoStateHoverProvider)widget).unsetHovering(widget);
+            }
+        }
+
+        public void setHovering(Widget widget) {
+            if (widget instanceof TwoStateHoverProvider) {
+                ((TwoStateHoverProvider)widget).setHovering(widget);
+            }
+        }
+
     }
-    
-    
+
     public class SceneListener implements ObjectSceneListener {
         
         public void selectionChanged(ObjectSceneEvent state,

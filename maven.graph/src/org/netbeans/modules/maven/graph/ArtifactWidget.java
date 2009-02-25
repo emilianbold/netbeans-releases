@@ -39,14 +39,20 @@
 package org.netbeans.modules.maven.graph;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.List;
+import javax.swing.Timer;
+import javax.swing.UIManager;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
+import org.netbeans.api.visual.action.TwoStateHoverProvider;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.ImageWidget;
@@ -60,7 +66,7 @@ import org.openide.util.NbBundle;
  *
  * @author mkleint
  */
-class ArtifactWidget extends Widget {
+class ArtifactWidget extends Widget implements TwoStateHoverProvider, ActionListener {
 
     final Color ROOT = new Color(178, 228, 255);
     final Color DIRECTS = new Color(178, 228, 255);
@@ -82,15 +88,34 @@ class ArtifactWidget extends Widget {
     private static final int RIGHT_TOP = 3;
     private static final int RIGHT_BOTTOM = 4;
 
+    private static final int UNHOVERED = 1;
+    private static final int HOVERED = 2;
+    private static final int ENSURE_READABLE = 3;
+
+    private static final int UNSELECTED = 1;
+    private static final int SELECTED = 2;
+    private static final int INSPECTED = 3;
+
     private static final Image lockImg = ImageUtilities.loadImage("org/netbeans/modules/maven/graph/lock.png");
     private static final Image brokenLockImg = ImageUtilities.loadImage("org/netbeans/modules/maven/graph/lock-broken.png");
 
-    private Widget defaultCard;
-    private Widget hiddenCard;
-    Widget label1;
     private ArtifactGraphNode node;
     private String currentSearchTerm;
     private List<String> scopes;
+    private int hoverState = UNHOVERED;
+    private int selectState = UNSELECTED;
+
+    private Timer hoverTimer;
+    private Color hoverBorderC;
+
+    private LabelWidget artifactW, versionW;
+    private Widget detailsW, contentW;
+    private ImageWidget lockW, hintBulbW;
+
+    private boolean grayed = true;
+
+    private Font origFont;
+    private Color origForeground;
 
     ArtifactWidget(DependencyGraphScene scene, ArtifactGraphNode node) {
         super(scene);
@@ -103,32 +128,23 @@ class ArtifactWidget extends Widget {
                 "TIP_Artifact", new Object[]{artifact.getGroupId(),
                     artifact.getArtifactId(), artifact.getVersion(),
                     artifact.getScope(), artifact.getType(), constructConflictText(node)}));
-        defaultCard = createCardContent(scene, artifact, true);
-        addChild(defaultCard);
-        hiddenCard = createCardContent(scene, artifact, false);
-        addChild(hiddenCard);
-        LayoutFactory.setActiveCard(this, defaultCard);
-    }
+        initContent(scene, artifact);
 
+        hoverTimer = new Timer(500, this);
+        hoverTimer.setRepeats(false);
 
-    public void switchToHidden() {
-        LayoutFactory.setActiveCard(this, hiddenCard);
-        bringToBack();
-        setVisible(true);
-        this.revalidate();
-    }
+        hoverBorderC = UIManager.getColor("TextPane.selectionBackground");
+        if (hoverBorderC == null) {
+            hoverBorderC = Color.GRAY;
+        }
 
-    public void switchToDefault() {
-        LayoutFactory.setActiveCard(this, defaultCard);
-        bringToFront();
-        setVisible(true);
-        this.revalidate();
+        origFont = getFont();
+        origForeground = getForeground();
     }
 
     void hightlightText(String searchTerm) {
         this.currentSearchTerm = searchTerm;
-        doHightlightText(searchTerm, hiddenCard);
-        doHightlightText(searchTerm, defaultCard);
+        doHightlightText(searchTerm);
     }
 
     private String constructConflictText(ArtifactGraphNode node) {
@@ -148,20 +164,18 @@ class ArtifactWidget extends Widget {
         return toRet;
     }
 
-    private void doHightlightText(String searchTerm, Widget wid) {
-        LabelWidget firstChild = (LabelWidget) wid.getChildren().get(0);
-        boolean hidden = wid == hiddenCard;
+    private void doHightlightText(String searchTerm) {
         if (searchTerm != null && node.getArtifact().getArtifact().getArtifactId().contains(searchTerm)) {
-            if (hidden) {
-                firstChild.setBackground(DISABLE_HIGHTLIGHT);
+            if (grayed) {
+                artifactW.setBackground(DISABLE_HIGHTLIGHT);
             } else {
-                firstChild.setBackground(HIGHTLIGHT);
+                artifactW.setBackground(HIGHTLIGHT);
             }
-            firstChild.setOpaque(true);
+            artifactW.setOpaque(true);
         } else {
             //reset
-            firstChild.setBackground(Color.WHITE);
-            firstChild.setOpaque(false);
+            artifactW.setBackground(Color.WHITE);
+            artifactW.setOpaque(false);
         }
     }
 
@@ -185,44 +199,48 @@ class ArtifactWidget extends Widget {
         return Color.BLACK;
     }
 
+    void setGrayed (boolean grayed) {
+        if (this.grayed == grayed) {
+            return;
+        }
 
-    private Widget createCardContent(DependencyGraphScene scene, Artifact artifact, boolean shown) {
-        Widget root = new LevelOfDetailsWidget(scene, 0.05, 0.1, Double.MAX_VALUE, Double.MAX_VALUE);
-        if (shown) {
-            root.setBorder(BorderFactory.createLineBorder(10));
-        } else {
-            root.setBorder(BorderFactory.createLineBorder(10,Color.lightGray));
+        Color c = grayed ? UIManager.getColor("disabledText") : origForeground;
+        if (c == null) {
+            c = Color.LIGHT_GRAY;
         }
-        //root.setOpaque(true);
-        root.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 1));
-        LabelWidget lbl = new LabelWidget(scene);
-        lbl.setLabel(artifact.getArtifactId() + "  ");
-        if (!shown) {
-            lbl.setForeground(Color.lightGray);
+
+        contentW.setBorder(BorderFactory.createLineBorder(10, c));
+        artifactW.setForeground(c);
+        versionW.setForeground(c);
+        if (lockW != null) {
+            lockW.setPaintAsDisabled(grayed);
         }
-//            lbl.setFont(scene.getDefaultFont().deriveFont(Font.BOLD));
-        root.addChild(lbl);
-        label1 = lbl;
-        Widget details1 = new LevelOfDetailsWidget(scene, 0.5, 0.7, Double.MAX_VALUE, Double.MAX_VALUE);
-        details1.setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 2));
-        root.addChild(details1);
-        LabelWidget lbl2 = new LabelWidget(scene);
-        lbl2.setLabel(artifact.getVersion());
+
+        contentW.repaint();
+    }
+
+    private Widget initContent (DependencyGraphScene scene, Artifact artifact) {
+        contentW = new LevelOfDetailsWidget(scene, 0.05, 0.1, Double.MAX_VALUE, Double.MAX_VALUE);
+        contentW.setBorder(BorderFactory.createLineBorder(10));
+        contentW.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 1));
+        artifactW = new LabelWidget(scene);
+        artifactW.setLabel(artifact.getArtifactId() + "  ");
+        contentW.addChild(artifactW);
+        Widget versionDetW = new LevelOfDetailsWidget(scene, 0.5, 0.7, Double.MAX_VALUE, Double.MAX_VALUE);
+        versionDetW.setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 2));
+        contentW.addChild(versionDetW);
+        versionW = new LabelWidget(scene);
+        versionW.setLabel(artifact.getVersion());
         int mngState = node.getManagedState();
-        ImageWidget img = null;
         if (mngState != ArtifactGraphNode.UNMANAGED) {
-             img = new ImageWidget(scene,
+             lockW = new ImageWidget(scene,
                     mngState == ArtifactGraphNode.MANAGED ? lockImg : brokenLockImg);
         }
-        if (!shown) {
-            lbl2.setForeground(Color.lightGray);
+        versionDetW.addChild(versionW);
+        if (lockW != null) {
+            versionDetW.addChild(lockW);
         }
-        details1.addChild(lbl2);
-        if (img != null) {
-            img.setPaintAsDisabled(!shown);
-            details1.addChild(img);
-        }
-        return root;
+        return contentW;
     }
 
     @Override
@@ -246,8 +264,7 @@ class ArtifactWidget extends Widget {
             }
             Color leftTopC = Color.WHITE;
             if (conflict) {
-                leftTopC = LayoutFactory.getActiveCard(this) == defaultCard ?
-                    CONFLICT : DISABLE_CONFLICT;
+                leftTopC = grayed ? DISABLE_CONFLICT : CONFLICT;
             } else {
                 int state = node.getManagedState();
                 if (ArtifactGraphNode.OVERRIDES_MANAGED == state) {
@@ -259,6 +276,10 @@ class ArtifactWidget extends Widget {
             if (node.getPrimaryLevel() == 1) {
                 paintBottom(g, bounds, DIRECTS, Color.WHITE, bounds.height / 6);
             }
+        }
+
+        if (hoverState != UNHOVERED) {
+            paintHover(g, bounds, hoverBorderC);
         }
     }
 
@@ -312,6 +333,50 @@ class ArtifactWidget extends Widget {
         g.setPaint(new GradientPaint(bounds.x, bounds.y + bounds.height, c1,
                 bounds.x, bounds.y + bounds.height - thickness, c2));
         g.fillRect(bounds.x, bounds.y + bounds.height - thickness, bounds.width, thickness);
+    }
+
+    private static void paintHover (Graphics2D g, Rectangle bounds, Color c) {
+        g.setColor(c);
+        g.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
+        g.drawRect(bounds.x + 1, bounds.y + 1, bounds.width - 2, bounds.height - 2);
+        g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 150));
+        g.drawRect(bounds.x + 2, bounds.y + 2, bounds.width - 4, bounds.height - 4);
+        g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 75));
+        g.drawRect(bounds.x + 3, bounds.y + 3, bounds.width - 6, bounds.height - 6);
+    }
+
+    /*** TwoStateHoverProvider ***/
+
+    public void unsetHovering(Widget widget) {
+        hoverTimer.stop();
+        int previous = hoverState;
+        hoverState = UNHOVERED;
+        if (previous == HOVERED) {
+            repaint();
+        } else if (previous == ENSURE_READABLE) {
+            updateContent();
+            getScene().getSceneAnimator().animatePreferredBounds(this, null);
+        }
+    }
+
+    public void setHovering(Widget widget) {
+        hoverState = HOVERED;
+        hoverTimer.restart();
+        repaint();
+    }
+
+    /*** ActionListener ***/
+
+    public void actionPerformed(ActionEvent e) {
+        hoverState = ENSURE_READABLE;
+        updateContent();
+        getScene().getSceneAnimator().animatePreferredBounds(this, null);
+    }
+
+    private void updateContent () {
+        Font f = hoverState != ENSURE_READABLE ? origFont : origFont.deriveFont(origFont.getSize() + 2);
+        artifactW.setFont(f);
+        versionW.setFont(f);
     }
 
 }

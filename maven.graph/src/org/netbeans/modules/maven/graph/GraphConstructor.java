@@ -150,7 +150,14 @@ class GraphConstructor implements DependencyNodeVisitor {
         }
 
         DependencyManagement dm = proj.getDependencyManagement();
+        if (dm == null) {
+            return ArtifactGraphNode.UNMANAGED;
+        }
+
         List<Dependency> deps = dm.getDependencies();
+        if (deps == null) {
+            return ArtifactGraphNode.UNMANAGED;
+        }
 
         String id = artifact.getArtifactId();
         String groupId = artifact.getGroupId();
