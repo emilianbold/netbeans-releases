@@ -230,8 +230,9 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
         
         @Override
         protected Node[] createNodes(ModelLineage key) {
-            ModelLineageIterator it = key.lineageIterator();
+            ModelLineageIterator it = key.reversedLineageIterator();
             List<POMNode> nds = new ArrayList<POMNode>();
+            String parentVersion = null;
             while (it.hasNext()) {
                 it.next();
                 Model mdl = it.getModel();
@@ -253,7 +254,8 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
                     }
                 }
                 
-                nds.add(new POMNode(fl, mdl, new AbstractLookup(ic)));
+                nds.add(0, new POMNode(fl, mdl, new AbstractLookup(ic), parentVersion));
+                parentVersion = mdl.getVersion();
             }
             return nds.toArray(new Node[0]);
         }
@@ -265,9 +267,13 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
         
         private Image icon = ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/Maven2Icon.gif"); // NOI18N
         private boolean readonly = false;
-        private POMNode(File key, Model mdl, Lookup lkp) {
+        private POMNode(File key, Model mdl, Lookup lkp, String parentVersion) {
             super( Children.LEAF, lkp);
-            setDisplayName(NbBundle.getMessage(POMInheritancePanel.class, "TITLE_PomNode", mdl.getArtifactId(), mdl.getVersion()));
+            String version = mdl.getVersion();
+            if (version == null) {
+                version = parentVersion;
+            }
+            setDisplayName(NbBundle.getMessage(POMInheritancePanel.class, "TITLE_PomNode", mdl.getArtifactId(), version));
             if (key.getName().endsWith("pom")) { //NOI18N
                 //coming from repository
                 readonly = true;
