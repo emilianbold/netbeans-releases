@@ -61,10 +61,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -79,6 +79,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -804,6 +805,13 @@ public class DataEditorSupport extends CloneableEditorSupport {
             firePropertyChange(Env.PROP_VALID, Boolean.TRUE, Boolean.FALSE);            
              */
         }
+
+        /** Called from the <code>EnvListener</code>.
+         */
+        final void fileRenamed () {
+            //#151787: Sync timestamp when svn client changes timestamp externally during rename.
+            firePropertyChange("expectedTime", null, getTime()); // NOI18N
+        }
         
         @Override
         public CloneableOpenSupport findCloneableOpenSupport() {
@@ -919,6 +927,14 @@ public class DataEditorSupport extends CloneableEditorSupport {
                 fe.getFile().addFileChangeListener(this);
             } else {
                 myEnv.fileChanged (fe.isExpected (), fe.getTime ());
+            }
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            Env myEnv = this.env.get();
+            if (myEnv != null) {
+                myEnv.fileRenamed();
             }
         }
                 
