@@ -50,12 +50,12 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
-//    public void testIZ148223() throws Exception {
-//        // IZ#148223: IDE can't recognize overloaded operator&&
-//        performTest("operators_hyperlink.cpp", 65, 21, "operators_hyperlink.cpp", 6, 9); // cc in (a1 && b1).cc()
-//        performTest("operators_hyperlink.cpp", 66, 21, "operators_hyperlink.cpp", 6, 9); // cc in (a1 && e1).cc()
-//        performTest("operators_hyperlink.cpp", 67, 21, "operators_hyperlink.cpp", 14, 9); // c1 in (e1 && d1)->c1()
-//    }
+    public void testIZ148223() throws Exception {
+        // IZ#148223: IDE can't recognize overloaded operator&&
+        performTest("operators_hyperlink.cpp", 65, 21, "operators_hyperlink.cpp", 6, 9); // cc in (a1 && b1).cc()
+        performTest("operators_hyperlink.cpp", 66, 21, "operators_hyperlink.cpp", 6, 9); // cc in (a1 && e1).cc()
+        performTest("operators_hyperlink.cpp", 67, 21, "operators_hyperlink.cpp", 14, 9); // c1 in (e1 && d1)->c1()
+    }
 
     public void testIZ157837() throws Exception {
         // IZ#157837: incorrect deref of function-type fields
