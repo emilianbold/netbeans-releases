@@ -35,8 +35,8 @@ import org.jruby.nb.ast.FCallNode;
 import org.jruby.nb.ast.MethodDefNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
@@ -98,8 +98,8 @@ public final class RubyIndexerHelper {
      * @return An updated signature, or null if this method should be removed from index
      */
     public static String getMethodSignature(AstElement child, Node root,
-            int flags, String signature, FileObject fo, BaseDocument doc) {
-        if (doc == null) { // tests?
+            int flags, String signature, FileObject fo, Snapshot snapshot) {
+        if (snapshot == null) { // tests?
             return signature;
         }
 
@@ -107,7 +107,7 @@ public final class RubyIndexerHelper {
             String hashNames = "";
             int originalFlags = flags;
 
-            List<String> callseq = getCallSeq(fo, child, doc);
+            List<String> callseq = getCallSeq(fo, child, snapshot);
 
             // See if the method takes blocks
             //List<Node> yields = new ArrayList<Node>();
@@ -207,9 +207,9 @@ public final class RubyIndexerHelper {
             //    yield self if block_given?
             // RDoc :yield: clauses should be specificed on the line of the starting
             // element - the def
-            int lineStart = Utilities.getRowStart(doc, child.getNode().getPosition().getStartOffset());
-            int lineEnd = Utilities.getRowEnd(doc, lineStart);
-            String line = doc.getText(lineStart, lineEnd - lineStart);
+            int lineStart = GsfUtilities.getRowStart(snapshot.getText(), child.getNode().getPosition().getStartOffset());
+            int lineEnd = GsfUtilities.getRowEnd(snapshot.getText(), lineStart);
+            String line = snapshot.getText().subSequence(lineStart, lineEnd).toString();
             int rdocYieldIdx = line.indexOf(":yield:");
             if (rdocYieldIdx == -1) {
                 rdocYieldIdx = line.indexOf(":yields:");
@@ -337,19 +337,19 @@ public final class RubyIndexerHelper {
     public static final int NODOC_ALL = 3;
 
     /** Should the class be removed? Return one of the _DOC constants above */
-    public static int isNodocClass(AstElement child, BaseDocument doc) {
-        if (doc == null) {
+    public static int isNodocClass(AstElement child, Snapshot snapshot) {
+        if (snapshot == null) {
             // tests?
             return DEFAULT_DOC;
         }
         try {
             int start = child.getNode().getPosition().getStartOffset();
-            if (start > doc.getLength()) {
+            if (start > snapshot.getText().length()) {
                 return DEFAULT_DOC;
             }
-            int lineStart = Utilities.getRowStart(doc, start);
-            int lineEnd = Utilities.getRowEnd(doc, lineStart);
-            String line = doc.getText(lineStart, lineEnd - lineStart);
+            int lineStart = GsfUtilities.getRowStart(snapshot.getText(), start);
+            int lineEnd = GsfUtilities.getRowEnd(snapshot.getText(), lineStart);
+            String line = snapshot.getText().subSequence(lineStart, lineEnd).toString();
 
             // Is this element one we don't want to  document? If so,
             // we probably don't want to see it either! Exclude from
@@ -407,13 +407,11 @@ public final class RubyIndexerHelper {
         return true;
     }
 
-    private static List<String> getCallSeq(FileObject fo, AstElement child,
-            BaseDocument doc) {
+    private static List<String> getCallSeq(FileObject fo, AstElement child, Snapshot snapshot) {
         List<String> callseq = null;
         if (fo.getParent() != null && fo.getParent().getParent() != null && 
                 "rubystubs".equals(fo.getParent().getParent().getName())) { // NOI18N
-            List<String> comments = AstUtilities.gatherDocumentation(null, doc,
-                    child.getNode());
+            List<String> comments = AstUtilities.gatherDocumentation(snapshot, child.getNode());
             for (int i = 0; i < comments.size(); i++) {
                 String line = comments.get(i);
                 if (!line.startsWith("#   ") || line.substring(1).trim().length() == 0) {

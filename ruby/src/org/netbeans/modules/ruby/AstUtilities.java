@@ -82,9 +82,11 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -93,7 +95,6 @@ import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedField;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
-import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -153,32 +154,28 @@ public class AstUtilities {
      * Get the rdoc documentation associated with the given node in the given document.
      * The node must have position information that matches the source in the document.
      */
-    public static List<String> gatherDocumentation(Parser.Result info, BaseDocument baseDoc, Node node) {
+    public static List<String> gatherDocumentation(Snapshot baseDoc, Node node) {
         LinkedList<String> comments = new LinkedList<String>();
         int elementBegin = node.getPosition().getStartOffset();
-        if (info != null) {
-            elementBegin = LexUtilities.getLexerOffset(info, elementBegin);
-        }
 
-        baseDoc.readLock();
         try {
-            if (elementBegin < 0 || elementBegin >= baseDoc.getLength()) {
+            if (elementBegin < 0 || elementBegin >= baseDoc.getText().length()) {
                 return null;
             }
 
             // Search to previous lines, locate comments. Once we have a non-whitespace line that isn't
             // a comment, we're done
 
-            int offset = Utilities.getRowStart(baseDoc, elementBegin);
+            int offset = GsfUtilities.getRowStart(baseDoc.getText(), elementBegin);
             offset--;
 
             // Skip empty and whitespace lines
             while (offset >= 0) {
                 // Find beginning of line
-                offset = Utilities.getRowStart(baseDoc, offset);
+                offset = GsfUtilities.getRowStart(baseDoc.getText(), offset);
 
-                if (!Utilities.isRowEmpty(baseDoc, offset) &&
-                        !Utilities.isRowWhite(baseDoc, offset)) {
+                if (!GsfUtilities.isRowEmpty(baseDoc.getText(), offset) &&
+                        !GsfUtilities.isRowWhite(baseDoc.getText(), offset)) {
                     break;
                 }
 
@@ -191,17 +188,17 @@ public class AstUtilities {
 
             while (offset >= 0) {
                 // Find beginning of line
-                offset = Utilities.getRowStart(baseDoc, offset);
+                offset = GsfUtilities.getRowStart(baseDoc.getText(), offset);
 
-                if (Utilities.isRowEmpty(baseDoc, offset) || Utilities.isRowWhite(baseDoc, offset)) {
+                if (GsfUtilities.isRowEmpty(baseDoc.getText(), offset) || GsfUtilities.isRowWhite(baseDoc.getText(), offset)) {
                     // Empty lines not allowed within an rdoc
                     break;
                 }
 
                 // This is a comment line we should include
-                int lineBegin = Utilities.getRowFirstNonWhite(baseDoc, offset);
-                int lineEnd = Utilities.getRowLastNonWhite(baseDoc, offset) + 1;
-                String line = baseDoc.getText(lineBegin, lineEnd - lineBegin);
+                int lineBegin = GsfUtilities.getRowFirstNonWhite(baseDoc.getText(), offset);
+                int lineEnd = GsfUtilities.getRowLastNonWhite(baseDoc.getText(), offset) + 1;
+                String line = baseDoc.getText().subSequence(lineBegin, lineEnd).toString();
 
                 // Tolerate "public", "private" and "protected" here --
                 // Test::Unit::Assertions likes to put these in front of each
@@ -209,7 +206,7 @@ public class AstUtilities {
                 if (line.startsWith("#")) {
                     comments.addFirst(line);
                 } else if ((comments.size() == 0) && line.startsWith("=end") &&
-                        (lineBegin == Utilities.getRowStart(baseDoc, offset))) {
+                        (lineBegin == GsfUtilities.getRowStart(baseDoc.getText(), offset))) {
                     // It could be a =begin,=end document - see scanf.rb in Ruby lib for example. Treat this differently.
                     gatherInlineDocumentation(comments, baseDoc, offset);
 
@@ -221,10 +218,10 @@ public class AstUtilities {
 
                     while (offset >= 0) {
                         // Find beginning of line
-                        offset = Utilities.getRowStart(baseDoc, offset);
+                        offset = GsfUtilities.getRowStart(baseDoc.getText(), offset);
 
-                        if (!Utilities.isRowEmpty(baseDoc, offset) &&
-                                !Utilities.isRowWhite(baseDoc, offset)) {
+                        if (!GsfUtilities.isRowEmpty(baseDoc.getText(), offset) &&
+                                !GsfUtilities.isRowWhite(baseDoc.getText(), offset)) {
                             break;
                         }
 
@@ -242,30 +239,28 @@ public class AstUtilities {
             }
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
-        } finally {
-            baseDoc.readUnlock();
         }
 
         return comments;
     }
 
     private static void gatherInlineDocumentation(LinkedList<String> comments,
-        BaseDocument baseDoc, int offset) throws BadLocationException {
+        Snapshot baseDoc, int offset) throws BadLocationException {
         // offset points to a line containing =end
         // Skip the =end list
-        offset = Utilities.getRowStart(baseDoc, offset);
+        offset = GsfUtilities.getRowStart(baseDoc.getText(), offset);
         offset--;
 
         // Search backwards in the document for the =begin (if any) and add all lines in reverse
         // order in between.
         while (offset >= 0) {
             // Find beginning of line
-            offset = Utilities.getRowStart(baseDoc, offset);
+            offset = GsfUtilities.getRowStart(baseDoc.getText(), offset);
 
             // This is a comment line we should include
             int lineBegin = offset;
-            int lineEnd = Utilities.getRowEnd(baseDoc, offset);
-            String line = baseDoc.getText(lineBegin, lineEnd - lineBegin);
+            int lineEnd = GsfUtilities.getRowEnd(baseDoc.getText(), offset);
+            String line = baseDoc.getText().subSequence(lineBegin, lineEnd).toString();
 
             if (line.startsWith("=begin")) {
                 // We're done!

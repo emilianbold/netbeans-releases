@@ -67,7 +67,6 @@ import org.jruby.nb.ast.SelfNode;
 import org.jruby.nb.ast.StrNode;
 import org.jruby.nb.ast.types.INameNode;
 import org.jruby.util.ByteList;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -86,7 +85,6 @@ import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.elements.ModuleElement;
-import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -335,7 +333,6 @@ public class RubyIndexer extends EmbeddingIndexer {
         private final Indexable indexable;
         private String requires;
         private final RubyParseResult result;
-        private BaseDocument doc;
         private int docMode;
         private final List<IndexDocument> documents;
         private String url;
@@ -390,102 +387,90 @@ public class RubyIndexer extends EmbeddingIndexer {
         }
 
         public void analyze() {
-            this.doc = LexUtilities.getDocument(result, true);
-
             try {
-                if (doc != null) {
-                    doc.readLock();
+                url = file.getURL().toExternalForm();
+
+                // Make relative URLs for urls in the libraries
+                url = RubyIndex.getPreindexUrl(url);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+
+            String fileName = file.getNameExt();
+            // DB migration?
+            if (Character.isDigit(fileName.charAt(0)) &&
+                    (fileName.matches("^\\d\\d\\d_.*") || fileName.matches("^\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d_.*"))) { // NOI18N
+                if (file != null && file.getParent() != null && file.getParent().getName().equals("migrate")) { // NOI18N
+                    handleMigration();
+                    // Don't exit here - proceed to also index the class as Ruby code
                 }
-
-                try {
-                    url = file.getURL().toExternalForm();
-
-                    // Make relative URLs for urls in the libraries
-                    url = RubyIndex.getPreindexUrl(url);
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
-
-                String fileName = file.getNameExt();
-                // DB migration?
-                if (Character.isDigit(fileName.charAt(0)) &&
-                        (fileName.matches("^\\d\\d\\d_.*") || fileName.matches("^\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d_.*"))) { // NOI18N
-                    if (file != null && file.getParent() != null && file.getParent().getName().equals("migrate")) { // NOI18N
-                        handleMigration();
-                        // Don't exit here - proceed to also index the class as Ruby code
-                    }
-                } else if ("schema.rb".equals(fileName)) { //NOI18N
-                    if (file != null && file.getParent() != null && file.getParent().getName().equals("db")) { // NOI18N
-                        handleMigration();
-                        // Don't exit here - proceed to also index the class as Ruby code
-                    }
-                }
-
-                //Node root = file.getRootNode();
-
-                // Compute the requires for this file first such that
-                // each class or module recorded in the index for this
-                // file can reference their includes
-                AnalysisResult ar = result.getStructure();
-                requires = getRequireString(ar.getRequires());
-                List<?extends AstElement> structure = ar.getElements();
-
-                // Rails special case
-                if (fileName.startsWith("acti")) { // NOI18N
-                    if ("action_controller.rb".equals(fileName)) { // NOI18N
-                        // Locate "ActionController::Base.class_eval do"
-                        // and take those include statements and stick them into ActionController::Base
-                        handleRailsBase("ActionController"); // NOI18N
-                        return;
-                    } else if ("active_record.rb".equals(fileName)) { // NOI18N
-                        handleRailsBase("ActiveRecord"); // NOI18N
-                        // HACK
-                        handleMigrations();
-                        return;
-                    } else if ("action_mailer.rb".equals(fileName)) { // NOI18N
-                        handleRailsBase("ActionMailer"); // NOI18N
-                        return;
-                    } else if ("action_view.rb".equals(fileName)) { // NOI18N
-                        handleRailsBase("ActionView"); // NOI18N
-
-                        // HACK
-                        handleActionViewHelpers();
-
-                        return;
-                    //} else if ("action_web_service.rb".equals(fileName)) { // NOI18N
-                        // Uh oh - we have two different kinds of class eval here - one for ActionWebService, one for ActionController!
-                        // Gotta make this shiznit smarter!
-                        //handleRailsBase("ActionWebService::Base", "Base", "ActionWebService"); // NOI18N
-                        //handleRailsBase("ActionController:Base", "Base", "ActionController"); // NOI18N
-                    }
-                } else if (fileName.equals("assertions.rb") && url.endsWith("lib/action_controller/assertions.rb")) { // NOI18N
-                    handleRailsClass("Test::Unit", "Test::Unit::TestCase", "TestCase", "TestCase"); // NOI18N
-                    return;
-                } else if (fileName.equals("schema_definitions.rb")) {
-                    handleSchemaDefinitions();
-                    // Fall through - also do normal indexing on the file
-                }
-
-                if ((structure == null) || (structure.size() == 0)) {
-                    if (requires != null) {
-                        IndexDocument document = support.createDocument(indexable);
-                        documents.add(document);
-                        if (requires != null) {
-                            document.addPair(FIELD_REQUIRES, requires, false, true);
-                        }
-
-                        addRequire(document);
-                    }
-
-                    return;
-                }
-
-                analyze(structure);
-            } finally {
-                if (doc != null) {
-                    doc.readUnlock();
+            } else if ("schema.rb".equals(fileName)) { //NOI18N
+                if (file != null && file.getParent() != null && file.getParent().getName().equals("db")) { // NOI18N
+                    handleMigration();
+                    // Don't exit here - proceed to also index the class as Ruby code
                 }
             }
+
+            //Node root = file.getRootNode();
+
+            // Compute the requires for this file first such that
+            // each class or module recorded in the index for this
+            // file can reference their includes
+            AnalysisResult ar = result.getStructure();
+            requires = getRequireString(ar.getRequires());
+            List<?extends AstElement> structure = ar.getElements();
+
+            // Rails special case
+            if (fileName.startsWith("acti")) { // NOI18N
+                if ("action_controller.rb".equals(fileName)) { // NOI18N
+                    // Locate "ActionController::Base.class_eval do"
+                    // and take those include statements and stick them into ActionController::Base
+                    handleRailsBase("ActionController"); // NOI18N
+                    return;
+                } else if ("active_record.rb".equals(fileName)) { // NOI18N
+                    handleRailsBase("ActiveRecord"); // NOI18N
+                    // HACK
+                    handleMigrations();
+                    return;
+                } else if ("action_mailer.rb".equals(fileName)) { // NOI18N
+                    handleRailsBase("ActionMailer"); // NOI18N
+                    return;
+                } else if ("action_view.rb".equals(fileName)) { // NOI18N
+                    handleRailsBase("ActionView"); // NOI18N
+
+                    // HACK
+                    handleActionViewHelpers();
+
+                    return;
+                //} else if ("action_web_service.rb".equals(fileName)) { // NOI18N
+                    // Uh oh - we have two different kinds of class eval here - one for ActionWebService, one for ActionController!
+                    // Gotta make this shiznit smarter!
+                    //handleRailsBase("ActionWebService::Base", "Base", "ActionWebService"); // NOI18N
+                    //handleRailsBase("ActionController:Base", "Base", "ActionController"); // NOI18N
+                }
+            } else if (fileName.equals("assertions.rb") && url.endsWith("lib/action_controller/assertions.rb")) { // NOI18N
+                handleRailsClass("Test::Unit", "Test::Unit::TestCase", "TestCase", "TestCase"); // NOI18N
+                return;
+            } else if (fileName.equals("schema_definitions.rb")) {
+                handleSchemaDefinitions();
+                // Fall through - also do normal indexing on the file
+            }
+
+            if ((structure == null) || (structure.size() == 0)) {
+                if (requires != null) {
+                    IndexDocument document = support.createDocument(indexable);
+                    documents.add(document);
+                    if (requires != null) {
+                        document.addPair(FIELD_REQUIRES, requires, false, true);
+                    }
+
+                    addRequire(document);
+                }
+
+                return;
+            }
+
+            analyze(structure);
         }
         
         private void handleSchemaDefinitions() {
@@ -1103,7 +1088,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                     //        module SchemaStatements
                     // and we definitely WANT to index SchemaStatements even though
                     // ConnectionAdapters is not there
-                    int newDocMode = RubyIndexerHelper.isNodocClass(element, doc);
+                    int newDocMode = RubyIndexerHelper.isNodocClass(element, result.getSnapshot());
                     if (newDocMode == RubyIndexerHelper.DOC) {
                         docMode = RubyIndexerHelper.DEFAULT_DOC;
                     } else if (newDocMode == RubyIndexerHelper.NODOC_ALL) {
@@ -1384,7 +1369,7 @@ public class RubyIndexer extends EmbeddingIndexer {
             if (/*file.isPlatform() || */isPreindexing()) {
                 Node root = AstUtilities.getRoot(result);
                 signature = RubyIndexerHelper.getMethodSignature(
-                        child, root, flags, signature, file, doc);
+                        child, root, flags, signature, file, result.getSnapshot());
                 if (signature == null) {
                     return;
                 }
@@ -1503,30 +1488,26 @@ public class RubyIndexer extends EmbeddingIndexer {
         }
 
         private int getDocumentSize(Node node) {
-            if (doc != null) {
-                List<String> comments = AstUtilities.gatherDocumentation(null, doc, node);
+            List<String> comments = AstUtilities.gatherDocumentation(result.getSnapshot(), node);
 
-                if ((comments != null) && (comments.size() > 0)) {
-                    int size = 0;
+            if ((comments != null) && (comments.size() > 0)) {
+                int size = 0;
 
-                    for (String line : comments) {
-                        size += line.length();
-                    }
-
-                    return size;
+                for (String line : comments) {
+                    size += line.length();
                 }
+
+                return size;
             }
 
             return 0;
         }
 
         private boolean isDocumented(Node node) {
-            if (doc != null) {
-                List<String> comments = AstUtilities.gatherDocumentation(null, doc, node);
+            List<String> comments = AstUtilities.gatherDocumentation(result.getSnapshot(), node);
 
-                if ((comments != null) && (comments.size() > 0)) {
-                    return true;
-                }
+            if ((comments != null) && (comments.size() > 0)) {
+                return true;
             }
 
             return false;

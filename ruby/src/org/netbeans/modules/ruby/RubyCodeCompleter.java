@@ -81,6 +81,8 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.ruby.RubyCompletionItem.CallItem;
 import org.netbeans.modules.ruby.RubyCompletionItem.ClassItem;
@@ -1621,7 +1623,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
                     if ((astOffset >= lineBegin) && (astOffset <= lineEnd)) {
                         // Look for documentation
-                        List<String> rdoc = AstUtilities.gatherDocumentation(parserResult, doc, node);
+                        List<String> rdoc = AstUtilities.gatherDocumentation(parserResult.getSnapshot(), node);
 
                         if (rdoc != null && !rdoc.isEmpty()) {
                             return Collections.singletonList(candidate);
@@ -2041,18 +2043,12 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         // When I started looking in the document itself, I realized I might as well
         // do all the manipulation on the document, since having the Comment nodes
         // don't particularly help.
-        Document doc = null;
-        BaseDocument baseDoc = null;
-
+        Snapshot snapshot;
         if (element instanceof IndexedElement) {
-            doc = ((IndexedElement)element).getDocument();
-            info = null;
+            FileObject f = ((IndexedElement) element).getFileObject();
+            snapshot = Source.create(f).createSnapshot();
         } else if (info != null) {
-            doc = RubyUtils.getDocument(info);
-        }
-
-        if (doc instanceof BaseDocument) {
-            baseDoc = (BaseDocument)doc;
+            snapshot = info.getSnapshot();
         } else {
             return null;
         }
@@ -2071,7 +2067,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 String name = AstUtilities.getClassOrModuleName(clz);
 
                 if (name.equals(className)) {
-                    comments = AstUtilities.gatherDocumentation(info, baseDoc, clz);
+                    comments = AstUtilities.gatherDocumentation(snapshot, clz);
 
                     if ((comments != null) && (!comments.isEmpty())) {
                         break;
@@ -2079,7 +2075,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 }
             }
         } else {
-            comments = AstUtilities.gatherDocumentation(info, baseDoc, node);
+            comments = AstUtilities.gatherDocumentation(snapshot, node);
         }
 
         if ((comments == null) || (comments.isEmpty())) {
