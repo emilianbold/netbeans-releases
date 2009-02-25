@@ -73,7 +73,7 @@ public class Controller {
 
     static Controller controller;
 
-    static Controller getDefault() {
+    public static Controller getDefault() {
         if (controller == null) {
             controller = new Controller();
         }
@@ -131,30 +131,115 @@ public class Controller {
     }
 
     private static final String KEY_FONTSIZE = "fontsize";
-    void changeFontSizeBy(int change) {
-        Font oldFont = ioToTab.values().iterator().next().getOutputPane().getViewFont();
-        int fontSize = oldFont.getSize() + change;
-        if (fontSize < 7) {
-            fontSize = 7;
+    private static final String KEY_FONTNAME = "fontname";
+    private static final String KEY_FONTSTYLE = "fontstyle";
+    private static final String KEY_FONTSIZE_MONOSPACED = "fontsize_monospaced";
+    private static final int MIN_FONT_SIZE = 3;
+
+    private static Font defaultFont;
+    private Font currentFontMS;
+    private Font currentFont = currentFont();
+    private boolean allMonospaced;
+
+    void changeFontSizeBy(int change, boolean monospaced) {
+        int fontSize = (monospaced ? currentFontMS.getSize() : currentFont.getSize()) + change;
+        if (fontSize < MIN_FONT_SIZE) {
+            fontSize = MIN_FONT_SIZE;
         } else if (fontSize > 72) {
             fontSize = 72;
         }
-        NbPreferences.forModule(Controller.class).putInt(KEY_FONTSIZE, fontSize);
-        Font newFont = oldFont.deriveFont((float) fontSize);
+        String sizeKey = (monospaced || allMonospaced) ? KEY_FONTSIZE_MONOSPACED : KEY_FONTSIZE;
+        NbPreferences.forModule(Controller.class).putInt(sizeKey, fontSize);
+        Font font;
+        if (monospaced || allMonospaced) {
+            currentFontMS = getCurrentFontMS().deriveFont((float) fontSize);
+            font = currentFontMS;
+            if (allMonospaced) {
+                currentFont = currentFontMS;
+            }
+        } else {
+            currentFont = currentFont.deriveFont((float) fontSize);
+            font = currentFont;
+        }
         for (OutputTab tab : ioToTab.values()) {
-            tab.getOutputPane().setViewFont(newFont);
+            if (allMonospaced || tab.getOutputPane().isWrapped() == monospaced) {
+                tab.getOutputPane().setViewFont(font);
+            }
         }
     }
 
-    public static int getDefaultFontSize() {
-        int result = NbPreferences.forModule(Controller.class).getInt(KEY_FONTSIZE, -1);
-        if (result == -1) {
-            result = UIManager.getInt("uiFontSize");
-            if (result < 7) {
-                result = -1;
+    void changeFont(Font font) {
+        currentFont = font == null ? getDefaultFont() : font;
+        allMonospaced = isDefaultFontType(currentFont);
+        if (allMonospaced) {
+            currentFontMS = currentFont;
+            NbPreferences.forModule(Controller.class).putInt(KEY_FONTSIZE_MONOSPACED, currentFont.getSize());
+        }
+
+        NbPreferences.forModule(Controller.class).putInt(KEY_FONTSIZE, currentFont.getSize());
+        NbPreferences.forModule(Controller.class).putInt(KEY_FONTSTYLE, currentFont.getStyle());
+        NbPreferences.forModule(Controller.class).put(KEY_FONTNAME, currentFont.getName());
+        for (OutputTab tab : ioToTab.values()) {
+            if (allMonospaced || !tab.getOutputPane().isWrapped()) {
+                tab.getOutputPane().setViewFont(currentFont);
             }
         }
-        return result;
+    }
+
+    private static Font getDefaultFont() {
+        if (defaultFont == null) {
+            int size = UIManager.getInt("uiFontSize"); //NOI18N
+            if (size < MIN_FONT_SIZE) {
+                size = UIManager.getInt("customFontSize"); //NOI18N
+            }
+            if (size < MIN_FONT_SIZE) {
+                Font f = (Font) UIManager.get("controlFont"); //NOI18N
+                size = f.getSize();
+            }
+            if (size < MIN_FONT_SIZE) {
+                size = 11;
+            }
+            defaultFont = new Font("Monospaced", Font.PLAIN, size); //NOI18N
+        }
+        return defaultFont;
+    }
+
+    public Font getCurrentFont() {
+        return currentFont;
+    }
+
+    private Font currentFont() {
+        Font font;
+        String name = NbPreferences.forModule(Controller.class).get(KEY_FONTNAME, "Monospaced"); //NOI18N
+        int size = NbPreferences.forModule(Controller.class).getInt(name.equals("Monospaced") ? KEY_FONTSIZE_MONOSPACED : KEY_FONTSIZE, -1); //NOI18N
+        int style = NbPreferences.forModule(Controller.class).getInt(KEY_FONTSTYLE, -1);
+        if (size == -1 || style == -1) {
+            font = getDefaultFont();
+            if (size != -1) {
+                font = font.deriveFont((float) size);
+            }
+            allMonospaced = true;
+        } else {
+            font = new Font(name, style, size);
+            allMonospaced = isDefaultFontType(font);
+        }
+        return font;
+    }
+
+    private boolean isDefaultFontType(Font font) {
+        Font defFont = getDefaultFont();
+        return defFont.getName().equals(font.getName()) && defFont.getStyle() == font.getStyle();
+    }
+
+    public Font getCurrentFontMS() {
+        if (currentFontMS == null) {
+            currentFontMS = getDefaultFont();
+            int size = NbPreferences.forModule(Controller.class).getInt(KEY_FONTSIZE_MONOSPACED, -1);
+            if (size != -1) {
+                currentFontMS = currentFontMS.deriveFont((float) size);
+            }
+        }
+        return currentFontMS;
     }
 
     void removeFromUpdater(OutputTab tab) {
