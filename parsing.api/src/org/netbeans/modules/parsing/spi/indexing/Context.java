@@ -110,6 +110,17 @@ public final class Context {
         return root;
     }
 
+    /**
+     *
+     * @param root
+     * @param files
+     *
+     * @since 1.2
+     */
+    public void addIndexingJob(URL root, URL... files) {
+        // XXX: implement this
+    }
+
     String getIndexerName () {
         return this.indexerName;
     }

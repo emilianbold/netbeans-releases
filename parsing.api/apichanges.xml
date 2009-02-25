@@ -107,6 +107,17 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="Context.addIndexingJob">
+      <api name="ParsingAPI"/>
+      <summary>Adding Context.addIndexingJob</summary>
+      <version major="1" minor="2"/>
+      <date day="25" month="2" year="2009"/>
+      <author login="vstejskal"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+      </description>
+  </change>
+
   <change id="Snapshot.getTokenHierarchy">
       <api name="ParsingAPI"/>
       <summary>Adding Snapshot.getTokenHierarchy</summary>
