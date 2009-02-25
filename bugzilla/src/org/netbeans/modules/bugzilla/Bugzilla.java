@@ -40,11 +40,9 @@
 package org.netbeans.modules.bugzilla;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -102,7 +100,7 @@ public class Bugzilla {
      * @throws java.io.IOException
      * @throws org.eclipse.core.runtime.CoreException
      */
-    public List<String> getProducts(BugzillaRepository repo) throws MalformedURLException, CoreException, IOException {
+    public List<String> getProducts(BugzillaRepository repo) throws CoreException, IOException {
         return getRepositoryConfiguration(repo).getProducts();
     }
 

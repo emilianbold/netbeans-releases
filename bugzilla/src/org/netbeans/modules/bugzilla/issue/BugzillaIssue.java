@@ -115,7 +115,10 @@ public class BugzillaIssue extends Issue {
         BLOCKS(BugzillaAttribute.BLOCKED.getKey()),
         URL(BugzillaAttribute.BUG_FILE_LOC.getKey()),
         KEYWORDS(BugzillaAttribute.KEYWORDS.getKey()),
-        SEVERITY(BugzillaAttribute.BUG_SEVERITY.getKey());
+        SEVERITY(BugzillaAttribute.BUG_SEVERITY.getKey()),
+        DESCRIPTION(TaskAttribute.DESCRIPTION),
+        CREATION(TaskAttribute.DATE_CREATION),
+        MODIFICATION(TaskAttribute.DATE_MODIFICATION);
 
         private final String key;
 
