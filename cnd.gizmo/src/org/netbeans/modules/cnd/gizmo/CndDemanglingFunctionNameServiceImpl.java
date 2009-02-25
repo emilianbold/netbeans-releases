@@ -39,15 +39,16 @@
 package org.netbeans.modules.cnd.gizmo;
 
 import java.io.StringWriter;
-import java.net.ConnectException;
+import java.io.Writer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
@@ -57,11 +58,7 @@ import org.netbeans.modules.dlight.spi.DemanglingFunctionNameServiceFactory.CPPC
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.support.InputRedirectorFactory;
 import org.openide.util.Exceptions;
-import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.InputOutput;
 
 /**
@@ -69,7 +66,8 @@ import org.openide.windows.InputOutput;
  * @author mt154047
  */
 public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionNameService {
-    private  final ExecutionEnvironment env;
+
+    private final ExecutionEnvironment env;
     private final CPPCompiler cppCompiler;
     private final String dem_util_path;
     private static final String GNU_FAMILIY = "gc++filt";
@@ -106,9 +104,9 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
 
     CndDemanglingFunctionNameServiceImpl(CPPCompiler cppCompiler) {
         this.cppCompiler = cppCompiler;
-        if (cppCompiler == CPPCompiler.GNU){
+        if (cppCompiler == CPPCompiler.GNU) {
             dem_util_path = GNU_FAMILIY;
-        }else{
+        } else {
             dem_util_path = SS_FAMILIY;
         }
         env = new ExecutionEnvironment();
@@ -116,7 +114,7 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
 
     public Future<String> demangle(final String functionName) {
         //get current Project
-       final String nameToDemangle  = functionName.substring(functionName.indexOf("`"), functionName.indexOf("+"));
+        final String nameToDemangle = functionName.substring(functionName.indexOf("`"), functionName.indexOf("+"));
         return DLightExecutorService.service.submit(new Callable<String>() {
 
             public String call() {
@@ -143,4 +141,18 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
         });
 
     }
+
+    private class InputRedirectorFactory implements ExecutionDescriptor.InputProcessorFactory {
+
+        private final Writer writer;
+
+        public InputRedirectorFactory(Writer writer) {
+            this.writer = writer;
+        }
+
+        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+            return InputProcessors.copying(writer);
+        }
+    }
+
 }

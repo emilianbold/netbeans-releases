@@ -39,34 +39,33 @@
 package org.netbeans.modules.dlight.sync;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
+import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
+import org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration;
+import org.netbeans.modules.dlight.collector.stdout.CLIOParser;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
+import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
-
-
-
-
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Vladimir Kvashin
  */
 public final class SyncToolConfigurationProvider implements DLightToolConfigurationProvider {
-  private static final String TOOL_NAME = "Sync Tool";//NOI18N
 
     private static final String TOOL_NAME = loc("SyncTool.ToolName"); // NOI18N
     private static final boolean USE_SUNSTUDIO = Boolean.getBoolean("gizmo.cpu.sunstudio"); // NOI18N
@@ -109,6 +108,8 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         toolConfiguration.addIndicatorDataProviderConfiguration(initIndicatorDataProviderConfiguration());
         toolConfiguration.addIndicatorConfiguration(initIndicatorConfiguration());
 
+        return toolConfiguration;
+    }
 
     private DataCollectorConfiguration initDataCollectorConfiguration() {
         DataCollectorConfiguration result = null;
