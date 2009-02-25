@@ -77,6 +77,7 @@ import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
 import org.netbeans.modules.ruby.rubyproject.Util;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeRunner;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
@@ -104,6 +105,7 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
     // Commands available from Ruby project
     private static final String[] supportedActions = {
         COMMAND_AUTOTEST,
+        COMMAND_AUTOSPEC,
         COMMAND_RDOC,
         COMMAND_RAILS_CONSOLE,
         COMMAND_RUN, 
@@ -415,15 +417,25 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
         }
 
         if (COMMAND_AUTOTEST.equals(command)) {
-            if (AutoTestSupport.isInstalled(project)) {
+            if (AutoTestSupport.isInstalled(project, TestType.AUTOTEST)) {
                 AutoTestSupport support = new AutoTestSupport(context, project, getSourceEncoding());
                 support.setClassPath(project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH));
-                support.start();
+                support.start(TestType.AUTOTEST);
             }
             
             return;
         }
         
+        if (COMMAND_AUTOSPEC.equals(command)) {
+            if (AutoTestSupport.isInstalled(project, TestType.AUTOSPEC)) {
+                AutoTestSupport support = new AutoTestSupport(context, project, getSourceEncoding());
+                support.setClassPath(project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH));
+                support.start(TestType.AUTOSPEC);
+            }
+
+            return;
+        }
+
         if (COMMAND_RAILS_CONSOLE.equals(command)) {
             //File pwd = FileUtil.toFile(project.getProjectDirectory());
             //String cmd = "Dir.chdir('" + pwd.getAbsolutePath() + "');load 'script/console'"; // NOI18N

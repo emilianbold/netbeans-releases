@@ -41,7 +41,6 @@
 package org.netbeans.core.output2;
 
 import java.awt.*;
-import java.util.Arrays;
 
 /**
  * An event type which carries data about an operation performed on an
@@ -124,38 +123,17 @@ final class IOEvent extends AWTEvent implements ActiveEvent {
      * Set the toolbar actions that should be displayed.
      */
     static final int CMD_SET_TOOLBAR_ACTIONS = 10;
-    /**
-     * XXX may not be supported - dispose of the default output window instance
-     */
-    static final int CMD_DETACH = 11;
-    
-    /**
-     * change the icon on the tab..
-     */
-    static final int CMD_ICON = 12;
 
+    /** set tab's icon */
+    static final int CMD_SET_ICON = 11;
+
+    /** set tool tip for tab */
+    static final int CMD_SET_TOOLTIP = 12;
     
-    /**
-     * Array of IDs for checking legal values and generating a string representing the event.
-     */
-    private static final int[] IDS = new int[] {
-        CMD_CREATE,
-        CMD_OUTPUT_VISIBLE,
-        CMD_INPUT_VISIBLE,
-        CMD_ERR_VISIBLE,
-        CMD_ERR_SEPARATED,
-        CMD_FOCUS_TAKEN,
-        CMD_SELECT,
-        CMD_CLOSE,
-        CMD_STREAM_CLOSED,
-        CMD_RESET,
-        CMD_SET_TOOLBAR_ACTIONS,
-        CMD_DETACH,
-        CMD_ICON
-    };
+    private static final int CMD_LAST = 13;
 
     /**
-     * Strings matching the values in the IDS array for generating a string representing the event.
+     * Strings representing the event.
      */
     private static final String[] CMDS = new String[] {
         "CREATE", //NOI18N
@@ -169,7 +147,8 @@ final class IOEvent extends AWTEvent implements ActiveEvent {
         "STREAM_CLOSED", //NOI18N
         "RESET", //NOI18N
         "SET_TOOLBAR_ACTIONS", //NOI18N
-        "DETACH"  //NOI18N
+        "CMD_SET_ICON", //NOI18N
+        "CMD_SET_TOOLTIP", //NOI18N
     };
 
     /**
@@ -198,7 +177,7 @@ final class IOEvent extends AWTEvent implements ActiveEvent {
     IOEvent(NbIO source, int command, boolean value) {
         //Null source only for destroying the default instance
         super(source == null ? new Object() : source, command + IO_EVENT_MASK);
-        assert Arrays.binarySearch (IDS, command) >= 0 : "Unknown command: " + command; //NOI18N
+        assert command >= 0 && command < CMD_LAST : "Unknown command: " + command; //NOI18N
         consumed = false;
         this.value = value;
         pendingCount++;
@@ -260,6 +239,7 @@ final class IOEvent extends AWTEvent implements ActiveEvent {
      *
      * @return If the event is consumed
      */
+    @Override
     public boolean isConsumed() {
         return consumed;
     }
@@ -268,10 +248,12 @@ final class IOEvent extends AWTEvent implements ActiveEvent {
      * Overridden to avoid a bit of work AWTEvent does that's not
      * necessary for us.
      */
+    @Override
     public void consume() {
         consumed = true;
     }
 
+    @Override
     public String toString() {
         return "IOEvent@" + System.identityHashCode(this) + "-" + 
             cmdToString(getCommand()) + " on " + getIO() +
@@ -279,20 +261,11 @@ final class IOEvent extends AWTEvent implements ActiveEvent {
     }
 
     public void dispatch() {
-        //The only thing needed to make this package fully reentrant (capable of
-        //supporting multiple output windows, FWIW) is to replace this line with
-        //iterating a registry of OutputContainers, and calling eventDispatched on each.
-
-        //Null check below so that if the module has been disabled (the only way
-        //this can be null), the dead module doesn't reopen its output window
-        if (OutputWindow.DEFAULT != null) {
-            //Can be null after CMD_DETACH
-            OutputWindow.DEFAULT.eventDispatched(this);
-        }
+        Controller.getDefault().eventDispatched(this);
         pendingCount--;
     }
 
     public static String cmdToString (int cmd) {
-        return CMDS[Arrays.binarySearch(IDS, cmd)];
+        return CMDS[cmd];
     }
 }

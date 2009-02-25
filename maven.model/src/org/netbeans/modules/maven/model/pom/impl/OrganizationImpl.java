@@ -63,4 +63,22 @@ public class OrganizationImpl extends POMComponentImpl implements Organization {
         visitor.visit(this);
     }
 
+    public String getUrl() {
+        return getChildElementText(getModel().getPOMQNames().URL.getQName());
+    }
+
+    public void setUrl(String url) {
+        setChildElementText(getModel().getPOMQNames().URL.getName(), url,
+                getModel().getPOMQNames().URL.getQName());
+    }
+
+    public String getName() {
+        return getChildElementText(getModel().getPOMQNames().NAME.getQName());
+    }
+
+    public void setName(String name) {
+        setChildElementText(getModel().getPOMQNames().NAME.getName(), name,
+                getModel().getPOMQNames().NAME.getQName());
+    }
+
 }

@@ -41,7 +41,6 @@ public abstract class TableVisualizerConfigurationAccessor {
     public abstract String getEmptyRunningMessage(TableVisualizerConfiguration configuration);
 
     public abstract String getEmptyAnalyzeMessage(TableVisualizerConfiguration configuration);
-
-    public abstract Action getDoubleClickRowAction(TableVisualizerConfiguration configuration);
+    
 
 }

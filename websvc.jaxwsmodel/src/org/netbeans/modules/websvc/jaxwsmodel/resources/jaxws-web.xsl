@@ -145,19 +145,8 @@ made subject to such option by the copyright holder.
                 <xsl:variable name="wsdl_url" select="jaxws:local-wsdl-file"/>
                 <xsl:variable name="package_path" select = "translate($package_name,'.','/')"/>
                 <xsl:variable name="catalog" select = "jaxws:catalog-file"/>
-                <target name="wsimport-client-check-{$wsname}" depends="wsimport-init">
-                    <condition property="wsimport-client-{$wsname}.notRequired">
-                        <xsl:choose>
-                            <xsl:when test="jaxws:package-name">
-                                <available file="${{build.generated.sources.dir}}/jax-ws/{$package_path}/{$wsname}.java"/>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <available file="${{build.generated.sources.dir}}/jax-ws/dummy" type="dir"/>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </condition>
-                </target>
-                <target name="wsimport-client-{$wsname}" depends="wsimport-init,wsimport-client-check-{$wsname}" unless="wsimport-client-{$wsname}.notRequired">
+                <target name="wsimport-client-{$wsname}" depends="wsimport-init">
+                    <mkdir dir="${{build.generated.dir}}/jax-wsCache/{$wsname}"/>
                     <xsl:variable name="forceReplace_var" select="jaxws:package-name/@forceReplace"/>
                     <xsl:variable name="isService_var" select="false()"/>
                     <xsl:call-template name="invokeWsimport">
@@ -169,9 +158,15 @@ made subject to such option by the copyright holder.
                         <xsl:with-param name="Catalog" select="$catalog"/>
                         <xsl:with-param name="wsimportoptions" select="jaxws:wsimport-options"/>
                     </xsl:call-template>
+                    <copy todir="${{build.generated.sources.dir}}/jax-ws">
+                        <fileset dir="${{build.generated.dir}}/jax-wsCache/{$wsname}">
+                            <include name="**/*.java"/>
+                        </fileset>
+                    </copy>
                 </target>
                 <target name="wsimport-client-clean-{$wsname}" depends="-init-project">
                     <delete dir="${{build.generated.sources.dir}}/jax-ws/{$package_path}"/>
+                    <delete dir="${{build.generated.dir}}/jax-wsCache/{$wsname}"/>
                 </target>
             </xsl:for-each>
             <!-- END: wsimport target for client -->
@@ -185,12 +180,8 @@ made subject to such option by the copyright holder.
                     <xsl:variable name="package_path" select = "translate($package_name,'.','/')"/>
                     <xsl:variable name="service_name" select = "jaxws:service-name"/>
                     <xsl:variable name="catalog" select = "jaxws:catalog-file"/>
-                    <target name="wsimport-service-check-{$wsname}" depends="wsimport-init">
-                        <condition property="wsimport-service-{$wsname}.notRequired">
-                            <available file="${{build.generated.sources.dir}}/jax-ws/{$package_path}/{$service_name}.java"/>
-                        </condition>
-                    </target>
-                    <target name="wsimport-service-{$wsname}" depends="wsimport-init,wsimport-service-check-{$wsname}" unless="wsimport-service-{$wsname}.notRequired">
+                    <target name="wsimport-service-{$wsname}" depends="wsimport-init">
+                        <mkdir dir="${{build.generated.dir}}/jax-wsCache/service/{$wsname}"/>
                         <xsl:variable name="forceReplace_var" select="jaxws:package-name/@forceReplace" />
                         <xsl:variable name="isService_var" select="true()"/>
                         <xsl:call-template name="invokeWsimport">
@@ -205,9 +196,15 @@ made subject to such option by the copyright holder.
                         <copy todir="${{build.web.dir}}/WEB-INF/wsdl/{$wsname}">
                             <fileset dir="${{basedir}}/${{conf-dir}}xml-resources/web-services/{$wsname}/wsdl/" />
                         </copy>
+                        <copy todir="${{build.generated.sources.dir}}/jax-ws">
+                            <fileset dir="${{build.generated.dir}}/jax-wsCache/service/{$wsname}">
+                                <include name="**/*.java"/>
+                            </fileset>
+                        </copy>
                     </target>
                     <target name="wsimport-service-clean-{$wsname}" depends="-init-project">
                         <delete dir="${{build.generated.sources.dir}}/jax-ws/{$package_path}"/>
+                        <delete dir="${{build.generated.dir}}/jax-wsCache/service/{$wsname}"/>
                     </target>
                 </xsl:if>
             </xsl:for-each>
@@ -254,11 +251,16 @@ made subject to such option by the copyright holder.
         <xsl:param name="Catalog"/>
         <xsl:param name="wsimportoptions"/>
         <wsimport>
-            <xsl:if test="$forceReplace">
-                <xsl:attribute name="package"><xsl:value-of select="$packageName"/></xsl:attribute>
-            </xsl:if>
-            <xsl:attribute name="sourcedestdir">${build.generated.sources.dir}/jax-ws</xsl:attribute>
-            <xsl:attribute name="destdir">${build.generated.sources.dir}/jax-ws</xsl:attribute>
+            <xsl:variable name="cacheDir">
+                <xsl:choose>
+                    <xsl:when test="$isService">
+                        <xsl:text>service/</xsl:text>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:text></xsl:text>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:variable>
             <xsl:variable name="wsDir">
                 <xsl:choose>
                     <xsl:when test="$isService">
@@ -269,6 +271,12 @@ made subject to such option by the copyright holder.
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:variable>
+            <!-- setting wsimport attributes -->
+            <xsl:attribute name="sourcedestdir">${build.generated.dir}/jax-wsCache/<xsl:value-of select="$cacheDir"/><xsl:value-of select="$wsName"/></xsl:attribute>
+            <xsl:attribute name="destdir">${build.generated.dir}/jax-wsCache/<xsl:value-of select="$cacheDir"/><xsl:value-of select="$wsName"/></xsl:attribute>
+            <xsl:if test="$forceReplace">
+                <xsl:attribute name="package"><xsl:value-of select="$packageName"/></xsl:attribute>
+            </xsl:if>
             <xsl:attribute name="wsdl">${basedir}/${conf-dir}xml-resources/<xsl:value-of select="$wsDir"/>/<xsl:value-of select="$wsName"/>/wsdl/<xsl:value-of select="$wsdlUrl"/></xsl:attribute>
             <xsl:attribute name="catalog"><xsl:value-of select="$Catalog" /></xsl:attribute>
             <xsl:if test="$wsimportoptions">
@@ -296,6 +304,15 @@ made subject to such option by the copyright holder.
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:for-each>
+                <xsl:variable name="produces" select="$wsimportoptions/jaxws:wsimport-option/jaxws:wsimport-option-name='xnocompile'"/>
+                <xsl:if test="$produces">
+                    <depends>
+                        <xsl:attribute name="file">${basedir}/${conf-dir}xml-resources/<xsl:value-of select="$wsDir"/>/<xsl:value-of select="$wsName"/>/wsdl/<xsl:value-of select="$wsdlUrl"/></xsl:attribute>
+                    </depends>
+                    <produces>
+                        <xsl:attribute name="dir">${build.generated.dir}/jax-wsCache/<xsl:value-of select="$cacheDir"/><xsl:value-of select="$wsName"/></xsl:attribute>
+                    </produces>
+                </xsl:if>
             </xsl:if>
             <xsl:if test="jaxws:binding">
                 <binding>

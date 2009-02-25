@@ -212,7 +212,7 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
     } else {
       performanceMonitorViewsArea.remove(viewComponent);
     }
-
+    viewComponent = null;
     validate();
     repaint();
   }

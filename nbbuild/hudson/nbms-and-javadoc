@@ -3,16 +3,14 @@
 ANT_OPTS='-Xmx512m -XX:MaxPermSize=128m'
 export ANT_OPTS
 
+# XXX awaiting Forest support:
 if [ -d contrib/.hg ] ; then
+    hg -R contrib up -C .
+    hg -R contrib --config extensions.purge= clean --all || exit
     hg -R contrib pull -u
 else
     hg clone http://hg.netbeans.org/main/contrib contrib
 fi
-
-hg up -C .
-hg -R contrib up -C .
-hg --config extensions.purge= clean --all || exit
-hg -R contrib --config extensions.purge= clean --all || exit
 
 mydir=`cd $(dirname $0); pwd`
 keystore=$mydir/../../../../NBstore

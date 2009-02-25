@@ -51,7 +51,6 @@ import string
 import traceback
 import threading
 import os
-import Queue
 import types
 import __builtin__
 import dbgutils
@@ -89,6 +88,12 @@ STATE_SUSPENDED = 1
 STATE_SUSPENDING = 2
 STATE_RESUMING = 3
 STATE_ONBREAKPOINT = 4
+
+# Breakpoint hits
+HIT_NOT_SET = -1
+HIT_EQUALS_TO = 0
+HIT_GREATER_THAN = 1
+HIT_MULTIPLE_OF = 2
 
 CP037_OPENBRACKET='\xBA'
 CP037_CLOSEBRACKET='\xBB'
@@ -162,6 +167,37 @@ def _DEBUG(   message) :
     if debugLogger != None :
         debugLogger.debug(message)
 
+class JpyDbgBreakpoint(bdb.Breakpoint):
+    """ override BdbBreakpoint to support hits """
+
+    def __init__(self , file, line, temporary=0, cond = None , hits = 0 , hitStyle = HIT_NOT_SET ) :
+        bdb.Breakpoint.__init__(self ,file,line,temporary,cond )
+        self.jpyhits = hits
+        self.hitStyle = hitStyle
+        self.hitted = 0
+
+    def bpprint(self):
+
+        if self.temporary:
+            disp = 'del  '
+        else:
+            disp = 'keep '
+        if self.enabled:
+            disp = disp + 'yes'
+        else:
+            disp = disp + 'no '
+        returned = '%-4dbreakpoint    %s at %s:%d' % (self.number, disp,
+                             self.file, self.line)
+        if self.cond:
+            returned= returned + '\tstop only if %s' % (self.cond,)
+        if self.ignore:
+            returned= returned +  '\tignore next %d hits' % (self.ignore)
+        if (self.jpyhits):
+            if (self.hitted > 1): ss = 's'
+            else: ss = ''
+            returned= returned +  ('\tbreakpoint already hit %d time%s' %
+                   (self.hitted, ss))
+        return returned
 
 
 class BdbClone(bdb.Bdb) :
@@ -425,6 +461,115 @@ class BdbClone(bdb.Bdb) :
                   _DEBUG(  'No ExtraInfos for THREAD : %s '  % ( str(t)))
         return False
 
+    def set_break(self, filename, lineno, temporary=0, cond = None , hits = 0 , hitStyle = -1):
+        """ Overridden bdb set_break """
+        filename = self.canonic(filename)
+        import linecache # Import as late as possible
+        line = linecache.getline(filename, lineno)
+        if not line:
+            return 'Line %s:%d does not exist' % (filename,
+                                   lineno)
+        if not self.breaks.has_key(filename):
+            self.breaks[filename] = []
+        list = self.breaks[filename]
+        if not lineno in list:
+            list.append(lineno)
+        bp = JpyDbgBreakpoint(filename, lineno, temporary, cond , hits , hitStyle )
+
+    def _checkHit( self , bp ):
+         """ deal with breakpoint hits checking """
+         hit = 0
+         if bp.jpyhits != 0 :
+             # check hits context
+             bp.hitted = bp.hitted + 1
+             if bp.hitStyle == HIT_EQUALS_TO and \
+                bp.hitted == bp.jpyhits :
+                    hit = 1
+             elif bp.hitStyle == HIT_GREATER_THAN and \
+                 bp.hitted > bp.jpyhits :
+                    hit = 1
+             elif bp.hitStyle == HIT_MULTIPLE_OF and \
+                 bp.hitted % bp.jpyhits == 0 :
+                    hit = 1
+             return hit
+         else :
+             return 1
+
+    # Determines if there is an effective (active) breakpoint at this
+    # line of code.  Returns breakpoint number or 0 if none
+    def effective( self , file, line, frame):
+        """Determine which breakpoint for this file:line is to be acted upon.
+
+        Called only if we know there is a bpt at this
+        location.  Returns breakpoint that was triggered and a flag
+        that indicates if it is ok to delete a temporary bp.
+
+        """
+        possibles = JpyDbgBreakpoint.bplist[file,line]
+        for i in range(0, len(possibles)):
+            b = possibles[i]
+            _DEBUG("check effective : %s" % ( b.bpprint() ))
+            if b.enabled == 0:
+                continue
+            if not b.cond:
+                # If unconditional, and ignoring,
+                # go on to next, else break
+                if b.ignore > 0:
+                    b.ignore = b.ignore -1
+                    continue
+                else:
+                    # breakpoint and marker that's ok
+                    # to delete if temporary
+                    return (b,1)
+            else:
+                # Conditional bp.
+                # Ignore count applies only to those bpt hits where the
+                # condition evaluates to true.
+                try:
+                    val = eval(b.cond, frame.f_globals,
+                           frame.f_locals)
+                    _DEBUG("eval condition %s in context %d" % (b.cond,val))
+                    if val:
+                        if b.ignore > 0:
+                            b.ignore = b.ignore -1
+                            # continue
+                        else:
+                            return (b,1)
+                    # else:
+                    #   continue
+                except:
+                    # if eval fails, most conservative
+                    # thing is to stop on breakpoint
+                    # regardless of ignore count.
+                    # Don't delete temporary,
+                    # as another hint to user.
+                    return (b,0)
+        return (None, None)
+
+
+    def break_here(self, frame):
+         """ overridden bdb break_here """
+         _DEBUG("entering break_here")
+         filename = self.canonic(frame.f_code.co_filename)
+         if not self.breaks.has_key(filename):
+             return 0
+         lineno = frame.f_lineno
+         if not lineno in self.breaks[filename]:
+             return 0
+         _DEBUG("found in break table")
+         # flag says ok to delete temp. bp
+         (bp, flag) = self.effective(filename, lineno, frame)
+         if bp:
+             _DEBUG("effective BREAK")
+             self.currentbp = bp.number
+             if (flag and bp.temporary):
+                 self.do_clear(str(bp.number))
+             # finally deal wit hits
+             _DEBUG("chkiHit : hitted=%d  hitsExpect=%d"  % ( bp.hitted , bp.jpyhits) )
+             return self._checkHit(bp)
+         else:
+             _DEBUG("effective UNBREAK")
+             return 0
 
 class MainThread (threading.Thread) :
     """ debuggee mainthread """
@@ -563,19 +708,25 @@ class JPyDbgFrame :
                     self.dispatchLineAndBreak(mainDebugger, frame , lthread )
                 # check for breakpoints as well
                 else :
+                    _DEBUG( "before checkForBreakPoint call" )
                     self.checkForBeakpoint(mainDebugger,frame,fileName,lineNumber,lthread)
                 # return trace fx in any cases
                 return self.trace_dispatch
             else :
                 #  DEBUG starting , STEP command => stop on next line
                 #_DEBUG( 'info.cmd=% '  % (info.cmd) )
-                #  thread frame in STEP INTO or DEBUG initial start
+                #  thread frame in STEP INTO/OUT or DEBUG initial start
                 _DEBUG('before STEP(%s) or DEBUG(%s)' % (info.cmd,mainDebugger.cmd) )
                 if  info.cmd == STEP or \
                   ( mainDebugger.isStarting() ) :
                     _DEBUG( 'STEP reached')
                     info.cmd = None
                     self.dispatchLineAndBreak(mainDebugger, frame , lthread )
+                elif info.cmd == STEP_RETURN  and info.step_out != None :
+                    _DEBUG( "check stepReturn %s==%s" % (info.step_out.f_lineno , frame.f_lineno)     )
+                    if frame == info.step_out :
+                        self.dispatchLineAndBreak(mainDebugger, frame , lthread )
+
                 return self.trace_dispatch
         else :
             # just check that we reached a breakpoint in RUN mode
@@ -632,6 +783,7 @@ class ExtraThreadInfos :
         self.last_line_frame = None
         self.cmd = None
         self.notify_kill = False
+        self.step_out = None
         # safely clear event to wait when setSuspended is entered
         self._state = STATE_RUNNING
         self.dbg = dbg
@@ -1276,15 +1428,38 @@ class JPyDbg(BdbClone) :
             self.cmd = STEP
             lthread.additionalInfo.cmd=STEP
             # self.set_step()
+        elif ( string.upper(verb) == "STEPOUT" ):
+            self.cmd = STEP_RETURN
+            lthread.additionalInfo.cmd=STEP_RETURN
+            # Store the backframe to check that next statement matches it
+            lthread.additionalInfo.step_out=lthread.additionalInfo.last_line_frame.f_back
         elif ( string.upper(verb) == "RUN" ):
             self.dbgContinue = True
             self.set_continue()
         elif ( string.upper(verb) == "BP+"):
             self.cmd = SET_BP
             # split the command line argument on the last blank
-            col = string.rfind( arg, ' ' )
-            arg ,optarg  = arg[:col].strip(),arg[col+1:]
-            self.set_break( arg , int(optarg) )
+            _DEBUG( 'BP+=%s' %(arg))
+            file , optarg = _utils.nextArg(arg)
+            line ,optarg= _utils.nextArg(optarg)
+            temp , optarg = _utils.nextArg(optarg)
+            if temp != None :
+                temp = int(temp)
+            condition , optarg = _utils.nextArg(optarg)
+            hits , optarg = _utils.nextArg(optarg)
+            hitsStyle , optarg = _utils.nextArg(optarg)
+            if hits != None :
+                hits = int(hits)
+                if  ( hitsStyle == "GREATER") :
+                    hitsStyle = HIT_GREATER_THAN
+                elif  ( hitsStyle == "MULTIPLE") :
+                    hitsStyle = HIT_MULTIPLE_OF
+                else :
+                    hitsStyle = HIT_EQUALS_TO
+            else :
+                hits = 0
+            _DEBUG( 'hist=%s' %(str(hits)))
+            self.set_break( file , int(line) , temp , condition , hits , hitsStyle)
             self.cmd = FREEZE
         elif ( string.upper(verb) == "STACK"):
             self.cmd = STACK

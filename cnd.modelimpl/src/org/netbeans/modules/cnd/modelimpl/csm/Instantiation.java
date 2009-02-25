@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import java.util.Set;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -47,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +63,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver.SafeTemplateBasedProvider;
 import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
@@ -70,6 +73,8 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  * @author eu155513
  */
 public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> implements CsmOffsetableDeclaration, CsmInstantiation, CsmIdentifiable {
+    private static final int MAX_INHERITANCE_DEPTH = 20;
+
     protected final T declaration;
     protected final Map<CsmTemplateParameter, CsmType> mapping;
     private String fullName = null;
@@ -222,6 +227,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         public Class(CsmClass clazz, CsmType type) {
             super(clazz, type);
             assert type.isInstantiation() : "Instantiation without parameters"; // NOI18N
+            assert !isRecursion(this, MAX_INHERITANCE_DEPTH) : "infinite recursion in "+toString();
         }
         
         public Class(CsmClass clazz, Map<CsmTemplateParameter, CsmType> mapping) {
@@ -238,6 +244,17 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
 
         public boolean isTemplate() {
             return ((CsmTemplate)declaration).isTemplate();
+        }
+
+        private boolean isRecursion(CsmTemplate type, int i){
+            if (i == 0) {
+                return true;
+            }
+            if (type instanceof Class) {
+                Class t = (Class) type;
+                return isRecursion((CsmTemplate)t.declaration, i-1);
+            }
+            return false;
         }
 
         private CsmMember createMember(CsmMember member) {
@@ -755,7 +772,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         }
     }
     
-    private static class Type implements CsmType, Resolver.SafeClassifierProvider {
+    private static class Type implements CsmType, Resolver.SafeClassifierProvider, SafeTemplateBasedProvider {
         protected final CsmType originalType;
         protected final CsmInstantiation instantiation;
         protected final CsmType instantiatedType;
@@ -779,6 +796,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             }
             this.originalType = origType;
             this.instantiatedType = newType;
+            assert !isRecursion(this, MAX_INHERITANCE_DEPTH) : "infinite recursion in "+this.toString();
         }
         
         private boolean instantiationHappened() {
@@ -827,8 +845,51 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return instantiatedType.isInstantiation();
         }
 
+        private boolean isRecursion(CsmType type, int i){
+            if (i == 0) {
+                return true;
+            }
+            if (type instanceof Instantiation.NestedType) {
+                Instantiation.NestedType t = (NestedType) type;
+                if (t.parentType != null) {
+                    return isRecursion(t.parentType, i-1);
+                } else {
+                    return isRecursion(t.instantiatedType, i-1);
+                }
+            } else if (type instanceof Type) {
+                return isRecursion(((Type)type).instantiatedType, i-1);
+            } else if (type instanceof org.netbeans.modules.cnd.modelimpl.csm.NestedType) {
+                org.netbeans.modules.cnd.modelimpl.csm.NestedType t = (org.netbeans.modules.cnd.modelimpl.csm.NestedType) type;
+                if (t.getParent() != null) {
+                    return isRecursion(t.getParent(), i-1);
+                } else {
+                    return false;
+                }
+            } else if (type instanceof TypeImpl){
+                return false;
+            } else if (type instanceof TemplateParameterTypeImpl){
+                return isRecursion(((TemplateParameterTypeImpl)type).getTemplateType(), i-1);
+            }
+            return false;
+        }
+
+
         public boolean isTemplateBased() {
-            return (instantiatedType == null) ? true : instantiatedType.isTemplateBased();
+            return isTemplateBased(new HashSet<CsmType>());
+        }
+
+        public boolean isTemplateBased(Set<CsmType> visited) {
+            if (instantiatedType == null) {
+                return true;
+            }
+            if (visited.contains(this)) {
+                return false;
+            }
+            visited.add(this);
+            if (instantiatedType instanceof SafeTemplateBasedProvider) {
+                return ((SafeTemplateBasedProvider)instantiatedType).isTemplateBased(visited);
+            }
+            return instantiatedType.isTemplateBased();
         }
 
         public boolean isReference() {
@@ -1033,5 +1094,23 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         public InstantiationUID(DataInput input) throws IOException {
             this.ref = null;
         }
+    }
+
+    public static CharSequence getInstantiationCanonicalText(List<CsmType> params) {
+        StringBuilder sb = new StringBuilder();
+        if (!params.isEmpty()) {
+            sb.append('<');
+            boolean first = true;
+            for (CsmType param : params) {
+                if (first) {
+                    first = false;
+                } else {
+                    sb.append(',');
+                }
+                sb.append(TypeImpl.getCanonicalText(param));
+            }
+            sb.append('>');
+        }
+        return sb;
     }
 }

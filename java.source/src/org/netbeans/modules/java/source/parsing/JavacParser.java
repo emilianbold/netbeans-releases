@@ -618,7 +618,6 @@ public class JavacParser extends Parser {
         ErrorHandlingJavadocEnter.preRegister(context);
         JavadocMemberEnter.preRegister(context);       
         JavadocEnv.preRegister(context, cpInfo);
-        DocCommentScanner.Factory.preRegister(context);
         com.sun.tools.javac.main.JavaCompiler.instance(context).keepComments = true;
         return javacTask;
     }
@@ -648,7 +647,6 @@ public class JavacParser extends Parser {
         }
         options.add("-XDide");   // NOI18N, javac runs inside the IDE
         options.add("-XDsave-parameter-names");   // NOI18N, javac runs inside the IDE
-        options.add("-g:");      // NOI18N, Enable some debug info
         options.add("-g:source"); // NOI18N, Make the compiler to maintian source file info
         options.add("-g:lines"); // NOI18N, Make the compiler to maintain line table
         options.add("-g:vars");  // NOI18N, Make the compiler to maintain local variables table

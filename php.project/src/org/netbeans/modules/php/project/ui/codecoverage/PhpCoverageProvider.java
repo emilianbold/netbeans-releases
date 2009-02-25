@@ -84,6 +84,7 @@ public final class PhpCoverageProvider implements CoverageProvider {
         synchronized (lock) {
             this.coverage = coverage;
         }
+        CoverageManager.INSTANCE.resultsUpdated(project, this);
     }
 
     public static void notifyProjectOpened(Project project) {

@@ -120,11 +120,11 @@ public final class MacroExpansionTopComponent extends TopComponent {
      * @return is macro expansion local
      */
     public static boolean isLocalContext() {
-        return NbPreferences.forModule(MacroExpansionTopComponent.class).getBoolean("show-local-context", true);
+        return NbPreferences.forModule(MacroExpansionTopComponent.class).getBoolean("show-local-context", true); // NOI18N
     }
 
     public static void setLocalContext(boolean localContext) {
-        NbPreferences.forModule(MacroExpansionTopComponent.class).putBoolean("show-local-context", localContext);
+        NbPreferences.forModule(MacroExpansionTopComponent.class).putBoolean("show-local-context", localContext); // NOI18N
     }
     /**
      * Indicates is caret synchronization enabled or not.

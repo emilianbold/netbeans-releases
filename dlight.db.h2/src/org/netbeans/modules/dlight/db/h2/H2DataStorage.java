@@ -148,8 +148,16 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
           return name.startsWith("dlight");
         }
       });
+      int newValue = 0;
+      boolean result = true;
       for (int i = 0; i < files.length; i++) {
-        files[i].delete();
+          boolean localResult= files[i].delete();
+          result = result && localResult;
+          newValue++;
+      }
+      if (!result){
+          //should increse dbIndex??
+          dbIndex.set(newValue);
       }
     }
   }

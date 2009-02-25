@@ -40,25 +40,30 @@ package org.netbeans.modules.dlight.perfan.spi;
 
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.impl.SunStudioDCConfigurationAccessor;
-import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.collector.DataCollectorFactory;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProviderFactory;
 import org.openide.util.lookup.ServiceProvider;
-
-
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
  * @author mt154047
  *
  */
-@ServiceProvider(service=org.netbeans.modules.dlight.spi.collector.DataCollectorFactory.class)
-public final class SunStudioDataCollectorFactory implements DataCollectorFactory<SunStudioDCConfiguration> {
+@ServiceProviders({
+    @ServiceProvider(service = DataCollectorFactory.class),
+    @ServiceProvider(service = IndicatorDataProviderFactory.class)
+})
+        
+public final class SunStudioDataCollectorFactory 
+        implements DataCollectorFactory<SunStudioDCConfiguration>,
+        IndicatorDataProviderFactory<SunStudioDCConfiguration> {
 
-  public DataCollector<SunStudioDCConfiguration> create(SunStudioDCConfiguration configuration) {
-    return SSDCProvider.getInstance().getSSDataCollector(SunStudioDCConfigurationAccessor.getDefault().getCollectedInfo(configuration));
-  }
+    public SunStudioDataCollector create(SunStudioDCConfiguration configuration) {
+        return SSDCProvider.getInstance().getSSDataCollector(SunStudioDCConfigurationAccessor.getDefault().getCollectedInfo(configuration));
+    }
 
-  public String getID() {
-    return SunStudioIDsProvider.DATA_COLLECTOR_ID;
-  }
+    public String getID() {
+        return SunStudioIDsProvider.DATA_COLLECTOR_ID;
+    }
 }

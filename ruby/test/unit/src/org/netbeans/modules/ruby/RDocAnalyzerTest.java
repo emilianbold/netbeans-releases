@@ -75,6 +75,18 @@ public final class RDocAnalyzerTest extends RubyTestBase {
         assertDescriptionMatches(commentRelFilePath, sb.toString(), false, ".types");
     }
 
+    public void testTypesFromComment() {
+        assertTypes(new String[]{"Array"}, "#  enten tenten  => [0, 1, 3]");
+        assertTypes(new String[]{"Fixnum", "FalseClass"}, "#  teelikamenten => 77 or false");
+        assertTypes(new String[]{"MyClass"}, "#  hissun kissun => MyClass");
+        assertTypes(new String[]{"Hash"}, "#  vaapula vissun => 1, \"qux\" => 2 }     #=> {\"baz\"=>1, \"bar\"=>2}");
+
+        assertTypes(new String[]{"Fixnum"}, "#  eelin keelin => -98");
+        assertTypes(new String[]{"Float"}, "#  klot => -5.555");
+        assertTypes(new String[]{"Float"}, "#  viipula => 5.555");
+        assertTypes(new String[]{"Fixnum"}, "#  vaapula => -1, 0, +1");
+    }
+
     public void testCollectTypesFromComment() {
         assertTypes("Array",
                 "#     mod.ancestors -> array",

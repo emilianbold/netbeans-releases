@@ -104,6 +104,36 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="IO-enhancements">
+      <api name="io"/>
+      <summary> Multiple IOProvider support, possibility to specify "parent container"
+      for IO tab</summary>
+      <version major="1" minor="15"/>
+      <date day="5" month="2" year="2008"/>
+      <author login="t_h"/>
+      <compatibility addition="yes" binary="compatible" semantic="compatible" />
+      <description>
+        <p>Added static <a href="@TOP@/org/openide/windows/IOProvider.html#get(java.lang.String)">
+        <code>IOProvider.get(String name)</code></a> to get specific implementation of IOProvider. Added
+        <a href="@TOP@/org/openide/windows/IOProvider.html#getName()"><code>IOProvider.getName()</code></a>
+        which should be overriden by subclasses to provide its name (ID).
+        </p>
+        <p><a href="@TOP@/org/openide/windows/IOContainer.html"><code>IOContainer</code></a>
+        was introduced as an accessor to "parent container" for IO components (tab).
+        <a href="@TOP@/org/openide/windows/IOProvider.html#getIO(java.lang.String, javax.swing.Action[], org.openide.windows.IOContainer)">
+        <code>IOProvider.getIO(String name, Action[] additionalActions, IOContainer ioContainer)</code></a>
+        can be used to specify alternative container.
+        </p>
+        <p>
+        First "feature class" <a href="@TOP@/org/openide/windows/IOTab.html">IOTab</a>
+        added to provide API for getting/setting icon/tooltip for IO tab.
+        </p>
+      </description>
+      <class package="org.openide.windows" name="IOProvider"/>
+      <class package="org.openide.windows" name="IOContainer"/>
+      <issue number="157911" />
+    </change>
+
     <change id="automatic-request-of-io-impl">
       <api name="io"/>
       <summary> No need to require IOProvider token anymore</summary>

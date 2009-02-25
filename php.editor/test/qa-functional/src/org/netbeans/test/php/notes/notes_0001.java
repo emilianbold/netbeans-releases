@@ -41,29 +41,9 @@
 
 package org.netbeans.test.php.notes;
 
-import javax.swing.tree.TreePath;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.JemmyException;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
-import org.netbeans.jemmy.operators.JToggleButtonOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JLabelOperator;
-import org.netbeans.jemmy.operators.JTableOperator;
-import javax.swing.table.TableModel;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
-import java.util.List;
 
 /**
  *

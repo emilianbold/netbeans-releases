@@ -82,7 +82,7 @@ import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.maven.dependencies.DependencyExcludeNodeVisitor;
-import org.netbeans.modules.maven.dependencies.DependencyTreeFactory;
+import org.netbeans.modules.maven.embedder.DependencyTreeFactory;
 import org.netbeans.modules.maven.dependencies.ExcludeDependencyPanel;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.model.ModelOperation;
@@ -318,6 +318,7 @@ public class DependencyNode extends AbstractNode {
             acts.add(new RemoveDependencyAction());
         }
         acts.add(null);
+        acts.add(CommonArtifactActions.createViewArtifactDetails(art, project.getOriginalMavenProject().getRemoteArtifactRepositories()));
         acts.add(CommonArtifactActions.createFindUsages(art));
         acts.add(null);
         acts.add(CommonArtifactActions.createViewJavadocAction(art));
@@ -620,7 +621,7 @@ public class DependencyNode extends AbstractNode {
         public void actionPerformed(ActionEvent event) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    org.apache.maven.shared.dependency.tree.DependencyNode rootnode = DependencyTreeFactory.createDependencyTree(project.getOriginalMavenProject(), EmbedderFactory.getOnlineEmbedder(), "test");
+                    org.apache.maven.shared.dependency.tree.DependencyNode rootnode = DependencyTreeFactory.createDependencyTree(project.getOriginalMavenProject(), EmbedderFactory.getOnlineEmbedder(), Artifact.SCOPE_TEST);
                     DependencyExcludeNodeVisitor nv = new DependencyExcludeNodeVisitor(art.getGroupId(), art.getArtifactId(), art.getType());
                     rootnode.accept(nv);
                     final Set<org.apache.maven.shared.dependency.tree.DependencyNode> nds = nv.getDirectDependencies();

@@ -215,7 +215,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
                                     if (endLine + 1 < lines) {
                                         lastLineEndOffset = Utilities.getRowStartFromLineOffset((BaseDocument) document, endLine + 1);
                                     } else {
-                                        lastLineEndOffset = document.getLength() + 1;
+                                        lastLineEndOffset = document.getLength();
                                     }
                                     
                                     if (sectionEnd + 2 >= lastLineEndOffset || // unclosed section

@@ -59,6 +59,7 @@ import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 
 
@@ -179,7 +180,7 @@ public class Utils {
     
     public static class LineFactory {
         public Line getLine(int line, String remoteFileName, SessionId id) {
-            DataObject dataObject = id.getDataObjectByRemote(remoteFileName);
+            DataObject dataObject = Utils.getDataObjectByRemote(id, remoteFileName);
             if (dataObject == null) {
                 return null;
             }
@@ -206,4 +207,17 @@ public class Utils {
     public static void openPhpOptionsDialog() {
         OptionsDisplayer.getDefault().open(PATH_IN_LAYER);
     }
+
+    public static DataObject getDataObjectByRemote(SessionId id, String uri) {
+        try {
+            FileObject fileObject = id.toSourceFile(uri);
+            if (fileObject == null) {
+                return null;
+            }
+            return DataObject.find(fileObject);
+        } catch (DataObjectNotFoundException e) {
+            return null;
+        }
+    }
+
 }

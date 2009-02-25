@@ -97,7 +97,7 @@ public class DebuggerTest extends NbTestCase {
         addBreakpoint(scriptFo, 7, testWrapper, new RunContinuation(sessionId));
         ProcessBuilder processBuilder = startDebugging(sessionId, scriptFile);
         Process process = processBuilder.start();        
-        sessionId.waitServerFile(true);
+        sessionId.isInitialized(true);
         process.waitFor();                
         testWrapper.assertTested();//sometimes, randomly fails 
     }

@@ -42,14 +42,35 @@ package org.netbeans.modules.maven.api.archetype;
 import java.util.List;
 
 /**
+ * Deprecated: user layer based registration instead:
+ * 
+     <p>
+       "Projects/org-netbeans-modules-maven/Archetypes" folder contains fileobjects
+       that represent archetypes. The archetypes are defined by the following file attributes:
+     </p>
+       <table>
+           <tbody>
+               <tr><td>groupId</td><td>mandatory</td><td></td></tr>
+               <tr><td>artifactId</td><td>mandatory</td><td></td></tr>
+               <tr><td>version</td><td>mandatory</td><td></td></tr>
+               <tr><td>repository</td><td>optional</td><td>url of the archetype's repository</td></tr>
+               <tr><td>nameBundleKey</td><td>optional</td><td>key in bundle file that holds localized name</td></tr>
+               <tr><td>descriptionBundleKey</td><td>optional</td><td>key in bundle file that holds localized description</td></tr>
+           </tbody>
+       </table>
+     <p>
+ *<strike>
  * Componentized provider of list of available archetypes.
  * It is used in New Maven project wizard to populate the list of available archetypes.
  * The providers are expected to be registered using {@link org.openide.util.lookup.ServiceProvider}.
- * There are 2 default implementations registered: One lists 3 basic archetypes 
- * (simple, webapp and mojo) and the other lists all archetypes it find in local repository index.
+ * There are 3 default implementations registered: One lists 1 basic archetype
+ * (simple and the other lists all archetypes it find in local and remote repository indexes.
+ * </strike>
+ * </p>
  * @author mkleint
+ * @deprecated Use layer based registration instead.
  */
-public interface ArchetypeProvider {
+public @Deprecated interface ArchetypeProvider {
 
     /**
      * return Archetype instances known to this provider. Is called once per

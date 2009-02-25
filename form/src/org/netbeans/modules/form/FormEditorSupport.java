@@ -1246,7 +1246,9 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
                     model = fe.getFormModel();
                     if (model != null) {
                         JavaCodeGenerator codeGen = (JavaCodeGenerator)FormEditor.getCodeGenerator(model);
-                        codeGen.regenerateCode();
+                        if (codeGen != null) {
+                            codeGen.regenerateCode();
+                        }
                     }
                 }
             }
