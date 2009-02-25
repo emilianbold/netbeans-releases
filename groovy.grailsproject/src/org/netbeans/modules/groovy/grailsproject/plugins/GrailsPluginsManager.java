@@ -143,21 +143,6 @@ public class GrailsPluginsManager {
         return processor.getPlugins();
     }
 
-    public File getPluginsDir() {
-        Version version = GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion();
-        File file;
-        if (Version.VERSION_1_1.compareTo(version) <= 0) {
-            file = new BuildConfig(GrailsProjectConfig.forProject(project)).getProjectPluginsDir();
-        } else {
-            File projectRoot = FileUtil.toFile(project.getProjectDirectory());
-            file = new File(projectRoot, "plugins"); // NOI18N
-        }
-
-        LOGGER.log(Level.FINE, "Project {0} has plugin dir {1}",
-                new Object[] {project.getProjectDirectory().getNameExt(), file.getAbsolutePath()});
-        return file;
-    }
-
     public List<GrailsPlugin> loadInstalledPlugins() {
         Version version = GrailsPlatform.getDefault().getVersion();
         if (Version.VERSION_1_1.compareTo(version) <= 0) {
@@ -295,7 +280,7 @@ public class GrailsPluginsManager {
         }
         executor.shutdown();
 
-        FileUtil.refreshFor(getPluginsDir());
+        FileUtil.refreshFor(project.getBuildConfig().getProjectPluginsDir());
         return installed;
     }
     
@@ -460,134 +445,4 @@ public class GrailsPluginsManager {
         }
     }
 
-    private static class BuildConfig {
-
-        private final GrailsProjectConfig config;
-
-        private final Object buildSettingsInstance;
-
-        private final File projectRoot;
-
-        public BuildConfig(GrailsProjectConfig config) {
-            long start = System.currentTimeMillis();
-
-            this.config = config;
-
-            projectRoot = FileUtil.toFile(config.getProject().getProjectDirectory());
-            assert projectRoot != null;
-
-            buildSettingsInstance = loadBuildSettings();
-            LOGGER.log(Level.INFO, "Took {0} ms to load BuildSettings for {1}",
-                    new Object[] {(System.currentTimeMillis() - start), config.getProject().getProjectDirectory().getNameExt()});
-        }
-
-        public File getProjectPluginsDir() {
-            try {
-                if (buildSettingsInstance != null) {
-                    Method getProjectPluginsDirMethod = buildSettingsInstance.getClass().getMethod("getProjectPluginsDir", // NOI18N
-                            new Class[] {});
-                    Object value = getProjectPluginsDirMethod.invoke(buildSettingsInstance, new Object[] {});
-
-                    if (value instanceof File) {
-                        File file = (File) value;
-                        if (!file.isAbsolute()) {
-                            file = new File(projectRoot, file.getPath());
-                        }
-                        return file;
-                    }
-                }
-            } catch (NoSuchMethodException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-            } catch (IllegalAccessException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-            } catch (InvocationTargetException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-            }
-
-            // this is just the best effort (ignoring BuildConfig.groovy)
-            File pluginsDirFile;
-            String strPluginsDir = System.getProperty("grails.project.plugins.dir"); // NOI18N
-            if (strPluginsDir == null) {
-                File projectWorkDirFile;
-                String projectWorkDir = System.getProperty("grails.project.work.dir"); // NOI18N
-                if (projectWorkDir == null) {
-                    File workDirFile;
-                    String workDir = System.getProperty("grails.work.dir"); // NOI18N
-                    if (workDir == null) {
-                        workDir = System.getProperty("user.home"); // NOI18N
-                        workDir = workDir + File.separator + ".grails" // NOI18N
-                                + File.separator + config.getGrailsPlatform().getVersion();
-                        workDirFile = new File(workDir);
-                    } else {
-                        workDirFile = new File(workDir);
-                        if (!workDirFile.isAbsolute()) {
-                            workDirFile = new File(projectRoot, workDir);
-                        }
-                    }
-                    projectWorkDirFile = new File(workDirFile, "projects" + File.separator + projectRoot.getName()); // NOI18N
-                } else {
-                    projectWorkDirFile = new File(projectWorkDir);
-                    if (!projectWorkDirFile.isAbsolute()) {
-                        projectWorkDirFile = new File(projectRoot, projectWorkDir);
-                    }
-                }
-                pluginsDirFile = new File(projectWorkDirFile, "plugins"); // NOI18N
-            } else {
-                pluginsDirFile = new File(strPluginsDir);
-                if (!pluginsDirFile.isAbsolute()) {
-                    pluginsDirFile = new File(projectRoot, strPluginsDir);
-                }
-            }
-
-            return pluginsDirFile;
-        }
-
-        public File getGlobalPluginsDir() {
-            return null;
-        }
-
-        public List<GrailsPlugin> getPlugins() {
-            return Collections.emptyList();
-        }
-
-        private Object loadBuildSettings() {
-            GrailsPlatform platform = config.getGrailsPlatform();
-            if (!platform.isConfigured()) {
-                return null;
-            }
-
-            ClassLoader loader = platform.getClassPath().getClassLoader(true);
-            URLClassLoader urlLoader;
-            if (loader instanceof URLClassLoader) {
-                urlLoader = (URLClassLoader) loader;
-            } else {
-                urlLoader = new URLClassLoader(new URL[] {}, loader);
-            }
-
-            try {
-                Class clazz = urlLoader.loadClass("grails.util.BuildSettings"); // NOI18N
-                Constructor contructor = clazz.getConstructor(File.class, File.class);
-                Object instance = contructor.newInstance(platform.getGrailsHome(), projectRoot);
-
-                Method setRootLoaderMethod = clazz.getMethod("setRootLoader", new Class[] {URLClassLoader.class}); // NOI18N
-                setRootLoaderMethod.invoke(instance, new Object[] {urlLoader});
-
-                Method loadConfigMethod = clazz.getMethod("loadConfig", new Class[] {}); // NOI18N
-                loadConfigMethod.invoke(instance, new Object[] {});
-
-                return instance;
-            } catch (ClassNotFoundException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-            } catch (NoSuchMethodException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-            } catch (InstantiationException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-            } catch (IllegalAccessException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-            } catch (InvocationTargetException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-            }
-            return null;
-        }
-    }
 }
