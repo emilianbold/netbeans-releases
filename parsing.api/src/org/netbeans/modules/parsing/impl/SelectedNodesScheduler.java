@@ -61,7 +61,10 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=Scheduler.class)
 public class SelectedNodesScheduler extends Scheduler {
-    
+
+
+    private Source              source;
+
     public SelectedNodesScheduler () {
         TopComponent.getRegistry ().addPropertyChangeListener (new AListener ());
     }
@@ -72,7 +75,7 @@ public class SelectedNodesScheduler extends Scheduler {
             final DataObject dataObject = nodes [0].getLookup ().lookup (DataObject.class);
             if (dataObject != null) {
                 final FileObject fileObject = dataObject.getPrimaryFile ();
-                final Source source = Source.create (fileObject);
+                source = Source.create (fileObject);
                 if (source != null) {
                     schedule (source, new SchedulerEvent (this) {});
                     return;
@@ -89,7 +92,9 @@ public class SelectedNodesScheduler extends Scheduler {
 
     @Override
     protected SchedulerEvent createSchedulerEvent (SourceModificationEvent event) {
-        return new SchedulerEvent (this) {};
+        if (event.getModifiedSource () == source)
+            return new SchedulerEvent (this) {};
+        return null;
     }
     
     private class AListener implements PropertyChangeListener {
