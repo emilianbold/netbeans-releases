@@ -71,6 +71,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.ErrorHandler;
@@ -103,7 +104,7 @@ public class HudsonConnector {
     }
     
     public synchronized Collection<HudsonJob> getAllJobs() {
-        Document docInstance = getDocument(instance.getUrl() + XML_API_URL);
+        Document docInstance = getDocument(instance.getUrl() + XML_API_URL + "?depth=1");
         
         if (null == docInstance)
             return new ArrayList<HudsonJob>();
@@ -111,12 +112,8 @@ public class HudsonConnector {
         // Clear cache
         cache.clear();
         
-        // Get views and jobs
-        NodeList views = docInstance.getElementsByTagName(XML_API_VIEW_ELEMENT);
-        NodeList jobs = docInstance.getElementsByTagName(XML_API_JOB_ELEMENT);
-        
         // Parse views and set them into instance
-        Collection<HudsonView> cViews = getViews(views);
+        Collection<HudsonView> cViews = getViews(docInstance);
         
         if (null == cViews)
             cViews = new ArrayList<HudsonView>();
@@ -124,7 +121,7 @@ public class HudsonConnector {
         instance.setViews(cViews);
         
         // Parse jobs and return them
-        Collection<HudsonJob> cJobs = getJobs(jobs);
+        Collection<HudsonJob> cJobs = getJobs(docInstance);
         
         if (null == cJobs)
             cJobs = new ArrayList<HudsonJob>();
@@ -233,11 +230,15 @@ public class HudsonConnector {
         
     }
     
-    private Collection<HudsonView> getViews(NodeList nodes) {
+    private Collection<HudsonView> getViews(Document doc) {
         Collection<HudsonView> views = new ArrayList<HudsonView>();
-        
+
+        NodeList nodes = doc.getDocumentElement().getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
             Node n = nodes.item(i);
+            if (!n.getNodeName().equals(XML_API_VIEW_ELEMENT)) {
+                continue;
+            }
             
             String name = null;
             String url = null;
@@ -256,10 +257,7 @@ public class HudsonConnector {
             }
             
             if (null != name && null != url) {
-                Document docView = getDocument(url + XML_API_URL);
-                
-                if (null == docView)
-                    continue;
+                Element docView = (Element) n;
                 
                 // Retrieve description
                 NodeList descriptionList = docView.getElementsByTagName(XML_API_DESCRIPTION_ELEMENT);
@@ -301,11 +299,15 @@ public class HudsonConnector {
         return views;
     }
     
-    private Collection<HudsonJob> getJobs(NodeList nodes) {
+    private Collection<HudsonJob> getJobs(Document doc) {
         Collection<HudsonJob> jobs = new ArrayList<HudsonJob>();
         
+        NodeList nodes = doc.getDocumentElement().getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
             Node n = nodes.item(i);
+            if (!n.getNodeName().equals(XML_API_JOB_ELEMENT)) {
+                continue;
+            }
             
             HudsonJobImpl job = new HudsonJobImpl(instance);
             
@@ -333,12 +335,7 @@ public class HudsonConnector {
             }
             
             if (null != job.getName() && null != job.getUrl() && null != job.getColor()) {
-                Document docJob = getDocument(job.getUrl() + XML_API_URL);
-                
-                if (null == docJob)
-                    continue;
-                
-                NodeList jobDetails = docJob.getDocumentElement().getChildNodes();
+                NodeList jobDetails = n.getChildNodes();
                 
                 for (int k = 0; k < jobDetails.getLength(); k++) {
                     Node d = jobDetails.item(k);

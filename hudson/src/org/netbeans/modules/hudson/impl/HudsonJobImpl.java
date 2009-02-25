@@ -82,11 +82,15 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     }
     
     public void putProperty(String name, Object o) {
+        if (o == null) {
+            throw new NullPointerException("putProperty: " + name);
+        }
         properties.putProperty(name, o);
     }
     
     public String getDisplayName() {
-        return properties.getProperty(JOB_DISPLAY_NAME, String.class);
+        String name = properties.getProperty(JOB_DISPLAY_NAME, String.class);
+        return name != null ? name : getName();
     }
     
     public String getName() {
