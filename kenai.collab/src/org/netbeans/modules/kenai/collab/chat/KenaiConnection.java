@@ -260,6 +260,7 @@ public class KenaiConnection implements KenaiListener {
                 connection.disconnect();
                 messageQueue.clear();
                 listeners.clear();
+                PresenceIndicator.getDefault().setStatus(Status.OFFLINE);
             }
         }
     }

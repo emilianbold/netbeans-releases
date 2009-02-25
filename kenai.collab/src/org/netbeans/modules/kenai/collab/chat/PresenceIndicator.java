@@ -44,6 +44,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Iterator;
 import javax.swing.AbstractAction;
@@ -87,6 +88,10 @@ public class PresenceIndicator {
 
     public void setStatus(Status status) {
         label.setIcon(status == Status.ONLINE?ONLINE:OFFLINE);
+        if (status==Status.OFFLINE) {
+            label.setText("");
+            label.setToolTipText("");
+        }
     }
 
     Component getComponent() {
@@ -178,7 +183,7 @@ public class PresenceIndicator {
 
     }
 
-    public class PresenceListener implements PacketListener, Runnable {
+    public class PresenceListener implements PacketListener {
         private String tip;
 
         /**
@@ -202,13 +207,12 @@ public class PresenceIndicator {
             }
             tip.append("</body></html>");
             this.tip=tip.toString();
-            java.awt.EventQueue.invokeLater(this);
-        }
-
-        public void run() {
-            label.setToolTipText(tip);
-            label.setText(String.valueOf(onlineUsers.size()));
+            if (onlineUsers.size()==0) {
+                setStatus(Status.OFFLINE);
+            } else {
+                label.setToolTipText(this.tip);
+                label.setText(String.valueOf(onlineUsers.size()));
+            }
         }
     }
-
 }
