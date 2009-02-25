@@ -60,9 +60,17 @@ public abstract class Issue {
      */
     public static String LABEL_NAME_SEEN = "issue.seen";
 
+    /**
+     * issue data were changed
+     */
+    public static final String EVENT_ISSUE_DATA_CHANGED = "issue.data_changed";
+
+    /**
+     * issues seen state changed
+     */
+    public static final String EVENT_ISSUE_SEEN_CHANGED = "issue.seen_changed";
+
     private boolean seen;
-    private String EVENT_ISSUE_DATA_CHANGED = "issue.data_changed";
-    private String EVENT_ISSUE_SEEN_CHANGED = "issue.seen_changed";
     
     /**
      * Creates an issue

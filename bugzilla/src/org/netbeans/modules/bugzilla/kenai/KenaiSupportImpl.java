@@ -64,7 +64,7 @@ public class KenaiSupportImpl extends KenaiSupport {
             if(!f.getName().equals("bz")) { // XXX constant?                // NOI18N
                 return null;
             }
-            String location = f.getLocation();
+            String location = f.getLocation().toString();
             int idx = location.indexOf(IBugzillaConstants.URL_BUGLIST);
             if(idx <= 0) {
                 Bugzilla.LOG.warning("can't get bugtracking url from [" + project.getName() + ", " + location + "]"); // NOI18N

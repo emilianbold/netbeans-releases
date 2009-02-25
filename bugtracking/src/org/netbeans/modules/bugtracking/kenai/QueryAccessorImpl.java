@@ -66,7 +66,7 @@ public class QueryAccessorImpl extends QueryAccessor {
     public List<QueryHandle> getQueries(ProjectHandle project) {
         Repository repo = KenaiRepositories.getInstance().getRepository(project, this);
         if(repo == null) {
-            // XXX
+            // XXX log this inconvenience
             return EMPTY_QH_LIST;
         }        
         return Collections.unmodifiableList(getQueries(repo, project));
