@@ -255,41 +255,46 @@ public class QueryController extends BugtrackingController implements DocumentLi
     void populate(final String urlParameters) {
         enableFields(false);
 
+        final Task[] t = new Task[1];
+        Cancellable c = new Cancellable() {
+            public boolean cancel() {
+                if(t[0] != null) {
+                    return t[0].cancel();
+                }
+                return true;
+            }
+        };
+
         final String msgPopulating = NbBundle.getMessage(this.getClass(), "MSG_Populating");    // NOI18N
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(msgPopulating);
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(msgPopulating, c);
         final JComponent progressBar = ProgressHandleFactory.createProgressComponent(handle);
-        
-        task = rp.post(new Runnable() {
+        t[0] = rp.post(new Runnable() {
             public void run() {
                 handle.start();
                 panel.showRetrievingProgress(true, progressBar, msgPopulating, !query.isSaved());
                 try {
-                    Bugzilla.LOG.fine("Starting populate query controller");    // NOI18N
-
+                    Bugzilla.LOG.fine("Starting populate query controller"); // NOI18N
+                    // NOI18N
                     Bugzilla bgz = Bugzilla.getInstance();
                     productParameter.setParameterValues(toParameterValues(bgz.getProducts(repository)));
-                    if(panel.productList.getModel().getSize() > 0) {
+                    if (panel.productList.getModel().getSize() > 0) {
                         panel.productList.setSelectedIndex(0);
                         populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
                     }
-
                     statusParameter.setParameterValues(toParameterValues(bgz.getStatusValues(repository)));
                     resolutionParameter.setParameterValues(toParameterValues(bgz.getResolutions(repository)));
                     priorityParameter.setParameterValues(toParameterValues(bgz.getPriorities(repository)));
                     changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
-
                     summaryParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
                     commentsParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
                     keywordsParameter.setParameterValues(QueryParameter.PV_KEYWORDS_VALUES);
                     peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
                     panel.changedToTextField.setText("Now"); // NOI18N
-                    
-                    if(urlParameters != null) {
+                    // NOI18N
+                    if (urlParameters != null) {
                         setParameters(urlParameters);
                     }
-
                     panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
-
                     panel.jScrollPane2.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
                     panel.jScrollPane3.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
                     panel.jScrollPane4.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -306,7 +311,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     enableFields(true);
                     handle.finish();
                     panel.showRetrievingProgress(false, progressBar, null, !query.isSaved());
-                    Bugzilla.LOG.fine("Finnished populate query controller");   // NOI18N
+                    Bugzilla.LOG.fine("Finnished populate query controller"); // NOI18N
                 }
             }
         });
