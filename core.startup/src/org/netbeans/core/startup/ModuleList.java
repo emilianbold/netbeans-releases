@@ -1624,6 +1624,7 @@ final class ModuleList implements Stamps.Updater {
                         jarFile = findJarByName(jar, cnb);
                     } catch (FileNotFoundException fnfe) {
                         ev.log(Events.MISSING_JAR_FILE, new File(fnfe.getMessage()), true);
+                        dirtyprops.remove(cnb); // #159001
                         continue;
                     }
                     Boolean reloadableB = (Boolean)props.get("reloadable"); // NOI18N
@@ -1666,6 +1667,7 @@ final class ModuleList implements Stamps.Updater {
                 Map<String, Object> props = entry.getValue();
                 if (props.get("enabled") != null && ((Boolean)props.get("enabled")).booleanValue()) { // NOI18N
                     DiskStatus status = statuses.get(cnb);
+                    assert status != null : cnb; // #159001
                     if (status.diskProps.get("enabled") == null || ! ((Boolean)status.diskProps.get("enabled")).booleanValue()) { // NOI18N
                         if (status.module.isEnabled()) throw new IllegalStateException("Already enabled: " + status.module); // NOI18N
                         toenable.add(status.module);
@@ -1682,9 +1684,7 @@ final class ModuleList implements Stamps.Updater {
                 Map<String, Object> props = entry.getValue();
                 if (props.get("enabled") == null || ! ((Boolean)props.get("enabled")).booleanValue()) { // NOI18N
                     DiskStatus status = statuses.get(cnb);
-                    if (status == null) { // Possible? #159001
-                        continue;
-                    }
+                    assert status != null : cnb; // #159001
                     if (Boolean.TRUE.equals(status.diskProps.get("enabled"))) { // NOI18N
                         if (! status.module.isEnabled()) throw new IllegalStateException("Already disabled: " + status.module); // NOI18N
                         todisable.add(status.module);
@@ -1753,7 +1753,8 @@ final class ModuleList implements Stamps.Updater {
                 String cnb = entry.getKey();
                 Map<String,Object> props = entry.getValue();
                 DiskStatus status = statuses.get(cnb);
-                Map diskProps = status.diskProps;
+                assert status != null : cnb; // #159001
+                Map<String,Object> diskProps = status.diskProps;
                 for (int i = 0; i < toCheck.length; i++) {
                     String prop = toCheck[i];
                     Object onDisk = props.get(prop);
@@ -1769,7 +1770,7 @@ final class ModuleList implements Stamps.Updater {
         }
         private void stepUpdateProps(Map<String,Map<String,Object>> dirtyprops) {
             LOG.fine("ModuleList: stepUpdateProps");
-	    for (Map.Entry<String,Map<String,Object>> entry: dirtyprops.entrySet()) {
+            for (Map.Entry<String,Map<String,Object>> entry: dirtyprops.entrySet()) {
                 String cnb = entry.getKey();
                 DiskStatus status = statuses.get(cnb);
                 if (status != null) {
