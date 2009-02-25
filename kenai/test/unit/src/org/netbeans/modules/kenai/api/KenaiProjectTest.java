@@ -55,6 +55,8 @@ import org.junit.Test;
  */
 public class KenaiProjectTest {
 
+    static String UNITTESTUNIQUENAME = "unittestuniquename01";
+
     public KenaiProjectTest() {
     }
 
@@ -89,7 +91,7 @@ public class KenaiProjectTest {
         System.out.println("forRepository1");
         String uri = "https://testkenai.com/svn/unittestuniquename01~source-code-repository";
         KenaiProject result = KenaiProject.forRepository(uri);
-        assert result.getName().equals(KenaiTest.UNITTESTUNIQUENAME);
+        assert result.getName().equals(UNITTESTUNIQUENAME);
     }
     /**
      * Test of forRepository method, of class KenaiProject.
@@ -99,7 +101,7 @@ public class KenaiProjectTest {
         System.out.println("forRepository2");
         String uri = "https://testkenai.com/hg/unittestuniquename01~source-code-repository2";
         KenaiProject result = KenaiProject.forRepository(uri);
-        assert result.getName().equals(KenaiTest.UNITTESTUNIQUENAME);
+        assert result.getName().equals(UNITTESTUNIQUENAME);
     }
 
     /**
@@ -107,7 +109,7 @@ public class KenaiProjectTest {
      */
     @Test
     public void testOpen() throws KenaiException {
-        KenaiProject instance = Kenai.getDefault().getProject(KenaiTest.UNITTESTUNIQUENAME);
+        KenaiProject instance = Kenai.getDefault().getProject(UNITTESTUNIQUENAME);
         instance.open();
         for (KenaiProject prj:Kenai.getDefault().getOpenProjects()) {
             System.out.println(prj);
@@ -116,7 +118,7 @@ public class KenaiProjectTest {
 
     @Test
     public void testCheckName() throws KenaiException, MalformedURLException {
-        assert KenaiProject.checkName("uniquename007") == null;
-        assert KenaiProject.checkName(KenaiTest.UNITTESTUNIQUENAME).equals("foo");
+        assert KenaiProject.checkName("uniquenamebond007") == null;
+        assert KenaiProject.checkName(UNITTESTUNIQUENAME).equals("foo");
     }
 }
