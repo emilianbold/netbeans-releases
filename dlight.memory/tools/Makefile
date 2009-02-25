@@ -39,15 +39,24 @@
 
 INSTALLDIR = /dev/null
 
-APP_NAME=privp
+APP_NAME=mmonitor
+LIB_NAME=magent
 
-#CFLAGS-Windows_XP := -c -mno-cygwin
-CFLAGS-Linux := -c -fPIC
-CFLAGS-SunOS := -c -fPIC
-CFLAGS-Mac_OS_X := -c -fPIC
+#SOEXT-Windows_XP := dll
+SOEXT-Linux := so
+SOEXT-SunOS := so
+SOEXT-Mac_OS_X := dylib
+
+#CFLAGS-Windows_XP := -g -c -mno-cygwin
+CFLAGS-Linux := -c -g -fPIC
+CFLAGS-SunOS := -c -g -fPIC
+CFLAGS-Mac_OS_X := -c -g -fPIC
 
 ifdef 64BITS
     FLAG64 := -m64
+endif
+ifdef DEBUG
+	DBGFLAG := -DDEBUG=${DEBUG}
 endif
 
 # The following sets UNAME_S to a platform dependent string. Since
@@ -65,7 +74,20 @@ ifeq (Darwin,$(UNAME_S))
 	OSNAME = Mac_OS_X
 endif
 
-CFLAGS := ${CFLAGS-${OSNAME}} ${FLAG64}
+#LDFLAGS_LIB-Windows_XP = -mno-cygwin -Wl,--out-implib,build/$(OSNAME)-$(PLATFORM)/lib${LIB_NAME}.import.a -shared
+LDFLAGS_LIB-Linux = -g -shared -fPIC
+LDFLAGS_LIB-SunOS = -g -shared -fPIC
+LDFLAGS_LIB-Mac_OS_X = -dynamiclib -g -fPIC -install_name ${LIB_NAME}-${OSNAME}-${PLATFORM}.${SOEXT}
+
+#LDFLAGS_APP-Windows_XP = -mno-cygwin -Wl
+LDFLAGS_APP-Linux = -g -shared -fPIC
+LDFLAGS_LIB-SunOS = -g -shared -fPIC
+LDFLAGS_LIB-Mac_OS_X = -dynamiclib -g -fPIC -install_name ${LIB_NAME}-${OSNAME}-${PLATFORM}.${SOEXT}
+
+SOEXT := ${SOEXT-${OSNAME}}
+CFLAGS := ${CFLAGS-${OSNAME}} ${FLAG64} ${DBGFLAG}
+LDFLAGS_LIB = ${LDFLAGS_LIB-${OSNAME}} ${FLAG64}
+LDFLAGS_APP = ${LDFLAGS_APP-${OSNAME}} ${FLAG64}
 
 ifdef 64BITS
     PLATFORM_64 := _64
@@ -85,21 +107,32 @@ endif
 
 testit :sh= uname -s
 
-DIST=../bin/nativeexecution
+DIST=../release/bin
 BUILD=./build
 
 PLATFORM_DIR=$(OSNAME)-$(PLATFORM)
-APP_PATH=${DIST}/${PLATFORM_DIR}/${APP_NAME}
-APP_OUT=${BUILD}/${PLATFORM_DIR}/${APP_NAME}.o
 
-all: check init ${APP_PATH}
+LIB_PATH=${DIST}/${PLATFORM_DIR}/${LIB_NAME}.${SOEXT}
+APP_PATH=${DIST}/${PLATFORM_DIR}/${APP_NAME}
+
+LIB_OBJ=${BUILD}/${PLATFORM_DIR}/${LIB_NAME}.o
+APP_OBJ=${BUILD}/${PLATFORM_DIR}/${APP_NAME}.o
+
+all: check init ${LIB_PATH} ${APP_PATH}
+
+#agent shared library lib:
+${LIB_PATH}: ${LIB_OBJ}
+	gcc ${LDFLAGS_LIB} -o ${LIB_PATH} ${LIB_OBJ}
+
+${LIB_OBJ}: ${LIB_NAME}.c
+	gcc ${CFLAGS} -o ${LIB_OBJ} ${LIB_NAME}.c
 
 #appliction:
-${APP_PATH}: ${APP_OUT}
-	gcc ${LDFLAGS_APP} -o ${APP_PATH} ${APP_OUT}
+${APP_PATH}: ${APP_OBJ}
+	gcc ${LDFLAGS_APP} -o ${APP_PATH} ${APP_OBJ}
 
-${APP_OUT}: ${APP_NAME}.c
-	gcc ${CFLAGS} -o ${APP_OUT} ${APP_NAME}.c
+${APP_OBJ}: ${APP_NAME}.c
+	gcc ${CFLAGS} -o ${APP_OBJ} ${APP_NAME}.c
 
 clean:
 	rm -rf ${BUILD}/${PLATFORM_DIR} ${DIST}/${PLATFORM_DIR}
@@ -134,5 +167,9 @@ test:
 	@echo "UNAME_P = [${UNAME_P}]"
 	@echo "OSNAME = [${OSNAME}]"
 	@echo "PLATFORM = [${PLATFORM}]"
+	@echo "SOEXT = [${SOEXT}]"
 	@echo "CFLAGS = [${CFLAGS}]"
+	@echo "LDFLAGS_LIB = [${LDFLAGS_LIB}]"
+	@echo "LDFLAGS_APP = [${LDFLAGS_APP}]"
+	@echo "${LIB_NAME} = [${LIB_PATH}]"	
 	@echo "${APP_NAME} = [${APP_PATH}]"

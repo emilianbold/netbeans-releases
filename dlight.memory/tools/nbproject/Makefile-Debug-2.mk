@@ -21,10 +21,10 @@ FC=g77
 PLATFORM=GNU-Solaris-x86
 
 # Include project Makefile
-include src-Makefile.mk
+include tools-Makefile.mk
 
 # Object Directory
-OBJECTDIR=build/Debug-1/${PLATFORM}
+OBJECTDIR=build/Debug-2/${PLATFORM}
 
 # Object Files
 OBJECTFILES=
@@ -44,7 +44,7 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	cd . && ${MAKE} DEBUG=1 all
+	cd . && ${MAKE} DEBUG=2 all
 
 # Subprojects
 .build-subprojects:

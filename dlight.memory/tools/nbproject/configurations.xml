@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configurationDescriptor version="51">
   <logicalFolder name="root" displayName="root" projectFiles="true">
-    <logicalFolder name="src" displayName="src" projectFiles="true">
+    <logicalFolder name="tools" displayName="tools" projectFiles="true">
       <itemPath>dlight.h</itemPath>
       <itemPath>magent.c</itemPath>
       <itemPath>mmonitor.c</itemPath>
@@ -10,10 +10,10 @@
                    displayName="Important Files"
                    projectFiles="false">
       <itemPath>Makefile</itemPath>
-      <itemPath>src-Makefile.mk</itemPath>
+      <itemPath>tools-Makefile.mk</itemPath>
     </logicalFolder>
   </logicalFolder>
-  <projectmakefile>src-Makefile.mk</projectmakefile>
+  <projectmakefile>tools-Makefile.mk</projectmakefile>
   <confs>
     <conf name="Release" type="0">
       <toolsSet>
