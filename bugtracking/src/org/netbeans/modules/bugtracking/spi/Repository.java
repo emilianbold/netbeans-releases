@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.bugtracking.spi;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+
 /**
  * 
  * Represents a bug tracking repository (server)
@@ -46,6 +49,13 @@ package org.netbeans.modules.bugtracking.spi;
  * @author Tomas Stupka
  */
 public abstract class Repository {
+
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
+
+    /**
+     * a query was saved or removed
+     */
+    public static String EVENT_QUERY_LIST_CHANGED = "bugtracking.repository.queries.changed";
 
     /**
      * Returns the display name for this repository
@@ -104,5 +114,17 @@ public abstract class Repository {
      * @param criteria
      */
     public abstract Issue[] simpleSearch(String criteria);
+
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
+    }
+
+    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
+    }
+
+    protected void fireQueryListChanged() {
+        support.firePropertyChange(EVENT_QUERY_LIST_CHANGED, null, null);
+    }
 
 }

@@ -236,6 +236,7 @@ public class BugzillaIssue extends Issue {
         data = taskData;
         attributes = null; // reset
         ((BugzillaIssueNode)getNode()).fireDataChanged();
+        fireDataChanged();
     }
 
     TaskData getTaskData() {

@@ -60,19 +60,27 @@ public abstract class Query implements Comparable<Query> {
 
     private final PropertyChangeSupport support;
 
-    public static final int ISSUE_STATUS_UPTODATE       = 2;
+    public static final int ISSUE_STATUS_UNKNOWN        = 0;
+    public static final int ISSUE_STATUS_SEEN           = 2;
     public static final int ISSUE_STATUS_NEW            = 4; 
     public static final int ISSUE_STATUS_MODIFIED       = 8;
     public static final int ISSUE_STATUS_OBSOLETE       = 16;
     public static final int ISSUE_STATUS_NOT_OBSOLETE   =
-                                ISSUE_STATUS_UPTODATE |
+                                ISSUE_STATUS_SEEN |
+                                ISSUE_STATUS_NEW |
+                                ISSUE_STATUS_MODIFIED;
+    public static final int ISSUE_STATUS_NOT_SEEN   =
                                 ISSUE_STATUS_NEW |
                                 ISSUE_STATUS_MODIFIED;
 
+    public static Filter FILTER_ALL = new AllFilter();
+    public static Filter FILTER_NOT_SEEN = new NotSeenFilter();
+    public Filter FILTER_OUTOFDATE = new OutOfDateFilter(this);
+
     /**
-     * queries data were changed
+     * querie issues list was changed
      */
-    public static String EVENT_QUERY_DATA_CHANGED   = "bugtracking.query.changed";
+    public static String EVENT_QUERY_ISSUES_CHANGED = "bugtracking.query.issues_changed";
 
     /**
      * query was saved
@@ -121,9 +129,9 @@ public abstract class Query implements Comparable<Query> {
      */
     public Filter[] getFilters() {
         return new Filter[] {
-            new AllFilter(),
-            new UnseenFilter(),
-            new RemovedFilter(this)
+            FILTER_ALL,
+            FILTER_NOT_SEEN,
+            new OutOfDateFilter(this)
         };    
     }
 
@@ -247,6 +255,9 @@ public abstract class Query implements Comparable<Query> {
         support.firePropertyChange(EVENT_QUERY_REMOVED, null, null);
     }
 
+    protected void fireQueryIssuesChanged() {
+        support.firePropertyChange(EVENT_QUERY_ISSUES_CHANGED, null, null);
+    }
 
     public void addNotifyListener(QueryNotifyListener l) {
         List<QueryNotifyListener> list = getNotifyListeners();
@@ -289,6 +300,7 @@ public abstract class Query implements Comparable<Query> {
             r.run();
         } finally {
             fireFinished();
+            fireQueryIssuesChanged();
             setLastRefresh(System.currentTimeMillis());
         }
     }
@@ -335,7 +347,7 @@ public abstract class Query implements Comparable<Query> {
             return true;
         }
     }
-    private static class UnseenFilter extends Filter {
+    private static class NotSeenFilter extends Filter {
         @Override
         public String getDisplayName() {
             return NbBundle.getMessage(Query.class, "LBL_UnseenIssuesFilter");
@@ -345,10 +357,10 @@ public abstract class Query implements Comparable<Query> {
             return !issue.wasSeen();
         }
     }
-    private static class RemovedFilter extends Filter {
+    private static class OutOfDateFilter extends Filter {
         private final Query query;
 
-        public RemovedFilter(Query query) {
+        public OutOfDateFilter(Query query) {
             this.query = query;
         }
         @Override

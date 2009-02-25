@@ -62,6 +62,7 @@ public abstract class Issue {
 
     private boolean seen;
     private String EVENT_ISSUE_DATA_CHANGED = "issue.data_changed";
+    private String EVENT_ISSUE_SEEN_CHANGED = "issue.seen_changed";
     
     /**
      * Creates an issue
@@ -147,7 +148,8 @@ public abstract class Issue {
      * @param seen
      */
     protected void setSeen(boolean seen) {
-        this.seen = seen;
+        this.seen = seen;        
+        fireSeenChanged();
     }
 
     public abstract Map<String, String> getAttributes();
@@ -162,5 +164,9 @@ public abstract class Issue {
 
     protected void fireDataChanged() {
         support.firePropertyChange(EVENT_ISSUE_DATA_CHANGED, null, null);
+    }
+
+    protected void fireSeenChanged() {
+        support.firePropertyChange(EVENT_ISSUE_SEEN_CHANGED, null, null);
     }
 }

@@ -68,10 +68,18 @@ public class BugzillaQuery extends Query {
 
     private String urlParameters;
     private boolean firstRun = true;
+    private boolean kenai;
 
     public BugzillaQuery(BugzillaRepository repository) {
         super();
         this.repository = repository;
+    }
+
+    public BugzillaQuery(BugzillaRepository repository, String urlParameters, boolean kenai) {
+        super();
+        this.repository = repository;
+        this.urlParameters = urlParameters;
+        this.kenai = kenai;
     }
 
     public BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, long lastRefresh) {
@@ -170,6 +178,10 @@ public class BugzillaQuery extends Query {
     @Override
     public int getIssueStatus(Issue issue) {
         String id = issue.getID();
+        return getIssueStatus(id);
+    }
+
+    public int getIssueStatus(String id) {
         if(obsoleteIssues.contains(id)) {
             return Query.ISSUE_STATUS_OBSOLETE;
         } else {
@@ -195,6 +207,10 @@ public class BugzillaQuery extends Query {
         this.name = name;
     }
 
+    public boolean isKenai() {
+        return kenai;
+    }
+
     @Override
     public void setSaved(boolean saved) {
         super.setSaved(saved);
@@ -203,11 +219,13 @@ public class BugzillaQuery extends Query {
     @Override
     public void fireQuerySaved() {
         super.fireQuerySaved();
+        repository.fireQueryListChanged();
     }
 
     @Override
     public void fireQueryRemoved() {
         super.fireQueryRemoved();
+        repository.fireQueryListChanged();
     }
 
     @Override
@@ -222,14 +240,14 @@ public class BugzillaQuery extends Query {
 
         // XXX move to cache and sync
         IssuesCache cache = repository.getCache();
-        List<Issue> l = new ArrayList<Issue>();
+        List<Issue> ret = new ArrayList<Issue>();
         for (String id : ids) {
-            int status = cache.getStatus(id);
+            int status = getIssueStatus(id);
             if((status & includeStatus) != 0) {
-                l.add(cache.getIssue(id));
+                ret.add(cache.getIssue(id));
             }
         }
-        return l.toArray(new Issue[l.size()]);
+        return ret.toArray(new Issue[ret.size()]);
     }
 
     boolean wasRun() {

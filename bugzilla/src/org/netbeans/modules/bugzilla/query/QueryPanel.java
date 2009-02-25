@@ -1043,37 +1043,41 @@ public class QueryPanel extends javax.swing.JPanel {
     final org.netbeans.modules.bugtracking.util.LinkButton webButton = new org.netbeans.modules.bugtracking.util.LinkButton();
     // End of variables declaration//GEN-END:variables
 
+    /**
+     * enables/disables all but the parameter fields
+     * @param enable
+     */
     void enableFields(boolean enable) {
-        summaryComboBox.setEnabled(enable);
-        commentComboBox.setEnabled(enable);
-        keywordsComboBox.setEnabled(enable);
-        summaryTextField.setEnabled(enable);
-        commentTextField.setEnabled(enable);
-        keywordsTextField.setEnabled(enable);
+//        summaryComboBox.setEnabled(enable);
+//        commentComboBox.setEnabled(enable);
+//        keywordsComboBox.setEnabled(enable);
+//        summaryTextField.setEnabled(enable);
+//        commentTextField.setEnabled(enable);
+//        keywordsTextField.setEnabled(enable);
         summaryLabel.setEnabled(enable);
         commentLabel.setEnabled(enable);
         keywordsLabel.setEnabled(enable);
 
         productLabel.setEnabled(enable);
-        productList.setEnabled(enable);
+//        productList.setEnabled(enable);
         componentLabel.setEnabled(enable);
-        componentList.setEnabled(enable);
+//        componentList.setEnabled(enable);
         versionLabel.setEnabled(enable);
-        versionList.setEnabled(enable);
+//        versionList.setEnabled(enable);
         statusLabel.setEnabled(enable);
-        statusList.setEnabled(enable);
+//        statusList.setEnabled(enable);
         resolutionLabel.setEnabled(enable);
-        resolutionList.setEnabled(enable);
+//        resolutionList.setEnabled(enable);
         priorityLabel.setEnabled(enable);
-        priorityList.setEnabled(enable);
+//        priorityList.setEnabled(enable);
 
         peopleLabel.setEnabled(enable);
-        peopleComboBox.setEnabled(enable);
+//        peopleComboBox.setEnabled(enable);
         peopleTextField.setEnabled(enable);
-        bugAssigneeCheckBox.setEnabled(enable);
-        reporterCheckBox.setEnabled(enable);
-        ccCheckBox.setEnabled(enable);
-        commenterCheckBox.setEnabled(enable);
+//        bugAssigneeCheckBox.setEnabled(enable);
+//        reporterCheckBox.setEnabled(enable);
+//        ccCheckBox.setEnabled(enable);
+//        commenterCheckBox.setEnabled(enable);
 
         searchButton.setEnabled(enable);
         saveButton.setEnabled(enable);
@@ -1081,14 +1085,14 @@ public class QueryPanel extends javax.swing.JPanel {
         urlToggleButton.setEnabled(enable);
 
         changedLabel.setEnabled(enable);
-        changedFromTextField.setEnabled(enable);
+//        changedFromTextField.setEnabled(enable);
         changedAndLabel.setEnabled(enable);
-        changedToTextField.setEnabled(enable);
+//        changedToTextField.setEnabled(enable);
         changedWhereLabel.setEnabled(enable);
-        changedList.setEnabled(enable);
+//        changedList.setEnabled(enable);
         changedBlaBlaLabel.setEnabled(enable);
         changedHintLabel.setEnabled(enable);
-        newValueTextField.setEnabled(enable);
+//        newValueTextField.setEnabled(enable);
     }
 
     void switchQueryFields(boolean showAdvanced) {
@@ -1110,13 +1114,6 @@ public class QueryPanel extends javax.swing.JPanel {
         noContentContainer.setVisible(on);
         tableSummaryLabel.setVisible(!on);
         tableFieldsPanel.setVisible(true);
-//        if(on) {
-//            tablePanel.add(noContentPanel, BorderLayout.CENTER);
-//            tablePanel.remove(tableComponent);
-//        } else {
-//            tablePanel.remove(noContentPanel);
-//            tablePanel.add(tableComponent, BorderLayout.CENTER);
-//        }
         if(on && text != null) {
             noContentPanel.setText(text);
         }
@@ -1126,13 +1123,6 @@ public class QueryPanel extends javax.swing.JPanel {
     void showRetrievingProgress(boolean on, JComponent progressBar, String text) {
         noContentContainer.setVisible(on);
         searchPanel.setVisible(!on);
-//        if(on) {
-//            tablePanel.add(noContentPanel, BorderLayout.CENTER);
-//            tablePanel.remove(tableComponent);
-//        } else {
-//            tablePanel.remove(noContentPanel);
-//            tablePanel.add(tableComponent, BorderLayout.CENTER);
-//        }
         if(on && text != null) {
             noContentPanel.setText(text);
         }

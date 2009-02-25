@@ -157,12 +157,16 @@ public class IssuesCache {
     }
 
     public int getStatus(String id) {
+        BugzillaIssue issue = getIssue(id);
+        if(issue == null) {
+            return Query.ISSUE_STATUS_UNKNOWN;
+        }
+        if(issue.wasSeen()) {
+            return Query.ISSUE_STATUS_SEEN;
+        }
         IssueData data = getSeenIssueData().get(id);
         assert data != null;
-//        if(data != null) {
-            return data.status;
-//        }
-//        return Query.ISSUE_STATUS_NEW;
+        return data.status;
     }
 
     public void storeQuery(BugzillaQuery query, String[] ids) {

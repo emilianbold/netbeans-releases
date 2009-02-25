@@ -173,7 +173,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         if(query.isSaved()) {
             setAsSaved();
-            // XXX load issues
         }
         populate(urlParameters);
     }
@@ -236,7 +235,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     void populate(final String urlParameters) {
-        panel.enableFields(false);
+        enableFields(false);
 
         final String msgPopulating = NbBundle.getMessage(this.getClass(), "MSG_Populating");    // NOI18N
         final ProgressHandle handle = ProgressHandleFactory.createHandle(msgPopulating);
@@ -286,13 +285,23 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 } catch (IOException ex) {
                     Bugzilla.LOG.log(Level.SEVERE, null, ex);
                 } finally {
-                    panel.enableFields(true);
+                    enableFields(true);
                     handle.finish();
                     panel.showRetrievingProgress(false, progressBar, null);
                     Bugzilla.LOG.fine("Finnished populate query controller");   // NOI18N
                 }
             }
         });
+    }
+
+    void enableFields(boolean bl) {
+        // set all non parameter fields
+        panel.enableFields(bl);
+        // set the parameter fields
+        for (Map.Entry<String, QueryParameter> e : parameters.entrySet()) {
+            QueryParameter pv = parameters.get(e.getKey());
+            pv.setEnabled(bl);
+        }
     }
 
     public void insertUpdate(DocumentEvent e) {
@@ -388,6 +397,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 }
                 assert name != null;
                 repository.saveQuery(query);
+                query.setSaved(true); // XXX
                 setAsSaved();
                 if(firstTime) {
                     onSearch();
@@ -410,7 +420,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private void setAsSaved() {
         panel.setSaved(query.getDisplayName(), getLastRefresh());
-        query.setSaved(true);
         panel.setModifyVisible(false);
     } 
 
@@ -575,7 +584,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(task != null) {
             task.cancel();
         }
-        panel.enableFields(false);        
+        enableFields(false);        
         task = rp.create(r);
 
         Cancellable c = new Cancellable() {
@@ -611,7 +620,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 final int size = query.getSize();
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        panel.enableFields(true);
+                        enableFields(true);
                         panel.setLastRefresh(getLastRefresh());
                         panel.showNoContentPanel(false);
                         if(size == 0) {
@@ -684,10 +693,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
         for (Map.Entry<String, List<ParameterValue>> e : normalizedParams.entrySet()) {
             QueryParameter pv = parameters.get(e.getKey());
             if(pv != null) {
-                List<ParameterValue> pvs = e.getValue();
-
-                // XXX won't work for combo
+                List<ParameterValue> pvs = e.getValue();    
                 pv.setValues(pvs.toArray(new ParameterValue[pvs.size()]));
+            }
+            if(query.isKenai()) {
+                pv.setAlwaysDisabled(true);
             }
         }
     }

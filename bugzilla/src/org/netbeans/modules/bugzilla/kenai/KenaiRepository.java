@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,61 +34,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla;
+package org.netbeans.modules.bugzilla.kenai;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.bugtracking.spi.KenaiSupport;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugzilla.kenai.KenaiSupportImpl;
+import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugzilla.BugzillaRepository;
+import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 
 /**
  *
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class)
-public class BugzillaConnector extends BugtrackingConnector {
+public class KenaiRepository extends BugzillaRepository {
+    private String urlParam;
 
-    private KenaiSupport kenaiSupport;
-
-    public String getDisplayName() {
-        return "Bugzilla"; // XXX bundle me!
-    }
-
-    public String getTooltip() {
-        return "Bugzilla Bug-Tracking System"; // XXX bundle me!
+    public KenaiRepository(String repoName, String url, String user, String password, String urlParam) {
+        super(repoName, url, user, password);
+        this.urlParam = urlParam;
     }
 
     @Override
-    public Repository createRepository() {
-        return new BugzillaRepository();
+    public Query createQuery() {
+        BugzillaQuery q = new BugzillaQuery(this, urlParam, true);
+        return q;
     }
 
-    @Override
-    public Repository[] getRepositories() {
-        String[] names = BugzillaConfig.getInstance().getRepositories();
-        if(names == null || names.length == 0) {
-            return new Repository[] {};
-        }
-        List<Repository> ret = new ArrayList<Repository>();
-        for (String name : names) {
-            Repository repo = BugzillaConfig.getInstance().getRepository(name);
-            if(repo != null) {
-                ret.add(repo);
-            }
-        }
-        return ret.toArray(new Repository[ret.size()]);
-    }
-
-    @Override
-    public KenaiSupport getKenaiSupport() {
-        if(kenaiSupport == null) {
-            kenaiSupport = new KenaiSupportImpl();
-        }
-        return kenaiSupport;
-    }
 }

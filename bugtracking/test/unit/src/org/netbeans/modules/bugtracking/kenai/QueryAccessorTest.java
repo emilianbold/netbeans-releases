@@ -37,34 +37,37 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla;
+package org.netbeans.modules.bugtracking.kenai;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.Collection;
 import java.util.logging.Level;
-import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
-import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.commons.net.WebUtil;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
-import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.bugtracking.spi.KenaiSupport;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author tomas
  */
-public class KenaiSupportTest extends NbTestCase implements TestConstants {
+public class QueryAccessorTest extends NbTestCase {
 
     private Kenai instance;
     private TaskRepositoryManager trm;
     private BugzillaRepositoryConnector brc;
 
-    public KenaiSupportTest(String arg0) {
+    public QueryAccessorTest(String arg0) {
         super(arg0);
     }
 
@@ -102,27 +105,28 @@ public class KenaiSupportTest extends NbTestCase implements TestConstants {
 
         WebUtil.init();
     }
-
-    public void testGetRepositoryNullProject () throws Throwable {
-
-        BugzillaConnector.KenaiSupportImpl support = new BugzillaConnector.KenaiSupportImpl();
-        BugzillaRepository repo = (BugzillaRepository) support.getRepository(null);
-        assertNotNull(repo);
-
-        trm.addRepository(repo.getTaskRepository());
-        TestUtil.validate(brc, repo.getTaskRepository());
-    }
     
     public void testGetRepository () throws Throwable {
         KenaiProject prj = instance.getProject("koliba");
         assertNotNull(prj);
 
-        BugzillaConnector.KenaiSupportImpl support = new BugzillaConnector.KenaiSupportImpl();
-        BugzillaRepository repo = (BugzillaRepository) support.getRepository(prj);
-        assertNotNull(repo);
-
-        trm.addRepository(repo.getTaskRepository());
-        TestUtil.validate(brc, repo.getTaskRepository());
+        Collection<? extends QueryAccessor> c = Lookup.getDefault().lookupAll(QueryAccessor.class);
+        assertNotNull(c);
+        assertTrue(c.size() > 0);
+        
+        QueryAccessorImpl qa = null;
+        for (QueryAccessor a : c) {
+            if(a instanceof QueryAccessorImpl) {
+                qa = (QueryAccessorImpl) a;
+                break;
+            }
+        }
+        assertNotNull(qa);
+        KenaiDashboardDummy kdd = new KenaiDashboardDummy(qa, prj);
+        kdd.setVisible(true);
+        while(kdd.isVisible()) {
+            Thread.sleep(1000);
+        }
     }
 
 }
