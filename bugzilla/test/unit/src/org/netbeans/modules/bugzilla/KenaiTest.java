@@ -39,11 +39,12 @@
 
 package org.netbeans.modules.bugzilla;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.commons.net.WebUtil;
@@ -52,12 +53,10 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
-import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 
 /**
  *
@@ -65,9 +64,7 @@ import org.netbeans.modules.bugzilla.util.BugzillaUtil;
  */
 public class KenaiTest extends NbTestCase implements TestConstants {
 
-    public static final String REPO_PASSWD  = "XXX";
-    public static final String REPO_URL     = "https://testkenai.com/bugzilla";
-    public static final String REPO_USER    = "XXX";
+    public static final String KENAI_REPO_URL = "https://testkenai.com/bugzilla";
 
     private TaskRepository repository;
     private BugzillaRepositoryConnector brc;
@@ -85,17 +82,21 @@ public class KenaiTest extends NbTestCase implements TestConstants {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+
+        BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
+        String username = br.readLine();
+        String password = br.readLine();
+        br.close();
+
         BugzillaCorePlugin bcp = new BugzillaCorePlugin();
         try {
             bcp.start(null);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        repository = new TaskRepository("bugzilla", REPO_URL);
-        AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(REPO_USER, REPO_PASSWD);
+        repository = new TaskRepository("bugzilla", KENAI_REPO_URL);
+        AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(username, password);
         repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
-//        authenticationCredentials = new AuthenticationCredentials("", "fabuloso09");
-//        repository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
 
         trm = new TaskRepositoryManager();
         brc = new BugzillaRepositoryConnector();
