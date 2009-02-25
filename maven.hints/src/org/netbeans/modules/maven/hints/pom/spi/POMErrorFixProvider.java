@@ -52,6 +52,12 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  */
 public interface POMErrorFixProvider extends POMErrorFixBase {
 
+    /**
+     *
+     * @param model
+     * @param prj can be null
+     * @return
+     */
     List<ErrorDescription> getErrorsForDocument(POMModel model, Project prj);
 
 

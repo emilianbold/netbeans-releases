@@ -65,7 +65,6 @@ import org.openide.util.RequestProcessor;
 public class NbmActionGoalProvider implements MavenActionsProvider {
     static final String NBMRELOAD = "nbmreload";
     
-    private static final RequestProcessor PROCESSOR=new  RequestProcessor("NbmActionGoalProvider Clearing Task");//NOI18N
     private AbstractMavenActionsProvider platformDelegate = new AbstractMavenActionsProvider() {
 
         protected InputStream getActionDefinitionStream() {
@@ -95,24 +94,9 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
         }
     };
 
-    private int CACHED_PLATFORM = VAL_NOT_CACHED;
-
-    private static int VAL_NOT_CACHED = 0;
-    private static int VAL_IDE = 1;
-    private static int VAL_PLATFORM = 2;
-    private static int VAL_NOT_NB = 3;
-
-    private RequestProcessor.Task clearingTask = PROCESSOR.create(
-    new Runnable() {
-        public void run() {
-            CACHED_PLATFORM = VAL_NOT_CACHED;
-        }
-    });
-
 
     /** Creates a new instance of NbmActionGoalProvider */
     public NbmActionGoalProvider() {
-        clearingTask.setPriority(Thread.MIN_PRIORITY);
     }
     
     public Set<String> getSupportedDefaultActions() {
@@ -124,24 +108,15 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
         return ProjectSensitiveActions.projectCommandAction(NBMRELOAD, NbBundle.getMessage(NbmActionGoalProvider.class, "ACT_NBM_Reload"), null);
     }
 
-    public boolean isActionEnable(String action, Project project, Lookup lookup) {
+    public synchronized boolean isActionEnable(String action, Project project, Lookup lookup) {
         if (!ActionProvider.COMMAND_RUN.equals(action) &&
                 !ActionProvider.COMMAND_DEBUG.equals(action) &&
                 !NBMRELOAD.equals(action)) {
             return false;
         }
-        if (CACHED_PLATFORM == VAL_NOT_CACHED) {
-            if (isPlatformApp(project)) {
-                CACHED_PLATFORM = VAL_PLATFORM;
-            }
-            else if (hasNbm(project)) {
-                CACHED_PLATFORM = VAL_IDE;
-            } else {
-                CACHED_PLATFORM = VAL_NOT_NB;
-            }
-            clearingTask.schedule(500);
-        }
-        if (CACHED_PLATFORM != VAL_NOT_NB) {
+        if (isPlatformApp(project)) {
+            return true;
+        } else if (hasNbm(project)) {
             return true;
         }
 
@@ -183,7 +158,7 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
 
     private RunConfig createConfig(String actionName, Project project, Lookup lookup, AbstractMavenActionsProvider delegate) {
         RunConfig conf = delegate.createConfigForDefaultAction(actionName, project, lookup);
-        if (conf != null) {
+        if (conf != null && hasNbm(project)) { //not for platform app anymore
             NbMavenProject mp = project.getLookup().lookup(NbMavenProject.class);
             if (mp.getMavenProject().getProperties().getProperty(MavenNbModuleImpl.PROP_NETBEANS_INSTALL) == null) {
                 conf.getProperties().setProperty(MavenNbModuleImpl.PROP_NETBEANS_INSTALL, guessNetbeansInstallation());
@@ -194,7 +169,7 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
 
     private NetbeansActionMapping createMapping(String actionName, Project project, AbstractMavenActionsProvider delegate) {
         NetbeansActionMapping mapp = delegate.getMappingForAction(actionName, project);
-        if (mapp != null) {
+        if (mapp != null &&hasNbm(project)) { //not for platform app anymore
             NbMavenProject mp = project.getLookup().lookup(NbMavenProject.class);
             if (mp.getMavenProject().getProperties().getProperty(MavenNbModuleImpl.PROP_NETBEANS_INSTALL) == null) {
                 mapp.getProperties().setProperty(MavenNbModuleImpl.PROP_NETBEANS_INSTALL, guessNetbeansInstallation());
@@ -234,14 +209,9 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
 
     private boolean isPlatformApp(Project p) {
         NbMavenProject watch = p.getLookup().lookup(NbMavenProject.class);
-        boolean isPom = NbMavenProject.TYPE_POM.equals(watch.getPackagingType());
-        if (isPom) {
-            String brand = PluginPropertyUtils.getPluginProperty(p, "org.codehaus.mojo", //NOI18N
-                    "nbm-maven-plugin", "brandingToken", null); //NOI18N
-            if (brand != null ||
-                    watch.getMavenProject().getProperties().getProperty("netbeans.branding.token") != null) { //NOI18N
-                return true;
-            }
+        String pack = watch.getPackagingType();
+        if (NbMavenProject.TYPE_NBM_APPLICATION.equals(pack)) {
+            return true;
         }
         return false;
     }
