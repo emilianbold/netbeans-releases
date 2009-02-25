@@ -77,9 +77,9 @@ public final class DLightCPUToolConfigurationProvider
 
 
     static {
-        Column utime = new _Column<Float>("utime"); // NOI18N
-        Column stime = new _Column<Float>("stime"); // NOI18N
-        Column wtime = new _Column<Float>("wtime"); // NOI18N
+        Column utime = new _Column(Float.class, "utime"); // NOI18N
+        Column stime = new _Column(Float.class, "stime"); // NOI18N
+        Column wtime = new _Column(Float.class, "wtime"); // NOI18N
 
         indicatorColumns = Arrays.asList(utime, stime, wtime);
     }
@@ -169,10 +169,10 @@ public final class DLightCPUToolConfigurationProvider
     }
 
     private DataTableMetadata createProfilerTableMetadata() {
-        Column cpuId = new _Column<Integer>("cpu_id"); // NOI18N
-        Column threadId = new _Column<Integer>("thread_id"); // NOI18N
-        Column timestamp = new _Column<Long>("time_stamp"); // NOI18N
-        Column stackId = new _Column<Integer>("leaf_id"); // NOI18N
+        Column cpuId = new _Column(Integer.class, "cpu_id"); // NOI18N
+        Column threadId = new _Column(Integer.class, "thread_id"); // NOI18N
+        Column timestamp = new _Column(Long.class, "time_stamp"); // NOI18N
+        Column stackId = new _Column(Integer.class, "leaf_id"); // NOI18N
 
         return new DataTableMetadata("CallStack", // NOI18N
                 Arrays.asList(cpuId, threadId, timestamp, stackId));
@@ -182,7 +182,7 @@ public final class DLightCPUToolConfigurationProvider
             DataTableMetadata profilerTableMetadata) {
 
         List<Column> columns = new ArrayList<Column>();
-        columns.add(new _Column<String>("name")); // NOI18N
+        columns.add(new _Column(String.class, "name")); // NOI18N
 
         List<FunctionMetric> metricsList = SQLStackStorage.METRICS;
 
@@ -239,11 +239,10 @@ public final class DLightCPUToolConfigurationProvider
                 DLightCPUToolConfigurationProvider.class, key, params);
     }
 
-    private static class _Column<T> extends Column {
+    private static class _Column extends Column {
 
-        public _Column(String name) {
-            super(name, ((T) new Object[0]).getClass(),
-                    loc("CPUMonitorTool.ColumnName." + name), null); // NOI18N
+        public _Column(Class clazz, String name) {
+            super(name, clazz, loc("CPUMonitorTool.ColumnName." + name), null); // NOI18N
         }
     }
 }

@@ -69,19 +69,19 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
 
     private static final String TOOL_NAME = loc("SyncTool.ToolName"); // NOI18N
     private static final boolean USE_SUNSTUDIO = Boolean.getBoolean("gizmo.cpu.sunstudio"); // NOI18N
-    private static final Column timestampColumn = new _Column<Long>("timestamp"); // NOI18N
-    private static final Column waiterColumn = new _Column<Integer>("waiter"); // NOI18N
-    private static final Column mutexColumn = new _Column<Long>("mutex"); // NOI18N
-    private static final Column blockerColumn = new _Column<Integer>("blocker"); // NOI18N
-    private static final Column timeColumn = new _Column<Long>("time"); // NOI18N
-    private static final Column stackColumn = new _Column<Integer>("stackid"); // NOI18N
-    private static final Column locksColumn = new _Column<Float>("locks"); // NOI18N
+    private static final Column timestampColumn = new _Column(Long.class, "timestamp"); // NOI18N
+    private static final Column waiterColumn = new _Column(Integer.class, "waiter"); // NOI18N
+    private static final Column mutexColumn = new _Column(Long.class, "mutex"); // NOI18N
+    private static final Column blockerColumn = new _Column(Integer.class, "blocker"); // NOI18N
+    private static final Column timeColumn = new _Column(Long.class, "time"); // NOI18N
+    private static final Column stackColumn = new _Column(Integer.class, "stackid"); // NOI18N
+    private static final Column locksColumn = new _Column(Float.class, "locks"); // NOI18N
     private static final DataTableMetadata rawTableMetadata;
 
-    private static class _Column<T> extends Column {
+    private static class _Column extends Column {
 
-        public _Column(String name) {
-            super(name, ((T) new Object[0]).getClass(), loc("SyncTool.ColumnName." + name), null); // NOI18N
+        public _Column(Class clazz, String name) {
+            super(name, clazz, loc("SyncTool.ColumnName." + name), null); // NOI18N
         }
     }
 
