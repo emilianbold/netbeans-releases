@@ -42,7 +42,6 @@
 package org.netbeans.modules.hudson.ui;
 
 import java.awt.Cursor;
-import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
@@ -51,6 +50,7 @@ import java.awt.event.MouseEvent;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.border.EmptyBorder;
+import org.openide.util.ImageUtilities;
 
 /**
  * Decorated button
@@ -59,14 +59,14 @@ import javax.swing.border.EmptyBorder;
  */
 public class HudsonButton extends JButton {
     
-    private ImageIcon ICON_ON;
-    private ImageIcon ICON_OFF;
+    private final ImageIcon ICON_ON;
+    private final ImageIcon ICON_OFF;
     
     private boolean active = false;
     
     public HudsonButton(String iconBaseOn, String iconBaseOff) {
-        ICON_ON = new ImageIcon(getClass().getResource(iconBaseOn));
-        ICON_OFF = new ImageIcon(getClass().getResource(iconBaseOff));
+        ICON_ON = ImageUtilities.loadImageIcon(iconBaseOn, true);
+        ICON_OFF = ImageUtilities.loadImageIcon(iconBaseOff, true);
         
         setBorder(new EmptyBorder(1, 1, 1, 1));
         setMargin(new Insets(0, 0, 0, 0));

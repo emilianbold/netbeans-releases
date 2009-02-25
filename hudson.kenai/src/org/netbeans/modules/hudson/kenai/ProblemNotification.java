@@ -102,7 +102,7 @@ class ProblemNotification implements ActionListener {
     }
 
     public Icon getIcon() {
-        return ImageUtilities.loadImageIcon("/org/netbeans/modules/hudson/ui/resources/" + // NOI18N
+        return ImageUtilities.loadImageIcon("org/netbeans/modules/hudson/ui/resources/" + // NOI18N
                 (failed ? "red" : "yellow") + (running ? "_run" : "") + ".png", true); // NOI18N
     }
 

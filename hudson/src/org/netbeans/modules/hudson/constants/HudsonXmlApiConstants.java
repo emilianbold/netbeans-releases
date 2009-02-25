@@ -51,7 +51,7 @@ public class HudsonXmlApiConstants {
     private HudsonXmlApiConstants() {}
     
     // XML API Suffix
-    public static final String XML_API_URL ="/api/xml";
+    public static final String XML_API_URL ="api/xml";
     
     // Hudson Instance Element
     public static final String XML_API_VIEW_ELEMENT = "view";

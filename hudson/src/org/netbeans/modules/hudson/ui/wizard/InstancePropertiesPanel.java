@@ -46,17 +46,17 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.hudson.api.HudsonVersion;
+import org.netbeans.modules.hudson.impl.HudsonConnector;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
 import org.netbeans.modules.hudson.impl.HudsonVersionImpl;
 import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.WizardDescriptor;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -75,7 +75,7 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel<InstanceW
     
     private InstanceWizard wizard;
     
-    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+    private final ChangeSupport cs = new ChangeSupport(this);
     
     private boolean checkingFlag = false;
     private boolean checkingState = false;
@@ -149,7 +149,7 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel<InstanceW
                     wizard.setErrorMessage(NbBundle.getMessage(InstancePropertiesPanel.class, "MSG_Checking"));
                     
                     try {
-                        URLConnection connection = new URL(checkingUrl).openConnection();
+                        URLConnection connection = HudsonConnector.followRedirects(new URL(checkingUrl).openConnection());
                         
                         // Resolve Hudson version
                         String sVersion = connection.getHeaderField("X-Hudson");
@@ -177,7 +177,7 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel<InstanceW
                         handle.finish();
                         
                         // Fire changes
-                        fireChangeEvent();
+                        cs.fireChange();
                     }
                     
                     // Everything is alright
@@ -207,33 +207,15 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel<InstanceW
     }
     
     public void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        cs.addChangeListener(l);
     }
     
     public void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
-    }
-    
-    private void fireChangeEvent() {
-        ArrayList<ChangeListener> tempList;
-        
-        synchronized (listeners) {
-            tempList = new ArrayList<ChangeListener>(listeners);
-        }
-        
-        ChangeEvent event = new ChangeEvent(this);
-        
-        for (ChangeListener l : tempList) {
-            l.stateChanged(event);
-        }
+        cs.removeChangeListener(l);
     }
     
     public void stateChanged(ChangeEvent arg0) {
-        fireChangeEvent();
+        cs.fireChange();
     }
     
     private InstancePropertiesVisual getInstancePropertiesVisual() {

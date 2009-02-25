@@ -42,8 +42,10 @@ package org.netbeans.modules.hudson.ui.actions;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.io.FileNotFoundException;
+import java.net.URL;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.hudson.impl.HudsonConnector;
 import org.netbeans.modules.hudson.impl.HudsonJobImpl;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -52,6 +54,7 @@ import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
@@ -117,7 +120,10 @@ public class ShowFailures extends AbstractAction implements Runnable {
                 }
             });
             // Requires Hudson 1.281 or later:
-            parser.parse(job.getUrl() + buildNumber + "/testReport/api/xml?xpath=//suite[case/errorStackTrace]&wrapper=failures"); // NOI18N
+            String url = job.getUrl() + buildNumber + "/testReport/api/xml?xpath=//suite[case/errorStackTrace]&wrapper=failures"; // NOI18N
+            InputSource source = new InputSource(HudsonConnector.followRedirects(new URL(url).openConnection()).getInputStream());
+            source.setSystemId(url);
+            parser.parse(source);
         } catch (FileNotFoundException x) {
             Toolkit.getDefaultToolkit().beep();
         } catch (Exception x) {

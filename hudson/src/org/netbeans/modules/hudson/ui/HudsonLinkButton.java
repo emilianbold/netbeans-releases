@@ -55,10 +55,10 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.border.EmptyBorder;
+import org.openide.util.ImageUtilities;
 
 /**
  * Decorated button (as hyperlink)
@@ -69,11 +69,7 @@ import javax.swing.border.EmptyBorder;
 public class HudsonLinkButton extends JButton
         implements MouseListener, FocusListener {
     
-    private static final String BULLET_BASE = "/org/netbeans/modules/hudson/ui/resources/bullet.png";
-    
     private boolean underline = false;
-    
-    final ImageIcon BULLET_ICON = new ImageIcon(getClass().getResource(BULLET_BASE));
     
     public HudsonLinkButton(boolean showBullet ) {
         setForeground(new Color(Integer.decode("0x0E1B55").intValue()));
@@ -83,7 +79,7 @@ public class HudsonLinkButton extends JButton
         addMouseListener(this);
         setFocusable( true );
         if( showBullet )
-            setIcon( BULLET_ICON );
+            setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/hudson/ui/resources/bullet.png", true));
         
         setMargin( new Insets(0, 0, 0, 0) );
         setBorderPainted( false );

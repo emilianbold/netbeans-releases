@@ -46,14 +46,14 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.hudson.api.HudsonJob;
@@ -69,10 +69,15 @@ import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  * Hudson Server Connector
@@ -80,8 +85,8 @@ import org.xml.sax.SAXException;
  * @author Michal Mocnak
  */
 public class HudsonConnector {
+    private static final Logger LOG = Logger.getLogger(HudsonConnector.class.getName());
     
-    private DocumentBuilder builder;
     private HudsonInstanceImpl instance;
     
     private HudsonVersion version;
@@ -96,16 +101,10 @@ public class HudsonConnector {
      */
     public HudsonConnector(HudsonInstanceImpl instance) {
         this.instance = instance;
-        
-        try {
-            builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        }  catch (ParserConfigurationException ex) {
-            ErrorManager.getDefault().log(ErrorManager.ERROR,NbBundle.getMessage(HudsonConnector.class, "MSG_ParserError", ex.getLocalizedMessage()));
-        }
     }
     
     public synchronized Collection<HudsonJob> getAllJobs() {
-        Document docInstance = getDocument(instance.getUrl() + XML_API_URL);
+        Document docInstance = getDocument(instance.getUrl() + XML_API_URL + "?depth=1");
         
         if (null == docInstance)
             return new ArrayList<HudsonJob>();
@@ -113,12 +112,8 @@ public class HudsonConnector {
         // Clear cache
         cache.clear();
         
-        // Get views and jobs
-        NodeList views = docInstance.getElementsByTagName(XML_API_VIEW_ELEMENT);
-        NodeList jobs = docInstance.getElementsByTagName(XML_API_JOB_ELEMENT);
-        
         // Parse views and set them into instance
-        Collection<HudsonView> cViews = getViews(views);
+        Collection<HudsonView> cViews = getViews(docInstance);
         
         if (null == cViews)
             cViews = new ArrayList<HudsonView>();
@@ -126,7 +121,7 @@ public class HudsonConnector {
         instance.setViews(cViews);
         
         // Parse jobs and return them
-        Collection<HudsonJob> cJobs = getJobs(jobs);
+        Collection<HudsonJob> cJobs = getJobs(docInstance);
         
         if (null == cJobs)
             cJobs = new ArrayList<HudsonJob>();
@@ -142,16 +137,17 @@ public class HudsonConnector {
         handle.start();
         
         try {
-            final URL url = new URL(Utilities.getURLWithoutSpaces(job.getUrl() + XML_API_BUILD_URL));
+            final URL url = new URL(job.getUrl() + XML_API_BUILD_URL);
             
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     try {
                         // Start job
-                        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                        HttpURLConnection conn = followRedirects(url.openConnection());
                         
-                        if(conn.getResponseCode() != 200)
-                            ErrorManager.getDefault().log("Can't start build HTTP error: " + conn.getResponseMessage());
+                        if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                            LOG.warning("Cannot start build; HTTP error from " + url + ": " + conn.getResponseMessage());
+                        }
                     } catch (IOException e) {
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                     } finally {
@@ -168,7 +164,21 @@ public class HudsonConnector {
         
         return false;
     }
-    
+
+    /**
+     * Workaround for JDK bug #6810084.
+     * @see HttpURLConnection#setInstanceFollowRedirects
+     */
+    public static HttpURLConnection followRedirects(URLConnection conn) throws IOException {
+        switch (((HttpURLConnection) conn).getResponseCode()) {
+        case HttpURLConnection.HTTP_MOVED_PERM:
+        case HttpURLConnection.HTTP_MOVED_TEMP:
+            return followRedirects(new URL(conn.getHeaderField("Location")).openConnection());
+        default:
+            return (HttpURLConnection) conn;
+        }
+    }
+
     /**
      * Gets general information about a build.
      * The changelog ({@code <changeSet>}) can be interpreted separately by {@link HudsonJobBuild#getChanges}.
@@ -220,11 +230,15 @@ public class HudsonConnector {
         
     }
     
-    private Collection<HudsonView> getViews(NodeList nodes) {
+    private Collection<HudsonView> getViews(Document doc) {
         Collection<HudsonView> views = new ArrayList<HudsonView>();
-        
+
+        NodeList nodes = doc.getDocumentElement().getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
             Node n = nodes.item(i);
+            if (!n.getNodeName().equals(XML_API_VIEW_ELEMENT)) {
+                continue;
+            }
             
             String name = null;
             String url = null;
@@ -237,16 +251,13 @@ public class HudsonConnector {
                     if (o.getNodeName().equals(XML_API_NAME_ELEMENT)) {
                         name = o.getFirstChild().getTextContent();
                     } else if (o.getNodeName().equals(XML_API_URL_ELEMENT)) {
-                        url = o.getFirstChild().getTextContent();
+                        url = Utilities.getURLWithoutSpaces(o.getFirstChild().getTextContent());
                     }
                 }
             }
             
             if (null != name && null != url) {
-                Document docView = getDocument(url + XML_API_URL);
-                
-                if (null == docView)
-                    continue;
+                Element docView = (Element) n;
                 
                 // Retrieve description
                 NodeList descriptionList = docView.getElementsByTagName(XML_API_DESCRIPTION_ELEMENT);
@@ -288,11 +299,15 @@ public class HudsonConnector {
         return views;
     }
     
-    private Collection<HudsonJob> getJobs(NodeList nodes) {
+    private Collection<HudsonJob> getJobs(Document doc) {
         Collection<HudsonJob> jobs = new ArrayList<HudsonJob>();
         
+        NodeList nodes = doc.getDocumentElement().getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
             Node n = nodes.item(i);
+            if (!n.getNodeName().equals(XML_API_JOB_ELEMENT)) {
+                continue;
+            }
             
             HudsonJobImpl job = new HudsonJobImpl(instance);
             
@@ -303,7 +318,7 @@ public class HudsonConnector {
                     if (o.getNodeName().equals(XML_API_NAME_ELEMENT)) {
                         job.putProperty(JOB_NAME, o.getFirstChild().getTextContent());
                     } else if (o.getNodeName().equals(XML_API_URL_ELEMENT)) {
-                        job.putProperty(JOB_URL, o.getFirstChild().getTextContent());
+                        job.putProperty(JOB_URL, Utilities.getURLWithoutSpaces(o.getFirstChild().getTextContent()));
                     } else if (o.getNodeName().equals(XML_API_COLOR_ELEMENT)) {
                         String color = o.getFirstChild().getTextContent().trim();
                         try {
@@ -320,12 +335,7 @@ public class HudsonConnector {
             }
             
             if (null != job.getName() && null != job.getUrl() && null != job.getColor()) {
-                Document docJob = getDocument(job.getUrl() + XML_API_URL);
-                
-                if (null == docJob)
-                    continue;
-                
-                NodeList jobDetails = docJob.getDocumentElement().getChildNodes();
+                NodeList jobDetails = n.getChildNodes();
                 
                 for (int k = 0; k < jobDetails.getLength(); k++) {
                     Node d = jobDetails.item(k);
@@ -378,7 +388,7 @@ public class HudsonConnector {
         
         try {
             URL u = new java.net.URL(instance.getUrl());
-            HttpURLConnection conn = (HttpURLConnection) u.openConnection();
+            HttpURLConnection conn = followRedirects(u.openConnection());
             String sVersion = conn.getHeaderField("X-Hudson");
             if (sVersion != null) {
                 v = new HudsonVersionImpl(sVersion);
@@ -393,14 +403,17 @@ public class HudsonConnector {
     }
     
     Document getDocument(String url) {
+        LOG.log(Level.FINER, "Loading: {0}", url);
         Document doc = null;
         
         try {
             URL u = new URL(url);
-            HttpURLConnection conn = (HttpURLConnection) u.openConnection();
+            HttpURLConnection conn = followRedirects(u.openConnection());
             
+            int responseCode = conn.getResponseCode();
             // Connected failed
-            if(conn.getResponseCode() != 200) {
+            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                LOG.log(Level.FINE, "{0}: {1} {2}", new Object[] {url, responseCode, conn.getResponseMessage()});
                 connected = false;
                 return null;
             }
@@ -415,7 +428,21 @@ public class HudsonConnector {
             InputStream stream = conn.getInputStream();
             
             // Parse document
-            doc = builder.parse(stream);
+            InputSource source = new InputSource(stream);
+            source.setSystemId(url);
+            doc = XMLUtil.parse(source, false, false, new ErrorHandler() {
+                public void warning(SAXParseException exception) throws SAXException {
+                    LOG.log(Level.FINE, "{0}:{1}: {2}", new Object[] {
+                        exception.getSystemId(), exception.getLineNumber(), exception.getMessage()});
+                }
+                public void error(SAXParseException exception) throws SAXException {
+                    warning(exception);
+                }
+                public void fatalError(SAXParseException exception) throws SAXException {
+                    warning(exception);
+                    throw exception;
+                }
+            }, null);
             
             // Check for right version
             if (!Utilities.isSupportedVersion(getHudsonVersion())) {
@@ -429,14 +456,10 @@ public class HudsonConnector {
             
             if(conn != null)
                 conn.disconnect();
-        } catch (MalformedURLException ex) {
-            ErrorManager.getDefault().log(ErrorManager.ERROR,NbBundle.getMessage(HudsonConnector.class, "MSG_MalformedURL", url + XML_API_URL));
-        } catch (IOException ex) {
-            ErrorManager.getDefault().log(ErrorManager.ERROR,NbBundle.getMessage(HudsonConnector.class, "MSG_IOError", url + XML_API_URL));
-        } catch (SAXException ex) {
-            ErrorManager.getDefault().log(ErrorManager.ERROR,NbBundle.getMessage(HudsonConnector.class, "MSG_ParserError", ex.getLocalizedMessage()));
-        } catch (NullPointerException ex) {
-            ErrorManager.getDefault().log(ErrorManager.ERROR,NbBundle.getMessage(HudsonConnector.class, "MSG_ParserError", ex.getLocalizedMessage()));
+        } catch (SAXParseException x) {
+            // already reported
+        } catch (Exception x) {
+            LOG.log(Level.FINE, url, x);
         }
         
         return doc;

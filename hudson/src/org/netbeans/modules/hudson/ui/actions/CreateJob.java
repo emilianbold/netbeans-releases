@@ -50,6 +50,7 @@ import java.util.Set;
 import javax.swing.AbstractAction;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.impl.HudsonConnector;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ProjectHudsonJobCreator;
 import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
@@ -96,7 +97,7 @@ public class CreateJob extends AbstractAction {
         try {
             Document doc = creator.configure();
             String createItemURL = instance.getUrl() + "createItem?name=" + URLEncoder.encode(name, "UTF-8"); // NOI18N
-            HttpURLConnection conn = (HttpURLConnection) new URL(createItemURL).openConnection();
+            HttpURLConnection conn = HudsonConnector.followRedirects(new URL(createItemURL).openConnection());
             conn.setDoOutput(true);
             conn.setRequestProperty("Content-Type", "text/xml");
             conn.connect();
