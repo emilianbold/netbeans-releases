@@ -1111,7 +1111,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         }
     }
 
-    private static class ListObjectCH<T extends POMComponent> extends POMCutHolder {
+    static class ListObjectCH<T extends POMComponent> extends POMCutHolder {
         private POMQName qname;
         private POMQName childName;
         private String displayName;
@@ -1127,6 +1127,10 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             this.type = type;
             this.keygen = keygen;
             this.configuration = configuration;
+        }
+
+        Class getListClass() {
+            return type;
         }
 
         @Override
