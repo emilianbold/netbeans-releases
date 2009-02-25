@@ -42,47 +42,51 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
-import java.util.logging.Level;
 import org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration;
 import org.netbeans.modules.dlight.collector.stdout.CLIOParser;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
-import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
 import org.openide.util.NbBundle;
 
 /**
- * 
+ *
  * @author Vladimir Kvashin
  */
-public final class MemoryToolConfigurationProvider implements DLightToolConfigurationProvider {
+public final class MemoryToolConfigurationProvider
+        implements DLightToolConfigurationProvider {
 
-    private static final boolean useCollector = Util.getBoolean("dlight.memory.collector", true);
-    private static final boolean redirectStdErr = Util.getBoolean("dlight.memory.log.stderr", false);
+    private static final boolean useCollector =
+            Util.getBoolean("dlight.memory.collector", true); // NOI18N
+    private static final boolean redirectStdErr =
+            Util.getBoolean("dlight.memory.log.stderr", false); // NOI18N
+    private static final String toolName = loc("MemoryTool.ToolName"); // NOI18N
 
     public MemoryToolConfigurationProvider() {
     }
 
     public DLightToolConfiguration create() {
-        final String toolName = "Memory Tool";
         final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(toolName);
-        Column totalColumn = new Column("total", Integer.class, "Heap size", null);
+        Column totalColumn = new _Column(Integer.class, "total"); // NOI18N
+
         DataTableMetadata rawTableMetadata = null;
+
         if (useCollector) {
-            Column timestampColumn = new Column("timestamp", Long.class, "Timestamp", null);
-            Column kindColumn = new Column("kind", Integer.class, "Kind", null);
-            Column sizeColumn = new Column("size", Integer.class, "Size", null);
-            Column addressColumn = new Column("address", Long.class, "Address", null);
-            Column stackColumn = new Column("stackid", Integer.class, "Stack ID", null);
+            Column timestampColumn = new _Column(Long.class, "timestamp"); // NOI18N
+            Column kindColumn = new _Column(Integer.class, "kind"); // NOI18N
+            Column sizeColumn = new _Column(Integer.class, "size"); // NOI18N
+            Column addressColumn = new _Column(Long.class, "address"); // NOI18N
+            Column stackColumn = new _Column(Integer.class, "stackid"); // NOI18N
 
             List<Column> columns = Arrays.asList(
                     timestampColumn,
@@ -92,38 +96,60 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
                     totalColumn,
                     stackColumn);
 
-            String scriptFile = Util.copyResource(getClass(), Util.getBasePath(getClass()) + "/resources/mem.d");
+            String scriptFile = Util.copyResource(getClass(),
+                    Util.getBasePath(getClass()) + "/resources/mem.d"); // NOI18N
 
-            rawTableMetadata = new DataTableMetadata("mem", columns);
-            DTDCConfiguration dataCollectorConfiguration = new DTDCConfiguration(scriptFile, Arrays.asList(rawTableMetadata));
+            rawTableMetadata = new DataTableMetadata("mem", columns); // NOI18N
+
+            DTDCConfiguration dataCollectorConfiguration =
+                    new DTDCConfiguration(scriptFile, Arrays.asList(rawTableMetadata));
+
             dataCollectorConfiguration.setStackSupportEnabled(true);
             //dataCollectorConfiguration.setIndicatorFiringFactor(1);
             // DTDCConfiguration collectorConfiguration = new DtraceDataAndStackCollector(dataCollectorConfiguration);
-            MultipleDTDCConfiguration multipleDTDCConfiguration = new MultipleDTDCConfiguration(dataCollectorConfiguration, "mem:");
+            MultipleDTDCConfiguration multipleDTDCConfiguration =
+                    new MultipleDTDCConfiguration(dataCollectorConfiguration, "mem:"); // NOI18N
+
             toolConfiguration.addDataCollectorConfiguration(multipleDTDCConfiguration);
         }
-        List<Column> indicatorColumns = Arrays.asList(
-                totalColumn);
-        IndicatorMetadata indicatorMetadata = new IndicatorMetadata(indicatorColumns);
-        DataTableMetadata indicatorTableMetadata = new DataTableMetadata("truss", indicatorColumns);
+
+        List<Column> indicatorColumns = Arrays.asList(totalColumn);
+
+        IndicatorMetadata indicatorMetadata =
+                new IndicatorMetadata(indicatorColumns);
+
+        DataTableMetadata indicatorTableMetadata =
+                new DataTableMetadata("truss", indicatorColumns); // NOI18N
 
         String monitor = MemoryMonitorUtil.getMonitorCmd();
         String envVar = MemoryMonitorUtil.getEnvVar();
         String agent = MemoryMonitorUtil.getAgentLib();
-        DLightLogger.instance.fine("Memory Indicator:\nmonitor:\n" + monitor + "\nagent:\n" + agent + "\n\n");
+
+        DLightLogger.instance.fine("Memory Indicator:\nmonitor:\n" + // NOI18N
+                monitor + "\nagent:\n" + agent + "\n\n"); // NOI18N
+
         if (monitor != null && agent != null) {
-            CLIODCConfiguration clioCollectorConfiguration = new CLIODCConfiguration(monitor,
-                    " @PID " + (redirectStdErr ? " 2>/tmp/mmonitor.err" : ""),
-                    new MAgentClioParser(totalColumn), Arrays.asList(indicatorTableMetadata));
+            CLIODCConfiguration clioCollectorConfiguration =
+                    new CLIODCConfiguration(monitor,
+                    " @PID " + (redirectStdErr ? " 2>/tmp/mmonitor.err" : ""), // NOI18N
+                    new MAgentClioParser(totalColumn),
+                    Arrays.asList(indicatorTableMetadata));
+
             Map<String, String> env = new LinkedHashMap<String, String>();
             env.put(envVar, agent);
+
             DLightLogger.instance.fine("SET " + envVar + "=" + agent);//NOI18N
+
             clioCollectorConfiguration.setDLightTargetExecutionEnv(env);
             toolConfiguration.addIndicatorDataProviderConfiguration(clioCollectorConfiguration);
-            MemoryIndicatorConfiguration indicator = new MemoryIndicatorConfiguration(indicatorMetadata, "total");
+
+            MemoryIndicatorConfiguration indicator =
+                    new MemoryIndicatorConfiguration(indicatorMetadata, "total"); // NOI18N
+
             if (useCollector) {
                 indicator.setVisualizerConfiguration(getDetails(rawTableMetadata));
             }
+
             toolConfiguration.addIndicatorConfiguration(indicator);
         }
 
@@ -133,25 +159,34 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
     private VisualizerConfiguration getDetails(DataTableMetadata rawTableMetadata) {
 
         List<Column> viewColumns = Arrays.asList(
-                new Column("func_name", String.class, "Function", null),
-                new Column("leak", Long.class, "Leak", null));
+                (Column) new _Column(String.class, "func_name"), // NOI18N
+                (Column) new _Column(Long.class, "leak")); // NOI18N
 
         String sql =
-            "SELECT func.func_name as func_name, SUM(size) as leak " +
-            "FROM mem, node AS node, func, ( " +
-            "   SELECT MAX(timestamp) as leak_timestamp FROM mem, ( " +
-            "       SELECT address as leak_address, sum(kind*size) AS leak_size FROM mem GROUP BY address HAVING sum(kind*size) > 0 " +
-            "   ) AS vt1 WHERE address = leak_address GROUP BY address " +
-            ") AS vt2 WHERE timestamp = leak_timestamp " +
-            "AND stackid = node.node_id and node.func_id = func.func_id " +
-            "GROUP BY node.func_id, func.func_name";
+                "SELECT func.func_name as func_name, SUM(size) as leak " + // NOI18N
+                "FROM mem, node AS node, func, ( " + // NOI18N
+                "   SELECT MAX(timestamp) as leak_timestamp FROM mem, ( " + // NOI18N
+                "       SELECT address as leak_address, sum(kind*size) AS leak_size FROM mem GROUP BY address HAVING sum(kind*size) > 0 " + // NOI18N
+                "   ) AS vt1 WHERE address = leak_address GROUP BY address " + // NOI18N
+                ") AS vt2 WHERE timestamp = leak_timestamp " + // NOI18N
+                "AND stackid = node.node_id and node.func_id = func.func_id " + // NOI18N
+                "GROUP BY node.func_id, func.func_name"; // NOI18N
 
-        DataTableMetadata viewTableMetadata = new DataTableMetadata("mem", viewColumns, sql, Arrays.asList(rawTableMetadata));
-        AdvancedTableViewVisualizerConfiguration tableVisualizerConfiguration = new AdvancedTableViewVisualizerConfiguration(viewTableMetadata, "func_name");
-        tableVisualizerConfiguration.setEmptyAnalyzeMessage(NbBundle.getMessage(MemoryToolConfigurationProvider.class, "DetailedView.EmptyAnalyzeMessage"));
-        tableVisualizerConfiguration.setEmptyRunningMessage(NbBundle.getMessage(MemoryToolConfigurationProvider.class, "DetailedView.EmptyRunningMessage"));
+        DataTableMetadata viewTableMetadata = new DataTableMetadata(
+                "mem", viewColumns, sql, Arrays.asList(rawTableMetadata)); // NOI18N
+
+        AdvancedTableViewVisualizerConfiguration tableVisualizerConfiguration =
+                new AdvancedTableViewVisualizerConfiguration(viewTableMetadata, "func_name"); // NOI18N
+
+        tableVisualizerConfiguration.setEmptyAnalyzeMessage(
+                loc("DetailedView.EmptyAnalyzeMessage")); // NOI18N
+
+        tableVisualizerConfiguration.setEmptyRunningMessage(
+                loc("DetailedView.EmptyRunningMessage")); // NOI18N
+
         tableVisualizerConfiguration.setDefaultActionProvider();
-        return  tableVisualizerConfiguration;
+
+        return tableVisualizerConfiguration;
     }
 
     private static class MAgentClioParser implements CLIOParser {
@@ -172,8 +207,8 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
                 return null;
             }
             try {
-                long value = Integer.parseInt(line);
-                return new DataRow(colNames, Arrays.asList(new Long[] { value }));
+                Long value = Long.parseLong(line);
+                return new DataRow(colNames, Arrays.asList((Object) value));
             } catch (NumberFormatException e) {
                 DLightLogger.instance.log(Level.WARNING, e.getMessage(), e);
             }
@@ -184,7 +219,6 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
             DLightLogger.assertTrue(s != null);
             return Integer.parseInt(s);
         }
-
     }
 
 //    private static class TrussClioParser implements CLIOParser {
@@ -281,4 +315,15 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 //            return Integer.parseInt(s.substring(2), 16);
 //        }
 //    }
+    private static String loc(String key, String... params) {
+        return NbBundle.getMessage(
+                MemoryToolConfigurationProvider.class, key, params);
+    }
+
+    private static class _Column extends Column {
+
+        public _Column(Class clazz, String name) {
+            super(name, clazz, loc("MemoryTool.ColumnName." + name), null); // NOI18N
+        }
+    }
 }

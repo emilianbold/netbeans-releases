@@ -49,7 +49,7 @@ public final class TimeMetric {
   static public final String ID_SyncWaitCallInclusive = "i.syncn"; //NOI18N
   static public final FunctionMetric UserFuncTimeInclusive = FunctionMetricsFactory.getInstance().getFunctionMetric(new FunctionMetric.FunctionMetricConfiguration(ID_UserFuncTimeInclusive, "Inclusive Function User Time", Double.class));
   static public final FunctionMetric UserFuncTimeExclusive = FunctionMetricsFactory.getInstance().getFunctionMetric(new FunctionMetric.FunctionMetricConfiguration(ID_UserFuncTimeExclusive, "Exclusive Function User Time", Double.class));
-  static public final FunctionMetric SyncWaitTimeInclusive = FunctionMetricsFactory.getInstance().getFunctionMetric(new FunctionMetric.FunctionMetricConfiguration(ID_SyncWaitCallInclusive, "Inclusive Sync. Wait Time", Double.class));
+  static public final FunctionMetric SyncWaitTimeInclusive = FunctionMetricsFactory.getInstance().getFunctionMetric(new FunctionMetric.FunctionMetricConfiguration(ID_SyncWaitTimeInclusive, "Inclusive Sync. Wait Time", Double.class));
   static public final FunctionMetric SyncWaitCallInclusive = FunctionMetricsFactory.getInstance().getFunctionMetric(new FunctionMetric.FunctionMetricConfiguration(ID_SyncWaitCallInclusive, "Incl. Sync. Wait Count", Integer.class));
 }
 

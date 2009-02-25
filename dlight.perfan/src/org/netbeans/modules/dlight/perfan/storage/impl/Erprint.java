@@ -77,6 +77,12 @@ public final class Erprint {
         this.erOutputProcessor = new FilteredInputProcessor();
     }
 
+    ExperimentStatistics getExperimentStatistics() {
+        restart();
+        String[] stat = exec("statistics"); // NOI18N
+        return new ExperimentStatistics(stat);
+    }
+
     private final void start() {
         final CountDownLatch doneSignal = new CountDownLatch(1);
 

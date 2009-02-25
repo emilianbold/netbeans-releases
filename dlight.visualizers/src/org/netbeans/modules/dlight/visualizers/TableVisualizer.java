@@ -45,6 +45,7 @@ import java.awt.BorderLayout;
 import java.awt.event.ComponentListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -59,6 +60,7 @@ import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.impl.TableVisualizerConfigurationAccessor;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -80,7 +82,7 @@ class TableVisualizer extends JPanel implements
     private boolean isEmptyContent;
 
     TableVisualizer(TableDataProvider provider, final TableVisualizerConfiguration configuration) {
-        timerHandler = new OnTimerRefreshVisualizerHandler(this, 5);
+        timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
         this.provider = provider;
         this.configuration = configuration;
         setEmptyContent();
@@ -194,7 +196,7 @@ class TableVisualizer extends JPanel implements
         refresh.addActionListener(new java.awt.event.ActionListener() {
 
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                load();
+                asyncFillModel();
             }
         });
 
@@ -216,11 +218,21 @@ class TableVisualizer extends JPanel implements
         if (!isShown || !isShowing()) {
             return 0;
         }
-        load();
+        syncFillModel();
         return 0;
     }
 
-    private void load() {
+     protected final void asyncFillModel() {
+         RequestProcessor.getDefault().post(new Runnable() {
+
+             public void run() {
+                 syncFillModel();
+             }
+         });
+
+     }
+
+     private void syncFillModel() {
         List<DataRow> dataRow = provider.queryData(configuration.getMetadata());
         boolean isEmpty;
         synchronized (data) {
@@ -268,7 +280,7 @@ class TableVisualizer extends JPanel implements
         }
         isShown = isShowing();
         if (isShown) {
-            onTimer();
+            asyncFillModel();
         }
 
     }
