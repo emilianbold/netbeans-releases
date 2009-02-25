@@ -491,7 +491,8 @@ public final class Entry {
      */
     public boolean isNewUserFile() {
         return revision != null
-                && revision.startsWith(NEW_USER_FILE);
+                && revision.startsWith(NEW_USER_FILE)
+                && revision.indexOf(".") < 0;
     }
 
     /**
