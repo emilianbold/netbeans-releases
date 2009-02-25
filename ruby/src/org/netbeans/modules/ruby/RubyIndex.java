@@ -134,7 +134,7 @@ public final class RubyIndex {
                 Collections.<String>emptySet()));
     }
 
-    private Collection<? extends IndexResult> query(
+    public Collection<? extends IndexResult> query(
             final String fieldName, final String fieldValue,
             final QuerySupport.Kind kind, final String... fieldsToLoad) {
         if (querySupport != null) {
@@ -164,6 +164,10 @@ public final class RubyIndex {
             Exceptions.printStackTrace(ioe);
             return false;
         }
+    }
+
+    FileObject getContext() {
+        return context;
     }
 
     Set<IndexedClass> getClasses(String name, final QuerySupport.Kind kind, boolean includeAll,
