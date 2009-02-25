@@ -24,10 +24,12 @@
         </folder>
     </folder>
     <folder name="Menu">
-        <folder name="Window">  
+        <folder name="Window">
+            <!--
             <file name="VisualizerTopComponentAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-dlight-core-ui-actions-VisualizerTopComponentAction.instance"/>
-            </file>           
+            </file>
+            -->
         </folder>
     </folder>
 </filesystem>
