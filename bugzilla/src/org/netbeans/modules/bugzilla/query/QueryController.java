@@ -47,6 +47,8 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
@@ -97,7 +99,7 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Tomas Stupka
  */
-public class QueryController extends BugtrackingController implements DocumentListener, ItemListener, ListSelectionListener, ActionListener, FocusListener {
+public class QueryController extends BugtrackingController implements DocumentListener, ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
     private QueryPanel panel;
 
     private final ComboParameter summaryParameter;
@@ -143,6 +145,23 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.removeButton.addActionListener(this);
         panel.changedFromTextField.addFocusListener(this);
 
+        panel.idTextField.addActionListener(this);
+        panel.productList.addKeyListener(this);
+        panel.componentList.addKeyListener(this);
+        panel.versionList.addKeyListener(this);
+        panel.statusList.addKeyListener(this);
+        panel.resolutionList.addKeyListener(this);
+        panel.priorityList.addKeyListener(this);
+        panel.changedList.addKeyListener(this);
+
+        panel.summaryTextField.addActionListener(this);
+        panel.commentTextField.addActionListener(this);
+        panel.keywordsTextField.addActionListener(this);
+        panel.peopleTextField.addActionListener(this);
+        panel.changedFromTextField.addActionListener(this);
+        panel.changedToTextField.addActionListener(this);
+        panel.changedToTextField.addActionListener(this);
+
         // setup parameters
         parameters = new LinkedHashMap<String, QueryParameter>();
         summaryParameter = createQueryParameter(ComboParameter.class, panel.summaryComboBox, "short_desc_type");    // NOI18N
@@ -167,7 +186,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         createQueryParameter(CheckBoxParameter.class, panel.commenterCheckBox, "emaillongdesc1");                   // NOI18N
         createQueryParameter(TextFieldParameter.class, panel.changedFromTextField, "chfieldfrom");                  // NOI18N
         createQueryParameter(TextFieldParameter.class, panel.changedToTextField, "chfieldto");                      // NOI18N
-        createQueryParameter(TextFieldParameter.class, panel.changedToTextField, "chfieldvalue");                   // NOI18N
+        createQueryParameter(TextFieldParameter.class, panel.newValueTextField, "chfieldvalue");                   // NOI18N
 
 
         if(query.isSaved()) {
@@ -369,6 +388,44 @@ public class QueryController extends BugtrackingController implements DocumentLi
             onMarkSeen();
         } else if (e.getSource() == panel.removeButton) {
             onRemove();
+        } else if (e.getSource() == panel.idTextField) {
+            if(!panel.idTextField.getText().trim().equals("")) {
+                onGotoIssue();
+            }
+        } else if (e.getSource() == panel.idTextField ||
+                   e.getSource() == panel.summaryTextField ||
+                   e.getSource() == panel.commentTextField ||
+                   e.getSource() == panel.keywordsTextField ||
+                   e.getSource() == panel.peopleTextField ||
+                   e.getSource() == panel.changedFromTextField ||
+                   e.getSource() == panel.newValueTextField ||
+                   e.getSource() == panel.changedToTextField)
+        {
+            onSearch();
+        }
+    }
+
+    public void keyTyped(KeyEvent e) {
+        // do nothing
+    }
+
+    public void keyPressed(KeyEvent e) {
+        // do nothing
+    }
+
+    public void keyReleased(KeyEvent e) {
+        if(e.getKeyCode() != KeyEvent.VK_ENTER) {
+            return;
+        }
+        if(e.getSource() == panel.productList ||
+           e.getSource() == panel.componentList ||
+           e.getSource() == panel.versionList ||
+           e.getSource() == panel.statusList ||
+           e.getSource() == panel.resolutionList ||
+           e.getSource() == panel.priorityList ||
+           e.getSource() == panel.changedList)
+        {
+            onSearch();
         }
     }
 
