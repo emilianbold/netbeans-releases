@@ -226,7 +226,7 @@ public abstract class Query implements Comparable<Query> {
     public abstract ColumnDescriptor[] getColumnDescriptors(); 
 
     public void setFilter(Filter filter) {
-        issueTable.setFilter(filter);
+        getIssueTable().setFilter(filter);
     }
 
     public long getLastRefresh() {
