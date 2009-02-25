@@ -79,10 +79,6 @@ import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
-import org.netbeans.modules.parsing.spi.SourceModificationEvent;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.Parameters;
@@ -816,12 +812,6 @@ public class TaskProcessor {
             this.schedulerType = schedulerType;
         }
         
-        private Request () {  
-            task = null;
-            cache = null;
-            reschedule = bridge = false;
-        }
-        
         public @Override String toString () {            
             if (reschedule) {
                 return String.format("Periodic request to perform: %s on: %s",  //NOI18N
@@ -905,10 +895,10 @@ public class TaskProcessor {
         boolean setCurrentTask (Request reference) throws InterruptedException {
             boolean result = false;
             assert !parserLock.isHeldByCurrentThread();
-            assert reference == null || reference.cache == null || !Thread.currentThread().holdsLock(reference.cache.getSnapshot().getSource());
+            assert reference == null || reference.cache == null || !Thread.holdsLock(reference.cache.getSnapshot().getSource());
             synchronized (INTERNAL_LOCK) {
                 while (this.canceledReference!=null) {
-                    assert canceledReference.cache == null || !Thread.currentThread().holdsLock(canceledReference.cache.getSnapshot().getSource());
+                    assert canceledReference.cache == null || !Thread.holdsLock(canceledReference.cache.getSnapshot().getSource());
                     INTERNAL_LOCK.wait();
                 }
                 result = this.canceled.getAndSet(false);
@@ -1078,8 +1068,8 @@ public class TaskProcessor {
                 boolean _canceled = canceled.getAndSet(true);
                 if (!_canceled) {
                     for (Iterator<DeferredTask> it = todo.iterator(); it.hasNext();) {
-                        DeferredTask task = it.next();
-                        if (task.task == this.task) {
+                        DeferredTask t = it.next();
+                        if (t.task == this.task) {
                             it.remove();
                             return true;
                         }

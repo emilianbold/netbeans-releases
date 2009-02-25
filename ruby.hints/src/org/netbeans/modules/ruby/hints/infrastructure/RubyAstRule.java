@@ -44,8 +44,8 @@ package org.netbeans.modules.ruby.hints.infrastructure;
 import java.util.List;
 import java.util.Set;
 import org.jruby.nb.ast.NodeType;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.Rule.AstRule;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.Rule.AstRule;
 
 /**
  * Represents a rule to be run on the source file, passing in some

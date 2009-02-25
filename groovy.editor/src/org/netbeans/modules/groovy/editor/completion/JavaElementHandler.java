@@ -40,7 +40,6 @@
 package org.netbeans.modules.groovy.editor.completion;
 
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
-import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -67,9 +66,10 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
-import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -80,13 +80,13 @@ public final class JavaElementHandler {
 
     private static final Logger LOG = Logger.getLogger(GroovyElementHandler.class.getName());
 
-    private final CompilationInfo info;
+    private final ParserResult info;
 
-    private JavaElementHandler(CompilationInfo info) {
+    private JavaElementHandler(ParserResult info) {
         this.info = info;
     }
 
-    public static JavaElementHandler forCompilationInfo(CompilationInfo info) {
+    public static JavaElementHandler forCompilationInfo(ParserResult info) {
         return new JavaElementHandler(info);
     }
 
@@ -149,7 +149,7 @@ public final class JavaElementHandler {
     }
 
     private JavaSource createJavaSource() {
-        FileObject fileObject = info.getFileObject();
+        FileObject fileObject = info.getSnapshot().getSource().getFileObject();
         if (fileObject == null) {
             return null;
         }

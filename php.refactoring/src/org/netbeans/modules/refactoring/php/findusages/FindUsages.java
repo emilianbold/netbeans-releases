@@ -40,15 +40,17 @@
  */
 package org.netbeans.modules.refactoring.php.findusages;
 
-import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.napi.gsfret.source.CompilationController;
-import org.netbeans.napi.gsfret.source.Phase;
-import org.netbeans.napi.gsfret.source.Source;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
@@ -94,7 +96,7 @@ public class FindUsages  {
         }
     }
 
-    private static class FindUsagesTask implements CancellableTask<CompilationController> {
+    private static class FindUsagesTask extends UserTask {
         private JTextComponent textC;
         private int caret;
         private RefactoringUI ui;
@@ -108,12 +110,12 @@ public class FindUsages  {
         public static void start(EditorCookie ec) {
             FindUsagesTask t = new FindUsagesTask(ec);
             try {
-                Source source = RefactoringUtils.getSource(t.textC.getDocument());
-                source.runUserActionTask(t, false);
-            } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
+                ParserManager.parse(Collections.singleton(Source.create(ec.getDocument())), t);
+            } catch (ParseException ex) {
+                ErrorManager.getDefault().notify(ex);
                 return;
             }
+
             TopComponent activetc = TopComponent.getRegistry().getActivated();
             if (t.ui != null) {
                 UI.openRefactoringUI(t.ui, activetc);
@@ -125,8 +127,9 @@ public class FindUsages  {
         public void cancel() {
         }
 
-        public void run(CompilationController cc) throws Exception {
-            cc.toPhase(Phase.RESOLVED);
+        @Override
+        public void run(ResultIterator resultIterator) throws Exception {
+            ParserResult cc = (ParserResult)resultIterator.getParserResult();
             Program root = RefactoringUtils.getRoot(cc);
             if (root == null) {
                 // TODO How do I add some kind of error message?

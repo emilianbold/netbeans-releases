@@ -38,8 +38,10 @@
  */
 package org.netbeans.modules.css.gsf;
 
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.parser.SimpleNode;
-import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  *
@@ -61,5 +63,37 @@ public class CssAstElement extends CSSElement {
     public SimpleNode node() {
         return node;
     }
+
+    /** Note(I): the css structure itema are renewed after each modification so we can
+     * return the cached offset range here instead of searching the new parser
+     * result. The only problem may happen if someone modifies the source
+     * and very quickly doubleclicks the navigator before it gets refreshed.
+     *
+     * TODO: fix this so we resolve this element to the new element in the fresh result.
+     */
+    @Override
+    public OffsetRange getOffsetRange(ParserResult result) {
+        Snapshot s = result.getSnapshot();
+        int from = node.startOffset();
+        int to = node.endOffset();
+
+        if(s.getText().length() == 0) {
+            return null;
+        }
+
+        //check the boundaries bacause of (I)
+        int origFrom = from > s.getText().length() ? 0 : s.getOriginalOffset(from);
+        int origTo = to > s.getText().length() ? 0 : s.getOriginalOffset(to);
+
+        if(origFrom == origTo || origTo == 0) {
+            return null;
+        }
+        
+        return new OffsetRange(origFrom, origTo);
+                
+                
+    }
+
+
 
 }

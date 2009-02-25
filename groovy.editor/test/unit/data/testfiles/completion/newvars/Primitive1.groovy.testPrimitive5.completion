@@ -1,5 +1,5 @@
 Code completion result for source line:
 float |
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 VARIABLE   f                                          null

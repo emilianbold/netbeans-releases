@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.javascript.editing;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import org.mozilla.nb.javascript.FunctionNode;
 import org.mozilla.nb.javascript.Node;
@@ -48,21 +50,21 @@ import org.mozilla.nb.javascript.Token;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.Parser;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.GsfTestBase;
-import org.netbeans.modules.gsf.api.EditHistory;
-import org.netbeans.modules.gsf.api.Formatter;
-import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.csl.api.test.CslTestBase.IndentPrefs;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.parsing.spi.Parser;
 
 /**
  * @author Tor Norbye
  */
-public abstract class JsTestBase extends GsfTestBase {
+public abstract class JsTestBase extends CslTestBase {
 
     public JsTestBase(String testName) {
         super(testName);
@@ -100,9 +102,8 @@ public abstract class JsTestBase extends GsfTestBase {
     
     @Override
     protected void setUp() throws Exception {
+        JsIndexer.setClusterUrl("file:/bogus"); // No translation
         super.setUp();
-        JsIndex.setClusterUrl("file:/bogus"); // No translation
-        getXTestJsCluster();
     }
     
     @Override
@@ -118,20 +119,21 @@ public abstract class JsTestBase extends GsfTestBase {
         
         return formatter;
     }
-    
-    // Called via reflection from GsfUtilities. This is necessary because
-    // during tests, going from a FileObject to a BaseDocument only works
-    // if all the correct data loaders are installed and working - and that
-    // hasn't been the case; we end up with PlainDocuments instead of BaseDocuments.
-    // If anyone can figure this out, please let me know and simplify the
-    // test infrastructure.
-    public static BaseDocument getDocumentFor(FileObject fo) {
-        BaseDocument doc = GsfTestBase.createDocument(read(fo));
-        doc.putProperty(org.netbeans.api.lexer.Language.class, JsTokenId.language());
-        doc.putProperty("mimeType", JsTokenId.JAVASCRIPT_MIME_TYPE);
 
-        return doc;
-    }
+// XXX: parsingapi
+//    // Called via reflection from GsfUtilities. This is necessary because
+//    // during tests, going from a FileObject to a BaseDocument only works
+//    // if all the correct data loaders are installed and working - and that
+//    // hasn't been the case; we end up with PlainDocuments instead of BaseDocuments.
+//    // If anyone can figure this out, please let me know and simplify the
+//    // test infrastructure.
+//    public static BaseDocument getDocumentFor(FileObject fo) {
+//        BaseDocument doc = GsfTestBase.createDocument(read(fo));
+//        doc.putProperty(org.netbeans.api.lexer.Language.class, JsTokenId.language());
+//        doc.putProperty("mimeType", JsTokenId.JAVASCRIPT_MIME_TYPE);
+//
+//        return doc;
+//    }
     
     protected String[] JAVASCRIPT_TEST_FILES = new String[] {
         "testfiles/arraytype.js",
@@ -276,11 +278,11 @@ public abstract class JsTestBase extends GsfTestBase {
 
         return true;
     }
-
-    @Override
-    protected void verifyIncremental(ParserResult result, EditHistory history, ParserResult oldResult) {
-        JsParseResult pr = (JsParseResult)result;
-        assertNotNull(pr.getIncrementalParse());
-        assertNotNull(pr.getIncrementalParse().newFunction);
-    }
+// XXX: parsingapi
+//    @Override
+//    protected void verifyIncremental(ParserResult result, EditHistory history, ParserResult oldResult) {
+//        JsParseResult pr = (JsParseResult)result;
+//        assertNotNull(pr.getIncrementalParse());
+//        assertNotNull(pr.getIncrementalParse().newFunction);
+//    }
 }
