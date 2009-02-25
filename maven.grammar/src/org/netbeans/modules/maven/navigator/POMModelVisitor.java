@@ -1190,6 +1190,12 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         }
 
         @Override
+        public Action getPreferredAction() {
+            return new SelectAction(this, 0);
+        }
+
+
+        @Override
         public String getShortDescription() {
             String[] values = getLookup().lookup(POMCutHolder.class).getCutValuesAsString();
             POMModel[] mdls = getLookup().lookup(POMCutHolder.class).getSource();
@@ -1268,6 +1274,12 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         }
 
         @Override
+        public Action getPreferredAction() {
+            return new SelectAction(this, 0);
+        }
+
+
+        @Override
         public String getHtmlDisplayName() {
             Object[] values = getLookup().lookup(POMCutHolder.class).getCutValues();
             String dispVal = POMModelPanel.definesValue(values) ? "" : NbBundle.getMessage(POMModelVisitor.class, "UNDEFINED");
@@ -1342,6 +1354,12 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                 new SelectAction(this)
             };
         }
+
+        @Override
+        public Action getPreferredAction() {
+            return new SelectAction(this, 0);
+        }
+
 
         @Override
         public String getHtmlDisplayName() {
@@ -1622,7 +1640,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             this.node = node;
         }
 
-        private SelectAction(Node node, int layer) {
+        SelectAction(Node node, int layer) {
             this.node = node;
             this.layer = layer;
         }

@@ -143,17 +143,6 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
             filtersPanel.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
 
         add(filtersPanel, BorderLayout.SOUTH);
-        getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-                    Node[] nds = getExplorerManager().getSelectedNodes();
-                    if (nds.length == 1) {
-                        selectByNode(nds[0], null, 0);
-                    }
-                }
-            }
-
-        });
     }
 
     static void selectByNode(Node nd, POMQName name, int layer) {
