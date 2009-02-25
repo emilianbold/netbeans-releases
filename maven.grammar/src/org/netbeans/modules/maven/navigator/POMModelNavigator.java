@@ -113,6 +113,8 @@ public class POMModelNavigator implements NavigatorPanel {
         if(selectedFiles.size() == 1) {
             DataObject d = (DataObject) selectedFiles.iterator().next();
             getNavigatorUI().navigate(d);           
+        } else {
+            getNavigatorUI().cleanup();
         }
     }
     
