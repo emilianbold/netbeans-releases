@@ -7,24 +7,18 @@
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.modules.dlight</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.dlight.collector.stdout</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.dlight.core.stack</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
@@ -49,24 +43,18 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.dlight.dtrace</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.dlight.indicators</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.dlight.management</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
@@ -79,16 +67,12 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.dlight.nativeexecution</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.dlight.perfan</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
@@ -101,16 +85,12 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.dlight.util</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.dlight.visualizers</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
