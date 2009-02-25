@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.ruby;
 
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -53,6 +55,11 @@ public class RubyCodeCompleterTest extends RubyTestBase {
     
     public RubyCodeCompleterTest(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return rubyTestsClassPath();
     }
 
 //    @Override

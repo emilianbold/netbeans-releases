@@ -64,6 +64,7 @@ import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.ast.ReturnNode;
 import org.jruby.nb.ast.StrNode;
 import org.jruby.nb.ast.types.INameNode;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -79,6 +80,11 @@ public class AstUtilitiesTest extends RubyTestBase {
     
     public AstUtilitiesTest(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return rubyTestsClassPath();
     }
 
     public void testFindBySignature1() throws Exception {

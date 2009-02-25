@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.Comparator;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -60,6 +61,11 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
 
     public RubyStructureAnalyzerTest(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return rubyTestsClassPath();
     }
 
     private void checkAttributes(String relFilePath) throws Exception {

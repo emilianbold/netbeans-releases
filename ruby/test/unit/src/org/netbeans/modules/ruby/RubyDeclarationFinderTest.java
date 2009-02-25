@@ -28,6 +28,8 @@
 
 package org.netbeans.modules.ruby;
 
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.openide.filesystems.FileObject;
 
@@ -39,6 +41,11 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
     
     public RubyDeclarationFinderTest(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return rubyTestsClassPath();
     }
 
     public void testDeclaration1() throws Exception {
@@ -92,9 +99,9 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
     public void testTestDeclarationIssue152703() throws Exception {
         // Make sure the test file is indexed
         FileObject fo = getTestFile("testfiles/rd_threads_and_frames_test.rb");
-        GsfTestCompilationInfo info = getInfo(fo);
-        assertNotNull(AstUtilities.getRoot(info));
-        info.getIndex(RubyInstallation.RUBY_MIME_TYPE);
+//        GsfTestCompilationInfo info = getInfo(fo);
+//        assertNotNull(AstUtilities.getRoot(info));
+//        info.getIndex(RubyInstallation.RUBY_MIME_TYPE);
 
         DeclarationLocation loc = RubyDeclarationFinder.getTestDeclaration(fo, "RDThreadsAndFrames/test_frames", false, false);
         assertTrue(loc != DeclarationLocation.NONE);

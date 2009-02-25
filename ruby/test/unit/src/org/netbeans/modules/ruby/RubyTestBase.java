@@ -122,8 +122,7 @@ public abstract class RubyTestBase extends org.netbeans.api.ruby.platform.RubyTe
         CodeStylePreferences.get(doc).getPreferences().putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, size);
     }
 
-    @Override
-    protected Map<String, ClassPath> createClassPathsForTest() {
+    protected final Map<String, ClassPath> rubyTestsClassPath() {
         // XXX - Parsing API - preindexing
 //        System.setProperty("netbeans.user", getWorkDirPath());
 //        FileObject jrubyHome = TestUtil.getXTestJRubyHomeFO();
@@ -137,7 +136,7 @@ public abstract class RubyTestBase extends org.netbeans.api.ruby.platform.RubyTe
 //        platform.getGemManager().getNonGemLoadPath();
 
         Map<String, ClassPath> loadPath = new HashMap<String, ClassPath>();
-        
+
         // rubystubs
         loadPath.put(RubyLanguage.BOOT, ClassPathSupport.createClassPath(RubyPlatform.getRubyStubs()));
 

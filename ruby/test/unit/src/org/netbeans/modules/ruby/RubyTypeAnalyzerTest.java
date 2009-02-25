@@ -40,8 +40,10 @@
  */
 package org.netbeans.modules.ruby;
 
+import java.util.Map;
 import org.jruby.nb.ast.MethodDefNode;
 import org.jruby.nb.ast.Node;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Source;
@@ -56,6 +58,11 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
 
     public RubyTypeAnalyzerTest(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return rubyTestsClassPath();
     }
 
     private RubyTypeInferencer getInferencer(String file, String caretLine, boolean findMethod) throws Exception {
