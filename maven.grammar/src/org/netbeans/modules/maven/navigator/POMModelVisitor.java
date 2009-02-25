@@ -1296,6 +1296,34 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             return getIcon(type);
         }
 
+        @Override
+        public String getShortDescription() {
+            Object[] values = getLookup().lookup(POMCutHolder.class).getCutValues();
+            POMModel[] mdls = getLookup().lookup(POMCutHolder.class).getSource();
+            StringBuffer buff = new StringBuffer();
+            int index = 0;
+            buff.append("<html>" +
+                    "Value is defined in the following POM files:" +
+                    "<p><table><thead><tr><th>" +
+                    "POM ArtifactId" +
+                    "</th><th>" +
+                    "Is Defined?" +
+                    "</th></tr></thead><tbody>");
+            for (POMModel mdl : mdls) {
+                String artifact = mdl.getProject().getArtifactId();
+                buff.append("<tr><td>"); //NOI18N
+                buff.append(artifact != null ? artifact : "project");
+                buff.append("</td><td>"); //NOI18N
+                buff.append(values[index] != null ? "Yes" : "No");
+                buff.append("</td></tr>");//NOI18N
+                index++;
+            }
+            buff.append("</tbody></table>");//NOI18N
+
+            return buff.toString();
+        }
+
+
     }
 
     private static class ListNode extends AbstractNode {
