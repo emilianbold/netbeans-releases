@@ -527,7 +527,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         });
     }
 
-    private void onRefresh() {
+    public void onRefresh() {
         post(new Runnable() {
             public void run() {
                 panel.setQueryRunning(true);
