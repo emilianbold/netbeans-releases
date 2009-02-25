@@ -50,6 +50,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ159156() throws Exception {
+        // IZ#159156: Wrong type resolving scope sequence in Resolver3
+        performTest("iz159156.cpp", 18, 18, "iz159156.cpp", 2, 5);
+    }
+
     public void testIZ148223() throws Exception {
         // IZ#148223: IDE can't recognize overloaded operator&&
         performTest("operators_hyperlink.cpp", 65, 21, "operators_hyperlink.cpp", 6, 9); // cc in (a1 && b1).cc()
