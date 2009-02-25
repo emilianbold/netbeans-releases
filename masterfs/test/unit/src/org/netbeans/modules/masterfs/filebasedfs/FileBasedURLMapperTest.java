@@ -40,13 +40,14 @@
  */
 package org.netbeans.modules.masterfs.filebasedfs;
 
-import org.netbeans.modules.masterfs.*;
-import junit.framework.*;
+import java.io.File;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.FileUtil;
 import java.net.URL;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
  * @author Radek Matous
@@ -55,12 +56,6 @@ public class FileBasedURLMapperTest extends NbTestCase {
 
     public FileBasedURLMapperTest(String testName) {
         super(testName);
-    }
-
-    protected void setUp() throws Exception {
-    }
-
-    protected void tearDown() throws Exception {
     }
 
     public static Test suite() {
@@ -77,5 +72,17 @@ public class FileBasedURLMapperTest extends NbTestCase {
         URLMapper instance = new FileBasedURLMapper();        
         URL result = instance.getURL(fo, type);
         assertNull(result);//NOI18N
-    }            
+    }
+
+    public void testGetURL155742() throws Exception {
+        clearWorkDir();
+        File f = new File(getWorkDir(), "dummy");
+        assertTrue(f.mkdir());
+        FileObject fo = FileUtil.toFileObject(f);
+        assertNotNull(fo);
+        f.delete();
+        URLMapper instance = new FileBasedURLMapper();
+        URL result = instance.getURL(fo, URLMapper.INTERNAL);
+        assertTrue("Folder URL must always end with slash.", result.toExternalForm().endsWith("/"));
+    }
 }

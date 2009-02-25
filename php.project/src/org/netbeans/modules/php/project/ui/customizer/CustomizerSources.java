@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -111,8 +112,12 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         copyFilesPanel.add(BorderLayout.NORTH, copyFilesVisual);
 
         PhpEnvironment.get().readDocumentRoots(new PhpEnvironment.ReadDocumentRootsNotifier() {
-            public void finished(List<DocumentRoot> documentRoots) {
-                initCopyTargets(documentRoots, copyTarget);
+            public void finished(final List<DocumentRoot> documentRoots) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        initCopyTargets(documentRoots, copyTarget);
+                    }
+                });
             }
         }, getSourcesFolderName());
 
@@ -193,7 +198,7 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         // copy target, if any
         File copyTarget = ProjectPropertiesSupport.getCopySourcesTarget(properties.getProject());
         if (copyTarget == null) {
-            return new LocalServer(""); // NOI18N
+            return LocalServer.getEmpty();
         }
         FileObject resolvedFO = FileUtil.toFileObject(copyTarget);
         if (resolvedFO == null) {
@@ -204,6 +209,7 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
     }
 
     void initCopyTargets(final List<DocumentRoot> roots, LocalServer initialLocalServer) {
+        assert initialLocalServer != null;
         int size = roots.size() + 1;
         List<LocalServer> localServers = new ArrayList<LocalServer>(size);
         localServers.add(initialLocalServer);
@@ -211,7 +217,7 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
             LocalServer ls = new LocalServer(root.getDocumentRoot());
             localServers.add(ls);
         }
-        copyFilesVisual.setLocalServerModel(new LocalServer.ComboBoxModel(localServers.toArray(new LocalServer[size])));
+        copyFilesVisual.setLocalServerModel(new LocalServer.ComboBoxModel(localServers.toArray(new LocalServer[localServers.size()])));
         copyFilesVisual.selectLocalServer(initialLocalServer);
         copyFilesVisual.setState(true);
         validateFields();

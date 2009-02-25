@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 
@@ -106,6 +107,8 @@ public class FilesAndAttributesCheck extends NbTestCase {
                 }
             }
             System.setProperty(dynVery + fo.getPath(), String.valueOf(cnt));
+            String locName = getDisplayName(fo);
+            System.setProperty(dynName + fo.getPath(), locName);
 
             if (fo.isData()) {
                 FileObject newfo = FileUtil.createData(lfs.getRoot(), fo.getPath());
@@ -124,6 +127,7 @@ public class FilesAndAttributesCheck extends NbTestCase {
             fail(errors.toString());
         }
     }
+    private static final String dynName = "dynamic/name/";
     private static final String dynVery = "dynamic/verify/";
     private static final String dynAttr = "dynamic/attr/";
 
@@ -168,7 +172,14 @@ public class FilesAndAttributesCheck extends NbTestCase {
                 errors.append("Both files exist: " + fo + "\n");
                 continue;
             }
-
+            if (!clone.getPath().startsWith("Templates/Privileged/")) {
+                String locName = System.getProperties().getProperty(dynName + clone.getPath());
+                assertNotNull("Localized name is recorded: " + clone, locName);
+                String newName = getDisplayName(clone);
+                if (!locName.equals(newName)) {
+                    errors.append("Localized name for " + clone + " does not match " + locName + " != " + newName + "\n");
+                }
+            }
             Enumeration<String> allAttributes = Collections.enumeration(filesAndAttribs.get(fo));
             while (allAttributes.hasMoreElements()) {
                 String name = allAttributes.nextElement();
@@ -251,5 +262,11 @@ public class FilesAndAttributesCheck extends NbTestCase {
         if (!filesAndAttribs.isEmpty()) {
             fail("All should be empty: " + filesAndAttribs);
         }
+    }
+
+    private static String getDisplayName(FileObject f) throws FileStateInvalidException {
+        return f.getFileSystem().getStatus().annotateName(
+            f.getNameExt(), Collections.<FileObject>singleton(f)
+        );
     }
 }

@@ -6,6 +6,7 @@ package org.netbeans.modules.dlight.visualizers.api.impl;
 
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.visualizers.api.TreeTableVisualizerConfiguration;
+import org.netbeans.spi.viewmodel.NodeActionsProvider;
 
 /**
  *
@@ -43,4 +44,6 @@ public abstract class TreeTableVisualizerConfigurationAccessor {
     public abstract Column getTreeColumn(TreeTableVisualizerConfiguration configuration);
 
     public abstract boolean isTableView(TreeTableVisualizerConfiguration configuration);
+
+    public abstract NodeActionsProvider getNodesActionProvider(TreeTableVisualizerConfiguration configuration);
 }

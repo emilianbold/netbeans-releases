@@ -50,6 +50,13 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void test154777() throws Exception {
+        // IZ154777: Unresolved inner type of specialization
+        performTest("iz154777.cpp", 16, 19, "iz154777.cpp", 10, 9); // DD in CC<int>::DD::dType j;
+        performTest("iz154777.cpp", 16, 24, "iz154777.cpp", 11, 13); // dType in CC<int>::DD::dType j;
+        performTest("iz154777.cpp", 17, 15, "iz154777.cpp", 3, 9); // method in j.method();
+    }
+
     public void testClassForward() throws Exception {
         // IZ144869 : fixed instantiation of class forward declaration
         performTest("classForward.h", 21, 12, "classForward.h", 16, 5);

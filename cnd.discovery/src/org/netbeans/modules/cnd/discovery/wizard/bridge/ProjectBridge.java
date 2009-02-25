@@ -442,7 +442,7 @@ public class ProjectBridge {
 
     public String getCygwinDrive(){
         String res =CompilerSetManager.getCygwinBase();
-        if (res != null && res.endsWith("/")){
+        if (res != null && res.endsWith("/")){ // NOI18N
             res = res.substring(0,res.length()-1);
         }
         return res;

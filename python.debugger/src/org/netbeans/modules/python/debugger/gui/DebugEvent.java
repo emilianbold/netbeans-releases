@@ -55,6 +55,7 @@ public class DebugEvent
   public final static String STEPOVER = "Debug statement step Over";
   public final static String STEPINTO = "Debug statement step Into";
   public final static String RUN = "Run";
+  public final static String RUNTOCURSOR = "Run to cursor";
   public final static String SENDCOMMAND = "execute Python Command";
   public final static String COMMANDFIELD = "Python command field";
   public final static String TOGGLEJYTHON = "Jython / CPython language switch";

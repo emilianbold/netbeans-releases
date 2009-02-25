@@ -38,20 +38,21 @@
  */
 package org.netbeans.modules.dlight.perfan.storage.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
-
-// TODO: implement SessionListener - kill idbe on Session closure
 public final class PerfanDataStorage extends DataStorage {
 
+    private final Object lock = new String(PerfanDataStorage.class.getName());
     private static final Logger log = DLightLogger.getLogger(PerfanDataStorage.class);
     private Erprint erprint;
 
@@ -60,22 +61,49 @@ public final class PerfanDataStorage extends DataStorage {
     }
 
     public void init(ExecutionEnvironment execEnv, String sproHome, String experimentDirectory) {
+        if (erprint != null) {
+            erprint.stop();
+        }
+        
         erprint = new Erprint(execEnv, sproHome, experimentDirectory);
     }
 
+    // TODO: implement!
     public Object[] getCallees(long ref) {
         return null;
     }
 
+    // TODO: implement!
     public Object[] getCallers(long ref) {
         return null;
     }
 
+    /**
+     * For now assume that getTopFunctions is a method that forces er_print restart...
+     * TODO: change the behavior later...
+     */
     public String[] getTopFunctions(String mspec, String msort, int limit) {
-        System.out.println("Actual metrics: " + erprint.setMetrics(mspec));
-        System.out.println("Actual sort by: " + erprint.setSortBy(msort));
+        String[] result = null;
+        synchronized (lock) {
+            erprint.restart();
+            erprint.setMetrics(mspec);
+            erprint.setSortBy(msort);
+            result = erprint.getHotFunctions(limit);
+        }
+        return result;
+    }
 
-        return erprint.getHotFunctions(limit);
+    public List fetchSummaryData(List<String> colNames) {
+        List result = new ArrayList();
+        ExperimentStatistics stat = erprint.getExperimentStatistics();
+
+        for (String col : colNames) {
+            if (col.equals(SunStudioDCConfiguration.c_ulockSummary.getColumnName())) {
+                result.add(stat.getULock_p());
+            }
+        }
+
+        return result;
     }
 
     @Override
@@ -90,6 +118,7 @@ public final class PerfanDataStorage extends DataStorage {
 
     @Override
     public void addData(String tableName, List<DataRow> data) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // Adding data is not supported for er_print
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 }

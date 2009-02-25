@@ -403,12 +403,21 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             }
             Map map = sourcesProperties.getProperties("additional_source_roots").
                 getMap("project", new HashMap());
-            map.put(projectRoot, new ArrayList<String>(additionalSourceRoots));
+            if (additionalSourceRoots != null) {
+                map.put(projectRoot, new ArrayList<String>(additionalSourceRoots));
+            } else {
+                map.remove(projectRoot);
+            }
             sourcesProperties.getProperties("additional_source_roots").
                     setMap("project", map);
         } else {
-            sourcesProperties.getProperties("additional_source_roots").
-                    setCollection("src_roots", new ArrayList<String>(additionalSourceRoots));
+            if (additionalSourceRoots != null) {
+                sourcesProperties.getProperties("additional_source_roots").
+                        setCollection("src_roots", new ArrayList<String>(additionalSourceRoots));
+            } else {
+                sourcesProperties.getProperties("additional_source_roots").
+                        setCollection("src_roots", null);
+            }
         }
     }
 

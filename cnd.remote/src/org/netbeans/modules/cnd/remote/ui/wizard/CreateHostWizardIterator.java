@@ -45,6 +45,7 @@ import java.util.NoSuchElementException;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -140,6 +141,11 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
         dialog.toFront();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
         if (!cancelled) {
+            Runnable r = (Runnable) wizardDescriptor.getProperty(CreateHostWizardPanel2.PROP_RUN_ON_FINISH);
+            CndUtils.assertFalse(r == null);
+            if (r != null) {
+                r.run();
+            }
             return (String)wizardDescriptor.getProperty(CreateHostWizardPanel2.PROP_HOSTKEY);
         } else {
             return null;

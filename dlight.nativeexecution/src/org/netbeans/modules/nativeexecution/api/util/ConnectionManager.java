@@ -49,6 +49,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
@@ -184,6 +185,9 @@ public final class ConnectionManager {
 
         try {
             session = futureSession.get();
+        } catch (CancellationException ex) {
+            // User canceled connection...
+            session = null;
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         } catch (ExecutionException ex) {

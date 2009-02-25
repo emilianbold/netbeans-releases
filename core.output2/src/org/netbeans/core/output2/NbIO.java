@@ -49,6 +49,10 @@ import java.awt.*;
 import java.io.IOException;
 import java.io.Reader;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.windows.IOContainer;
+import org.openide.windows.IOTab;
 
 /** Implementation of InputOutput.  Implements calls as a set of
  * "commands" which are passed up to Dispatcher to be run on the event
@@ -56,25 +60,28 @@ import org.openide.util.Exceptions;
  *
  * @author  Tim Boudreau
  */
-class NbIO implements InputOutput {
+class NbIO implements InputOutput, Lookup.Provider {
 
     private Boolean focusTaken = null;
-    private Boolean closed = null;
+    private boolean closed = false;
     private final String name;
     
     private Action[] actions;
 
     private NbWriter out = null;
-
-    private Icon icon;
+    private IOContainer ioContainer;
+    private Lookup lookup;
+    private IOTabImpl ioTab;
 
     /** Creates a new instance of NbIO 
      * @param name The name of the IO
      * @param toolbarActions an optional set of toolbar actions
+     * @param iowin parent container accessor (null for default)
      */
-    NbIO(String name, Action[] toolbarActions) {
+    NbIO(String name, Action[] toolbarActions, IOContainer ioContainer) {
         this(name);
         this.actions = toolbarActions;
+        this.ioContainer = ioContainer != null ? ioContainer : IOContainer.getDefault();
     }
     
     /** Package private constructor for unit tests */
@@ -94,7 +101,11 @@ class NbIO implements InputOutput {
     String getName() {
         return name;
     }
-    
+
+    IOContainer getIOContainer() {
+        return ioContainer;
+    }
+
     public OutputWriter getErr() {
         return ((NbWriter) getOut()).getErr();
     }
@@ -134,11 +145,11 @@ class NbIO implements InputOutput {
     }
 
     void setClosed (boolean val) {
-        closed = val ? Boolean.TRUE : Boolean.FALSE;
+        closed = val;
     }
 
     public boolean isClosed() {
-        return Boolean.TRUE.equals(closed);
+        return closed;
     }
 
     public boolean isErrSeparated() {
@@ -203,18 +214,10 @@ class NbIO implements InputOutput {
     Action[] getToolbarActions() {
         return actions;
     }
-
-    boolean checkReset() {
-        // XXX won't this always return false? -jglick
-        boolean result = wasReset;
-        wasReset = false;
-        return result;
-    }
     
-    private boolean wasReset = false;
     public void reset() {
         if (Controller.LOG) Controller.log (this + ": reset");
-        closed = null;
+        closed = false;
         streamClosedSet = false;
         streamClosed = false;
 
@@ -265,18 +268,16 @@ class NbIO implements InputOutput {
     @SuppressWarnings("deprecation")
     public Reader flushReader() {
         return getIn();
-    }    
+    }
 
-    public void setIcon(Icon icn) {
-        icon = icn;
-        post (this, IOEvent.CMD_ICON, icn);
-        
+    public synchronized Lookup getLookup() {
+        if (lookup == null) {
+            ioTab = new IOTabImpl();
+            lookup = Lookups.fixed(ioTab);
+        }
+        return lookup;
     }
-    
-    public Icon getIcon() {
-        return icon;
-    }
-    
+
     class IOReader extends Reader {
         private boolean pristine = true;
         IOReader() {
@@ -415,5 +416,39 @@ class NbIO implements InputOutput {
             return inputClosed;
         }
     }
-    
+
+    Icon getIcon() {
+        return ioTab != null ? ioTab.getIcon() : null;
+    }
+
+    String getToolTipText() {
+        return ioTab != null ? ioTab.getToolTipText() : null;
+    }
+
+    private class IOTabImpl extends IOTab {
+        Icon icon;
+        String toolTip;
+
+        @Override
+        protected Icon getIcon() {
+            return icon;
+        }
+
+        @Override
+        protected String getToolTipText() {
+            return toolTip;
+        }
+
+        @Override
+        protected void setIcon(Icon icon) {
+            this.icon = icon;
+            post(NbIO.this, IOEvent.CMD_SET_ICON, this.icon);
+        }
+
+        @Override
+        protected void setToolTipText(String text) {
+            toolTip = text;
+            post(NbIO.this, IOEvent.CMD_SET_TOOLTIP, toolTip);
+        }
+    }
 }

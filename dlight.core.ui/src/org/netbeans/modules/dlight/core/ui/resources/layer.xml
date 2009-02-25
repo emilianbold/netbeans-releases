@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <!--
     <folder name="Actions">
         <folder name="DLight">
 
@@ -30,6 +31,7 @@
         </folder>
 
     </folder>
+    -->
     <folder name="Windows2">
         <folder name="Components">
             <file name="DLightIndicatorsTopComponent.settings" url="DLightIndicatorsTopComponentSettings.xml"/>
@@ -50,6 +52,7 @@
         </folder>
     </folder>
     <folder name="Menu">
+        <!--
         <folder name="Window">
             <file name="DLightIndicatorsAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-dlight-core-ui-actions-DLightIndicatorsAction.instance"/>
@@ -65,5 +68,6 @@
                 <attr name="position" intvalue="0"/>
             </file>
         </folder>
+        -->
     </folder>
 </filesystem>

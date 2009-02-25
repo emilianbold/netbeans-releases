@@ -170,6 +170,33 @@ public final class POMQNames {
     public final POMQName EXCLUDES;
     public final POMQName EXCLUDE;
 
+    public final POMQName TAG;
+    public final POMQName CONNECTION;
+    public final POMQName DEVELOPERCONNECTION;
+
+    public final POMQName SYSTEM;
+
+    public final POMQName EMAIL;
+    public final POMQName ORGANIZATIONURL;
+    public final POMQName TIMEZONE;
+
+    public final POMQName SUBSCRIBE;
+    public final POMQName UNSUBSCRIBE;
+    public final POMQName POST;
+    public final POMQName ARCHIVE;
+
+    public final POMQName DOWNLOADURL;
+
+    public final POMQName MAVEN;
+
+    public final POMQName REPORTS;
+    public final POMQName REPORT;
+
+    public final POMQName ENABLED;
+    public final POMQName UPDATEPOLICY;
+    public final POMQName CHECKSUMPOLICY;
+
+
 
     private boolean ns;
 
@@ -201,7 +228,7 @@ public final class POMQNames {
         TESTRESOURCE = new POMQName(POMQName.createQName("testResource",ns), ns); // NOI18N
         PLUGINMANAGEMENT = new POMQName(POMQName.createQName("pluginManagement",ns), ns); // NOI18N
         REPORTING = new POMQName(POMQName.createQName("reporting",ns), ns); // NOI18N
-        REPORTPLUGIN = new POMQName(POMQName.createQName("reportPlugin",ns), ns); // NOI18N
+        REPORTPLUGIN = new POMQName(POMQName.createQName("plugin",ns), ns); // NOI18N
         REPORTSET = new POMQName(POMQName.createQName("reportSet",ns), ns); // NOI18N
         ACTIVATION = new POMQName(POMQName.createQName("activation",ns), ns); // NOI18N
         ACTIVATIONPROPERTY = new POMQName(POMQName.createQName("property",ns), ns); // NOI18N
@@ -229,7 +256,7 @@ public final class POMQNames {
         EXTENSIONS = new POMQName(POMQName.createQName("extensions",ns), ns); // NOI18N
         RESOURCES = new POMQName(POMQName.createQName("resources",ns), ns); // NOI18N
         TESTRESOURCES = new POMQName(POMQName.createQName("testResources",ns), ns); // NOI18N
-        REPORTPLUGINS = new POMQName(POMQName.createQName("reportPlugins",ns), ns); // NOI18N
+        REPORTPLUGINS = new POMQName(POMQName.createQName("plugins",ns), ns); // NOI18N
         REPORTSETS = new POMQName(POMQName.createQName("reportSets",ns), ns); // NOI18N
 
 
@@ -294,8 +321,33 @@ public final class POMQNames {
         INCLUDE = new POMQName(POMQName.createQName("include",ns), ns); //NOI18N
         EXCLUDES = new POMQName(POMQName.createQName("excludes",ns), ns); //NOI18N
         EXCLUDE = new POMQName(POMQName.createQName("exclude",ns), ns); //NOI18N
+
+        TAG = new POMQName(POMQName.createQName("tag",ns), ns); //NOI18N
+        CONNECTION = new POMQName(POMQName.createQName("connection",ns), ns); //NOI18N
+        DEVELOPERCONNECTION = new POMQName(POMQName.createQName("developerConnection",ns), ns); //NOI18N
+
+        SYSTEM = new POMQName(POMQName.createQName("system",ns), ns); //NOI18N
+
+        ORGANIZATIONURL = new POMQName(POMQName.createQName("organizationUrl",ns), ns); //NOI18N
+        EMAIL = new POMQName(POMQName.createQName("email",ns), ns); //NOI18N
+        TIMEZONE = new POMQName(POMQName.createQName("timezone",ns), ns); //NOI18N
         //when adding items here, need to add them to the set below as well.
 
+        SUBSCRIBE = new POMQName(POMQName.createQName("subscribe",ns), ns); //NOI18N
+        UNSUBSCRIBE = new POMQName(POMQName.createQName("unsubscribe",ns), ns); //NOI18N
+        POST = new POMQName(POMQName.createQName("post",ns), ns); //NOI18N
+        ARCHIVE = new POMQName(POMQName.createQName("archive",ns), ns); //NOI18N
+
+        DOWNLOADURL = new POMQName(POMQName.createQName("downloadUrl",ns), ns); //NOI18N
+
+        MAVEN = new POMQName(POMQName.createQName("maven",ns), ns); //NOI18N
+
+        REPORTS = new POMQName(POMQName.createQName("reports",ns), ns); //NOI18N
+        REPORT = new POMQName(POMQName.createQName("report",ns), ns); //NOI18N
+
+        ENABLED = new POMQName(POMQName.createQName("enabled",ns), ns); //NOI18N
+        UPDATEPOLICY = new POMQName(POMQName.createQName("updatePolicy",ns), ns); //NOI18N
+        CHECKSUMPOLICY = new POMQName(POMQName.createQName("checksumPolicy",ns), ns); //NOI18N
     }
 
     public boolean isNSAware() {
@@ -404,7 +456,25 @@ public final class POMQNames {
             INCLUDES.getQName(),
             INCLUDE.getQName(),
             EXCLUDES.getQName(),
-            EXCLUDE.getQName()
+            EXCLUDE.getQName(),
+            DEVELOPERCONNECTION.getQName(),
+            CONNECTION.getQName(),
+            TAG.getQName(),
+            SYSTEMPATH.getQName(),
+            ORGANIZATIONURL.getQName(),
+            EMAIL.getQName(),
+            TIMEZONE.getQName(),
+            ARCHIVE.getQName(),
+            SUBSCRIBE.getQName(),
+            UNSUBSCRIBE.getQName(),
+            POST.getQName(),
+            DOWNLOADURL.getQName(),
+            MAVEN.getQName(),
+            REPORTS.getQName(),
+            REPORT.getQName(),
+            ENABLED.getQName(),
+            UPDATEPOLICY.getQName(),
+            CHECKSUMPOLICY.getQName()
         };
         List<QName> list = Arrays.asList(names);
         return new HashSet<QName>(list);

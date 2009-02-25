@@ -178,6 +178,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         }
 
         // Attach listeners to all disk folders
+        boolean currentState = configurationDescriptor.getModified();
         Vector<Folder> firstLevelFolders = configurationDescriptor.getLogicalFolders().getFolders();
         for (Folder f : firstLevelFolders) {
             if (f.isDiskFolder()) {
@@ -185,6 +186,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
                 f.attachListeners();
             }
         }
+        configurationDescriptor.setModified(currentState);
 
         configurationDescriptor.setState(State.READY);
 

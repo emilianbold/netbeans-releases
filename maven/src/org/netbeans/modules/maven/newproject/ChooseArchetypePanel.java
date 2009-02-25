@@ -224,7 +224,7 @@ public class ChooseArchetypePanel extends javax.swing.JPanel implements Explorer
 private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveActionPerformed
     Node[] nds = getExplorerManager().getSelectedNodes();
     if (nds.length != 0) {
-        Archetype arch = (Archetype) nds[0].getValue(PROP_ARCHETYPE);
+        final Archetype arch = (Archetype) nds[0].getValue(PROP_ARCHETYPE);
         NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
                 NbBundle.getMessage(ChooseArchetypePanel.class, "Q_RemoveArch", arch.getArtifactId()), 
                 NotifyDescriptor.YES_NO_OPTION);
@@ -232,26 +232,29 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         if (ret != NotifyDescriptor.YES_OPTION) {
             return;
         }
-        try {
-            RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById(RepositoryPreferences.LOCAL_REPO_ID);
-            if (info != null) {
-                List<NBVersionInfo> rec = RepositoryQueries.getRecords(arch.getGroupId(),
-                        arch.getArtifactId(), arch.getVersion(), info);
-                for (NBVersionInfo record : rec) {
-                        Artifact a = RepositoryUtil.createArtifact(record);
-                        RepositoryIndexer.deleteArtifactFromIndex(info, a);
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById(RepositoryPreferences.LOCAL_REPO_ID);
+                    if (info != null) {
+                        List<NBVersionInfo> rec = RepositoryQueries.getRecords(arch.getGroupId(),
+                                arch.getArtifactId(), arch.getVersion(), info);
+                        for (NBVersionInfo record : rec) {
+                            Artifact a = RepositoryUtil.createArtifact(record);
+                            RepositoryIndexer.deleteArtifactFromIndex(info, a);
+                        }
+                    }
+                    File path = new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir(),
+                            arch.getGroupId().replace('.', File.separatorChar) + File.separator + arch.getArtifactId() + File.separator + arch.getVersion());
+                    if (path.exists()) {
+                        FileUtils.deleteDirectory(path);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
-            File path = new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir(),
-                    arch.getGroupId().replace('.', File.separatorChar) + File.separator + arch.getArtifactId() 
-                  + File.separator + arch.getVersion());
-            if (path.exists()) {
-                FileUtils.deleteDirectory(path);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        ((Childs)getExplorerManager().getRootContext().getChildren()).removeArchetype(arch);
+        });
+        ((Childs) getExplorerManager().getRootContext().getChildren()).removeArchetype(arch);
     }
 }//GEN-LAST:event_btnRemoveActionPerformed
 
@@ -399,7 +402,7 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         AbstractNode nd = new AbstractNode(childs);
         String dn = arch.getName() == null ? arch.getArtifactId() : arch.getName();
         nd.setName(dn);
-        nd.setDisplayName(dn);
+        nd.setDisplayName(NbBundle.getMessage(ChooseArchetypePanel.class, "TIT_Archetype_Node_Name", dn, arch.getVersion()));
         nd.setIconBaseWithExtension("org/netbeans/modules/maven/Maven2Icon.gif"); //NOI18N
         nd.setValue(PROP_ARCHETYPE, arch);
         return new Node[] { nd };
@@ -487,13 +490,16 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             if (key == LOADING_ARCHETYPE) {
                 return ChooseArchetypePanel.createNodes(key, LEAF);
             }
-            String id = key.getGroupId() + "|" + key.getArtifactId();
+            String id = key.getGroupId() + "|" + key.getArtifactId(); //NOI18N
             TreeMap<DefaultArtifactVersion, Archetype> rs = res.get(id);
             Children childs = Children.LEAF;
             if (rs != null && rs.size() > 1) {
                 //can it be actually null?
                 childs = new Childs();
-                ((Childs)childs).addArchetypes(rs.values());
+                List<Archetype> lst = new ArrayList<Archetype>();
+                lst.addAll(rs.values());
+                lst.remove(key);
+                ((Childs)childs).addArchetypes(lst);
             } 
             return ChooseArchetypePanel.createNodes(key, childs);
         }
@@ -501,7 +507,7 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         public void run() {
             RemoteRepoProvider provider = new RemoteRepoProvider();
             for (Archetype ar : provider.getArchetypes()) {
-                String key = ar.getGroupId() + "|" + ar.getArtifactId();
+                String key = ar.getGroupId() + "|" + ar.getArtifactId(); //NOI18N
                 TreeMap<DefaultArtifactVersion, Archetype> archs = res.get(key);
                 if (archs == null) {
                     archs = new TreeMap<DefaultArtifactVersion, Archetype>(new VersionComparator());

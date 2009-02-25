@@ -293,7 +293,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         }
         if (tt != null) {
             int startIndex = tt.findInIntervalIndex(offset);
-            if (startIndex < tt.intervals.size()) {
+            if (0 <= startIndex && startIndex < tt.intervals.size()) {
                 if (tt.intervals.get(startIndex).inInterval.end == offset) {
                     // use next
                     startIndex++;

@@ -75,7 +75,7 @@ import org.openide.awt.HtmlRenderer;
 public class SlidingTabDisplayerButtonUI extends BasicToggleButtonUI {
     private static final SlidingTabDisplayerButtonUI INSTANCE = new SlidingTabDisplayerButtonUI();
     /** Creates a new instance of SlidingTabDisplayerButtonUI */
-    private SlidingTabDisplayerButtonUI() {
+    protected SlidingTabDisplayerButtonUI() {
     }
     
     public static ComponentUI createUI(JComponent c) {
@@ -84,6 +84,7 @@ public class SlidingTabDisplayerButtonUI extends BasicToggleButtonUI {
 
     /** Overridden to not install keyboard actions (the buttons aren't focusable
      * anyway) and not invoke the overhead of BasicHTML */
+    @Override
     public void installUI(JComponent c) {
         installDefaults((AbstractButton) c);
         installListeners((AbstractButton) c);
@@ -97,6 +98,7 @@ public class SlidingTabDisplayerButtonUI extends BasicToggleButtonUI {
     
     /** Overridden to not uninstall keyboard actions (the buttons aren't focusable
      * anyway) and not invoke the overhead of BasicHTML */
+    @Override
     public void uninstallUI(JComponent c) {
         uninstallListeners((AbstractButton) c);
         uninstallDefaults((AbstractButton) c);
@@ -104,24 +106,29 @@ public class SlidingTabDisplayerButtonUI extends BasicToggleButtonUI {
     
     /** Overridden to not call super.installDefaults() and only set the button
      * to be non-focusable */
+    @Override
     public void installDefaults (AbstractButton b) {
         b.setFocusable (false);
     }
     
+    @Override
     public Dimension getMinimumSize(JComponent c) {
         return getPreferredSize(c);
     }
 
+    @Override
     public Dimension getPreferredSize(JComponent c) {
         return null;  //Layout manager handles this anyway, nobody should ask for it
     }    
 
+    @Override
     public Dimension getMaximumSize(JComponent c) {
         return getPreferredSize(c);
     }
     
     /** Provides the painting logic.  Note that this does not call any of the
      * painting methods of BasicToggleButtonUI */
+    @Override
     public final void paint(Graphics g, JComponent c) {
         
         BasicSlidingTabDisplayerUI.IndexButton b = 
@@ -202,7 +209,10 @@ public class SlidingTabDisplayerButtonUI extends BasicToggleButtonUI {
     private static SlidingTabDisplayerButtonUI AQUA_INSTANCE = null;
     
     /** Aqua ui for sliding buttons.  This class is public so it can be 
-     * instantiated by UIManager, but is of no interest as API. */
+     * instantiated by UIManager, but is of no interest as API.
+     * 
+     * @deprecated No brushed metal look and feel doesn't need this class anymore.
+     */
     public static final class Aqua extends SlidingTabDisplayerButtonUI {
         public static ComponentUI createUI(JComponent c) {
             if (AQUA_INSTANCE == null) {
@@ -211,10 +221,12 @@ public class SlidingTabDisplayerButtonUI extends BasicToggleButtonUI {
             return AQUA_INSTANCE;
         }
 
+        @Override
         protected void installBorder (AbstractButton b) {
             b.setBorder (BorderFactory.createEmptyBorder (5,2,2,2));
         }
 
+        @Override
         protected void paintBackground (Graphics2D g, BasicSlidingTabDisplayerUI.IndexButton b) {
             GenericGlowingChiclet chic = GenericGlowingChiclet.INSTANCE;
             int state = 0;

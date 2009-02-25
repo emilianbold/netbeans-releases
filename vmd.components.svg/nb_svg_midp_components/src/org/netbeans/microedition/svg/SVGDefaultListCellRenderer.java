@@ -123,12 +123,12 @@ public class SVGDefaultListCellRenderer extends TextRenderer
         myX = hiddenText.getFloatTrait(SVGComponent.TRAIT_X);
         myY = hiddenText.getFloatTrait(SVGComponent.TRAIT_Y);
         
-        if ( list.getBoundsElement().getScreenBBox() != null 
-                && hiddenText.getScreenBBox()!= null && myTextWidth == -1 )
+        if ( list.getBoundsElement().getBBox() != null 
+                && hiddenText.getBBox()!= null && myTextWidth == -1 )
         {
-            myTextWidth = list.getBoundsElement().getScreenBBox().getWidth() + 0.5f - 
-                (hiddenText.getScreenBBox().getX() - 
-                        list.getBoundsElement().getScreenBBox().getX()) * 2;
+            myTextWidth = list.getBoundsElement().getBBox().getWidth() + 0.5f - 
+                (hiddenText.getBBox().getX() - 
+                        list.getBoundsElement().getBBox().getX()) * 2;
         }
         
         

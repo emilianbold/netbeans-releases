@@ -627,12 +627,9 @@ public class Resolver3 implements Resolver {
                     result = currLocalClassifier;
                 }
                 if( currTypedef != null && needClassifiers()) {
-                    CsmType type = currTypedef.getType();
-                    if( type != null ) {
-                        result = getTypeClassifier(type);
-                    }
+                    result = currTypedef;
                 }
-                
+
                 if( result == null ) {
                     CsmDeclaration decl = usingDeclarations.get(CharSequenceKey.create(nameTokens[0]));
                     if( decl != null ) {

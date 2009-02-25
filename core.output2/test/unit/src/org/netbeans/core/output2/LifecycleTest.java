@@ -43,9 +43,15 @@ package org.netbeans.core.output2;
 
 import java.awt.BorderLayout;
 import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import junit.framework.TestCase;
+import org.openide.util.Exceptions;
+import org.openide.windows.IOContainer;
 
 /**
  *
@@ -57,40 +63,38 @@ public class LifecycleTest extends TestCase {
         super(testName);
     }
 
-    private OutputWindow win;
+    private IOContainer container;
     private NbIO io;
-    private OutWriter out = null;
     JFrame jf = null;
 
     OutputTab tab = null;
     OutputPane pane = null;
+    @Override
     protected void setUp() throws java.lang.Exception {
-//        Controller.logStdOut = true;
-//        Controller.log = true;
-        
-        jf = new JFrame();
-        win = new OutputWindow();
-        OutputWindow.DEFAULT = win;
-        jf.getContentPane().setLayout (new BorderLayout());
-        jf.getContentPane().add (win, BorderLayout.CENTER);
-        jf.setBounds (20, 20, 700, 300);
-        io = (NbIO) new NbIOProvider().getIO ("Test", false);
-        SwingUtilities.invokeAndWait (new Shower());
-        io.select();
-        sleep();
-        sleep();
-        tab = (OutputTab) win.getSelectedTab();
+        SwingUtilities.invokeAndWait(new Runnable() {
+
+            public void run() {
+                container = IOContainer.getDefault();
+                jf = new JFrame();
+                jf.getContentPane().setLayout(new BorderLayout());
+                jf.getContentPane().add(getIOWindow(), BorderLayout.CENTER);
+                jf.setBounds(20, 20, 700, 300);
+                jf.setVisible(true);
+                io = (NbIO) new NbIOProvider().getIO("Test", false);
+                io.select();
+                tab = (OutputTab) container.getSelected();
+                pane = (OutputPane) tab.getOutputPane();
+            }
+        });
         if (tab == null) {
-            fail ("Failed in setup - selected tab was null");
+            fail("Failed in setup - selected tab was null");
         }
-        pane = (OutputPane) tab.getOutputPane();
-        sleep();
     }
     
+    @Override
     protected void tearDown() {
         tab = null;
         pane = null;
-        out = null;
         if (jf != null) {
             jf.dispose();
         }
@@ -98,9 +102,9 @@ public class LifecycleTest extends TestCase {
         if (io != null) {
             NbIOProvider.dispose(io);
         }
+        io.closeInputOutput();
         io = null;
-        win = null;
-        OutputWindow.DEFAULT = null;
+        container = null;
         sleep();
     }
     
@@ -120,23 +124,17 @@ public class LifecycleTest extends TestCase {
     
     private final void dosleep() {
         try {
-            Thread.currentThread().sleep(200);
+            Thread.sleep(200);
             SwingUtilities.invokeAndWait (new Runnable() {
                 public void run() {
                     System.currentTimeMillis();
                 }
             });
-            Thread.currentThread().sleep(200);
+            Thread.sleep(200);
         } catch (Exception e) {
             fail (e.getMessage());
         }
     }    
-    
-    public class Shower implements Runnable {
-        public void run() {
-            jf.setVisible(true);
-        }
-    }
     
     public void testGetErr() throws Exception {
         System.out.println("testGetOut");
@@ -260,11 +258,9 @@ public class LifecycleTest extends TestCase {
         sleep();
         writer.close();
         sleep();
-        
         io.closeInputOutput();
         sleep();        
-        
-        assertNull ("Should be no selected tab after closeInputOutput", win.getSelectedTab());
+        assertNull ("Should be no selected tab after closeInputOutput", getSelectedTab());
     } 
     
     public void testFilesCleanedUp() throws Exception {
@@ -319,6 +315,52 @@ public class LifecycleTest extends TestCase {
         
         assertFalse ("Reset on a used writer should replace its underlying output", writer.out() == out);
         
+    }
+
+    static JComponent getIOWindow() {
+        IOContainer container = IOContainer.getDefault();
+        JComponent comp = null;
+        try {
+            try {
+                Field f = container.getClass().getDeclaredField("provider");
+                f.setAccessible(true);
+                IOContainer.Provider prov = (IOContainer.Provider) f.get(container);
+                Method m = prov.getClass().getDeclaredMethod("impl", new Class[0]);
+                m.setAccessible(true);
+                comp = (JComponent) m.invoke(prov);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (NoSuchMethodException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalAccessException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } catch (NoSuchFieldException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return comp;
+    }
+
+    JComponent getSelectedTab() {
+        class R implements Runnable {
+            JComponent tab;
+            public void run() {
+                tab = container.getSelected();
+            }
+        }
+        R r = new R();
+        try {
+            SwingUtilities.invokeAndWait(r);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return r.tab;
     }
     
 }

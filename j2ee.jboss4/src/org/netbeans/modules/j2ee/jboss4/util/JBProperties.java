@@ -209,7 +209,14 @@ public class JBProperties {
 
             addFiles(new File(rootDir, "lib"), list); // NOI18N
             addFiles(new File(serverDir, "lib"), list); // NOI18N
-            
+
+            // FIXME shouldn't we use whole cmmon in JB5
+            File jspAPI = new File(rootDir, "common" + File.separator + "lib" + File.separator + "jsp-api.jar");
+            if (jspAPI.exists()) {
+                list.add(fileToUrl(jspAPI));
+            }
+
+
             if (supportsJavaEE5ejb3()) {
                 File ejb3deployer = new File(serverDir, "/deploy/ejb3.deployer/");  // NOI18N
                 if (ejb3deployer.exists()) {

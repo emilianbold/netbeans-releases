@@ -1,7 +1,7 @@
 # platform cluster first
 platform10
 # application cluster second
-nb7.0
+nb6.7
 # ergonomics cluster if present
 ergonomics1
 # and now the rest
@@ -24,6 +24,7 @@ identity2
 uml6
 harness
 cnd2
+dlight1
 groovy1
 extra
 javafx2

@@ -111,7 +111,17 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         // IZ#158216 : Unresolved ids in compiler extensions
         performStaticTest("iz158216.cpp");
     }
-    
+
+    public void testIZ158730() throws Exception {
+        // IZ#158730 : False positive error highlighting on nested types in templates
+        performStaticTest("iz158730.cpp");
+    }
+
+    public void testIZ158831() throws Exception {
+        // IZ#158831 : False positive error highlighting errors on typedefs in local methods of templates
+        performStaticTest("iz158831.cpp");
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,7 +42,7 @@ package org.netbeans.modules.db.dataview.util;
 
 import java.sql.Time;
 import java.text.DateFormat;
-import java.text.ParsePosition;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 import org.netbeans.modules.db.dataview.meta.DBException;
@@ -54,53 +54,54 @@ import org.openide.util.NbBundle;
  * 
  * @author Ahimanikya Satapathy
  */
-public class TimeType extends TimestampType {
+public class TimeType {
 
-    // DateFormat objects are not thread safe. Do not share across threads w/o synch block.
-    public final DateFormat[] TIME_PARSING_FORMATS = new DateFormat[]{
+    public static final DateFormat DEFAULT_FOMAT = new SimpleDateFormat("HH:mm:ss"); // NOI18N
+    public static final DateFormat[] TIME_PARSING_FORMATS = new DateFormat[]{
+        DEFAULT_FOMAT,
         DateFormat.getTimeInstance(),
-        new SimpleDateFormat("HH:mm:ss", LOCALE), // NOI18N
-        DateFormat.getTimeInstance(DateFormat.SHORT, LOCALE)
+        DateFormat.getTimeInstance(DateFormat.SHORT),
+        DateFormat.getTimeInstance(DateFormat.LONG, TimestampType.LOCALE),
+        DateFormat.getTimeInstance(DateFormat.SHORT, TimestampType.LOCALE),
+        new SimpleDateFormat("HH:mm:ss", TimestampType.LOCALE), // NOI18N
     };
 
-    public TimeType() {
+    {
         for (int i = 0; i < TIME_PARSING_FORMATS.length; i++) {
             TIME_PARSING_FORMATS[i].setLenient(false);
         }
     }
-    private static TimeZone TIME_ZONE = TimeZone.getDefault();
 
-    public static TimeZone getTimeZone() {
-        return TIME_ZONE;
-    }
+    public static final TimeZone TIME_ZONE = TimeZone.getDefault();
 
-    
     /* Increment to use in computing a successor value. */
     // One day = 1 day x 24 hr/day x 60 min/hr x 60 sec/min x 1000 ms/sec
-    static final long INCREMENT_DAY = 1 * 24 * 60 * 60 * 1000;
+    private static final long INCREMENT_DAY = 1 * 24 * 60 * 60 * 1000;
     
     public static long normalizeTime(long rawTimeMillis) {
         int dstOffset = (TIME_ZONE.inDaylightTime(new java.util.Date(rawTimeMillis))) ? TIME_ZONE.getDSTSavings() : 0;
         return (rawTimeMillis < INCREMENT_DAY) ? rawTimeMillis : (rawTimeMillis % INCREMENT_DAY) + dstOffset;
     }
 
-    private Time getNormalizedTime(long time) {
+    private static Time getNormalizedTime(long time) {
         Time ret = null;
         ret = new Time(normalizeTime(time));
         return ret;
     }
 
-    private Time convertToTime(Object value) throws DBException {
+    public static Time convert(Object value) throws DBException {
         if (null == value) {
             return null;
         } else if (value instanceof java.sql.Time) {
             return (Time) value;
         } else if (value instanceof String) {
             java.util.Date dVal = null;
-            int i = 0;
-            while (dVal == null && i < TIME_PARSING_FORMATS.length) {
-                dVal = TIME_PARSING_FORMATS[i].parse((String) value, new ParsePosition(0));
-                i++;
+            for (DateFormat fm : TIME_PARSING_FORMATS) {
+                try {
+                    dVal = fm.parse ((String) value);
+                    break;
+                } catch (ParseException ex) {
+                }
             }
 
             if (dVal == null) {
@@ -110,13 +111,5 @@ public class TimeType extends TimestampType {
         } else {
             throw new DBException(NbBundle.getMessage(TimeType.class,"LBL_invalid_time"));
         }
-    }
-
-    @Override
-    public Object convert(Object value) throws DBException {
-        if (value instanceof Time) {
-            return value;
-        }
-        return convertToTime(value);
     }
 }

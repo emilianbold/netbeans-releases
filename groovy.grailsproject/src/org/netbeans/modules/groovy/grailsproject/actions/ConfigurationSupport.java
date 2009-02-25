@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.groovy.grailsproject.actions;
 
-import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
+import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -54,7 +54,7 @@ public final class ConfigurationSupport {
         super();
     }
 
-    public static void showConfigurationWarning(GrailsRuntime runtime) {
+    public static void showConfigurationWarning(GrailsPlatform runtime) {
         if (!runtime.isConfigured()) {
             String msg = NbBundle.getMessage(ConfigurationSupport.class, "MSG_Runtime_Not_Configured");
             DialogDisplayer.getDefault().notify(

@@ -113,10 +113,6 @@ public class NonProjectJ2eeModule implements J2eeModuleImplementation {
         return ret;
     }
     
-    public void setUrl(String url) {
-        this.url = url;
-    }
-    
     public FileObject getArchive() throws IOException {
 //        System.out.println("NPJM: get archive=" + artifact.getFile());
         return FileUtil.toFileObject(FileUtil.normalizeFile(artifact.getFile()));

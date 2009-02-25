@@ -11,9 +11,6 @@ then
     fi
     dir=`dirname $0`/../..
     cd $dir
-else
-    hg up -C . # in case previous build mistakenly modified some source files
-    hg --config extensions.purge= clean --all || exit
 fi
 
 DIST=$PWD/nbbuild/dist
@@ -54,7 +51,7 @@ ant zip-cluster-config -Dcluster.config=cnd -Dzip.name=$DIST/zip/$BASENAME-cpp.z
 
 cd netbeans
 expat='extra|testtools'
-for c in platform ide java apisupport harness enterprise profiler ruby mobility soa xml cnd identity gsf php groovy; do
+for c in platform ide java apisupport harness enterprise profiler ruby mobility soa xml cnd identity gsf php groovy dlight; do
     find * | egrep "^$c[0-9]*/" | zip -q $DIST/zip/moduleclusters/$BASENAME-$c.zip -@ || exit
     expat="$expat|$c[0-9]*"
 done
@@ -122,7 +119,8 @@ sh -x `dirname $0`/initAppserver.sh
 # Mobility UI validation tests
 ant -f mobility.project/build.xml -Dtest.config=uicommit -Dtest-qa-functional-sys-prop.wtk.dir=/hudson -Dbuild.test.qa-functional.results.dir=$TESTS_RESULT_DIR -Dcontinue.after.failing.tests=true test
 # J2EE validation tests
-ant -f j2ee.kit/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.results.dir=$TESTS_RESULT_DIR -Dcontinue.after.failing.tests=true -Dtest-qa-functional-sys-prop.com.sun.aas.installRoot=/hudson/workdir/jobs/trunk/testappsrv/glassfish test
+#-Dbuild.test.qa-functional.results.dir=$TESTS_RESULT_DIR
+ant -f j2ee.kit/build.xml -Dtest.config=uicommit -Dcontinue.after.failing.tests=true -Dtest-qa-functional-sys-prop.com.sun.aas.installRoot=/hudson/workdir/jobs/trunk/testappsrv/glassfish test
 
 echo TESTS STARTED: $TESTS_STARTED
 echo TESTS FINISHED: `date`

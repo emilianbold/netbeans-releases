@@ -6,9 +6,11 @@
 package org.netbeans.modules.dlight.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -50,6 +52,7 @@ public class TimerTaskExecutionServiceTest {
         System.out.println("registerTimerTask");
         int count = 1200;
         final List<Worker> workers = new ArrayList<Worker>();
+        final List<Future> tasks = Collections.synchronizedList(new ArrayList<Future>());
         
         for (int i = 0; i < count; i++) {
             workers.add(new Worker(i));
@@ -62,7 +65,7 @@ public class TimerTaskExecutionServiceTest {
 
             public void run() {
                 for (Worker worker : workers) {
-                    service.registerTimerTask(worker, r.nextInt(4) + 1);
+                    tasks.add(service.scheduleAtFixedRate(worker, r.nextInt(4) + 1, TimeUnit.SECONDS));
                 }
             }
         };
@@ -89,8 +92,8 @@ public class TimerTaskExecutionServiceTest {
             Exceptions.printStackTrace(ex);
         }
         
-        for (Worker worker : workers) {
-            service.unregisterTimerTask(worker);
+        for (Future task : tasks) {
+            task.cancel(true);
         }
 
     }
@@ -101,23 +104,19 @@ public class TimerTaskExecutionServiceTest {
 //    @Test
     public void testUnregisterTimerTask() {
         System.out.println("unregisterTimerTask");
-        Callable<Integer> task = null;
-        TimerTaskExecutionService instance = null;
-        instance.unregisterTimerTask(task);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
 
-    private static class Worker implements Callable<Integer> {
+    private static class Worker implements Runnable {
         private final int id;
         
         public Worker(int id) {
             this.id = id;
         }
 
-        public Integer call() throws Exception {
+        public void run() {
             System.out.println("Hello from " + id);
-            return id;
         }
 
     }

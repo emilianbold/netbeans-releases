@@ -201,11 +201,9 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
      */
     private void annotate () {
         // 1) no current thread => remove annotations
-        CallStackFrame[] stack;
-        final CallStackFrame csf;
-        JPDADebugger debugger;
+        final JPDADebugger debugger;
         final SourcePath sourcePath;
-        final String language;
+        final JPDAThread thread;
         synchronized (this) {
             debugger = currentDebugger;
             if ( (currentThread == null) ||
@@ -217,27 +215,55 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                 return;
             }
 
-            // 2) get call stack & Line
-            try {
-                stack = currentThread.getCallStack ();
-            } catch (AbsentInformationException ex) {
-                synchronized (currentPCLock) {
-                    currentPCSet = false; // The annotation is goint to be removed
-                }
-                removeAnnotations ();
-                return;
-            }
-            csf = debugger.getCurrentCallStackFrame ();
             sourcePath = currentSourcePath;
-            Session s;
-            try {
-                s = (Session) debugger.getClass().getMethod("getSession").invoke(debugger);
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-                s = null;
-            }
-            language = (s != null) ? s.getCurrentLanguage() : null;
+            thread = currentThread;
         }
+        Session s;
+        try {
+            s = (Session) debugger.getClass().getMethod("getSession").invoke(debugger);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            s = null;
+        }
+        RequestProcessor rProcessor = null;
+        if (s != null) {
+            rProcessor = s.lookupFirst(null, RequestProcessor.class);
+        }
+        if (rProcessor == null) {
+            rProcessor = this.rp;
+        }
+        rProcessor.post(new Runnable() {
+            public void run() {
+                annotate(debugger, thread, sourcePath);
+            }
+        });
+    }
+
+    private void annotate (JPDADebugger debugger, final JPDAThread currentThread, final SourcePath sourcePath) {
+        // 1) no current thread => remove annotations
+        CallStackFrame[] stack;
+        final CallStackFrame csf;
+        final String language;
+
+        // 2) get call stack & Line
+        try {
+            stack = currentThread.getCallStack ();
+        } catch (AbsentInformationException ex) {
+            synchronized (currentPCLock) {
+                currentPCSet = false; // The annotation is goint to be removed
+            }
+            removeAnnotations ();
+            return;
+        }
+        csf = debugger.getCurrentCallStackFrame ();
+        Session s;
+        try {
+            s = (Session) debugger.getClass().getMethod("getSession").invoke(debugger);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            s = null;
+        }
+        language = (s != null) ? s.getCurrentLanguage() : null;
 
         // 3) annotate current line & stack
         synchronized (currentPCLock) {
@@ -246,18 +272,14 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 // show current line
-                JPDAThread thread;
-                synchronized (CurrentThreadAnnotationListener.this) {
-                    thread = currentThread;
-                }
                 synchronized (currentPCLock) {
                     if (currentPC != null)
                         EditorContextBridge.getContext().removeAnnotation (currentPC);
-                    if (csf != null && sourcePath != null && thread != null) {
+                    if (csf != null && sourcePath != null && currentThread != null) {
 
                         sourcePath.showSource (csf, language);
                         // annotate current line
-                        currentPC = sourcePath.annotate (thread, language);
+                        currentPC = sourcePath.annotate (currentThread, language);
                     }
                 }
             }

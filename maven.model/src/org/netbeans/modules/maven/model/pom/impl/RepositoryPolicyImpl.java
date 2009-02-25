@@ -65,5 +65,37 @@ public class RepositoryPolicyImpl extends POMComponentImpl implements Repository
         visitor.visit(this);
     }
 
+    public Boolean isEnabled() {
+        String str = getChildElementText(getModel().getPOMQNames().ENABLED.getQName());
+        if (str != null) {
+            return Boolean.valueOf(str);
+        }
+        return null;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        setChildElementText(getModel().getPOMQNames().ENABLED.getName(),
+                enabled == null ? null : enabled.toString(),
+                getModel().getPOMQNames().ENABLED.getQName());
+    }
+
+    public String getUpdatePolicy() {
+        return getChildElementText(getModel().getPOMQNames().UPDATEPOLICY.getQName());
+    }
+
+    public void setUpdatePolicy(String updatePolicy) {
+        setChildElementText(getModel().getPOMQNames().UPDATEPOLICY.getName(), updatePolicy,
+                getModel().getPOMQNames().UPDATEPOLICY.getQName());
+    }
+
+    public String getChecksumPolicy() {
+        return getChildElementText(getModel().getPOMQNames().CHECKSUMPOLICY.getQName());
+    }
+
+    public void setChecksumPolicy(String checksumPolicy) {
+        setChildElementText(getModel().getPOMQNames().CHECKSUMPOLICY.getName(), checksumPolicy,
+                getModel().getPOMQNames().CHECKSUMPOLICY.getQName());
+    }
+
 
 }
