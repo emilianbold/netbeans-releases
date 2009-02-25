@@ -65,7 +65,7 @@ public class LineBreakpointImpl extends BreakpointImpl {
 	String path = null;
 
 	if (lastPath == null && bppath.indexOf(' ') == -1) {
-	    path = bppath;
+	    path = debugger.getPathMap().getRemotePath(bppath);
 	} else if (lastPath == null) {
 	    path = debugger.getBestPath(bppath);
 	} else if (lastPath.length() > 0) {

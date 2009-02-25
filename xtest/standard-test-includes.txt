@@ -1,8 +1,0 @@
-**/*.class
-**/data/**
-**/*.jar
-**/*.xml
-**/*.ser
-**/*.txt
-**/*.properties
-META-INF/**
