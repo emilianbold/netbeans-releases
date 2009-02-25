@@ -114,14 +114,13 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private final Map<String, QueryParameter> parameters;
 
-    private RequestProcessor rp = new RequestProcessor("Bugzilla queries", 1);  // NOI18N
+    private static int counter;
+    private RequestProcessor rp = new RequestProcessor("Bugzilla query - " + counter++, 1);  // NOI18N
     private Task task;
 
     private final BugzillaRepository repository;
     private BugzillaQuery query;
 
-//    private IssueTable issueTable;
-    
     private SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss, EEE MMM d yyyy"); // NOI18N
 
     public QueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters) {
@@ -244,7 +243,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         task = rp.post(new Runnable() {
             public void run() {
                 handle.start();
-                panel.showRetrievingProgress(true, progressBar, msgPopulating);
+                panel.showRetrievingProgress(true, progressBar, msgPopulating, !query.isSaved());
                 try {
                     Bugzilla.LOG.fine("Starting populate query controller");    // NOI18N
 
@@ -287,7 +286,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 } finally {
                     enableFields(true);
                     handle.finish();
-                    panel.showRetrievingProgress(false, progressBar, null);
+                    panel.showRetrievingProgress(false, progressBar, null, !query.isSaved());
                     Bugzilla.LOG.fine("Finnished populate query controller");   // NOI18N
                 }
             }
