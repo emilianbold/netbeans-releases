@@ -419,7 +419,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 }
             }
         } catch (Exception ex) {
-            log.warning("GdbDebugger.startDebugger: Exception during start [" + ex.getClass().getName() + "]");
+            log.log(Level.WARNING, "GdbDebugger.startDebugger: Exception during start: ", ex);
             if (startupTimer != null) {
                 startupTimer.cancel();
             }
