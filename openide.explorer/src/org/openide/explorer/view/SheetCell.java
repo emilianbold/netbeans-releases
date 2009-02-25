@@ -537,10 +537,6 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
             }
         }
         
-        public boolean isValid() {
-            return true;
-        }
-        
         public boolean isShowing() {
             return true;
         }

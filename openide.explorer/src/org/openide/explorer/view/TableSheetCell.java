@@ -722,10 +722,6 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
             }
         }
 
-        public boolean isValid() {
-            return true;
-        }
-
         public boolean isShowing() {
             return true;
         }
