@@ -75,12 +75,13 @@ public class BugzillaQuery extends Query {
         this.repository = repository;
     }
 
-    public BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean kenai) {
+    public BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean kenai, boolean saved) {
         super();
         this.name = name;
         this.repository = repository;
         this.urlParameters = urlParameters;
         this.kenai = kenai;
+        this.saved = saved;
     }
 
     public BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, long lastRefresh) {

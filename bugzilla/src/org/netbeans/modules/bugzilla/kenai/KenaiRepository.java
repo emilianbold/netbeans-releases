@@ -61,7 +61,7 @@ public class KenaiRepository extends BugzillaRepository {
 
     @Override
     public Query createQuery() {
-        BugzillaQuery q = new BugzillaQuery(null, this, urlParam, true);
+        BugzillaQuery q = new BugzillaQuery(null, this, urlParam, true, false);
         return q;
     }
 
@@ -77,23 +77,23 @@ public class KenaiRepository extends BugzillaRepository {
         return ret;
     }
 
-    private Query[] getDefinedQueries() {
+    private synchronized Query[] getDefinedQueries() {
         if(definedQueries == null) {
             definedQueries = new Query[2];
 
             StringBuffer sb = new StringBuffer();
             sb.append(urlParam);
             sb.append(MessageFormat.format(BugzillaConstants.MY_ISSUES_PARAMETERS_FORMAT, getUsername()));
-            BugzillaQuery myIssues = new BugzillaQuery(NbBundle.getMessage(KenaiRepository.class, "LBL_MyIssues"), this, sb.toString(), true); // NOI18N
-            myIssues.setSaved(true);
+            BugzillaQuery myIssues = new BugzillaQuery(NbBundle.getMessage(KenaiRepository.class, "LBL_MyIssues"), this, sb.toString(), true, true); // NOI18N
             myIssues.getController().onRefresh(); // XXX this is messy
+            definedQueries[0] = myIssues;
 
             sb = new StringBuffer();
             sb.append(urlParam);
             sb.append(BugzillaConstants.ALL_ISSUES_PARAMETERS);
-            BugzillaQuery allIssues = new BugzillaQuery(NbBundle.getMessage(KenaiRepository.class, "LBL_AllIssues"), this, sb.toString(), true); // NOI18N
-            allIssues.setSaved(true);
+            BugzillaQuery allIssues = new BugzillaQuery(NbBundle.getMessage(KenaiRepository.class, "LBL_AllIssues"), this, sb.toString(), true, true); // NOI18N
             allIssues.getController().onRefresh(); // XXX this is messy
+            definedQueries[1] = allIssues;
 
         }
         return definedQueries;
