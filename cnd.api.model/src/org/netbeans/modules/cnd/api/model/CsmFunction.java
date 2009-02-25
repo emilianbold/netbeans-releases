@@ -118,14 +118,7 @@ public interface CsmFunction extends CsmOffsetableDeclaration, CsmScope {
         private static boolean inited = false;
         private static Map<String, OperatorKind> binaryMap = new HashMap<String, OperatorKind>();
         private static Map<String, OperatorKind> unaryMap = new HashMap<String, OperatorKind>();
-        public static OperatorKind getKindByImage(String image) {
-            OperatorKind out = getKindByImage(image, true);
-            if (out == NONE) {
-                out = getKindByImage(image, false);
-            }
-            return out;
-        }
-        
+
         public static OperatorKind getKindByImage(String image, boolean binary) {
             boolean wasInited = inited;
             if (!wasInited) {
