@@ -99,6 +99,9 @@ public final class InspectorManagerView implements DesignDocumentAwareness, Acti
                     if (folderWrapperTree == null)
                         return;
                      folderWrapperTree.buildTree(null);
+                     if (ui == null || folderWrapperTree.getRootWrapperFolder() == null || ui.getExplorerManager() == null) {
+                         return;
+                     }
                      ui.getExplorerManager().setRootContext(folderWrapperTree.getRootWrapperFolder().getNode());
                 }
             });         
