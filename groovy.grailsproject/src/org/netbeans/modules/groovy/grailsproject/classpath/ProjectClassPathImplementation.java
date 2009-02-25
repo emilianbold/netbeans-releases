@@ -102,8 +102,6 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
     }
 
     private List<PathResourceImplementation> getPath() {
-        Thread.dumpStack();
-        
         assert Thread.holdsLock(this);
 
         // When called from EDT we do not return plugin classpath immediately
@@ -135,8 +133,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
 
 
         if (pluginsDir == null) {
-            this.pluginsDir = GrailsPluginsManager.getInstance((GrailsProject) projectConfig.getProject())
-                    .getPluginsDir();
+            this.pluginsDir = ((GrailsProject) projectConfig.getProject()).getBuildConfig().getProjectPluginsDir();
         }
 
         if (pluginsDir.isDirectory()) {
