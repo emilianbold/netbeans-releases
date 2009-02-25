@@ -97,8 +97,7 @@ public class LineBreakpoint extends AbstractBreakpoint {
         if ( project == null ){
             return false;
         }
-        Project dbgProject = getProject();
-        return (dbgProject != null) ? project.equals( dbgProject ) : true;
+        return true;
     }
     
     public void removed(){
