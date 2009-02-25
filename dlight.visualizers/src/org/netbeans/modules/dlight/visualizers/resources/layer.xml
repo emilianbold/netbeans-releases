@@ -19,7 +19,9 @@
         </folder>
         <folder name="Modes">
             <folder name="output">
-                <file name="VisualizerTopComponentTopComponent.wstcref" url="VisualizerTopComponentTopComponentWstcref.xml"/>
+                <file name="VisualizerTopComponentTopComponent.wstcref" url="VisualizerTopComponentTopComponentWstcref.xml">
+                    <attr name="position" intvalue="3100"/>
+                </file>
             </folder>
         </folder>
     </folder>
