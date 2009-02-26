@@ -431,7 +431,8 @@ public class BugzillaIssue extends Issue {
 
     public void refresh() {
         try {
-            data = Bugzilla.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), data.getTaskId(), new NullProgressMonitor());
+            TaskData td = Bugzilla.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), data.getTaskId(), new NullProgressMonitor());
+            setTaskData(data);
         } catch (CoreException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
         }
