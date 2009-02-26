@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.kenai.api;
 
+import java.beans.PropertyChangeEvent;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -46,7 +47,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.codeviation.commons.utils.CollectionsUtil;
 import org.netbeans.modules.kenai.FeatureData;
 import org.netbeans.modules.kenai.ProjectData;
 
@@ -147,7 +147,7 @@ public final class KenaiProject {
         Kenai.getDefault().getOpenProjects();
         Kenai.getDefault().openProjects.add(this);
         kenai.storeProjects();
-        kenai.fireKenaiEvent(new KenaiEvent(this, KenaiEvent.PROJECT_OPEN));
+        kenai.fireEvent(new PropertyChangeEvent(kenai, Kenai.PROP_PROJECT_OPEN, null, this));
     }
 
     /**
@@ -159,7 +159,7 @@ public final class KenaiProject {
         Kenai.getDefault().getOpenProjects();
         Kenai.getDefault().openProjects.remove(this);
         kenai.storeProjects();
-        kenai.fireKenaiEvent(new KenaiEvent(this, KenaiEvent.PROJECT_CLOSE));
+        kenai.fireEvent(new PropertyChangeEvent(kenai, Kenai.PROP_PROJECT_CLOSE, this, null));
     }
 
     private static Pattern repositoryPattern = Pattern.compile("(https|http)://(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)");
@@ -278,7 +278,7 @@ public final class KenaiProject {
             throw new IllegalArgumentException(ex);
         }
         features=null;
-        Kenai.getDefault().fireKenaiEvent(new KenaiEvent(this, KenaiEvent.PROJECT_CHANGED));
+        Kenai.getDefault().fireEvent(new PropertyChangeEvent(Kenai.getDefault(), Kenai.PROP_PROJECT_CHANGED, null, this));
     }
 
     @Override

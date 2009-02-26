@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.kenai.collab.chat;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.PasswordAuthentication;
 import java.util.Collection;
 import java.util.Collections;
@@ -59,15 +61,10 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiEvent;
 import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.api.KenaiListener;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.collab.chat.ChatTopComponent;
-import org.netbeans.modules.kenai.collab.chat.PresenceIndicator;
 import org.netbeans.modules.kenai.collab.chat.PresenceIndicator.PresenceListener;
 import org.netbeans.modules.kenai.collab.chat.PresenceIndicator.Status;
-import org.omg.CORBA.Request;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -75,7 +72,7 @@ import org.openide.util.RequestProcessor;
  * Class representing connection to kenai xmpp server
  * @author Jan Becicka
  */
-public class KenaiConnection implements KenaiListener {
+public class KenaiConnection implements PropertyChangeListener {
 
     //Map <kenai project name, message listener>
     private HashMap<String, PacketListener> listeners = new HashMap();
@@ -101,7 +98,7 @@ public class KenaiConnection implements KenaiListener {
     public static synchronized KenaiConnection getDefault() {
         if (instance == null) {
             instance = new KenaiConnection();
-            Kenai.getDefault().addKenaiListener(instance);
+            Kenai.getDefault().addPropertyChangeListener(Kenai.PROP_LOGIN,instance);
         }
         return instance;
     }
@@ -244,24 +241,22 @@ public class KenaiConnection implements KenaiListener {
         return connection.getRoster();
     }
 
-    public void stateChanged(KenaiEvent e) {
-        if (e.getType() == KenaiEvent.LOGIN) {
-            final PasswordAuthentication pa = (PasswordAuthentication) e.getSource();
-            if (pa != null) {
-                myProjects = null;
-                USER=pa.getUserName();
-                PASSWORD=new String(pa.getPassword());
-                tryConnect();
-            } else {
-                for (MultiUserChat muc:getChats()) {
-                    muc.leave();
-                }
-                chats.clear();
-                connection.disconnect();
-                messageQueue.clear();
-                listeners.clear();
-                PresenceIndicator.getDefault().setStatus(Status.OFFLINE);
+    public void propertyChange(PropertyChangeEvent e) {
+        final PasswordAuthentication pa = (PasswordAuthentication) e.getNewValue();
+        if (pa != null) {
+            myProjects = null;
+            USER = pa.getUserName();
+            PASSWORD = new String(pa.getPassword());
+            tryConnect();
+        } else {
+            for (MultiUserChat muc : getChats()) {
+                muc.leave();
             }
+            chats.clear();
+            connection.disconnect();
+            messageQueue.clear();
+            listeners.clear();
+            PresenceIndicator.getDefault().setStatus(Status.OFFLINE);
         }
     }
     

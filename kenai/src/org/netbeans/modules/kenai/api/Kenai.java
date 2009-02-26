@@ -39,21 +39,18 @@
 
 package org.netbeans.modules.kenai.api;
 
-import java.io.File;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import java.net.Authenticator;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.AbstractCollection;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.codeviation.commons.patterns.Factory;
 import org.codeviation.commons.utils.Iterators;
 import org.netbeans.modules.kenai.FeatureData;
@@ -71,7 +68,35 @@ import org.netbeans.modules.kenai.ServicesListData.ServicesListItem;
  */
 public final class Kenai {
 
-    private static Kenai instance;
+    /**
+     * fired when user logs in/out
+     * getOldValue() returns old PasswordAuthentication or null
+     * getNewValue() returns new PasswordAuthentication or null
+     */
+     public static final String PROP_LOGIN = "login";
+
+     /**
+      * fired when project is open in UI
+      * getNewValue returns project being open
+      * do we need this event at all?
+      */
+     @Deprecated
+     public static final String PROP_PROJECT_OPEN = "project_open";
+
+     /**
+      * fired when project is closed in UI
+      * getOldValue() returns project being closed
+      * do we need this event at all?
+      */
+     @Deprecated
+     public static final String PROP_PROJECT_CLOSE = "project_close";
+
+     /**
+      * getNewValue() returns project being refreshed
+      */
+     public static final String PROP_PROJECT_CHANGED = "project_change";
+
+     private static Kenai instance;
 
     private PasswordAuthentication auth = null;
     private static URL url;
@@ -79,6 +104,7 @@ public final class Kenai {
     HashMap<String, WeakReference<KenaiProject>> projectsCache = new HashMap<String, WeakReference<KenaiProject>>();
     Collection<KenaiProject> openProjects = null;
 
+    private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
     public static synchronized Kenai getDefault() {
         if (instance == null) {
@@ -109,6 +135,7 @@ public final class Kenai {
      * @throws KenaiException
      */
     public void login(final String username, final char [] password) throws KenaiException {
+        PasswordAuthentication old = auth;
         impl.verify(username, password);
         auth = new PasswordAuthentication(username, password);
 //        Authenticator.setDefault(new Authenticator() {
@@ -117,7 +144,7 @@ public final class Kenai {
 //                return auth;
 //            }
 //        });
-        fireKenaiEvent(new KenaiEvent(getPasswordAuthentication(), KenaiEvent.LOGIN));
+        fireEvent(new PropertyChangeEvent(this, PROP_LOGIN, old, auth));
     }
 
 
@@ -126,38 +153,49 @@ public final class Kenai {
      * Logs out current session
      */
     public void logout() {
+        PasswordAuthentication old=auth;
         auth = null;
-        fireKenaiEvent(new KenaiEvent(auth, KenaiEvent.LOGIN));
+        fireEvent(new PropertyChangeEvent(this, PROP_LOGIN, old, auth));
     }
-
-    private ArrayList<KenaiListener> listenerList = new ArrayList<KenaiListener>(1);
 
     /**
      * Adds listener to Kenai instance
      * @param l
      */
-    public synchronized void addKenaiListener(KenaiListener l) {
-        listenerList.add(l);
+    public synchronized void addPropertyChangeListener(PropertyChangeListener l) {
+        propertyChangeSupport.addPropertyChangeListener(l);
     }
 
+    /**
+     * Adds listener to Kenai instance
+     * @param name 
+     * @param l
+     */
+    public synchronized void addPropertyChangeListener(String name, PropertyChangeListener l) {
+        propertyChangeSupport.addPropertyChangeListener(name,l);
+    }
 
     /**
      * Removes listener from Kenai instance
      * @param l
      */
-    public synchronized void removeKenaiListener(KenaiListener l) {
-        listenerList.remove(l);
+    public synchronized void removePropertyChangeListener(PropertyChangeListener l) {
+        propertyChangeSupport.removePropertyChangeListener(l);
     }
 
+    /**
+     * Removes listener from Kenai instance
+     * @param name
+     * @param l
+     */
+    public synchronized void removePropertyChangeListener(String name, PropertyChangeListener l) {
+        propertyChangeSupport.removePropertyChangeListener(name, l);
+    }
+
+
     
-    synchronized void fireKenaiEvent(KenaiEvent event) {
-        for (KenaiListener l : listenerList) {
-            try {
-                l.stateChanged(event);
-            } catch (Exception e) {
-                Logger.getLogger(Kenai.class.getName()).log(Level.SEVERE, null, e);
-            }
-        }
+    synchronized void fireEvent(PropertyChangeEvent event) {
+        propertyChangeSupport.firePropertyChange(event);
     }
 
 
