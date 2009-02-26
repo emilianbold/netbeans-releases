@@ -56,46 +56,40 @@ public class FileObjectCrawler extends Crawler {
     
     private final FileObject root;
     private final FileObject[] files;
+    private final boolean checkTimeStamps;
 
-    public FileObjectCrawler (final FileObject root) throws IOException {
+    public FileObjectCrawler (final FileObject root, final boolean checkTimeStamps) throws IOException {
         super (root.getURL());
         this.root = root;
         this.files = null;
+        this.checkTimeStamps = checkTimeStamps;
     }
 
-    public FileObjectCrawler (final FileObject root, final FileObject[] files) throws IOException {
+    public FileObjectCrawler (final FileObject root, final FileObject[] files, final boolean checkTimeStamps) throws IOException {
         super (root.getURL());
         this.root = root;
         this.files = files;
+        this.checkTimeStamps = checkTimeStamps;
     }
 
     @Override
     protected Map<String, Collection<Indexable>> collectResources(final Set<? extends String> supportedMimeTypes) {
         Map<String, Collection<Indexable>> result = new HashMap<String, Collection<Indexable>>();
         if (files != null) {
-            collect (files,root,result,supportedMimeTypes,true);
-        }
-        else {
-            collect (root, root, result, supportedMimeTypes);
+            collect (files, root, result, supportedMimeTypes);
+        } else {
+            collect (root.getChildren(), root, result, supportedMimeTypes);
         }
         return result;
     }
 
-    private void collect(final FileObject dir, final FileObject root,
-            final Map<String, Collection<Indexable>> cache,
-            final Set<? extends String> supportedMimeTypes) {
-        final FileObject[] fos = dir.getChildren();
-        collect(fos, root, cache, supportedMimeTypes,false);
-    }
-
     private void collect (FileObject[] fos, FileObject root,
             final Map<String, Collection<Indexable>> cache,
-            final Set<? extends String> supportedMimeTypes, final boolean force) {
+            final Set<? extends String> supportedMimeTypes) {
         for (FileObject fo : fos) {
             if (fo.isFolder()) {
-                collect(fo, root, cache, supportedMimeTypes);
-            }
-            else {
+                collect(fo.getChildren(), root, cache, supportedMimeTypes);
+            } else {
                 final String mime = fo.getMIMEType();
                 if (mime != null && supportedMimeTypes.contains(mime)) {
                     Collection<Indexable> indexable = cache.get(mime);
@@ -103,14 +97,11 @@ public class FileObjectCrawler extends Crawler {
                         indexable = new LinkedList<Indexable>();
                         cache.put(mime, indexable);
                     }
-                    if (force || !timeStamps.isUpToDate(fo)) {
+                    if (!checkTimeStamps || !getTimeStamps().isUpToDate(fo)) {
                         indexable.add(SPIAccessor.getInstance().create(new FileObjectIndexable(root, fo)));
                     }
                 }
             }
         }
     }
-
-
-
 }

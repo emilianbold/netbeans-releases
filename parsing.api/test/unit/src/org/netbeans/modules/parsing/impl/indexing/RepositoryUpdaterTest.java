@@ -527,8 +527,9 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
     public static class TestHandler extends Handler {
 
-        public static enum Type {BATCH, DELETE};
+        public static enum Type {BATCH, DELETE, FILELIST};
 
+            private Type type;
             private CountDownLatch latch;
             private List<URL> sources;
             private Set<URL> binaries;
@@ -541,15 +542,23 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 reset (Type.BATCH);
             }
 
-            public void reset (final Type type) {
+            public void reset(final Type t) {
                 sources = null;
                 binaries = null;
-                if (type == Type.BATCH) {
+                type = t;
+                if (t == Type.BATCH) {
                     latch = new CountDownLatch(2);
                 }
                 else {
                     latch = new CountDownLatch(1);
                 }
+            }
+
+            public void reset(final Type t, int initialCount) {
+                sources = null;
+                binaries = null;
+                type = t;
+                latch = new CountDownLatch(initialCount);
             }
 
             public boolean await () throws InterruptedException {
@@ -567,20 +576,27 @@ public class RepositoryUpdaterTest extends NbTestCase {
             @Override
             public void publish(LogRecord record) {
                 String msg = record.getMessage();
-                if ("scanBinary".equals(msg)) {
-                    @SuppressWarnings("unchecked")
-                    Set<URL> b = (Set<URL>) record.getParameters()[0];
-                    binaries = b;
-                    latch.countDown();
-                }
-                else if ("scanSources".equals(msg)) {
-                    @SuppressWarnings("unchecked")
-                    List<URL> s =(List<URL>) record.getParameters()[0];
-                    sources = s;
-                    latch.countDown();
-                }
-                else if ("delete".equals(msg)) {
-                    latch.countDown();
+                if (type == Type.BATCH) {
+                    if ("scanBinary".equals(msg)) {
+                        @SuppressWarnings("unchecked")
+                        Set<URL> b = (Set<URL>) record.getParameters()[0];
+                        binaries = b;
+                        latch.countDown();
+                    }
+                    else if ("scanSources".equals(msg)) {
+                        @SuppressWarnings("unchecked")
+                        List<URL> s =(List<URL>) record.getParameters()[0];
+                        sources = s;
+                        latch.countDown();
+                    }
+                } else if (type == Type.DELETE) {
+                    if ("delete".equals(msg)) {
+                        latch.countDown();
+                    }
+                } else if (type == Type.FILELIST) {
+                    if ("filelist".equals(msg)) {
+                        latch.countDown();
+                    }
                 }
             }
 

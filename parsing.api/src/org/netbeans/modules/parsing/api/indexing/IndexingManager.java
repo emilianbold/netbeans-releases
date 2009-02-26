@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,73 +34,70 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl.indexing;
+package org.netbeans.modules.parsing.api.indexing;
 
-import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 
 /**
  *
- * @author Tomas Zezula
+ * @author Vita Stejskal
+ * @since 1.3
  */
-public abstract class Crawler {
+public final class IndexingManager {
 
-    protected Crawler (final URL root) throws IOException {
-        this.root = root;
-        this.timeStamps = TimeStamps.forRoot(root);
+    // -----------------------------------------------------------------------
+    // public implementation
+    // -----------------------------------------------------------------------
+
+    public static synchronized IndexingManager getDefault() {
+        if (instance == null) {
+            instance = new IndexingManager();
+        }
+        return instance;
     }
 
-//    public final synchronized String getDigest () throws IOException {
-//        init ();
-//        return this.digest;
-//    }
-//
-//    protected final void addToDigest () {
-//    }
-
-    public final synchronized Map<String, Collection<Indexable>> getResources() throws IOException {
-        init ();
-        return cache;
+    /**
+     * Checks whether there are any indexing tasks running.
+     *
+     * @return <code>true</code> if there are indexing tasks running, otherwise <code>false</code>.
+     */
+    public boolean isIndexing() {
+        return RepositoryUpdater.getDefault().isScanInProgress();
     }
 
-    public final Collection<Indexable> getDeletedResources () throws IOException {
-        init ();
-        return Collections.unmodifiableCollection(deleted);
+    /**
+     * Schedules new files for indexing. The set of files passed to this method
+     * will be scheduled for reindexing. That means that all the indexers appropriate
+     * for each file will have a chance to update their index. No timestamp checks
+     * are doen for the files, which means that even files that have not been changed
+     * since their last indexing will be reindexed again.
+     *
+     * <p>IMPORTANT: Please use this with extreme caution. Indexing is generally
+     * very expensive operation and the more files you ask to reindex the longer the
+     * job will take.
+     *
+     * @param root The common parent folder of the files that should be reindexed.
+     * @param files The files to reindex. Can be <code>null</code> or an empty
+     *   collection in which case <b>all</b> files under the <code>root</code> will
+     *   be reindexed.
+     */
+    public void refreshIndex(URL root, Collection<? extends URL> files) {
+        RepositoryUpdater.getDefault().addIndexingJob(root, files, false);
     }
-
-    protected final TimeStamps getTimeStamps() {
-        return timeStamps;
-    }
-
-    protected abstract Map<String, Collection<Indexable>> collectResources(final Set<? extends String> supportedMimeTypes);
 
     // -----------------------------------------------------------------------
     // private implementation
     // -----------------------------------------------------------------------
 
-//    private String digest;
-    private Map<String, Collection<Indexable>> cache;
-    private Collection<Indexable> deleted;
-    private final TimeStamps timeStamps;
-    private final URL root;
+    private static IndexingManager instance;
 
-    private void init () throws IOException {
-        if (this.cache == null) {
-            this.cache = collectResources(PathRecognizerRegistry.getDefault().getMimeTypes());
-            final Set<String> unseen = timeStamps.store();
-            deleted = new ArrayList<Indexable>(unseen.size());
-            for (String u : unseen) {
-                deleted.add(SPIAccessor.getInstance().create(new DeletedIndexable(root, u)));
-            }
-        }
+    private IndexingManager() {
+        // no-op
     }
+
 }

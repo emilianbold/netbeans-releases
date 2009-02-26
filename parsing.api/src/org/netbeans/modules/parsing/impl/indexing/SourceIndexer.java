@@ -72,13 +72,15 @@ public class SourceIndexer {
     
     private final URL rootURL;
     private final FileObject cache;
+    private final boolean followUpJob;
     private final Map<String,EmbeddingIndexerFactory> embeddedIndexers = new HashMap<String, EmbeddingIndexerFactory>();
 
-    public SourceIndexer (final URL rootURL, final FileObject cache) {
+    public SourceIndexer (final URL rootURL, final FileObject cache, final boolean followUpJob) {
         assert rootURL != null;
         assert cache != null;
         this.rootURL = rootURL;
         this.cache = cache;
+        this.followUpJob = followUpJob;
     }
 
     protected void index(Iterable<? extends Indexable> files, Collection<? extends Indexable> deleted) throws IOException {
@@ -103,7 +105,7 @@ public class SourceIndexer {
                             if (currentIndexerFactory != null) {
                                 final String indexerName = currentIndexerFactory.getIndexerName();
                                 final int indexerVersion = currentIndexerFactory.getIndexVersion();
-                                final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, indexerName, indexerVersion, null);
+                                final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, indexerName, indexerVersion, null, followUpJob);
                                 final EmbeddingIndexer indexer = currentIndexerFactory.createIndexer(dirty,resultIterator.getSnapshot());
                                 if (indexer != null) {
                                     SPIAccessor.getInstance().index(indexer, dirty, resultIterator.getParserResult(), context);
@@ -131,7 +133,7 @@ public class SourceIndexer {
             final EmbeddingIndexerFactory factory = MimeLookup.getLookup(mimeType).lookup(EmbeddingIndexerFactory.class);
             if (factory != null) {
                 embeddedIndexers.put(mimeType, factory);
-                final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, factory.getIndexerName(), factory.getIndexVersion(), null);
+                final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob);
                 factory.filesDeleted(deleted, context);
             }
         }

@@ -107,6 +107,23 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="Explicit-index-refresh">
+      <api name="ParsingAPI"/>
+      <summary>Support for explicit index refreshing</summary>
+      <version major="1" minor="3"/>
+      <date day="26" month="2" year="2009"/>
+      <author login="vstejskal"/>
+      <compatibility source="incompatible" binary="incompatible" semantic="compatible" deletion="yes" addition="yes" modification="no"/>
+      <description>
+          <p>
+              Adding <code>IndexingManager</code> class, which allows requesting
+              to reindex a set of files. Also adding <code>addSupplemntaryFiles</code>
+              and <code>isSupplementaryFilesIndexing</code> methods to <code>Context</code>
+              class in order to allow indexers to request reindexing of additional files.
+          </p>
+      </description>
+  </change>
+
   <change id="Context.addIndexingJob">
       <api name="ParsingAPI"/>
       <summary>Adding Context.addIndexingJob</summary>

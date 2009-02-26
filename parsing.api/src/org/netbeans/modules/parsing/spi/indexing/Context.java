@@ -40,9 +40,10 @@
 package org.netbeans.modules.parsing.spi.indexing;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URL;
+import java.util.Collection;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -59,6 +60,8 @@ public final class Context {
     private final FileObject indexFolder;
     private final String indexerName;
     private final int indexerVersion;
+    private final boolean followUpJob;
+    
     private FileObject root;
 
     //unit test
@@ -66,7 +69,7 @@ public final class Context {
 
     Context (final FileObject indexBaseFolder,
              final URL rootURL, final String indexerName, final int indexerVersion,
-             final IndexFactoryImpl factory) throws IOException {
+             final IndexFactoryImpl factory, boolean followUpJob) throws IOException {
         assert indexBaseFolder != null;
         assert rootURL != null;
         assert indexerName != null;
@@ -75,6 +78,7 @@ public final class Context {
         this.indexerName = indexerName;
         this.indexerVersion = indexerVersion;
         this.factory = factory;
+        this.followUpJob = followUpJob;
         final String path = getIndexerPath(indexerName, indexerVersion); //NOI18N
         this.indexFolder = FileUtil.createFolder(this.indexBaseFolder,path);
     }
@@ -111,14 +115,37 @@ public final class Context {
     }
 
     /**
+     * Schedules additional files for reindexing. This method can be used for requesting
+     * reindexing of additional files that an indexer discovers while indexing some
+     * other files. The files passed to this method will be processed by a new
+     * indexing job after the current indexing is finished.
+     * That means that all the indexers appropriate
+     * for each file will have a chance to update their index. No timestamp checks
+     * are done on the additional files, which means that even files that have not been changed
+     * since their last indexing will be reindexed again.
      *
-     * @param root
-     * @param files
+     * @param root The common parent folder of the files that should be reindexed.
+     * @param files The files to reindex. Can be <code>null</code> or an empty
+     *   collection in which case <b>all</b> files under the <code>root</code> will
+     *   be reindexed.
      *
-     * @since 1.2
+     * @since 1.3
      */
-    public void addIndexingJob(URL root, URL... files) {
-        // XXX: implement this
+    public void addSupplementaryFiles(URL root, Collection<? extends URL> files) {
+        RepositoryUpdater.getDefault().addIndexingJob(root, files, true);
+    }
+
+    /**
+     * Indicates whether the current indexing job was requested by calling
+     * {@link #addSupplementaryFiles(java.net.URL, java.util.Collection) } method.
+     *
+     * @return <code>true</code> if the indexing job was requested by <code>addSupplementaryFiles</code>,
+     *   otherwise <code>false</code>
+     *
+     * @since 1.3
+     */
+    public boolean isSupplementaryFilesIndexing() {
+        return followUpJob;
     }
 
     String getIndexerName () {

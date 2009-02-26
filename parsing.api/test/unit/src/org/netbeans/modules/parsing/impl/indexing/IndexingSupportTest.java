@@ -87,9 +87,9 @@ public class IndexingSupportTest extends NbTestCase {
     public void testIndexingSupportInstances () throws Exception {
         Collection<? extends IndexingSupport> dirty = SupportAccessor.getInstance().getDirtySupports();
         assertTrue(dirty.isEmpty());
-        final Context ctx1 = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root.getURL()), root.getURL(), "fooIndexer", 1, null);
+        final Context ctx1 = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root.getURL()), root.getURL(), "fooIndexer", 1, null, false);
         assertNotNull(ctx1);
-        final Context ctx2 = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root.getURL()), root.getURL(), "embIndexer", 1, null);
+        final Context ctx2 = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root.getURL()), root.getURL(), "embIndexer", 1, null, false);
         assertNotNull(ctx2);
         SupportAccessor.getInstance().beginTrans();
         final IndexingSupport is1 = IndexingSupport.getInstance(ctx1);
@@ -104,7 +104,7 @@ public class IndexingSupportTest extends NbTestCase {
     }
 
     public void testIndexingQuerySupport () throws Exception {
-        final Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root.getURL()), root.getURL(), "fooIndexer", 1, null);
+        final Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root.getURL()), root.getURL(), "fooIndexer", 1, null, false);
         assertNotNull(ctx);
         SupportAccessor.getInstance().beginTrans();
         final Indexable i1 = SPIAccessor.getInstance().create(new FileObjectIndexable(root, f1));

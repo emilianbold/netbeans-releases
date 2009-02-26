@@ -118,6 +118,55 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     public boolean isScanInProgress() {
         return getWorker().isWorking();
     }
+
+    /**
+     * Schedules new job for indexing files under a root. This method forcible
+     * reindexes all files in the job without checking timestamps.
+     *
+     * @param rootUrl The root that should be reindexed.
+     * @param fileUrls Files under the root. Files that are not under the <code>rootUrl</code>
+     *   are ignored. Can be <code>null</code> in which case all files under the root
+     *   will be reindexed.
+     * @param followUpJob If <code>true</code> the indexers will be notified that
+     *   they are indexing follow up files (ie. files that one of the indexers involved
+     *   in earlier indexing job requested to reindex) in contrast to files that are
+     *   being reindexed due to ordinary change events (eg. when classpath roots are
+     *   added/removed, file is modified, editor tabs are switched, etc).
+     */
+    public void addIndexingJob(URL rootUrl, Collection<? extends URL> fileUrls, boolean followUpJob) {
+        assert rootUrl != null;
+
+        FileObject root = URLMapper.findFileObject(rootUrl);
+        assert root != null : rootUrl + " can't be translated to FileObject"; //NOI18N
+        if (root == null) {
+            return;
+        }
+
+        FileListWork flw = null;
+        if (fileUrls != null && fileUrls.size() > 0) {
+            Set<FileObject> files = new HashSet<FileObject>();
+            for(URL fileUrl : fileUrls) {
+                FileObject file = URLMapper.findFileObject(fileUrl);
+                if (file != null) {
+                    if (FileUtil.isParentOf(root, file)) {
+                        files.add(file);
+                    } else {
+                        LOGGER.warning(file + " does not lie under " + root + ", not indexing it"); //NOI18N
+                    }
+                }
+            }
+
+            if (files.size() > 0) {
+                flw = new FileListWork(rootUrl, files, followUpJob);
+            }
+        } else {
+            flw = new FileListWork(rootUrl, followUpJob);
+        }
+
+        if (flw != null) {
+            getWorker().schedule(flw);
+        }
+    }
     
     // -----------------------------------------------------------------------
     // PathRegistryListener implementation
@@ -165,7 +214,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         if ( root != null && VisibilityQuery.getDefault().isVisible(fo)) {
-            submit(new FileListWork(root, fo));
+            submit(new FileListWork(root, Collections.singleton(fo), false));
         }
     }
 
@@ -180,7 +229,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         if (root != null && VisibilityQuery.getDefault().isVisible(fo) &&
             FileUtil.getMIMEType(fo, PathRecognizerRegistry.getDefault().getMimeTypesAsArray()) != null)
         {
-            submit(new FileListWork(root, fo));
+            submit(new FileListWork(root, Collections.singleton(fo), false));
         }
     }
 
@@ -195,7 +244,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         if (root != null && VisibilityQuery.getDefault().isVisible(fo) &&
             FileUtil.getMIMEType(fo, PathRecognizerRegistry.getDefault().getMimeTypesAsArray()) != null)
         {
-            submit(new FileListWork(root, fo));
+            submit(new FileListWork(root, Collections.singleton(fo), false));
         }
     }
 
@@ -273,7 +322,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
                             FileListWork job = jobs.get(root);
                             if (job == null) {
-                                job = new FileListWork(root, f);
+                                job = new FileListWork(root, Collections.singleton(f), false);
                                 jobs.put(root, job);
                             } else {
                                 job.addFile(f);
@@ -375,9 +424,11 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
     private static abstract class Work {
 
+        private final boolean followUpJob;
         private ProgressHandle progressHandle = null;
         
-        protected Work() {
+        protected Work(boolean followUpJob) {
+            this.followUpJob = followUpJob;
         }
 
         protected final void updateProgress(String message) {
@@ -431,7 +482,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                             }
 
                             supportsEmbeddings &= b;
-                            final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null);
+                            final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob);
                             factory.filesDeleted(deleted, ctx);
                             final Collection<? extends Indexable> indexables = resources.get(mimeType);
                             if (indexables != null) {
@@ -458,7 +509,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     LOGGER.fine("Using EmbeddingIndexers for " + toIndex); //NOI18N
                 }
 
-                final SourceIndexer si = new SourceIndexer(root,cacheRoot);
+                final SourceIndexer si = new SourceIndexer(root, cacheRoot, followUpJob);
                 si.index(toIndex, deleted);
             } finally {
                 SupportAccessor.getInstance().endTrans();
@@ -474,14 +525,24 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         private final URL root;
         private final Collection<FileObject> files;
 
-        public FileListWork (URL root, FileObject file) {
+        public FileListWork (URL root, boolean followUpJob) {
+            super(followUpJob);
+
             assert root != null;
-            assert file != null;
+            this.root = root;
+            this.files = null;
+        }
+
+        public FileListWork (URL root, Collection<FileObject> files, boolean followUpJob) {
+            super(followUpJob);
+            
+            assert root != null;
+            assert files != null && files.size() > 0;
             this.root = root;
             this.files = new HashSet<FileObject>();
-            this.files.add(file);
+            this.files.addAll(files);
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("FileListWork: root=" + root + ", file=" + file); //NOI18N
+                LOGGER.fine("FileListWork: root=" + root + ", file=" + files); //NOI18N
             }
         }
 
@@ -494,16 +555,19 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         public void getDone() {
             updateProgress(root);
             final FileObject rootFo = URLMapper.findFileObject(root);
-            if (rootFo == null) {
-                return;
+            if (rootFo != null) {
+                try {
+                    final Crawler crawler = files == null ?
+                        new FileObjectCrawler(rootFo, false) : // rescan the whole root (no timestamp check)
+                        new FileObjectCrawler(rootFo, files.toArray(new FileObject[files.size()]), false); // rescan selected files (no timestamp check)
+
+                    final Map<String,Collection<Indexable>> resources = crawler.getResources();
+                    index (resources, Collections.<Indexable>emptyList(), root);
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
             }
-            try {
-                final Crawler crawler = new FileObjectCrawler(rootFo, files.toArray(new FileObject[files.size()]));
-                final Map<String,Collection<Indexable>> resources = crawler.getResources();
-                index (resources, Collections.<Indexable>emptyList(), root);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
+            TEST_LOGGER.log(Level.FINEST, "filelist"); //NOI18N
         }
 
     } // End of FileListWork
@@ -514,6 +578,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         private final FileObject[] files;
 
         public DeleteWork (URL root, FileObject file) {
+            super(false);
+            
             assert root != null;
             assert file != null;
             this.root = root;
@@ -532,7 +598,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     indexables.add(SPIAccessor.getInstance().create(new DeletedIndexable (root, FileUtil.getRelativePath(rootFo, files[i]))));
                 }
                 index(Collections.<String,Collection<Indexable>>emptyMap(), indexables, root);
-                TEST_LOGGER.log(Level.FINEST, "delete");         //NOI18N
+                TEST_LOGGER.log(Level.FINEST, "delete"); //NOI18N
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }
@@ -546,6 +612,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         private final Set<URL> scannedBinaries;
 
         public RootsWork (Set<URL> scannedRoots, Set<URL> scannedBinaries) {
+            super(false);
+            
             this.scannedRoots = scannedRoots;
             this.scannedBinaries = scannedBinaries;
         }
@@ -704,7 +772,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             //todo: optimize for java.io.Files
             final FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo != null) {
-                final Crawler crawler = new FileObjectCrawler(rootFo);
+                final Crawler crawler = new FileObjectCrawler(rootFo, true);
                 final Map<String,Collection<Indexable>> resources = crawler.getResources();
                 final Collection<Indexable> deleted = crawler.getDeletedResources();
                 index (resources, deleted, root);
