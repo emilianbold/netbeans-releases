@@ -41,6 +41,7 @@ package org.netbeans.modules.bugzilla.issue;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -85,7 +86,7 @@ public class BugzillaIssue extends Issue {
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT);
     private IssueController controller;
     private IssueNode node;
-
+    
     static final String LABEL_NAME_ID           = "bugzilla.issue.id";
     static final String LABEL_NAME_SEVERITY     = "bugzilla.issue.severity";
     static final String LABEL_NAME_PRIORITY     = "bugzilla.issue.priority";
@@ -360,21 +361,28 @@ public class BugzillaIssue extends Issue {
         return attachments.toArray(new Attachment[attachments.size()]);
     }
 
-    void addAttachment(File f, String comment, String desc) {
+
+    void addAttachment(File f, String comment, String desc, String contentType) throws HttpException, IOException, CoreException  {
         FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(f);
-        attachmentSource.setContentType("text/plain");
+        attachmentSource.setContentType(contentType);
         BugzillaTaskAttachmentHandler.AttachmentPartSource source = new BugzillaTaskAttachmentHandler.AttachmentPartSource(attachmentSource);
 
-        try {
-            Bugzilla.getInstance().getRepositoryConnector().getClientManager().getClient(getTaskRepository(), new NullProgressMonitor()).
-            postAttachment(getID(), comment, desc, attachmentSource.getContentType(), false, source, new NullProgressMonitor());
-        } catch (HttpException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        }
+//        try {
+            Bugzilla.getInstance().getClient(repository).postAttachment(
+                    getID(), 
+                    comment, 
+                    desc, 
+                    attachmentSource.getContentType(), 
+                    false, 
+                    source, 
+                    new NullProgressMonitor());
+//        } catch (HttpException ex) {
+//            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+//        } catch (IOException ex) {
+//            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+//        } catch (CoreException ex) {
+//            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+//        }
     }
 
     Comment[] getComments() {
@@ -397,20 +405,23 @@ public class BugzillaIssue extends Issue {
         refresh();
 
         // resolved attrs
-        Set<TaskAttribute> attrs = null; // XXX looks like we don't need this at all - see in submmit -> attr = null
         if(close) {
-            attrs = getResolveAttributes("FIXED");
+            resolve("FIXED"); // XXX constant?
         }
-        // commet attrs
         if(comment != null) {
-            TaskAttribute ta = data.getRoot().createMappedAttribute(TaskAttribute.COMMENT_NEW);
-            ta.setValue(comment);
-            attrs.add(ta);
+            addComment(comment);
         }
         try {
             submit();
         } catch (CoreException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void addComment(String comment) {
+        if(comment != null) {
+            TaskAttribute ta = data.getRoot().createMappedAttribute(TaskAttribute.COMMENT_NEW);
+            ta.setValue(comment);
         }
     }
 
