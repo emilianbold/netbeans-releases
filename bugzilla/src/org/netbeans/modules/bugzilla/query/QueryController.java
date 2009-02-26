@@ -632,17 +632,22 @@ public class QueryController extends BugtrackingController implements DocumentLi
             NbBundle.getMessage(QueryController.class, "MSG_RemoveQuery", new Object[] { query.getDisplayName() }), // NOI18N
             NbBundle.getMessage(QueryController.class, "CTL_RemoveQuery"),      // NOI18N
             NotifyDescriptor.OK_CANCEL_OPTION);
+
         if(DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
             Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
                 public void run() {
-                    if(task != null) {
-                        task.cancel();
-                    }
-                    repository.removeQuery(query);
-                    query.fireQueryRemoved();
+                    remove();
                 }
             });
         }
+    }
+    
+    private void remove() {
+        if (task != null) {
+            task.cancel();
+        }
+        repository.removeQuery(query);
+        query.fireQueryRemoved();
     }
 
     private synchronized void post(Runnable r) {
