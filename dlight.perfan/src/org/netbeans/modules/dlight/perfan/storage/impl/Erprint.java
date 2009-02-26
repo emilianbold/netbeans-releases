@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
@@ -183,7 +184,7 @@ public final class Erprint {
     String[] getHotFunctions(int limit) {
         String[] result = null;
         synchronized (lock) {
-            erOutputProcessor.setFilterType(FilterType.onlyContainsNumbers);
+            erOutputProcessor.setFilterType(FilterType.startsWithNumber);
             result = exec("functions", limit);
             erOutputProcessor.setFilterType(FilterType.noFiltering);
         }
@@ -222,9 +223,13 @@ public final class Erprint {
     }
 
     private static class FilteredInputProcessor implements InputProcessor {
-
+        // Buffer must be synchronized, because it caould be accessed
+        // from several threads (example: one thread - onTimer, another one -
+        // user clicks on indicator)
+        // The problem may appear when one thread gets buffer, while another one
+        // cleans it... 
+        private final List<String> buffer = Collections.synchronizedList(new ArrayList<String>());
         private FilterType filterType = FilterType.noFiltering;
-        private List<String> buffer = new ArrayList();
         private String prompt = null;
         private CountDownLatch doneSignal;
 
@@ -252,8 +257,8 @@ public final class Erprint {
                 if (line.length() != 0) {
                     switch (filterType) {
                         // TODO: fixme Need correct filtering.
-                        case onlyContainsNumbers:
-                            if (!line.contains(",")) {
+                        case startsWithNumber:
+                            if (!line.matches("^ *[0-9]+.*")) {
                                 continue;
                             }
                     }
@@ -294,7 +299,7 @@ public final class Erprint {
     private static enum FilterType {
 
         noFiltering,
-        onlyContainsNumbers,
+        startsWithNumber,
     }
 
     private final class ErprintListener implements ChangeListener {
