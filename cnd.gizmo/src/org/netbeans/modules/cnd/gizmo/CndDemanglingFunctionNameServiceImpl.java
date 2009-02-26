@@ -70,8 +70,8 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
     private final ExecutionEnvironment env;
     private final CPPCompiler cppCompiler;
     private final String dem_util_path;
-    private static final String GNU_FAMILIY = "gc++filt";
-    private static final String SS_FAMILIY = "dem";
+    private static final String GNU_FAMILIY = "gc++filt"; //NOI18N
+    private static final String SS_FAMILIY = "dem"; //NOI18N
 
     CndDemanglingFunctionNameServiceImpl() {
         Project project = org.netbeans.api.project.ui.OpenProjects.getDefault().getMainProject();
@@ -99,7 +99,7 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
         } else {
             env = new ExecutionEnvironment();
         }
-        dem_util_path = binDir + "/" + demangle_utility;
+        dem_util_path = binDir + "/" + demangle_utility; //NOI18N BTW: isn't it better to use File.Separator?
     }
 
     CndDemanglingFunctionNameServiceImpl(CPPCompiler cppCompiler) {
@@ -114,11 +114,11 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
 
     public Future<String> demangle(final String functionName) {
         //get current Project
-        final String nameToDemangle = functionName.substring(functionName.indexOf("`"), functionName.indexOf("+"));
+        final String nameToDemangle = functionName.substring(functionName.indexOf("`"), functionName.indexOf("+")); //NOI18N
         return DLightExecutorService.service.submit(new Callable<String>() {
 
             public String call() {
-                NativeProcessBuilder npb = new NativeProcessBuilder(env, dem_util_path + " " + nameToDemangle);
+                NativeProcessBuilder npb = new NativeProcessBuilder(env, dem_util_path + " " + nameToDemangle); //NOI18N
                 ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
                     InputOutput.NULL);
                 StringWriter result = new StringWriter();
