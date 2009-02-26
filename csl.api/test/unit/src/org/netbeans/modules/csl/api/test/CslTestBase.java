@@ -1401,7 +1401,8 @@ public abstract class CslTestBase extends NbTestCase {
                 root.getURL(),
                 factory.getIndexerName(),
                 factory.getIndexVersion(),
-                tifi
+                tifi,
+                false
         );
 
         SupportAccessor.getInstance().beginTrans();
