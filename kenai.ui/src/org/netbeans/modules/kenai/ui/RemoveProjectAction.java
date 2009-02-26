@@ -41,7 +41,7 @@ package org.netbeans.modules.kenai.ui;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 
 /**
@@ -50,13 +50,13 @@ import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
  */
 public class RemoveProjectAction extends AbstractAction {
 
-    private KenaiProject prj;
+    private ProjectHandle prj;
     public RemoveProjectAction(ProjectHandle project) {
         super(org.openide.util.NbBundle.getMessage(RemoveProjectAction.class, "CTL_RemoveProject"));
-        this.prj=((ProjectHandleImpl) project).getKenaiProject();
+        this.prj=project;
     }
 
     public void actionPerformed(ActionEvent arg0) {
-        prj.close();
+        Dashboard.getDefault().removeProject(prj);
     }
 }
