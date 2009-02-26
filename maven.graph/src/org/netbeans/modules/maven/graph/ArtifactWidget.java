@@ -112,7 +112,7 @@ class ArtifactWidget extends Widget implements TwoStateHoverProvider, ActionList
     private Widget detailsW, contentW;
     private ImageWidget lockW, hintBulbW;
 
-    private boolean grayed = true;
+    private boolean grayed = false;
 
     private Font origFont;
     private Color origForeground;
@@ -122,7 +122,7 @@ class ArtifactWidget extends Widget implements TwoStateHoverProvider, ActionList
         this.node = node;
 
         Artifact artifact = node.getArtifact().getArtifact();
-        setLayout(LayoutFactory.createCardLayout(this));
+        setLayout(LayoutFactory.createVerticalFlowLayout());
 
         setToolTipText(NbBundle.getMessage(DependencyGraphScene.class,
                 "TIP_Artifact", new Object[]{artifact.getGroupId(),
@@ -137,9 +137,6 @@ class ArtifactWidget extends Widget implements TwoStateHoverProvider, ActionList
         if (hoverBorderC == null) {
             hoverBorderC = Color.GRAY;
         }
-
-        origFont = getFont();
-        origForeground = getForeground();
     }
 
     void hightlightText(String searchTerm) {
@@ -203,8 +200,13 @@ class ArtifactWidget extends Widget implements TwoStateHoverProvider, ActionList
         if (this.grayed == grayed) {
             return;
         }
+        this.grayed = grayed;
 
-        Color c = grayed ? UIManager.getColor("disabledText") : origForeground;
+        if (origForeground == null) {
+            origForeground = getForeground();
+        }
+
+        Color c = grayed ? UIManager.getColor("textInactiveText") : origForeground;
         if (c == null) {
             c = Color.LIGHT_GRAY;
         }
@@ -219,12 +221,16 @@ class ArtifactWidget extends Widget implements TwoStateHoverProvider, ActionList
         contentW.repaint();
     }
 
-    private Widget initContent (DependencyGraphScene scene, Artifact artifact) {
+    private void initContent (DependencyGraphScene scene, Artifact artifact) {
         contentW = new LevelOfDetailsWidget(scene, 0.05, 0.1, Double.MAX_VALUE, Double.MAX_VALUE);
         contentW.setBorder(BorderFactory.createLineBorder(10));
         contentW.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 1));
         artifactW = new LabelWidget(scene);
         artifactW.setLabel(artifact.getArtifactId() + "  ");
+        if (node.isRoot()) {
+            Font defF = getOrigFont();
+            artifactW.setFont(defF.deriveFont(Font.BOLD, defF.getSize() + 3f));
+        }
         contentW.addChild(artifactW);
         Widget versionDetW = new LevelOfDetailsWidget(scene, 0.5, 0.7, Double.MAX_VALUE, Double.MAX_VALUE);
         versionDetW.setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 2));
@@ -240,7 +246,7 @@ class ArtifactWidget extends Widget implements TwoStateHoverProvider, ActionList
         if (lockW != null) {
             versionDetW.addChild(lockW);
         }
-        return contentW;
+        addChild(contentW);
     }
 
     @Override
@@ -354,8 +360,9 @@ class ArtifactWidget extends Widget implements TwoStateHoverProvider, ActionList
         if (previous == HOVERED) {
             repaint();
         } else if (previous == ENSURE_READABLE) {
+            artifactW.setPreferredBounds(artifactW.getPreferredBounds());
             updateContent();
-            getScene().getSceneAnimator().animatePreferredBounds(this, null);
+            getScene().getSceneAnimator().animatePreferredBounds(artifactW, null);
         }
     }
 
@@ -369,14 +376,28 @@ class ArtifactWidget extends Widget implements TwoStateHoverProvider, ActionList
 
     public void actionPerformed(ActionEvent e) {
         hoverState = ENSURE_READABLE;
+        artifactW.setPreferredBounds(artifactW.getPreferredBounds());
+        bringToFront();
         updateContent();
-        getScene().getSceneAnimator().animatePreferredBounds(this, null);
+        getScene().getSceneAnimator().animatePreferredBounds(artifactW, null);
     }
 
     private void updateContent () {
-        Font f = hoverState != ENSURE_READABLE ? origFont : origFont.deriveFont(origFont.getSize() + 2);
+        Font origF = getOrigFont();
+        float ratio = (float) Math.max (1, 1.0f / Math.max(0.0001f, getScene().getZoomFactor()));
+        Font f = hoverState != ENSURE_READABLE ? origF : origF.deriveFont(origF.getSize() * ratio);
         artifactW.setFont(f);
         versionW.setFont(f);
+    }
+
+    private Font getOrigFont () {
+        if (origFont == null) {
+            origFont = getFont();
+            if (origFont == null) {
+                origFont = getScene().getDefaultFont();
+            }
+        }
+        return origFont;
     }
 
 }
