@@ -6,7 +6,7 @@
     </Component>
     <Component class="javax.swing.JComboBox" name="serverTypeCombo">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JComboBox(new Object[] {org.openide.util.NbBundle.getMessage(ServerPropertiesPanel.class, &quot;SERVER_TYPE_LOCAL&quot;)/*, org.openide.util.NbBundle.getMessage(ServerPropertiesPanel.class, &quot;SERVER_TYPE_REMOTE&quot;)*/})"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JComboBox(new Object[] {org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, &quot;SERVER_TYPE_LOCAL&quot;)/*, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, &quot;SERVER_TYPE_REMOTE&quot;)*/})"/>
         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="serverTypeCombo.addActionListener(new ServerTypeActionListener());"/>
       </AuxValues>
     </Component>
@@ -14,6 +14,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>

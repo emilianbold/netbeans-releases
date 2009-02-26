@@ -602,7 +602,7 @@ class InstallPanelVisual extends javax.swing.JPanel {
         jButtonBaseBrowse.setEnabled(enabled);
     }
     
-    public boolean isValid() {
+    public boolean hasValidData() {
         errorMessage = null;
         infoMessage = false;
         return isHomeValid() && isBaseValid() && !isAlreadyRegistered() && isUsernamePasswordValid();

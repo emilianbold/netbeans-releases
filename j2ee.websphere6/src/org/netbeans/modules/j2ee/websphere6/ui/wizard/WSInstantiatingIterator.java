@@ -40,8 +40,6 @@
  */
 package org.netbeans.modules.j2ee.websphere6.ui.wizard;
 
-
-
 import java.io.IOException;
 
 import java.net.Socket;
@@ -52,6 +50,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Vector;
 
+import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -84,7 +83,7 @@ public class WSInstantiatingIterator
      * at creation time and can be changed via the properties sheet
      */
     private static final String DEFAULT_DEBUGGER_PORT = "8787"; // NOI18N
-    
+
     private final WSVersion version;
     
     /**
@@ -118,6 +117,23 @@ public class WSInstantiatingIterator
      */
     public void initialize(WizardDescriptor wizardDescriptor) {
         this.wizardDescriptor = wizardDescriptor;
+
+        for (int i = 0; i < panels.size(); i++)
+        {
+            Object c = panels.get(i).getComponent();
+
+            if (c instanceof JComponent)
+            {
+                // assume Swing components
+                JComponent jc = (JComponent) c;
+                // Step #.
+                jc.putClientProperty(
+                    WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
+
+                // Step name (actually the whole list for reference).
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
+            }
+        }
     }
     
     /**
@@ -185,7 +201,7 @@ public class WSInstantiatingIterator
         try {
             new Socket(getHost(), new Integer(getPort()).intValue());
         } catch (UnknownHostException e) {
-            JOptionPane.showMessageDialog(serverPropertiesPanel, 
+            JOptionPane.showMessageDialog(serverPropertiesPanel.getComponent(),
                     NbBundle.getMessage(WSInstantiatingIterator.class, 
                     "MSG_unknownHost", getHost()), 
                     NbBundle.getMessage(WSInstantiatingIterator.class, 
@@ -230,8 +246,7 @@ public class WSInstantiatingIterator
         this.serverRoot = serverRoot;
         
         // reinit the instances list
-        serverPropertiesPanel.getWizardServerProperties().
-                updateInstancesList(serverRoot);
+        serverPropertiesPanel.updateServerRoot(serverRoot);
     }
     
     /**
@@ -409,28 +424,22 @@ public class WSInstantiatingIterator
     /**
      * The steps names for the wizard: Server Location & Instance properties
      */
-    private Vector steps = new Vector();
+    private String[] steps = new String[]
     {
-        steps.add(NbBundle.getMessage(ServerPropertiesPanel.class, 
-                "SERVER_LOCATION_STEP"));                              // NOI18N
-        steps.add(NbBundle.getMessage(ServerPropertiesPanel.class, 
-                "SERVER_PROPERTIES_STEP"));                            // NOI18N
-    }
+        NbBundle.getMessage(ServerPropertiesPanel.class, 
+                "SERVER_LOCATION_STEP"),                           // NOI18N
+        NbBundle.getMessage(ServerPropertiesPanel.class, 
+                "SERVER_PROPERTIES_STEP")                       // NOI18N
+    };
     
     /**
      * The wizard's panels
      */
-    private Vector panels = new Vector();
-    private ServerLocationPanel serverLocationPanel = 
-            new ServerLocationPanel(
-                    (String[]) steps.toArray(new String[steps.size()]), 
-                    0, 
-                    new IteratorListener(), this);
+    private Vector<WizardDescriptor.Panel> panels = new Vector<WizardDescriptor.Panel>() ;
+    private ServerLocationPanel serverLocationPanel =
+            new ServerLocationPanel(this);
     private ServerPropertiesPanel serverPropertiesPanel = 
-            new ServerPropertiesPanel(
-                    (String[]) steps.toArray(new String[steps.size()]), 
-                    1, 
-                    new IteratorListener(), this);
+            new ServerPropertiesPanel( this);
     {
         panels.add(serverLocationPanel);
         panels.add(serverPropertiesPanel);
