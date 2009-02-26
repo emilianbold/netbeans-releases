@@ -39,12 +39,16 @@
 
 package org.netbeans.modules.bugzilla.query;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import org.netbeans.modules.bugzilla.*;
 import java.net.MalformedURLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
@@ -115,7 +119,8 @@ public class QueryTest extends NbTestCase implements TestConstants {
         q.refresh(p);
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        assertEquals(1, nl.getIssues(Query.ISSUE_STATUS_NOT_OBSOLETE).size());
+        il = nl.getIssues(Query.ISSUE_STATUS_NOT_OBSOLETE);
+        assertEquals(1, il.size());
         i = il.get(0);
         assertEquals(summary, i.getSummary());
         assertEquals(id1, i.getID());
@@ -216,9 +221,134 @@ public class QueryTest extends NbTestCase implements TestConstants {
         assertTrue(q.getLastRefresh() >= ts);
 
     }
-    
+
+    public void testSaveAterSearch() throws MalformedURLException, CoreException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, InterruptedException {
+        long ts = System.currentTimeMillis();
+        String summary = "somary" + ts;
+        String id1 = TestUtil.createIssue(getRepository(), summary);
+
+        // create query
+        BugzillaQuery q = new BugzillaQuery(getRepository());
+        LogHandler h = new LogHandler("Finnished populate ");
+        Bugzilla.LOG.addHandler(h);
+
+        // get controler and wait until populated with default values
+        QueryController c = q.getController();
+        while(!h.done) Thread.sleep(100);
+
+        // populate with parameters - summary
+        populate(c, summary);
+
+        TestQueryNotifyListener nl = new TestQueryNotifyListener(q);
+
+        // search
+        nl.reset();
+        h = new LogHandler("refresh finish");
+        Bugzilla.LOG.addHandler(h);
+        search(c); // search button and wait until done
+        while(!h.done) Thread.sleep(100);
+
+        assertTrue(nl.started);
+        assertTrue(nl.finished);
+        List<Issue> il = nl.getIssues(Query.ISSUE_STATUS_NOT_OBSOLETE);
+        assertEquals(1, il.size());
+        Issue i = il.get(0);
+        assertEquals(summary, i.getSummary());
+        assertEquals(id1, i.getID());
+
+        // save
+        nl.reset();
+        h = new LogHandler("refresh finish");
+        Bugzilla.LOG.addHandler(h);
+        save(c, QUERY_NAME + ts); // save button
+        while(!h.done) Thread.sleep(100);
+
+        assertTrue(nl.started);
+        assertTrue(nl.finished);
+        il = nl.getIssues(Query.ISSUE_STATUS_NOT_OBSOLETE);
+        assertEquals(1, il.size());
+        i = il.get(0);
+        assertEquals(summary, i.getSummary());
+        assertEquals(id1, i.getID());
+    }
+
+    public void testSaveBeforeSearch() throws MalformedURLException, CoreException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, InterruptedException {
+        long ts = System.currentTimeMillis();
+        String summary = "somary" + ts;
+        String id1 = TestUtil.createIssue(getRepository(), summary);
+
+        // create query
+        BugzillaQuery q = new BugzillaQuery(getRepository());
+        LogHandler h = new LogHandler("Finnished populate ");
+        Bugzilla.LOG.addHandler(h);
+
+        // get controler and wait until populated with default values
+        QueryController c = q.getController();
+        while(!h.done) Thread.sleep(100);
+
+        // populate with parameters - summary
+        populate(c, summary);
+
+        TestQueryNotifyListener nl = new TestQueryNotifyListener(q);
+
+        nl.reset();
+        h = new LogHandler("refresh finish");
+        Bugzilla.LOG.addHandler(h);
+        save(c, QUERY_NAME + ts); // save button
+        while(!h.done) Thread.sleep(100);
+
+        assertTrue(nl.started);
+        assertTrue(nl.finished);
+        List<Issue> il = nl.getIssues(Query.ISSUE_STATUS_NOT_OBSOLETE);
+        assertEquals(1, il.size());
+        Issue i = il.get(0);
+        assertEquals(summary, i.getSummary());
+        assertEquals(id1, i.getID());
+    }
+
     private BugzillaRepository getRepository() {
         return TestUtil.getRepository(REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD);
     }
 
+    private void save(QueryController c, String name) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        Method m = c.getClass().getDeclaredMethod("save", String.class, boolean.class);
+        m.setAccessible(true);
+        m.invoke(c, name, true);
+    }
+
+    private void search(QueryController c) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        Method m = c.getClass().getDeclaredMethod("onSearch");
+        m.setAccessible(true);
+        m.invoke(c);
+    }
+
+    private void populate(QueryController c, String summary) {
+        QueryPanel p = (QueryPanel) c.getComponent();
+        p.summaryTextField.setText(summary);
+        p.productList.getSelectionModel().clearSelection(); // no product
+    }
+
+    private class LogHandler extends Handler {
+        final String msg;
+        boolean done = false;
+        public LogHandler(String msg) {
+            this.msg = msg;
+        }
+
+        @Override
+        public void publish(LogRecord record) {
+            if(!done) {
+                done = record.getMessage().startsWith(msg);
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
+
+    }
 }

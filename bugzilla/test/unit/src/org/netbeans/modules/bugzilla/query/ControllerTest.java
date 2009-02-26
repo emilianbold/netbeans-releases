@@ -165,7 +165,7 @@ public class ControllerTest extends NbTestCase implements TestConstants {
 
         @Override
         public void publish(LogRecord record) {
-            done = record.getMessage().equals(msg);
+            if(!done) done = record.getMessage().equals(msg);
         }
 
         @Override
