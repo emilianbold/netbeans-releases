@@ -42,6 +42,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
@@ -194,7 +195,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
             if (USE_PRSTAT) {
                 lockIndicatorDataProvider = new CLIODCConfiguration(
                         "/bin/prstat", "-mv -p @PID -c 1", // NOI18N
-                        new SyncCLIOParser(locksColumn), indicatorTablesMetadata);
+                        new SAgentClioParser(locksColumn), indicatorTablesMetadata);
             } else {
                 String monitor = NativeToolsUtil.getExecutable("smonitor");
                 String envVar = NativeToolsUtil.getLdPreloadEnvVarName();
@@ -218,6 +219,51 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         }
 
         return lockIndicatorDataProvider;
+    }
+
+    private static class SAgentClioParser implements CLIOParser {
+
+            private List<String> colNames;
+            private float prev;
+
+            public SAgentClioParser(Column totalColumn) {
+                colNames = Arrays.asList(totalColumn.getColumnName());
+                prev = 0;
+            }
+
+            public DataRow process(String line) {
+                DLightLogger.instance.fine(getClass().getSimpleName() + ": " + line); //NOI18N
+                if (line == null) {
+                    return null;
+                }
+                line = line.trim();
+                if (!Character.isDigit(line.charAt(0))) {
+                    return null;
+                }
+                try {
+                    String l = line.trim();
+                    l = l.replaceAll(",", "."); // NOI18N
+                    String[] tokens = l.split("[ \t]+"); // NOI18N
+
+                    float curr = Float.parseFloat(tokens[0]);
+                    int threads = Integer.parseInt(tokens[1]);
+                    float delta = curr - prev;
+                    float res = delta * 100 / threads;
+                    DLightLogger.instance.fine(getClass().getSimpleName() +
+                            ": curr=" + curr + " threads=" + threads + //NOI18N
+                            " delta=" + delta + " res=" + res); //NOI18N
+                    return new DataRow(colNames, Arrays.asList(Float.valueOf(res)));
+                } catch (NumberFormatException e) {
+                    DLightLogger.instance.log(Level.WARNING, e.getMessage(), e);
+                }
+                return null;
+            }
+
+            int parseInt(String s) throws NumberFormatException {
+                DLightLogger.assertTrue(s != null);
+                return Integer.parseInt(s);
+            }
+
     }
 
     private static class SyncCLIOParser implements CLIOParser {
