@@ -7,6 +7,7 @@ package org.netbeans.modules.kenai.ui.spi;
 
 import java.awt.event.ActionListener;
 import java.util.List;
+import org.openide.util.Lookup;
 
 /**
  * Main access point to Kenai's Query&Issues API.
@@ -18,6 +19,10 @@ import java.util.List;
  * @author S. Aubrecht
  */
 public abstract class QueryAccessor {
+
+    public static QueryAccessor getDefault() {
+        return Lookup.getDefault().lookup(QueryAccessor.class);
+    }
 
     /**
      * Retrieve the list of queries defined for given project.

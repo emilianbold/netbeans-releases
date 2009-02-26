@@ -41,6 +41,9 @@ package org.netbeans.modules.kenai.ui;
 import java.awt.BorderLayout;
 import java.io.Serializable;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
+import javax.swing.JScrollPane;
+import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -72,6 +75,8 @@ final class KenaiTopComponent extends TopComponent {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+
+        setLayout(new java.awt.BorderLayout());
     }// </editor-fold>//GEN-END:initComponents
 
 
@@ -115,12 +120,17 @@ final class KenaiTopComponent extends TopComponent {
 
     @Override
     public void componentOpened() {
-        // TODO add custom code on component opening
+        removeAll();
+        //TODO use login handle from previous session (if any)
+        JScrollPane scroll = new JScrollPane( DashboardImpl.getInstance().getComponent() );
+        scroll.setBorder(BorderFactory.createEmptyBorder());
+        add( scroll, BorderLayout.CENTER );
     }
 
     @Override
     public void componentClosed() {
-        // TODO add custom code on component closing
+        DashboardImpl.getInstance().close();
+        removeAll();
     }
 
     /** replaces this in object stream */

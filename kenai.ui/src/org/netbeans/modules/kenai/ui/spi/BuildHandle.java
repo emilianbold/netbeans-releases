@@ -5,7 +5,10 @@
 
 package org.netbeans.modules.kenai.ui.spi;
 
+import java.awt.Color;
 import java.beans.PropertyChangeListener;
+import javax.swing.UIManager;
+import org.netbeans.modules.kenai.ui.dashboard.ColorManager;
 
 /**
  * Abstraction of a single build process (a line in Builds section)
@@ -21,10 +24,28 @@ public abstract class BuildHandle {
     public static final String PROP_STATUS = "status";
 
     public enum Status {
-        Running,
-        Failed,
-        Stable,
-        Unknown
+        
+        RUNNING( "running", ColorManager.defaultForeground ),
+        FAILED( "failed", ColorManager.errorColor ),
+        STABLE( "stable", ColorManager.stableBuildColor ),
+        UNSTABLE( "unstable", ColorManager.unstableBuildColor ),
+        UNKNOWN( "unknown", ColorManager.disabledColor );
+
+        private final Color c;
+        private final String displayName;
+
+        private Status( String displayName, Color c ) {
+            this.displayName = displayName;
+            this.c = c;
+        }
+
+        public Color getColor() {
+            return c;
+        }
+
+        public String toString() {
+            return displayName;
+        }
     }
 
     /**

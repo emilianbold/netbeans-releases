@@ -37,29 +37,23 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui;
+package org.netbeans.modules.kenai.ui.treelist;
 
-import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import java.util.Collections;
+import java.util.List;
 
 /**
+ * Node without any children.
  *
- * @author Jan Becicka
+ * @author S. Aubrecht
  */
-public class ProjectHandleImpl extends ProjectHandle {
+public abstract class LeafNode extends TreeListNode {
 
-    private KenaiProject prj;
-    public ProjectHandleImpl(KenaiProject prj) {
-        super( prj.getName() );
-        this.prj=prj;
+    public LeafNode( TreeListNode parent ) {
+        super( false, parent );
     }
 
-    @Override
-    public String getDisplayName() {
-        return prj.getDisplayName();
-    }
-
-    public KenaiProject getKenaiProject() {
-        return prj;
+    protected final List<TreeListNode> createChildren() {
+        return Collections.emptyList();
     }
 }

@@ -37,29 +37,35 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui;
+package org.netbeans.modules.kenai.ui.dashboard;
 
-import org.netbeans.modules.kenai.api.KenaiProject;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
+import org.netbeans.modules.kenai.ui.spi.SourceHandle;
+import org.openide.util.NbBundle;
 
 /**
+ * Node for project's sources section.
  *
- * @author Jan Becicka
+ * @author S. Aubrecht
  */
-public class ProjectHandleImpl extends ProjectHandle {
+public class SourceListNode extends SectionNode {
 
-    private KenaiProject prj;
-    public ProjectHandleImpl(KenaiProject prj) {
-        super( prj.getName() );
-        this.prj=prj;
+    public SourceListNode( ProjectNode parent ) {
+        super( NbBundle.getMessage(SourceListNode.class, "LBL_Sources"), parent, ProjectHandle.PROP_SOURCE_LIST ); //NOI18N
     }
 
     @Override
-    public String getDisplayName() {
-        return prj.getDisplayName();
-    }
-
-    public KenaiProject getKenaiProject() {
-        return prj;
+    protected List<TreeListNode> createChildren() {
+        ArrayList<TreeListNode> res = new ArrayList<TreeListNode>(20);
+        SourceAccessor accessor = SourceAccessor.getDefault();
+        List<SourceHandle> sources = accessor.getSources(project);
+        for( SourceHandle s : sources ) {
+            res.add( new SourceNode( s, this ) );
+        }
+        return res;
     }
 }

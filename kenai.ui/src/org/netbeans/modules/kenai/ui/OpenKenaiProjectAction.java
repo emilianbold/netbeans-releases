@@ -42,6 +42,7 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
@@ -50,16 +51,14 @@ public final class OpenKenaiProjectAction implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         KenaiSearchPanel searchPanel = new KenaiSearchPanel(KenaiSearchPanel.PanelType.OPEN);
         DialogDescriptor dialogDesc = new DialogDescriptor(searchPanel,
-                "Open Kenai Project", true, new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                // TODO
-            }
-        });
+                "Open Kenai Project", true, null);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
         dialog.setVisible(true);
         dialog.toFront();
         KenaiProject selProject = searchPanel.getSelectedProject();
-        System.out.println("Selected Kenai Project: " + selProject);
+        if( null != selProject ) {
+            ProjectHandleImpl project = new ProjectHandleImpl(selProject);
+            Dashboard.getDefault().addNonMemberProject(project);
+        }
     }
-    
 }
