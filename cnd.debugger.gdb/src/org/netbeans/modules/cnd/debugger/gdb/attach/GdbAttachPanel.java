@@ -373,7 +373,6 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
          * @return <code>true</code> whether value of this customizer
          * is valid
          */
-        @Override
         public boolean isValid() {
             return projectCB.getItemCount() > 0;
         }
