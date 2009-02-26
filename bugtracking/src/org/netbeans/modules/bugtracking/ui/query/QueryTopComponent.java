@@ -60,6 +60,8 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JSeparator;
@@ -125,11 +127,16 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
             repositoryComboBox.setRenderer(new DefaultListCellRenderer() {
                 @Override
                 public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                    Repository r = null;
                     if(value != null) {
-                        Repository r = (Repository) value;
+                        r = (Repository) value;
                         value = r.getDisplayName();
                     }
-                    return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                    Component renderer = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                    if(renderer instanceof JLabel && r != null) {
+                        ((JLabel) renderer).setIcon((Icon) r.getIcon());
+                    }
+                    return renderer;
                 }
             });
 

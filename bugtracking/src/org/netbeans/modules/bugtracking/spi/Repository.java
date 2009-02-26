@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugtracking.spi;
 
+import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
@@ -56,6 +57,12 @@ public abstract class Repository {
      * a query was saved or removed
      */
     public static String EVENT_QUERY_LIST_CHANGED = "bugtracking.repository.queries.changed";
+
+    /**
+     * Returns the icon for this repository
+     * @return
+     */
+    public abstract Image getIcon();
 
     /**
      * Returns the display name for this repository
