@@ -7,6 +7,7 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <sys/types.h>
+#include <errno.h>
 
 #include "instruments.h"
 
@@ -20,7 +21,7 @@ static void* hndl = NULL;
 
 static void* reporter(void* arg);
 
-static void start_reporting() {
+static void start_reporting() {    
     int tid;
     void* (*pcreate)(void*, void*, void*(*)(void*), void*) =  dlsym(hndl, "pthread_create");
     if(pcreate)
@@ -64,10 +65,11 @@ void cleanup(void* p) {
 }
 
 void
-__attribute((constructor))
+__attribute__((constructor))
 init_function(void) {
-    if((pthreads_enabled = init_sync_tracing()))
+    if((pthreads_enabled = init_sync_tracing())) {
         start_reporting();
+    }
     key_t key = getpid(); // use pid as a name of queue
     int msgflg = IPC_CREAT | 0666;
 
@@ -82,7 +84,7 @@ init_function(void) {
 
 
 void
-__attribute((destructor))
+__attribute__((destructor))
 fini_function(void) {
     cleanup(0);
 }
@@ -212,9 +214,14 @@ int pthread_create(void *newthread,
     return ORIG(pthread_create)(newthread, attr, start_routine, user_data);
 }
 
-int init_sync_tracing() {
-    if((hndl = dlopen("libpthread.so.0", RTLD_LAZY))) {
+#if defined(__sun)
+#define LIBNAME "libc.so.1"
+#else
+#define LIBNAME "libpthread.so.0"
+#endif
 
+int init_sync_tracing() {
+    if((hndl = dlopen(LIBNAME, RTLD_LAZY))) {
         INIT(pthread_cond_wait);
         INIT(pthread_cond_timedwait);
         INIT(pthread_mutex_lock);
@@ -230,17 +237,20 @@ int init_sync_tracing() {
         INIT(pthread_create);
         INIT(pthread_cleanup_push);
     }
-
     return (_orig_pthread_mutex_lock != NULL);
 }
 
 void* reporter(void* arg) {
-    long resolution = 10000;
+    long resolution = DEFAULT_RESOLUTION;
     struct timespec w;
-    if(clock_getres(CLOCK_REALTIME, &w))
+    if(clock_getres(CLOCK_REALTIME, &w) == 0) {
         resolution = w.tv_nsec;
+    } else {
+        trace("clock_getres failed, errno=%d, using default resolution resolution=%d\n", errno, resolution);
+    }
     w.tv_nsec = (GRANULARITY*resolution);
     long rep_interval = 1000000000L/w.tv_nsec;
+    trace("Calibrated: w.tv_sec=%d w.tv_nsec=%d rep_interval=%d\n", w.tv_sec, w.tv_nsec, rep_interval);
     int counter = 0;
     long sync_wait = 0;
     struct timespec rem;
@@ -262,6 +272,11 @@ void* reporter(void* arg) {
 //        unlock();
         sync_wait += lock_count;
 
+        #if DEBUG
+        if (trace_sync && counter%1000 == 0) {
+            trace("reporter trace_sync=%d counter=%d rep_interval=%d\n", trace_sync, counter, rep_interval);
+        }
+        #endif
         if (trace_sync && (counter++ > rep_interval)) {
             counter = 0;
             struct syncmsg buf = {
@@ -269,6 +284,7 @@ void* reporter(void* arg) {
                 sync_wait,
                 thr_count
             };
+            trace("reporting sync_wait=%d thr_count=%d\n", sync_wait, thr_count);
             msgsnd(msqid, &buf, sizeof(buf) - sizeof(buf.type), IPC_NOWAIT);
             //printf("%ld\n", sync_wait);
         }
