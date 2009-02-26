@@ -38,34 +38,26 @@
  */
 package org.netbeans.modules.kenai.ui;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.net.PasswordAuthentication;
-import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.spi.LoginHandle;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Implementation of LoginHandle. Currently fires events when user logs in/out
  * @author Jan Becicka
  */
-@ServiceProvider(service=LoginHandle.class)
-public class LoginHandleImpl extends LoginHandle implements PropertyChangeListener {
+public class LoginHandleImpl extends LoginHandle {
 
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    private String uname;
 
-    public LoginHandleImpl() {
-        Kenai.getDefault().addPropertyChangeListener(Kenai.PROP_LOGIN,this);
+    public LoginHandleImpl(String uname) {
+        this.uname=uname;
     }
 
     @Override
     public String getUserName() {
-        final PasswordAuthentication passwordAuthentication = Kenai.getDefault().getPasswordAuthentication();
-        if (passwordAuthentication==null) {
-            return null;
-        }
-        return passwordAuthentication.getUserName();
+        return uname;
     }
 
     /**
@@ -84,10 +76,5 @@ public class LoginHandleImpl extends LoginHandle implements PropertyChangeListen
      */
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         propertyChangeSupport.removePropertyChangeListener(listener);
-    }
-
-    
-    public void propertyChange(PropertyChangeEvent e) {
-        propertyChangeSupport.firePropertyChange(PROP_MEMBER_PROJECT_LIST, null, null);
     }
 }

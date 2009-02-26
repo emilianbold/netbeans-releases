@@ -48,6 +48,7 @@ import java.awt.event.ActionListener;
 import org.netbeans.modules.kenai.ui.spi.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
@@ -57,7 +58,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.LoginAction;
+import org.netbeans.modules.kenai.ui.LoginHandleImpl;
 import org.netbeans.modules.kenai.ui.treelist.TreeList;
 import org.netbeans.modules.kenai.ui.treelist.TreeListModel;
 import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
@@ -98,6 +101,19 @@ public final class DashboardImpl extends Dashboard {
                 }
             }
         };
+        Kenai.getDefault().addPropertyChangeListener(Kenai.PROP_LOGIN, new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent pce) {
+                final PasswordAuthentication newValue = (PasswordAuthentication) pce.getNewValue();
+                if (newValue==null) {
+                    setUser(null);
+                } else {
+                    setUser(new LoginHandleImpl(newValue.getUserName()));
+                }
+                if (newValue==null) {
+
+                }
+            }
+        });
     }
 
     public static DashboardImpl getInstance() {
