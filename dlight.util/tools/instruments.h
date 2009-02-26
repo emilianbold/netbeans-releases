@@ -25,6 +25,13 @@ typedef struct syncmsg {
 } syncmsg;
 
 #define GRANULARITY (5)
+#define DEFAULT_RESOLUTION (1000)
+
+#if DEBUG
+#define trace(format, args...) fprintf(stderr, format , ## args)
+#else
+#define trace(format, args...)
+#endif
 
 #endif	/* _INSTRUMENTS_H */
 

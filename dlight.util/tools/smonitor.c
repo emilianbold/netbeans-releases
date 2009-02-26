@@ -33,12 +33,12 @@ int main(int argc, char** argv) {
         msqid = msgget((int) pid, 0666);
     }
     if (msqid < 0) {
-        fprintf(stderr, "Can not communicate to process %s\n", argv[1]);
+        fprintf(stderr, "Can not communicate to process %s (error creating message queue)\n", argv[1]);
         return -2;
     }
 
     if (kill(pid, SIGUSR2) < 0) {
-        fprintf(stderr, "Can not communicate to process %s\n", argv[1]);
+        fprintf(stderr, "Can not communicate to process %s (error sending signal)\n", argv[1]);
         return -3;
     }
 
@@ -54,9 +54,12 @@ int main(int argc, char** argv) {
         return -5;
     }
     struct timespec res;
-    long resolution = 10000;
-    if(clock_getres(CLOCK_REALTIME, &res))
+    long resolution = DEFAULT_RESOLUTION;
+    if(clock_getres(CLOCK_REALTIME, &res) == 0) {
         resolution = res.tv_nsec;
+    } else {
+        trace("clock_getres failed, errno=%d, using default resolution resolution=%d\n", errno, resolution);
+    }
     long per_sec = 1000000000L/(GRANULARITY*resolution);
 
     printf("sync_waits\t#threads\n");

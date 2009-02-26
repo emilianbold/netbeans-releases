@@ -142,7 +142,7 @@ ${SYN_APP_PATH}: ${SYN_APP_OBJ}
 
 # sync monitor agent
 ${SYN_LIB_PATH}: ${SYN_LIB_OBJ}
-	gcc -ldl ${LDFLAGS_LIB} -o ${SYN_LIB_PATH} ${SYN_LIB_OBJ}
+	gcc -ldl -lrt ${LDFLAGS_LIB} -o ${SYN_LIB_PATH} ${SYN_LIB_OBJ}
 
 clean:
 	rm -rf ${BUILD_PATH} ${DIST_PATH}
