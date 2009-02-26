@@ -451,22 +451,26 @@ public class QueryController extends BugtrackingController implements DocumentLi
                         if(name == null || name.trim().equals("")) {
                             return; // XXX nice error?
                         }
-                        query.setName(name);
                     } else {
                         return;
                     }
                 }
                 assert name != null;
-                repository.saveQuery(query);
-                query.setSaved(true); // XXX
-                setAsSaved();
-                if(firstTime) {
-                    onSearch();
-                } else {
-                    onRefresh();
-                }
+                save(name, firstTime);
             }
        });
+    }
+
+    private void save(String name, boolean firstTime) {
+        query.setName(name);
+        repository.saveQuery(query);
+        query.setSaved(true); // XXX
+        setAsSaved();
+        if (firstTime) {
+            onSearch();
+        } else {
+            onRefresh();
+        }
     }
 
     private void onCancelChanges() {
